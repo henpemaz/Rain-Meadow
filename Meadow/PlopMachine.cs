@@ -169,15 +169,22 @@ namespace RainMeadow
                 RainMeadow.Debug(e);
                 //throw;
             }
-            if (WetTrack == null)
+            if (WetController == null)
             {
-                WetTrack = new DisembodiedLoopEmitter(0f, 1, 0);
+                WetController = new DisembodiedLoopEmitter(0f, 1, 0);
+                RainMeadow.Debug("Created wetcontroller");
+            }
+            else
+            {
+                RainMeadow.Debug("Did NOT delete wetcontroller, Fading is " + WetData.Fading);
+                WetData.Fading = false;
+                WetData.ClearWetTrack();
             }
             if (WetLoop == null) 
             { 
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetTrack, 0, 0f, 1, false);
+                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, 0f, 1, false);
 
                 WetLoop.gameObject.AddComponent<AudioLowPassFilter>();
                 WetLoop.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = 23000;
@@ -211,11 +218,12 @@ namespace RainMeadow
                 
                 //WE'RE SO FUCKING BACK
 
-                mic.PlayDisembodiedLoop(twentysecsilence, WetTrack, 0, 0f, 1);
+                RainMeadow.Debug("Created wetloop");
+                //mic.PlayDisembodiedLoop(twentysecsilence, WetController, 0, 0f, 1);
             }
         }
         static VirtualMicrophone.DisembodiedLoop? WetLoop;
-        static DisembodiedLoopEmitter? WetTrack;
+        static DisembodiedLoopEmitter? WetController;
 
 
         static string GetFolderName(string path)
@@ -458,7 +466,7 @@ namespace RainMeadow
             // (which will also be reverb effect here then)
 
             float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
-            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-420, 420) / 1000f;
+            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-120, 120) / 1000f;
 
             WetData.Plop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
             
@@ -732,6 +740,8 @@ namespace RainMeadow
                 public int ploprendered;
                 public float volume;
                 public float pan; //-1 for left, 1 for right
+                public float lan;
+                public float ran;
                 public int oct;
                 public Plop(string length, int octave, int semitone, float volume, float pan)
                 {
@@ -740,63 +750,53 @@ namespace RainMeadow
                     TrackSampleStartsAt = WetLoop.audioSource.timeSamples;
                     //TrackSampleStartsAt += 0; //initial delay
 
-                    //float randominteger = (UnityEngine.Random.Range(0, 4) switch { 0 => 2f, 1 => 4f, 2 => 7f, 3 => 11f, _ => 2f });
-                    //float randominteger2 = (float)(UnityEngine.Random.Range(0, 2));
-
                     this.oct = octave;
                     this.Frequency = 440f * Mathf.Pow(2, octave - 5) * Mathf.Pow(2, (float)(semitone + 3) / (float)12);
                     
                     //please only use double digit floats
                     //these'll be decided by the wavetype? 
-                    float attacktime = 0.01f; 
-                    float releasetime = length switch { "L" => 5.99f , "M" => 2.98f , "S" => 0.98f, _ => 3.98f }; 
+                    float attacktime = 0.02f; 
+                    float releasetime = length switch { "L" => 5.98f , "M" => 2.98f , "S" => 0.98f, _ => 3.98f }; 
                     plopattackmonosamples = (int)(attacktime * 44100);
                     plopreleasemonosamples = (int)(releasetime * 44100);
-                    ploptotallength = 44100 * 2 * (int)(attacktime+releasetime);
+                    ploptotallength =  2 * (plopattackmonosamples + plopreleasemonosamples);
                     ploprendered = 0;
 
-                    this.volume = volume / 10f;
-                    this.pan = pan; //made this pan thingy in like 3 minutes i'm so good rn 
-                    //WetData.plops.Add(this);
+                    this.volume = volume / 10f * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
+                    this.pan = pan + PlopInititationPan; 
 
-                    /*
-                    if (MeadowMusic.vibeIntensity == null || MeadowMusic.vibeIntensity.Value == 0f || velocity == 0f)
-                    {
-                        if (RainWorld.ShowLogs)
-                        {
-                            RainMeadow.Debug("VibeIntensity is undefined or 0, or inputted velocity is 0, won't bother playing thing");
-                        }
-                        return;
-                    }
-                    float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * 0.5f * velocity;
-
-                    float pan = (MeadowMusic.vibePan == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
-                    */
-
-
-
-
+                    lan = Mathf.Pow(Mathf.Clamp01(1f - this.pan), 2);
+                    ran = Mathf.Pow(Mathf.Clamp01(1f + this.pan), 2);   
                 }
                 public static void WetPlop(string length, int octave, int semitone, float volume, float pan)
                 {
+                    if (PlopInititationVelocity == 0) return;
                     plops.Add(new Plop(length, octave, semitone, volume, pan));
+                    //RainMeadow.Debug("Should play " + "   " + length + "   " + octave + "   " + semitone + "   " + volume + "   " + pan + "   " + plops.Count);
                 }
+
                 public void Update()
                 {
                     if (WetLoop == null) return;
-                    int samplestorender = 4410 * 2; //0.1 second a tick
+
+                  
+                    //if (Fading == true)
+                    //{
+                    //    RainMeadow.Debug("Removed a plop");
+                    //    plopstoremove.Add(this);
+                    //    return;
+                    //}                    
+                    int samplestorender = 8820; //0.2 second a tick
                     //RainMeadow.Debug("Rendering " + ploprendered + "  " + (ploprendered + samplestorender));
                     //RainMeadow.Debug(ploprendered + "    " + plopattackmonosamples + "   " + ploptotallength + "   " + TrackClipData.Length + "   " + TotalWetSamples);
-                    Wavetype type = Wavetype.sineiloveyousineohmygodhavemybabies;
+                    Wavetype type = Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck;
                     
-                    if ((ploprendered*2 + samplestorender) > ploptotallength) 
+                    if (samplestorender + (ploprendered * 2) > ploptotallength) 
                     { 
-                        //RainMeadow.Debug("It did the thing " + samplestorender);
                         samplestorender = ploptotallength - (ploprendered * 2);
-                        //RainMeadow.Debug("It did the thing " + samplestorender);
-                        if (samplestorender == 0)
+                        if (samplestorender <= 0)
                         {
-                            RainMeadow.Debug("Removed a plop");
+                            //RainMeadow.Debug("Removed a plop");
                             plopstoremove.Add(this);
                             return;
                         }
@@ -807,8 +807,9 @@ namespace RainMeadow
                     Parallel.For(ploprendered*2, ploprendered * 2 + TrackClipData.Length, i =>
                     {
                         int ii = (i % 2 == 0 ? i / 2 : (i - 1) / 2);
-                        float ipan = (i % 2 == 0 ? Mathf.Min(1, (1 + pan)) : Mathf.Min(1, (1 - pan)));
+                        float ipan = (i % 2 == 0 ? lan : ran);
                         float CurrentAmplitude;
+                        float iPhase = (ii * Mathf.PI * 2f * Frequency / 44100f);
 
                         if (ii < plopattackmonosamples)
                         {
@@ -817,21 +818,29 @@ namespace RainMeadow
                         }
                         else //we have no decay nor sustain here bro
                         {
-                            CurrentAmplitude = Mathf.Pow(1.0f - (float)(ii - plopattackmonosamples) / plopreleasemonosamples, 3);
+                            CurrentAmplitude = Mathf.Pow((1.0f - (((float)(ii - plopattackmonosamples)) / plopreleasemonosamples)), 3);
                         }
+                        float iValue = volume * CurrentAmplitude * ipan * (1f - (float)oct / 20);
 
                         switch (type)
                         {
                             case Wavetype.sineiloveyousineohmygodhavemybabies:
-                                TrackClipData[i-(ploprendered*2)] += Mathf.Sin(ii * Mathf.PI * 2f * Frequency / 44100f) * volume * CurrentAmplitude * ipan * (1f-(float)oct/20);
+                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue;
                                 break;
 
-                            case Wavetype.square:
-                                TrackClipData[i-(ploprendered*2)] += Mathf.Atan(Mathf.Sin(ii * Mathf.PI * 2f * Frequency / 44100f)*3) / Mathf.Atan(3) * volume * CurrentAmplitude * ipan * (1f-(float)oct/20);
+                            case Wavetype.smoothsquareiwouldeatmyarmforthishoe:
+                                TrackClipData[i - (ploprendered * 2)] += Mathf.Atan(Mathf.Sin(iPhase) * 3) / Mathf.Atan(3) * iValue;
                                 break; //HOLY FUCKING SHIT IT WORKS 
-                            
+
+                            case Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck:
+                                TrackClipData[i - (ploprendered * 2)] += Mathf.Asin(Mathf.Cos(iPhase)) * iValue;
+                                break;
+                            case Wavetype.square: //i'll make these formulas in celebration
+                                break;
+                            case Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude:
+                                break;
                             default:
-                                TrackClipData[i-(ploprendered*2)] += Mathf.Sin(ii * Mathf.PI * 2f * Frequency / 44100f) * volume * 0.5f * CurrentAmplitude * ipan * (1f-(float)oct/20);
+                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * 0.5f * iValue;
                                 break;
                         }
                         //while (TrackClipData[i - (ploprendered * 2)] >= 0.3)
@@ -855,32 +864,53 @@ namespace RainMeadow
                 }
             }
             static public List<Plop> plopstoremove = new();
-            static bool Fading = false;
+            public static bool Fading = false;
+            static public float PlopInititationVelocity;
+            static public float PlopInititationPan;
+
             public static void Update() 
             {
                 if (WetLoop == null) return;
 
+                WetLoop.Update(20149109.0f, 901590.0625f); //doesn't matter what floats lol
+
                 CheckWetTrack();
-                if (WetTrack != null)
+
+                if (MeadowMusic.vibeIntensity != null)// && MeadowMusic.vibeIntensity.Value != 0f) 
                 {
-                    if (Fading)
-                    {
-                        WetTrack.volume = Custom.LerpAndTick(WetTrack.volume, 0f, 0.3f, 0.04f);
-                        if (WetTrack.volume == 0f)
+                    PlopInititationVelocity = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f);
+                }
+                else
+                {
+                    PlopInititationVelocity = 0;
+                }
+
+
+                if (WetController != null)
+                {
+
+                    PlopInititationPan = (MeadowMusic.vibePan == null || MeadowMusic.vibeIntensity == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
+
+                        if (Fading)
                         {
-                            ClearWetTrack();
-                            Fading = false;
-                            RainMeadow.Debug("Did delete my things");
+                            if (WetController.volume != 0f)
+                            {
+                                WetController.volume = Custom.LerpAndTick(WetController.volume, 0f, 0.3f, 0.04f);
+                            }
+                            else
+                            {
+                                ClearWetTrack();
+                            }
                         }
-                    }
                     else
                     {
-                        if (WetTrack.volume != 0.3f)
+                        if (WetController.volume != 0.3f)
                         {
-                            WetTrack.volume = Custom.LerpAndTick(WetTrack.volume, 0.3f, 0.02f, 0.002f);
+                            WetController.volume = Custom.LerpAndTick(WetController.volume, 0.3f, 0.02f, 0.002f);
                         }
                     }
-                } //TODO gonna need to find another place to place this shit if i really wanna clear the track for later.
+                } //but at least it fades it *in*
+
 
                 if (plops.Count > 0)
                 {
@@ -901,6 +931,33 @@ namespace RainMeadow
             }
 
             static int? TrackCurrentSectionBuffer;
+            public static void Debug()
+            {
+                RainMeadow.Debug("CHECKING OUT WET CONTROLLER");
+                if (WetController != null)
+                {
+                    RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(WetController));
+                    RainMeadow.Debug(WetController.volume);
+
+                    if (WetLoop != null)
+                    {
+                        //RainMeadow.Debug(Newtonsoft.Json.JsonConvert.SerializeObject(WetLoop)); can't serialize wetloop due to gameobject
+                        var TrackClip = WetLoop.audioSource.clip;
+                        RainMeadow.Debug((TrackClip.samples * TrackClip.channels));
+                        
+                        RainMeadow.Debug(WetLoop.slatedForDeletion);
+                        RainMeadow.Debug(WetLoop.controller.currentSoundObject == null);
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Wetloop is null");
+                    }
+                }
+                else
+                {
+                    RainMeadow.Debug("Wettrack is null");
+                }
+            }
             private static void CheckWetTrack()
             {
                 if (WetLoop == null) return;
@@ -917,13 +974,13 @@ namespace RainMeadow
                 }
                 if (TrackCurrentSectionBuffer != TrackCurrentBuffer)
                 {
-                    RainMeadow.Debug(TrackCurrentSectionBuffer + "     " + TrackCurrentBuffer);
+                    //RainMeadow.Debug(TrackCurrentSectionBuffer + "     " + TrackCurrentBuffer);
                     int deletethissection = TrackCurrentSectionBuffer.Value == 0 ? 3 : TrackCurrentSectionBuffer.Value - 1;
                     int sectionstartoffset = TrackSamples * deletethissection / 4;
 
                     float[] TrackClipData = new float[TrackSamples];
                     TrackClip.GetData(TrackClipData, 0);
-                    RainMeadow.Debug(TrackSamples + "That many times it has done it stuff");
+                    //RainMeadow.Debug(TrackSamples + "That many times it has done it stuff");
                     for (int i = 0; i < TrackSamples / 4; ++i) //that'll be 0.5 seconds (2 channels)
                     {
                         TrackClipData[i + sectionstartoffset] = 0;
@@ -932,20 +989,32 @@ namespace RainMeadow
                     TrackClip.SetData(TrackClipData, 0);
                 }
             }
-            public static void FadeOut()
-            {
-                Fading = true;
-            }
-            private static void ClearWetTrack()
+
+            public static void DestroyKillMurderDoSomethingImNotSureOfHowToDoSomethingElse()
             {
                 if (WetLoop == null) return;
+                //Fading = true;
+                //yeah no i'm not sure how i'd work in the Fading out and in so i'm just gonna not,
+                //although the problem might be deeper still... the update function isn't called during transitions, which results in weird a gap and splice, help
+                plops.Clear();
+                ClearWetTrack();
+            }
+          public static void FadeOut()
+            {
+
+                Fading = true;
+                }
+            public static void ClearWetTrack()
+            {
+                if (WetLoop == null) return;
+                RainMeadow.Debug("Cleared Wet Track");  
                 var TrackClip = WetLoop.audioSource.clip;
                 int TrackSamples = (TrackClip.samples * TrackClip.channels);
                 float[] TrackClipData = new float[TrackSamples];
                 TrackClip.SetData(TrackClipData, 0);
             }
         }
-        
+
         /*
         private void PlopWetTrack()
         {
@@ -2111,10 +2180,10 @@ namespace RainMeadow
                     {
                         float trackvol = track.track switch
                         {
-                            0 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.4f - 0.5f, 1)),
-                            1 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.5f - 1f, 1)),
-                            2 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.35f - 1f, 1)),
-                            3 => Math.Max(0, Math.Min(plopMachine.currentagora * 0.27f - 1.6f, 1)),
+                            0 => Mathf.Clamp01((plopMachine.currentagora * 0.4f - 0.5f)),
+                            1 => Mathf.Clamp01(plopMachine.currentagora * 0.5f - 1f),
+                            2 => Mathf.Clamp01(plopMachine.currentagora * 0.35f - 1f),
+                            3 => Mathf.Clamp01(plopMachine.currentagora * 0.27f - 1.6f),
                             _ => 0f,
                         };
                         plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol * 0.2f, 1, mic, PlopType.Drum); 
@@ -2250,7 +2319,8 @@ namespace RainMeadow
 
             if (Input.GetKey("e") && !ol1)
             {
-                agora++;
+                //agora++;
+                WetData.Debug();
                 //var clipclip = self.manager.musicPlayer.song.subTracks[0].source.clip;
                 //var allSamples = new float[clipclip.samples * clipclip.channels];
                 //clipclip.GetData(allSamples, 0);

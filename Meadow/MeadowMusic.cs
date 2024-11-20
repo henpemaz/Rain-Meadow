@@ -55,7 +55,7 @@ namespace RainMeadow
                         if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
                         {
                             self.song.FadeOut(120f);
-                            PlopMachine.WetData.FadeOut();
+                            //PlopMachine.WetData.FadeOut();
                         }
                     }
                 }
@@ -64,7 +64,7 @@ namespace RainMeadow
                     if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
                     {
                         self.song.FadeOut(120f);
-                        PlopMachine.WetData.FadeOut();
+                        //PlopMachine.WetData.FadeOut();
                     }
                 }
             }
@@ -73,7 +73,7 @@ namespace RainMeadow
                 if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
                 {
                     self.song.FadeOut(120f);
-                    PlopMachine.WetData.FadeOut();
+                    //PlopMachine.WetData.FadeOut();
                 }
             }
             orig.Invoke(self, currentProcess);
@@ -431,16 +431,16 @@ namespace RainMeadow
                 //RainMeadow.Debug("Has made vectors to viberoom and player");
                 float vibeIntensityTarget = 
                              Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
-                           * Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
-                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works 
+                           * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))                 //* Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
+                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works   <--- DOES NOT ???
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : (float)vibeIntensity, vibeIntensityTarget, 0.025f, 0.002f);
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.015f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.2f;
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
                     if ((float)vibeIntensity > 0.9f) { musicPlayer.song.baseVolume = 0f; }
-                    else { musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2f) * 0.3f; }
+                    else { musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2.5f) * 0.3f; }
                 }                
                 //RainMeadow.Debug("Has assigned vibeintensity, plopping, and maybe musicvolume.");
             }
@@ -902,8 +902,8 @@ namespace RainMeadow
         static int DegreesOfAwayness;
         static int CalculateDegreesOfAwayness(AbstractRoom testRoom)
         {
-            var vibeRoom = testRoom.world.GetAbstractRoom(az.room);
-            if (vibeRoom == null) return -1;
+            var vibeRoom = testRoom.world.GetAbstractRoom(closestVibe);
+            if (vibeRoom == null) return 100;
             
             if (testRoom.index == vibeRoom.index)
             {
@@ -943,7 +943,7 @@ namespace RainMeadow
             }
             if (num > 3)
             {
-                return -1;
+                return 4; //I'm just using it for one thing that'll have =< 4 equal 0
             }
             return num;
         }
