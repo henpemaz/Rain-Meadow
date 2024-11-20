@@ -29,10 +29,6 @@ namespace RainMeadow
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
 
-            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) // Can snipe players, should wait to give them time to prep
-            {
-                arena.setupTime = arena.setupTime * 2;
-            }
             session = arenaGameSession;
             arena.trackSetupTime = arena.setupTime;
             matchMode = TimerMode.Waiting;
