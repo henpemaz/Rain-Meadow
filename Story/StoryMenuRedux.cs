@@ -124,7 +124,6 @@ namespace RainMeadow
             {
                 UpdatePlayerList();
             }
-            RainMeadow.Debug(storyModeOnline.saveToDisk);
         }
 
         public override void ShutDownProcess()
