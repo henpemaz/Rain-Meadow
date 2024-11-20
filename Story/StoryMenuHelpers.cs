@@ -308,6 +308,7 @@ namespace RainMeadow
             storyMenu.hostStartButton.buttonBehav.greyedOut = false;
             storyMenu.pages[0].subObjects.Add(storyMenu.hostStartButton);
 
+            storyModeOnline.saveToDisk = true;
             try
             {
                 if (storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName != null && storyMenu.saveGameData[storyModeOnline.currentCampaign].shelterName.Length > 2)
