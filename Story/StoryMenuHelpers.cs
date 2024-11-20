@@ -272,7 +272,9 @@ namespace RainMeadow
                     currentBtn.toggled = !currentBtn.toggled;
                     //storyMenu.customSelectedSlugcat =
                     storyModeOnline.avatarSettings.playingAs = slug;
-
+                    storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
+                    storyMenu.RemoveColorButtons();
+                    storyMenu.AddColorButtons();
 
                     // Set all other buttons to false
                     foreach (var otherBtn in storyMenu.pages[0].subObjects.OfType<SimplerButton>())
@@ -396,7 +398,7 @@ namespace RainMeadow
             }
             catch
             {
-                RainMeadow.Error("Error getting prev region name");
+                RainMeadow.Error("Error getting region name");
                 storyModeOnline.region = "";
             }
         }

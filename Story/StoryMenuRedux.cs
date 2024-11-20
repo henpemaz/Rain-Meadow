@@ -18,7 +18,6 @@ namespace RainMeadow
         internal EventfulHoldButton hostStartButton;
         internal EventfulHoldButton clientWaitingButton;
         internal SlugcatCustomization personaSettings;
-        private StoryGameMode story;
         private PlayerInfo[] players;
         internal bool resetSave;
         private bool updateDefaultColors;
@@ -125,6 +124,7 @@ namespace RainMeadow
             {
                 UpdatePlayerList();
             }
+
         }
 
         public override void ShutDownProcess()
