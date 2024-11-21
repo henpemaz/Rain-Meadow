@@ -175,7 +175,7 @@ namespace RainMeadow
 
                     foreach (var def in registeredEntities.list)
                     {
-                        if (def.entityId.FindEntity() is var ent)
+                        if (def.entityId.FindEntity() is var ent && ent != null)
                         {
                             if (def.owner != ent.owner.inLobbyId && OnlineManager.lobby.PlayerFromId(def.owner) is OnlinePlayer newOwner)
                             {
