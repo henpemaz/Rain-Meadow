@@ -47,8 +47,6 @@ public partial class RainMeadow
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
-
-
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
