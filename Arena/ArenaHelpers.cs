@@ -33,8 +33,12 @@ namespace RainMeadow
                 lobby.playButton.inactive = false;
 
             }
-            arena.allPlayersReadyLockLobby = false;
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.allPlayersReadyLockLobby = false;
+            }
             arena.clientsAreReadiedUp = 0;
+            lobby.clientReadiedUp = false;
             foreach (var player in OnlineManager.players)
             {
                 arena.playersReadiedUp[player.id.name] = false;
@@ -57,16 +61,23 @@ namespace RainMeadow
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
         {
-
-            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            try
             {
-                if (playerNumber == i)
+                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                 {
-                    return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    if (playerNumber == i)
+                    {
+                        return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    }
                 }
             }
+            catch
+            {
+                RainMeadow.Error("Error finding player");
 
+            }
             return null;
+
         }
 
         public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
