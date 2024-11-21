@@ -272,12 +272,12 @@ namespace RainMeadow
                     currentBtn.toggled = !currentBtn.toggled;
 
                     storyModeOnline.avatarSettings.playingAs = slug;
+                    storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
 
-                    if (storyMenu.colorChecked && ModManager.MSC)
+                    if (storyMenu.colorChecked)
                     {
                         storyMenu.RemoveColorButtons();
                         storyMenu.AddColorButtons();
-                        storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
                     }
 
                     // Set all other buttons to false
