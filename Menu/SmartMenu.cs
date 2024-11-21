@@ -35,6 +35,7 @@ namespace RainMeadow
         private void Back(SimplerButton obj)
         {
             manager.RequestMainProcessSwitch(this.backTarget);
+            base.PlaySound(SoundID.MENU_Switch_Page_Out);
         }
 
         public override string UpdateInfoText()
