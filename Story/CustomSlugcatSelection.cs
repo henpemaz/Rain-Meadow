@@ -5,9 +5,9 @@ namespace RainMeadow
 {
     public partial class SlugcatCustomSelection : SlugcatSelectMenu.SlugcatPage
     {
-        public StoryMenuRedux storyCustomMenu;
+        public StoryOnlineMenu storyCustomMenu;
 
-        public SlugcatCustomSelection(StoryMenuRedux storyCustomMenu, SlugcatSelectMenu unusedMenu, int pageIndex, SlugcatStats.Name slug) : base(unusedMenu, null, pageIndex, slug)
+        public SlugcatCustomSelection(StoryOnlineMenu storyCustomMenu, SlugcatSelectMenu unusedMenu, int pageIndex, SlugcatStats.Name slug) : base(unusedMenu, null, pageIndex, slug)
         {
             this.storyCustomMenu = storyCustomMenu;
             base.AddImage(false);

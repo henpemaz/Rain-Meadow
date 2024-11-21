@@ -9,7 +9,7 @@ using UnityEngine;
 using HUD;
 namespace RainMeadow
 {
-    public class StoryMenuRedux : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
+    public class StoryOnlineMenu : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
     {
         int selectOneBtnIndex;
         internal CheckBox clientWantsToOverwriteSave;
@@ -21,7 +21,7 @@ namespace RainMeadow
         private PlayerInfo[] players;
         internal bool resetSave;
         private bool updateDefaultColors;
-        internal StoryGameMode storyModeOnline;
+        internal StoryGameMode storyGameMode;
         internal MenuLabel campaignContainer;
         internal MenuLabel onlineDifficultyLabel;
         internal SimplerSymbolButton iHateCheckboxes;
@@ -29,39 +29,39 @@ namespace RainMeadow
 
         internal SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
 
-        public StoryMenuRedux(ProcessManager manager) : base(manager)
+        public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
 
-            storyModeOnline = OnlineManager.lobby.gameMode as StoryGameMode;
+            storyGameMode= OnlineManager.lobby.gameMode as StoryGameMode;
 
-            StoryMenuHelpers.SanitizeStoryClientSettings(storyModeOnline.storyClientData);
-            StoryMenuHelpers.SanitizeStoryGameMode(storyModeOnline);
+            StoryMenuHelpers.SanitizeStoryClientSettings(storyGameMode.storyClientData);
+            StoryMenuHelpers.SanitizeStoryGameMode(storyGameMode);
 
-            storyModeOnline.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+            storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
-            StoryMenuHelpers.RemoveExcessStoryObjects(this, storyModeOnline);
+            StoryMenuHelpers.RemoveExcessStoryObjects(this, storyGameMode);
             StoryMenuHelpers.ModifyExistingMenuItems(this);
 
             if (OnlineManager.lobby.isOwner)
             {
-                StoryMenuHelpers.SetupHostMenu(this, storyModeOnline);
+                StoryMenuHelpers.SetupHostMenu(this, storyGameMode);
                 var hostSettings = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
-                storyModeOnline.storyBoolRemixSettings = hostSettings.hostBoolSettings;
-                storyModeOnline.storyFloatRemixSettings = hostSettings.hostFloatSettings;
-                storyModeOnline.storyIntRemixSettings = hostSettings.hostIntSettings;
+                storyGameMode.storyBoolRemixSettings = hostSettings.hostBoolSettings;
+                storyGameMode.storyFloatRemixSettings = hostSettings.hostFloatSettings;
+                storyGameMode.storyIntRemixSettings = hostSettings.hostIntSettings;
             }
             else
             {
-                StoryMenuHelpers.SetupClientMenu(this, storyModeOnline);
+                StoryMenuHelpers.SetupClientMenu(this, storyGameMode);
                 if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
-                    StoryMenuHelpers.CustomSlugcatSetup(this, storyModeOnline);
+                    StoryMenuHelpers.CustomSlugcatSetup(this, storyGameMode);
                 }
 
             }
             SteamSetup();
             UpdatePlayerList();
-            StoryMenuHelpers.SetupOnlineMenuItems(this, storyModeOnline);
+            StoryMenuHelpers.SetupOnlineMenuItems(this, storyGameMode);
 
             StoryMenuHelpers.SetupOnlineCustomization(this);
 
@@ -77,19 +77,19 @@ namespace RainMeadow
             {
                 if (ModManager.MMF)
                 {
-                    StoryMenuHelpers.SetClientStoryRemixSettings(storyModeOnline.storyBoolRemixSettings, storyModeOnline.storyFloatRemixSettings, storyModeOnline.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
+                    StoryMenuHelpers.SetClientStoryRemixSettings(storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
                 }
                 if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
                 {
-                    personaSettings.playingAs = storyModeOnline.currentCampaign;
+                    personaSettings.playingAs = storyGameMode.currentCampaign;
                 }
             }
             else //I'm the host
             {
 
 
-                RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyModeOnline));
-                personaSettings.playingAs = storyModeOnline.currentCampaign;
+                RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyGameMode));
+                personaSettings.playingAs = storyGameMode.currentCampaign;
             }
 
             manager.arenaSitting = null;
@@ -114,8 +114,8 @@ namespace RainMeadow
             }
             else
             {
-                clientWaitingButton.buttonBehav.greyedOut = !(storyModeOnline.isInGame && !storyModeOnline.changedRegions);
-                StoryMenuHelpers.GetRegionAndCampaignNameForClient(this, storyModeOnline);
+                clientWaitingButton.buttonBehav.greyedOut = !(storyGameMode.isInGame && !storyGameMode.changedRegions);
+                StoryMenuHelpers.GetRegionAndCampaignNameForClient(this, storyGameMode);
 
             }
 
@@ -197,12 +197,12 @@ namespace RainMeadow
             {
 
                 var index = slugcatPageIndex - 1 < 0 ? slugcatPages.Count - 1 : slugcatPageIndex - 1;
-                StoryMenuHelpers.TryGetRegion(this, storyModeOnline, index);
+                StoryMenuHelpers.TryGetRegion(this, storyGameMode, index);
             }
             if (message == "NEXT")
             {
                 var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
-                StoryMenuHelpers.TryGetRegion(this, storyModeOnline, index);
+                StoryMenuHelpers.TryGetRegion(this, storyGameMode, index);
 
             }
 

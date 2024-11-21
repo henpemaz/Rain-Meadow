@@ -296,7 +296,7 @@ namespace RainMeadow
             }
             if (ID == Ext_ProcessID.StoryMenu)
             {
-                self.currentMainLoop = new StoryMenuRedux(self);
+                self.currentMainLoop = new StoryOnlineMenu(self);
             }
 
 #if !LOCAL_P2P

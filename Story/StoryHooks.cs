@@ -82,7 +82,7 @@ namespace RainMeadow
 
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
-            if (isStoryMode(out var storyModeOnline))
+            if (isStoryMode(out var storyGameMode))
             {
                 if (box.IDString == "COLORS")
                 {
@@ -96,13 +96,13 @@ namespace RainMeadow
 
                 if (box.IDString == "CLIENTSAVERESET")
                 {
-                    return storyModeOnline.saveToDisk;
+                    return storyGameMode.saveToDisk;
                 }
 
 
                 if (box.IDString == "ONLINEFRIENDLYFIRE")
                 {
-                    return storyModeOnline.friendlyFire;
+                    return storyGameMode.friendlyFire;
                 }
 
                 return false;
@@ -115,7 +115,7 @@ namespace RainMeadow
 
         private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
         {
-            if (isStoryMode(out var storyModeOnline) && self is StoryMenuRedux storyMenu)
+            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu storyMenu)
             {
 
                 if (box.IDString == "COLORS")
@@ -141,12 +141,12 @@ namespace RainMeadow
                 }
                 if (box.IDString == "CLIENTSAVERESET")
                 {
-                    storyModeOnline.saveToDisk = c;
+                    storyGameMode.saveToDisk = c;
                 }
 
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
-                    storyModeOnline.friendlyFire = c;
+                    storyGameMode.friendlyFire = c;
 
                 }
             }
