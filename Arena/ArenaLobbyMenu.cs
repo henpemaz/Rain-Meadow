@@ -109,15 +109,24 @@ namespace RainMeadow
 
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
-                for (int i = this.levelSelector.levelsPlaylist.levelItems.Count - 1; i >= 0; i--)
-                {
-                    this.GetGameTypeSetup.playList.RemoveAt(this.GetGameTypeSetup.playList.Count - 1);
-                    this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
-                    this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
-                    this.levelSelector.levelsPlaylist.ConstrainScroll();
-                }
 
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    for (int i = this.levelSelector.levelsPlaylist.levelItems.Count - 1; i >= 0; i--)
+                    {
+                        this.GetGameTypeSetup.playList.RemoveAt(this.GetGameTypeSetup.playList.Count - 1);
+                        this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
+                        this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
+                        this.levelSelector.levelsPlaylist.ConstrainScroll();
+                    }
+
+                }
+                else
+                {
+                    arena.playList = this.GetGameTypeSetup.playList;
+                }
             }
+
 
         }
 
@@ -155,6 +164,7 @@ namespace RainMeadow
 
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
+
                 if (!OnlineManager.lobby.isOwner)
                 {
                     foreach (var level in arena.playList)
@@ -278,8 +288,8 @@ namespace RainMeadow
             }
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
-               var currentPlayer =  ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
-               arena.playerResultColors[currentPlayer.id.name] = UnityEngine.Random.Range(0, 4);
+                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+                arena.playerResultColors[currentPlayer.id.name] = UnityEngine.Random.Range(0, 4);
             }
             arena.returnToLobby = false;
         }
@@ -288,6 +298,10 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
 
+            if (arena.isInGame && !clientReadiedUp)
+            {
+                return;
+            }
 
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
@@ -354,7 +368,7 @@ namespace RainMeadow
                 UpdateReadyUpLabel();
             }
 
-            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient)  // time to go
+            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
             {
                 this.StartGame();
                 initiatedStartGameForClient = true;
@@ -365,15 +379,13 @@ namespace RainMeadow
             if (this.playButton != null)
             {
 
-
                 if (OnlineManager.players.Count == 1)
                 {
                     this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
-                    //this.playButton.inactive = true;
 
                 }
 
-                if (this.GetGameTypeSetup.playList.Count == 0)
+                if (this.GetGameTypeSetup.playList.Count == 0 && OnlineManager.lobby.isOwner)
                 {
                     this.playButton.buttonBehav.greyedOut = true;
                 }
@@ -390,7 +402,6 @@ namespace RainMeadow
                         this.playButton.buttonBehav.greyedOut = false;
                     }
                 }
-
 
 
                 if (clientReadiedUp && OnlineManager.players.Count > 1)
@@ -433,10 +444,14 @@ namespace RainMeadow
 
                 }
 
-                if (arena.arenaSittingOnlineOrder.Count != OnlineManager.players.Count && arena.isInGame) // you're late.
+                if (arena.isInGame)
                 {
                     this.playButton.inactive = true;
-                    this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
+                    if (arena.isInGame && !clientReadiedUp) // you're late
+                    {
+                        this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
+
+                    }
                 }
 
                 if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
@@ -550,10 +565,6 @@ namespace RainMeadow
                     AddOtherUsernameButtons();
                     AddOtherPlayerClassButtons();
                     HandleLobbyProfileOverflow();
-
-
-                    clientReadiedUp = false;
-
 
                     if (this != null)
                     {
@@ -762,38 +773,6 @@ namespace RainMeadow
                 }
             }
         }
-
-
-        // UNUSED due to weird subobject logic between smart menu and MultiplayerMenu
-
-        //private void SetupCharacterCustomization()
-        //{
-        //    var bodyLabel = new MenuLabel(this, pages[0], Translate("Body color"), new Vector2(800, 353), new(0, 30), false);
-        //    bodyLabel.label.alignment = FLabelAlignment.Right;
-        //    this.pages[0].subObjects.Add(bodyLabel);
-
-        //    var eyeLabel = new MenuLabel(this, pages[0], Translate("Eye color"), new Vector2(900, 353), new(0, 30), false);
-        //    eyeLabel.label.alignment = FLabelAlignment.Right;
-        //    this.pages[0].subObjects.Add(eyeLabel);
-
-        //    bodyColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(705, 353), personaSettings.bodyColor);
-        //    var tabWrapper = new MenuTabWrapper(this, this.pages[0]);
-        //    bodyColor = new UIelementWrapper(tabWrapper, bodyColorPicker);
-        //    bodyColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
-
-        //    eyeColorPicker = new OpTinyColorPicker(this.pages[0].menu, new Vector2(810, 353), personaSettings.eyeColor);
-        //    eyeColor = new UIelementWrapper(tabWrapper, eyeColorPicker);
-        //    eyeColorPicker.OnValueChangedEvent += ColorPicker_OnValueChangedEvent;
-
-        //    pages[0].subObjects.Add(bodyColor);
-        //    pages[0].subObjects.Add(eyeColor);
-        //}
-
-        //private void ColorPicker_OnValueChangedEvent()
-        //{
-        //    personaSettings.bodyColor = Extensions.SafeColorRange(bodyColorPicker.valuecolor);
-        //    personaSettings.eyeColor = Extensions.SafeColorRange(eyeColorPicker.valuecolor);
-        //}
 
         private void UpdateReadyUpLabel()
         {

@@ -398,7 +398,7 @@ namespace RainMeadow
             {
                 foreach (var player in OnlineManager.players)
                 {
-                    if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                    if (player.id == OnlineManager.lobby.owner.id)
                     {
                         continue;
                     }
@@ -409,12 +409,8 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playList.Add(levelName);
-                }
+                orig(self, levelName);
             }
-            orig(self, levelName);
 
         }
 
