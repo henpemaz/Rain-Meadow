@@ -81,7 +81,7 @@ namespace RainMeadow
         {
             get
             {
-                return abstractPlayer.Room.shelter;
+                return abstractPlayer?.Room?.shelter ?? false;
             }
         }
 
@@ -89,7 +89,7 @@ namespace RainMeadow
         {
             get
             {
-                return abstractPlayer.Room.gate;
+                return abstractPlayer?.Room?.gate ?? false;
             }
         }
 
