@@ -177,10 +177,11 @@ namespace RainMeadow
         private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
         {
             orig(self, menu, owner, pos, slugcatID, names, defaultColors);
-
-            self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
-            self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
-
+            if (isStoryMode(out var _))
+            {
+                self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
+                self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            }
 
 
         }
