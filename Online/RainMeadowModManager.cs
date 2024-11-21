@@ -8,23 +8,48 @@ namespace RainMeadow
     public class RainMeadowModManager
     {
         public static string[] GetActiveMods()
-        {
-
-            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).Select(mod => mod.id);
-
-            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix"); // Remix needs to be added to the 'game-breaking' mods for game settings sync
-            if (remixMod != null)
-            {
-                highImpactMods = highImpactMods.Append(remixMod.id);
-            }
-
-            return highImpactMods.ToArray();
+        { 
+            return ModManager.ActiveMods
+                .Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))
+                    || highImpactMods.Contains(mod.id)
+                    || cheatMods.Contains(mod.id))
+                .Select(mod => mod.id)
+                .ToArray();
         }
+        
+        public static readonly string[] highImpactMods = {
+            "rwremix",
+            "moreslugcats",
+            "keepthatawayfromme",  // needs extra syncing to work
+        };
 
+        public static readonly string[] cheatMods = {
+            "devtools",
+            "maxi-mol.mousedrag",
+            "fyre.BeastMaster",
+            "slime-cubed.devconsole",
+            "zrydnoob.UnityExplorer",
+            "warp",
+            "pushtomeow",  //to make them mad >:)
+            "presstopup",
+            "no-damage-rng",
+            "CandleSign.debugvisualizer",
+            "maxi-mol.freecam",
+            "henpemaz_spawnmenu",  //gotta be safe
+        };
+
+        public static string[] GetCheatMods(string[] mods = null)
+        {
+            if (mods is null) mods = ModManager.ActiveMods.Select(mod => mod.id).ToArray();
+            return mods.Intersect(cheatMods).ToArray();
+        }
+        
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
-
-            if (Enumerable.SequenceEqual(localMods, lobbyMods))
+            var lobbyCheatMods = GetCheatMods(lobbyMods);
+            var localCheatMods = GetCheatMods(localMods);
+            if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(LobbyCheatMods))
+                && !(localCheatMods.Any() && !lobbyCheatMods.Any()))
             {
                 RainMeadow.Debug("Same mod set !");
             }
