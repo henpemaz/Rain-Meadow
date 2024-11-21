@@ -46,48 +46,9 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
-        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
-        On.PlayerGraphics.AxolotlGills.SetGillColors += AxolotlGills_SetGillColors;
-        On.PlayerGraphics.TailSpeckles.DrawSprites += TailSpeckles_DrawSprites;
-
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
 
 
-    }
-
-    private void TailSpeckles_DrawSprites(On.PlayerGraphics.TailSpeckles.orig_DrawSprites orig, PlayerGraphics.TailSpeckles self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-    {
-        orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (self.pGraphics.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
-        {
-            for (int i = 0; i < self.rows; i++)
-            {
-                for (int j = 0; j < self.lines; j++)
-                {
-
-                    sLeaser.sprites[self.startSprite + i * self.lines + j].color = UnityEngine.Color.blue;
-                }
-            }
-            sLeaser.sprites[self.startSprite + self.lines * self.rows].color = UnityEngine.Color.blue;
-
-        }
-    }
-
-    private void AxolotlGills_SetGillColors(On.PlayerGraphics.AxolotlGills.orig_SetGillColors orig, PlayerGraphics.AxolotlGills self, UnityEngine.Color baseCol, UnityEngine.Color effectCol)
-    {
-        if (OnlineManager.lobby != null)
-        {
-            baseCol = UnityEngine.Color.black;
-            var updatedColor = new UnityEngine.Color(Mathf.Clamp(UnityEngine.Color.green.r, 0.01f, 0.99f), Mathf.Clamp(UnityEngine.Color.green.g, 0.01f, 0.99f), Mathf.Clamp(UnityEngine.Color.green.b, 0.01f, 0.99f));
-
-            effectCol = updatedColor;
-            orig(self, baseCol, effectCol);
-
-        }
-        else
-        {
-            orig(self, baseCol, effectCol);
-        }
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
@@ -103,26 +64,6 @@ public partial class RainMeadow
             }
         }
         orig(self, obj, chunk, appendage);
-    }
-
-
-
-    private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-    {
-        orig(self, sLeaser, rCam, timeStacker, camPos);
-        if (self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint || self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
-        {
-            var updatedColor = new UnityEngine.Color(Mathf.Clamp(UnityEngine.Color.green.r, 0.01f, 0.99f), Mathf.Clamp(UnityEngine.Color.green.g, 0.01f, 0.99f), Mathf.Clamp(UnityEngine.Color.green.b, 0.01f, 0.99f));
-            sLeaser.sprites[12].color = updatedColor;
-        }
-
-        //if (isArenaMode(out var arena) && self.player.SlugCatClass == SlugcatStats.Name.Night)
-        //{
-
-        //    Nightcat.NightcatImplementation(arena, self, sLeaser, rCam, timeStacker, camPos);
-        //}
-
-
     }
 
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)

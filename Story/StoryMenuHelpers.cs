@@ -254,6 +254,8 @@ namespace RainMeadow
         {
 
             var slugList = AllSlugcats();
+            slugList = slugList.Where(s => storyMenu.saveGameData[s] != null).ToList(); // Protect clients from trying to load null data. Play a slugcat once to have it accessed
+
             var slugButtons = new EventfulSelectOneButton[slugList.Count];
 
 
@@ -264,14 +266,13 @@ namespace RainMeadow
                 btn.toggled = false;
                 storyMenu.pages[0].subObjects.Add(btn);
 
-                // Store the current button in a variable accessible by the lambda
                 var currentBtn = btn;
                 btn.OnClick += (_) =>
                 {
-                    // Set the clicked button to true
                     currentBtn.toggled = !currentBtn.toggled;
-                    //storyMenu.customSelectedSlugcat =
+
                     storyModeOnline.avatarSettings.playingAs = slug;
+
                     if (storyMenu.colorChecked && ModManager.MSC)
                     {
                         storyMenu.RemoveColorButtons();
@@ -349,10 +350,7 @@ namespace RainMeadow
 
             if (storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyModeOnline.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
             {
-                //if (p.KarmaSymbolPos != null)
-                //{
-                //    storyMenu.campaignContainer.pos = p.KarmaSymbolPos;
-                //}
+
                 GetRegionAndCampaignNameForClient(storyMenu, storyModeOnline);
 
 
