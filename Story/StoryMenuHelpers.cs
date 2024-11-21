@@ -254,7 +254,7 @@ namespace RainMeadow
         {
 
             var slugList = AllSlugcats();
-            slugList = slugList.Where(s => storyMenu.saveGameData[s] != null).ToList(); // Protect clients from trying to load null data. Play a slugcat once to have it accessed
+            //slugList = slugList.Where(s => storyMenu.saveGameData[s] != null).ToList(); // Protect clients from trying to load null data. Play a slugcat once to have it accessed
 
             var slugButtons = new EventfulSelectOneButton[slugList.Count];
 
@@ -272,7 +272,7 @@ namespace RainMeadow
                     currentBtn.toggled = !currentBtn.toggled;
 
                     storyModeOnline.avatarSettings.playingAs = slug;
-                    storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
+                    //storyMenu.slugcatColorOrder[storyMenu.slugcatPageIndex] = storyModeOnline.avatarSettings.playingAs;
 
                     if (storyMenu.colorChecked)
                     {
