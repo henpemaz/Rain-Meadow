@@ -46,8 +46,6 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
-        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
-
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
     }
 
@@ -66,28 +64,17 @@ public partial class RainMeadow
         orig(self, obj, chunk, appendage);
     }
 
-
-
-    private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-    {
-        orig(self, sLeaser, rCam, timeStacker, camPos);
-
-
-        //if (isArenaMode(out var arena) && self.player.SlugCatClass == SlugcatStats.Name.Night)
-        //{
-
-        //    Nightcat.NightcatImplementation(arena, self, sLeaser, rCam, timeStacker, camPos);
-        //}
-
-
-    }
-
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
     {
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+            if (
+                self.room.world.game.cameras[0] != null &&
+                self.room.world.game.cameras[0].hud != null &&
+                self.room.world.game.cameras[0].hud.textPrompt != null &&
+                self.room.world.game.cameras[0].hud.textPrompt.pausedMode ||
+                ChatHud.chatButtonActive)
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
@@ -483,7 +470,7 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        
+
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))

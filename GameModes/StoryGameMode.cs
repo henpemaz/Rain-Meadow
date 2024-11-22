@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -13,6 +12,8 @@ namespace RainMeadow
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
         public string? myLastDenPos = null;
+        public string? region = null;
+
         public bool hasSheltered = false;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, int> ghostsTalkedTo;
@@ -24,6 +25,7 @@ namespace RainMeadow
 
 
         public bool saveToDisk = false;
+      
 
         public SlugcatCustomization avatarSettings;
 

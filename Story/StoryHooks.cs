@@ -73,22 +73,118 @@ namespace RainMeadow
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+            On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
+            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+            On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
+            On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
         }
 
 
+        private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (box.IDString == "COLORS")
+                {
+                    return self.colorChecked;
+                }
+
+                if (box.IDString == "RESTART")
+                {
+                    return self.restartChecked;
+                }
+
+                if (box.IDString == "CLIENTSAVERESET")
+                {
+                    return storyGameMode.saveToDisk;
+                }
 
 
+                if (box.IDString == "ONLINEFRIENDLYFIRE")
+                {
+                    return storyGameMode.friendlyFire;
+                }
+
+                return false;
+            }
+            else
+            {
+                return orig(self, box);
+            }
+        }
+
+        private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
+        {
+            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu storyMenu)
+            {
+
+                if (box.IDString == "COLORS")
+                {
+                    self.colorChecked = c;
+                    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
+                    {
+                        self.AddColorButtons();
+                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
+                    }
+                    else
+                    {
+                        self.RemoveColorButtons();
+                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
+                    }
+                }
+
+                if (box.IDString == "RESTART")
+                {
+                    self.restartChecked = c;
+                    self.UpdateStartButtonText();
+
+                }
+                if (box.IDString == "CLIENTSAVERESET")
+                {
+                    storyGameMode.saveToDisk = c;
+                }
+
+                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
+                {
+                    storyGameMode.friendlyFire = c;
+
+                }
+            }
+            else
+            {
+                orig(self, box, c);
+            }
+        }
+
+        private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
+        {
+            orig(self, slider, f);
+            if (isStoryMode(out var story))
+            {
+
+                self.colorInterface.bodyColors[self.activeColorChooser].color = RWCustom.Custom.HSL2RGB(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
+                RainMeadow.Debug(self.colorInterface.bodyColors[self.activeColorChooser].color);
+                story.avatarSettings.bodyColor = self.colorInterface.bodyColors[0].color;
+                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
+
+                story.avatarSettings.eyeColor = self.colorInterface.bodyColors[1].color;
+                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
 
 
+            }
+        }
+
+        private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
+        {
+            orig(self, menu, owner, pos, slugcatID, names, defaultColors);
+            if (isStoryMode(out var _))
+            {
+                self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
+                self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            }
 
 
-
-
-
-
-
-
-
+        }
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
@@ -488,7 +584,7 @@ namespace RainMeadow
         private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
         {
             if (isStoryMode(out var gameMode))
-            {                
+            {
                 if (OnlineManager.lobby.isOwner)
                 {
                     RPCs.MovePlayersToDeathScreen();
