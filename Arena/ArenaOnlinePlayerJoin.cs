@@ -74,6 +74,7 @@ namespace Menu
 
 
             portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
+          
             subObjects.Add(portrait);
             string text = menu.Translate("");
             readyForCombat = false;

@@ -75,6 +75,8 @@ namespace RainMeadow
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
+            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
+       
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
@@ -82,6 +84,41 @@ namespace RainMeadow
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.Player.ctor += Player_ctor1;
 
+        }
+
+
+
+        private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
+        {
+            if (isArenaMode(out var _))
+            {
+                var slugList = ArenaHelpers.AllSlugcats();
+                var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+
+                if (baseGameSlugs.Contains(classID) && color <= 3)
+                {
+                    return "MultiplayerPortrait" + color + "1";
+                }
+
+                if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
+                {
+                    
+                    return "MultiplayerPortrait" + "41-" + slugList[color];
+
+                }
+
+                if (!baseGameSlugs.Contains(classID))
+                {
+                    
+                    color = 0;
+                    return "MultiplayerPortrait" + color + "1-" + classID.ToString();
+                }
+                return orig(self, classID, color);
+            }
+            else
+            {
+                return orig(self, classID, color);
+            }
         }
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
@@ -409,6 +446,15 @@ namespace RainMeadow
                 {
                     return;
                 }
+                orig(self, levelName);
+                arena.playList = self.levelsPlaylist.PlayList;
+                foreach (var i in arena.playList)
+                {
+                    RainMeadow.Debug(i);
+                }
+            }
+            else
+            {
                 orig(self, levelName);
             }
 
@@ -1257,25 +1303,14 @@ namespace RainMeadow
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                var deadCount = 0;
-                foreach (var player in self.gameSession.Players)
-                {
-                    if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
-                    {
+                int playersStillStanding = self.gameSession.Players?.Count(player =>
+                    player.realizedCreature != null &&
+                    (player.realizedCreature.State.alive || player.state.alive)) ?? 0;
 
-                        deadCount++;
-                    }
-                }
 
-                if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-                {
-
-                    return true;
-                }
-
-                if (self.world.rainCycle.TimeUntilRain <= 100)
+                if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
                 {
                     return true;
                 }
