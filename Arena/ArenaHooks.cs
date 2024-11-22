@@ -123,7 +123,7 @@ namespace RainMeadow
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
         {
-
+            
             if (isArenaMode(out var arena))
             {
 
@@ -1207,8 +1207,16 @@ namespace RainMeadow
                         }
                     }
                 }
-
-
+                if (self.Players != null && self.Players.Count > 0)
+                {
+                    foreach (var player in self.Players)
+                    {
+                        if (player.realizedCreature != null)
+                        {
+                            RainMeadow.Debug((player.realizedCreature as Player).SlugCatClass);
+                        }
+                    }
+                }
                 if (!self.sessionEnded)
                 {
                     foreach (var s in self.arenaSitting.players)
@@ -1307,9 +1315,10 @@ namespace RainMeadow
             {
                 int playersStillStanding = self.gameSession.Players?.Count(player =>
                     player.realizedCreature != null &&
-                    (player.realizedCreature.State.alive || player.state.alive)) ?? 0;
-
-
+                    (player.realizedCreature.State.alive)) ?? 0;
+                /// || player.state.alive
+                /// 
+                RainMeadow.Debug("Players still standing: " + playersStillStanding);
                 if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
                 {
                     return true;
