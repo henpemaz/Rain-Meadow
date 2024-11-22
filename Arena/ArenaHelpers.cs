@@ -94,6 +94,7 @@ namespace RainMeadow
                     hasEnteredGameArea = true
                 };
 
+
                 manager.arenaSitting.players.Add(newPlayer);
 
             }
@@ -128,6 +129,25 @@ namespace RainMeadow
             return filteredList;
         }
 
+        public static List<SlugcatStats.Name> BaseGameSlugcats()
+        {
+            var baseGameSlugs = new List<SlugcatStats.Name>();
+            baseGameSlugs.Add(SlugcatStats.Name.White);
+            baseGameSlugs.Add(SlugcatStats.Name.Yellow);
+            baseGameSlugs.Add(SlugcatStats.Name.Red);
+            baseGameSlugs.Add(SlugcatStats.Name.Night);
+            if (ModManager.MSC)
+            {
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+            }
+            return baseGameSlugs;
+
+
+        }
         public static void OverideSlugcatClassAbilities(Player player, ArenaCompetitiveGameMode arena)
         {
 
