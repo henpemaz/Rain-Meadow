@@ -80,9 +80,16 @@ namespace RainMeadow
 
         }
 
+        public static int FindOnlinePlayerNumber(ArenaCompetitiveGameMode arena, OnlinePlayer player)
+        {
+
+            return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
+
+
+        }
         public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
         {
-            
+
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
@@ -95,7 +102,7 @@ namespace RainMeadow
                     hasEnteredGameArea = true
                 };
 
-               
+
                 manager.arenaSitting.players.Add(newPlayer);
 
             }
@@ -151,26 +158,27 @@ namespace RainMeadow
         }
         public static void OverideSlugcatClassAbilities(Player player, ArenaCompetitiveGameMode arena)
         {
-            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) {
+            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            {
                 //if (saintAscensionInArena)
                 //{
-                    if (!arena.countdownInitiatedHoldFire)
+                if (!arena.countdownInitiatedHoldFire)
+                {
+                    if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
                     {
-                        if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
-                        {
-                            player.maxGodTime = arena.arenaSaintAscendanceTimer;
-                            player.ActivateAscension();
-                        }
-                        if (player.wantToJump > 0 && player.monkAscension)
-                        {
-                            player.DeactivateAscension();
-                        }
+                        player.maxGodTime = arena.arenaSaintAscendanceTimer;
+                        player.ActivateAscension();
                     }
+                    if (player.wantToJump > 0 && player.monkAscension)
+                    {
+                        player.DeactivateAscension();
+                    }
+                }
                 //} else
                 //{
 
                 //}
-            } 
+            }
 
 
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
