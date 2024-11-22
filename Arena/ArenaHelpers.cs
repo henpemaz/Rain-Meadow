@@ -82,6 +82,7 @@ namespace RainMeadow
 
         public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
         {
+            
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
@@ -90,11 +91,11 @@ namespace RainMeadow
                 ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
                 {
                     playerNumber = i,
-                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. TODO: Try and find a way to go through avatarSettings for this
+                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. This is for the PlayerResult profile pics
                     hasEnteredGameArea = true
                 };
 
-
+               
                 manager.arenaSitting.players.Add(newPlayer);
 
             }
