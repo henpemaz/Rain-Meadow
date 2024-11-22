@@ -46,6 +46,8 @@ namespace RainMeadow
             IL.MoreSlugcats.MSCRoomSpecificScript.SI_SAINTINTRO_tut.ctor += ClientDisableUAD;
 
             IL.RegionGate.Update += RegionGate_Update;
+            On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
+            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
 
             On.GhostHunch.Update += GhostHunch_Update;
@@ -810,6 +812,35 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private int RegionGate_PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
+        {
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
+                    .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
+                {
+                    if (ac.Room.index != self.room.abstractRoom.index || ret != self.DetectZone(ac))
+                        return -1;
+                }
+            }
+            return ret;
+        }
+
+        private bool RegionGate_PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
+                    .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
+                {
+                    if (ac.realizedCreature is Player p && p.touchedNoInputCounter < 20)
+                        return false;
+                }
+            }
+            return orig(self);
         }
 
         private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
