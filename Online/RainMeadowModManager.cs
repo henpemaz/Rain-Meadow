@@ -21,6 +21,7 @@ namespace RainMeadow
             "rwremix",
             "moreslugcats",
             "keepthatawayfromme",  // needs extra syncing to work
+            "no-damage-rng",
         };
 
         public static readonly string[] cheatMods = {
@@ -32,7 +33,6 @@ namespace RainMeadow
             "warp",
             "pushtomeow",  //to make them mad >:)
             "presstopup",
-            "no-damage-rng",
             "CandleSign.debugvisualizer",
             "maxi-mol.freecam",
             "henpemaz_spawnmenu",  //gotta be safe
@@ -43,7 +43,6 @@ namespace RainMeadow
             if (mods is null) mods = ModManager.ActiveMods.Select(mod => mod.id).ToArray();
             return mods.Intersect(cheatMods).ToArray();
         }
-        
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
             var lobbyCheatMods = GetCheatMods(lobbyMods);
