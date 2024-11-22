@@ -48,7 +48,7 @@ namespace RainMeadow
         {
             var lobbyCheatMods = GetCheatMods(lobbyMods);
             var localCheatMods = GetCheatMods(localMods);
-            if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(LobbyCheatMods))
+            if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(lobbyCheatMods))
                 && !(localCheatMods.Any() && !lobbyCheatMods.Any()))
             {
                 RainMeadow.Debug("Same mod set !");
