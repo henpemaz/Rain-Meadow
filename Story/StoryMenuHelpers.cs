@@ -342,14 +342,17 @@ namespace RainMeadow
 
             storyMenu.clientWantsToOverwriteSave = new CheckBox(storyMenu, storyMenu.pages[0], storyMenu, new Vector2(storyMenu.colorsCheckbox.pos.x, storyMenu.colorsCheckbox.pos.y - 30f), 70f, storyMenu.Translate("Match save"), "CLIENTSAVERESET", false);
             storyMenu.pages[0].subObjects.Add(storyMenu.clientWantsToOverwriteSave);
-            OverrideClientMenuItems(storyMenu, storyGameMode, SlugcatStats.Name.White);
+            OverrideClientMenuItems(storyMenu, storyGameMode, storyGameMode.currentCampaign);
         }
 
         public static void OverrideClientMenuItems(StoryOnlineMenu storyMenu, StoryGameMode storyGameMode, SlugcatStats.Name selectedSlug)
         {
+
+            int currentIndex = storyMenu.indexFromColor(selectedSlug);
+
             GetRegionAndCampaignNameForClient(storyMenu, storyGameMode);
 
-            if (storyMenu.slugcatPages[storyMenu.indexFromColor(selectedSlug)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(selectedSlug)] is SlugcatSelectMenu.SlugcatPageContinue p)
+            if (storyMenu.slugcatPages[currentIndex] != null && storyMenu.slugcatPages[currentIndex] is SlugcatSelectMenu.SlugcatPageContinue p)
             {
 
                 List<HudPart> partsToRemove = new List<HudPart>();
@@ -377,7 +380,7 @@ namespace RainMeadow
                 }
 
             }
-            if (storyMenu.slugcatPages[storyMenu.indexFromColor(selectedSlug)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(selectedSlug)] is SlugcatSelectMenu.SlugcatPageNewGame pN)
+            if (storyMenu.slugcatPages[currentIndex] != null && storyMenu.slugcatPages[currentIndex] is SlugcatSelectMenu.SlugcatPageNewGame pN)
             {
 
                 if (pN.difficultyLabel != null)
@@ -394,7 +397,7 @@ namespace RainMeadow
             }
 
         }
-   
+
 
 
         public static void GetRegionAndCampaignNameForClient(StoryOnlineMenu storyMenu, StoryGameMode storyGameMode)
