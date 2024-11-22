@@ -76,7 +76,7 @@ namespace RainMeadow
 
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
             On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
-       
+
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
@@ -102,14 +102,14 @@ namespace RainMeadow
 
                 if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
                 {
-                    
+
                     return "MultiplayerPortrait" + "41-" + slugList[color];
 
                 }
 
                 if (!baseGameSlugs.Contains(classID))
                 {
-                    
+
                     color = 0;
                     return "MultiplayerPortrait" + color + "1-" + classID.ToString();
                 }
@@ -123,7 +123,7 @@ namespace RainMeadow
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
         {
-            
+
             if (isArenaMode(out var arena))
             {
 
@@ -633,6 +633,7 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
+
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }

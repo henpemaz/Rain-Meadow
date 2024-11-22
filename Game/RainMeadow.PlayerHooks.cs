@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEngine;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow;
 
@@ -49,6 +50,90 @@ public partial class RainMeadow
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
 
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+        IL.Player.ThrowObject += Player_ThrowObject1;
+    }
+
+    private void Player_ThrowObject1(ILContext il)
+    {
+        try
+        {
+            // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            //becomes
+            // if (!(isStoryMode(out _) && otherObject is Player) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            var cursor = new ILCursor(il);
+            var skip = il.DefineLabel();
+            cursor.GotoNext(moveType: MoveType.AfterLabel,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdsfld<ModManager>("MSC"),
+                i => i.MatchIsinst("Spear"),
+                i => i.MatchCall<SlugcatStats.Name>("op_Equality")
+           );
+            cursor.Emit(OpCodes.Brtrue, skip);
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate((Player self) =>
+            {
+                isArenaMode(out var _);
+            });
+
+            cursor.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+
+        //    try
+        //{
+        //    ILCursor ilcursor = new ILCursor(il);
+        //    ILLabel label = null;
+        //    ILCursor ilcursor2 = ilcursor;
+
+        //    Func<Instruction, bool>[] array = new Func<Instruction, bool>[1];
+        //    array[0] = (Instruction i) => ILPatternMatchingExt.MatchCallOrCallvirt<Player>(i, "TossObject");
+        //    ilcursor2.GotoNext(array);    
+
+
+        //    ILCursor ilcursor3 = ilcursor;
+        //    Func<Instruction, bool>[] array2 = new Func<Instruction, bool>[1];
+        //    array2[0] = (Instruction i) => ILPatternMatchingExt.MatchLdsfld<ModManager>(i, "MSC");
+        //    ilcursor3.GotoNext(array2);
+
+
+        //    ilcursor.GotoNext(MoveType.After, new Func<Instruction, bool>[]
+        //    {
+        //    (Instruction i) => ILPatternMatchingExt.MatchBrfalse(i, label)
+        //    });
+
+
+        //    ILCursor ilcursor4 = ilcursor;
+        //    Func<Instruction, bool>[] array3 = new Func<Instruction, bool>[1];
+
+        //    array3[0] = (Instruction i) => ILPatternMatchingExt.MatchLdsfld<ModManager>(i, "MSC");
+        //    ilcursor4.GotoPrev(array3);
+
+        //    ILCursor ilcursor5 = ilcursor;
+        //    Func<Instruction, bool>[] array4 = new Func<Instruction, bool>[1];
+
+        //    array4[0] = (Instruction i) => ILPatternMatchingExt.MatchLdsfld<ModManager>(i, "MSC");
+
+        //    ilcursor5.GotoPrev(array4);
+        //    ILCursor ilcursor6 = ilcursor;
+        //    MoveType moveType = MoveType.After;
+        //    Func<Instruction, bool>[] array5 = new Func<Instruction, bool>[1];
+        //    array5[0] = delegate (Instruction i)
+        //    {
+        //        ILLabel illabel;
+
+        //        return ILPatternMatchingExt.MatchBrfalse(i, ref illabel);
+        //    };
+        //    ilcursor6.GotoNext(moveType, array5);
+        //    ilcursor.Emit(OpCodes.Br, label);
+        //}
+        //catch (Exception ex)
+        //{
+        //    base.Logger.LogError(ex);
+        //    throw;
+        //}
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
@@ -483,7 +568,7 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        
+
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
