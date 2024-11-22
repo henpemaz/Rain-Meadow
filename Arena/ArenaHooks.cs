@@ -83,6 +83,7 @@ namespace RainMeadow
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.Player.ctor += Player_ctor1;
+            
 
         }
 
@@ -234,7 +235,7 @@ namespace RainMeadow
         private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
         {
             orig(self, abstractCreature, world);
-            if (isArenaMode(out _))
+            if (isArenaMode(out var _))
             {
                 if (self.slugcatStats is not null)
                 {
@@ -1208,16 +1209,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                if (self.Players != null && self.Players.Count > 0)
-                {
-                    foreach (var player in self.Players)
-                    {
-                        if (player.realizedCreature != null)
-                        {
-                            RainMeadow.Debug((player.realizedCreature as Player).SlugCatClass);
-                        }
-                    }
-                }
+
                 if (!self.sessionEnded)
                 {
                     foreach (var s in self.arenaSitting.players)
@@ -1419,7 +1411,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
+                    abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs, isGhost: false);
                 }
 
                 RainMeadow.Debug("Arena: Realize Creature!");
