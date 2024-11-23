@@ -228,7 +228,6 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(this.backTarget);
                 base.PlaySound(SoundID.MENU_Switch_Page_Out);
                 isExiting = true;
-                RainMeadow.Error("Down");
             }
             else if (!RWInput.CheckPauseButton(0) && isInit)
             {
