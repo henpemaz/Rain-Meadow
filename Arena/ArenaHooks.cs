@@ -1405,13 +1405,15 @@ namespace RainMeadow
                     self.game.cameras[0].followAbstractCreature = abstractCreature;
                 }
 
-                if (self.chMeta != null)
+                if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
+                    abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, oe.owner), customization.playingAs, isGhost: false);
+
                 }
                 else
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer), OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs, isGhost: false);
+                    RainMeadow.Error("Could not get online owner for spawned player!");
+                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
                 }
 
                 RainMeadow.Debug("Arena: Realize Creature!");
