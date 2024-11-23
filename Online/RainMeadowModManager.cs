@@ -31,7 +31,6 @@ namespace RainMeadow
             "slime-cubed.devconsole",
             "zrydnoob.UnityExplorer",
             "warp",
-            "pushtomeow",  //to make them mad >:)
             "presstopup",
             "CandleSign.debugvisualizer",
             "maxi-mol.freecam",
