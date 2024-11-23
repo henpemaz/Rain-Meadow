@@ -18,6 +18,7 @@ namespace RainMeadow
         }
         
         public static readonly string[] highImpactMods = {
+            "devtools",
             "rwremix",
             "moreslugcats",
             "keepthatawayfromme",  // needs extra syncing to work
@@ -25,7 +26,6 @@ namespace RainMeadow
         };
 
         public static readonly string[] cheatMods = {
-            "devtools",
             "maxi-mol.mousedrag",
             "fyre.BeastMaster",
             "slime-cubed.devconsole",
