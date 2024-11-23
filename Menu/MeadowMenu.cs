@@ -34,11 +34,17 @@ namespace RainMeadow
         private SubtleSlider2 tintSlider;
         private MenuLabel tintLabel;
 
+        private bool isExiting;
+        private bool isInit;
+
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
         {
             RainMeadow.DebugMe();
             backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
+            isExiting = RWInput.CheckPauseButton(0);
+            isInit = true;
 
             this.mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
 
@@ -217,6 +223,20 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            if (RWInput.CheckPauseButton(0) && !isExiting)
+            {
+                manager.RequestMainProcessSwitch(this.backTarget);
+                base.PlaySound(SoundID.MENU_Switch_Page_Out);
+                isExiting = true;
+                RainMeadow.Error("Down");
+            }
+            else if (!RWInput.CheckPauseButton(0) && isInit)
+            {
+                isExiting = false;
+                isInit = false;
+            }
+
             if (this.rainEffect != null)
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);

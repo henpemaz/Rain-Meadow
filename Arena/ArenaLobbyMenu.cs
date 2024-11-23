@@ -483,7 +483,7 @@ namespace RainMeadow
             if (message == "BACKTOLOBBY")
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
+                base.PlaySound(SoundID.MENU_Switch_Page_Out);
             }
             if (message == "STARTARENAONLINEGAME")
             {
