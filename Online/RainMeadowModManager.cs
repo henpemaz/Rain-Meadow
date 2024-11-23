@@ -35,6 +35,16 @@ namespace RainMeadow
             "CandleSign.debugvisualizer",
             "maxi-mol.freecam",
             "henpemaz_spawnmenu",  //gotta be safe
+            "autodestruct",
+            "DieButton",
+            "emeralds_features",
+            "flirpy.rivuletunscammedlungcapacity",
+            "Aureuix.Kaboom",
+            "TM.PupMagnet",
+            "iwantbread.slugpupstuff",
+            "blujai.rocketficer",
+            "slugcatstatsconfig",
+            "explorite.slugpups_cap_configuration",
         };
 
         public static string[] GetCheatMods(string[] mods = null)
