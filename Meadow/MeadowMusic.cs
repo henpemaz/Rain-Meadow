@@ -3,7 +3,6 @@ using RWCustom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using RWCustom;
 using System;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -52,29 +51,18 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
-                        {
-                            self.song.FadeOut(120f);
-                            //PlopMachine.WetData.FadeOut();
-                        }
+                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
                     }
                 }
                 else
                 {
-                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
-                    {
-                        self.song.FadeOut(120f);
-                        //PlopMachine.WetData.FadeOut();
-                    }
+                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
                 }
             }
             else
             {
-                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null)
-                {
-                    self.song.FadeOut(120f);
-                    //PlopMachine.WetData.FadeOut();
-                }
+                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                
             }
             orig.Invoke(self, currentProcess);
         }
@@ -432,9 +420,9 @@ namespace RainMeadow
                 float vibeIntensityTarget = 
                              Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
                            * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))                 //* Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
-                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works   <--- DOES NOT ???
+                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works   <--- DOES NOT ??? <--- YES IT DOES??? we got overloads on that bitch
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.015f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.2f;
                 if (musicPlayer != null && musicPlayer.song != null)
@@ -700,9 +688,8 @@ namespace RainMeadow
             if (sub.source.clip != null)
 			{
 				sub.source.clip.LoadAudioData();
-			}
-					
-			else if (!sub.source.isPlaying && 2 == (int)sub.source.clip.loadState)
+			}		
+			else if (!sub.source.isPlaying && (int)sub.source.clip.loadState == 2)
 			{
 				sub.readyToPlay = true;
 			}
