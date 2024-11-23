@@ -83,7 +83,7 @@ namespace RainMeadow
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.Player.ctor += Player_ctor1;
-            
+
 
         }
 
@@ -418,14 +418,8 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    try
-                    {
-                        arena.playList.RemoveAt(index);
-                    }
-                    catch
-                    {
-                        RainMeadow.Debug("Arena: Empty playlist");
-                    }
+                    arena.playList = self.levelsPlaylist.PlayList;
+
                 }
             }
         }
