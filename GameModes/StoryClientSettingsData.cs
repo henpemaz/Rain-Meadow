@@ -7,6 +7,12 @@ namespace RainMeadow
         public bool readyForWin;
         public bool isDead;
 
+        public void Sanitize()
+        {
+            readyForWin = false;
+            isDead = false;
+        }
+
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
             return new State(this);

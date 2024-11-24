@@ -11,36 +11,53 @@ namespace RainMeadow
         public bool didStartCycle = false;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
-        public string? myLastDenPos = null;
         public string? region = null;
-
-        public bool hasSheltered = false;
         public SlugcatStats.Name currentCampaign;
         public Dictionary<string, int> ghostsTalkedTo;
+        public Dictionary<ushort, ushort[]> consumedItems;
+
+        // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
-        public Dictionary<ushort, ushort[]> consumedItems;
-        public StoryClientSettingsData storyClientData;
-
-
-        public bool saveToDisk = false;
-      
 
         public SlugcatCustomization avatarSettings;
+        public StoryClientSettingsData storyClientData;
+
+        public string? myLastDenPos = null;
+        public bool hasSheltered = false;
+
+        public void Sanitize()
+        {
+            hasSheltered = false;
+            isInGame = false;
+            changedRegions = false;
+            didStartCycle = false;
+            defaultDenPos = null;
+            myLastDenPos = null;
+            region = null;
+            ghostsTalkedTo = new();
+            consumedItems = new();
+            storyClientData?.Sanitize();
+        }
+
+        public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
+
         public override ProcessManager.ProcessID MenuProcessId()
         {
             return RainMeadow.Ext_ProcessID.StoryMenu;
         }
+
         public override bool AllowedInMode(PlacedObject item)
         {
             return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
         }
+
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             if (OnlineManager.mePlayer.isActuallySpectating)
@@ -65,7 +82,6 @@ namespace RainMeadow
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-
             return true;
         }
 
@@ -73,6 +89,7 @@ namespace RainMeadow
         {
             return currentCampaign;
         }
+
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return currentCampaign;
@@ -111,6 +128,7 @@ namespace RainMeadow
         public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
+            // XXX: does not work as expected, new lobby owner is assigned before we receive this
             if (player == lobby.owner)
             {
                 OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
