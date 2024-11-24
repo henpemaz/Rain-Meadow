@@ -241,19 +241,13 @@ namespace RainMeadow
             {
                 // if (room.physicalObjects[i][j] is Player)
                 //becomes
-                // if (room.physicalObjects[i][j] is Player && self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal())
+                // if (room.physicalObjects[i][j] is local Player)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchIsinst<Player>(),
-                    i => i.MatchBrfalse(out skip)
+                    i => i.MatchIsinst<Player>()
                     );
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc_0);
-                c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal());
-                c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((Player? player) => player?.IsLocal() is true ? player : null);  // null if remote player
             }
             catch (Exception e)
             {
