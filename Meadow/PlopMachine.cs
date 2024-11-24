@@ -3,19 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
-using UnityEngine.Assertions.Must;
-using Unity.Mathematics;
 using System.Threading.Tasks;
-using System.Threading;
-using IL.MoreSlugcats;
-using System.Data.SqlTypes;
-using System.Drawing.Printing;
-using System.Drawing.Drawing2D;
-using System.Drawing;
-using RWCustom;
-using MonoMod.Cil;
-using Mono.Cecil.Cil;
-using MonoMod.RuntimeDetour;
 
 namespace RainMeadow
 {
@@ -37,18 +25,14 @@ namespace RainMeadow
             WetData.Update();
         }
 
-        //Note to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
+        //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
         private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
         {
             //fuckoff
         }
 
-        readonly float magicnumber = 1.0594630776202568303519954093385f;
-        int CurrentKey = 0;
-        int QueuedModulation = 0;
-        int debugstopwatch = 0;
         /*
-        readonly string[,] notesinkey =
+        readonly string[,] notesinkey = //kept for the sake of remembering what chords have what notes
         {
             {"Gb", "Ab", "Bb", "B" , "Db", "Eb", "F" , "Gb"}, //Gb  (the same as F#) 
             {"Db", "Eb", "F" , "Gb", "Ab", "Bb", "C" , "Db"}, //Db 
@@ -101,8 +85,11 @@ namespace RainMeadow
             { 6  , 8  , 9  , 11 , 1  , 2  , 4  , 6  } //F# m  (the same as Gb)
         };
 
+        int debugstopwatch = 0;
 
+        int CurrentKey = 0;
         bool inmajorscale = true;
+
         bool EntryRequest = true;
         bool playingchord = false;
 
@@ -111,7 +98,7 @@ namespace RainMeadow
 
         int chordtimer = 0;
 
-        string UpcomingEntry = "Balaboo";         //important to set a first one
+        string NextChord = "Balaboo";         //important to set a first one
 
         float fichtean;
         float chordexhaustion = 1f;
@@ -120,10 +107,13 @@ namespace RainMeadow
         public static int agora = 0;
         float currentagora = 0f;
 
-        string? CurrentRegion; 
+        public static string? CurrentRegion = "sl"; 
 
         bool fileshavebeenchecked = false;
-        string[][]? ChordInfos; 
+        string[][]? ChordInfos;
+
+        static VirtualMicrophone.DisembodiedLoop? WetLoop;
+        static DisembodiedLoopEmitter? WetController;
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
@@ -147,14 +137,14 @@ namespace RainMeadow
                 if (!fileshavebeenchecked)
                 {
                     StartthefuckingWaitDict();
-                    NoteMagazine.fuckinginitthatdictlineagebitch();
+                    NoteMagazine.Fuckinginitthatdictlineagebitch();
                     RainMeadow.Debug("Checking files");
                     string[] mydirs = AssetManager.ListDirectory("soundeffects", false, true);
                     RainMeadow.Debug("Printing all directories in soundeffects");
                     foreach (string dir in mydirs)
                     {
-                        string filename = GetFolderName(dir);
-                        //RainMeadow.Debug(filename + " Is one of the things it sees, straight from " + dir);
+                        string[] arr = dir.Split(Path.DirectorySeparatorChar);
+                        string filename = arr[arr.Length - 1];
                         if (filename == "!Entries.txt")
                         {
                             RainMeadow.Debug("The file exists actually");
@@ -222,47 +212,20 @@ namespace RainMeadow
                 WetLoop.gameObject.GetComponent<AudioEchoFilter>().wetMix = 0.4f;
                 WetLoop.gameObject.GetComponent<AudioEchoFilter>().decayRatio = 0.6f;
                 WetLoop.gameObject.GetComponent<AudioEchoFilter>().delay = 600f;
-                
-                //WE'RE SO FUCKING BACK
 
+                WetLoop.gameObject.AddComponent<AudioChorusFilter>();
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().depth = 0.4f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().dryMix = 0.6f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().delay = 12f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().rate = 1.34f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().wetMix1 = 0.6f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().wetMix2 = 0.6f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().wetMix3 = 0.6f;
+
+                //WE'RE SO FUCKING BACK
                 RainMeadow.Debug("Created wetloop");
-                //mic.PlayDisembodiedLoop(twentysecsilence, WetController, 0, 0f, 1);
             }
         }
-        static VirtualMicrophone.DisembodiedLoop? WetLoop;
-        static DisembodiedLoopEmitter? WetController;
-
-
-        static string GetFolderName(string path)
-        {
-            string[] arr = path.Split(Path.DirectorySeparatorChar);
-            return arr[arr.Length - 1];
-        }
-        
-        /*
-            //On Initialize()
-            IDetour hookTestMethodA = new Hook(
-                    typeof(Class Of Property).GetProperty("property without get_", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(),
-                    typeof(Class where hook is located).GetMethod("name of the methodHK", BindingFlags.Static | BindingFlags.Public)
-                );
-            //On Static hook class
-                public delegate Type_of_property orig_nameOfProperty(Class self);
-                
-                public static Type_of_property get_PropertyHK(orig_nameOfProperty orig_nameOfProperty, Class self)
-                {
-                return orig_nameOfProperty(self);
-                }
-        */
-
-        //public delegate int orig_lengthSamples(int self);
-        //
-        //    public static int get_CreateHK(orig_lengthSamples orig_lengthSamples, AudioClip self)
-        //    {
-        //        
-        //        return orig_lengthSamples(self);
-        //    }
-        // HAHAhahaha, this was my first naive thought of how i wanted to go about hooking onto the audioplayer of unity itself, IL hooks or some magic variable wishwash i didn't get, even when writing. Look how far we've come (this will be deleted)
-
         public int IndexTOCKInt(int index)
         {
             int treatedkey = CurrentKey + 6;
@@ -270,191 +233,9 @@ namespace RainMeadow
             int integer = thescale[treatedkey, index - 1];
             return integer;
         }
-        private SoundID[] SampDict(PlopType length) //might just be totally replaced! Goodbye samples! Will in remove following updates
-        {
-            //RainMeadow.Debug($"It's trying to get length {length}");
-            SoundID[] library = new SoundID[7]; //to do:  sure
-            string acronym = CurrentRegion.ToUpper();
-            MeadowMusic.VibeZone[] newthings;
-            bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out newthings);
-            //we retrieve a newthings array (one of many vibezones)
-            if (!diditwork) { RainMeadow.Debug("itdidn'twork"); return null; }
-            MeadowMusic.VibeZone newthing = newthings[0]; 
-            string patch = newthing.sampleUsed;
-
-            switch (length)
-            {
-                case PlopType.Long:
-                    switch (patch)
-                    {
-                        case "Trisaw":
-                            library[0] = C1LongTrisaw;
-                            library[1] = C2LongTrisaw;
-                            library[2] = C3LongTrisaw;
-                            library[3] = C4LongTrisaw;
-                            library[4] = C5LongTrisaw;
-                            library[5] = C6LongTrisaw;
-                            library[6] = C7LongTrisaw;
-                            break;
-
-                        case "Clar":
-                            library[0] = C1LongClar;
-                            library[1] = C2LongClar;
-                            library[2] = C3LongClar;
-                            library[3] = C4LongClar;
-                            library[4] = C5LongClar;
-                            library[5] = C6LongClar;
-                            library[6] = C7LongClar;
-                            break;
-
-                        case "Litri":
-                            library[0] = C1LongLitri;
-                            library[1] = C2LongLitri;
-                            library[2] = C3LongLitri;
-                            library[3] = C4LongLitri;
-                            library[4] = C5LongLitri;
-                            library[5] = C6LongLitri;
-                            library[6] = C7LongLitri;
-                            break;
-
-                        case "Sine":
-                            library[0] = C1LongSine;
-                            library[1] = C2LongSine;
-                            library[2] = C3LongSine;
-                            library[3] = C4LongSine;
-                            library[4] = C5LongSine;
-                            library[5] = C6LongSine;
-                            library[6] = C7LongSine;
-                            break;
-
-                        case "Bell":
-                            library[0] = C1LongBell;
-                            library[1] = C2LongBell;
-                            library[2] = C3LongBell;
-                            library[3] = C4LongBell;
-                            library[4] = C5LongBell;
-                            library[5] = C6LongBell;
-                            library[6] = C7LongBell;
-                            break;
-                    }
-                    break;
-                case PlopType.Medium:
-                    switch (patch)
-                    {
-                        case "Trisaw":
-                            library[0] = C1MediumTrisaw;
-                            library[1] = C2MediumTrisaw;
-                            library[2] = C3MediumTrisaw;
-                            library[3] = C4MediumTrisaw;
-                            library[4] = C5MediumTrisaw;
-                            library[5] = C6MediumTrisaw;
-                            library[6] = C7MediumTrisaw;
-                            break;
-
-                        case "Clar":
-                            library[0] = C1MediumClar;
-                            library[1] = C2MediumClar;
-                            library[2] = C3MediumClar;
-                            library[3] = C4MediumClar;
-                            library[4] = C5MediumClar;
-                            library[5] = C6MediumClar;
-                            library[6] = C7MediumClar;
-                            break;
-
-                        case "Litri":
-                            library[0] = C1MediumLitri;
-                            library[1] = C2MediumLitri;
-                            library[2] = C3MediumLitri;
-                            library[3] = C4MediumLitri;
-                            library[4] = C5MediumLitri;
-                            library[5] = C6MediumLitri;
-                            library[6] = C7MediumLitri;
-                            break;
-
-                        case "Sine":
-                            library[0] = C1MediumSine;
-                            library[1] = C2MediumSine;
-                            library[2] = C3MediumSine;
-                            library[3] = C4MediumSine;
-                            library[4] = C5MediumSine;
-                            library[5] = C6MediumSine;
-                            library[6] = C7MediumSine;
-                            break;
-
-                        case "Bell":
-                            library[0] = C1MediumBell;
-                            library[1] = C2MediumBell;
-                            library[2] = C3MediumBell;
-                            library[3] = C4MediumBell;
-                            library[4] = C5MediumBell;
-                            library[5] = C6MediumBell;
-                            library[6] = C7MediumBell;
-                            break;
-
-                    }
-                    break;
-                case PlopType.Short:
-                    switch (patch)
-                    {
-                        case "Trisaw":
-                            library[0] = C1ShortTrisaw;
-                            library[1] = C2ShortTrisaw;
-                            library[2] = C3ShortTrisaw;
-                            library[3] = C4ShortTrisaw;
-                            library[4] = C5ShortTrisaw;
-                            library[5] = C6ShortTrisaw;
-                            library[6] = C7ShortTrisaw;
-                            break;
-
-                        case "Clar":
-                            library[0] = C1ShortClar;
-                            library[1] = C2ShortClar;
-                            library[2] = C3ShortClar;
-                            library[3] = C4ShortClar;
-                            library[4] = C5ShortClar;
-                            library[5] = C6ShortClar;
-                            library[6] = C7ShortClar;
-                            break;
-
-                        case "Litri":
-                            library[0] = C1ShortLitri;
-                            library[1] = C2ShortLitri;
-                            library[2] = C3ShortLitri;
-                            library[3] = C4ShortLitri;
-                            library[4] = C5ShortLitri;
-                            library[5] = C6ShortLitri;
-                            library[6] = C7ShortLitri;
-                            break;
-
-                        case "Sine":
-                            library[0] = C1ShortSine;
-                            library[1] = C2ShortSine;
-                            library[2] = C3ShortSine;
-                            library[3] = C4ShortSine;
-                            library[4] = C5ShortSine;
-                            library[5] = C6ShortSine;
-                            library[6] = C7ShortSine;
-                            break;
-
-                        case "Bell":
-                            library[0] = C1ShortBell;
-                            library[1] = C2ShortBell;
-                            library[2] = C3ShortBell;
-                            library[3] = C4ShortBell;
-                            library[4] = C5ShortBell;
-                            library[5] = C6ShortBell;
-                            library[6] = C7ShortBell;
-                            break;
-
-                    }
-                    break;
-            }
-            return library;
-        }
-        private void Plop(string input, VirtualMicrophone mic)
+        private void Plop(string input)
         {
             string[] parts = input.Split('-');
-            //PlopType slib = parts[0] switch { "L" => PlopType.Long, "M" => PlopType.Medium, "S" => PlopType.Short, _ => PlopType.Short }; //either L for Long, M for Medium, or S for Short
             string length = parts[0];
             int oct = int.Parse(parts[1]);
             bool intiseasy = int.TryParse(parts[2], out int ind);
@@ -469,51 +250,11 @@ namespace RainMeadow
             
             transposition += extratranspose; //If to the power is smart(can take negative numbers), this can work
 
-            //float speeed = Mathf.Pow(magicnumber, transposition);
-            // get intensity and turn that into too 
-            // (which will also be reverb effect here then)
-
             float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
             float humanizingrandomnesspanlol = UnityEngine.Random.Range(-120, 120) / 1000f;
 
             WetData.Plop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
-            
-            //PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic, slib);
-
-
         }
-        //private void Plop(string input, VirtualMicrophone mic)
-        //{
-        //    //RainMeadow.Debug("It plays the plop " + input);
-        //    string[] parts = input.Split('-');
-        //    //Dust.Add(input, this); haltered
-        //    PlopType slib = parts[0] switch { "L" => PlopType.Long, "M" => PlopType.Medium, "S" => PlopType.Short, _ => PlopType.Short }; //either L for Long, M for Medium, or S for Short
-        //    int oct = int.Parse(parts[1]);
-        //    bool intiseasy = int.TryParse(parts[2], out int ind);
-        //    //Debug($"So the string is {s}, which counts as {parts.Length} amounts of parts. {slib}, {oct}, {ind}");
-        //    SoundID[] slopb = SampDict(slib);
-        //    SoundID sampleused = slopb[oct - 1];
-        //    //Debug("Octave integer " + oct + ". sampleused: " + sampleused);
-        //    int extratranspose = 0;
-        //    if (!intiseasy)
-        //    {
-        //        string appends = parts[2].Substring(1);
-        //        foreach (char letter in appends) { extratranspose = letter switch { 'b' => extratranspose--, '#' => extratranspose, _ => extratranspose }; }
-        //        ind = int.Parse(parts[2].Substring(0, 1));
-        //    }
-        //    int transposition = IndexTOCKInt(ind);
-        //
-        //    transposition += extratranspose; //If to the power is smart(can take negative numbers), this can work
-        //    float speeed = Mathf.Pow(magicnumber, transposition);
-        //
-        //    // get intensity and turn that into too 
-        //    // (which will also be reverb effect here then)
-        //
-        //    float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
-        //    PlayThing(sampleused, humanizingrandomnessinvelocitylol, speeed, mic, slib);
-        //
-        //
-        //}
         private void PushKeyModulation(int diff)
         {
             CurrentKey += diff;
@@ -527,64 +268,57 @@ namespace RainMeadow
         {
             inmajorscale = majorscaling;
         }
-        private void InfluenceModulation()
+        private void InfluenceModulation(int Strength)
         {
             int dicedsign = UnityEngine.Random.Range(-5, 3);
             if (dicedsign <= 0) dicedsign = -1; else dicedsign = 1; //6/8th chance to go downwards, unstable by choice
-            int dicedint = UnityEngine.Random.Range(0, 777) / (Math.Abs(QueuedModulation) + 1);
-            int deadint = CurrentKey; //Debug thing
+            int dicedint = UnityEngine.Random.Range(0, 777) / (Math.Abs(Strength) + 1);
             if (dicedint <= 77 && dicedint > 44) CurrentKey += 1 * dicedsign;
             if (dicedint <= 44 && dicedint > 7) CurrentKey += 2 * dicedsign;
             if (dicedint <= 7) CurrentKey += 3 * dicedsign;
 
-            if (UnityEngine.Random.Range(0, 101) < 4) { inmajorscale = !inmajorscale ; }
+            if (UnityEngine.Random.Range(0, 101) < 4) { inmajorscale = !inmajorscale; }
 
             //RainMeadow.Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
-            QueuedModulation = 0;
 
-            //CurrentKey += QueuedModulation;
             while (CurrentKey < -6 || CurrentKey > 6)
             {
                 if (CurrentKey < 1) CurrentKey += 12;
                 else CurrentKey -= 12;
             }
-            ChitChat.Analyze(this); //if made into a 12 tone temprement, analyze will  be readjusted to remove duplicates, or muting the duplicates, or other stuff with them
+            ChitChat.Analyze(this); 
         }
-        private void PlayEntry(VirtualMicrophone mic)
+        private void PlayEntry()
         {
-            //RainMeadow.Debug($"yo sup dude,{EntryRequest} {UpcomingEntry} {chordqueuedentry} {entrychord} {entryriff} {playingchord} {playingriff}");
             if (EntryRequest)
             {
+                //RainMeadow.Debug("Playing New Chord");
                 EntryRequest = false;
-                for (int i = 0; i < ChordInfos.GetLength(0); i++)
-                {
-                    string[] entry = ChordInfos.First(l => l[0] == UpcomingEntry);
-                    chordnotes = entry[1];
-                    chordleadups = entry[2];
-                }
-                InfluenceModulation(); //this'll be modified to take in int
+                string[] entry = ChordInfos.First(l => l[0] == NextChord);
+                chordnotes = entry[1];
+                chordleadups = entry[2];
                 ChitChat.Wipe(this);
+                InfluenceModulation(2); 
                 string[] inst = chordnotes.Split(',');
                 string[] notes = inst[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 string[] bassnotes = inst[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
                 for (int i = 0; i < notes.Length; i++)
                 {
-                    Plop(notes[i], mic);
+                    Plop(notes[i]);
                     NoteMagazine.AddSeed(notes[i].Substring(2));
                 }
                 int sowhichoneisitboss = UnityEngine.Random.Range(0, bassnotes.Length);
-                Plop(bassnotes[sowhichoneisitboss], mic); 
+                Plop(bassnotes[sowhichoneisitboss]); 
 
                 //all notes have been played, moving onto leadup
                 string[] leadups = chordleadups.Split('|');
                 int butwhatnowboss = UnityEngine.Random.Range(0, leadups.Length);
-                UpcomingEntry = leadups[butwhatnowboss];
+                NextChord = leadups[butwhatnowboss];
 
                 float feelingtoplay = UnityEngine.Random.Range(0, 1001) / 1000f;
                 float threshholdtoplay = 0.77f - (fichtean * 0.48f) + chordexhaustion * 0.08f + chordsequenceiteration * Mathf.Lerp(0.225f, 0.125f, fichtean); //will be tweaked probs
                 bool chordissequenced = feelingtoplay > threshholdtoplay;
-                //RainMeadow.Debug($"Chord is getting played with a {threshholdtoplay} threshhold");
                 if (chordissequenced)
                 {
                     chordexhaustion = (chordexhaustion * 1.325f) + Mathf.Lerp(1.75f, 0.55f, fichtean);
@@ -603,12 +337,12 @@ namespace RainMeadow
                 playingchord = true;
             }
 
-            if (playingchord == true) //holding
+            if (playingchord) //holding
             {
-                ChitChat.Update(mic, this);
+                ChitChat.Update(this);
                 if (chordtimer <= 0)
                 {
-                    //RainMeadow.Debug($"{UpcomingEntry} will play");       
+                    //RainMeadow.Debug($"{NextChord} will play");       
                     playingchord = false;
                     EntryRequest = true;
                 }
@@ -619,56 +353,46 @@ namespace RainMeadow
                 }
             }    
         }
-        private void PlayThing(SoundID Note, float velocity, float speed, VirtualMicrophone virtualMicrophone, PlopType type)
+        private void PlayThing(SoundID SoundId, float velocity, float speed, VirtualMicrophone virtualMicrophone)
         {
             if (MeadowMusic.vibeIntensity == null || MeadowMusic.vibeIntensity.Value == 0f || velocity == 0f)
             {
                 /*
                 if (RainWorld.ShowLogs) 
                 {
-                    if (MeadowMusic.vibeIntensity == null)
-                    {
-                        RainMeadow.Debug("VibeIntensity is undefinedwon't bother playing thing");
-                    }
-                    else if (MeadowMusic.vibeIntensity.Value == 0f )
-                    {
-                        RainMeadow.Debug("VibeIntensity is 0, won't bother playing thing");
-                    }
-                    else
-                    {
-                        RainMeadow.Debug("Inputted velocity is 0, won't bother playing thing");
-                    }
+                    if (MeadowMusic.vibeIntensity == null) RainMeadow.Debug("VibeIntensity is undefinedwon't bother playing thing");
+                    else if (MeadowMusic.vibeIntensity.Value == 0f ) RainMeadow.Debug("VibeIntensity is 0, won't bother playing thing");
+                    else RainMeadow.Debug("Inputted velocity is 0, won't bother playing thing");
                 }
                 */
                 return;
             }
             float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * 0.5f * velocity;
-
             float pan = (MeadowMusic.vibePan == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
-            
-            //RainMeadow. Debug($"Trying to play a {Note}, at {vol} volume, with {pan} pan");
+            //virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
+            //RainMeadow. Debug($"Trying to play a {SoundId}, at {vol} volume, with {pan} pan");
             try
             {
                 if (virtualMicrophone.visualize)
                 {
-                    virtualMicrophone.Log(Note);
+                    virtualMicrophone.Log(SoundId);
                 }
 
-                if (!virtualMicrophone.AllowSound(Note))
+                if (!virtualMicrophone.AllowSound(SoundId))
                 {
-                    RainMeadow.Debug($"Too many sounds playing, denying a {Note}");
+                    RainMeadow.Debug($"Too many sounds playing, denying a {SoundId}");
                     return;
                 }
-                SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(Note, -1);
+                SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(SoundId, -1);
                 if (virtualMicrophone.SoundClipReady(soundData))
                 {
                     if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyOldestPlop();
                     if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyOldestPlop();
-                    var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, velocity, speed, false, 0);
+                    var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, speed, false, 0);
                     //var clipclip = thissound.audioSource;
                     //FeedAudioWetTrack(clipclip, vol, speed); TESTING
                     virtualMicrophone.soundObjects.Add(thissound);
-                    InfoThingy thingy = new(type, thissound, vol, false, 0);
+                    InfoThingy thingy = new(thissound, vol, false, 0);
                     AliveList.Add(thingy);
                 }
                 else
@@ -679,7 +403,7 @@ namespace RainMeadow
 
                 if (RainWorld.ShowLogs)
                 {
-                    //RainMeadow.Debug($"the note that played: {Note} at {speed}");
+                    //RainMeadow.Debug($"the note that played: {SoundId} at {speed}");
                 }
             }
             catch (Exception e)
@@ -687,52 +411,14 @@ namespace RainMeadow
                 RainMeadow.Debug($"Log {e}");
             }
         }
-        /*
-        private void FeedAudioWetTrack(AudioSource AddedSource, float volume, float speed) //yeah alright keep this here maybe but dude i don't wanna use this (doesn't know how to speed up samples
-        {
-            if (WetLoop == null) return;
-            var TrackClip = WetLoop.audioSource.clip;
-            float[] TrackClipData = new float[TrackClip.samples * TrackClip.channels];
-            TrackClip.GetData(TrackClipData, 0);
-
-            int float1 = DateTime.Now.Millisecond;
-            var AddedClip = AddedSource.clip;
-            int float2 = DateTime.Now.Millisecond;
-            float[] AddedClipData = new float[AddedClip.samples * AddedClip.channels];
-            int float3 = DateTime.Now.Millisecond;
-            AddedClip.GetData(AddedClipData, 0);
-            int float4 = DateTime.Now.Millisecond;
-
-            int TrackCurrentSampleTime = WetLoop.audioSource.timeSamples;
-            RainMeadow.Debug(TrackCurrentSampleTime + "   " + (TrackClip.samples * TrackClip.channels) + "    " + AddedClipData.Length + "    " + (AddedClip.samples * AddedClip.channels) + "    " +  AddedSource.pitch  + "    " + TrackClip.samples);
-            for (int i = 0; i < AddedClipData.Length; ++i) 
-            {
-                if (i + TrackCurrentSampleTime * 2 < (TrackClip.samples * TrackClip.channels))
-                {
-                    TrackClipData[i + TrackCurrentSampleTime*2] += AddedClipData[i];
-                }
-                else
-                {
-                    TrackClipData[i+TrackCurrentSampleTime*2 - (TrackClip.samples * TrackClip.channels)] += AddedClipData[i];
-                }
-            }
-            int float5 = DateTime.Now.Millisecond;
-
-            TrackClip.SetData(TrackClipData, 0);
-            int float6 = DateTime.Now.Millisecond;
-            RainMeadow.Debug((float2 - float1) + "   " + (float3 - float1) + "   " + (float4 - float1) + "   " + (float5 - float1) + "   " + (float6 - float1));
-
-        }
-        */
-        //maybe could be in its own file
-
         public enum Wavetype
         {
             sineiloveyousineohmygodhavemybabies,
             square,
             triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
             smoothsquareiwouldeatmyarmforthishoe,
-            sawwaveiguesswhyareyouherewearenotevendubsteprndude
+            sawwaveiguesswhyareyouherewearenotevendubsteprndude,
+            BandNoiseOhhhhManYourTheBasicButTheBest
         }
         public static class WetData
         {
@@ -740,6 +426,7 @@ namespace RainMeadow
             public class Plop
             {
                 public float Frequency;
+                public Wavetype Wavetype;
                 public int TrackSampleStartsAt;
                 public int plopattackmonosamples;
                 public int plopreleasemonosamples;
@@ -753,15 +440,27 @@ namespace RainMeadow
                 public Plop(string length, int octave, int semitone, float volume, float pan)
                 {
                     if (WetLoop== null) return;
+                    
+                    string acronym = (CurrentRegion == null) ? "sl" : CurrentRegion.ToUpper();
+                    bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out MeadowMusic.VibeZone[] newthings);
+                    Wavetype = (diditwork ? "Trisaw" : newthings[0].sampleUsed) switch
+                    {
 
-
+                        "Trisaw" => Wavetype.smoothsquareiwouldeatmyarmforthishoe,
+                        "Clar" => Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest,
+                        "Litri" => Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
+                        "Sine" => Wavetype.sineiloveyousineohmygodhavemybabies,
+                        "Bell" => Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude,
+                        _ => Wavetype.square
+                    };
                     //var TrackClip = WetLoop.audioSource.clip;
                     TrackSampleStartsAt = WetLoop.audioSource.timeSamples;
                     //TrackSampleStartsAt += 0; //initial delay
-
                     this.oct = octave;
                     this.Frequency = 440f * Mathf.Pow(2, octave - 5) * Mathf.Pow(2, (float)(semitone + 3) / (float)12);
-                    //These could dictated by the Region? 
+
+                    //These times could dictated by a perlin noise 
+                    //Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
                     float attacktime = 0.004f; 
                     float releasetime = length switch { "L" => 5.98f , "M" => 2.98f , "S" => 0.98f, _ => 3.98f }; 
                     plopattackmonosamples = (int)(attacktime * 44100);
@@ -788,7 +487,6 @@ namespace RainMeadow
                     plops.Add(new Plop(length, octave, semitone, volume, pan));
                     //RainMeadow.Debug("Should play " + "   " + length + "   " + octave + "   " + semitone + "   " + volume + "   " + pan + "   " + plops.Count);
                 }
-
                 public void Update()
                 {
                     if (WetLoop == null) return;
@@ -796,7 +494,7 @@ namespace RainMeadow
                     int samplestorender = 8820; //0.2 second a tick
                     //RainMeadow.Debug("Rendering " + ploprendered + "  " + (ploprendered + samplestorender));
                     //RainMeadow.Debug(ploprendered + "    " + plopattackmonosamples + "   " + ploptotallength + "   " + TrackClipData.Length + "   " + TotalWetSamples);
-                    Wavetype type = Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude;
+                    Wavetype type = Wavetype.smoothsquareiwouldeatmyarmforthishoe;
                     
                     if (samplestorender + (ploprendered * 2) > ploptotallength) 
                     { 
@@ -823,7 +521,7 @@ namespace RainMeadow
                             CurrentAmplitude = (float)ii / (float)plopattackmonosamples;
 
                         }
-                        else //we have no decay nor sustain here bro
+                        else //we have no decay nor sustain here to worry about bro we're just impulses
                         {
                             CurrentAmplitude = Mathf.Pow((1.0f - (((float)(ii - plopattackmonosamples)) / plopreleasemonosamples)), 3);
                         }
@@ -843,6 +541,7 @@ namespace RainMeadow
                                 TrackClipData[i - (ploprendered * 2)] += Mathf.Asin(Mathf.Cos(iPhase)) * iValue;
                                 break;
                             case Wavetype.square: //i'll make these formulas in celebration
+                                TrackClipData[i - (ploprendered * 2)] += ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue)*0.75f;
                                 break;
                             case Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude:
                                 //TrackClipData[i - (ploprendered * 2)] += ((2*Mathf.Atan(Mathf.Tan(iPhase/2f)))/Mathf.PI) * iValue * 0.8f;
@@ -889,7 +588,7 @@ namespace RainMeadow
             {
                 if (WetLoop == null) return;
                 if (flusheswithoutplop > 4) return; 
-                //reminder to self, you're starting the thing off as zero
+                //reminder to self, you're starting wetloop off as zero
 
                 WetLoop.Update(20149109.0f, 901590.0625f); //doesn't matter what floats lol
 
@@ -915,7 +614,7 @@ namespace RainMeadow
                         plop.Update();
                     };
                     int float2 = DateTime.Now.Millisecond;
-                    if ((float2 - float1) > 5) RainMeadow.Debug(("Big amount of elapsed time in plop calculations: " + (float2 - float1)));
+                    if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop{plops.Count} calculations: " + (float2 - float1));
 
                 }
                 if (plopstoremove.Count > 0)
@@ -956,7 +655,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Wettrack is null");
                 }
             }
-            private static void CheckWetTrack() //flushes the diametric quarter of the loop when entering a new quarter.
+            private static void CheckWetTrack() //flushes the previous quarter of the loop when entering a new quarter.
             {
                 if (WetLoop == null) return;
                 if (flusheswithoutplop > 4) return; //no need to do this when we know there's no data anyways
@@ -990,164 +689,39 @@ namespace RainMeadow
                 }
             }
         }
-
-        /*
-        private void PlopWetTrack()
-        {
-            if (WetLoop == null) return;
-
-            //TrackClipData = await Task.Run(() => Mixing(WetLoop));
-
-            var TrackClip = WetLoop.audioSource.clip;
-            float[] TrackClipData = new float[TrackClip.samples * TrackClip.channels];
-            TrackClip.GetData(TrackClipData, 0);
-
-            int TotalWetSamples = (TrackClip.samples * TrackClip.channels);
-            int TrackCurrentSampleTime = WetLoop.audioSource.timeSamples;
-
-
-            float randominteger = (UnityEngine.Random.Range(0, 4) switch { 0 => 2f, 1 => 4f, 2 => 7f, 3 => 11f, _ => 2f });
-            float randominteger2 = (float)(UnityEngine.Random.Range(0, 2));
-            //this is the part that takes the most time
-            //that'll be 0.5 seconds (divide by 2 channels, divide by 44100 samples per second)
-            //float[] AddedWaveData = GenerateWaveTable(Wavetype.sineiloveyousineohmygodhavemybabies, 4, 0);
-            int length = 7;
-
-            Parallel.For(0, 44100*length, i =>
-            {
-                int ii = (i % 2 == 0 ? i / 2 : (i - 1) / 2);
-                if (i + TrackCurrentSampleTime * 2 < TotalWetSamples)
-                {
-                    TrackClipData[i + TrackCurrentSampleTime * 2] += Mathf.Sin(ii * Mathf.PI * 2f * 440f * (1f / (1f + randominteger2)) * (float)Math.Pow(2, randominteger / 12f) / 44100f) * 0.1f * Mathf.Pow(1f - (ii / (22050f*length)), 2);//;
-                }
-                else
-                {
-                    TrackClipData[i + TrackCurrentSampleTime * 2 - TotalWetSamples] += Mathf.Sin(ii * Mathf.PI * 2f * 440f * (1f / (1f + randominteger2)) * (float)Math.Pow(2, randominteger / 12f) / 44100f) * 0.1f * Mathf.Pow(1f - (ii / (22050f * length)), 2);//;
-                }
-            });
-            TrackClip.SetData(TrackClipData, 0);
-        }
-        */
         
-        private float[] GenerateWaveTable(Wavetype wavetype, int octave, int semitone)
-        {
-            int samplerate = 44100;
-            int channels = 2;
-
-            //float attacktime, float attackexponent, float releasetime, float releaseexponent
-            //these are going to be decided through the wavetype
-            //but for now we're just gonna use some  *placeholderssss*
-
-            float attacktime = 0.2f;
-            float releasetime = 6.99f; //please just use double digit floats
-            //float attackexponent = -0.025f;
-            //float releaseexponent = -0.35f;
-            int attacksamples = (int)(attacktime * 44100);
-            int releasesamples = (int)(releasetime * 44100);
-
-            float[] WaveData = new float[(int)((attacktime + releasetime) * samplerate * channels)];
-            RainMeadow.Debug(WaveData.Length);
-            int MonoSamplesOfAttack = (int)(attacktime * samplerate);
-            float Frequency = 440f * Mathf.Pow(2, octave - 5) * Mathf.Pow(2, (float)(semitone + 3) / (float)12);
-            int float1 = DateTime.Now.Millisecond;
-
-            for (int i = 0; i < WaveData.Length; i++)
-            {
-                float CurrentAmplitude;
-                int ii = (i % 2 == 0 ? i / 2 : (i - 1) / 2); //an index that only increases once every other sample to compensate for 2 channels
-                //int pani = i % 2; (amp the x side)
-
-                if (ii / 2 < MonoSamplesOfAttack)
-                {
-                    //attack time
-                    //CurrentAmplitude = (Mathf.Pow(2, 16f * attackexponent * ((float)ii / (float)MonoSamplesOfAttack)) - 1f) / (Mathf.Pow(2, 16.0f * attackexponent) - 1f);
-                    //no fancy shmancy shit
-                    CurrentAmplitude = (float)ii / attacksamples;
-                }
-                else //we have no decay nor sustain here bro
-                {
-                    //release time 
-                    //CurrentAmplitude = 1.0f - (Mathf.Pow(2, 16.0f * releaseexponent * ((float)(ii - MonoSamplesOfAttack) / (float)(WaveData.Length - MonoSamplesOfAttack))) - 1) / (Mathf.Pow(2, 16.0f * releaseexponent) - 1f);
-
-                    CurrentAmplitude = Mathf.Pow(1.0f - (float)(ii - attacksamples) / releasesamples, 3);
-                }
-                WaveData[i] = Mathf.Sin(ii * Mathf.PI * 2f * Frequency / 44100f) * 0.1f * (float)CurrentAmplitude;
-            }
-            int float2 = DateTime.Now.Millisecond;
-            RainMeadow.Debug((float2 - float1));
-            return WaveData;
-        }
-        
-
-
         private void SoundObject_Destroy(On.VirtualMicrophone.SoundObject.orig_Destroy orig, VirtualMicrophone.SoundObject self)
         {
             //just straight up kill that guy immediatly     //Debug("Hi");
             orig(self);
-            int indextodelete = -1;
-            for (int i = 0; i < AliveList.Count; i++)
-            {
-                if (AliveList[i].soundObject == self) { indextodelete = i; break; }
-            }
-            if (indextodelete == -1)
-            {
-                //Debug("this normal sound"); 
-            }
-            else
-            { //Debug("this plop");  
-                AliveList.RemoveAt(indextodelete);
-            }
+            int indextodelete = AliveList.FindIndex(c => c.soundObject == self);
+            if (indextodelete != -1) AliveList.RemoveAt(indextodelete);
         }
         
         private void DestroyOldestPlop()
         {
-            //will need a redesign, drums are frequent and short, but midnotes could be more preferable to destroy
-            PlopType looksfor = 0;
             InfoThingy KillThisFucker;
-            int RightHere = -1;
-            while (true)
+            for (int righthere = 0; righthere < AliveList.Count; righthere++)
             {
-                foreach (InfoThingy aliverrr in AliveList)
+                InfoThingy aliverrr = AliveList[righthere];
+                if (!aliverrr.dying)
                 {
-                    RightHere++;
-                    if (aliverrr.type == looksfor && aliverrr.dying != true)
-                    {
-                        KillThisFucker = aliverrr;
-                        KillThisFucker.dying = true;
-                        AliveList[RightHere] = KillThisFucker;
-                        break;
-                    }
+                    KillThisFucker = aliverrr;
+                    KillThisFucker.dying = true;
+                    AliveList[righthere] = KillThisFucker;
+                    break;
                 }
-                if (looksfor == PlopType.Pad || AliveList[RightHere].dying)
-                {
-                    //NotMyProblem = true;
-                    break; //Not my problem
-                }
-                RightHere = -1;
-                looksfor++;
             }
         }
-
-        enum PlopType
-        {
-            Drum,
-            Short,
-            Medium,
-            Long,
-            Pad
-        }
-
         struct InfoThingy
         {
-            public InfoThingy(PlopType type, VirtualMicrophone.SoundObject soundObject, float initvolume, bool dying, float dyingpercent)
+            public InfoThingy(VirtualMicrophone.SoundObject soundObject, float initvolume, bool dying, float dyingpercent)
             {
-                this.type = type;
                 this.soundObject = soundObject;
                 this.initvolume = initvolume;
                 this.dying = dying;
                 this.dyingpercent = dyingpercent;
             }
-            public PlopType type;
             public VirtualMicrophone.SoundObject soundObject;
             public float initvolume;
             public bool dying;
@@ -1206,7 +780,6 @@ namespace RainMeadow
             static int[] liaisonrace = new int[0]; //arp pitch sorted array that will be remade with the analyze function
             static public bool isindividualistic = false; //setting for whether it'll treat things as individualistic
             static bool upperswitch = true;
-            //is NOT the bar timer, that would be plopmachine.debugstopwatch.  This shall be used as a ,,, relatuve thing=????
             public enum Arpmode
             {
                 upwards,
@@ -1225,19 +798,14 @@ namespace RainMeadow
             static int steppatternindex = 0;
 
             static public double arpcounterstopwatch;
-            static int arpcurrentfreq;
-            static public int arpbufferfreq;
-
+            static int arprate;
+            
             static List<int> randomsetsacrificeboard = new List<int>();
             static bool arpmiddlenoteistop;
-            static int arpindexabovemidline;
-            static int arpindexbelowmidline;
-            //static List<string> nameshaha = [];
             
             static int TensionStopwatch; //this will be reset on wipe, and be the strain until a modulation or strum  //tension is chordstopwatch essentially 
-            //depending on how i wanna do the random, like if i wanna do it like cookie clicker
-            static bool ismodulation; //0 will make it break like a modulation, 1 will like a transposition.  random
-            static bool hasbroken; //will be set to true when breaks. reset to false at wipe, and by undo
+            static bool ismodulation; 
+            static bool hasbroken; 
             static int differencebuffer;
             static bool hasswitchedscales;
             static int BreakUndoStopwatch; //will start to be counted when tension has broken
@@ -1250,36 +818,21 @@ namespace RainMeadow
                 {//modulation
                     int keybefore = plopmachine.CurrentKey;
                     bool scalebefore = plopmachine.inmajorscale;
-                    plopmachine.QueuedModulation = 2;
-                    plopmachine.InfluenceModulation();
-                    plopmachine.QueuedModulation = 2;
-                    plopmachine.InfluenceModulation();
-                    plopmachine.QueuedModulation = 2;
-                    plopmachine.InfluenceModulation();
+                    plopmachine.InfluenceModulation(7);
                     differencebuffer = plopmachine.CurrentKey - keybefore;
                     hasswitchedscales = scalebefore == plopmachine.inmajorscale;
                 }
                 else
                 {//transposition
-                    differencebuffer = UnityEngine.Random.Range(-2, 3);
-                    while (differencebuffer == 0) { differencebuffer = UnityEngine.Random.Range(-2, 3); }
-
-                    string appendedaccidentals = "";
-                    switch (differencebuffer)
+                    do { differencebuffer = UnityEngine.Random.Range(-2, 3); } while (differencebuffer == 0);
+                    string appendedaccidentals = differencebuffer switch
                     {
-                        case 2:
-                            appendedaccidentals = "##";
-                            break;
-                        case 1:
-                            appendedaccidentals = "#";
-                            break;
-                        case -1:
-                            appendedaccidentals = "b";
-                            break;
-                        case -2:
-                            appendedaccidentals = "bb";
-                            break;
-                    }
+                        2 => "##",
+                        1 => "#",
+                        -1 => "b",
+                        -2 => "bb",
+                        _ => ""
+                    };
 
                     for (int i = 0; i < LiaisonList.Count; i++)
                     {
@@ -1309,7 +862,7 @@ namespace RainMeadow
                     }
                 }
             }
-            public static void Update(VirtualMicrophone mic, PlopMachine plopmachine)
+            public static void Update(PlopMachine plopmachine)
             {
                 TensionStopwatch++;//if i add it here every time, well, then, reminder that the stopwatch starts on 1, since a wipe and the start of liaisoning for the next chord happens at the same time.... well... ig that's the nature of doing a ++; at the start of ever
                                    //if (LiaisonList.Count == 1) isindividualistic = true; //until a thing can grow horns on its own, it should stay like this... but then what if it could? What if a note had a chance to spawn others that fitted to it? Check that
@@ -1337,7 +890,7 @@ namespace RainMeadow
 
                 if (isindividualistic) //upperswitch is true here
                 {
-                    Anarchy(mic, plopmachine);
+                    Anarchy(plopmachine);
                     upperswitch = true;
                 }
                 else //shall be false here
@@ -1349,45 +902,40 @@ namespace RainMeadow
                         upperswitch = false;
                     }
 
-                    if (isstrumming)
+                    if (strumphase != 0)
                     {
-                        Strum(mic, plopmachine);
+                        Strum(plopmachine);
                     }
                     else
                     {
                         if (arptimer <= 0)
                         {
-                            if (LiaisonList.Count != 0) //bruh why would it ever be less than zero lmao (that's the joke here)
+                            if (LiaisonList.Count != 0) 
                             { 
-                                if (steppattern[steppatternindex]) CollectiveArpStep(mic, plopmachine);
+                                if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
                                 arpcounterstopwatch += plopmachine.fichtean * 12 + 4;
-                                //arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
-
-                                int waitnumber = arpbufferfreq switch { 0 => 4, 1 => 6, 2 => 8, 3 => 12, 4 => 16, _ => 16, };
-                                arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
-                                if (arpbufferfreq != arpcurrentfreq && plopmachine.chordtimer < 96)
+                                int waitnumber = arprate switch { 0 => 4, 1 => 6, 2 => 8, 3 => 12, 4 => 16, _ => 16, };
+                                int arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
+                                if (arprate != arpcurrentfreq && plopmachine.chordtimer < 96)
                                 {
-                                    if (arpbufferfreq > arpcurrentfreq) 
+                                    if (arprate > arpcurrentfreq)
                                     {
                                         waitnumber /= 2;
-                                        if (steppattern[steppatternindex]) CollectiveArpStep(mic, plopmachine);
+                                        if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
                                     }
-                                    else 
-                                    { 
+                                    else
+                                    {
                                         //if (plopmachine.chordtimer == 48-1) waitnumber /= 2; 
                                         //so this shall be remade if (plopmachine.chordtimer < 48-1) waitnumber *= 2; //doesn't work artistically
                                     }
                                 }
-                                //PLUSS ONE because its' fucking... because this one plays it at the exact same time??? And goes downward for some reason??? Oh wait it's because it starts HERE. At THIS MOMENT, if it was a wait, there would be 24 until the next.
-                                //RainMeadow.Debug("OK SO THE NEXT ONE IS " + arptimer);
+                                //(note from self i'm keeping btecause funny (it's about timer)PLUSS ONE because its' fucking... because this one plays it at the exact same time??? And goes downward for some reason??? Oh wait it's because it starts HERE. At THIS MOMENT, if it was a wait, there would be 24 until the next.
                                 arptimer = Wait.Until($"1/{waitnumber}", 1, plopmachine.debugstopwatch);
-                                //RainMeadow.Debug("Arptimer waits " + arptimer);
 
                                 if (UnityEngine.Random.Range(0, 150000) + TensionStopwatch*12 > 150000) //RTYU            this is strum activationcode  //temp, will share with other. I decide now that if it's strummed, it'll roll a chance to break, but reset the "stopwatch" both use, tension   
                                 {
-                                    isstrumming = true;
                                     strumphase = Strumphases.queued;
-                                    strumqueuetimer = Wait.Untils("half", 1, 3, plopmachine.debugstopwatch);
+                                    strumtimer = Wait.Untils("half", 1, 3, plopmachine.debugstopwatch);
                                     if (UnityEngine.Random.Range(0, 1001) < 69) //good, the break will happen before the strum.
                                     {
                                         Break(plopmachine);
@@ -1404,7 +952,7 @@ namespace RainMeadow
                     }
                 }
             }
-            private static void Anarchy(VirtualMicrophone mic, PlopMachine plopmachine)
+            private static void Anarchy(PlopMachine plopmachine)
             {
                 for (int i = 0; i < LiaisonList.Count; i++)
                 {
@@ -1420,21 +968,14 @@ namespace RainMeadow
                         if (liaison.pattern[liaison.patternindex])
                         {
                             bool nextnoteexists = liaison.patternindex + 1 < liaison.pattern.Length ? liaison.pattern[liaison.patternindex + 1] : liaison.pattern[0];
-                            if (nextnoteexists) plopmachine.Plop($"S-{liaison.note.Substring(2, 3)}", mic);
-                            else plopmachine.Plop(liaison.note, mic);
-                            //string lol = "";
-                            //foreach(bool thing in liaison.pattern)
-                            //{
-                            //    lol += thing;
-                            //}
-                            //RainMeadow.Debug("haha "+ lol);
+                            if (nextnoteexists) plopmachine.Plop($"S-{liaison.note.Substring(2, 3)}");
+                            else plopmachine.Plop(liaison.note);
                         }
                         int liaisonwait = Wait.Until(liaison.period, 1, plopmachine.debugstopwatch);
                         int lolol = liaison.patternindex + 1;
                         if (lolol >= liaison.pattern.Length) lolol = 0; 
                         LiaisonList[i] = new Liaison(liaison.note, liaisonwait, liaison.pattern, lolol, liaison.period);
                         CheckThisLiaisonOutDude(i, plopmachine);
-                        //RainMeadow.Debug($"We're so here, playing a {liaison.note}, and their {liaison.yoffset} makes a delay of {moneydym1}");
                     }
                 }
             }
@@ -1445,15 +986,7 @@ namespace RainMeadow
                 //List<string> CopyCheckerColonD = new();
                 foreach (Liaison heyo in LiaisonList)
                 {
-                    //bool isthisunique = true;
-                    //foreach (string s in CopyCheckerColonD)
-                    //{
-                    //    if (s == heyo.note) isthisunique = false; break;
-                    //}
-                    //if (isthisunique){
-                    //    CopyCheckerColonD.Add(heyo.note); }
-                    string[] hey = heyo.note.Substring(2).Split('-');//maybe this'll fuck up in the future :3 yeah it fucks up now, it doesn't account for string
-                    //fixed the fuck tho
+                    string[] hey = heyo.note.Substring(2).Split('-');
                     bool intiseasy = int.TryParse(hey[1], out int ind);
                     int extratranspose = 0;
                     if (!intiseasy)
@@ -1461,15 +994,7 @@ namespace RainMeadow
                         string accidentals = hey[1].Substring(1);
                         foreach (char accidental in accidentals)
                         {
-                            switch (accidental)
-                            {
-                                case 'b':
-                                    extratranspose--;
-                                    break;
-                                case '#':
-                                    extratranspose++;
-                                    break;
-                            }
+                            extratranspose += accidental switch { 'b' => -1, '#' => 1, _ => 0 };
                         }
                         ind = int.Parse(hey[1].Substring(0, 1));
                     }
@@ -1481,9 +1006,7 @@ namespace RainMeadow
                 }//there's ceraintly a better and less costly ways of going about but :PPPPPP
 
                 int[] LiaisonIndexArrayThatllBeSwayed = new int[index];
-                for (int i = 0; i < index; i++)
-                    LiaisonIndexArrayThatllBeSwayed[i] = i;
-
+                for (int i = 0; i < index; i++) LiaisonIndexArrayThatllBeSwayed[i] = i;
                 int[] LiaisonsFreqNumbsArray = LiaisonsFreqNumbs.ToArray();
                 Array.Sort(LiaisonsFreqNumbsArray, LiaisonIndexArrayThatllBeSwayed);
                 liaisonrace = LiaisonIndexArrayThatllBeSwayed;
@@ -1502,7 +1025,7 @@ namespace RainMeadow
                 if (LiaisonList.Count < 3) 
                 { 
                     isindividualistic = true; 
-                    //RainMeadow.Debug("SO its normally individual"); 
+                    //If it's less than three, some arpegiation patterns will break, we therefore do anarchic.
                 }
                 else
                 {
@@ -1524,13 +1047,11 @@ namespace RainMeadow
                 //arpingmode = Arpmode.upwards; //FOR TESTING, REMOVE AFTERWARDS
                 steppatternindex = 0;
 
-                //some bogus code to make a new step sequence sometimes
+                //bogus code to make a new step sequence sometimes
                 if (UnityEngine.Random.Range(0, 100) < 10f + plopMachine.fichtean * 15f)
                 {
                     //RainMeadow.Debug("Time to change the stepsequence, yup");
-                    List<bool> steppatternlist = new();
-                    steppatternlist.Add(true);
-                    //RainMeadow.Debug(steppatternlist);
+                    List<bool> steppatternlist = new() { true };
                     bool satisfied = false;
 
                     while (!satisfied)
@@ -1567,15 +1088,8 @@ namespace RainMeadow
             }
             public static void Add(string note, PlopMachine plopmachine)
             {
-                //RainMeadow.Debug($"SOthestart of Chitchat.add, when i'm trying to input a {note}");
-                string[] anotherhighernotesparts = note.Split('-');
-                //RainMeadow.Debug(anotherhighernotesparts[0] + " " + anotherhighernotesparts[1]);
-                int octave = int.Parse(anotherhighernotesparts[0]);
-                bool willadd = true;
-                string mynote = "M-" + note;
-                //int thing = (int)(plopmachine.fichtean * 5); //was 16 - 4 here
-                int thing = arpbufferfreq; //is 4 - 16 here
-                string period = thing switch
+                if (LiaisonList.Exists(L => L.note == note.Substring(2))) return;
+                string period = arprate switch //is 4 - 16 here
                 {
                     0 => "1/8",
                     1 => "1/12",
@@ -1585,40 +1099,28 @@ namespace RainMeadow
                     _ => "1/32",
                 };
                 int liaisonwait = Wait.Until(period, 1, plopmachine.debugstopwatch);
-                //int amountoftimes = UnityEngine.Random.Range(8 - (int)(plopmachine.fichtean * 3), 29 - (int)(plopmachine.fichtean * 15));
-                int amountoftimes = UnityEngine.Random.Range(8 - (arpbufferfreq/5 * 3), 23 - ((int)(arpbufferfreq/2)* 3));
+                int amountoftimes = UnityEngine.Random.Range(8 - (arprate/5 * 3), 23 - (3*(arprate/2)));
+                
                 bool[] mama = new bool[amountoftimes];
                 for (int i = 0; i < amountoftimes; i++)
                 {
-                    mama[i] = UnityEngine.Random.Range(4, ((5-arpbufferfreq)*2) + 72) > 66;
+                    mama[i] = UnityEngine.Random.Range(4, ((5-arprate)*2) + 72) > 66;
                 }
 
-                Liaison helo = new Liaison(mynote, liaisonwait, mama, UnityEngine.Random.Range(0, amountoftimes), period);
-
-                //checks there's no duplicates, doesn't add if so
-                foreach (Liaison thisliaison in LiaisonList)
-                {
-                    if (thisliaison.note == mynote) willadd = false;
-                }
-
-                if (willadd) { LiaisonList.Add(helo); }
-                //if (!isindividualistic) { RainMeadow.Debug($"Added {mynote}, a {helo.note} with analysis"); } else { RainMeadow.Debug($"Added {mynote}, a {helo.note} without analysis"); }
+                Liaison NewLiaison = new($"M-{note}", liaisonwait, mama, UnityEngine.Random.Range(0, amountoftimes), period);
+                LiaisonList.Add(NewLiaison);
             }
             private static void CheckThisLiaisonOutDude(int indexofwhereitathomie, PlopMachine plopmachine)
             {
                 Liaison liaison = LiaisonList[indexofwhereitathomie];
 
-                bool itwillevolve = UnityEngine.Random.Range(0, 800) + (int)evolvestopwatch > 1200; //RTYU
-                //RainMeadow.Debug("Hi it is using this thing " + itwillevolve + " " + evolvestopwatch);
+                bool itwillevolve = UnityEngine.Random.Range(0, 800) + (int)evolvestopwatch > 1200; //Values to be joar-tweaked
                 if (itwillevolve)
                 {
                     evolvestopwatch = 0;
                     //RainMeadow.Debug("Evolves " + liaison.note);
 
                     string[] parts = liaison.note.Split('-');
-                    //ok this REALLY should be reworked to pick the note NEXT to that guy
-                    //      what the fuck do you mean, past me????
-                    //              hahaaaa my past selves not knowing shit, so cute
 
                     int oct = int.Parse(parts[1]);
                     bool intiseasy = int.TryParse(parts[2], out int ind);
@@ -1632,7 +1134,7 @@ namespace RainMeadow
                     bool willmodify;
                     do
                     {
-                        willmodify = true; //copied straight from the best coder on earth, me, when wriding Add()
+                        willmodify = true; //copied straight from the best coder on earth, me, when wriding Add()  <<-- with all of it's wrongs apperantly
                         int modifying = UnityEngine.Random.Range(-2, 1);
                         if (modifying > -1) modifying++;
                         if (modifying == -2 || modifying == 2) if (UnityEngine.Random.Range(0, 2) == 1) modifying /= 2;
@@ -1644,18 +1146,11 @@ namespace RainMeadow
 
                         if (oct < 1) oct++;
                         if (oct > 7) oct--;
-                        string construction;
-                        if (intiseasy) construction = "M-" + Convert.ToString(oct) + "-" + Convert.ToString(ind);
-                        else construction = "M-" + Convert.ToString(oct) + "-" + Convert.ToString(ind) + accidentals;
-                        liaison.note = construction;
-
-                        foreach (Liaison thing in LiaisonList)
-                        {
-                            //RainMeadow.Debug($"Trying to Fuck {thing.note} {construction}");
-                            if (thing.note == construction) willmodify = false;
-                        }
+                        liaison.note = $"M-{oct}-{ind}{accidentals}"; // string construction = "M-" + Convert.ToString(oct) + "-" + Convert.ToString(ind) + accidentals;
+                        willmodify = LiaisonList.Exists(l => l.note == liaison.note);
                         attempts++;
                     } while (!willmodify && attempts < 4);
+
                     if (attempts >= 4) { RainMeadow.Debug("Oh no can't fuck with it"); }
                     else
                     {
@@ -1671,50 +1166,47 @@ namespace RainMeadow
                 arpstep = 0;
                 TensionStopwatch = 0;
                 hasbroken = false;
-                isstrumming = false;
+                strumphase = 0;
                 BreakUndoStopwatch = 0;
                 randomsetsacrificeboard.Clear();
-                arpbufferfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
-                //arpbufferfreq = 3; //TESTING 
+                arprate = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
                 if (!isindividualistic) { Analyze(plopmachine); }
             }
             public static void RandomMode()
             {
-                //switch statement that takes a number and changes
                 //arpingmode to be: "upwards" "downwards" "switchwards" "randomwards" "inwards" "outwards"
                 int sowhichoneboss = UnityEngine.Random.Range(0, 6); 
                 arpingmode = (Arpmode)sowhichoneboss;
-                //RainMeadow.Debug("The arping mode has been chosen to be " + arpingmode);
                 arpmiddlenoteistop = UnityEngine.Random.Range(0, 2) == 1;
-                
-                //OKAY SO SIDE NOTE TO MYSELF, always call randommode AFTER you've found out how many things there are in here
+                //RainMeadow.Debug("We're now arping " + arpingmode);
+                //OKAY SO SIDE NOTE TO MYSELF, always call randommode AFTER you've found out how many liaisons are listed
+                arpgoingupwards = UnityEngine.Random.Range(0, 2) == 1;
+                arpstep = arpingmode switch
+                {
+                    Arpmode.upwards => 0,
+                    Arpmode.downwards => LiaisonList.Count - 1,
+                    Arpmode.switchwards => arpgoingupwards ? LiaisonList.Count - 1 : 0,
+                    Arpmode.randomwards => 0,
+                    Arpmode.inwards => arpgoingupwards ? 0 : LiaisonList.Count - 1,
+                    Arpmode.outwards => arpgoingupwards ? 0 : LiaisonList.Count - 1,
+                    _ => 0
+                };
+
             }
-            public static void CollectiveArpStep(VirtualMicrophone mic, PlopMachine plopmachine)
+            public static void CollectiveArpStep(PlopMachine plopmachine)
             {
-                //uses the logic of the mode selected by the string of arpingmode to *arp* between the notes,
-                //plays the note that it's selected, then selects the next one
-                //so, arpstep is the current step in the arpegio, normal
-                //liaisonrace interprets the number and gives back another number which is the index of the note in liaison
-                //when picking an index from the liaisonlist, it returns a Liaison, that liaison has got properties, one of them is its note, which'll be a string.
-
-                //RainMeadow.Debug($"it plays a thing at uhhhh   {arpstep},,,,   then it's the index  {liaisonrace[arpstep]}.. .  ..  {LiaisonList[liaisonrace[arpstep]].note}");
-
-                //public static string CollectiveArpStep(VirtualMicrophone mic, PlopMachine plopmachine, bool returnnoteinstead = false)
-                //if (returnnoteinstead) return LiaisonList[liaisonrace[arpstep]].note; 
-                //RainMeadow.Debug("Playing a Plop from Chitchat.CollectiveArpStep, the " + arpstep);
-                plopmachine.Plop(LiaisonList[liaisonrace[arpstep]].note, mic); //so it plays the previous one
+                //RainMeadow.Debug(arpstep + "    " + arpingmode + "   " + arpmiddlenoteistop + "   " + arpgoingupwards);
+                plopmachine.Plop(LiaisonList[liaisonrace[arpstep]].note); //so it plays the arp it *leaves*
                 CheckThisLiaisonOutDude(liaisonrace[arpstep], plopmachine);
 
                 switch (arpingmode)
                 {
                     case Arpmode.upwards:
-                        arpstep++;
-                        if (arpstep >= LiaisonList.Count) { arpstep = 0; }
+                        arpstep = ((arpstep + 1) < LiaisonList.Count) ? (arpstep + 1) : 0;
                         break;
 
                     case Arpmode.downwards:
-                        arpstep--;
-                        if (arpstep < 0) { arpstep = LiaisonList.Count - 1; }
+                        arpstep = ((arpstep - 1) < 0) ? (LiaisonList.Count - 1) : (arpstep - 1);
                         break;
 
                     case Arpmode.switchwards:
@@ -1756,9 +1248,7 @@ namespace RainMeadow
                         if (arpgoingupwards)
                         {
                             arpstep++;
-                            if (arpmiddlenoteistop) lookoutfor = arpindexabovemidline;
-                            else lookoutfor = arpindexbelowmidline;
-
+                            lookoutfor = (LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1)+1 ;
                             if (arpstep >= lookoutfor)
                             {
                                 arpgoingupwards = false;
@@ -1768,8 +1258,7 @@ namespace RainMeadow
                         else
                         {
                             arpstep--;
-                            if (arpmiddlenoteistop) lookoutfor = arpindexbelowmidline;
-                            else lookoutfor = arpindexabovemidline;
+                            lookoutfor = ((LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1));
                             if (arpstep <= lookoutfor)
                             {
                                 arpgoingupwards = true;
@@ -1784,12 +1273,7 @@ namespace RainMeadow
                             arpstep++;
                             if (arpstep >= LiaisonList.Count)
                             { 
-                                //this fucks up and returns a negative value  if  liaisonlist.count = 1
-                                float pseudoarpstep = LiaisonList.Count / 2;
-                                if (arpmiddlenoteistop)
-                                    arpstep = (int)Math.Floor(pseudoarpstep) - 1;
-                                else
-                                    arpstep = (int)Math.Ceiling(pseudoarpstep) - 1;
+                                arpstep = (LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1);
                                 arpgoingupwards = false;
                             }
                         }
@@ -1798,8 +1282,7 @@ namespace RainMeadow
                             arpstep--;
                             if (arpstep < 0)
                             {
-                                if (arpmiddlenoteistop) arpstep = arpindexabovemidline;
-                                else arpstep = arpindexbelowmidline;
+                                arpstep = ((LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1)) + 1;
                                 arpgoingupwards = true;
                             }
                         }
@@ -1807,67 +1290,39 @@ namespace RainMeadow
                 }
             }
 
-            static int strumindex;
-            static bool strumdirectionupwards; //true = upwards. false = downwards
-            static bool isstrumming;
-            static int strumqueuetimer = 20;
-            static int strumtimer;
-            static int strumepiloguetimer;
             static Strumphases strumphase;
             enum Strumphases
             {
+                notplaying,
                 queued,
                 playing,
-                epilogue
+                epilogue,
             }
-            private static void Strum(VirtualMicrophone mic, PlopMachine plopmachine)
+            static int strumindex;
+            static bool strumdirectionupwards; //true = upwards. false = downwards
+            static int strumtimer = 20;
+            private static void Strum(PlopMachine plopmachine)
             {
                 switch (strumphase)
                 {
                     case Strumphases.queued:
-                        strumqueuetimer--;
-                        //if strumqueuetimer has reached zero: strum is no longer queued, it will start playing (strumplaying/strumstrumming = true, strumqueued = false, strumtimer = 0)
-                        if (strumqueuetimer <= 0)
+                        strumtimer--;
+                        //if strumqueuetimer has reached zero: strum is no longer queued, it will start playing next tick (strumplaying/strumstrumming = true, strumqueued = false, strumtimer = 0)
+                        if (strumtimer <= 0)
                         {
-                            switch (arpingmode)
+                            strumdirectionupwards = arpingmode switch
                             {
-                                case Arpmode.upwards:
-                                    strumdirectionupwards = false;
-                                    break;
-
-                                case Arpmode.downwards:
-                                    strumdirectionupwards = true;
-                                    break;
-
-                                case Arpmode.switchwards:
-                                    if (arpgoingupwards) strumdirectionupwards = false;
-                                    else strumdirectionupwards = true;
-                                    break;
-
-                                case Arpmode.randomwards:
-                                    strumdirectionupwards = UnityEngine.Random.Range(0, 2) == 0;
-                                    break;
-
-                                case Arpmode.outwards: //because this one feels like it's missing
-                                    if (arpmiddlenoteistop) strumdirectionupwards = true;
-                                    else strumdirectionupwards = false;
-                                    break;
-
-                                case Arpmode.inwards: //because this one feels like it's cutting off 
-                                    if (arpmiddlenoteistop) strumdirectionupwards = false;
-                                    else strumdirectionupwards = true;
-                                    break;
-
-                                default:
-                                    strumdirectionupwards = true;
-                                    break;
-                            }
+                                Arpmode.upwards => false,
+                                Arpmode.downwards => true,
+                                Arpmode.switchwards => !arpgoingupwards,
+                                Arpmode.randomwards => UnityEngine.Random.Range(0, 2) == 0,
+                                Arpmode.inwards => arpgoingupwards,
+                                Arpmode.outwards => !arpgoingupwards,
+                                _ => true
+                            };
                             //depending on strumdirection, strumindex will be: "upwards" = 0, "downwards" = (liaisonlist.count-1) //(cuz if there's 4 things, then 3 is maxindex)
-                            if (strumdirectionupwards) strumindex = 0;
-                            else strumindex = LiaisonList.Count - 1;
-
+                            strumindex = strumdirectionupwards ? 0 : LiaisonList.Count - 1;
                             strumphase++;
-                            strumtimer = 0;
                         }
                         break;
 
@@ -1879,7 +1334,7 @@ namespace RainMeadow
                         else
                         {
                             //RainMeadow.Debug("It's the funny it's so playing :))))" + strumindex +"   ummm"+ liaisonrace[strumindex] +"   ummmm"+ LiaisonList[liaisonrace[strumindex]]);
-                            plopmachine.Plop(LiaisonList[liaisonrace[strumindex]].note, mic);
+                            plopmachine.Plop(LiaisonList[liaisonrace[strumindex]].note);
                             strumtimer = (int)(plopmachine.fichtean * 4);  //which is essentially //perlinnoise(1, 4) (1, 2, 3)
                             if (strumdirectionupwards) { strumindex++; }
                             else { strumindex--; }
@@ -1887,19 +1342,19 @@ namespace RainMeadow
                             if (strumindex < 0 || strumindex > LiaisonList.Count - 1)
                             {
                                 strumphase++;
-                                strumepiloguetimer = Wait.Until("bar", 0, plopmachine.debugstopwatch);
+                                strumtimer = Wait.Until("bar", 0, plopmachine.debugstopwatch);
                             }
                         }
                         break;
 
                     case Strumphases.epilogue:
-                        if (strumepiloguetimer > 0)
+                        if (strumtimer > 0)
                         {
-                            strumepiloguetimer--;   //maybe in the future we can do some BONUS STRUMS
+                            strumtimer--;   //maybe in the future we can do some BONUS STRUMS  <-- but not now :P
                         }
                         else
                         {
-                            isstrumming = false;
+                            strumphase = 0;
                         }
                         break;
                 }
@@ -1909,15 +1364,14 @@ namespace RainMeadow
 
         public static class NoteMagazine
         {
-            static List<string> InNoteList = new(); //actually filled with "3-3" too,, 
-            static List<string> OutNoteList = new(); //filled with "3-1"
+            static List<string> InNoteList = new(); 
+            static List<string> OutNoteList = new(); 
             static bool hasdecidedamount = false;
             static int decidedamount;
-            static int
-                triedamounts;
+            static int triedamounts;
             static readonly Dictionary<string, string> SoloLineageDict = new(); //one at a time kid
             static readonly Dictionary<string, string> DuoLineageDict = new(); //thanks dad it's time for duo
-            public static void fuckinginitthatdictlineagebitch()
+            public static void Fuckinginitthatdictlineagebitch()
             {
                 SoloLineageDict.Add("fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes");
                 SoloLineageDict.Add("4-1", "3-5 4-1 4-3 4-5|3-6 4-2 4-4");
@@ -1930,7 +1384,6 @@ namespace RainMeadow
 
                 //yeahhh and then the second one !
                 DuoLineageDict.Add("timeforsecondof painyo", "yeah|yeah");
-                //DuoLineageDict.Add("4-1 4-5", "4-4 4-1 4-5|4-6 5-3 4-1");
                 DuoLineageDict.Add("4-1 4-2", "3-5 4-1 4-2 4-3 4-6 5-2|3-7 4-1 4-2 4-4 4-6 5-3");
                 DuoLineageDict.Add("4-1 4-3", "3-6 4-1 4-3 4-5 5-2|3-6 4-4 4-5 4-6");
                 DuoLineageDict.Add("4-1 4-4", "3-5 4-1 4-4 4-6 5-3|4-2 4-5 4-6 5-2");
@@ -1953,26 +1406,12 @@ namespace RainMeadow
                 DuoLineageDict.Add("4-5 4-7", "3-5 4-1 4-5 4-7 5-5|3-4 3-7 4-4 4-6 5-4");
                 DuoLineageDict.Add("4-6 4-7", "3-5 4-2 4-6 4-7 5-3 5-5|3-4 3-7 4-3 4-5 5-1 5-4");
             }
-            //don't be scared of the lowest notes, oct 1 will be rolled up.
-            //i'll use octave 4 as the baseline
-            //index is index
-            //
-            //static string[] keycodeNames = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=" };
-
-            //alright so, the thing creature here is then,,,,
-            //This includes an inputted string, the Innote,  and gives back two sets of "children" for lack of a better word.
-            //First set is the ambiency set, second the chordy. 
-            //This dict shall be used by Grow
-
-            //static Dictionary<int, Dictionary<int, string>> LOLTHISWORKS = new();
-            //imagine opening a book and it just having more books in it
-            //maybe this is a quicker thing, i'll have to ask hellothere(an actual programmer)
 
             public static void AddSeed(string Note) { InNoteList.Add(Note); }
             public static void Fester(PlopMachine plopmachine)
-            {//(it is time to create the outnotes.) (very expensive here)
+            {
                 if (!hasdecidedamount) { decidedamount = (int)Mathf.Lerp(6.5f, 2f, plopmachine.fichtean); hasdecidedamount = true; }
-                //RainMeadow.Debug("Amount of things it's wanting" + decidedamount);
+                decidedamount = 7;
                 while (OutNoteList.Count < decidedamount && triedamounts < 10)
                 {
                     Grows(plopmachine);
@@ -2114,7 +1553,6 @@ namespace RainMeadow
                     sequenceindex = 0;
                 }
 
-                //PlopMachine PlopMachine;
                 public Fill[] sequence;
                 public SoundID sample;
                 public int track;
@@ -2160,7 +1598,7 @@ namespace RainMeadow
                             3 => Mathf.Clamp01(plopMachine.currentagora * 0.27f - 1.6f),
                             _ => 0f,
                         };
-                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol * 0.2f, 1, mic, PlopType.Drum); 
+                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol * 0.2f, 1, mic); 
                     }
                 }
                 //impulse from a main loop will trigger a random fill of x length
@@ -2264,9 +1702,8 @@ namespace RainMeadow
 
 
         bool ol1;
-        bool ol2;
+        bool ol2 = true;
         bool ol3;
-        bool ol4 = true;
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
@@ -2284,13 +1721,26 @@ namespace RainMeadow
                 debugstopwatch++;
                 float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
                 fichtean = (Mathf.Pow(x, 1/(currentagora/2 + 1))+x)/2;
-                PlayEntry(mic);
+                PlayEntry();
                 DrumMachine.Update(mic, this);
-                
             }
 
             ThanatosSlayGirl();
             //WetData.Update();
+
+
+            if (ol2)
+            {
+                RainMeadow.Debug("Haha");
+                ol2 = false;
+                for (int i = 1; i < 9; i++) 
+                {
+                    RainMeadow.Debug(i + "  " + ((i / 2) - (false ? ((i + 1) % 2) : 1)));
+                    RainMeadow.Debug(i + "  " + ((i / 2) - (true ? ((i + 1) % 2) : 1)));
+                }
+            }
+
+
 
             if (Input.GetKey("e") && !ol1)
             {
@@ -2307,110 +1757,5 @@ namespace RainMeadow
         public static readonly SoundID Kick = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
         public static readonly SoundID HiHat = new SoundID("HiHat", register: true);
-        public static readonly SoundID C1LongSine = new SoundID("C1LongSine", register: true);
-        public static readonly SoundID C2LongSine = new SoundID("C2LongSine", register: true);
-        public static readonly SoundID C3LongSine = new SoundID("C3LongSine", register: true);
-        public static readonly SoundID C4LongSine = new SoundID("C4LongSine", register: true);
-        public static readonly SoundID C5LongSine = new SoundID("C5LongSine", register: true);
-        public static readonly SoundID C6LongSine = new SoundID("C6LongSine", register: true);
-        public static readonly SoundID C7LongSine = new SoundID("C7LongSine", register: true);
-        public static readonly SoundID C1MediumSine = new SoundID("C1MediumSine", register: true);
-        public static readonly SoundID C2MediumSine = new SoundID("C2MediumSine", register: true);
-        public static readonly SoundID C3MediumSine = new SoundID("C3MediumSine", register: true);
-        public static readonly SoundID C4MediumSine = new SoundID("C4MediumSine", register: true);
-        public static readonly SoundID C5MediumSine = new SoundID("C5MediumSine", register: true);
-        public static readonly SoundID C6MediumSine = new SoundID("C6MediumSine", register: true);
-        public static readonly SoundID C7MediumSine = new SoundID("C7MediumSine", register: true);
-        public static readonly SoundID C1ShortSine = new SoundID("C1ShortSine", register: true);
-        public static readonly SoundID C2ShortSine = new SoundID("C2ShortSine", register: true);
-        public static readonly SoundID C3ShortSine = new SoundID("C3ShortSine", register: true);
-        public static readonly SoundID C4ShortSine = new SoundID("C4ShortSine", register: true);
-        public static readonly SoundID C5ShortSine = new SoundID("C5ShortSine", register: true);
-        public static readonly SoundID C6ShortSine = new SoundID("C6ShortSine", register: true);
-        public static readonly SoundID C7ShortSine = new SoundID("C7ShortSine", register: true);
-        public static readonly SoundID C1LongLitri = new SoundID("C1LongLitri", register: true);
-        public static readonly SoundID C2LongLitri = new SoundID("C2LongLitri", register: true);
-        public static readonly SoundID C3LongLitri = new SoundID("C3LongLitri", register: true);
-        public static readonly SoundID C4LongLitri = new SoundID("C4LongLitri", register: true);
-        public static readonly SoundID C5LongLitri = new SoundID("C5LongLitri", register: true);
-        public static readonly SoundID C6LongLitri = new SoundID("C6LongLitri", register: true);
-        public static readonly SoundID C7LongLitri = new SoundID("C7LongLitri", register: true);
-        public static readonly SoundID C1MediumLitri = new SoundID("C1MediumLitri", register: true);
-        public static readonly SoundID C2MediumLitri = new SoundID("C2MediumLitri", register: true);
-        public static readonly SoundID C3MediumLitri = new SoundID("C3MediumLitri", register: true);
-        public static readonly SoundID C4MediumLitri = new SoundID("C4MediumLitri", register: true);
-        public static readonly SoundID C5MediumLitri = new SoundID("C5MediumLitri", register: true);
-        public static readonly SoundID C6MediumLitri = new SoundID("C6MediumLitri", register: true);
-        public static readonly SoundID C7MediumLitri = new SoundID("C7MediumLitri", register: true);
-        public static readonly SoundID C1ShortLitri = new SoundID("C1ShortLitri", register: true);
-        public static readonly SoundID C2ShortLitri = new SoundID("C2ShortLitri", register: true);
-        public static readonly SoundID C3ShortLitri = new SoundID("C3ShortLitri", register: true);
-        public static readonly SoundID C4ShortLitri = new SoundID("C4ShortLitri", register: true);
-        public static readonly SoundID C5ShortLitri = new SoundID("C5ShortLitri", register: true);
-        public static readonly SoundID C6ShortLitri = new SoundID("C6ShortLitri", register: true);
-        public static readonly SoundID C7ShortLitri = new SoundID("C7ShortLitri", register: true);
-        public static readonly SoundID C1LongBell = new SoundID("C1LongBell", register: true);
-        public static readonly SoundID C2LongBell = new SoundID("C2LongBell", register: true);
-        public static readonly SoundID C3LongBell = new SoundID("C3LongBell", register: true);
-        public static readonly SoundID C4LongBell = new SoundID("C4LongBell", register: true);
-        public static readonly SoundID C5LongBell = new SoundID("C5LongBell", register: true);
-        public static readonly SoundID C6LongBell = new SoundID("C6LongBell", register: true);
-        public static readonly SoundID C7LongBell = new SoundID("C7LongBell", register: true);
-        public static readonly SoundID C1MediumBell = new SoundID("C1MediumBell", register: true);
-        public static readonly SoundID C2MediumBell = new SoundID("C2MediumBell", register: true);
-        public static readonly SoundID C3MediumBell = new SoundID("C3MediumBell", register: true);
-        public static readonly SoundID C4MediumBell = new SoundID("C4MediumBell", register: true);
-        public static readonly SoundID C5MediumBell = new SoundID("C5MediumBell", register: true);
-        public static readonly SoundID C6MediumBell = new SoundID("C6MediumBell", register: true);
-        public static readonly SoundID C7MediumBell = new SoundID("C7MediumBell", register: true);
-        public static readonly SoundID C1ShortBell = new SoundID("C1ShortBell", register: true);
-        public static readonly SoundID C2ShortBell = new SoundID("C2ShortBell", register: true);
-        public static readonly SoundID C3ShortBell = new SoundID("C3ShortBell", register: true);
-        public static readonly SoundID C4ShortBell = new SoundID("C4ShortBell", register: true);
-        public static readonly SoundID C5ShortBell = new SoundID("C5ShortBell", register: true);
-        public static readonly SoundID C6ShortBell = new SoundID("C6ShortBell", register: true);
-        public static readonly SoundID C7ShortBell = new SoundID("C7ShortBell", register: true);
-        public static readonly SoundID C1LongClar = new SoundID("C1LongClar", register: true);
-        public static readonly SoundID C2LongClar = new SoundID("C2LongClar", register: true);
-        public static readonly SoundID C3LongClar = new SoundID("C3LongClar", register: true);
-        public static readonly SoundID C4LongClar = new SoundID("C4LongClar", register: true);
-        public static readonly SoundID C5LongClar = new SoundID("C5LongClar", register: true);
-        public static readonly SoundID C6LongClar = new SoundID("C6LongClar", register: true);
-        public static readonly SoundID C7LongClar = new SoundID("C7LongClar", register: true);
-        public static readonly SoundID C1MediumClar = new SoundID("C1MediumClar", register: true);
-        public static readonly SoundID C2MediumClar = new SoundID("C2MediumClar", register: true);
-        public static readonly SoundID C3MediumClar = new SoundID("C3MediumClar", register: true);
-        public static readonly SoundID C4MediumClar = new SoundID("C4MediumClar", register: true);
-        public static readonly SoundID C5MediumClar = new SoundID("C5MediumClar", register: true);
-        public static readonly SoundID C6MediumClar = new SoundID("C6MediumClar", register: true);
-        public static readonly SoundID C7MediumClar = new SoundID("C7MediumClar", register: true);
-        public static readonly SoundID C1ShortClar = new SoundID("C1ShortClar", register: true);
-        public static readonly SoundID C2ShortClar = new SoundID("C2ShortClar", register: true);
-        public static readonly SoundID C3ShortClar = new SoundID("C3ShortClar", register: true);
-        public static readonly SoundID C4ShortClar = new SoundID("C4ShortClar", register: true);
-        public static readonly SoundID C5ShortClar = new SoundID("C5ShortClar", register: true);
-        public static readonly SoundID C6ShortClar = new SoundID("C6ShortClar", register: true);
-        public static readonly SoundID C7ShortClar = new SoundID("C7ShortClar", register: true);
-        public static readonly SoundID C1LongTrisaw = new SoundID("C1LongTrisaw", register: true);
-        public static readonly SoundID C2LongTrisaw = new SoundID("C2LongTrisaw", register: true);
-        public static readonly SoundID C3LongTrisaw = new SoundID("C3LongTrisaw", register: true);
-        public static readonly SoundID C4LongTrisaw = new SoundID("C4LongTrisaw", register: true);
-        public static readonly SoundID C5LongTrisaw = new SoundID("C5LongTrisaw", register: true);
-        public static readonly SoundID C6LongTrisaw = new SoundID("C6LongTrisaw", register: true);
-        public static readonly SoundID C7LongTrisaw = new SoundID("C7LongTrisaw", register: true);
-        public static readonly SoundID C1MediumTrisaw = new SoundID("C1MediumTrisaw", register: true);
-        public static readonly SoundID C2MediumTrisaw = new SoundID("C2MediumTrisaw", register: true);
-        public static readonly SoundID C3MediumTrisaw = new SoundID("C3MediumTrisaw", register: true);
-        public static readonly SoundID C4MediumTrisaw = new SoundID("C4MediumTrisaw", register: true);
-        public static readonly SoundID C5MediumTrisaw = new SoundID("C5MediumTrisaw", register: true);
-        public static readonly SoundID C6MediumTrisaw = new SoundID("C6MediumTrisaw", register: true);
-        public static readonly SoundID C7MediumTrisaw = new SoundID("C7MediumTrisaw", register: true);
-        public static readonly SoundID C1ShortTrisaw = new SoundID("C1ShortTrisaw", register: true);
-        public static readonly SoundID C2ShortTrisaw = new SoundID("C2ShortTrisaw", register: true);
-        public static readonly SoundID C3ShortTrisaw = new SoundID("C3ShortTrisaw", register: true);
-        public static readonly SoundID C4ShortTrisaw = new SoundID("C4ShortTrisaw", register: true);
-        public static readonly SoundID C5ShortTrisaw = new SoundID("C5ShortTrisaw", register: true);
-        public static readonly SoundID C6ShortTrisaw = new SoundID("C6ShortTrisaw", register: true);
-        public static readonly SoundID C7ShortTrisaw = new SoundID("C7ShortTrisaw", register: true);
     }
 }
