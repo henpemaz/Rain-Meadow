@@ -12,15 +12,15 @@ namespace RainMeadow
     internal static class StoryMenuHelpers
     {
         #region Remix
-        public static List<string> nonCampaignSlugcats = new List<string> { "Night", "MeadowOnline", "MeadowOnlineRemote" };
 
-        public static List<string> nonGameplayRemixSettings = new List<string> { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
+        // TODO: make this per-gamemode?
+        public static List<string> nonGameplayRemixSettings = new() { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
 
         internal static (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostBoolStoryRemixSettings()
         {
-            Dictionary<string, bool> configurableBools = new Dictionary<string, bool>();
-            Dictionary<string, float> configurableFloats = new Dictionary<string, float>();
-            Dictionary<string, int> configurableInts = new Dictionary<string, int>();
+            Dictionary<string, bool> configurableBools = new();
+            Dictionary<string, float> configurableFloats = new();
+            Dictionary<string, int> configurableInts = new();
 
             if (ModManager.MMF)
             {
@@ -51,14 +51,13 @@ namespace RainMeadow
                 RainMeadow.Debug(configurableBools);
                 RainMeadow.Debug(configurableInts);
                 RainMeadow.Debug(configurableFloats);
-                return (configurableBools, configurableFloats, configurableInts);
             }
+
             return (configurableBools, configurableFloats, configurableInts);
         }
 
         internal static void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
-
             Type type = typeof(MoreSlugcats.MMF);
 
             FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
@@ -76,7 +75,6 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug($"Remix Key: {field.Name} with value {boolOption._typedValue} does not match host's, setting to {hostBoolRemixSettings.Values.ElementAt(i)}");
                             boolOption._typedValue = hostBoolRemixSettings.Values.ElementAt(i);
-
                         }
                     }
                 }
@@ -89,7 +87,6 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug($"Remix Key: {field.Name} with value {floatOption._typedValue} does not match host's, setting to {hostFloatRemixSettings.Values.ElementAt(i)}");
                             floatOption._typedValue = hostFloatRemixSettings.Values.ElementAt(i);
-
                         }
                     }
                 }
@@ -103,34 +100,12 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug($"Remix Key: {field.Name} with value {intOption._typedValue} does not match host's, setting to {hostIntRemixSettings.Values.ElementAt(i)}");
                             intOption._typedValue = hostIntRemixSettings.Values.ElementAt(i);
-
                         }
                     }
                 }
             }
         }
-
-        internal static void SanitizeStoryClientSettings(StoryClientSettingsData clientSettings)
-        {
-            clientSettings.readyForWin = false;
-            clientSettings.isDead = false;
-        }
-
-        internal static void SanitizeStoryGameMode(StoryGameMode gameMode)
-        {
-            gameMode.isInGame = false;
-            gameMode.changedRegions = false;
-            gameMode.didStartCycle = false;
-            gameMode.defaultDenPos = null;
-            gameMode.ghostsTalkedTo = new();
-            gameMode.consumedItems = new();
-            gameMode.myLastDenPos = null;
-            gameMode.hasSheltered = false;
-            gameMode.region = null;
-        }
-
         #endregion
-
 
         #region StoryObjects
         internal static void RemoveExcessStoryObjects(StoryOnlineMenu storyMenu, StoryGameMode storyGameMode)
@@ -154,26 +129,26 @@ namespace RainMeadow
                     storyMenu.nextButton.RemoveSprites();
                     storyMenu.pages[0].RemoveSubObject(storyMenu.nextButton);
                 }
+
                 if (storyMenu.prevButton != null)
                 {
                     storyMenu.prevButton.RemoveSprites();
                     storyMenu.pages[0].RemoveSubObject(storyMenu.prevButton);
                 }
 
-                if ((storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p))
+                if (storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] is SlugcatSelectMenu.SlugcatPageContinue p)
                 {
                     p.regionLabel.RemoveSprites();
                     storyMenu.pages[0].RemoveSubObject(p.regionLabel);
                 }
 
-                if ((storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] is SlugcatSelectMenu.SlugcatPageNewGame pN))
+                if (storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] is SlugcatSelectMenu.SlugcatPageNewGame pN)
                 {
-                    pN.difficultyLabel.RemoveSprites();
                     pN.infoLabel.RemoveSprites();
                     storyMenu.pages[0].RemoveSubObject(pN.infoLabel);
+                    pN.difficultyLabel.RemoveSprites();
                     storyMenu.pages[0].RemoveSubObject(pN.difficultyLabel);
                 }
-
             }
         }
 
@@ -202,7 +177,6 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner && (storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] != null && storyMenu.slugcatPages[storyMenu.indexFromColor(storyGameMode.currentCampaign)] is SlugcatSelectMenu.SlugcatPage p))
             {
-
                 storyMenu.onlineDifficultyLabel = new MenuLabel(storyMenu, storyMenu.pages[0], $"{GetCurrentCampaignName(storyGameMode)}", new Vector2(storyMenu.startButton.pos.x - 100f, storyMenu.startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
                 storyMenu.onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
                 storyMenu.onlineDifficultyLabel.label.alpha = 0.5f;

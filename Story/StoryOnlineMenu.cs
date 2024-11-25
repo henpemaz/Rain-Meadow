@@ -31,11 +31,9 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
+            storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
-            storyGameMode= OnlineManager.lobby.gameMode as StoryGameMode;
-
-            StoryMenuHelpers.SanitizeStoryClientSettings(storyGameMode.storyClientData);
-            StoryMenuHelpers.SanitizeStoryGameMode(storyGameMode);
+            storyGameMode.Sanitize();
 
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
