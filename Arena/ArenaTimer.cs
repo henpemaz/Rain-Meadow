@@ -80,6 +80,8 @@ namespace RainMeadow
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
                     modeLabel.text = showMode.ToString();
+                    arena.countdownInitiatedHoldFire = true;
+
 
                 }
                 else if (arena.setupTime > 0)
