@@ -50,6 +50,7 @@ namespace RainMeadow
             On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.Update += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_Update;
             On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.TriggerBossFight += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_TriggerBossFight;
             On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.SummonScavengers += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_SummonScavengers;
+            IL.Scavenger.ctor += Scavenger_ctor_KingExtraShells;
 
             IL.RegionGate.Update += RegionGate_Update;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
@@ -725,6 +726,22 @@ namespace RainMeadow
         {
             if (isStoryMode(out _) && !(self.room.abstractRoom.GetResource()?.isOwner ?? true)) return;
             orig(self);
+        }
+
+        private void Scavenger_ctor_KingExtraShells(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchStfld<Scavenger>("armorPieces")
+                    );
+                c.EmitDelegate((int count) => isStoryMode(out _) ? Math.Max(count, OnlineManager.lobby.playerAvatars.Count * 3) : count);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
