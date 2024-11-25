@@ -67,9 +67,9 @@ namespace RainMeadow
 
         }
 
+        // TODO: refactor to use vanilla StartGame
         public void StartGame()
         {
-
             RainMeadow.DebugMe();
             if (!OnlineManager.lobby.isOwner) // I'm a client
             {
@@ -84,8 +84,6 @@ namespace RainMeadow
             }
             else //I'm the host
             {
-
-
                 RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyGameMode));
                 personaSettings.playingAs = storyGameMode.currentCampaign;
             }
@@ -93,6 +91,7 @@ namespace RainMeadow
             manager.arenaSitting = null;
             if (restartChecked)
             {
+                manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
             }
             else
