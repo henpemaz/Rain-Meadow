@@ -843,7 +843,7 @@ namespace RainMeadow
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                self.playerNameLabel.text = currentName.id.name;
+                self.playerNameLabel.text = currentName.id.name ?? "Player missing";
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
@@ -1189,6 +1189,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
@@ -1212,9 +1213,18 @@ namespace RainMeadow
 
                         foreach (var c in self.Players)
                         {
-                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC) && onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC))
                             {
-                                s.timeAlive++;
+
+                                if (onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                                {
+                                    s.timeAlive++;
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
+                                self.Players.Remove(c);
                             }
                         }
                     }
