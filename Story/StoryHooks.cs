@@ -37,8 +37,10 @@ namespace RainMeadow
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
-            new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
+            new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
+
+            new Hook(typeof(StoryGameSession).GetProperty(nameof(StoryGameSession.slugPupMaxCount)).GetGetMethod(), StoryGameSession_slugPupMaxCount);
 
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
@@ -533,6 +535,15 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private int StoryGameSession_slugPupMaxCount(Func<StoryGameSession, int> orig, StoryGameSession self)
+        {
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)  // HACK: should sync pup spawn criteria
+            {
+                return 0;
+            }
+            return orig(self);
         }
 
         private void ClientDisableUAD(ILContext il)
