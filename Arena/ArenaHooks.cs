@@ -1315,7 +1315,7 @@ namespace RainMeadow
                     (player.realizedCreature.State.alive)) ?? 0;
                 /// || player.state.alive
                 /// 
-                RainMeadow.Debug("Players still standing: " + playersStillStanding);
+                //RainMeadow.Debug("Players still standing: " + playersStillStanding);
                 if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
                 {
                     return true;
