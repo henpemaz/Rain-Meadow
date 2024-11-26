@@ -628,7 +628,10 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
-
+                if (!ModManager.MSC)
+                {
+                    self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
+                }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
@@ -849,15 +852,21 @@ namespace RainMeadow
 
                 if (!ModManager.MSC)
                 {
-                    // TODO: Test this with recent arenasitting changes
+                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+                    {
+                        var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
+                              (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
+                              (player.playerClass == SlugcatStats.Name.Red) ? 2 :
+                              (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
 
-                    var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                          (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                          (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                          (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
 
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
+                    else
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
 
-                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
                     self.subObjects.Add(self.portrait);
 
                 }

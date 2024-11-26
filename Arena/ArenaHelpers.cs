@@ -11,6 +11,24 @@ namespace RainMeadow
 
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
 
+        public static void SetProfileColor(ArenaCompetitiveGameMode arena)
+        {
+            int profileColor = 0;
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+                if (ArenaHelpers.BaseGameSlugcats().Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
+                {
+                    profileColor = UnityEngine.Random.Range(0, 4);
+                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                }
+                else
+                {
+                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                }
+            }
+        }
+
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
         public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
         {
