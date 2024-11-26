@@ -129,7 +129,7 @@ public class RainMeadowOptions : OptionInterface
                     accept = OpTextBox.Accept.Int
                 },
 
-                new OpLabel(10f, 455, "Disable Saint ascendance", bigText: false),
+                new OpLabel(10f, 455, "Sain't: Disable Saint ascendance", bigText: false),
                 new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
 
                 new OpLabel(10f, 410, "Saint ascendance duration timer. 60 == 1s", bigText: false),

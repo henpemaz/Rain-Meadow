@@ -806,16 +806,6 @@ namespace RainMeadow
                 }
 
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]);
-
-                //if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] > 3 && ModManager.MSC)
-                //{
-                //    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]];
-
-                //}
-                //else
-                //{
-                //    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name] + "1";
-                //}
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
@@ -869,16 +859,6 @@ namespace RainMeadow
                 }
 
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name]);
-
-                //if (arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name] > 3 && ModManager.MSC)
-                //{
-                //    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + "41-" + allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]];
-
-                //}
-                //else
-                //{
-                //    classButtons[holdPlayerPosition].portrait.fileName = "MultiplayerPortrait" + arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name] + "1";
-                //}
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
