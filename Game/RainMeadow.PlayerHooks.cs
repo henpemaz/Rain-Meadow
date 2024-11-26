@@ -46,6 +46,16 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
+        On.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer1;
+    }
+
+    private void Player_ClassMechanicsArtificer1(On.Player.orig_ClassMechanicsArtificer orig, Player self)
+    {
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            return;
+        }
+        orig(self);
     }
 
     private void Player_ThrowObject1(ILContext il)
