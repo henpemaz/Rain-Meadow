@@ -60,9 +60,15 @@ namespace RainMeadow
 
             public LogLevel LogLevelFilter => DisplayedLogLevel;
 
-            public string StripNumbers(string line)
+            public string Strip(string line)
             {
-                return Regex.Replace(line, @"\d+", "{#}");
+                // strip timestamps
+                if (line.Substring(8, 13) == ":RainMeadow] " && line[29] == '|' && line[36] == '|')
+                {
+                    return line.Substring(37);
+                }
+                return line;
+                //return Regex.Replace(line, @"\d+", "{#}", RegexOptions.Compiled);  // TODO: fine-tune and benchmark
             }
 
             private int repeat;
@@ -70,7 +76,7 @@ namespace RainMeadow
 
             public bool LogEventIsRepeat(string line)
             {
-                var stripped = StripNumbers(line);
+                var stripped = Strip(line);
                 int i;
                 for (i = lastLines.Count - 1; i >= 0; i--)
                     if (lastLines.ElementAt(i).Item2 == stripped)
@@ -89,7 +95,7 @@ namespace RainMeadow
                 else if (repeat > 0)
                 {
                     if (repeat > lastLines.Count)
-                        LogWriter.WriteLine($"... {(int)repeat / lastLines.Count} times");
+                        LogWriter.WriteLine($"... {repeat / lastLines.Count} times");
                     var remainder = repeat % lastLines.Count;
                     for (var j = lastLines.Count - remainder; j > 0; j--)
                         lastLines.Dequeue();
