@@ -14,21 +14,18 @@ namespace RainMeadow
         {
             public static HashSet<string> BlacklistedSources = new() { "Unity", "Unity Log" };
 
-            public CustomLogListener(string localPath, int maxLogFiles = 5, string? rootPath = null, bool delayedFlushing = false)
+            public CustomLogListener(string localPath, int maxLogFiles = 2, string? rootPath = null, bool delayedFlushing = false)
             {
                 rootPath ??= BepInEx.Paths.BepInExRootPath;
 
                 try
                 {
-                    var logFiles = Directory.GetFiles(rootPath, "meadowLog.*.log");
-                    if (logFiles.Count() > maxLogFiles)
+                    var logFiles = Directory.GetFiles(rootPath, "meadowLog.*.log");  // assume sorted from oldest to newest
+                    if (logFiles.Count() >= maxLogFiles)
                     {
-                        var i = logFiles.Count() - maxLogFiles;
-                        foreach (var path in logFiles)
+                        foreach (var path in logFiles.Take(logFiles.Count() - maxLogFiles + 1))
                         {
-                            if (i == 0) break;
                             File.Delete(path);
-                            i--;
                         }
                     }
                 }
@@ -39,10 +36,8 @@ namespace RainMeadow
 
                 DisplayedLogLevel = LogLevel.Info;
 
-                FileStream fileStream;
-
                 if (!BepInEx.Utility.TryOpenFileStream(Path.Combine(rootPath, localPath),
-                    FileMode.Create, out fileStream, share: FileShare.Read, access: FileAccess.Write))
+                    FileMode.Create, out var fileStream, share: FileShare.Read, access: FileAccess.Write))
                 {
                     Error($"couldn't open logfile {localPath}!");
                     return;
