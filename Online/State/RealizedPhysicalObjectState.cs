@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // main-ish component of PhysicalObjectEntityState
+    // main-ish component of AbstractPhysicalObjectState
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
