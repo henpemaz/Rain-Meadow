@@ -9,6 +9,7 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool didStartCycle = false;
+        public byte readyForGate = 0;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
         public string? region = null;
@@ -33,6 +34,7 @@ namespace RainMeadow
             isInGame = false;
             changedRegions = false;
             didStartCycle = false;
+            readyForGate = 0;
             defaultDenPos = null;
             myLastDenPos = null;
             region = null;
@@ -121,8 +123,38 @@ namespace RainMeadow
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
+
             // could switch this based on rules? any vs all
             storyClientData.isDead = avatars.All(a => a.abstractCreature.state is PlayerState state && (state.dead || state.permaDead));
+
+            if (lobby.isOwner && lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
+            {
+                var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+
+                if (readyForGate == 0)
+                {
+                    if (inGameClientsData.All(scs => scs.readyForGate))
+                    {
+                        // make sure they're at the same region gate
+                        var rooms = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true)))
+                            .OfType<OnlinePhysicalObject>().Select(opo => opo.apo.pos.room);
+                        if (rooms.Distinct().Count() == 1)
+                        {
+                            RainMeadow.Debug($"ready for gate!");
+                            readyForGate = 1;
+                        }
+                    }
+                }
+                else if (readyForGate > 0)
+                {
+                    // wait for all players to pass through
+                    if (inGameClientsData.All(scs => !scs.readyForGate))
+                    {
+                        RainMeadow.Debug($"all through gate!");
+                        readyForGate = 0;
+                    }
+                }
+            }
         }
 
         public override void PlayerLeftLobby(OnlinePlayer player)
@@ -186,7 +218,8 @@ namespace RainMeadow
             base.PreGameStart();
             changedRegions = false;
             hasSheltered = false;
-            storyClientData.isDead = false;
+            readyForGate = 0;
+            storyClientData.Sanitize();
         }
 
         public override void PostGameStart(RainWorldGame game)
