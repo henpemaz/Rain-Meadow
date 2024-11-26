@@ -16,6 +16,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> ChatTalkingKey;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
+    public readonly Configurable<bool> ArenaSAINOT;
 
 
 
@@ -40,6 +41,7 @@ public class RainMeadowOptions : OptionInterface
         ChatTalkingKey = config.Bind("ChatTalkingKey", KeyCode.Return);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
+        ArenaSAINOT = config.Bind("ArenaSAINOT", false);
 
 
     }
@@ -118,7 +120,7 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[5]
+            OnlineArenaSettings = new UIelement[7]
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
                 new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
@@ -126,11 +128,16 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.Int
                 },
-                new OpLabel(10f, 460, "Saint ascendance duration timer. 60 == 1s", bigText: false),
-                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 435), 160f)
+
+                new OpLabel(10f, 455, "Disable Saint ascendance", bigText: false),
+                new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
+
+                new OpLabel(10f, 410, "Saint ascendance duration timer. 60 == 1s", bigText: false),
+                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
                 {
                     accept = OpTextBox.Accept.Int
                 }
+
         };
             arenaTab.AddItems(OnlineArenaSettings);
 

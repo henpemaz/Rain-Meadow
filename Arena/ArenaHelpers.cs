@@ -160,27 +160,22 @@ namespace RainMeadow
         {
             if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
             {
-                //if (saintAscensionInArena)
-                //{
-                if (!arena.countdownInitiatedHoldFire)
+                if (!arena.sainot)
                 {
-                    if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                    if (!arena.countdownInitiatedHoldFire)
                     {
-                        player.maxGodTime = arena.arenaSaintAscendanceTimer;
-                        player.ActivateAscension();
-                    }
-                    if (player.wantToJump > 0 && player.monkAscension)
-                    {
-                        player.DeactivateAscension();
+                        if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                        {
+                            player.maxGodTime = arena.arenaSaintAscendanceTimer;
+                            player.ActivateAscension();
+                        }
+                        if (player.wantToJump > 0 && player.monkAscension)
+                        {
+                            player.DeactivateAscension();
+                        }
                     }
                 }
-                //} else
-                //{
-
-                //}
             }
-
-
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
             //    Nightcat.CheckInputForActivatingNightcat(player);

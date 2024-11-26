@@ -52,43 +52,17 @@ public partial class RainMeadow
     {
         try
         {
-            var cursor = new ILCursor(il);
+            var c = new ILCursor(il);
             var skip = il.DefineLabel();
-            cursor.GotoNext(moveType: MoveType.AfterLabel,
-
-            i => i.MatchLdsfld<ModManager>("MSC")
-
-            );
-            cursor.GotoNext(moveType: MoveType.AfterLabel,
-
-            i => i.MatchCallOrCallvirt<Creature>("get_grasps"),
-            i => i.MatchLdarg(1),
-            i => i.MatchLdelemRef(),
-            i => i.MatchLdfld<Creature.Grasp>("grabbed"),
-            i => i.MatchIsinst(typeof(Spear))
-
-            );
-            cursor.GotoNext(moveType: MoveType.AfterLabel,
-
-                i => i.MatchLdfld(typeof(Player).GetField("SlugCatClass")), // Load SlugCatClass
-                i => i.MatchLdsfld(typeof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName).GetField("Saint")), // Load Saint
-                i => i.MatchCall(typeof(ExtEnum<SlugcatStats.Name>).GetMethod("op_Equality"))// Call ExtEnum op_Equality
-                //i => i.MatchBrfalse(out skip)
-           );
-            cursor.GotoNext(moveType: MoveType.Before,
-            i => i.MatchLdsfld<ModManager>("Expedition"),
-            i => i.MatchBrfalse(out var skip)
-        );
-            // Emit the delegate here after the Expedition check
-            cursor.Emit(OpCodes.Ldarg_0); // Load the first argument (Player)
-            cursor.Emit(OpCodes.Ldarg_1); // Load the second argument (grasp, int)
-            cursor.Emit(OpCodes.Ldarg_2); // Load the third argument (eu, bool)
-            cursor.EmitDelegate((Player self, int grasp, bool eu) =>
-            {
-                isArenaMode(out var _);
-                RainMeadow.Debug("hi");
-            });
-            cursor.MarkLabel(skip);
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("SlugCatClass"),
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
         {
