@@ -761,7 +761,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Continue - host");
                     }
-                    else if (!gameMode.didStartCycle)
+                    else if (!gameMode.isInGame)
                     {
                         sender.toggled = !sender.toggled;
                         isPlayerReady = sender.toggled;
@@ -784,7 +784,7 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (gameMode.didStartCycle)
+                else if (gameMode.isInGame)
                 {
                     if (isPlayerReady)
                     {
