@@ -194,6 +194,8 @@ namespace RainMeadow
 
     public class RPCEvent : OnlineEvent, ResolvableEvent
     {
+        public static RPCEvent? currentRPCEvent;
+
         public RPCManager.RPCDefinition handler;
         public object target;
         public object[] args;
@@ -258,7 +260,9 @@ namespace RainMeadow
                 }
 
                 var nout = from.OutgoingEvents.Count;
+                currentRPCEvent = this;
                 var result = handler.method.Invoke(target, useArgs);
+                currentRPCEvent = null;
                 if (from.OutgoingEvents.Count != nout && from.OutgoingEvents.Any(e => e is GenericResult gr && gr.referencedEvent == this)) return;
 
                 if (result is GenericResult res) from.QueueEvent(res);
@@ -266,6 +270,7 @@ namespace RainMeadow
             }
             catch (Exception e)
             {
+                currentRPCEvent = null;
                 RainMeadow.Error($"Error handing RPC {handler.method.Name} {e}");
                 from.QueueEvent(new GenericResult.Error(this));
             }

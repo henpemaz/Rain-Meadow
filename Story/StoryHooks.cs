@@ -52,9 +52,10 @@ namespace RainMeadow
 
             On.GhostHunch.Update += GhostHunch_Update;
 
+            On.RainWorldGame.Win += RainWorldGame_Win;
+            On.RainWorldGame.GoToStarveScreen += RainWorldGame_GoToStarveScreen;
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
-            On.RainWorldGame.Win += RainWorldGame_Win;
 
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
@@ -570,43 +571,92 @@ namespace RainMeadow
             }
         }
 
-        private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToGhostScreen, ghostID.value);
-            }
-            else
-            {
-                orig(self, ghostID);
-            }
-        }
-
-        private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    RPCs.MovePlayersToDeathScreen();
-                }
-            }
-            else
-            {
-                orig(self);
-            }
-        }
-
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
             if (isStoryMode(out var storyGameMode))
             {
-                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    return;
+                }
             }
-            else
+
+            orig(self, malnourished);
+        }
+
+        private void RainWorldGame_GoToStarveScreen(On.RainWorldGame.orig_GoToStarveScreen orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
             {
-                orig(self, malnourished);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                    return;
+                }
             }
+
+            orig(self);
+        }
+
+        private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                    return;
+                }
+            }
+
+            orig(self, ghostID);
+        }
+
+        private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // only host can end the game
+                    //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    return;
+                }
+            }
+
+            orig(self);
         }
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)

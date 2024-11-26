@@ -7,6 +7,7 @@ namespace RainMeadow
         public void GameplayHooks()
         {
             On.ShelterDoor.Close += ShelterDoorOnClose;
+            On.ShelterDoor.DoorClosed += ShelterDoor_DoorClosed;
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
             On.Lizard.Violence += Lizard_Violence; // todo there might be more like this one that do not call base()
@@ -247,12 +248,18 @@ namespace RainMeadow
 
             if (self.IsClosing)
             {
-                if (storyGameMode != null)
+                if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.hasSheltered = true;
                 }
             }
+        }
+
+        private void ShelterDoor_DoorClosed(On.ShelterDoor.orig_DoorClosed orig, ShelterDoor self)
+        {
+            if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
+            orig(self);
         }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
