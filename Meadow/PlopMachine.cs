@@ -216,7 +216,7 @@ namespace RainMeadow
                 WetLoop.gameObject.AddComponent<AudioChorusFilter>();
                 WetLoop.gameObject.GetComponent<AudioChorusFilter>().depth = 0.4f;
                 WetLoop.gameObject.GetComponent<AudioChorusFilter>().dryMix = 0.6f;
-                WetLoop.gameObject.GetComponent<AudioChorusFilter>().delay = 12f;
+                WetLoop.gameObject.GetComponent<AudioChorusFilter>().delay = 7f;
                 WetLoop.gameObject.GetComponent<AudioChorusFilter>().rate = 1.34f;
                 WetLoop.gameObject.GetComponent<AudioChorusFilter>().wetMix1 = 0.6f;
                 WetLoop.gameObject.GetComponent<AudioChorusFilter>().wetMix2 = 0.6f;
@@ -443,7 +443,7 @@ namespace RainMeadow
                     
                     string acronym = (CurrentRegion == null) ? "sl" : CurrentRegion.ToUpper();
                     bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out MeadowMusic.VibeZone[] newthings);
-                    Wavetype = (diditwork ? "Trisaw" : newthings[0].sampleUsed) switch
+                    Wavetype = (diditwork ? newthings[0].sampleUsed : "Trisaw") switch
                     {
 
                         "Trisaw" => Wavetype.smoothsquareiwouldeatmyarmforthishoe,
@@ -494,7 +494,7 @@ namespace RainMeadow
                     int samplestorender = 8820; //0.2 second a tick
                     //RainMeadow.Debug("Rendering " + ploprendered + "  " + (ploprendered + samplestorender));
                     //RainMeadow.Debug(ploprendered + "    " + plopattackmonosamples + "   " + ploptotallength + "   " + TrackClipData.Length + "   " + TotalWetSamples);
-                    Wavetype type = Wavetype.smoothsquareiwouldeatmyarmforthishoe;
+                    Wavetype type = this.Wavetype;
                     
                     if (samplestorender + (ploprendered * 2) > ploptotallength) 
                     { 
@@ -540,14 +540,17 @@ namespace RainMeadow
                             case Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck:
                                 TrackClipData[i - (ploprendered * 2)] += Mathf.Asin(Mathf.Cos(iPhase)) * iValue;
                                 break;
-                            case Wavetype.square: //i'll make these formulas in celebration
-                                TrackClipData[i - (ploprendered * 2)] += ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue)*0.75f;
-                                break;
+                            case Wavetype.square: 
+                                TrackClipData[i - (ploprendered * 2)] += ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue) * 0.75f;
+                                break; //i make these formulas in celebration
                             case Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude:
                                 //TrackClipData[i - (ploprendered * 2)] += ((2*Mathf.Atan(Mathf.Tan(iPhase/2f)))/Mathf.PI) * iValue * 0.8f;
                                 //TrackClipData[i - (ploprendered * 2)] += sum of ((2/(n*mathf.pi)) * Mathf.Sin(iPhase*n))
-                                TrackClipData[i - (ploprendered * 2)] += (Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2)/2f +  Mathf.Sin(iPhase * 3)/3f) * (2 / (Mathf.PI)) * iValue;
+                                TrackClipData[i - (ploprendered * 2)] += (Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue;
                                 //TrackClipData[i - (ploprendered * 2)] += (((ii * Frequency / 44100f) - Mathf.Floor(ii * Frequency / 44100f)) * 2f - 1f) * iValue;
+                                break;
+                            case Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest:
+                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue; //Todo :D Make something cool
                                 break;
                             default:
                                 TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue;
@@ -689,7 +692,7 @@ namespace RainMeadow
                 }
             }
         }
-        
+
         private void SoundObject_Destroy(On.VirtualMicrophone.SoundObject.orig_Destroy orig, VirtualMicrophone.SoundObject self)
         {
             //just straight up kill that guy immediatly     //Debug("Hi");
@@ -1590,6 +1593,10 @@ namespace RainMeadow
                     tracks[i] = track; //Hi henp is there an easier way to modify this list shit?
                     if (step != null && step.Value.velocity != 0)
                     {
+                        if (step.Value.chance != 1f && step.Value.chance < (UnityEngine.Random.Range(0f, 1f)))
+                        {
+                            continue;
+                        }
                         float trackvol = track.track switch
                         {
                             0 => Mathf.Clamp01((plopMachine.currentagora * 0.4f - 0.5f)),
@@ -1609,25 +1616,23 @@ namespace RainMeadow
             public static void StartthefuckingWaitDicthehe()
             {
                 Fill[]? fuck = new Fill[2];
-                fuck[0] = new Fill(1f, "1/8", 7);
-                fuck[1] = new Fill(0.4f, "1/8", 1, 0.6f);
+                fuck[0] = new Fill(1f, "1/4", 3);
+                fuck[1] = new Fill(0.4f, "1/4", 1, 0.6f);
                 Track kicks = new Track(fuck, Kick, 0);
 
                 Fill[]? fuck2 = new Fill[2];
                 fuck2[0] = new Fill(0f, "1/2", 1);
-                fuck2[1] = new Fill(1f, "1/2", 1, 0.6f);
+                fuck2[1] = new Fill(1f, "1/2", 1);
                 Track snares = new Track(fuck2, Snare, 1);
 
                 Fill[]? fuck3 = new Fill[2];
-                fuck3[0] = new Fill(0.2f, "1/8T", 1);
-                fuck3[1] = new Fill(0.4f, "1/8T", 1, 0.6f);
+                fuck3[0] = new Fill(0.2f, "1/8", 1);
+                fuck3[1] = new Fill(0.4f, "1/8", 1, 0.8f);
                 Track hats = new Track(fuck3, HiHat, 2);
-
 
                 tracks.Add(kicks);
                 tracks.Add(hats);
                 tracks.Add(snares);
-                //TESTING this whole thing, probably is going to be remade, somehow?
             }
 
         }
@@ -1728,18 +1733,12 @@ namespace RainMeadow
             ThanatosSlayGirl();
             //WetData.Update();
 
-
-            if (ol2)
+            if (Input.GetKey("1") && !ol2)
             {
-                RainMeadow.Debug("Haha");
-                ol2 = false;
-                for (int i = 1; i < 9; i++) 
-                {
-                    RainMeadow.Debug(i + "  " + ((i / 2) - (false ? ((i + 1) % 2) : 1)));
-                    RainMeadow.Debug(i + "  " + ((i / 2) - (true ? ((i + 1) % 2) : 1)));
-                }
+                RainMeadow.Debug("Manually fading out song");
+                self.manager.musicPlayer.song.FadeOut(30f);
             }
-
+            ol2 = Input.GetKey("1");
 
 
             if (Input.GetKey("e") && !ol1)
