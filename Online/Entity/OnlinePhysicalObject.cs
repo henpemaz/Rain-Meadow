@@ -61,10 +61,10 @@ namespace RainMeadow
                     SaveExtras(serializedObject.Substring(index + 4));
                 }
 
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
             }
 
-            protected virtual string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            protected virtual string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}",
                     new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
@@ -72,7 +72,7 @@ namespace RainMeadow
                     initialState.pos.SaveToString());
             }
 
-            public virtual string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            public virtual string MakeSerializedObject(AbstractPhysicalObjectState initialState)
             {
                 if (string.IsNullOrEmpty(extraData))
                 {
@@ -86,7 +86,7 @@ namespace RainMeadow
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
             {
-                return new OnlinePhysicalObject(this, inResource, (PhysicalObjectEntityState)initialState);
+                return new OnlinePhysicalObject(this, inResource, (AbstractPhysicalObjectState)initialState);
             }
         }
 
@@ -171,7 +171,7 @@ namespace RainMeadow
             }
         }
 
-        protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
 
@@ -193,7 +193,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, PhysicalObjectEntityState initialState) : base(entityDefinition, inResource, initialState)
+        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {
             this.apo = ApoFromDef(entityDefinition, inResource, initialState);
             realized = initialState.realized;
@@ -223,7 +223,7 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            return new PhysicalObjectEntityState(this, inResource, tick);
+            return new AbstractPhysicalObjectState(this, inResource, tick);
         }
 
         protected void AllMoving(bool set)
@@ -242,7 +242,7 @@ namespace RainMeadow
         protected override void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
             // on joinimpl we've just read initialstate as well so some stuff is already set
-            var poState = initialState as PhysicalObjectEntityState;
+            var poState = initialState as AbstractPhysicalObjectState;
             var topos = poState.pos;
 
             RainMeadow.Debug($"{this} joining {inResource} at {poState.pos}");

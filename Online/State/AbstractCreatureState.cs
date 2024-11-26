@@ -1,6 +1,6 @@
 namespace RainMeadow
 {
-    public class AbstractCreatureState : PhysicalObjectEntityState
+    public class AbstractCreatureState : AbstractPhysicalObjectState
     {
         [OnlineField(polymorphic = true)]
         public CreatureStateState creatureStateState;
