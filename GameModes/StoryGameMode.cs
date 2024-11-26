@@ -9,6 +9,7 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool didStartCycle = false;
+        public bool readyForWin = false;
         public byte readyForGate = 0;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
@@ -34,6 +35,7 @@ namespace RainMeadow
             isInGame = false;
             changedRegions = false;
             didStartCycle = false;
+            readyForWin = false;
             readyForGate = 0;
             defaultDenPos = null;
             myLastDenPos = null;
@@ -131,6 +133,12 @@ namespace RainMeadow
             {
                 var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
 
+                if (!readyForWin && inGameClientsData.Any(scs => scs.readyForWin) && inGameClientsData.All(scs => scs.readyForWin || scs.isDead))
+                {
+                    RainMeadow.Debug("ready for win!");
+                    readyForWin = true;
+                }
+
                 if (readyForGate == 0)
                 {
                     if (inGameClientsData.All(scs => scs.readyForGate))
@@ -218,6 +226,7 @@ namespace RainMeadow
             base.PreGameStart();
             changedRegions = false;
             hasSheltered = false;
+            readyForWin = false;
             readyForGate = 0;
             storyClientData.Sanitize();
         }

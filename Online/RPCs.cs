@@ -101,7 +101,6 @@ namespace RainMeadow
             (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame).cameras[0].hud.karmaMeter.reinforceAnimation = 0;
         }
 
-
         [RPCMethod]
         public static void MovePlayersToDeathScreen()
         {

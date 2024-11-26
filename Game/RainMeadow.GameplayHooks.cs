@@ -230,24 +230,10 @@ namespace RainMeadow
                 return;
             }
 
-            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
-            var storyClientSettings = storyGameMode?.storyClientData;
-            if (storyGameMode != null)
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !self.Broken)
             {
-                storyClientSettings.readyForWin = true;
-
-                var anyNotReady = false;
-                foreach (var cs in OnlineManager.lobby.clientSettings.Values)
-                {
-                    var scs = cs.GetData<StoryClientSettingsData>();
-                    RainMeadow.Debug($"player {cs.owner} inGame:{cs.inGame} isDead:{scs.isDead} readyForWin:{scs.readyForWin}");
-                    anyNotReady |= cs.inGame && !scs.isDead && !scs.readyForWin;
-                }
-
-                if (anyNotReady)
-                {
-                    return;
-                }
+                storyGameMode.storyClientData.readyForWin = true;
+                if (!storyGameMode.readyForWin) return;
             }
             else
             {
