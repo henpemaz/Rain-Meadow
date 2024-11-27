@@ -8,22 +8,20 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using UnityEngine;
-
+using System.Linq;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
     {
-        private ArenaCompetitiveGameMode arena => (ArenaCompetitiveGameMode)OnlineManager.lobby.gameMode;
+        private ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
 
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
-        //private OpTinyColorPicker bodyColorPicker;
-        //private OpTinyColorPicker eyeColorPicker;
-        //public UIelementWrapper bodyColor;
-        //public UIelementWrapper eyeColor;
         public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
+        public MenuLabel displayCurrentGameMode;
+
         private SimplerSymbolButton viewNextPlayer;
         private SimplerSymbolButton viewPrevPlayer;
 
@@ -71,7 +69,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             //SetupCharacterCustomization();
             initiatedStartGameForClient = false;
-
+            arena.currentGameMode = Competitive.CompetitiveMode.value;
         }
 
 
@@ -136,10 +134,8 @@ namespace RainMeadow
             RemoveExcessArenaObjects();
 
             this.currentGameType = this.nextGameType = ArenaSetup.GameTypeID.Competitive;
-            this.nextButton.inactive = true;
-            this.nextButton.signalText = "BLACKHOLE";
-            this.prevButton.inactive = true;
-            this.prevButton.signalText = "BLACKHOLE";
+            this.nextButton.signalText = "NEXTONLINEGAME";
+            this.prevButton.signalText = "PREVONLINEGAME";
 
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
@@ -180,6 +176,11 @@ namespace RainMeadow
             // Ready up label
             this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(meUsernameButton.pos.x + 30f, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
             this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
+
+            this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode: {arena.currentGameMode}"), new Vector2(this.meUsernameButton.pos.x, meUsernameButton.pos.y + 200f), new Vector2(10f, 10f), true);
+            this.pages[0].subObjects.Add(displayCurrentGameMode);
+
+
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -289,6 +290,21 @@ namespace RainMeadow
 
             ArenaHelpers.SetProfileColor(arena);
             arena.returnToLobby = false;
+
+            //
+
+            //
+            if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
+            {
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
+                RainMeadow.Debug("Playing GameMode: " + arena.onlineArenaGameMode);
+            }
+            else
+            {
+                RainMeadow.Error("Could not find gamemode link to current game mode! Setting to Competitive as a fallback");
+
+            }
+            arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
         }
 
         private void StartGame()
@@ -360,9 +376,19 @@ namespace RainMeadow
         {
             base.Update();
 
+            RainMeadow.Debug(arena.currentGameMode);
+
+
+
             if (this.totalClientsReadiedUpOnPage != null)
             {
                 UpdateReadyUpLabel();
+            }
+
+            if (this.displayCurrentGameMode != null)
+            {
+                UpdateGameModeLabel();
+
             }
 
             if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
@@ -494,6 +520,21 @@ namespace RainMeadow
             {
                 infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
+
+            if (message == "NEXTONLINEGAME")
+            {
+                var gameModesList = arena.registeredGameModes.ToList();
+
+                // Find the current game mode entry
+                var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+
+                // Get the next mode in the list, or wrap around to the first mode if at the end
+                var nextModeIndex = (currentModeIndex + 1) % gameModesList.Count;
+
+                // Update the current game mode
+                arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
+                arena.currentGameMode = gameModesList[nextModeIndex].Value;
+            }
         }
 
 
@@ -608,7 +649,7 @@ namespace RainMeadow
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
 
-               
+
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
                 arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
 
@@ -753,7 +794,11 @@ namespace RainMeadow
             this.totalClientsReadiedUpOnPage.text = $"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}";
 
         }
+        private void UpdateGameModeLabel()
+        {
+            this.displayCurrentGameMode.text = $"Current Mode: {arena.currentGameMode}";
 
+        }
 
         private void HandleLobbyProfileOverflow()
         {
@@ -858,7 +903,7 @@ namespace RainMeadow
                     };
                 }
 
-                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition -1].id.name]);
+                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try

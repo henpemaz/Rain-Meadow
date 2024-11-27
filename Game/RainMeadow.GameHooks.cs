@@ -443,7 +443,7 @@ namespace RainMeadow
         {
             orig(self, player);
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaOnlineGameMode)
             {
                 return;
             }

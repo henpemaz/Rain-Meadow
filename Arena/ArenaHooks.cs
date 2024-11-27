@@ -10,12 +10,32 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-        public static bool isArenaMode(out ArenaCompetitiveGameMode gameMode)
+        public static bool isArenaMode(out ArenaOnlineGameMode gameMode)
         {
             gameMode = null;
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode arena)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena)
             {
                 gameMode = arena;
+                return true;
+            }
+            return false;
+        }
+
+        //public static bool isArenaOnslaughtMode(ArenaOnlineGameMode arena, out Onslaught onslaught)
+        //{
+        //    onslaught = null;
+        //    if (arena.currentGameMode == Onslaught.OnslaughtMode.value)
+        //    {
+        //        onslaught = (arena.onlineArenaGameMode as Onslaught);
+        //        return true;
+        //    }
+        //    return false;
+        //}
+
+        public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
+        {
+            if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
+            {
                 return true;
             }
             return false;
@@ -82,12 +102,35 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; ;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; 
 
-
+            On.ArenaSetup.GameTypeSetup.InitAsGameType += GameTypeSetup_InitAsGameType;
+            On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
         }
 
+        private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
+        {
+            orig(self, gameType);
+            if (isArenaMode(out var arena) && !arena.registeredNewGameModes)
+            {
+                arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+                arena.registeredNewGameModes = true;
+            }
+        }
 
+        private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
+        {
+            orig();
+            if (isArenaMode(out var arena))
+            {
+                foreach (var kvp in arena.registeredGameModes)
+                {
+                    ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(kvp.Value);
+                }
+
+            }
+
+        }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {
             if (isArenaMode(out var _))
@@ -743,6 +786,7 @@ namespace RainMeadow
 
                             if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
                             {
+                                arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
 
                                 if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
                                 {
@@ -1013,6 +1057,8 @@ namespace RainMeadow
                 self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
                 self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
                 self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
+
+                arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, orig, self, session);
 
             }
             else
@@ -1315,18 +1361,8 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                int playersStillStanding = self.gameSession.Players?.Count(player =>
-                    player.realizedCreature != null &&
-                    (player.realizedCreature.State.alive)) ?? 0;
-                /// || player.state.alive
-                /// 
-                //RainMeadow.Debug("Players still standing: " + playersStillStanding);
-                if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
-                {
-                    return true;
-                }
 
-                orig(self);
+                return arena.onlineArenaGameMode.IsExitsOpen(arena, orig, self);
             }
 
             return orig(self);

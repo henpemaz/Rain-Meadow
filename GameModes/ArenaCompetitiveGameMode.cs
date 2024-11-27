@@ -1,15 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace RainMeadow
 {
-    public class ArenaCompetitiveGameMode : OnlineGameMode
+    public class ArenaOnlineGameMode : OnlineGameMode
     {
+
+        public InternalArenaGameMode onlineArenaGameMode;
+        public string currentGameMode;
+        public Dictionary<InternalArenaGameMode, string> registeredGameModes;
+
+        public bool registeredNewGameModes = false;
+
         public bool isInGame = false;
         public int playerLeftGame = 0;
         public int clientsAreReadiedUp = 0;
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
+
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -35,12 +46,14 @@ namespace RainMeadow
 
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
-        public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
+        public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
+            registeredGameModes = new Dictionary<InternalArenaGameMode, string>();
+
         }
 
         public void ResetGameTimer()
@@ -126,5 +139,13 @@ namespace RainMeadow
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
         }
+
+        public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
+        {
+            return onlineArenaGameMode.SpawnBatflies(self, spawnRoom);
+
+
+        }
+
     }
 }
