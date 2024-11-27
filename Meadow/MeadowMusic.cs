@@ -30,10 +30,8 @@ namespace RainMeadow
             On.Music.MusicPiece.StopAndDestroy += MusicPiece_StopAndDestroy;
         }
 
-        //Todo: When you enter the game without any music on, this breaks. Fix that
         private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
         {
-            //oh this fella fails if there's no song playing currently, like if there's no "me" playing in the character select
             if (self.musicContext != null)
             {
                 if (currentProcess.ID == ProcessManager.ProcessID.Game)
@@ -73,6 +71,8 @@ namespace RainMeadow
             // replace vanilla handling, ours is better
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
+                if (self.musicPlayer == null || self.musicPlayer.gameObj == null || self.musicPlayer.song == null) return; //don't really need to track it if you don't have a song.
+
                 if (self.musicPlayer.manager.currentMainLoop == null || self.musicPlayer.manager.currentMainLoop.ID != ProcessManager.ProcessID.Game)
                 {
                     self.recommendedDroneVolume = 0f;
@@ -108,6 +108,12 @@ namespace RainMeadow
                     self.ghostMode = 0f;
                 }
 
+                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
+                {
+                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                }//like here, yeah?
 
                 if (self.ghostMode == 0f && self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled)
                 {
@@ -241,13 +247,13 @@ namespace RainMeadow
         static float time = 0f;
         static bool timerStopped = true;
 
-        static VibeZone? activeZone = null;
+        static VibeZone activeZone = new VibeZone();
         public static bool AllowPlopping;
 
         public static float? vibeIntensity = null;
         public static float? vibePan = null;
         static bool UpdateIntensity;
-        static bool UpdateIntensityTarget;
+        static bool IDontWantToGoToZero;
 
         static bool ivebeenpatientlywaiting = false;
 
@@ -270,7 +276,6 @@ namespace RainMeadow
             public float minradius;
             public string sampleUsed;
         }
-        static VibeZone az = new VibeZone();
         private static void CheckFiles()
         {
             if (!filesChecked)
@@ -393,32 +398,47 @@ namespace RainMeadow
                     joinTimer = null;
                 }
             }
-            //Todo: Update when this is called 
-            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null)
+            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null && activeZonesDict != null && closestVibe != -1)
             {
-                //i have NO idea how it'll fuck up when the region has not got a vibezone but idccccccccccccccc. oh wait it wont cuz it won't activate updateintensity cuz it'll never go close to one.
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
                 //RainMeadow.Debug("Has Calculated Pan");
                 Vector2 VibeRoomCenterPos = self.world.RoomToWorldPos(self.world.GetAbstractRoom(closestVibe).size.ToVector2() * 10f, closestVibe);
                 Vector2 PlayerPos = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
                 //RainMeadow.Debug("Has made vectors to viberoom and player");
-                float vibeIntensityTarget = 
-                             Mathf.Pow(Mathf.InverseLerp(az.radius, az.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
-                           * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))                 //* Custom.LerpMap((float)DegreesOfAwayness, 0f, 3f, 1f, 0.15f) //* Custom.LerpMap((float)DegreesOfAwayness, 1f, 3f, 0.6f, 0.15f)
-                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f); //az.room also works   <--- DOES NOT ??? <--- YES IT DOES??? we got overloads on that bitch
+                float vibeIntensityTarget =
+                             Mathf.Pow(Mathf.InverseLerp(activeZone.radius, activeZone.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
+                           * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))
+                           * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f) //activeZone.room also works   <--- DOES NOT ??? <--- YES IT DOES??? we got overloads on that bitch
+                           * (IDontWantToGoToZero ? 1f : 0f);
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? UpdateIntensityTarget?1f:0f : vibeIntensity.Value, vibeIntensityTarget, 0, dt * 0.1f * (UpdateIntensityTarget?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
+                //reminder set vibeintensity to null on occasions where you go to menu or some shit
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? IDontWantToGoToZero?vibeIntensityTarget: 0f : vibeIntensity.Value, vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
-                AllowPlopping = vibeIntensity.Value >= 0.2f;
+                AllowPlopping = vibeIntensity.Value >= 0.05f;
                 if (musicPlayer != null && musicPlayer.song != null)
                 {
-                    if ((float)vibeIntensity > 0.9f) { musicPlayer.song.baseVolume = 0f; }
-                    else { musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2.5f) * 0.3f; }
-                }           
-                if (UpdateIntensityTarget == false && vibeIntensity < 0.001f)
+                    if ((float)vibeIntensity > 0.9f) 
+                    { 
+                        musicPlayer.song.baseVolume = 0f; 
+                    }
+                    else 
+                    { 
+                        musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2.5f) * 0.3f; 
+                    }
+                }
+                if (vibeIntensity < 0.001f && vibeIntensityTarget == 0f)
                 {
+                    RainMeadow.Debug("vibe intensity locked to the zero... :(");
                     UpdateIntensity = false;
                     vibeIntensity = 0f;
+                    if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = 0.3f;
+                }
+                else if (vibeIntensity > 0.999f && vibeIntensityTarget == 1f)
+                {
+                    RainMeadow.Debug("VIBE INTENSITY LOCKED TO THE MEGA!!! :D");
+                    UpdateIntensity = false;
+                    vibeIntensity = 1f;
+                    if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = 0f;
                 }
                 //RainMeadow.Debug("Has assigned vibeintensity, plopping, and maybe musicvolume.");
             }
@@ -463,14 +483,32 @@ namespace RainMeadow
                 }
             }
             inGroupbuffer = inGroup;
-
-            //Todo: Create latches for when dj doesn't provide a song 
+            bool ImFollowingMyOrder = true;
             if (musicPlayer != null && musicPlayer.song == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
             {
-                //that smalll moment when host has no song after having switched is a bit akward (posts like one million error messages in the other place
+                if (ivebeenpatientlywaiting)
+                {
+                    //intilatch for when dj doesn't provide a song or is ending theirs
+                    if (OnlineManager.lobby.PlayerFromId(hostId) is OnlinePlayer other
+                    && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
+                    && otherOcId.FindEntity() is OnlineCreature oc)
+                    {
+                        MeadowMusicData myDJsdata = oc.GetData<MeadowMusicData>();
+
+                        if (myDJsdata.providedSong == "" || myDJsdata.providedSong == null || myDJsdata.providedSong == songtoavoid)
+                        {
+                            ImFollowingMyOrder = false;
+                        }
+                        else
+                        {
+                            songtoavoid = "";
+                        }
+                    }
+                }
+                //Hmmm, we could make it so that if if the group host says it starts at a time *in the future*, then everyone will latch to play it at that time.
                 musicdata.providedSong = null;
                 timerStopped = false;
-                if (time > waitSecs)
+                if (time > waitSecs && ImFollowingMyOrder)
                 {
                     RainMeadow.Debug("Tryna find a song to play");
                     if (ambienceSongArray != null)
@@ -549,6 +587,8 @@ namespace RainMeadow
                 var musicdata = creature.GetData<MeadowMusicData>();
 
                 musicPlayer.song = song;
+                //if (!UpdateIntensity && vibeIntensity != null) musicPlayer.song.baseVolume = Mathf.Lerp(0.3f, 0f, vibeIntensity.Value); else musicPlayer.song.baseVolume = 0.3f;
+                //song.StartPlaying();
                 musicdata.providedSong = songtobesang;
                 musicdata.startedPlayingAt = LobbyTime();
                 RainMeadow.Debug("my song is now " + musicdata.providedSong);
@@ -561,11 +601,11 @@ namespace RainMeadow
                     RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + timetobestarted.Value + " which amounts to " + calculatedthing);
                     RainMeadow.Debug("and thus it's now at " + musicPlayer.song.subTracks[0].source.time + "... is this no longer 0? Yay!!!");
                     if (musicPlayer.song.subTracks[0].source.time == 0f) RainMeadow.Error("Oh wait it is zero, fuck");
-                    ivebeenpatientlywaiting = true;
+                    ivebeenpatientlywaiting = true; //for the next track, now that we're synced up
                 }
             }
         }
-        
+        static string songtoavoid = "";
         private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, float? DJstartedat)
         {
             loadingsong = true;
@@ -608,7 +648,7 @@ namespace RainMeadow
             MusicPiece.SubTrack sub = song.subTracks[0];
             sub.isStreamed = true;
 
-            if (DJstartedat != null)
+            if (DJstartedat != null) //Here the todo
             {
                 float hostsonglength = clipclip.length;
                 if (hostsonglength != 0)
@@ -623,6 +663,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Meadow Music: I Have the song, and i've figured since my DJ is soon done, i'll wait to play the next song from the start");
                         ivebeenpatientlywaiting = true;
+                        songtoavoid = providedsong;
                         loadingsong = false;
                         return null;
                     }
@@ -643,11 +684,12 @@ namespace RainMeadow
                     song.fadeInTime = 120f;
                 }
             }
+            //todo find out why this wacks up when you're at multiplayer and then we'll be Good to go (clueless: :)) good to go  for everyone else to tear me into shreads :D ) 
 
             sub.source.clip = clipclip;
 			sub.source.clip.LoadAudioData();
 			sub.readyToPlay = true;
-            sub.StartPlaying();
+            sub.StartPlaying(); 
             loadingsong = false;
             return song;
         }
@@ -902,7 +944,6 @@ namespace RainMeadow
                 NewRoom(room);
             }
         }
-        //Todo: Update what this actually switches around
         public static void NewRoom(Room room)
         {
             RainMeadow.Debug("New room is being checked"); 
@@ -928,30 +969,25 @@ namespace RainMeadow
                     var dist = (v2 - v1).magnitude;
                     if (dist < minDist)
                     {
+                        //the closest vibezone will be the one we evaluate our distance from
                         minDist = dist;
                         closestVibe = rooms[i];
                     }
                 }
                 //and just grab its corresponding vibezone from the dict
-                az = activeZonesDict[closestVibe];
-                if (minDist > az.radius)
+                activeZone = activeZonesDict[closestVibe];
+                if (minDist > activeZone.radius)
                 {
-                    //RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, Disabled plopping, stopped updating intensity, and musicvolume set to max... ");
-                    MusicPlayer? musicPlayer = room.game.manager.musicPlayer;
-                    //musicPlayer.song.FadeOut(40f);
-                    //activeZone = null;
+                    RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, set updatingtarget to false, and musicvolume set to max... ");
                     if (vibeIntensity == null) vibeIntensity = 0f;
-                    //AllowPlopping = false;
-                    UpdateIntensityTarget = false;
-                    //vibePan = null;
+                    if (vibeIntensity == 1f) UpdateIntensity = true; 
+                    IDontWantToGoToZero = false;
                 }
-                else if (minDist < az.radius)
+                else if (minDist < activeZone.radius)
                 {
-                    RainMeadow.Debug("Meadow Music: Started updating intensity and allowing plopping... ");
-                    UpdateIntensity = true;
-                    UpdateIntensityTarget = true;
-                    AllowPlopping = true;
-                    //activeZone = az;
+                    RainMeadow.Debug("Meadow Music: Inside of vibezone radius, started updating intensity...");
+                    UpdateIntensity = true; //we're jumpstarting it for *every* room we traverse, if it's continuously
+                    IDontWantToGoToZero = true;
                 }
             }
             

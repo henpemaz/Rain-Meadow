@@ -58,7 +58,7 @@ namespace RainMeadow
         {
             if(avatars.Count > 0 && avatars[0].roomSession == inResource)
             {
-                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //for some reason it's calling enterresource instead of this for a slugcat entering the room next to you
             }
         }
 

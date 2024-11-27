@@ -19,11 +19,6 @@ namespace RainMeadow
             On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
         }
 
-        private void SoundLoader_Update(On.SoundLoader.orig_Update orig, SoundLoader self)
-        {
-            orig.Invoke(self);
-            WetData.Update();
-        }
 
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
         private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
@@ -250,8 +245,8 @@ namespace RainMeadow
             
             transposition += extratranspose; //If to the power is smart(can take negative numbers), this can work
 
-            float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(360, 1001) / 1000f;
-            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-120, 120) / 1000f;
+            float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(0.3f, 1f);
+            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-0.12f, 0.12f);
 
             WetData.Plop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
         }
@@ -460,6 +455,7 @@ namespace RainMeadow
                     this.Frequency = 440f * Mathf.Pow(2, octave - 5) * Mathf.Pow(2, (float)(semitone + 3) / (float)12);
 
                     //These times could dictated by a perlin noise 
+                    //Todo: let regions customize this.
                     //Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
                     float attacktime = 0.004f; 
                     float releasetime = length switch { "L" => 5.98f , "M" => 2.98f , "S" => 0.98f, _ => 3.98f }; 
@@ -468,7 +464,7 @@ namespace RainMeadow
                     ploptotallength =  2 * (plopattackmonosamples + plopreleasemonosamples);
                     ploprendered = 0;
 
-                    this.volume = volume / 10f * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
+                    this.volume = volume * 0.2f * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
                     this.pan = pan + PlopInititationPan; 
 
                     lan = Mathf.Pow(Mathf.Clamp01(1f - this.pan), 2);
@@ -600,7 +596,7 @@ namespace RainMeadow
                 if (MeadowMusic.vibeIntensity != null)// && MeadowMusic.vibeIntensity.Value != 0f) 
                 {
                     PlopInititationVelocity = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f);
-                    PlopInititationPan = (MeadowMusic.vibePan == null || MeadowMusic.vibeIntensity == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
+                    PlopInititationPan = (MeadowMusic.vibePan == null || MeadowMusic.vibeIntensity == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow((1f - MeadowMusic.vibeIntensity.Value) * 0.7f + 0.125f, 1.65f);
                 }
                 else
                 {
@@ -1752,6 +1748,13 @@ namespace RainMeadow
             }
             ol3 = Input.GetKey("q");
         }
+
+        private void SoundLoader_Update(On.SoundLoader.orig_Update orig, SoundLoader self)
+        {
+            orig.Invoke(self);
+            WetData.Update();
+        }
+
         public static readonly SoundID twentysecsilence = new SoundID("twentysecsilence", register: true);
         public static readonly SoundID Kick = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
