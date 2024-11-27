@@ -32,6 +32,8 @@ namespace RainMeadow
 
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
+            On.Tracker.CreatureNoticed += Tracker_CreatureNoticed; // don't notice other creatures
+
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
@@ -310,6 +312,12 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private Tracker.CreatureRepresentation Tracker_CreatureNoticed(On.Tracker.orig_CreatureNoticed orig, Tracker self, AbstractCreature crit)
+        {
+            if (!self.AI.creature.IsLocal()) return null;
+            return orig(self, crit);
         }
     }
 }
