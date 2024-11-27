@@ -33,8 +33,6 @@ namespace RainMeadow
             [OnlineField]
             public int cycleNumber;
             [OnlineField]
-            public bool didStartCycle;
-            [OnlineField]
             public bool reinforcedKarma;
             [OnlineField]
             public int karmaCap;
@@ -75,9 +73,8 @@ namespace RainMeadow
 
                 ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
-                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
-                didStartCycle = storyGameMode.didStartCycle;
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = storyGameMode.readyForGate;
                 if (currentGameState?.session is StoryGameSession storySession)
@@ -138,7 +135,6 @@ namespace RainMeadow
 
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
-                (lobby.gameMode as StoryGameMode).didStartCycle = didStartCycle;
                 (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
                 (lobby.gameMode as StoryGameMode).readyForGate = readyForGate;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;

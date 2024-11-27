@@ -8,7 +8,6 @@ namespace RainMeadow
         // these are synced by StoryLobbyData
         public bool isInGame = false;
         public bool changedRegions = false;
-        public bool didStartCycle = false;
         public bool readyForWin = false;
         public byte readyForGate = 0;
         public bool friendlyFire = false; // false until we manage it via UI
@@ -34,7 +33,6 @@ namespace RainMeadow
             hasSheltered = false;
             isInGame = false;
             changedRegions = false;
-            didStartCycle = false;
             readyForWin = false;
             readyForGate = 0;
             defaultDenPos = null;
@@ -234,13 +232,11 @@ namespace RainMeadow
         public override void PostGameStart(RainWorldGame game)
         {
             base.PostGameStart(game);
-            didStartCycle = true;
         }
 
         public override void GameShutDown(RainWorldGame game)
         {
             base.GameShutDown(game);
-            didStartCycle = false;
         }
     }
 }
