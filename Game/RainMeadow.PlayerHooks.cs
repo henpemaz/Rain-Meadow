@@ -50,7 +50,7 @@ public partial class RainMeadow
     }
 
 
-
+    // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
     private void Player_ThrowObject1(ILContext il)
     {
         try
