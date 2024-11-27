@@ -57,36 +57,27 @@ public partial class RainMeadow
         {
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
-            //c.GotoNext(moveType: MoveType.After,
-            //    i => i.MatchLdarg(0),
-            //    i => i.MatchLdfld<Player>("SlugCatClass"),
-            //    i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
-            //    i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
-            //    i => i.MatchBrfalse(out skip)
-            //    );
-            //c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
-            //c.Emit(OpCodes.Brtrue, skip);
+            var skip2 = il.DefineLabel();
 
             c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("SlugCatClass"),
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
 
-            i => i.MatchLdarg(0),
-            i => i.MatchLdloc(0),
-            i => i.MatchLdcR4(0.5f)
+            c.GotoNext(moveType: MoveType.After,
+            i => i.MatchLdfld<Creature.Grasp>("grabbed"),
+            i => i.MatchIsinst<Rock>(),
+            i => i.MatchBrfalse(out skip2)
             );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
 
-            c.EmitDelegate(() =>
-            {
-                if (isArenaMode(out var arena) && arena.sainot)
-                {
-                    return 1f;
-                }
-                else
-                {
-                    return 1f;
-                }
-            });
-
-            // c.Emit(OpCodes.Ldc_R4, 1f);
+            c.MarkLabel(skip);
         }
         catch (Exception e)
         {
