@@ -75,13 +75,50 @@ namespace RainMeadow
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
+            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
+
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.ctor += Player_ctor1;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; ;
 
+
+        }
+
+
+        private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
+        {
+            if (isArenaMode(out var _))
+            {
+                var slugList = ArenaHelpers.AllSlugcats();
+                var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+
+                if (baseGameSlugs.Contains(classID) && color <= 3)
+                {
+                    return "MultiplayerPortrait" + color + "1";
+                }
+
+                if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
+                {
+
+                    return "MultiplayerPortrait" + "41-" + slugList[color];
+
+                }
+
+                if (!baseGameSlugs.Contains(classID))
+                {
+
+                    color = 0;
+                    return "MultiplayerPortrait" + color + "1-" + classID.ToString();
+                }
+                return orig(self, classID, color);
+            }
+            else
+            {
+                return orig(self, classID, color);
+            }
         }
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
@@ -194,19 +231,18 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
         {
-            orig(self, abstractCreature, world);
-            if (isArenaMode(out _))
+            orig(self);
+            if (isArenaMode(out var _))
             {
-                if (self.slugcatStats is not null)
+                if (self.slugcatStats.throwingSkill == 0)
                 {
-                    if (self.slugcatStats.throwingSkill == 0)
-                    {
-                        self.slugcatStats.throwingSkill = 1; // don't let them push you around
-                        // Nightcat.ResetSneak(self);
-                    }
+                    self.slugcatStats.throwingSkill = 1; // don't let them push you around
+                    // Nightcat.ResetSneak(self);
                 }
+
             }
         }
 
@@ -380,14 +416,8 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    try
-                    {
-                        arena.playList.RemoveAt(index);
-                    }
-                    catch
-                    {
-                        RainMeadow.Debug("Arena: Empty playlist");
-                    }
+                    arena.playList = self.levelsPlaylist.PlayList;
+
                 }
             }
         }
@@ -398,7 +428,7 @@ namespace RainMeadow
             {
                 foreach (var player in OnlineManager.players)
                 {
-                    if (player.id == OnlineManager.lobby.owner.id || player.isMe)
+                    if (player.id == OnlineManager.lobby.owner.id)
                     {
                         continue;
                     }
@@ -409,12 +439,17 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (OnlineManager.lobby.isOwner)
+                orig(self, levelName);
+                arena.playList = self.levelsPlaylist.PlayList;
+                foreach (var i in arena.playList)
                 {
-                    arena.playList.Add(levelName);
+                    RainMeadow.Debug(i);
                 }
             }
-            orig(self, levelName);
+            else
+            {
+                orig(self, levelName);
+            }
 
         }
 
@@ -591,6 +626,10 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
+                if (!ModManager.MSC)
+                {
+                    self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
+                }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
@@ -811,15 +850,21 @@ namespace RainMeadow
 
                 if (!ModManager.MSC)
                 {
-                    // TODO: Test this with recent arenasitting changes
+                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+                    {
+                        var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
+                              (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
+                              (player.playerClass == SlugcatStats.Name.Red) ? 2 :
+                              (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
 
-                    var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                          (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                          (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                          (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
 
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
+                    else
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
 
-                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
                     self.subObjects.Add(self.portrait);
 
                 }
@@ -1151,6 +1196,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
@@ -1166,7 +1212,6 @@ namespace RainMeadow
                     }
                 }
 
-
                 if (!self.sessionEnded)
                 {
                     foreach (var s in self.arenaSitting.players)
@@ -1175,16 +1220,23 @@ namespace RainMeadow
 
                         foreach (var c in self.Players)
                         {
-                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC) && onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC))
                             {
-                                s.timeAlive++;
+
+                                if (onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                                {
+                                    s.timeAlive++;
+                                }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
+                                self.Players.Remove(c);
                             }
                         }
                     }
 
                 }
-
-
 
             }
         }
@@ -1261,25 +1313,15 @@ namespace RainMeadow
         private bool ExitManager_ExitsOpen(On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                var deadCount = 0;
-                foreach (var player in self.gameSession.Players)
-                {
-                    if (player.realizedCreature != null && (player.realizedCreature.State.dead || player.state.dead))
-                    {
-
-                        deadCount++;
-                    }
-                }
-
-                if (deadCount != 0 && deadCount == self.gameSession.Players.Count - 1)
-                {
-
-                    return true;
-                }
-
-                if (self.world.rainCycle.TimeUntilRain <= 100)
+                int playersStillStanding = self.gameSession.Players?.Count(player =>
+                    player.realizedCreature != null &&
+                    (player.realizedCreature.State.alive)) ?? 0;
+                /// || player.state.alive
+                /// 
+                //RainMeadow.Debug("Players still standing: " + playersStillStanding);
+                if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
                 {
                     return true;
                 }
@@ -1372,13 +1414,15 @@ namespace RainMeadow
                     self.game.cameras[0].followAbstractCreature = abstractCreature;
                 }
 
-                if (self.chMeta != null)
+                if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
+                    abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, oe.owner), customization.playingAs, isGhost: false);
+
                 }
                 else
                 {
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, new SlugcatStats.Name(ExtEnum<SlugcatStats.Name>.values.GetEntry(0)), isGhost: false);
+                    RainMeadow.Error("Could not get online owner for spawned player!");
+                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
                 }
 
                 RainMeadow.Debug("Arena: Realize Creature!");
@@ -1403,6 +1447,12 @@ namespace RainMeadow
                     {
                         self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, 0.75f);
                         self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.3f);
+                    }
+
+                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.5f);
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
                     }
 
 

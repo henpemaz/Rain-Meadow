@@ -142,17 +142,7 @@ namespace RainMeadow
 
                         if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
                         {
-                            if (currentColorIndex > 3 && ModManager.MSC)
-                            {
-                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + Sluglist[currentColorIndex];
-
-                            }
-                            else
-                            {
-                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
-                            }
-
-
+                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
                             game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
                         }

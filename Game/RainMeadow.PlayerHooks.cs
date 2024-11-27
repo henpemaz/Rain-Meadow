@@ -1,10 +1,8 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RainMeadow.Arena.Nightcat;
 using System;
 using System.Drawing;
 using System.Linq;
-using UnityEngine;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 
@@ -47,6 +45,45 @@ public partial class RainMeadow
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+        IL.Player.ThrowObject += Player_ThrowObject1;
+
+    }
+
+
+    // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
+    private void Player_ThrowObject1(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            var skip2 = il.DefineLabel();
+
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("SlugCatClass"),
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.GotoNext(moveType: MoveType.After,
+            i => i.MatchLdfld<Creature.Grasp>("grabbed"),
+            i => i.MatchIsinst<Rock>(),
+            i => i.MatchBrfalse(out skip2)
+            );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
@@ -84,6 +121,7 @@ public partial class RainMeadow
                 if (arena.countdownInitiatedHoldFire)
                 {
                     PlayerMovementOverride.HoldFire(self);
+
                 }
 
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
@@ -661,7 +699,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out var story) && !story.friendlyFire);
+            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire));
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
