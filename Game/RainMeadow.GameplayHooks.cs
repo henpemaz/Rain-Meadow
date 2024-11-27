@@ -1,5 +1,10 @@
-﻿using System.Linq;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.Utils;
+using System;
+using System.Linq;
 using UnityEngine;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -13,8 +18,14 @@ namespace RainMeadow
             On.Lizard.Violence += Lizard_Violence; // todo there might be more like this one that do not call base()
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
-            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-            On.MoreSlugcats.SingularityBomb.Explode += SingularityBomb_Explode;
+            IL.ScavengerBomb.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
+            IL.FlareBomb.StartBurn += PhysicalObject_Explode;
+            IL.FirecrackerPlant.Ignite += PhysicalObject_Trigger;
+            IL.FirecrackerPlant.Explode += PhysicalObject_Explode;
+            IL.PuffBall.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.FireEgg.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
@@ -22,45 +33,80 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
         }
 
-        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        private void PhysicalObject_Trigger(ILContext il)
         {
-            if (OnlineManager.lobby != null)
+            try
             {
-                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-                if (!room.isOwner)
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((PhysicalObject self) =>
                 {
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
+                    if (OnlineManager.lobby != null)
                     {
-                        Error($"Entity {self} doesn't exist in online space!");
-                        return;
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner)
+                        {
+                            opo.BroadcastRPCInRoom(opo.Trigger, self.bodyChunks[0].pos);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Trigger, self.bodyChunks[0].pos);
+                        }
                     }
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, opo, self.bodyChunks[0].pos);
-                }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
             }
-            orig(self, hitChunk);
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
-        private void SingularityBomb_Explode(On.MoreSlugcats.SingularityBomb.orig_Explode orig, MoreSlugcats.SingularityBomb self)
+        private void PhysicalObject_Explode(ILContext il)
         {
-            if (OnlineManager.lobby != null)
+            try
             {
-                if (self.activateLightning != null)
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((PhysicalObject self) =>
                 {
-                    self.activateLightning.Destroy();
-                    self.activateLightning = null;
-                }
-                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-                if (!room.isOwner)
-                {
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
+                    if (OnlineManager.lobby != null)
                     {
-                        Error($"Entity {self} doesn't exist in online space!");
-                        return;
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner)
+                        {
+                            opo.BroadcastRPCInRoom(opo.Explode, self.bodyChunks[0].pos);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Explode, self.bodyChunks[0].pos);
+                        }
                     }
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.SingularityBombExplode, opo, self.bodyChunks[0].pos);
-                }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
             }
-            orig(self);
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
@@ -192,7 +238,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
                 if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
                 {
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
                     return;
                 }
             }
@@ -215,7 +261,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
                 {
-                    room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                    room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
                     return;
                 }
             }

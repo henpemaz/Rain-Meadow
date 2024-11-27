@@ -467,32 +467,54 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
+        public void HitByWeapon(OnlinePhysicalObject weapon)
         {
-            objectHit?.apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
-        }
-        [RPCMethod]
-        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
-        {
-            objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
+            apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
 
         [RPCMethod]
-        public static void ScavengerBombExplode(OnlinePhysicalObject opo, Vector2 pos)
+        public void HitByExplosion(float hitfac)
         {
-            if (opo?.apo.realizedObject is not ScavengerBomb bomb) return;
-
-            bomb.bodyChunks[0].pos = pos;
-            bomb.Explode(null);
+            apo.realizedObject?.HitByExplosion(hitfac, null, 0);
         }
 
         [RPCMethod]
-        public static void SingularityBombExplode(OnlinePhysicalObject opo, Vector2 pos)
+        public void Trigger()
         {
-            if (opo?.apo.realizedObject is not MoreSlugcats.SingularityBomb bomb) return;
+            if (apo.realizedObject is null) return;
+            switch (apo.realizedObject)
+            {
+                case FirecrackerPlant bomb:
+                    bomb.Ignite(); return;
+                default:
+                    RainMeadow.Error($"unknown trigger {this}"); return;
+            }
+        }
 
-            bomb.bodyChunks[0].pos = pos;
-            bomb.Explode();
+        [RPCMethod]
+        public void Explode(Vector2 pos)
+        {
+            if (apo.realizedObject is null) return;
+            apo.realizedObject.bodyChunks[0].pos = pos;
+            switch (apo.realizedObject)
+            {
+                case ScavengerBomb bomb:
+                    bomb.Explode(null); return;
+                case MoreSlugcats.SingularityBomb bomb:
+                    bomb.Explode(); return;
+                case FlareBomb bomb:
+                    bomb.StartBurn(); return;
+                case FirecrackerPlant bomb:
+                    bomb.Explode(); return;
+                case PuffBall bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.FireEgg bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.EnergyCell bomb:
+                    bomb.Explode(); return;
+                default:
+                    RainMeadow.Error($"unknown explode {this}"); return;
+            }
         }
     }
 }

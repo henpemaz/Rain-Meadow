@@ -62,7 +62,6 @@ namespace RainMeadow
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
-            On.PuffBall.Explode += PuffBall_Explode;
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
@@ -319,36 +318,6 @@ namespace RainMeadow
                     self.room.world.GetResource().ApoEnteringWorld(apo);
                     self.room.abstractRoom.GetResource().ApoEnteringRoom(apo, apo.pos);
                 }
-            }
-        }
-
-        private void PuffBall_Explode(On.PuffBall.orig_Explode orig, PuffBall self)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
-
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var onlineRoom);
-            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
-
-            if (onlineSporePlant.isMine)
-            {
-                foreach (var kv in OnlineManager.lobby.playerAvatars)
-                {
-                    var playerAvatar = kv.Value;
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none || kv.Key.isMe) continue; // not in game or is me
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room == self.room.abstractRoom)
-                        {
-                            opo.owner.InvokeOnceRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
-                        }
-                    }
-                }
-                orig(self);
-                return;
             }
         }
 
