@@ -82,11 +82,10 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.ctor += Player_ctor1;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; ;
 
 
         }
-
 
 
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
@@ -232,19 +231,18 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+
+        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
         {
-            orig(self, abstractCreature, world);
+            orig(self);
             if (isArenaMode(out var _))
             {
-                if (self.slugcatStats is not null)
+                if (self.slugcatStats.throwingSkill == 0)
                 {
-                    if (self.slugcatStats.throwingSkill == 0)
-                    {
-                        self.slugcatStats.throwingSkill = 1; // don't let them push you around
-                        // Nightcat.ResetSneak(self);
-                    }
+                    self.slugcatStats.throwingSkill = 1; // don't let them push you around
+                    // Nightcat.ResetSneak(self);
                 }
+
             }
         }
 
