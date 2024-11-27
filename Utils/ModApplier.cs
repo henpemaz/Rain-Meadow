@@ -129,25 +129,19 @@ namespace RainMeadow
 
             Action confirmProceed = () =>
             {
-
-                Start(filesInBadState);
-
-            };
-
-            Action cancelProceed = () =>
-            {
                 manager.dialog = null;
                 requiresRestartDialog = null;
                 OnlineManager.LeaveLobby();
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
+                
             };
 
 
 
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
 
-            manager.ShowDialog(checkUserConfirmation);
+            requiresRestartDialog = new DialogNotify(modMismatchString, manager, confirmProceed);
+
+            manager.ShowDialog(requiresRestartDialog);
 
 
 
