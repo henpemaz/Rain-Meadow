@@ -21,11 +21,54 @@ namespace RainMeadow
             IL.ScavengerBomb.Explode += PhysicalObject_Explode;
             IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
             IL.FlareBomb.StartBurn += PhysicalObject_Explode;
+            IL.FirecrackerPlant.Ignite += PhysicalObject_Trigger;
+            IL.FirecrackerPlant.Explode += PhysicalObject_Explode;
+            IL.PuffBall.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.FireEgg.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
 
             On.RoomRealizer.Update += RoomRealizer_Update;
+        }
+
+        private void PhysicalObject_Trigger(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((PhysicalObject self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner)
+                        {
+                            opo.BroadcastRPCInRoom(opo.Trigger, self.bodyChunks[0].pos);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Trigger, self.bodyChunks[0].pos);
+                        }
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void PhysicalObject_Explode(ILContext il)

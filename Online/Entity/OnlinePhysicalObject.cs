@@ -479,6 +479,19 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public void Trigger()
+        {
+            if (apo.realizedObject is null) return;
+            switch (apo.realizedObject)
+            {
+                case FirecrackerPlant bomb:
+                    bomb.Ignite(); return;
+                default:
+                    RainMeadow.Error($"unknown trigger {this}"); return;
+            }
+        }
+
+        [RPCMethod]
         public void Explode(Vector2 pos)
         {
             if (apo.realizedObject is null) return;
@@ -491,8 +504,16 @@ namespace RainMeadow
                     bomb.Explode(); return;
                 case FlareBomb bomb:
                     bomb.StartBurn(); return;
+                case FirecrackerPlant bomb:
+                    bomb.Explode(); return;
+                case PuffBall bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.FireEgg bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.EnergyCell bomb:
+                    bomb.Explode(); return;
                 default:
-                    RainMeadow.Error($"unknown exploder {this}"); return;
+                    RainMeadow.Error($"unknown explode {this}"); return;
             }
         }
     }
