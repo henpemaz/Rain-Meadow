@@ -46,17 +46,10 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
-        On.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer1;
+
     }
 
-    private void Player_ClassMechanicsArtificer1(On.Player.orig_ClassMechanicsArtificer orig, Player self)
-    {
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
-        {
-            return;
-        }
-        orig(self);
-    }
+
 
     private void Player_ThrowObject1(ILContext il)
     {
@@ -64,15 +57,36 @@ public partial class RainMeadow
         {
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
+            //c.GotoNext(moveType: MoveType.After,
+            //    i => i.MatchLdarg(0),
+            //    i => i.MatchLdfld<Player>("SlugCatClass"),
+            //    i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+            //    i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+            //    i => i.MatchBrfalse(out skip)
+            //    );
+            //c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            //c.Emit(OpCodes.Brtrue, skip);
+
             c.GotoNext(moveType: MoveType.After,
-                i => i.MatchLdarg(0),
-                i => i.MatchLdfld<Player>("SlugCatClass"),
-                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
-                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
-                i => i.MatchBrfalse(out skip)
-                );
-            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
-            c.Emit(OpCodes.Brtrue, skip);
+
+            i => i.MatchLdarg(0),
+            i => i.MatchLdloc(0),
+            i => i.MatchLdcR4(0.5f)
+            );
+
+            c.EmitDelegate(() =>
+            {
+                if (isArenaMode(out var arena) && arena.sainot)
+                {
+                    return 1f;
+                }
+                else
+                {
+                    return 1f;
+                }
+            });
+
+            // c.Emit(OpCodes.Ldc_R4, 1f);
         }
         catch (Exception e)
         {

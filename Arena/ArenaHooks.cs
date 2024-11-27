@@ -846,7 +846,7 @@ namespace RainMeadow
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                self.playerNameLabel.text = currentName.id.name ?? "Player missing";
+                self.playerNameLabel.text = currentName.id.name;
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
@@ -1233,14 +1233,14 @@ namespace RainMeadow
                             else
                             {
                                 RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
-                                self.Players.Remove(c);
+                                //self.Players.Remove(c);
                             }
                         }
                     }
 
                 }
 
-
+                RainMeadow.Debug(self.Players.Count);
 
             }
         }
