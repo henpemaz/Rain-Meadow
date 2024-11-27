@@ -133,7 +133,7 @@ namespace RainMeadow
                 requiresRestartDialog = null;
                 OnlineManager.LeaveLobby();
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                
+
             };
 
 
