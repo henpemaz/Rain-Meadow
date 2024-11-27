@@ -1231,14 +1231,12 @@ namespace RainMeadow
                             else
                             {
                                 RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
-                                //self.Players.Remove(c);
+                                self.Players.Remove(c);
                             }
                         }
                     }
 
                 }
-
-                RainMeadow.Debug(self.Players.Count);
 
             }
         }
