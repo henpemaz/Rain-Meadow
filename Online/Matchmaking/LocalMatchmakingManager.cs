@@ -229,12 +229,7 @@ namespace RainMeadow
 
         public void UpdatePlayersList()
         {
-            List<PlayerInfo> playersinfo = new List<PlayerInfo>();
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                playersinfo.Add(new PlayerInfo(default, player.id.name));
-            }
-            OnPlayerListReceived?.Invoke(playersinfo.ToArray());
+            OnPlayerListReceived?.Invoke(playerList.ToArray());
         }
 
         public override string GetLobbyID()
