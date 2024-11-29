@@ -27,10 +27,19 @@ namespace RainMeadow
             IL.MoreSlugcats.FireEgg.Explode += PhysicalObject_Explode;
             IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
 
+            On.Spear.Spear_makeNeedle += Spear_makeNeedle;
+
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
 
             On.RoomRealizer.Update += RoomRealizer_Update;
+        }
+
+        private void Spear_makeNeedle(On.Spear.orig_Spear_makeNeedle orig, Spear self, int type, bool active)
+        {
+            // apo.realize defaults to inactive even if remote is active
+            if (!self.IsLocal()) active = self.spearmasterNeedle_hasConnection;
+            orig(self, type, active);
         }
 
         private void PhysicalObject_Trigger(ILContext il)

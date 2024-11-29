@@ -24,6 +24,7 @@ public partial class RainMeadow
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
+        IL.Player.GrabUpdate += Player_GrabUpdate_FixSpearmasterNeedles;
         IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
@@ -321,6 +322,65 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
             c.Emit(OpCodes.Brfalse, skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private void Player_GrabUpdate_FixSpearmasterNeedles(ILContext il)
+    {
+        try
+        {
+            // spearmaster needle set state before registering
+            var c = new ILCursor(il);
+            int loc = 0;
+            c.GotoNext(moveType: MoveType.After,
+                // AbstractSpear abstractSpear = new AbstractSpear(room.world, null, room.GetWorldCoordinate(base.mainBodyChunk.pos), room.game.GetNewID(), explosive: false);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("world"),
+                i => i.MatchLdnull(),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Creature>("get_mainBodyChunk"),
+                i => i.MatchLdfld<BodyChunk>("pos"),
+                i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                i => i.MatchLdcI4(0),
+                i => i.MatchNewobj<AbstractSpear>(),
+                i => i.MatchStloc(out loc)
+                );
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = true;
+                }
+            });
+            c.GotoNext(moveType: MoveType.After,
+                // room.abstractRoom.AddEntity(abstractSpear);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchCallvirt<Room>("get_abstractRoom"),
+                i => i.MatchLdloc(19),
+                i => i.MatchCallvirt<AbstractRoom>("AddEntity")
+                );
+            // unset again because RealizeInRoom will assume dead
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = false;
+                }
+            });
         }
         catch (Exception e)
         {
