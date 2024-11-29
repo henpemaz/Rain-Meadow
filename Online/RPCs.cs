@@ -38,7 +38,7 @@ namespace RainMeadow
             RainMeadow.Debug(incomingUsername);
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
-                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(incomingUsername))
+                if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername))
                 {
                     continue;
                 }
