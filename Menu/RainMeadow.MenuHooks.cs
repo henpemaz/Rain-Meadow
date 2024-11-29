@@ -43,9 +43,12 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu menu)
             {
-                menu.PreStartGame(storyGameCharacter);
+                menu.StartGame(storyGameCharacter);
             }
-            orig(self, storyGameCharacter);
+            else
+            {
+                orig(self, storyGameCharacter);
+            }
         }
 
         private void SlugcatSelectMenu_UpdateStartButtonText(On.Menu.SlugcatSelectMenu.orig_UpdateStartButtonText orig, SlugcatSelectMenu self)

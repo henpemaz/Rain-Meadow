@@ -53,7 +53,7 @@ namespace RainMeadow
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        public void PreStartGame(SlugcatStats.Name storyGameCharacter)
+        public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
             if (OnlineManager.lobby.isOwner)
             {
@@ -70,6 +70,22 @@ namespace RainMeadow
                     personaSettings.playingAs = storyGameMode.currentCampaign;
                 }
             }
+
+            // TODO: figure out how to reuse vanilla StartGame
+            // * override singleplayer custom colours
+            // * fix intro cutscenes messing with resource acquisition
+            // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
+            manager.arenaSitting = null;
+            if (restartChecked)
+            {
+                manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
+                manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
+            }
+            else
+            {
+                manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
+            }
+            manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
         public override void Update()
