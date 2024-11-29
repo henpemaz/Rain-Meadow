@@ -24,6 +24,8 @@ namespace RainMeadow
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
+            On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
+            On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
@@ -35,6 +37,31 @@ namespace RainMeadow
 
             //TODO MSC: do something smarter, this stops the crash; I'm being lazy -Turtle
             return true;
+        }
+
+        private void SlugcatSelectMenu_StartGame(On.Menu.SlugcatSelectMenu.orig_StartGame orig, SlugcatSelectMenu self, SlugcatStats.Name storyGameCharacter)
+        {
+            if (self is StoryOnlineMenu menu)
+            {
+                menu.StartGame(storyGameCharacter);
+            }
+            else
+            {
+                orig(self, storyGameCharacter);
+            }
+        }
+
+        private void SlugcatSelectMenu_UpdateStartButtonText(On.Menu.SlugcatSelectMenu.orig_UpdateStartButtonText orig, SlugcatSelectMenu self)
+        {
+            if (self is StoryOnlineMenu menu && OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                self.startButton.fillTime = 40f;
+                self.startButton.menuLabel.text = self.Translate("ENTER");
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
