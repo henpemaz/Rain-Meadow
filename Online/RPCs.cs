@@ -52,8 +52,7 @@ namespace RainMeadow
                 {
                     if (part.player == rpc.from)
                     {
-                        part.message.text = $"{lastSentMessage}";
-                        part.resetUsernameCounter = 200;
+                        part.messageQueue.Enqueue(new OnlinePlayerDisplay.Message(lastSentMessage));
                         return;
                     }
                 }
