@@ -33,6 +33,14 @@ namespace RainMeadow
                 return;
             }
             orig(self, obj);
+            if (OnlineManager.lobby != null)
+            {
+                if (obj is PhysicalObject po && po.abstractPhysicalObject is AbstractPhysicalObject apo && !apo.GetOnlineObject(out _))
+                {
+                    self.world.GetResource()?.ApoEnteringWorld(apo);
+                    self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
+                }
+            }
         }
 
         // removes entities that should be deleted when going between rooms
