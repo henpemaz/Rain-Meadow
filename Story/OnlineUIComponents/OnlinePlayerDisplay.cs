@@ -11,6 +11,8 @@ namespace RainMeadow
         public FLabel username;
         public FLabel message;
         public FSprite slugIcon;
+        public OnlinePlayer player;
+
 
         public Color color;
         public Color lighter_color;
@@ -33,8 +35,10 @@ namespace RainMeadow
        
         SlugcatCustomization customization;
 
-        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
+
+        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player) : base(owner)
         {
+            this.player = player;
             this.owner = owner;
             this.resetUsernameCounter = 200;
 

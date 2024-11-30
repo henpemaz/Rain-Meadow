@@ -33,42 +33,29 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void UpdateUsernameTemporarily(string incomingUsername, string lastSentMessage)
+        public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
         {
-            RainMeadow.Debug(incomingUsername);
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            string incomingUsername = rpc.from.id.name;
+            RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
+
+            if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(incomingUsername)) return;
+
+            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+
+            if (game == null) return;
+
+            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+            foreach (var onlineHud in onlineHuds)
             {
-                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(incomingUsername))
+                foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
                 {
-                    continue;
-                }
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == incomingUsername && opo.apo is AbstractCreature ac)
-                {
-                    var onlineHuds = ac.world.game.cameras[0].hud.parts
-                        .OfType<PlayerSpecificOnlineHud>();
-
-                    foreach (var onlineHud in onlineHuds)
+                    if (part.player == rpc.from)
                     {
-                        OnlinePlayerDisplay usernameDisplay = null;
-
-                        foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
-                        {
-                            if (part.username.text == incomingUsername)
-                            {
-                                usernameDisplay = part;
-                                break;
-                            }
-                        }
-
-                        if (usernameDisplay != null)
-                        {
-                            usernameDisplay.message.text = $"{lastSentMessage}";
-                        }
+                        part.message.text = $"{lastSentMessage}";
+                        return;
                     }
                 }
-
             }
         }
 

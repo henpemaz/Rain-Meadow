@@ -141,7 +141,7 @@ namespace RainMeadow
             if (this.playerDisplay == null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
-                this.playerDisplay = new OnlinePlayerDisplay(this, customization);
+                this.playerDisplay = new OnlinePlayerDisplay(this, customization, clientSettings.owner);
                 this.parts.Add(this.playerDisplay);
             }
 
