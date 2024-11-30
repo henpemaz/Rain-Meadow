@@ -163,8 +163,8 @@ namespace RainMeadow
             this.username.x = vector.x;
             this.username.y = vector.y + 20f;
 
-            this.message.x = vector.x + 20f;
-            this.message.alignment = FLabelAlignment.Center;
+            this.message.x = vector.x + 5f;
+            this.message.alignment = FLabelAlignment.Left;
             this.message.y = vector.y + 20f;
 
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
@@ -183,7 +183,7 @@ namespace RainMeadow
             {
                 this.username.text = customization.nickname + ":";
                 resetUsernameCounter--;
-                this.username.x = vector.x + this.message._textRect.x - 15f;
+                this.username.x -= username._textRect.width / 2;
             }
 
             if (resetUsernameCounter < 0)
