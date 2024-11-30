@@ -40,16 +40,11 @@ namespace RainMeadow
         private int maxPlayerCount;
         private EventfulScrollButton upButton;
         private EventfulScrollButton downButton;
-        private bool isExiting;
-        private bool isInit;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
         {
             RainMeadow.DebugMe();
-
-            isExiting = RWInput.CheckPauseButton(0);
-            isInit = true;
 
             Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
@@ -222,18 +217,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
-            if (RWInput.CheckPauseButton(0) && !isExiting)
-            {
-                manager.RequestMainProcessSwitch(this.backTarget);
-                base.PlaySound(SoundID.MENU_Switch_Page_Out);
-                isExiting = true;
-            }
-            else if (!RWInput.CheckPauseButton(0) && isInit)
-            {
-                isExiting = false;
-                isInit = false;
-            }
 
             bool popupVisible = popupDialog != null;
 
