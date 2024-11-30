@@ -178,8 +178,7 @@ namespace RainMeadow
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
-            var ghostNumber = rawEnumBase as GhostWorldPresence.GhostID;
-            if (ghostNumber == null) return;
+            if (rawEnumBase is not GhostWorldPresence.GhostID ghostNumber) return;
             var ghostsTalkedTo = (game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo;
             if (!ghostsTalkedTo.ContainsKey(ghostNumber) || ghostsTalkedTo[ghostNumber] < 1)
                 ghostsTalkedTo[ghostNumber] = 1;

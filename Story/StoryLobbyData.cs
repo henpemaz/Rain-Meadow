@@ -47,15 +47,13 @@ namespace RainMeadow
             [OnlineField]
             public int mushroomCounter;
             [OnlineField]
-            public Dictionary<string, int> ghostsTalkedTo;
-            [OnlineField]
-            public Dictionary<ushort, ushort[]> consumedItems;
-            [OnlineField]
             public Dictionary<string, bool> storyBoolRemixSettings;
             [OnlineField]
             public Dictionary<string, float> storyFloatRemixSettings;
             [OnlineField]
             public Dictionary<string, int> storyIntRemixSettings;
+            [OnlineField(nullable = true)]
+            public string? saveStateString;
 
 
             public State() { }
@@ -67,16 +65,15 @@ namespace RainMeadow
 
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
-                consumedItems = storyGameMode.consumedItems;
+                storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
                 storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
                 storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
-
-                ghostsTalkedTo = storyGameMode.ghostsTalkedTo;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = storyGameMode.readyForGate;
+                saveStateString = storyGameMode.saveStateString;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -127,8 +124,6 @@ namespace RainMeadow
                     }
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
-                (lobby.gameMode as StoryGameMode).ghostsTalkedTo = ghostsTalkedTo;
-                (lobby.gameMode as StoryGameMode).consumedItems = consumedItems;
                 (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
                 (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
@@ -139,6 +134,8 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).readyForGate = readyForGate;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
+
+                (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
             }
         }
     }
