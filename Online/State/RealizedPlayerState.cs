@@ -1,9 +1,13 @@
-﻿using UnityEngine;
+﻿using System.Security.AccessControl;
+using UnityEngine;
 
 namespace RainMeadow
 {
     public class RealizedPlayerState : RealizedCreatureState
     {
+        [OnlineField(nullable = true)]
+        private OnlinePhysicalObject? deer;
+
         [OnlineField]
         private byte animationIndex;
         [OnlineField]
@@ -74,8 +78,11 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
+            deer = p.playerInAntlers?.deer?.abstractPhysicalObject.GetOnlineObject();
+
             analogInputX = i.analogueDir.x;
             analogInputY = i.analogueDir.y;
+
         }
         public Player.InputPackage GetInput()
         {
@@ -95,7 +102,7 @@ namespace RainMeadow
             i.analogueDir.y = analogInputY;
             return i;
         }
-
+        
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
@@ -129,6 +136,16 @@ namespace RainMeadow
                     {
                         tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
                     }
+                }
+
+                if (deer != null)
+                {
+                    pl.playerInAntlers ??= new Deer.PlayerInAntlers(pl, deer.apo.realizedObject as Deer);
+                }
+                else if (pl.playerInAntlers != null)
+                {
+                    pl.playerInAntlers.playerDisconnected = true;
+                    pl.playerInAntlers = null;
                 }
             }
             else
