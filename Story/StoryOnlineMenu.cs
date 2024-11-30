@@ -100,7 +100,7 @@ namespace RainMeadow
             }
             else
             {
-                startButton.buttonBehav.greyedOut = storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate != 0 || storyGameMode.readyForWin;
+                startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
                 onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : $" - {storyGameMode.region}");
             }
         }
