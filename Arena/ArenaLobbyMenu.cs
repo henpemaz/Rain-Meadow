@@ -46,6 +46,7 @@ namespace RainMeadow
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
+            ID = OnlineManager.lobby.gameMode.MenuProcessId();
             RainMeadow.DebugMe();
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");

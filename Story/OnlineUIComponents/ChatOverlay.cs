@@ -58,7 +58,7 @@ namespace RainMeadow
                     if (partsOfMessage.Length >= 2)
                     {
                         string username = partsOfMessage[0].Trim(); // Extract and trim the username
-                        if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(username))
+                        if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(username))
                         {
                             continue;
                         }

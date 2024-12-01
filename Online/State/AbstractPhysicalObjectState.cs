@@ -44,6 +44,16 @@ namespace RainMeadow
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is Oracle oracle)
+            {
+                if (oracle.oracleBehavior is SLOracleBehavior)
+                {
+                    return new RealizedSLOracleState(onlineObject);
+                }
+                return new RealizedOracleState(onlineObject);
+            }
+            if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
+            if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
             if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);

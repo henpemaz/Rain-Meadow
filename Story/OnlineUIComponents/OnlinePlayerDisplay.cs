@@ -35,6 +35,7 @@ namespace RainMeadow
         public float V;
 
         public int counter;
+        public int resetUsernameCounter;
         public float alpha;
         public float lastAlpha;
         public float blink;
@@ -52,6 +53,7 @@ namespace RainMeadow
         {
             this.player = player;
             this.owner = owner;
+            this.resetUsernameCounter = 200;
 
             this.color = customization.SlugcatColor();
 
@@ -200,9 +202,7 @@ namespace RainMeadow
                 bool first = true;
                 for (int i = messageQueue.Count - 1; i >= 0; i--)
                 {
-                    var messageData = messageQueue.ElementAt(i);
-                    messageLabels[i].text = messageData.text;
-                    messageLabels[i].alpha = Mathf.Min(messageData.timer / 10f, 1f);
+                    messageLabels[i].text = messageQueue.ElementAt(i).text;
                     if (first)
                     {
                         first = false;
@@ -225,7 +225,6 @@ namespace RainMeadow
 
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
-                messageLabels[i].alpha = 0f;
                 messageLabels[i].text = "";
             }
 
@@ -236,11 +235,12 @@ namespace RainMeadow
             this.slugIcon.alpha = num;
             if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
             {
+                foreach (var label in this.messageLabels) label.alpha = lighter_color.a;
                 this.username.alpha = lighter_color.a;
             }
             else
             {
-                foreach (var label in messageLabels) label.alpha = num;
+                foreach (var label in this.messageLabels) label.alpha = num;
                 this.username.alpha = num;
             }
 

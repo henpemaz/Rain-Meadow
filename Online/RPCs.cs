@@ -35,8 +35,14 @@ namespace RainMeadow
         [RPCMethod]
         public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
         {
-            string incomingUsername = rpc.from.id.name;
-            RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
+            RainMeadow.Debug(incomingUsername);
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            {
+                if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername))
+                {
+                    continue;
+                }
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
 
             if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(incomingUsername)) return;
 
@@ -165,8 +171,7 @@ namespace RainMeadow
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
-            var ghostNumber = rawEnumBase as GhostWorldPresence.GhostID;
-            if (ghostNumber == null) return;
+            if (rawEnumBase is not GhostWorldPresence.GhostID ghostNumber) return;
             var ghostsTalkedTo = (game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo;
             if (!ghostsTalkedTo.ContainsKey(ghostNumber) || ghostsTalkedTo[ghostNumber] < 1)
                 ghostsTalkedTo[ghostNumber] = 1;
