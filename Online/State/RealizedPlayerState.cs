@@ -174,7 +174,8 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
-            if (playerInAntlersState != null) this.chunkPosThreshold = 4f;
+            this.chunkPosLeniency = 0f;
+            if (playerInAntlersState != null) this.chunkPosLeniency = 20 * 4;
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).apo.realizedObject is Player pl)
             {
