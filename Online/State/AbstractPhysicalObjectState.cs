@@ -151,6 +151,23 @@ namespace RainMeadow
             }
 
             onlineObject.realized = this.realized;
+
+            if (onlineObject.roomSession is not null && onlineObject.roomSession.participants.Contains(OnlineManager.mePlayer) && !onlineObject.isPending)
+            {
+                switch (apo.realizedObject, realizedObjectState)
+                {
+                    case (null, not null):
+                        RainMeadow.Error($"{apo} unrealized, {onlineObject} realized (waiting for JoinImpl?)");
+                        break;
+                    case (not null, null):
+                        RainMeadow.Error($"{apo} realized, {onlineObject} unrealized");
+                        apo.Abstractize(pos);
+                        apo.realizedObject.RemoveFromRoom();
+                        apo.Room.RemoveEntity(apo);
+                        break;
+                }
+            }
+
             if (onlineObject.apo.realizedObject != null)
             {
                 RainMeadow.Trace($"{onlineEntity} realized target exists");
