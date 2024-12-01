@@ -34,6 +34,7 @@ namespace RainMeadow
             {
                 po.ChangeCollisionLayer(collisionLayer);
             }
+            this.chunkPosLeniency = 0f;  // restore to default in case this object is reused
         }
     }
 
