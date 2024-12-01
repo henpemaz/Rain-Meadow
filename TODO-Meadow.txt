@@ -16,11 +16,11 @@ creature todo
 
 
 lizard todo
-	blues have trouble sticking to the ceiling
-	blues have trouble climbing/pathing ledges
-	lizard wallclimb is slow, slows you down a lot in zerog movement
-	red and some more lizs are having trouble climbing
+	blues have trouble sticking to the ceiling (retest)
+	blues have trouble climbing/pathing ledges (retest)
+	lizard wallclimb is slow, slows you down a lot in zerog movemen
 	could use proper lizard voice not default pink
+	red liz uses wrong seed sometimes? unconf
 
 
 scav todo
@@ -57,6 +57,11 @@ accessibility
 	ds c03 exist is at water height wont path
 	dsa13 corner up lizard stuck
 
+ui
+	pause menu could have icons next to relevant buttons
+		hub - to hub
+		survivor - to outskirts
+		shelter - passage
 
 emotes
 	wish there was a symbol for outskirts
@@ -67,7 +72,9 @@ emotes
 
 customization
 	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
+	could let one pick a tint "absolutely" limiting the range of the color-picker itself
 
+	wolfy commented on a while-but-highly-customizable skin
 
 input
 	throw is for switching pages on hotwheel, but also call, specially on controller
