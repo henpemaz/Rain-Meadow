@@ -234,6 +234,13 @@ namespace RainMeadow
 
                 this.symbol = new CreatureSymbol(CreatureSymbol.SymbolDataFromCreature(avatar.abstractCreature), this.meadowHud.hud.map.inFrontContainer);
                 symbol.Show(false);
+                avatarSettings.ModifyBodyColor(ref symbol.myColor);
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                symbol.Update();
             }
 
             public override void Draw(float timeStacker)
