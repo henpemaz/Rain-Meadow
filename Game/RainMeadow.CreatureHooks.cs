@@ -14,6 +14,8 @@ namespace RainMeadow
             On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
             On.OverseerAI.Update += OverseerAI_Update; // please look at what I tell you to
 
+            On.TentaclePlantAI.Update += TentaclePlantAI_Update;
+
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
@@ -177,6 +179,13 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void TentaclePlantAI_Update(On.TentaclePlantAI.orig_Update orig, TentaclePlantAI self)
+        {
+            var mostInterestingItem = self.mostInterestingItem;
+            orig(self);
+            if (!self.creature.IsLocal()) self.mostInterestingItem = mostInterestingItem;
         }
     }
 }
