@@ -125,7 +125,7 @@ namespace RainMeadow
                 this.unknownMods = unknownMods;
             }
 
-            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please press OK to return to the lobby select menu");
+            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
 
             Action confirmProceed = () =>
             {
