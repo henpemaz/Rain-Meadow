@@ -59,6 +59,9 @@ namespace RainMeadow
         {
             return --timer;
         }
-
+        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        {
+            return arena.countdownInitiatedHoldFire = true;
+        }
     }
 }

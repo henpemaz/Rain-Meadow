@@ -36,15 +36,9 @@ namespace RainMeadow
             
         }
 
-        //public void ResetViolence(ArenaOnlineGameMode arena)
-        //{
-        //    arena.countdownInitiatedHoldFire = HoldFireWhileTimerIsActive();
-        //    arena.playerEnteredGame = 0;
-        //}
-
         public virtual int TimerDirection(int timer)
         {
-            return --timer;
+            return timer--;
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
