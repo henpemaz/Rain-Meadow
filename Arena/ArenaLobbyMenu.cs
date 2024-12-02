@@ -62,7 +62,6 @@ namespace RainMeadow
             BindSettings();
             BuildLayout();
 
-
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
 
@@ -377,7 +376,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            RainMeadow.Debug(GetGameTypeSetup.denEntryRule);
+            RainMeadow.Debug(arena.registeredGameModes.Count);
 
 
 
@@ -537,7 +536,6 @@ namespace RainMeadow
                     // Update the current game mode
                     arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
                     arena.currentGameMode = gameModesList[nextModeIndex].Value;
-                    arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 
                 }
 
@@ -567,7 +565,6 @@ namespace RainMeadow
 
                         // Initialize the custom game type
                     }
-                    arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 
                 }
 

@@ -91,21 +91,26 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; 
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
-            On.ArenaSetup.GameTypeSetup.InitAsGameType += GameTypeSetup_InitAsGameType;
             On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
+            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
         }
 
-        private void GameTypeSetup_InitAsGameType(On.ArenaSetup.GameTypeSetup.orig_InitAsGameType orig, ArenaSetup.GameTypeSetup self, ArenaSetup.GameTypeID gameType)
+
+        private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
         {
-            orig(self, gameType);
-            if (isArenaMode(out var arena) && !arena.registeredNewGameModes)
+            if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
             {
-                arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
-            
-                arena.registeredNewGameModes = true;
+                var comp = new Competitive();
+                if (!arena.registeredGameModes.ContainsKey(comp))
+                {
+                    arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+                }
             }
+
+            orig(self, manager);
+
         }
 
         private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
@@ -1046,13 +1051,6 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                self.AddPart(new TextPrompt(self));
-                self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, session.game.cameras[0]));
-                self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
-                self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
-
                 arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, orig, self, session);
 
             }

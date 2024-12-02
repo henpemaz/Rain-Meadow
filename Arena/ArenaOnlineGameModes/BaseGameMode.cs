@@ -36,7 +36,7 @@ namespace RainMeadow
             
         }
 
-        public virtual int TimerDirection(int timer)
+        public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
             return timer--;
         }

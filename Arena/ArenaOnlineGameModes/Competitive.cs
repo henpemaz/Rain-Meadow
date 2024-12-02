@@ -21,6 +21,11 @@ namespace RainMeadow
                 return true;
             }
 
+            if (self.world.rainCycle.TimeUntilRain <= 100)
+            {
+                return true;
+            }
+
             return orig(self);
         }
 
@@ -55,9 +60,9 @@ namespace RainMeadow
             get { return _timerDuration; }
             set { _timerDuration = value; }
         }
-        public override int TimerDirection(int timer)
+        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return --timer;
+            return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {

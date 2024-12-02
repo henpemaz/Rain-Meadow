@@ -73,8 +73,6 @@ namespace RainMeadow
                     safetyCatchTimer++;
                 }
 
-                arena.setupTime = System.Math.Max(0, arena.setupTime);
-
                 if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
                 {
                     showMode = TimerMode.Waiting;
@@ -86,7 +84,7 @@ namespace RainMeadow
                 }
                 else if (arena.setupTime > 0)
                 {
-                    arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena.setupTime);
+                    arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
                     showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = arena.onlineArenaGameMode.TimerText();
