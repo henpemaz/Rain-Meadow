@@ -1326,6 +1326,11 @@ namespace RainMeadow
                     return true;
                 }
 
+                if (self.world.rainCycle.TimeUntilRain <= 100)
+                {
+                    return true;
+                }
+
                 orig(self);
             }
 
