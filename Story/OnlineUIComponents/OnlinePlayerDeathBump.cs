@@ -46,7 +46,7 @@ namespace RainMeadow
             this.lastPos = this.pos;
         }
 
-        public OnlinePlayerDeathBump(PlayerSpecificOnlineHud owner) : base(owner)
+        public OnlinePlayerDeathBump(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
         {
             this.owner = owner;
             this.SetPosToPlayer();
@@ -60,7 +60,7 @@ namespace RainMeadow
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
             this.symbolSprite = new FSprite("Multiplayer_Death", true);
-            this.symbolSprite.color = PlayerGraphics.DefaultSlugcatColor((owner.abstractPlayer.state as PlayerState).slugcatCharacter);
+            this.symbolSprite.color = customization.bodyColor;
             owner.hud.fContainers[0].AddChild(this.symbolSprite);
             this.symbolSprite.alpha = 0f;
             this.symbolSprite.x = -1000f;
