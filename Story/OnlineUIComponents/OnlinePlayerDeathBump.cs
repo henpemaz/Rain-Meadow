@@ -14,6 +14,7 @@ namespace RainMeadow
         private float blink;
         private float lastBlink;
         public bool removeAsap;
+        public Color onlineColor;
 
         public bool PlayerHasExplosiveSpearInThem
         {
@@ -56,14 +57,16 @@ namespace RainMeadow
             {
                 this.gradient.color = new Color(0f, 0f, 0f);
             }
+            onlineColor = customization.bodyColor;
             owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
             this.symbolSprite = new FSprite("Multiplayer_Death", true);
-            this.symbolSprite.color = customization.bodyColor;
+            this.symbolSprite.color = onlineColor;
             owner.hud.fContainers[0].AddChild(this.symbolSprite);
             this.symbolSprite.alpha = 0f;
             this.symbolSprite.x = -1000f;
+            
         }
 
         public override void Update()
@@ -138,7 +141,8 @@ namespace RainMeadow
             this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
             this.symbolSprite.x = vector.x;
             this.symbolSprite.y = Mathf.Min(vector.y + Custom.SCurve(Mathf.InverseLerp(40f, 130f, (float)this.counter + timeStacker), 0.8f) * 80f, this.owner.camera.sSize.y - 30f);
-            Color color = PlayerGraphics.DefaultSlugcatColor((this.owner.abstractPlayer.state as PlayerState).slugcatCharacter);
+            Color color = this.onlineColor;
+
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
                 if ((this.owner.abstractPlayer.state as PlayerState).slugcatCharacter == SlugcatStats.Name.White)
