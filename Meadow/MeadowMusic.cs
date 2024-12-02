@@ -16,6 +16,20 @@ namespace RainMeadow
 {
     public partial class MeadowMusic
     {
+        //Todo:
+        // Song Priority.
+        // Refactor and remove vanillas variables of songs (stopongate, startonlywhen X, remove that stuff) ,
+        // Inspect how vanilla treats song priority, for then to have
+        //   - songs given by yourself to yourself be given a normal priority, even when you're a host
+        //   - songs given to yourself by host to be given MAX priority
+        //
+        //- Make RPC for the host to interupt everyone else with a song  ,  !!!!!! still gotta !!!! do this !!!!!
+        //
+        //- Make it so that when you enter lobby/quit to menu/quit game , you leave the group simultaniously 
+        //
+        //note to self, you can set a shit in  volumegroups     check virtualmicrophone
+        //there's 5 of them,
+        
         public static void EnableMusic()
         {
             CheckFiles();
@@ -28,8 +42,156 @@ namespace RainMeadow
 
             On.Music.MusicPlayer.UpdateMusicContext += MusicPlayer_UpdateMusicContext;
             On.Music.MusicPiece.StopAndDestroy += MusicPiece_StopAndDestroy;
+
+
+            On.Music.MusicPlayer.GameRequestsSong += MusicPlayer_GameRequestsSong;
+            On.ActiveTriggerChecker.FireEvent += ActiveTriggerChecker_FireEvent;
+            On.SSOracleBehavior.TurnOffSSMusic += SSOracleBehavior_TurnOffSSMusic;
+            On.Music.SSSong.Update += SSSong_Update;
+            On.Music.MusicPlayer.RainRequestStopSong += MusicPlayer_RainRequestStopSong;
+
+            On.VirtualMicrophone.SoundObject.SetLowPassCutOff += SoundObject_SetLowPassCutOff;
+        
         }
 
+        private static void SoundObject_SetLowPassCutOff(On.VirtualMicrophone.SoundObject.orig_SetLowPassCutOff orig, VirtualMicrophone.SoundObject self, float effect)
+        {
+            if (effect == 0f && self.gameObject.GetComponent<AudioLowPassFilter>() != null)
+            {
+                UnityEngine.Object.Destroy(self.gameObject.GetComponent<AudioLowPassFilter>());
+            }
+            else if (effect > 0f && self.gameObject.GetComponent<AudioLowPassFilter>() == null)
+            {
+                self.gameObject.AddComponent<AudioLowPassFilter>();
+            }
+            if (effect > 0f)
+            {
+                self.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = Mathf.Lerp(22000f, 1500f, Mathf.Pow(effect, 0.5f)); // THIS PART is what causes the cuts, cuz it's not caring about being lerped
+            }
+        }
+
+
+        //Game music requests 
+        private static void MusicPlayer_RainRequestStopSong(On.Music.MusicPlayer.orig_RainRequestStopSong orig, MusicPlayer self) { if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) orig.Invoke(self); } //hehe Just in Case lmao
+
+        private static void SSSong_Update(On.Music.SSSong.orig_Update orig, SSSong self)
+        {
+            if (self.setVolume == null && self.destroyCounter > 150)
+            {
+                if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+                {
+                    //RPC to destroy everyone
+                }
+            }
+            orig(self);
+        }
+
+        private static void SSOracleBehavior_TurnOffSSMusic(On.SSOracleBehavior.orig_TurnOffSSMusic orig, SSOracleBehavior self, bool abruptEnd)
+        {
+            orig.Invoke(self, abruptEnd);
+
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (abruptEnd
+                    && self.oracle.room.game.manager.musicPlayer != null 
+                    && self.oracle.room.game.manager.musicPlayer.song != null 
+                    && self.oracle.room.game.manager.musicPlayer.song is SSSong
+                    )
+                {
+                    //self.oracle.room.game.manager.musicPlayer.song.FadeOut(2f);
+                    //do the rpc to mute everyone else here yeah yeah?
+                }
+            } // so yeah note to self that this is what you gotta do like,, yeah account for this bitch
+
+        }
+
+        private static void ActiveTriggerChecker_FireEvent(On.ActiveTriggerChecker.orig_FireEvent orig, ActiveTriggerChecker self)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                if (self.eventTrigger.tEvent == null)
+                {
+                    return;
+                }
+                if (self.eventTrigger.tEvent.type == TriggeredEvent.EventType.MusicEvent)
+                {
+                    //if (self.room.game.manager.musicPlayer != null 
+                        // && (self.room.game.world.rainCycle.MusicAllowed || self.room.roomSettings.DangerType == RoomRain.DangerType.None) 
+                        //&& (!self.room.game.IsStorySession || !self.room.game.GetStorySession.RedIsOutOfCycles) //oh wow that's cute, no more music, time to die cancer boy
+                    //    ) 
+                    //{
+                    //
+                    //}
+                    //no need to check RainRequestStopSong lmao  no rain dude
+                    self.room.game.manager.musicPlayer?.GameRequestsSong(self.eventTrigger.tEvent as MusicEvent);
+                }
+                else if (self.eventTrigger.tEvent.type == TriggeredEvent.EventType.StopMusicEvent) self.room.game.manager.musicPlayer?.GameRequestsSongStop(self.eventTrigger.tEvent as StopMusicEvent); //for when it wants to uhhh, loop thing? idek
+            }
+            else
+            {
+                orig.Invoke(self);
+            }
+        }
+
+        private static void MusicPlayer_GameRequestsSong(On.Music.MusicPlayer.orig_GameRequestsSong orig, MusicPlayer self, MusicEvent musicEvent)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                var smg = OnlineManager.lobby.GetData<LobbyMusicData>();
+                var inGroup = smg.playerGroups[OnlineManager.mePlayer.inLobbyId];
+                ushort hostId = inGroup == 0 ? (ushort)0U : smg.groupHosts[inGroup];
+
+                if (hostId == OnlineManager.mePlayer.inLobbyId)
+                {
+                    //hmmmmm, (!this.manager.rainWorld.setup.playMusic) is a thing? concerning...
+
+                    //PlaySong(musicEvent.songName) Since it's a 
+                    
+                    Song song = new(self, musicEvent.songName, MusicPlayer.MusicContext.StoryMode);
+                    song.fadeOutAtThreat = 6969f; //wont be important cuz we *set* the threatvariable anyways haha,,,,,
+                    //song.Loop = false;
+                    song.Loop = musicEvent.loop;
+                    //song.roomTransitions haha no need to set this  cuz PlayerToNewRoom isn't called when in meadowmode
+                    //actually, might be a bit important, cuz pebbles loop, we should want to find out what to do then,
+                    //presumably latch onto musicplayerupdate to if my (the host's) song is empty send: an empty ReplaceSong RPC, just to end the loop for everyone.
+                    song.priority = 420f;
+                    song.stopAtDeath = false;
+                    song.stopAtGate = false;
+
+
+                    if (self.song == null)
+                    {
+                        self.song = song;
+                        self.song.playWhenReady = true;
+                    }
+                    else
+                    {
+                    if (self.nextSong != null && (self.nextSong.priority >= musicEvent.prio || self.nextSong.name == musicEvent.songName))
+                        {
+                            return;
+                        }
+                        self.nextSong = song;
+                        self.nextSong.playWhenReady = false;
+                    }
+
+                    //do a method here that sends an RPC to everyone that they need to change their song to THIS SONG dude. (and mayb loop it too :))
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                orig.Invoke(self, musicEvent);
+            }
+        }
+
+
+
+
+
+        //musiccode
         private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
         {
             if (self.musicContext != null)
@@ -81,6 +243,8 @@ namespace RainMeadow
                     self.region = null;
                     return;
                 }
+                self.currentThreat = 0f;
+                self.currentMusicAgnosticThreat = 0f;
                 Creature player = mgm.avatars[0].realizedCreature;
                 if (player == null || player.room == null)
                 {
@@ -138,42 +302,42 @@ namespace RainMeadow
                     float highpassgoal = Mathf.Lerp(0f, 1200f, Mathf.Pow(self.ghostMode, 2.5f));    
                     self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, currenthighpass > highpassgoal ? 0.025f : 0.005f, 0.0f);
                 }
-
-                if (!player.room.world.singleRoomWorld)
-                {
-                    if (player.room.abstractRoom.index != self.room)
-                    {
-                        self.lastLastRoom = self.lastRoom;
-                        self.lastRoom = self.room;
-                        self.room = player.room.abstractRoom.index;
-                        if (self.room != self.lastLastRoom)
-                        {
-                            self.roomSwitches++;
-                            if (player.room.world.region.name != self.region)
-                            {
-                                self.region = player.room.world.region.name;
-                                self.musicPlayer.NewRegion(self.region);
-                            }
-                        }
-                    }
-                    if (self.roomSwitches > 0 && self.roomSwitchDelay > 0)
-                    {
-                        self.roomSwitchDelay--;
-                        if (self.roomSwitchDelay < 1)
-                        {
-                            if (self.musicPlayer.song != null)
-                            {
-                                self.musicPlayer.song.PlayerToNewRoom();
-                            }
-                                if (self.musicPlayer.nextSong != null)
-                            {
-                                self.musicPlayer.nextSong.PlayerToNewRoom();
-                            }
-                            self.roomSwitchDelay = UnityEngine.Random.Range(80, 400);
-                            self.roomSwitches--;
-                        }
-                    }
-                }
+                
+                //if (!player.room.world.singleRoomWorld)
+                //{
+                //    if (player.room.abstractRoom.index != self.room)
+                //    {
+                //        self.lastLastRoom = self.lastRoom;
+                //        self.lastRoom = self.room;
+                //        self.room = player.room.abstractRoom.index;
+                //        if (self.room != self.lastLastRoom)
+                //        {
+                //            self.roomSwitches++;
+                //            if (player.room.world.region.name != self.region)
+                //            {
+                //                self.region = player.room.world.region.name;
+                //                self.musicPlayer.NewRegion(self.region);
+                //            }
+                //        }
+                //    }
+                //    if (self.roomSwitches > 0 && self.roomSwitchDelay > 0)
+                //    {
+                //        self.roomSwitchDelay--;
+                //        if (self.roomSwitchDelay < 1)
+                //        {
+                //            if (self.musicPlayer.song != null)
+                //            {
+                //                self.musicPlayer.song.PlayerToNewRoom();
+                //            }
+                //                if (self.musicPlayer.nextSong != null)
+                //            {
+                //                self.musicPlayer.nextSong.PlayerToNewRoom();
+                //            }
+                //            self.roomSwitchDelay = UnityEngine.Random.Range(80, 400);
+                //            self.roomSwitches--;
+                //        }
+                //    }
+                //}
                 //else if ((self.musicPlayer.manager.currentMainLoop as RainWorldGame).IsArenaSession && (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == MoreSlugcatsEnums.GameTypeID.Challenge && (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta != null && !string.IsNullOrEmpty((self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta.threatMusic))
                 //{
                 //    string threatMusic = (self.musicPlayer.manager.currentMainLoop as RainWorldGame).GetArenaGameSession.chMeta.threatMusic;
@@ -335,6 +499,7 @@ namespace RainMeadow
                     self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
                     OnlineManager.lobby.owner.InvokeRPC(AskNowLeave);
                     demiseTimer = null;
+                    ivebeenpatientlywaiting = false;
                 }
             }
             if (groupdemiseTimer != null)
@@ -412,7 +577,7 @@ namespace RainMeadow
                            * (IDontWantToGoToZero ? 1f : 0f);
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
                 //reminder set vibeintensity to null on occasions where you go to menu or some shit
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? IDontWantToGoToZero?vibeIntensityTarget: 0f : vibeIntensity.Value, vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? (IDontWantToGoToZero?vibeIntensityTarget:0f) : vibeIntensity.Value, vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.05f;
                 if (musicPlayer != null && musicPlayer.song != null)
@@ -586,9 +751,14 @@ namespace RainMeadow
                 var creature = mgm.avatars[0];
                 var musicdata = creature.GetData<MeadowMusicData>();
 
+                if (portableDJ != null)
+                {
+                    song.priority = 255_207_64f; // :)
+                    song.stopAtDeath = false; //well, just to be sure!
+                    song.stopAtGate = false;
+                }
                 musicPlayer.song = song;
-                //if (!UpdateIntensity && vibeIntensity != null) musicPlayer.song.baseVolume = Mathf.Lerp(0.3f, 0f, vibeIntensity.Value); else musicPlayer.song.baseVolume = 0.3f;
-                //song.StartPlaying();
+                if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f)?0.3f:0f);
                 musicdata.providedSong = songtobesang;
                 musicdata.startedPlayingAt = LobbyTime();
                 RainMeadow.Debug("my song is now " + musicdata.providedSong);
@@ -609,8 +779,6 @@ namespace RainMeadow
         private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, float? DJstartedat)
         {
             loadingsong = true;
-            bool ProvidedItWorks = true;
-            string copesong = "";
             //just putting more and more technical debt onto songnames
             AudioClip? clipclip = null;
             string text1 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), providedsong, ".ogg" });
@@ -639,15 +807,7 @@ namespace RainMeadow
                 return null;
             }
 
-            Song song = new(musicPlayer, (ProvidedItWorks?providedsong:copesong), MusicPlayer.MusicContext.StoryMode)
-            {
-                playWhenReady = true,
-                volume = 1
-            };
-
-            MusicPiece.SubTrack sub = song.subTracks[0];
-            sub.isStreamed = true;
-
+            bool willfadein = false;
             if (DJstartedat != null) //Here the todo
             {
                 float hostsonglength = clipclip.length;
@@ -681,15 +841,23 @@ namespace RainMeadow
                 if (!ivebeenpatientlywaiting)
                 {
                     RainMeadow.Debug("Fading it in slowly");
-                    song.fadeInTime = 120f;
+                    willfadein = true;
                 }
             }
-            //todo find out why this wacks up when you're at multiplayer and then we'll be Good to go (clueless: :)) good to go  for everyone else to tear me into shreads :D ) 
+
+            Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
+            {
+                playWhenReady = true,
+                volume = 0
+            };
+
+            if (willfadein) song.fadeInTime = 120f;
+            else song.fadeInTime = 2f; 
+            MusicPiece.SubTrack sub = song.subTracks[0];
+            sub.isStreamed = true;
 
             sub.source.clip = clipclip;
-			sub.source.clip.LoadAudioData();
 			sub.readyToPlay = true;
-            sub.StartPlaying(); 
             loadingsong = false;
             return song;
         }

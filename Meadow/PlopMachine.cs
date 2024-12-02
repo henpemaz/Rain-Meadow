@@ -17,8 +17,20 @@ namespace RainMeadow
             On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
             On.VirtualMicrophone.SoundObject.Destroy += SoundObject_Destroy;
             On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
+            On.Menu.PauseMenu.ctor += PauseMenu_ctor1;
         }
 
+        private void PauseMenu_ctor1(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
+        {
+            orig.Invoke(self, manager, game);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            {
+                self.controlMap.RemoveSprites();
+                self.pages[0].subObjects.Remove(self.controlMap);
+            }
+            // i love technical debt!!!!!
+            // i just dislike seeing the menu text popping up 
+        }
 
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
         private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
@@ -384,6 +396,7 @@ namespace RainMeadow
                     if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyOldestPlop();
                     if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyOldestPlop();
                     var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, speed, false, 0);
+                    //thissound.volumeGroup = 3;
                     //var clipclip = thissound.audioSource;
                     //FeedAudioWetTrack(clipclip, vol, speed); TESTING
                     virtualMicrophone.soundObjects.Add(thissound);
@@ -431,6 +444,7 @@ namespace RainMeadow
                 public float pan; //-1 for left, 1 for right
                 public float lan;
                 public float ran;
+                public float phase;
                 public int oct;
                 public Plop(string length, int octave, int semitone, float volume, float pan)
                 {
@@ -464,6 +478,7 @@ namespace RainMeadow
                     ploptotallength =  2 * (plopattackmonosamples + plopreleasemonosamples);
                     ploprendered = 0;
 
+                    this.phase = UnityEngine.Random.Range(0f, 1f);
                     this.volume = volume * 0.2f * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
                     this.pan = pan + PlopInititationPan; 
 
@@ -505,12 +520,14 @@ namespace RainMeadow
                     AudioClip TrackClip = WetLoop.audioSource.clip;
                     float[] TrackClipData = new float[samplestorender*2];
                     TrackClip.GetData(TrackClipData, TrackSampleStartsAt + ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
+                    float attenuation = (1f - (float)oct / 20);
+                    float atan3 = Mathf.Atan(3);
                     Parallel.For(ploprendered*2, ploprendered * 2 + TrackClipData.Length, i =>
                     {
                         int ii = (i % 2 == 0 ? i / 2 : (i - 1) / 2);
                         float ipan = (i % 2 == 0 ? lan : ran);
                         float CurrentAmplitude;
-                        float iPhase = (ii * Mathf.PI * 2f * Frequency / 44100f);
+                        float iPhase = (ii * Mathf.PI * 2f * Frequency / 44100f) + phase;
 
                         if (ii < plopattackmonosamples)
                         {
@@ -521,37 +538,24 @@ namespace RainMeadow
                         {
                             CurrentAmplitude = Mathf.Pow((1.0f - (((float)(ii - plopattackmonosamples)) / plopreleasemonosamples)), 3);
                         }
-                        float iValue = volume * CurrentAmplitude * ipan * (1f - (float)oct / 20);
+                        float iValue = volume * CurrentAmplitude * ipan * attenuation;
 
-                        switch (type)
+                        TrackClipData[i - (ploprendered * 2)] += type switch
                         {
-                            case Wavetype.sineiloveyousineohmygodhavemybabies:
-                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue;
-                                break;
-
-                            case Wavetype.smoothsquareiwouldeatmyarmforthishoe:
-                                TrackClipData[i - (ploprendered * 2)] += Mathf.Atan(Mathf.Sin(iPhase) * 3) / Mathf.Atan(3) * iValue;
-                                break; //HOLY FUCKING SHIT IT WORKS 
-
-                            case Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck:
-                                TrackClipData[i - (ploprendered * 2)] += Mathf.Asin(Mathf.Cos(iPhase)) * iValue;
-                                break;
-                            case Wavetype.square: 
-                                TrackClipData[i - (ploprendered * 2)] += ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue) * 0.75f;
-                                break; //i make these formulas in celebration
-                            case Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude:
+                            Wavetype.sineiloveyousineohmygodhavemybabies => Mathf.Sin(iPhase) * iValue,
+                            Wavetype.smoothsquareiwouldeatmyarmforthishoe => Mathf.Atan(Mathf.Sin(iPhase) * 3) / atan3 * iValue,
+                            Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck => Mathf.Asin(Mathf.Cos(iPhase)) * iValue,
+                            Wavetype.square => ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue) * 0.75f,
                                 //TrackClipData[i - (ploprendered * 2)] += ((2*Mathf.Atan(Mathf.Tan(iPhase/2f)))/Mathf.PI) * iValue * 0.8f;
                                 //TrackClipData[i - (ploprendered * 2)] += sum of ((2/(n*mathf.pi)) * Mathf.Sin(iPhase*n))
-                                TrackClipData[i - (ploprendered * 2)] += (Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue;
+                                //TrackClipData[i - (ploprendered * 2)] += (Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue;
                                 //TrackClipData[i - (ploprendered * 2)] += (((ii * Frequency / 44100f) - Mathf.Floor(ii * Frequency / 44100f)) * 2f - 1f) * iValue;
-                                break;
-                            case Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest:
-                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue; //Todo :D Make something cool
-                                break;
-                            default:
-                                TrackClipData[i - (ploprendered * 2)] += Mathf.Sin(iPhase) * iValue;
-                                break;
-                        }
+                                //(Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue,//TrackClipData[i - (ploprendered * 2)] += ((2*Mathf.Atan(Mathf.Tan(iPhase/2f)))/Mathf.PI) * iValue * 0.8f;
+                                //mod(x, 1)
+                            Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude => ((((iPhase/(Mathf.PI*2))%1f)*2)-1f)*iValue,
+                            Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest => Mathf.Sin(iPhase) * iValue,//Todo :D Make something cool
+                            _ => Mathf.Sin(iPhase) * iValue,
+                        };;
                         //Previous Formulas for Amplitudes
                         //CurrentAmplitude = (Mathf.Pow(2, 16f * attackexponent * ((float)ii / (float)MonoSamplesOfAttack)) - 1f) / (Mathf.Pow(2, 16.0f * attackexponent) - 1f);
                         //CurrentAmplitude = 1.0f - (Mathf.Pow(2, 16.0f * releaseexponent * ((float)(ii - MonoSamplesOfAttack) / (float)(WaveData.Length - MonoSamplesOfAttack))) - 1) / (Mathf.Pow(2, 16.0f * releaseexponent) - 1f);
@@ -613,7 +617,7 @@ namespace RainMeadow
                         plop.Update();
                     };
                     int float2 = DateTime.Now.Millisecond;
-                    if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop{plops.Count} calculations: " + (float2 - float1));
+                    if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop ({plops.Count}) calculations: " + (float2 - float1));
 
                 }
                 if (plopstoremove.Count > 0)
@@ -1150,7 +1154,10 @@ namespace RainMeadow
                         attempts++;
                     } while (!willmodify && attempts < 4);
 
-                    if (attempts >= 4) { RainMeadow.Debug("Oh no can't fuck with it"); }
+                    if (attempts >= 4) 
+                    { 
+                        //RainMeadow.Debug("Oh no can't fuck with it"); 
+                    }
                     else
                     {
                         LiaisonList[indexofwhereitathomie] = liaison;

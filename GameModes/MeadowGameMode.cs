@@ -56,7 +56,7 @@ namespace RainMeadow
 
         internal override void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
         {
-            if(avatars.Count > 0 && avatars[0].roomSession == inResource)
+            if (oe is OnlineCreature && inResource is RoomSession)
             {
                 MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //for some reason it's calling enterresource instead of this for a slugcat entering the room next to you
             }
@@ -64,7 +64,7 @@ namespace RainMeadow
 
         internal override void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
         {
-            if (avatars.Count > 0 && avatars[0].roomSession == inResource)
+            if (oe is OnlineCreature && inResource is RoomSession)
             {
                 MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
