@@ -111,7 +111,7 @@ namespace RainMeadow
 
             if (modsToEnable.Count > 0)
             {
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToEnable = modsToEnable;
             }
             if (modsToDisable.Count > 0)
