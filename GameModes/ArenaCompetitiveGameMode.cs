@@ -29,7 +29,7 @@ namespace RainMeadow
 
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-        public bool countdownInitiatedHoldFire = true;
+        public bool countdownInitiatedHoldFire;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;

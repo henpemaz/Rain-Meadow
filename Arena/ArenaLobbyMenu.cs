@@ -67,9 +67,9 @@ namespace RainMeadow
 
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-            //SetupCharacterCustomization();
             initiatedStartGameForClient = false;
             arena.currentGameMode = Competitive.CompetitiveMode.value;
+            
         }
 
 
@@ -301,10 +301,11 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Error("Could not find gamemode link to current game mode! Setting to Competitive as a fallback");
-
+                RainMeadow.Error("Could not find gamemode in list! Setting to Competitive as a fallback");
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
             }
             arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
+
         }
 
         private void StartGame()
@@ -376,7 +377,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            RainMeadow.Debug(arena.currentGameMode);
+            RainMeadow.Debug(GetGameTypeSetup.denEntryRule);
 
 
 
@@ -521,19 +522,55 @@ namespace RainMeadow
                 infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
 
-            if (message == "NEXTONLINEGAME")
+            if (OnlineManager.lobby.isOwner)
             {
-                var gameModesList = arena.registeredGameModes.ToList();
+                if (message == "NEXTONLINEGAME")
+                {
+                    var gameModesList = arena.registeredGameModes.ToList();
 
-                // Find the current game mode entry
-                var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+                    // Find the current game mode entry
+                    var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
 
-                // Get the next mode in the list, or wrap around to the first mode if at the end
-                var nextModeIndex = (currentModeIndex + 1) % gameModesList.Count;
+                    // Get the next mode in the list, or wrap around to the first mode if at the end
+                    var nextModeIndex = (currentModeIndex + 1) % gameModesList.Count;
 
-                // Update the current game mode
-                arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
-                arena.currentGameMode = gameModesList[nextModeIndex].Value;
+                    // Update the current game mode
+                    arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
+                    arena.currentGameMode = gameModesList[nextModeIndex].Value;
+                    arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
+
+                }
+
+                if (message == "PREVONLINEGAME")
+                {
+                    var gameModesList = arena.registeredGameModes.ToList();
+
+                    // Find the current game mode entry
+                    int currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+
+                    // Handle the case when we're at the beginning of the list
+                    if (currentModeIndex > 0)
+                    {
+                        // Get the previous mode in the list
+                        int prevModeIndex = currentModeIndex - 1;
+                        arena.onlineArenaGameMode = gameModesList[prevModeIndex].Key;
+                        arena.currentGameMode = gameModesList[prevModeIndex].Value;
+
+                        // Initialize the custom game type
+                    }
+                    else
+                    {
+                        // Handle the case when we're already at the beginning
+                        // You might want to wrap around to the last mode here
+                        arena.onlineArenaGameMode = gameModesList[gameModesList.Count - 1].Key;
+                        arena.currentGameMode = gameModesList[gameModesList.Count - 1].Value;
+
+                        // Initialize the custom game type
+                    }
+                    arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
+
+                }
+
             }
         }
 

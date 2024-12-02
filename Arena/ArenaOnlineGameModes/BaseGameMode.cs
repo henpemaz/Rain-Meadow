@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using JollyCoop;
+using System.Text.RegularExpressions;
 using Menu;
-using RWCustom;
-using UnityEngine;
 namespace RainMeadow
 {
     public abstract class InternalArenaGameMode
@@ -17,7 +15,7 @@ namespace RainMeadow
 
         public virtual void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
-            orig(self, game);
+           
         }
 
         public abstract void InitAsCustomGameType(ArenaSetup.GameTypeSetup self);
@@ -27,10 +25,22 @@ namespace RainMeadow
             return "";
         }
 
-        public virtual int SetTimer()
+        public virtual int SetTimer(ArenaOnlineGameMode arena)
         {
-            return RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            return arena.setupTime = 1;
         }
+
+        public virtual void ResetGameTimer()
+        {
+            _timerDuration = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            
+        }
+
+        //public void ResetViolence(ArenaOnlineGameMode arena)
+        //{
+        //    arena.countdownInitiatedHoldFire = HoldFireWhileTimerIsActive();
+        //    arena.playerEnteredGame = 0;
+        //}
 
         public virtual int TimerDirection(int timer)
         {
@@ -49,5 +59,20 @@ namespace RainMeadow
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
         }
+        public virtual void ArenaCreatureSpawner_SpawnCreatures(ArenaOnlineGameMode arena, On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
+        {
+
+        }
+
+        public virtual void ArenaImage(ArenaOnlineGameMode arena, On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
+        {
+
+        }
+
+        public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+        {
+            return arena.countdownInitiatedHoldFire;
+        }
+
     }
 }

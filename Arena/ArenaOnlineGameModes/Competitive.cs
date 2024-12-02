@@ -46,9 +46,9 @@ namespace RainMeadow
             self.saveCreatures = false;
         }
 
-        public override int SetTimer()
+        public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            return RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            return arena.setupTime =  RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
         public override int TimerDuration
         {
@@ -60,6 +60,5 @@ namespace RainMeadow
             return --timer;
         }
 
-        
     }
 }

@@ -21,17 +21,6 @@ namespace RainMeadow
             return false;
         }
 
-        //public static bool isArenaOnslaughtMode(ArenaOnlineGameMode arena, out Onslaught onslaught)
-        //{
-        //    onslaught = null;
-        //    if (arena.currentGameMode == Onslaught.OnslaughtMode.value)
-        //    {
-        //        onslaught = (arena.onlineArenaGameMode as Onslaught);
-        //        return true;
-        //    }
-        //    return false;
-        //}
-
         public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
         {
             if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
@@ -114,6 +103,7 @@ namespace RainMeadow
             if (isArenaMode(out var arena) && !arena.registeredNewGameModes)
             {
                 arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+            
                 arena.registeredNewGameModes = true;
             }
         }
@@ -133,7 +123,7 @@ namespace RainMeadow
         }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 var slugList = ArenaHelpers.AllSlugcats();
                 var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
@@ -156,6 +146,7 @@ namespace RainMeadow
                     color = 0;
                     return "MultiplayerPortrait" + color + "1-" + classID.ToString();
                 }
+                arena.onlineArenaGameMode.ArenaImage(arena, orig, self, classID, color);
                 return orig(self, classID, color);
             }
             else
@@ -674,6 +665,7 @@ namespace RainMeadow
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
+                arena.onlineArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
 
@@ -1005,11 +997,14 @@ namespace RainMeadow
 
         private void ArenaCreatureSpawner_SpawnArenaCreatures(On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 if (OnlineManager.lobby.isOwner)
                 {
                     RainMeadow.Debug("Spawning creature");
+
+                    arena.onlineArenaGameMode.ArenaCreatureSpawner_SpawnCreatures(arena, orig, game, wildLifeSetting, ref availableCreatures, ref unlocks);
+
                     orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
                 }
                 else
@@ -1242,6 +1237,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                RainMeadow.Debug(arena.onlineArenaGameMode);
 
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
