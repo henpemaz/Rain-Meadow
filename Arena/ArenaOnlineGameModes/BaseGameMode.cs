@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using Menu;
 namespace RainMeadow
 {
-    public abstract class InternalArenaGameMode
+    public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
 
@@ -27,7 +27,7 @@ namespace RainMeadow
 
         public virtual int SetTimer(ArenaOnlineGameMode arena)
         {
-            return arena.setupTime = 1;
+            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
 
         public virtual void ResetGameTimer()

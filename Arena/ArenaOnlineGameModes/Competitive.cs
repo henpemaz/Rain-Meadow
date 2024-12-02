@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 namespace RainMeadow
 {
-    public class Competitive : InternalArenaGameMode
+    public class Competitive : ExternalArenaGameMode
     {
 
         public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: true);

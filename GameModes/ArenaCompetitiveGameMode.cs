@@ -8,9 +8,9 @@ namespace RainMeadow
     public class ArenaOnlineGameMode : OnlineGameMode
     {
 
-        public InternalArenaGameMode onlineArenaGameMode;
+        public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
-        public Dictionary<InternalArenaGameMode, string> registeredGameModes;
+        public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
 
         public bool registeredNewGameModes = false;
 
@@ -52,7 +52,7 @@ namespace RainMeadow
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
-            registeredGameModes = new Dictionary<InternalArenaGameMode, string>();
+            registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
 
         }
 
