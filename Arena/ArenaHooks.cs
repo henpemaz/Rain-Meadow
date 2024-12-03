@@ -82,12 +82,21 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1; ;
+            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
 
         }
 
+        private void ArenaSettingsInterface_Update(On.Menu.ArenaSettingsInterface.orig_Update orig, Menu.ArenaSettingsInterface self)
+        {
+            orig(self);
+            if (isArenaMode(out var _) && self.spearsHitCheckbox != null && OnlineManager.lobby.isOwner)
+            {
+                self.spearsHitCheckbox.buttonBehav.greyedOut = false;
 
+            }
+        }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {
             if (isArenaMode(out var _))
