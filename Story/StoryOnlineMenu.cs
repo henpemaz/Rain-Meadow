@@ -96,12 +96,21 @@ namespace RainMeadow
             {
                 storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
                 storyGameMode.region = CurrentRegion();
-                startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                }
             }
             else
             {
-                startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
-                onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : $" - {storyGameMode.region}");
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
+                }
+                if (onlineDifficultyLabel != null)
+                {
+                    onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : $" - {storyGameMode.region}");
+                }
             }
         }
 
