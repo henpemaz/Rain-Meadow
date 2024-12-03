@@ -47,6 +47,19 @@ namespace RainMeadow
             }
         }
 
+        public void ReadTo(Deer.PlayerInAntlers playerInAntlers)
+        {
+            var deer = playerInAntlers.deer;
+            if (!deer.playersInAntlers.Contains(playerInAntlers))
+                deer.playersInAntlers.Add(playerInAntlers);
+            playerInAntlers.dangle = dangle;
+            if (playerInAntlers.stance is Deer.PlayerInAntlers.GrabStance stance)
+            {
+                stance.upper = upperAntlerPoint?.GetAntlerPoint();
+                stance.lower = lowerAntlerPoint?.GetAntlerPoint();
+            }
+        }
+
         public void ReadTo(Player player)
         {
             if (onlineDeer?.apo.realizedObject is not Deer deer) { RainMeadow.Error("deer not found: " + onlineDeer); return; }
@@ -56,14 +69,7 @@ namespace RainMeadow
                 player.playerInAntlers = null;
             }
             player.playerInAntlers ??= new Deer.PlayerInAntlers(player, deer);
-            if (!deer.playersInAntlers.Contains(player.playerInAntlers))
-                deer.playersInAntlers.Add(player.playerInAntlers);
-            player.playerInAntlers.dangle = dangle;
-            if (player.playerInAntlers.stance is Deer.PlayerInAntlers.GrabStance stance)
-            {
-                stance.upper = upperAntlerPoint?.GetAntlerPoint();
-                stance.lower = lowerAntlerPoint?.GetAntlerPoint();
-            }
+            this.ReadTo(player.playerInAntlers);
         }
     }
 
@@ -168,7 +174,7 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
-            if (playerInAntlersState != null) this.chunkPosThreshold = 4f;
+            if (playerInAntlersState != null) this.chunkPosLeniency = 20f * 4;
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlineCreature).apo.realizedObject is Player pl)
             {

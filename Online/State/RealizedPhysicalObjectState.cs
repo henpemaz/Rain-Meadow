@@ -8,7 +8,7 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
-        public float chunkPosThreshold = 0f;
+        public float chunkPosLeniency = 0f;
 
         [OnlineField] // todo field that does sequenceequals or type that handles these better
         private ChunkState[] chunkStates; // pretty sure these get sent every time because the array comparison doesn't do sequenceequal but does referenceequal instead
@@ -28,12 +28,13 @@ namespace RainMeadow
             var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
             for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
             {
-                chunkStates[i].ReadTo(po.bodyChunks[i], chunkPosThreshold);
+                chunkStates[i].ReadTo(po.bodyChunks[i], chunkPosLeniency);
             }
             if (po.collisionLayer != collisionLayer)
             {
                 po.ChangeCollisionLayer(collisionLayer);
             }
+            this.chunkPosLeniency = 0f;  // restore to default in case this object is reused
         }
     }
 
@@ -59,7 +60,7 @@ namespace RainMeadow
 
         public void ReadTo(BodyChunk c, float threshold = 0f)
         {
-            if (threshold == 0 || threshold > 0 && !pos.CloseEnough(c.pos, threshold))
+            if (threshold == 0f || (threshold > 0f && !pos.CloseEnough(c.pos, threshold * threshold)))
                 c.pos = pos;
             c.vel = vel;
         }
