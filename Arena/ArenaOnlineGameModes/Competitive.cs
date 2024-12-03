@@ -31,7 +31,7 @@ namespace RainMeadow
 
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
         {
-            return false;
+            return true;
         }
         public override string TimerText()
         {
@@ -67,6 +67,11 @@ namespace RainMeadow
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             return arena.countdownInitiatedHoldFire = true;
+        }
+
+        public override string AddCustomIcon(ArenaOnlineGameMode arena)
+        {
+            return "ShortcutGate";
         }
     }
 }

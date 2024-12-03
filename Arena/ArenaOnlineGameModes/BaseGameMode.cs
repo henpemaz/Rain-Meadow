@@ -45,7 +45,7 @@ namespace RainMeadow
             
         }
 
-        public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, On.HUD.HUD.orig_InitMultiplayerHud orig, HUD.HUD self, ArenaGameSession session)
+        public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
             self.AddPart(new ChatHud(self, session.game.cameras[0]));
@@ -66,6 +66,11 @@ namespace RainMeadow
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             return arena.countdownInitiatedHoldFire;
+        }
+
+        public virtual string AddCustomIcon(ArenaOnlineGameMode arena)
+        {
+            return "";
         }
 
     }

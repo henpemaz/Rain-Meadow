@@ -127,6 +127,10 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
+                    else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena) != "")
+                    {
+                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena));
+                    }
                     else slugIcon.SetElementByName(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(onlineTimeSinceSpawn / fadeSpeed) + 1f) / 2f);

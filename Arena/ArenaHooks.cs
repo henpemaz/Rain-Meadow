@@ -95,9 +95,18 @@ namespace RainMeadow
 
             On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
             On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
         }
 
+        private void ArenaSettingsInterface_Update(On.Menu.ArenaSettingsInterface.orig_Update orig, Menu.ArenaSettingsInterface self)
+        {
+            orig(self);
+            if (isArenaMode(out var _) && self.spearsHitCheckbox != null && OnlineManager.lobby.isOwner)
+            {
+                self.spearsHitCheckbox.buttonBehav.greyedOut = false;
 
+            }
+        }
         private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
         {
             if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
@@ -1051,7 +1060,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, orig, self, session);
+                arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
 
             }
             else
