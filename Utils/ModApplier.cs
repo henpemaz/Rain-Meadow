@@ -111,12 +111,12 @@ namespace RainMeadow
 
             if (modsToEnable.Count > 0)
             {
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToEnable = modsToEnable;
             }
             if (modsToDisable.Count > 0)
             {
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that will be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
                 this.modsToDisable = modsToDisable;
             }
             if (unknownMods.Count > 0)
@@ -125,13 +125,17 @@ namespace RainMeadow
                 this.unknownMods = unknownMods;
             }
 
-            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Please confirm to auto-apply these changes, or cancel and return to lobby");
+            modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
 
             Action confirmProceed = () =>
             {
+                manager.dialog = null;
+                requiresRestartDialog = null;
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
-                Start(filesInBadState);
-
+                //Start(filesInBadState);
+                
             };
 
             Action cancelProceed = () =>
@@ -144,16 +148,19 @@ namespace RainMeadow
             };
 
 
+            //checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
 
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+            requiresRestartDialog = new DialogNotify(modMismatchString, manager, confirmProceed);
 
-            manager.ShowDialog(checkUserConfirmation);
+            //manager.ShowDialog(checkUserConfirmation);
+
+            manager.ShowDialog(requiresRestartDialog);
 
 
 
         }
 
-        public new void Start(bool filesInBadState)
+        public new void Start(bool filesInBadState) // todo fix me
         {
 
             if (unknownMods.Count > 0)
