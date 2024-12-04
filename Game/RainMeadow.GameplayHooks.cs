@@ -303,10 +303,19 @@ namespace RainMeadow
 
             if (self.IsClosing)
             {
-                if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
+                if (storyGameMode != null)
                 {
-                    storyGameMode.myLastDenPos = self.room.abstractRoom.name;
-                    storyGameMode.hasSheltered = true;
+                    if (storyGameMode.storyClientData.readyForWin)
+                    {
+                        var absPlayer = self.room.game.Players.First();
+                        storyGameMode.myLastDenPos = absPlayer.pos.ResolveRoomName();
+                        storyGameMode.swallowedItem = (absPlayer.realizedCreature as Player)?.objectInStomach.ToString();
+                        storyGameMode.hasSheltered = true;
+                    }
+                    else
+                    {
+                        storyGameMode.myLastDenPos = self.room.abstractRoom.name;
+                    }
                 }
             }
         }

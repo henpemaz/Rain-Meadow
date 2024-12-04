@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -25,6 +26,7 @@ namespace RainMeadow
         public StoryClientSettingsData storyClientData;
 
         public string? myLastDenPos = null;
+        public string? swallowedItem = null;  // NOTE: does not spawn the item, simply identifies which to reclaim
         public bool hasSheltered = false;
 
         public void Sanitize()
@@ -36,6 +38,7 @@ namespace RainMeadow
             readyForGate = 0;
             defaultDenPos = null;
             myLastDenPos = null;
+            swallowedItem = null;
             region = null;
             saveStateString = null;
             storyClientData?.Sanitize();
@@ -209,9 +212,55 @@ namespace RainMeadow
             storyClientData.Sanitize();
         }
 
+        private void PlayerSwallow(Player player, AbstractPhysicalObject apo)
+        {
+            apo.realizedObject?.RemoveFromRoom();
+            if (apo.GetOnlineObject(out var opo)) opo.realized = false;
+            apo.Abstractize(player.abstractCreature.pos);
+            apo.Room.RemoveEntity(apo);
+            apo.InDen = true;
+            apo.pos.WashNode();
+            player.objectInStomach = apo;
+        }
+
         public override void PostGameStart(RainWorldGame game)
         {
             base.PostGameStart(game);
+            if (swallowedItem is not null && game.world.GetResource() is WorldSession ws && !ws.isOwner
+                && game.FirstAnyPlayer?.realizedCreature is Player player && player.objectInStomach is null)
+            {
+                // compare object type and extradata
+                var arr = swallowedItem.Split('<');
+                foreach (var apo in game.FirstAlivePlayer.Room.entities.OfType<AbstractPhysicalObject>())
+                {
+                    var arr2 = apo.ToString().Split('<');
+                    if (arr[1] == arr2[1] && arr.Skip(3).SequenceEqual(arr2.Skip(3)))
+                    {
+                        if (apo.GetOnlineObject(out var opo) && !opo.isMine)
+                        {
+                            try
+                            {
+                                opo.Request();
+                                (opo.pendingRequest as RPCEvent).Then((result) =>
+                                {
+                                    if (result is GenericResult.Ok && player.objectInStomach is null)
+                                    {
+                                        PlayerSwallow(player, apo);
+                                    }
+                                });
+                            }
+                            catch (Exception e)
+                            {
+                                RainMeadow.Error($"couldn't claim swallowed item {opo}: {e}");
+                            }
+                        }
+                        else
+                        {
+                            PlayerSwallow(player, apo);
+                        }
+                    }
+                }
+            }
         }
 
         public override void GameShutDown(RainWorldGame game)

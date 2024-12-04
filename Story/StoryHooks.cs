@@ -851,7 +851,7 @@ namespace RainMeadow
             return s;
         }
 
-        private static string SaveStateToString(SaveState? saveState)
+        private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
 
@@ -877,7 +877,7 @@ namespace RainMeadow
             var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
-                currentSaveState.progression ??= self;
+                currentSaveState.progression ??= self;  // HACK: fixes SaveStateToString nullref, not sure why
                 if (OnlineManager.lobby.isOwner)
                 {
                     storyGameMode.saveStateString = SaveStateToString(currentSaveState);
@@ -893,8 +893,6 @@ namespace RainMeadow
                 {
                     storyGameMode.defaultDenPos = currentSaveState.denPosition;
                 }
-
-                return currentSaveState;
             }
 
             return currentSaveState;
