@@ -92,6 +92,7 @@ namespace RainMeadow
 
         public readonly AbstractPhysicalObject apo;
         public bool realized;
+        public bool lenientPos;
 
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
