@@ -96,6 +96,22 @@ namespace RainMeadow
             On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
             On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
             On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
+
+            On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;            
+        }
+
+
+        private Color CreatureSymbol_ColorOfCreature(On.CreatureSymbol.orig_ColorOfCreature orig, IconSymbol.IconSymbolData iconData)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (iconData.critType == CreatureTemplate.Type.Slugcat)
+                {
+                    return Color.white;
+                }
+            }
+
+            return orig(iconData);
         }
 
         private void ArenaSettingsInterface_Update(On.Menu.ArenaSettingsInterface.orig_Update orig, Menu.ArenaSettingsInterface self)
@@ -179,7 +195,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                
+
                 if (!player.IsLocal())
                 {
                     return;
@@ -242,11 +258,6 @@ namespace RainMeadow
                             {
                                 flag = false;
                             }
-
-                            //if (addToAliveTime && flag && !self.sessionEnded && self.game.pauseMenu == null)
-                            //{
-                            //    self.arenaSitting.players[j].timeAlive++;
-                            //}
 
                             if (dontCountSandboxLosers && self.arenaSitting.players[j].sandboxWin < 0)
                             {
@@ -1262,6 +1273,8 @@ namespace RainMeadow
                         }
                     }
                 }
+
+                arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)
                 {

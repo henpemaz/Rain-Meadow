@@ -16,7 +16,7 @@ namespace RainMeadow
 
         public virtual void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
-           
+
         }
 
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
@@ -46,7 +46,7 @@ namespace RainMeadow
         public virtual void ResetGameTimer()
         {
             _timerDuration = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
-            
+
         }
 
         public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
@@ -55,7 +55,7 @@ namespace RainMeadow
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
-            
+
         }
         public virtual void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
         {
@@ -220,6 +220,11 @@ namespace RainMeadow
                     getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
                 }
             }
+        }
+
+        public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
+        {
+
         }
 
     }
