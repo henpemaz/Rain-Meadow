@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace RainMeadow
 {
@@ -84,7 +83,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        static void AskNowLeave(RPCEvent rpcEvent)
+        public static void AskNowLeave(RPCEvent rpcEvent)
         {
             RainMeadow.Debug($"{rpcEvent.from} is asking to leave");
             if (!OnlineManager.lobby.isOwner) return;
@@ -92,6 +91,39 @@ namespace RainMeadow
             var lmd = OnlineManager.lobby.GetData<LobbyMusicData>();
             var who = rpcEvent.from.inLobbyId;
             lmd.PlayerLeaveGroups(who);
+        }
+
+        [RPCMethod]
+        public static void BroadcastInterruption(RPCEvent rpcEvent, string song = "")
+        {
+            RainMeadow.Debug($"{rpcEvent.from} is trying to broadcast an interruption");
+            //A double check if this guy really is a host
+            var mgrr = OnlineManager.lobby.GetData<LobbyMusicData>();
+            var from = rpcEvent.from.inLobbyId;
+            var itsgroup = mgrr.playerGroups[from];
+            if (mgrr.groupHosts[itsgroup] != from) return;
+            RainMeadow.Debug("It is a host");
+            //ok they are, interupt the song of everyone in their group
+            foreach(var player in mgrr.playerGroups.Where(p => p.Value == itsgroup))
+            {
+                if (player.Key == from) continue;
+                RainMeadow.Debug("Sending an rpc to " + player.Key + " of the song: " + song);
+                OnlineManager.lobby.PlayerFromId(player.Key).InvokeRPC(InteruptSong, song);
+            }
+        }
+
+        [RPCMethod]
+        static void InteruptSong(string song)
+        {
+            RainMeadow.Debug("Im getting my song interrupted");
+            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (game == null) return; //if not in game, don't do this
+            var musicPlayer = game.manager.musicPlayer;
+            if (musicPlayer != null)
+            {
+                RainMeadow.Debug("yeah it's musicplayer time");
+                _ = PlaySong(musicPlayer, song);
+            }
         }
 
         [RPCMethod]

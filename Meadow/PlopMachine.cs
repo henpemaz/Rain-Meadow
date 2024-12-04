@@ -1708,7 +1708,6 @@ namespace RainMeadow
             }
         }
 
-
         bool ol1;
         bool ol2 = true;
         bool ol3;
@@ -1720,9 +1719,10 @@ namespace RainMeadow
             var mic = self.cameras[0].virtualMicrophone;
             CurrentRegion = self.world.region.name;
             CurrentRegion ??= "sl";
+            //note to self, you can set a shit in  volumegroups     check virtualmicrophone
+            //there's 5 of them,
 
-            currentagora = Mathf.Lerp(currentagora, agora, 0.1f); //TESTING, actual value = 0.005
-            //RainMeadow.Debug("Next procedural: " + (self.manager.musicPlayer.nextProcedural == null) + " Nextsong: " + (self.manager.musicPlayer.nextSong == null));
+            currentagora = Mathf.Lerp(currentagora, agora, 0.008f); 
             if (MeadowMusic.AllowPlopping)
             {
                 
@@ -1731,17 +1731,16 @@ namespace RainMeadow
                 fichtean = (Mathf.Pow(x, 1/(currentagora/2 + 1))+x)/2;
                 PlayEntry();
                 DrumMachine.Update(mic, this);
+                ThanatosSlayGirl();
+            
             }
 
-            ThanatosSlayGirl();
-            //WetData.Update();
-
-            if (Input.GetKey("1") && !ol2)
+            if (Input.GetKey("f") && !ol2)
             {
-                RainMeadow.Debug("Manually fading out song");
-                self.manager.musicPlayer.song.FadeOut(30f);
+                //RainMeadow.Debug("Manually fading out song");
+                //self.manager.musicPlayer.song.FadeOut(30f);
             }
-            ol2 = Input.GetKey("1");
+            ol2 = Input.GetKey("f");
 
 
             if (Input.GetKey("e") && !ol1)

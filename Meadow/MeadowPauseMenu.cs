@@ -49,8 +49,8 @@ namespace RainMeadow
                     this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
-                pos.y -= (buttonCount) * 40f;
-                SimplerButton button = new SimplerButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription);
+                pos.y -= (buttonCount) * 40f; 
+                SimplerButton button = new SimplerButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription, true);
                 button.OnClick += onClick;
                 button.nextSelectable[0] = button;
                 button.nextSelectable[2] = button;
@@ -88,14 +88,16 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             base.PlaySound(SoundID.HUD_Exit_Game);
+            OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.AskNowLeave);
             manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowMenu);
         }
 
         private void Passage(SimplerButton button)
         {
             RainMeadow.DebugMe();
-            this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.FastTravelScreen);
             base.PlaySound(SoundID.MENU_Passage_Button);
+            OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.AskNowLeave);
+            this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.FastTravelScreen);
         }
 
         private void ToOutskirts(SimplerButton button)

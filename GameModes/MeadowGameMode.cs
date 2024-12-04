@@ -128,7 +128,8 @@ namespace RainMeadow
 
         public override void PlayerLeftLobby(OnlinePlayer player)
         {
-            base.PlayerLeftLobby(player); if (lobby.isOwner)
+            base.PlayerLeftLobby(player); 
+            if (lobby.isOwner)
             {
                 var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
                 musicdata.PlayerLeaveGroups(player.inLobbyId);
