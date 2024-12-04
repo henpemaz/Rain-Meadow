@@ -54,12 +54,21 @@ namespace RainMeadow
         }
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
-            var lobbyCheatMods = GetCheatMods(lobbyMods);
-            var localCheatMods = GetCheatMods(localMods);
-            if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(lobbyCheatMods))
-                && !(localCheatMods.Any() && !lobbyCheatMods.Any()))
+            if (GetCheatMods(lobbyMods).Any())
             {
-                RainMeadow.Debug("Same mod set !");
+                // ignore all cheats  // TODO: handle cheat load order?
+                lobbyMods = lobbyMods.Except(cheatMods).ToArray();
+                localMods = localMods.Except(cheatMods).ToArray();
+            }
+            RainMeadow.Debug($"lobbyMods: [ {string.Join(", ", lobbyMods)} ]");
+            RainMeadow.Debug($"localMods: [ {string.Join(", ", localMods)} ]");
+            if (Enumerable.SequenceEqual(localMods, lobbyMods))
+            {
+                RainMeadow.Debug("Same mod set");
+            }
+            else if (localMods.ToHashSet().SetEquals(lobbyMods))
+            {
+                RainMeadow.Debug("Same mod set, but different order");  // TODO ask user to reorder
             }
             else
             {

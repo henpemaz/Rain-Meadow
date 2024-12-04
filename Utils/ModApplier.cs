@@ -105,9 +105,7 @@ namespace RainMeadow
 
         public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
-
             modMismatchString = menu.Translate("Mod mismatch detected.") + Environment.NewLine;
-
 
             if (modsToEnable.Count > 0)
             {
@@ -127,16 +125,12 @@ namespace RainMeadow
 
             modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
 
+            /* TODO: fix modapplier
             Action confirmProceed = () =>
             {
-                manager.dialog = null;
-                requiresRestartDialog = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
-                //Start(filesInBadState);
-                
+                Start(filesInBadState);
             };
+            */
 
             Action cancelProceed = () =>
             {
@@ -144,20 +138,13 @@ namespace RainMeadow
                 requiresRestartDialog = null;
                 OnlineManager.LeaveLobby();
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
             };
 
-
             //checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
-
-            requiresRestartDialog = new DialogNotify(modMismatchString, manager, confirmProceed);
-
             //manager.ShowDialog(checkUserConfirmation);
 
+            requiresRestartDialog = new DialogNotify(modMismatchString, manager, cancelProceed);
             manager.ShowDialog(requiresRestartDialog);
-
-
-
         }
 
         public new void Start(bool filesInBadState) // todo fix me
