@@ -143,8 +143,13 @@ namespace RainMeadow
                         SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
                     }
                 };
+                playerButtons.Add(btn);
+            }
+            foreach (var btn in playerButtons)
+            {
                 this.pages[0].subObjects.Add(btn);
             }
+
         }
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
