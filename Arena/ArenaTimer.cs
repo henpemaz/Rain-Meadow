@@ -70,7 +70,7 @@ namespace RainMeadow
             {
                 if (showMode == TimerMode.Waiting)
                 {
-                    safetyCatchTimer++;
+                    arena.onlineArenaGameMode.TimerDirection(arena, safetyCatchTimer);
                 }
 
                 if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)

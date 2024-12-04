@@ -179,7 +179,11 @@ namespace RainMeadow
                 {
                     return;
                 }
-
+                
+                if (!player.IsLocal())
+                {
+                    return;
+                }
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
                 {
 
@@ -195,7 +199,7 @@ namespace RainMeadow
                         continue;
                     }
 
-                    self.arenaSitting.players[i].AddSandboxScore(self.GameTypeSetup.spearHitScore);
+                    arena.onlineArenaGameMode.LandSpear(arena, self, player, target, self.arenaSitting.players[i]);
 
                 }
 
@@ -789,7 +793,7 @@ namespace RainMeadow
 
                         for (int i = 0; i < self.arenaSitting.players.Count; i++)
                         {
-
+                            RainMeadow.Debug("HIT YOU WITH SPEAR!");
                             if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
                             {
                                 arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
@@ -1244,8 +1248,6 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                RainMeadow.Debug(arena.onlineArenaGameMode);
-
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
@@ -1280,7 +1282,7 @@ namespace RainMeadow
                             else
                             {
                                 RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
-                                self.Players.Remove(c);
+                                //self.Players.Remove(c);
                             }
                         }
                     }
@@ -1379,7 +1381,7 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-               arena.onlineArenaGameMode.SpawnPlayer(arena, self, room, suggestedDens);
+                arena.onlineArenaGameMode.SpawnPlayer(arena, self, room, suggestedDens);
 
             }
 

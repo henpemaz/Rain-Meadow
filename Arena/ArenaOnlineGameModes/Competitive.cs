@@ -57,5 +57,11 @@ namespace RainMeadow
             return arena.countdownInitiatedHoldFire = true;
         }
 
+        public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
+        {
+            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
+
+        }
+
     }
 }

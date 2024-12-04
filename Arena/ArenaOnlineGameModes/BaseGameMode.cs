@@ -57,7 +57,10 @@ namespace RainMeadow
         {
             
         }
+        public virtual void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
+        {
 
+        }
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
