@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 namespace RainMeadow
 {
     public class Competitive : ExternalArenaGameMode
@@ -37,19 +38,6 @@ namespace RainMeadow
         {
             return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
         }
-        public override void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
-        {
-            self.foodScore = 1;
-            self.survivalScore = 0;
-            self.spearHitScore = 0;
-            self.repeatSingleLevelForever = false;
-            self.savingAndLoadingSession = true;
-            self.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-            self.rainWhenOnePlayerLeft = true;
-            self.levelItems = true;
-            self.fliesSpawn = true;
-            self.saveCreatures = false;
-        }
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
@@ -69,9 +57,5 @@ namespace RainMeadow
             return arena.countdownInitiatedHoldFire = true;
         }
 
-        public override string AddCustomIcon(ArenaOnlineGameMode arena)
-        {
-            return "ShortcutGate";
-        }
     }
 }
