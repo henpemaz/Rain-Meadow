@@ -132,19 +132,24 @@ namespace RainMeadow
 
             var pos = new Vector2(194, 553);
 
-            foreach (var playerInfo in MatchmakingManager.instance.playerList)
+            for (int i = 0; i < MatchmakingManager.instance.playerList.Count; i++)
             {
                 pos -= new Vector2(0, 38);
-                var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
+                var btn = new SimplerButton(this, this.pages[0], MatchmakingManager.instance.playerList[i].name, pos, new(110, 30));
                 btn.OnClick += (_) =>
                 {
-                    if (playerInfo.id != default)
+                    if (MatchmakingManager.instance.playerList[i].id != default)
                     {
-                        SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
+                        SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{MatchmakingManager.instance.playerList[i].id}");
                     }
                 };
+                playerButtons.Add(btn);
+            }
+            foreach (var btn in playerButtons)
+            {
                 this.pages[0].subObjects.Add(btn);
             }
+
         }
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
