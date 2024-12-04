@@ -136,7 +136,6 @@ namespace RainMeadow
             {
                 pos -= new Vector2(0, 38);
                 var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
-                playerButtons.Add(btn);
                 btn.OnClick += (_) =>
                 {
                     if (playerInfo.id != default)
@@ -144,6 +143,7 @@ namespace RainMeadow
                         SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
                     }
                 };
+                playerButtons.Add(btn);
             }
             foreach (var btn in playerButtons)
             {
