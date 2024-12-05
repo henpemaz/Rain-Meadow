@@ -132,6 +132,14 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void GoToPassageScreen(WinState.EndgameID endGameID)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is Menu.SleepAndDeathScreen sleepAndDeathScreen && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null)) return;
+            sleepAndDeathScreen.proceedWithEndgameID = endGameID;
+            RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(ProcessManager.ProcessID.CustomEndGameScreen);
+        }
+
+        [RPCMethod]
         public static void KickToLobby()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
