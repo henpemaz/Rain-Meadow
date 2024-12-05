@@ -74,14 +74,9 @@ namespace RainMeadow
 
         }
 
-        public virtual void ArenaImage(ArenaOnlineGameMode arena, On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
-        {
-
-        }
-
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
-            return arena.countdownInitiatedHoldFire;
+            return arena.countdownInitiatedHoldFire = false;
         }
 
         public virtual string AddCustomIcon(ArenaOnlineGameMode arena)

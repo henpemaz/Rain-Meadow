@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal static class ArenaHelpers
+    public static class ArenaHelpers
     {
 
 

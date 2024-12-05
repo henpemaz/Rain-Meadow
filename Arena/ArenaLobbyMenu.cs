@@ -376,9 +376,6 @@ namespace RainMeadow
         {
             base.Update();
 
-            RainMeadow.Debug(arena.registeredGameModes.Count);
-
-
 
             if (this.totalClientsReadiedUpOnPage != null)
             {

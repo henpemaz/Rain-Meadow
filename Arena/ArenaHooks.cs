@@ -176,7 +176,6 @@ namespace RainMeadow
                     color = 0;
                     return "MultiplayerPortrait" + color + "1-" + classID.ToString();
                 }
-                arena.onlineArenaGameMode.ArenaImage(arena, orig, self, classID, color);
                 return orig(self, classID, color);
             }
             else
@@ -1291,11 +1290,6 @@ namespace RainMeadow
                                 {
                                     s.timeAlive++;
                                 }
-                            }
-                            else
-                            {
-                                RainMeadow.Debug("ArenaGameSessionUpdate: Could not find online owner, removing abstract creature");
-                                //self.Players.Remove(c);
                             }
                         }
                     }
