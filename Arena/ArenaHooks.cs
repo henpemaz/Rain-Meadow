@@ -908,7 +908,7 @@ namespace RainMeadow
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                self.playerNameLabel.text = currentName.id.name;
+                self.playerNameLabel.text = currentName.id.name ?? "Unknown user";
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
@@ -1373,8 +1373,8 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-
                 return arena.onlineArenaGameMode.IsExitsOpen(arena, orig, self);
+
             }
 
             return orig(self);

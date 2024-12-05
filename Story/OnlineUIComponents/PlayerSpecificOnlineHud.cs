@@ -123,20 +123,18 @@ namespace RainMeadow
                 }
             }
 
-            if (!clientSettings.inGame) return;
+            this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
-            if (abstractPlayer == null)
+            if (!clientSettings.inGame) return;
+            if (clientSettings.avatars.Count == 0) return;
+            if (clientSettings.avatars[0]?.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
             {
-                RainMeadow.Debug("finding player abscrt for " + clientSettings.owner);
-                if (clientSettings.avatars.Count > 0 && clientSettings.avatars[0].FindEntity(true) is OnlineCreature oc) // todo these arrows should be per-avatar?
-                {
-                    abstractPlayer = oc.abstractCreature;
-                    customization = oc.GetData<SlugcatCustomization>();
-                }
-                else
-                {
-                    return;
-                }
+                abstractPlayer = oc.abstractCreature;
+                customization = oc.GetData<SlugcatCustomization>();
+            }
+            else
+            {
+                return;
             }
             if (this.playerDisplay == null)
             {
@@ -144,9 +142,6 @@ namespace RainMeadow
                 this.playerDisplay = new OnlinePlayerDisplay(this, customization, clientSettings.owner);
                 this.parts.Add(this.playerDisplay);
             }
-
-            // tracking
-            this.found = false;
 
             Vector2 rawPos = new();
             // in this room
