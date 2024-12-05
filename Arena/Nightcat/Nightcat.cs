@@ -95,7 +95,7 @@ namespace RainMeadow.Arena.Nightcat
 
         }
 
-        public static void ActivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        public static void ActivateNightcat(ArenaOnlineGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
             isActive = true;
 
@@ -127,7 +127,7 @@ namespace RainMeadow.Arena.Nightcat
 
         }
 
-        public static void DeactivateNightcat(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        public static void DeactivateNightcat(ArenaOnlineGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
 
                 isActive = false;
@@ -157,7 +157,7 @@ namespace RainMeadow.Arena.Nightcat
                 firstTimeInitiating = false;
             }
 
-        public static void NightcatImplementation(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        public static void NightcatImplementation(ArenaOnlineGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
 
             MakeEyesFlash(arena, self, sLeaser, rCam, timeStacker, camPos);
@@ -181,7 +181,7 @@ namespace RainMeadow.Arena.Nightcat
             }
         }
 
-        public static void MakeEyesFlash(ArenaCompetitiveGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+        public static void MakeEyesFlash(ArenaOnlineGameMode arena, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
                 if (!Nightcat.activatedNightcat && Nightcat.cooldownTimer == 0)
                 {

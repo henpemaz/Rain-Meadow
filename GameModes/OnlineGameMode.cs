@@ -26,7 +26,7 @@ namespace RainMeadow
         {
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
-            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) },
+            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaOnlineGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
