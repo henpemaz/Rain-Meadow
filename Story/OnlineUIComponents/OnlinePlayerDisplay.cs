@@ -129,7 +129,7 @@ namespace RainMeadow
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena) != "")
                     {
-                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena));
+                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
                     }
                     else slugIcon.SetElementByName(iconString);
 

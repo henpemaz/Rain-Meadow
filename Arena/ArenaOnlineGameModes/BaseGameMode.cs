@@ -79,7 +79,7 @@ namespace RainMeadow
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public virtual string AddCustomIcon(ArenaOnlineGameMode arena)
+        public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner)
         {
             return "";
         }

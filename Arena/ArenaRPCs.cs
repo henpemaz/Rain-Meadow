@@ -87,7 +87,6 @@ namespace RainMeadow
                 arena.playerEnteredGame = arena.playerEnteredGame + 1;
 
             }
-
         }
 
         [RPCMethod]
