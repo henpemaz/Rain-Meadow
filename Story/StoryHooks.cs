@@ -13,8 +13,6 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-        private bool isPlayerReady = false;
-
         public static bool isStoryMode(out StoryGameMode gameMode)
         {
             gameMode = null;
@@ -30,11 +28,18 @@ namespace RainMeadow
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
-            On.Menu.KarmaLadderScreen.ctor += KarmaLadderScreen_ctor;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
-            On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
-
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+
+            On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
+            On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
+            On.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor;
+            IL.Menu.FastTravelScreen.ctor += FastTravelScreen_ctor_ClientDontFilterRegions;
+            On.Menu.FastTravelScreen.StepRegion += FastTravelScreen_StepRegion;
+            On.Menu.FastTravelScreen.InitiateRegionSwitch += FastTravelScreen_InitiateRegionSwitch;
+            On.Menu.FastTravelScreen.Update += FastTravelScreen_Update;
+
+            On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
@@ -903,6 +908,95 @@ namespace RainMeadow
             orig(self);
         }
 
+        private void SleepAndDeathScreen_AddPassageButton(On.Menu.SleepAndDeathScreen.orig_AddPassageButton orig, Menu.SleepAndDeathScreen self, bool buttonBlack)
+        {
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner) return;
+            orig(self, buttonBlack);
+        }
+
+        private void CustomEndGameScreen_GetDataFromSleepScreen(On.Menu.CustomEndGameScreen.orig_GetDataFromSleepScreen orig, Menu.CustomEndGameScreen self, WinState.EndgameID endGameID)
+        {
+            if (isStoryMode(out _) && OnlineManager.lobby.isOwner)
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToPassageScreen, endGameID);
+                }
+            }
+
+            orig(self, endGameID);
+        }
+
+        private void FastTravelScreen_ctor(On.Menu.FastTravelScreen.orig_ctor orig, Menu.FastTravelScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
+        {
+            orig(self, manager, ID);
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
+            {
+                StoryMenuHelpers.RemoveMenuObjects(self.mapButtonPrompt, self.prevButton, self.nextButton, self.chooseButton, self.buttonInstruction);
+            }
+        }
+
+        private void FastTravelScreen_ctor_ClientDontFilterRegions(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchStloc(0)
+                );
+                c.EmitDelegate((bool flag) =>
+                {
+                    if (isStoryMode(out _) && !OnlineManager.lobby.isOwner) return true;
+                    return flag;
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void FastTravelScreen_StepRegion(On.Menu.FastTravelScreen.orig_StepRegion orig, Menu.FastTravelScreen self, int change)
+        {
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner) return;
+            orig(self, change);
+        }
+
+        private int RegionAcronymToIndexForFastTravelScreen(Menu.FastTravelScreen self, string acronym) => self.accessibleRegions.IndexOf(Array.FindIndex(self.allRegions, x => x.name == acronym));
+
+        private void FastTravelScreen_InitiateRegionSwitch(On.Menu.FastTravelScreen.orig_InitiateRegionSwitch orig, Menu.FastTravelScreen self, int switchToRegion)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner)
+            {
+                if (storyGameMode.region is not (null or ""))
+                    switchToRegion = RegionAcronymToIndexForFastTravelScreen(self, storyGameMode.region);
+                if (switchToRegion < 0) switchToRegion = 0;
+            }
+            orig(self, switchToRegion);
+        }
+
+        private void FastTravelScreen_Update(On.Menu.FastTravelScreen.orig_Update orig, Menu.FastTravelScreen self)
+        {
+            if (isStoryMode(out var storyGameMode) && !OnlineManager.lobby.isOwner && storyGameMode.region is not (null or ""))
+            {
+                var hostCurrentRegion = RegionAcronymToIndexForFastTravelScreen(self, storyGameMode.region);
+                if (hostCurrentRegion != -1 && hostCurrentRegion != self.currentRegion && hostCurrentRegion != self.upcomingRegion)
+                    self.InitiateRegionSwitch(hostCurrentRegion);
+            }
+            orig(self);
+            if (storyGameMode is not null)
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    storyGameMode.region = self.allRegions[self.accessibleRegions[self.currentRegion]].name;
+                }
+                else if (self.startButton is not null)
+                {
+                    self.startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
+                }
+            }
+        }
+
         public static readonly string[] joarxml = {
             "<cA>",
             "<cB>",
@@ -1069,24 +1163,23 @@ namespace RainMeadow
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
-            if (isStoryMode(out var gameMode))
+            if (isStoryMode(out _))
             {
+                if (message == "READY")
+                {
+                    sender.toggled ^= true;
+                    return;
+                }
+
                 if (message == "CONTINUE")
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
                         RainMeadow.Debug("Continue - host");
                     }
-                    else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)
-                    {
-                        RainMeadow.Debug("Continue - client");
-                    }
                     else
                     {
-                        sender.toggled = !sender.toggled;
-                        isPlayerReady = sender.toggled;
-                        RainMeadow.Debug(sender.toggled ? "Ready!" : "Cancelled!");
-                        return;
+                        RainMeadow.Debug("Continue - client");
                     }
                 }
             }
@@ -1097,38 +1190,23 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (isStoryMode(out var gameMode) && self.continueButton != null)
+            if (isStoryMode(out var storyGameMode) && self.continueButton != null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
+                else if (storyGameMode.canJoinGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
                 {
-                    if (isPlayerReady)
-                    {
-                        self.Singal(self.continueButton, "CONTINUE");
-                    }
-                    else
-                    {
-                        self.continueButton.menuLabel.text = self.Translate("CONTINUE");
-                    }
+                    self.continueButton.signalText = "CONTINUE";
+                    self.continueButton.menuLabel.text = self.Translate("CONTINUE");
+                    if (self.continueButton.toggled) self.Singal(self.continueButton, "CONTINUE");
                 }
                 else
                 {
+                    self.continueButton.signalText = "READY";
                     self.continueButton.menuLabel.text = self.Translate("READY");
                 }
-            }
-        }
-
-        private void KarmaLadderScreen_ctor(On.Menu.KarmaLadderScreen.orig_ctor orig, Menu.KarmaLadderScreen self, ProcessManager manager, ProcessManager.ProcessID ID)
-        {
-            RainMeadow.Debug("In KarmaLadder Screen");
-            orig(self, manager, ID);
-
-            if (isStoryMode(out var gameMode))
-            {
-                isPlayerReady = false;
             }
         }
 
