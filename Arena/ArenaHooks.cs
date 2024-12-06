@@ -1272,7 +1272,7 @@ namespace RainMeadow
                         }
                     }
                 }
-
+                
                 arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)
@@ -1281,17 +1281,24 @@ namespace RainMeadow
                     {
                         var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
 
-                        foreach (var c in self.Players)
+                        int index = self.Players.Count - 1;
+                        while (index >= 0)
                         {
+                            var c = self.Players[index];
                             if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC))
                             {
-
-                                if (onlineC.owner == os && c.realizedCreature is not null && !c.realizedCreature.State.dead)
+                                if (onlineC.owner == os && c.realizedCreature != null && !c.realizedCreature.State.dead)
                                 {
                                     s.timeAlive++;
                                 }
                             }
+                            else
+                            {
+                                self.Players.RemoveAt(index);
+                            }
+                            index--;
                         }
+
                     }
 
                 }
