@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using HUD;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ namespace RainMeadow
 
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
+
+        public int hudCounter;
 
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
@@ -62,6 +65,7 @@ namespace RainMeadow
         {
             base.Update();
             UpdatePlayers();
+            hudCounter++;
         }
     }
 }

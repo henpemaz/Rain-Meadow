@@ -153,7 +153,7 @@ namespace RainMeadow
                     }
                     else slugIcon.SetElementByName(iconString);
 
-                    if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(onlineTimeSinceSpawn / fadeSpeed) + 1f) / 2f);
+                    if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
                     else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
                 }
                 else
