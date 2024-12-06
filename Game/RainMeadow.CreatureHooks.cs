@@ -27,6 +27,9 @@ namespace RainMeadow
             IL.GarbageWorm.NewHole += GarbageWorm_NewHole;
             On.GarbageWormAI.Update += GarbageWormAI_Update;
 
+            On.DropBugAI.CeilingSitModule.Dislodge += DropBugAI_CeilingSitModule_Dislodge;
+            On.DropBugAI.CeilingSitModule.JumpFromCeiling += DropBugAI_CeilingSitModule_JumpFromCeiling;
+
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
         }
@@ -155,6 +158,18 @@ namespace RainMeadow
                 self.worm.lookPoint = origLookPoint;
                 self.showAsAngry = origAngry;
             }
+        }
+
+        private void DropBugAI_CeilingSitModule_Dislodge(On.DropBugAI.CeilingSitModule.orig_Dislodge orig, DropBugAI.CeilingSitModule self)
+        {
+            if (!self.AI.creature.IsLocal()) return;
+            orig(self);
+        }
+
+        private void DropBugAI_CeilingSitModule_JumpFromCeiling(On.DropBugAI.CeilingSitModule.orig_JumpFromCeiling orig, DropBugAI.CeilingSitModule self, BodyChunk targetChunk, Vector2 attackDir)
+        {
+            if (!self.AI.creature.IsLocal()) return;
+            orig(self, targetChunk, attackDir);
         }
 
         private void AbstractCreature_IsEnteringDen(ILContext il)
