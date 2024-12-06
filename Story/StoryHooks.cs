@@ -851,7 +851,7 @@ namespace RainMeadow
             return s;
         }
 
-        private static string SaveStateToString(SaveState? saveState)
+        private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
 
@@ -859,7 +859,7 @@ namespace RainMeadow
             {
                 var s = saveState.SaveToString();
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
-                s = Regex.Replace(s, @">(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", ">");
+                s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
                 RainMeadow.Debug($"abbrSaveState[{s.Length}]");
