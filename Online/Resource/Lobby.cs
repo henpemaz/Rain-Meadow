@@ -12,6 +12,9 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<System.Type, Dictionary<int, int>> enumMapToLocal = new();
+        public Dictionary<System.Type, Dictionary<int, int>> enumMapToRemote = new();
+        private Dictionary<string, List<string>> strEnumMap = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
         public string[] mods = RainMeadowModManager.GetActiveMods();
@@ -39,14 +42,23 @@ namespace RainMeadow
             if (isOwner)
             {
                 this.password = password;
+                this.strEnumMap = ExtEnumBase.valueDictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.entries);
+                foreach (var kvp in this.strEnumMap)
+                {
+                    var type = Type.GetType(kvp.Key);
+                    Dictionary<int, int> map = new();
+                    for (var i = 0; i < kvp.Value.Count; i++)
+                    {
+                        map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                    }
+                    this.enumMapToLocal.Add(type, map);
+                    this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key));
+                }
             }
             else
             {
                 RequestLobby(password);
             }
-
-
-
         }
 
         public void RequestLobby(string? key)
@@ -177,6 +189,8 @@ namespace RainMeadow
             public ushort nextId;
             [OnlineField]
             public string[] mods;
+            [OnlineField]
+            public Dictionary<string, List<string>> strEnumMap;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -190,8 +204,8 @@ namespace RainMeadow
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 mods = lobby.mods;
+                strEnumMap = lobby.strEnumMap;
                 bannedUsers = lobby.bannedUsers;
-
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -201,7 +215,6 @@ namespace RainMeadow
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
-
                     if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
@@ -211,8 +224,6 @@ namespace RainMeadow
                     {
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
-
-
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
                 if (lobby.bannedUsersChecked == false)
@@ -234,12 +245,26 @@ namespace RainMeadow
                     lobby.bannedUsersChecked = true;
                 }
 
-
-
                 if (!lobby.modsChecked)
                 {
                     RainMeadowModManager.CheckMods(this.mods, lobby.mods);
                     lobby.modsChecked = true;
+                }
+
+                if (!lobby.strEnumMap.Any())
+                {
+                    foreach (var kvp in this.strEnumMap)
+                    {
+                        var type = Type.GetType(kvp.Key);
+                        Dictionary<int, int> map = new();
+                        for (var i = 0; i < kvp.Value.Count; i++)
+                        {
+                            map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                        }
+                        lobby.enumMapToLocal.Add(type, map);
+                        lobby.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key));
+                    }
+                    lobby.strEnumMap = this.strEnumMap;
                 }
 
                 base.ReadTo(resource);
