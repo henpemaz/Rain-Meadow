@@ -70,7 +70,6 @@ namespace RainMeadow
                 chatButtonOverlay = new ChatButtonOverlay(game.manager, game, chatLog);
                 chatButtonActive = true;
                 chatTextButtonCooldown = 1;
-                ChatTextBox.ShouldCapture(true);
 
                 if (chatOverlay == null && !chatLogActive)
                 {
@@ -88,7 +87,6 @@ namespace RainMeadow
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) 
             {
                 ShutDownChatButton();
-                ChatTextBox.ShouldCapture(false);
             }
 
         }

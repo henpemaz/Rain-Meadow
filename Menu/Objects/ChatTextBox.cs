@@ -29,12 +29,14 @@ namespace RainMeadow
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
+            ShouldCapture(true);
         }
 
         public void DelayedUnload(float delay)
         {
             if (!isUnloading)
             {
+                ShouldCapture(false);
                 isUnloading = true;
                 typingHandler.StartCoroutine(Unload(delay));
             }
@@ -93,7 +95,7 @@ namespace RainMeadow
         }
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
-        public static void ShouldCapture(bool shouldCapture)
+        private static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)
             {
@@ -134,7 +136,15 @@ namespace RainMeadow
         private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
+        private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
+        {
+            if (code == KeyCode.Return)
+            {
+                return orig(code);
+            }
+
+            return blockInput ? false : orig(code);
+        }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyUp(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
     }
