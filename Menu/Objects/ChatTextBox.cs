@@ -67,43 +67,7 @@ namespace RainMeadow
 
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe)
-                        {
-
-                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, OnlineManager.mePlayer.id.name, lastSentMessage);
-                        }
-                    }
-
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.owner.id.name == OnlineManager.mePlayer.id.name && opo.apo is AbstractCreature ac)
-                        {
-
-                            var onlineHuds = ac.world.game.cameras[0].hud.parts
-                                .OfType<PlayerSpecificOnlineHud>();
-
-                            foreach (var onlineHud in onlineHuds)
-                            {
-                                OnlinePlayerDisplay usernameDisplay = null;
-
-                                foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
-                                {
-                                    if (part.username.text == OnlineManager.mePlayer.id.name)
-                                    {
-                                        usernameDisplay = part;
-                                        break;
-                                    }
-                                }
-
-                                if (usernameDisplay != null)
-                                {
-                                    usernameDisplay.message.text = $"{lastSentMessage}";
-                                }
-                            }
-                        }
-
+                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);
                     }
                 }
                 else

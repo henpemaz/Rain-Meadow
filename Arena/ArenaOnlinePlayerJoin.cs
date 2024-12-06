@@ -38,7 +38,7 @@ namespace Menu
 
         public bool readyForCombat;
 
-        public ArenaCompetitiveGameMode arena;
+        public ArenaOnlineGameMode arena;
 
         private ArenaLobbyMenu arenaMenu;
 
@@ -74,6 +74,7 @@ namespace Menu
 
 
             portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
+          
             subObjects.Add(portrait);
             string text = menu.Translate("");
             readyForCombat = false;

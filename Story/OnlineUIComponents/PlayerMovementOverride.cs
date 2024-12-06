@@ -1,5 +1,5 @@
 ﻿namespace RainMeadow
-{ 
+{
     public static class PlayerMovementOverride
     {
         public static void StopPlayerMovement(Player p)
@@ -20,5 +20,15 @@
 
 
         }
+
+        public static void StopSpecialSkill(Player p)
+        {
+            if (p.wantToJump > 0 && p.input[0].pckp)
+            {
+                p.input[0].pckp = false;
+            }
+
+        }
+
     }
 }

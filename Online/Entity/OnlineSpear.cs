@@ -41,7 +41,7 @@
 
         public AbstractSpear AbstractSpear => apo as AbstractSpear;
 
-        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             var entityDefinition = (OnlineSpearDefinition)newObjectEvent;
             var asp = (AbstractSpear)base.ApoFromDef(newObjectEvent, inResource, initialState);
@@ -70,7 +70,7 @@
             return new OnlineSpearState(this, inResource, tick);
         }
 
-        public class OnlineSpearState : PhysicalObjectEntityState
+        public class OnlineSpearState : AbstractPhysicalObjectState
         {
             [OnlineField]
             public sbyte stuckInWallCycles;

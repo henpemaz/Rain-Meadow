@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    public class PhysicalObjectEntityState : OnlineEntity.EntityState
+    public class AbstractPhysicalObjectState : OnlineEntity.EntityState
     {
         [OnlineField(group = "realized")]
         public WorldCoordinate pos;
@@ -16,8 +16,8 @@ namespace RainMeadow
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
 
-        public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+        public AbstractPhysicalObjectState() : base() { }
+        public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             var realizedState = inResource is RoomSession;
             if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
@@ -44,6 +44,16 @@ namespace RainMeadow
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is Oracle oracle)
+            {
+                if (oracle.oracleBehavior is SLOracleBehavior)
+                {
+                    return new RealizedSLOracleState(onlineObject);
+                }
+                return new RealizedOracleState(onlineObject);
+            }
+            if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
+            if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
             if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);

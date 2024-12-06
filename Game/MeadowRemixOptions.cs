@@ -6,6 +6,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> FriendsListKey;
     public readonly Configurable<bool> ShowFriends;
     public readonly Configurable<bool> SlugcatCustomToggle;
+    public readonly Configurable<bool> ReadyToContinueToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
     public readonly Configurable<Color> BodyColor;
     public readonly Configurable<Color> EyeColor;
@@ -15,6 +16,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> ChatTalkingKey;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
+    public readonly Configurable<bool> ArenaSAINOT;
 
 
 
@@ -29,6 +31,7 @@ public class RainMeadowOptions : OptionInterface
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         ShowFriends = config.Bind("ShowFriends", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
+        ReadyToContinueToggle = config.Bind("ContinueToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
@@ -38,6 +41,7 @@ public class RainMeadowOptions : OptionInterface
         ChatTalkingKey = config.Bind("ChatTalkingKey", KeyCode.Return);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
+        ArenaSAINOT = config.Bind("ArenaSAINOT", false);
 
 
     }
@@ -90,24 +94,33 @@ public class RainMeadowOptions : OptionInterface
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            OnlineStorySettings = new UIelement[6]
+            OnlineStorySettings = new UIelement[9]
            {    new OpLabel(10f, 550f, "Story", bigText: true),
-                new OpLabel(10f, 500, "[Experimental Features]", bigText: true),
-                new OpLabel(10f, 480, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
 
-                new OpLabel(10f, 450, "Custom Story Slugcat", bigText: false),
+                new OpLabel(10f, 500, "Ready to shelter/gate", bigText: false),
 
-                new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 420)),
-                new OpLabel(40f, 420, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
+                new OpCheckBox(ReadyToContinueToggle, new Vector2(10f, 470)),
+                new OpLabel(40f, 470, RWCustom.Custom.ReplaceLineDelimeters("If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter."))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
-                }
+                },
+
+                new OpLabel(10f, 400, "[Experimental Features]", bigText: true),
+                new OpLabel(10f, 380, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
+
+                new OpLabel(10f, 350, "Custom Story Slugcat", bigText: false),
+
+                new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 320)),
+                new OpLabel(40f, 320, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
            };
             storyTab.AddItems(OnlineStorySettings);
 
 
 
-            OnlineArenaSettings = new UIelement[5]
+            OnlineArenaSettings = new UIelement[7]
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
                 new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
@@ -115,11 +128,16 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.Int
                 },
-                new OpLabel(10f, 460, "Saint ascendance duration timer. 60 == 1s", bigText: false),
-                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 435), 160f)
+
+                new OpLabel(10f, 455, "Sain't: Disable Saint ascendance", bigText: false),
+                new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
+
+                new OpLabel(10f, 410, "Saint ascendance duration timer. 60 == 1s", bigText: false),
+                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
                 {
                     accept = OpTextBox.Accept.Int
                 }
+
         };
             arenaTab.AddItems(OnlineArenaSettings);
 

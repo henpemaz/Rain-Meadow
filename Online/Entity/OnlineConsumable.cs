@@ -21,7 +21,7 @@ namespace RainMeadow
 
             protected override int ExtrasIndex => base.ExtrasIndex + 2;
 
-            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            protected override string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}", base.MakeSerializedObjectNoExtras(initialState), originRoom, placedObjectIndex);
             }
@@ -42,7 +42,7 @@ namespace RainMeadow
 
         }
 
-        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             OnlineConsumableDefinition entityDefinition = (OnlineConsumableDefinition)newObjectEvent;
             var acm = (AbstractConsumable)base.ApoFromDef(newObjectEvent, inResource, initialState);
@@ -64,7 +64,7 @@ namespace RainMeadow
             return new OnlineConsumableState(this, inResource, tick);
         }
 
-        public class OnlineConsumableState : PhysicalObjectEntityState
+        public class OnlineConsumableState : AbstractPhysicalObjectState
         {
             [OnlineField]
             public bool isConsumed;

@@ -45,7 +45,7 @@ namespace RainMeadow
         public void PlayerAdded(ClientSettings clientSettings)
         {
             RainMeadow.DebugMe();
-            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(this, camera, onlineGameMode, clientSettings);
+            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }

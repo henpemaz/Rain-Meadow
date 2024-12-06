@@ -8,23 +8,56 @@ namespace RainMeadow
     public class RainMeadowModManager
     {
         public static string[] GetActiveMods()
-        {
-
-            var highImpactMods = ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).Select(mod => mod.id);
-
-            var remixMod = ModManager.ActiveMods.Find(mod => mod.id == "rwremix"); // Remix needs to be added to the 'game-breaking' mods for game settings sync
-            if (remixMod != null)
-            {
-                highImpactMods = highImpactMods.Append(remixMod.id);
-            }
-
-            return highImpactMods.ToArray();
+        { 
+            return ModManager.ActiveMods
+                .Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))
+                    || highImpactMods.Contains(mod.id)
+                    || cheatMods.Contains(mod.id))
+                .Select(mod => mod.id)
+                .ToArray();
         }
+        
+        public static readonly string[] highImpactMods = {
+            "devtools",
+            "rwremix",
+            "moreslugcats",
+            "keepthatawayfromme",  // needs extra syncing to work
+            "no-damage-rng",
+        };
 
+        public static readonly string[] cheatMods = {
+            "maxi-mol.mousedrag",
+            "fyre.BeastMaster",
+            "slime-cubed.devconsole",
+            "zrydnoob.UnityExplorer",
+            "warp",
+            "presstopup",
+            "CandleSign.debugvisualizer",
+            "maxi-mol.freecam",
+            "henpemaz_spawnmenu",  //gotta be safe
+            "autodestruct",
+            "DieButton",
+            "emeralds_features",
+            "flirpy.rivuletunscammedlungcapacity",
+            "Aureuix.Kaboom",
+            "TM.PupMagnet",
+            "iwantbread.slugpupstuff",
+            "blujai.rocketficer",
+            "slugcatstatsconfig",
+            "explorite.slugpups_cap_configuration",
+        };
+
+        public static string[] GetCheatMods(string[] mods = null)
+        {
+            if (mods is null) mods = ModManager.ActiveMods.Select(mod => mod.id).ToArray();
+            return mods.Intersect(cheatMods).ToArray();
+        }
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
-
-            if (Enumerable.SequenceEqual(localMods, lobbyMods))
+            var lobbyCheatMods = GetCheatMods(lobbyMods);
+            var localCheatMods = GetCheatMods(localMods);
+            if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(lobbyCheatMods))
+                && !(localCheatMods.Any() && !lobbyCheatMods.Any()))
             {
                 RainMeadow.Debug("Same mod set !");
             }

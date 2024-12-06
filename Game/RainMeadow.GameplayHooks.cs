@@ -1,5 +1,10 @@
-﻿using System.Linq;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.Utils;
+using System;
+using System.Linq;
 using UnityEngine;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -7,13 +12,22 @@ namespace RainMeadow
         public void GameplayHooks()
         {
             On.ShelterDoor.Close += ShelterDoorOnClose;
+            On.ShelterDoor.DoorClosed += ShelterDoor_DoorClosed;
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
             On.Lizard.Violence += Lizard_Violence; // todo there might be more like this one that do not call base()
             On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
-            On.ScavengerBomb.Explode += ScavengerBomb_Explode;
-            On.MoreSlugcats.SingularityBomb.Explode += SingularityBomb_Explode;
+            IL.ScavengerBomb.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
+            IL.FlareBomb.StartBurn += PhysicalObject_Explode;
+            IL.FirecrackerPlant.Ignite += PhysicalObject_Trigger;
+            IL.FirecrackerPlant.Explode += PhysicalObject_Explode;
+            IL.PuffBall.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.FireEgg.Explode += PhysicalObject_Explode;
+            IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
+
+            On.Spear.Spear_makeNeedle += Spear_makeNeedle;
 
             On.AbstractPhysicalObject.AbstractObjectStick.ctor += AbstractObjectStick_ctor;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
@@ -21,45 +35,87 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
         }
 
-        private void ScavengerBomb_Explode(On.ScavengerBomb.orig_Explode orig, ScavengerBomb self, BodyChunk hitChunk)
+        private void Spear_makeNeedle(On.Spear.orig_Spear_makeNeedle orig, Spear self, int type, bool active)
         {
-            if (OnlineManager.lobby != null)
-            {
-                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-                if (!room.isOwner)
-                {
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
-                    {
-                        Error($"Entity {self} doesn't exist in online space!");
-                        return;
-                    }
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.ScavengerBombExplode, opo, self.bodyChunks[0].pos);
-                }
-            }
-            orig(self, hitChunk);
+            // apo.realize defaults to inactive even if remote is active
+            if (!self.IsLocal()) active = self.spearmasterNeedle_hasConnection;
+            orig(self, type, active);
         }
 
-        private void SingularityBomb_Explode(On.MoreSlugcats.SingularityBomb.orig_Explode orig, MoreSlugcats.SingularityBomb self)
+        private void PhysicalObject_Trigger(ILContext il)
         {
-            if (OnlineManager.lobby != null)
+            try
             {
-                if (self.activateLightning != null)
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((PhysicalObject self) =>
                 {
-                    self.activateLightning.Destroy();
-                    self.activateLightning = null;
-                }
-                RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-                if (!room.isOwner)
-                {
-                    if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var opo))
+                    if (OnlineManager.lobby != null)
                     {
-                        Error($"Entity {self} doesn't exist in online space!");
-                        return;
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner)
+                        {
+                            opo.BroadcastRPCInRoom(opo.Trigger, self.bodyChunks[0].pos);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Trigger, self.bodyChunks[0].pos);
+                        }
                     }
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.SingularityBombExplode, opo, self.bodyChunks[0].pos);
-                }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
             }
-            orig(self);
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void PhysicalObject_Explode(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((PhysicalObject self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                        {
+                            Error($"Entity {self} doesn't exist in online space!");
+                            return true;
+                        }
+                        if (opo.roomSession.isOwner)
+                        {
+                            opo.BroadcastRPCInRoom(opo.Explode, self.bodyChunks[0].pos);
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            if (!opo.isMine) return false;  // wait to be RPC'd
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Explode, self.bodyChunks[0].pos);
+                        }
+                    }
+                    return true;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private static void Creature_SwitchGrasps(On.Creature.orig_SwitchGrasps orig, Creature self, int fromGrasp, int toGrasp)
@@ -191,7 +247,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
                 if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
                 {
-                    room.owner.InvokeOnceRPC(OnlinePhysicalObject.HitByExplosion, objectHit, hitFac);
+                    room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
                     return;
                 }
             }
@@ -214,7 +270,7 @@ namespace RainMeadow
                 OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
                 if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
                 {
-                    room.owner.InvokeRPC(OnlinePhysicalObject.HitByWeapon, objectHit, abstWeapon);
+                    room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
                     return;
                 }
             }
@@ -230,24 +286,10 @@ namespace RainMeadow
                 return;
             }
 
-            var storyGameMode = OnlineManager.lobby.gameMode as StoryGameMode;
-            var storyClientSettings = storyGameMode?.storyClientData;
-            if (storyGameMode != null)
+            if (RainMeadow.isStoryMode(out var storyGameMode) && !self.Broken)
             {
-                storyClientSettings.readyForWin = true;
-
-                var anyNotReady = false;
-                foreach (var cs in OnlineManager.lobby.clientSettings.Values)
-                {
-                    var scs = cs.GetData<StoryClientSettingsData>();
-                    RainMeadow.Debug($"player {cs.owner} inGame:{cs.inGame} isDead:{scs.isDead} readyForWin:{scs.readyForWin}");
-                    anyNotReady |= cs.inGame && !scs.isDead && !scs.readyForWin;
-                }
-
-                if (anyNotReady)
-                {
-                    return;
-                }
+                storyGameMode.storyClientData.readyForWin = true;
+                if (!storyGameMode.readyForWin) return;
             }
             else
             {
@@ -261,12 +303,18 @@ namespace RainMeadow
 
             if (self.IsClosing)
             {
-                if (storyGameMode != null)
+                if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.hasSheltered = true;
                 }
             }
+        }
+
+        private void ShelterDoor_DoorClosed(On.ShelterDoor.orig_DoorClosed orig, ShelterDoor self)
+        {
+            if (isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered) return;
+            orig(self);
         }
 
         private void CreatureOnUpdate(On.Creature.orig_Update orig, Creature self, bool eu)
@@ -315,7 +363,7 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
+            if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
             {
                 if (self.room != null)
                 {
