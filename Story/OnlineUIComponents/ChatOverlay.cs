@@ -6,11 +6,13 @@ namespace RainMeadow
 {
     public class ChatOverlay : Menu.Menu
     {
+        private List<FSprite> sprites;
         private List<string> chatLog;
         public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public ChatTextBox chat;
+        private bool displayBg = false;
         private int ticker;
         public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
@@ -31,7 +33,26 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
+            sprites = new();
             float yOffSet = 0;
+
+            if (!displayBg)
+            {
+                displayBg = true;
+                var background = new FSprite("pixel")
+                {
+                    color = new Color(0f, 0f, 0f),
+                    anchorX = 0f,
+                    anchorY = 0f,
+                    x = 0,
+                    y = 32,
+                    scaleY = 330,
+                    scaleX = 745,
+                    alpha = 0.5f
+                };
+                pages[0].Container.AddChild(background);
+                sprites.Add(background);
+            }
             if (chatLog.Count > 0)
             {
                 var logsToRemove = new List<MenuObject>();
