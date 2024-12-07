@@ -16,27 +16,9 @@ namespace RainMeadow
             On.SoundLoader.Update += SoundLoader_Update;
             On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
             On.VirtualMicrophone.SoundObject.Destroy += SoundObject_Destroy;
-            On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
-            On.Menu.PauseMenu.ctor += PauseMenu_ctor1;
-        }
-
-        private void PauseMenu_ctor1(On.Menu.PauseMenu.orig_ctor orig, Menu.PauseMenu self, ProcessManager manager, RainWorldGame game)
-        {
-            orig.Invoke(self, manager, game);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
-            {
-                self.controlMap.RemoveSprites();
-                self.pages[0].subObjects.Remove(self.controlMap);
-            }
-            // i love technical debt!!!!!
-            // i just dislike seeing the menu text popping up 
         }
 
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
-        private void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
-        {
-            //fuckoff
-        }
 
         /*
         readonly string[,] notesinkey = //kept for the sake of remembering what chords have what notes

@@ -67,6 +67,9 @@ namespace RainMeadow
             AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby);
             this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu);
 
+            // Removes the tutorial sprites 
+            this.controlMap.RemoveSprites();
+            this.pages[0].subObjects.Remove(this.controlMap);
             //this.blackSprite.scaleX = manager.rainWorld.options.ScreenSize.x / 4f;
         }
 
