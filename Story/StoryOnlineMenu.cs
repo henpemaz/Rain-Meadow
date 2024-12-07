@@ -21,6 +21,7 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
+            ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
             storyGameMode.Sanitize();

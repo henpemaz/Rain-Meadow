@@ -44,6 +44,7 @@ namespace RainMeadow
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
+            ID = OnlineManager.lobby.gameMode.MenuProcessId();
             RainMeadow.DebugMe();
 
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
@@ -506,7 +507,7 @@ namespace RainMeadow
             if (message == "BACKTOLOBBY")
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-
+                base.PlaySound(SoundID.MENU_Switch_Page_Out);
             }
             if (message == "STARTARENAONLINEGAME")
             {
