@@ -211,7 +211,14 @@ namespace RainMeadow
             if (manager.musicPlayer != null)
             {
                 manager.musicPlayer.MenuRequestsSong("Establish", 1, 0);
-                manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                if (manager.musicPlayer.nextSong == null)
+                {
+                    manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                }
+                else
+                {
+                    manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                }
             }
         }
 
