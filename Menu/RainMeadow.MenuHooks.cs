@@ -24,6 +24,8 @@ namespace RainMeadow
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
+            On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
+            On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
@@ -35,6 +37,31 @@ namespace RainMeadow
 
             //TODO MSC: do something smarter, this stops the crash; I'm being lazy -Turtle
             return true;
+        }
+
+        private void SlugcatSelectMenu_StartGame(On.Menu.SlugcatSelectMenu.orig_StartGame orig, SlugcatSelectMenu self, SlugcatStats.Name storyGameCharacter)
+        {
+            if (self is StoryOnlineMenu menu)
+            {
+                menu.StartGame(storyGameCharacter);
+            }
+            else
+            {
+                orig(self, storyGameCharacter);
+            }
+        }
+
+        private void SlugcatSelectMenu_UpdateStartButtonText(On.Menu.SlugcatSelectMenu.orig_UpdateStartButtonText orig, SlugcatSelectMenu self)
+        {
+            if (self is StoryOnlineMenu menu && OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                self.startButton.fillTime = 40f;
+                self.startButton.menuLabel.text = self.Translate("ENTER");
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
@@ -246,121 +273,29 @@ namespace RainMeadow
                     {
                         //throw new InvalidProgrammerException("implement me");
                     }
-
                 }
 
-                if (self.slugcatNumber == RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer && self is SlugcatCustomSelection slugcatCustom)
+                if (isStoryMode(out var _) &&  !OnlineManager.lobby.isOwner)
                 {
-                    if (OnlineManager.lobby.isOwner) // Host
-                    {
-
-                        if (slugcatCustom.slug == SlugcatStats.Name.White)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_White;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-
-                        }
-
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Yellow)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Yellow;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-
-                        else if (slugcatCustom.slug == SlugcatStats.Name.Red)
-                        {
-                            sceneID = Menu.MenuScene.SceneID.Slugcat_Red;
-                            self.sceneOffset = new Vector2(-10f, 100f);
-                            self.slugcatDepth = 3.1000001f;
-                        }
-                        else if (ModManager.MSC)
-                        {
-
-                            if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Rivulet;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Artificer;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Gourmand;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Saint;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else if (slugcatCustom.slug == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
-                            {
-
-                                sceneID = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID.Slugcat_Spear;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-
-                            else
-                            {
-                                sceneID = Menu.MenuScene.SceneID.NewDeath;
-                                self.sceneOffset = new Vector2(-10f, 100f);
-                                self.slugcatDepth = 3.1000001f;
-                            }
-                        }
-
-                    }
-                    else // Client
-                    {
-                        var result = UnityEngine.Random.Range(0, 3);
-                        switch (result)
-                        {
-                            case 0:
-                                sceneID = Menu.MenuScene.SceneID.Intro_4_Walking;
-                                break;
-                            case 1:
-                                sceneID = Menu.MenuScene.SceneID.Intro_11_Drowning;
-                                break;
-                            case 2:
-                                sceneID = Menu.MenuScene.SceneID.Intro_8_Climbing;
-                                break;
-                            case 3:
-                                sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
-                                break;
-                        }
-
-                        self.sceneOffset = new Vector2(-10f, 100f);
-                        self.slugcatDepth = 3.1000001f;
-
-                    }
+                    sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
+                    self.sceneOffset = new Vector2(-10f, 100f);
+                    self.slugcatDepth = 3.1000001f;
                 }
-
             });
         }
 
         private void ProcessManager_RequestMainProcessSwitch_ProcessID(On.ProcessManager.orig_RequestMainProcessSwitch_ProcessID orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
-            if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame)
+            if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode and not MeadowGameMode)
             {
-                if (gameMode is not MeadowGameMode)
+                // todo figure out a better way to do this proccess redirection, this isn't ideal
+                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
                 {
-                    // todo figure out a better way to do this proccess redirection, this isn't ideal
-                    if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
+                    if (self.currentMainLoop.ID == gameMode.MenuProcessId())
+                    {
+                        ID = Ext_ProcessID.LobbySelectMenu;
+                    }
+                    else
                     {
                         ID = gameMode.MenuProcessId();
 
@@ -392,7 +327,7 @@ namespace RainMeadow
             }
             if (ID == Ext_ProcessID.StoryMenu)
             {
-                self.currentMainLoop = new StoryMenu(self);
+                self.currentMainLoop = new StoryOnlineMenu(self);
             }
 
 #if !LOCAL_P2P

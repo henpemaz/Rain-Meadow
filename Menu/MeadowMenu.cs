@@ -212,6 +212,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
             if (this.rainEffect != null)
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);

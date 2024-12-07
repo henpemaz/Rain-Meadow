@@ -1,4 +1,6 @@
-﻿using MonoMod.RuntimeDetour;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
 
@@ -27,6 +29,8 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
+
+            IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
@@ -81,6 +85,12 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe))
             {
+                if (self.type == AbstractPhysicalObject.AbstractObjectType.Oracle)
+                {
+                    // apo.realize doesn't handle oracles
+                    self.realizedObject = new Oracle(self, self.Room.realizedRoom);
+                }
+                RainMeadow.Debug(self.type);
                 if (!oe.isMine && !oe.realized && oe.isTransferable && !oe.isPending)
                 {
                     if (oe.roomSession == null || !oe.roomSession.participants.Contains(oe.owner)) //if owner of oe is subscribed (is participant) do not request
@@ -225,24 +235,24 @@ namespace RainMeadow
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
                         {
                             // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
                             // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!oe.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
                                 // not-online-aware removal
-                                Debug("removing remote entity from game " + oe);
-                                oe.beingMoved = true;
-                                if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                Debug("removing remote entity from game " + opo);
+                                opo.beingMoved = true;
+                                if (apo.realizedObject is Creature c && c.inShortcut)
                                 {
                                     c.RemoveFromShortcuts();
                                 }
-                                entities.Remove(oe.apo);
-                                room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                room.RemoveObject(oe.apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                oe.beingMoved = false;
+                                entities.Remove(apo);
+                                room.abstractRoom.creatures.Remove(apo as AbstractCreature);
+                                room.RemoveObject(apo.realizedObject);
+                                room.CleanOutObjectNotInThisRoom(apo.realizedObject);
+                                opo.beingMoved = false;
                             }
                         }
                     }
@@ -271,6 +281,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
                     storyGameMode.changedRegions = true;
+                    storyGameMode.readyForGate = 2;
                 }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
@@ -280,6 +291,34 @@ namespace RainMeadow
             else
             {
                 orig(self);
+            }
+        }
+
+        private void AbstractCreature_IsExitingDen(ILContext il)
+        {
+            try
+            {
+                // if pos not NodeDefined (means is stomach object) then RealizeInRoom
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                ILLabel end = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<AbstractWorldEntity>("get_Room"),
+                    i => i.MatchLdfld<AbstractRoom>("realizedRoom"),
+                    i => i.MatchBrfalse(out end)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((AbstractCreature ac) => OnlineManager.lobby != null && !ac.pos.NodeDefined && ac.GetOnlineObject(out _));
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit<AbstractCreature>(OpCodes.Callvirt, "RealizeInRoom");
+                c.Emit(OpCodes.Br, end);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
     }

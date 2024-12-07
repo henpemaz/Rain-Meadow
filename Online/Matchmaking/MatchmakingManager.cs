@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Steamworks;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -57,12 +58,31 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
+        public virtual List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(default, player.id.name)).ToList();
+
         // the idea here was to decide by ping some day
         public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
         {
             if (onlineResource.isAvailable && onlineResource.isActive && subscribers.Contains(OnlineManager.mePlayer) && !OnlineManager.mePlayer.isActuallySpectating) return OnlineManager.mePlayer;
             if (subscribers.Count < 1) return null;
             return subscribers.FirstOrDefault(p => !p.hasLeft && OnlineManager.lobby.gameMode.PlayerCanOwnResource(p, onlineResource));
+        }
+
+        public void HandleDisconnect(OnlinePlayer player)
+        {
+            RainMeadow.Debug($"Handling player disconnect:{player}");
+            player.hasLeft = true;
+            OnlineManager.lobby?.OnPlayerDisconnect(player);
+            while (player.HasUnacknoledgedEvents())
+            {
+                player.AbortUnacknoledgedEvents();
+                OnlineManager.lobby?.OnPlayerDisconnect(player);
+                OnlineManager.ForceLoadUpdate(); // process incoming data
+            }
+            RainMeadow.Debug($"Actually removing player:{player}");
+            OnlineManager.players.Remove(player);
+
+            ChatLogManager.LogMessage($"{player.id.name} left the game.");
         }
 
         public abstract MeadowPlayerId GetEmptyId();

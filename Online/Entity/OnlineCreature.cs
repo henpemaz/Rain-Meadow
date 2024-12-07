@@ -22,21 +22,25 @@ namespace RainMeadow
                 this.creatureType = onlineCreature.creature.creatureTemplate.type;
             }
 
+            protected void CreatureSaveExtras(string extras)
+            {
+                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
+            }
+
+            protected string CreatureBuildExtras()
+            {
+                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
+            }
+
             protected override int ExtrasIndex => 3;
 
             protected override void StoreSerializedObject(OnlinePhysicalObject onlinePhysicalObject)
             {
                 var onlineCreature = (OnlineCreature)onlinePhysicalObject;
 
-                string serializedObject = null;
-                if (RainMeadow.isArenaMode(out var _))
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature);
-                }
-                else
-                {
-                    serializedObject = SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
-                }
+                var serializedObject = onlineCreature.abstractCreature.world.singleRoomWorld
+                    ? SaveState.AbstractCreatureToStringSingleRoomWorld(onlineCreature.abstractCreature)
+                    : SaveState.AbstractCreatureToStringStoryWorld(onlineCreature.abstractCreature);
                 RainMeadow.Debug("Data is " + serializedObject);
                 int index = 0;
                 int count = ExtrasIndex;
@@ -52,22 +56,11 @@ namespace RainMeadow
                     CreatureSaveExtras(serializedObject.Substring(index + 4));
                 }
 
-
                 this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
             }
 
-            protected void CreatureSaveExtras(string extras)
-            {
-                extraData = extras.Replace("<cA>", "\u0001").Replace("<cB>", "\u0002").Replace("<cC>", "\u0003");
-            }
-
-            protected string CreatureBuildExtras()
-            {
-                return extraData.Replace("\u0001", "<cA>").Replace("\u0002", "<cB>").Replace("\u0003", "<cC>");
-            }
-
-            public override string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            public override string MakeSerializedObject(AbstractPhysicalObjectState initialState)
             {
                 if (string.IsNullOrEmpty(extraData))
                 {
@@ -75,13 +68,13 @@ namespace RainMeadow
                 }
                 else
                 {
-                    return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());
+                    return string.Format(CultureInfo.InvariantCulture, "{0}{1}", MakeSerializedObjectNoExtras(initialState), CreatureBuildExtras());  // MakeSerializedObjectNoExtras already appends a `<cA>`
                 }
             }
 
-            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            protected override string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",
+                return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",  // trailing `<cA>` expected by game code
                     creatureType.ToString(),
                     new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
                     initialState.pos.ResolveRoomName(), // this uses story index, doesn't work in arena but we use pos directly anyways
@@ -143,7 +136,7 @@ namespace RainMeadow
             return abstractCreature;
         }
 
-        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();
@@ -181,56 +174,26 @@ namespace RainMeadow
         public void RPCCreatureViolence(OnlinePhysicalObject onlineVillain, int? hitchunkIndex, PhysicalObject.Appendage.Pos hitappendage, Vector2? directionandmomentum, Creature.DamageType type, float damage, float stunbonus)
         {
             byte chunkIndex = (byte)(hitchunkIndex ?? 255);
-            this.owner.InvokeRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
+            RunRPC(this.CreatureViolence, onlineVillain, chunkIndex, hitappendage == null ? null : new AppendageRef(hitappendage), directionandmomentum, type, damage, stunbonus);
         }
 
         [RPCMethod]
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
+            if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
             var creature = (this.apo.realizedObject as Creature);
-            if (creature == null) return;
+            if (creature == null)
+            {
+                RainMeadow.Error("realized creature not found for: " + this);
+                return;
+            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
+            RainMeadow.Debug($"{this} hit for {damage}");
+            if(creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
-        }
-
-        //public void ForceGrab(GraspRef graspRef)
-        //{
-        //    var castShareability = new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(graspRef.Shareability));
-        //    var other = graspRef.OnlineGrabbed.FindEntity(quiet: true) as OnlinePhysicalObject;
-        //    if (other != null && other.apo.realizedObject != null)
-        //    {
-        //        var grabber = (Creature)this.apo.realizedObject;
-        //        var grabbedThing = other.apo.realizedObject;
-        //        var graspUsed = graspRef.GraspUsed;
-
-        //        if (grabber.grasps[graspUsed] != null)
-        //        {
-        //            if (grabber.grasps[graspUsed].grabbed == grabbedThing) return;
-        //            grabber.grasps[graspUsed].Release();
-        //        }
-        //        grabber.grasps[graspUsed] = new Creature.Grasp(grabber, grabbedThing, graspUsed, graspRef.ChunkGrabbed, castShareability, graspRef.Dominance, graspRef.Pacifying);
-        //        grabbedThing.room = grabber.room;
-        //        grabbedThing.Grabbed(grabber.grasps[graspUsed]);
-        //        new AbstractPhysicalObject.CreatureGripStick(grabber.abstractCreature, grabbedThing.abstractPhysicalObject, graspUsed, graspRef.Pacifying || grabbedThing.TotalMass < grabber.TotalMass);
-        //    }
-        //}
-
-        public void BroadcastSuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
-        {
-            if (currentlyJoinedResource is RoomSession room)
-            {
-                RainMeadow.Debug(this);
-                if (id.type == 0) throw new InvalidProgrammerException("here");
-                foreach (var participant in room.participants)
-                {
-                    if (!participant.isMe)
-                    {
-                        participant.InvokeRPC(this.SuckedIntoShortCut, entrancePos, carriedByOther);
-                    }
-                }
-            }
+            if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
         [RPCMethod]
@@ -275,20 +238,6 @@ namespace RainMeadow
                 }
             }
             enteringShortCut = false;
-        }
-
-        public void BroadcastTookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
-        {
-            if (currentlyJoinedResource is RoomSession room)
-            {
-                RainMeadow.Debug(this);
-                if (id.type == 0) throw new InvalidProgrammerException("here");
-                foreach (var participant in room.participants)
-                {
-                    if (!participant.isMe)
-                        participant.InvokeRPC(this.TookFlight, type, start, dest);
-                }
-            }
         }
 
         [RPCMethod]

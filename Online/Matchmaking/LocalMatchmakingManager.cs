@@ -190,7 +190,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
             OnlineManager.players.Add(joiningPlayer);
 
-            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
             {
                 // Tell the other players to create this player
                 foreach (OnlinePlayer player in OnlineManager.players)
@@ -211,11 +211,11 @@ namespace RainMeadow
         {
             if (!OnlineManager.players.Contains(leavingPlayer)) { return; }
 
-            OnlineManager.players.Remove(leavingPlayer);
+            HandleDisconnect(leavingPlayer);
 
-            if (OnlineManager.lobby.owner.isMe)
+            if (OnlineManager.lobby.isOwner)
             {
-                // Tell the other players to create this player
+                // Tell the other players to remove this player
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (player.isMe)
@@ -229,12 +229,7 @@ namespace RainMeadow
 
         public void UpdatePlayersList()
         {
-            List<PlayerInfo> playersinfo = new List<PlayerInfo>();
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                playersinfo.Add(new PlayerInfo(default, player.id.name));
-            }
-            OnPlayerListReceived?.Invoke(playersinfo.ToArray());
+            OnPlayerListReceived?.Invoke(playerList.ToArray());
         }
 
         public override string GetLobbyID()

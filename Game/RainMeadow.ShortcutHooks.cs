@@ -33,6 +33,14 @@ namespace RainMeadow
                 return;
             }
             orig(self, obj);
+            if (OnlineManager.lobby != null)
+            {
+                if (obj is PhysicalObject po && po.abstractPhysicalObject is AbstractPhysicalObject apo && !apo.GetOnlineObject(out _))
+                {
+                    self.world.GetResource()?.ApoEnteringWorld(apo);
+                    self.abstractRoom.GetResource()?.ApoEnteringRoom(apo, apo.pos);
+                }
+            }
         }
 
         // removes entities that should be deleted when going between rooms
@@ -178,7 +186,7 @@ namespace RainMeadow
             if (onlineCreature.isMine)
             {
                 RainMeadow.Debug($"{onlineCreature} took flight");
-                onlineCreature.BroadcastTookFlight(type, start, dest);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.TookFlight, type, start, dest);
             }
             else if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
@@ -223,7 +231,7 @@ namespace RainMeadow
             {
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
-                onlineCreature.BroadcastSuckedIntoShortCut(entrancePos, carriedByOther);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
             }
             else

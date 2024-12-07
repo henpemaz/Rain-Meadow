@@ -17,6 +17,8 @@ namespace RainMeadow
             On.LanternMouse.MoveTowards += LanternMouse_MoveTowards; // snap to poles
             On.LanternMouse.Run += LanternMouse_Run;
 
+            On.LanternMouse.Squeak += LanternMouse_Squeak; // quiet
+
             On.MouseAI.Update += MouseAI_Update;
             On.MouseAI.DangleTile += MouseAI_DangleTile; // no dangling
 
@@ -29,6 +31,15 @@ namespace RainMeadow
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("BodyColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("DecalColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("EyesColor").GetGetMethod(), MouseGraphics_ColorHook);
+        }
+
+        private static void LanternMouse_Squeak(On.LanternMouse.orig_Squeak orig, LanternMouse self, float stress)
+        {
+            if (creatureControllers.TryGetValue(self, out var p))
+            {
+                return; // need voicecounter == 0 for no shake, but also no constant squeals plz
+            }
+            orig(self, stress);
         }
 
         private static void LanternMouse_Run(On.LanternMouse.orig_Run orig, LanternMouse self, MovementConnection followingConnection)
@@ -351,7 +362,7 @@ namespace RainMeadow
                 }
             }
 
-            mouse.voiceCounter = 10; // shh
+            mouse.voiceCounter = 0; // don't shake
         }
 
         protected override void OnCall()

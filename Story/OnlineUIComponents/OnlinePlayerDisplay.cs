@@ -1,4 +1,5 @@
 ﻿using RWCustom;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -8,46 +9,82 @@ namespace RainMeadow
     {
         public FSprite arrowSprite;
         public FSprite gradient;
-        public FLabel label;
+        public FLabel username;
+        public List<FLabel> messageLabels = new();
         public FSprite slugIcon;
+        public OnlinePlayer player;
+        public class Message
+        {
+            public int timer;
+            public string text;
+
+            public Message(string message, int timer = 200)
+            {
+                this.timer = timer;
+                this.text = message;
+            }
+        }
+
+        public Queue<Message> messageQueue = new();
+
+        public Color color;
+        public Color lighter_color;
+
+        public float H;
+        public float S;
+        public float V;
+
         public int counter;
-        public int resetUsernameCounter;
         public float alpha;
         public float lastAlpha;
         public float blink;
         public float lastBlink;
-        public bool switchedToDeathIcon;
         public int onlineTimeSinceSpawn;
         public string iconString;
+        public bool flashIcons;
+
+        public float fadeSpeed;
 
         SlugcatCustomization customization;
 
-        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization) : base(owner)
-        {
 
+        public OnlinePlayerDisplay(PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player) : base(owner)
+        {
+            this.player = player;
             this.owner = owner;
-            this.resetUsernameCounter = 200;
+
+            this.color = customization.SlugcatColor();
+
+            Color.RGBToHSV(color, out H, out S, out V);
+
+            if (V < 0.8f)
+            {
+                this.lighter_color = Color.HSVToRGB(H, S, 0.8f);
+            }
+            else
+            {
+                this.lighter_color = color;
+            }
 
             this.pos = new Vector2(-1000f, -1000f);
             this.lastPos = this.pos;
             this.gradient = new FSprite("Futile_White", true);
+            owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.shader = owner.hud.rainWorld.Shaders["FlatLight"];
             this.gradient.color = new Color(0f, 0f, 0f);
-            owner.hud.fContainers[0].AddChild(this.gradient);
             this.gradient.alpha = 0f;
             this.gradient.x = -1000f;
-            this.label = new FLabel(Custom.GetFont(), customization.nickname);
-            this.label.color = Color.white;
 
-
-            owner.hud.fContainers[0].AddChild(this.label);
-            this.label.alpha = 0f;
-            this.label.x = -1000f;
-            this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
-            owner.hud.fContainers[0].AddChild(this.arrowSprite);
-            this.arrowSprite.alpha = 0f;
-            this.arrowSprite.x = -1000f;
-            this.arrowSprite.color = Color.white;
+            for (int i = 0; i < 3; i++)
+            {
+                var label = new FLabel(Custom.GetFont(), "");
+                this.messageLabels.Add(label);
+                owner.hud.fContainers[0].AddChild(label);
+                label.alignment = FLabelAlignment.Center;
+                label.color = Color.white;
+                label.alpha = 0f;
+                label.x = -1000f;
+            }
 
             if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
@@ -58,19 +95,29 @@ namespace RainMeadow
                 this.iconString = "Kill_Slugcat";
 
             }
+
             this.slugIcon = new FSprite(iconString, true);
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
-            this.slugIcon.color = Color.white;
-
+            this.slugIcon.color = lighter_color;
             this.blink = 1f;
-            this.switchedToDeathIcon = false;
 
-            this.label.color = customization.SlugcatColor();
-            this.arrowSprite.color = customization.SlugcatColor();
-            this.slugIcon.color = customization.SlugcatColor();
+            this.username = new FLabel(Custom.GetFont(), customization.nickname);
+            owner.hud.fContainers[0].AddChild(this.username);
+            this.username.alpha = 0f;
+            this.username.x = -1000f;
+            this.username.color = lighter_color;
+
+            this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
+            owner.hud.fContainers[0].AddChild(this.arrowSprite);
+            this.arrowSprite.alpha = 0f;
+            this.arrowSprite.x = -1000f;
+            this.arrowSprite.color = lighter_color;
+
             this.customization = customization;
+
+            this.fadeSpeed = 20f;
         }
 
         public override void Update()
@@ -78,8 +125,10 @@ namespace RainMeadow
             base.Update();
             onlineTimeSinceSpawn++;
 
-            bool show = owner.owner.showFriends || (owner.clientSettings.owner.isMe && onlineTimeSinceSpawn < 120);
-            if (show || this.alpha > 0)
+            this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
+
+            bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
+            if (show || this.alpha > 0 || flashIcons)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
@@ -94,13 +143,18 @@ namespace RainMeadow
 
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
-                    if (owner.PlayerConsideredDead != switchedToDeathIcon)
+                    if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
+                    else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
+                    else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
+                    else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
+                    else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
                     {
-                        slugIcon.RemoveFromContainer();
-                        slugIcon = new FSprite(owner.PlayerConsideredDead ? "Multiplayer_Death" : iconString);
-                        owner.hud.fContainers[0].AddChild(slugIcon);
-                        switchedToDeathIcon = owner.PlayerConsideredDead;
+                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
                     }
+                    else slugIcon.SetElementByName(iconString);
+
+                    if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(onlineTimeSinceSpawn / fadeSpeed) + 1f) / 2f);
+                    else if (RainMeadow.rainMeadowOptions.ShowFriends.Value) this.alpha = lighter_color.a;
                 }
                 else
                 {
@@ -108,31 +162,91 @@ namespace RainMeadow
                 }
 
                 this.counter++;
-
             }
             if (!show) this.lastAlpha = this.alpha;
+
+            for (int i = 0; i < messageQueue.Count;)
+            {
+                messageQueue.ElementAt(i).timer--;
+                if (messageQueue.ElementAt(i).timer <= 0)
+                {
+                    messageQueue.Dequeue();
+                    // this is a queue so if we dequeue it shifts the entire list
+                }
+                else i++;
+            }
         }
 
         public override void Draw(float timeStacker)
         {
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
+            var pos = vector;
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
-            this.gradient.x = vector.x;
-            this.gradient.y = vector.y + 10f;
-            this.gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
-            this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
-            this.arrowSprite.x = vector.x;
-            this.arrowSprite.y = vector.y;
+
+            this.arrowSprite.x = pos.x;
+            this.arrowSprite.y = pos.y;
             this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(owner.pointDir * -1);
 
-            this.slugIcon.x = vector.x;
-            this.slugIcon.y = vector.y + 40f;
+            this.gradient.x = pos.x;
+            this.gradient.y = pos.y + 10f;
+            this.gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
+            this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
 
-            this.label.x = vector.x;
-            this.label.y = vector.y + 20f;
-            Color color = Color.white;
+            pos.y += 20f;
+            this.username.x = pos.x;
+            this.username.y = pos.y;
 
-            color = customization.SlugcatColor();
+            if (messageQueue.Count > 0)
+            {
+                this.username.text = customization.nickname + ": ";
+
+                while (messageQueue.Count > messageLabels.Count) messageQueue.Dequeue();
+                bool first = true;
+                for (int i = messageQueue.Count - 1; i >= 0; i--)
+                {
+                    var messageData = messageQueue.ElementAt(i);
+                    messageLabels[i].text = messageData.text;
+                    messageLabels[i].alpha = Mathf.Min(messageData.timer / 10f, 1f);
+                    if (first)
+                    {
+                        first = false;
+                        this.username.x = pos.x - (messageLabels[i]._textRect.width / 2);
+                        this.messageLabels[i].x = pos.x + (username._textRect.width / 2);
+                    }
+                    else
+                    {
+                        this.messageLabels[i].x = pos.x;
+                    }
+                    messageLabels[i].y = pos.y;
+                    pos.y += 20;
+                }
+            }
+            else
+            {
+                this.username.text = customization.nickname;
+                pos.y += 20;
+            }
+
+            for (int i = messageQueue.Count; i < messageLabels.Count; i++)
+            {
+                messageLabels[i].alpha = 0f;
+                messageLabels[i].text = "";
+            }
+
+            this.slugIcon.x = pos.x;
+            this.slugIcon.y = pos.y;
+
+            this.arrowSprite.alpha = num;
+            this.slugIcon.alpha = num;
+            if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
+            {
+                this.username.alpha = lighter_color.a;
+            }
+            else
+            {
+                foreach (var label in messageLabels) label.alpha = num;
+                this.username.alpha = num;
+            }
 
             if (this.counter % 6 < 2 && this.lastBlink > 0f)
             {
@@ -145,38 +259,6 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
-            var lighter_color = color * 1.7f;
-            this.label.color = lighter_color;
-
-            if (this.label.text != customization.nickname) // we've updated a username
-            {
-                resetUsernameCounter--;
-                this.label.color = color * 3f;
-
-            }
-
-            if (resetUsernameCounter < 10) // snappier fadeaway
-            {
-                this.label.color = lighter_color;
-
-            }
-
-
-            if (resetUsernameCounter < 0)
-            {
-
-                this.label.text = customization.nickname;
-                resetUsernameCounter = 200;
-
-            }
-
-            this.arrowSprite.color = lighter_color;
-            this.slugIcon.color = lighter_color;
-
-            this.label.alpha = num;
-            this.arrowSprite.alpha = num;
-            this.slugIcon.alpha = num;
-
         }
 
         public override void ClearSprites()
@@ -184,7 +266,8 @@ namespace RainMeadow
             base.ClearSprites();
             this.gradient.RemoveFromContainer();
             this.arrowSprite.RemoveFromContainer();
-            this.label.RemoveFromContainer();
+            this.username.RemoveFromContainer();
+            foreach (var label in this.messageLabels) label.RemoveFromContainer();
             this.slugIcon.RemoveFromContainer();
         }
     }

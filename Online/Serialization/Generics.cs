@@ -409,7 +409,7 @@ namespace RainMeadow.Generics
     {
         public List<T> list;
         public List<U> removed;
-        private Dictionary<U, T> lookup;
+        public Dictionary<U, T> lookup;
         private HashSet<U> removedLookup;
 
         public DynamicIdentifiablesPrimaryDeltaList() { }

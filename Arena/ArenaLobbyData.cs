@@ -30,11 +30,24 @@ namespace RainMeadow
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
             public Dictionary<string, int> playersChoosingSlugs;
-
+            [OnlineField]
+            public Dictionary<string, int> playerResultColors;
+            [OnlineField]
+            public bool countdownInitiatedHoldFire;
+            [OnlineField]
+            public int playerEnteredGame;
+            [OnlineField]
+            public int clientsAreReadiedUp;
+            [OnlineField]
+            public int arenaSetupTime;
+            [OnlineField]
+            public bool sainot;
+            [OnlineField]
+            public string currentGameMode;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
-                ArenaCompetitiveGameMode arena = (onlineResource as Lobby).gameMode as ArenaCompetitiveGameMode;
+                ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 playList = arena.playList;
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
@@ -43,21 +56,33 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
+                countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
+                playerResultColors = arena.playerResultColors;
+                playerEnteredGame = arena.playerEnteredGame;
+                clientsAreReadiedUp = arena.clientsAreReadiedUp;
+                arenaSetupTime = arena.setupTime;
+                sainot = arena.sainot;
+                currentGameMode = arena.currentGameMode;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
                 var lobby = (resource as Lobby);
-                (lobby.gameMode as ArenaCompetitiveGameMode).isInGame = isInGame;
-                (lobby.gameMode as ArenaCompetitiveGameMode).playList = playList;
-                (lobby.gameMode as ArenaCompetitiveGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
-                (lobby.gameMode as ArenaCompetitiveGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
-                (lobby.gameMode as ArenaCompetitiveGameMode).returnToLobby = returnToLobby;
-                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
-                (lobby.gameMode as ArenaCompetitiveGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
-                (lobby.gameMode as ArenaCompetitiveGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
-
-
+                (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
+                (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
+                (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
+                (lobby.gameMode as ArenaOnlineGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
+                (lobby.gameMode as ArenaOnlineGameMode).returnToLobby = returnToLobby;
+                (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
+                (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
+                (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
+                (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
+                (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
+                (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
+                (lobby.gameMode as ArenaOnlineGameMode).clientsAreReadiedUp = clientsAreReadiedUp;
+                (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
+                (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
+                (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

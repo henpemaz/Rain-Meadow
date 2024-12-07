@@ -609,7 +609,7 @@ namespace RainMeadow
                     return creature.room.GetWorldCoordinate(scavenger.occupyTile);
                 }
 
-                return creature.room.GetWorldCoordinate(creature.bodyChunks[0].pos);
+                return base.CurrentPathfindingPosition;
             }
         }
 

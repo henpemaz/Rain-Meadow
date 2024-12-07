@@ -33,7 +33,7 @@
         public SeedCob.AbstractSeedCob AbstractSeedCob => apo as SeedCob.AbstractSeedCob;
 
 
-        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             var consumableDef = (OnlineSeedCobDefinition)newObjectEvent;
             var apo = base.ApoFromDef(newObjectEvent, inResource, initialState);

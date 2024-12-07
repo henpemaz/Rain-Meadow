@@ -1,9 +1,10 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RainMeadow.Story.OnlineUIComponents;
 using System;
+using System.Drawing;
 using System.Linq;
-using UnityEngine;
+using MonoMod.RuntimeDetour;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow;
 
@@ -14,17 +15,17 @@ public partial class RainMeadow
     {
         On.RainWorldGame.SpawnPlayers_bool_bool_bool_bool_WorldCoordinate += RainWorldGame_SpawnPlayers_bool_bool_bool_bool_WorldCoordinate; // Personas are set as non-transferable
 
-        On.SlugcatStats.ctor += SlugcatStats_ctor;
-
         On.Player.ctor += Player_ctor;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
+        new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
         IL.Player.Update += Player_Update;
         On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
-        On.Player.SwallowObject += Player_SwallowObject;
+        IL.Player.GrabUpdate += Player_GrabUpdate_FixSpearmasterNeedles;
+        IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
         On.Player.CanIPickThisUp += Player_CanIPickThisUp;
@@ -44,7 +45,61 @@ public partial class RainMeadow
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
+        On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+        IL.Player.ThrowObject += Player_ThrowObject1;
 
+    }
+
+
+    // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
+    private void Player_ThrowObject1(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            var skip2 = il.DefineLabel();
+
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("SlugCatClass"),
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.GotoNext(moveType: MoveType.After,
+            i => i.MatchLdfld<Creature.Grasp>("grabbed"),
+            i => i.MatchIsinst<Rock>(),
+            i => i.MatchBrfalse(out skip2)
+            );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+
+    }
+
+    private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
+    {
+        if (isStoryMode(out var _))
+        {
+            if (obj is Player)
+            {
+                if (self.thrownBy == (obj as Player) && obj.IsLocal() && self is Spear)
+                {
+                    return;
+                }
+            }
+        }
+        orig(self, obj, chunk, appendage);
     }
 
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
@@ -52,9 +107,26 @@ public partial class RainMeadow
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (self.room.world.game.cameras[0].hud.textPrompt.pausedMode || ChatHud.chatButtonActive)
+            if (
+                self.room.world.game.cameras[0] != null &&
+                self.room.world.game.cameras[0].hud != null &&
+                self.room.world.game.cameras[0].hud.textPrompt != null &&
+                self.room.world.game.cameras[0].hud.textPrompt.pausedMode ||
+                ChatHud.chatButtonActive)
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
+            }
+
+            if (isArenaMode(out var arena))
+            {
+                if (arena.countdownInitiatedHoldFire)
+                {
+                    PlayerMovementOverride.HoldFire(self);
+
+                }
+
+                ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
+
             }
         }
 
@@ -96,6 +168,8 @@ public partial class RainMeadow
                 {
                     if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
                         return false;
+                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && storyGameMode.readyForWin)
+                        return true;
                     if (!self.abstractCreature.IsLocal()) // don't shelter if remote
                         return false;
                 }
@@ -111,12 +185,34 @@ public partial class RainMeadow
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
+        if (OnlineManager.lobby != null && self.objectInStomach != null)
+            self.objectInStomach.pos = self.abstractCreature.pos;
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
-        if (isStoryMode(out var _) && !self.inShortcut && OnlineManager.players.Count > 4)
+        if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
+            {
+                if (!self.IsLocal() && self.collisionLayer != 0)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 0);
+
+                }
+            }
+            else
+            {
+                if (!self.IsLocal() && self.collisionLayer != 1)
+                {
+                    self.room.ChangeCollisionLayerForObject(self, 1);
+
+                }
+            }
+        }
+
+        if (isArenaMode(out var arena) && !self.inShortcut)
+        {
+            if (arena.countdownInitiatedHoldFire)
             {
                 if (self.collisionLayer != 0)
                 {
@@ -233,6 +329,65 @@ public partial class RainMeadow
         }
     }
 
+    private void Player_GrabUpdate_FixSpearmasterNeedles(ILContext il)
+    {
+        try
+        {
+            // spearmaster needle set state before registering
+            var c = new ILCursor(il);
+            int loc = 0;
+            c.GotoNext(moveType: MoveType.After,
+                // AbstractSpear abstractSpear = new AbstractSpear(room.world, null, room.GetWorldCoordinate(base.mainBodyChunk.pos), room.game.GetNewID(), explosive: false);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("world"),
+                i => i.MatchLdnull(),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Creature>("get_mainBodyChunk"),
+                i => i.MatchLdfld<BodyChunk>("pos"),
+                i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                i => i.MatchLdcI4(0),
+                i => i.MatchNewobj<AbstractSpear>(),
+                i => i.MatchStloc(out loc)
+                );
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = true;
+                }
+            });
+            c.GotoNext(moveType: MoveType.After,
+                // room.abstractRoom.AddEntity(abstractSpear);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchCallvirt<Room>("get_abstractRoom"),
+                i => i.MatchLdloc(19),
+                i => i.MatchCallvirt<AbstractRoom>("AddEntity")
+                );
+            // unset again because RealizeInRoom will assume dead
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = false;
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
     public static bool sUpdateFood = true;
 
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
@@ -242,7 +397,6 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
         if (!onlineEntity.isMine) return;
 
@@ -356,6 +510,8 @@ public partial class RainMeadow
         return orig(self, player1, player2, player3, player4, location);
     }
 
+    public static ConditionalWeakTable<Player, SlugcatStats> slugcatStatsPerPlayer = new();
+
     private void Player_ctor(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
     {
         orig(self, abstractCreature, world);
@@ -369,12 +525,18 @@ public partial class RainMeadow
             {
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
+            if (oe is not null)
+            {
+                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
+                RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
+            }
         }
     }
 
     private void Player_GetInitialSlugcatClass(On.Player.orig_GetInitialSlugcatClass orig, Player self)
     {
         orig(self);
+
         if (OnlineManager.lobby != null)
         {
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
@@ -386,6 +548,19 @@ public partial class RainMeadow
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
         }
+    }
+
+    private SlugcatStats Player_slugcatStats(Func<Player, SlugcatStats> orig, Player self)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
+            {
+                return slugcatStats;
+            }
+        }
+
+        return orig(self);
     }
 
     private void PlayerOnDie(On.Player.orig_Die orig, Player self)
@@ -434,13 +609,55 @@ public partial class RainMeadow
         return orig(self, obj);
     }
 
-    private void Player_SwallowObject(On.Player.orig_SwallowObject orig, Player self, int grasp)
+    private void Player_SwallowObject(ILContext il)
     {
-        if (!self.abstractPhysicalObject.IsLocal(out var oe)) return;
-        orig(self, grasp);
-        if (oe is not null && self.objectInStomach is not null)
+        try
         {
-            self.objectInStomach.pos.room = -1; // signal not-in-a-room
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            c.GotoNext(moveType: MoveType.AfterLabel,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdloc(0),
+                i => i.MatchStfld<Player>("objectInStomach")
+                );
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc_0);
+            c.EmitDelegate((Player self, AbstractPhysicalObject objectInStomach) =>
+            {
+                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
+                {
+                    if (!oe.isMine) return false;
+                    if (objectInStomach.GetOnlineObject(out var oeInStomach))
+                        oeInStomach.realized = false;  // don't release ownership
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, skip);
+            c.Index = il.Instrs.Count - 1;
+            c.GotoPrev(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("objectInStomach"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCallOrCallvirt<Creature>("get_abstractCreature"),
+                i => i.MatchLdfld<AbstractWorldEntity>("pos"),
+                i => i.MatchCallOrCallvirt<AbstractWorldEntity>("Abstractize")
+                );
+            // abstractize sets pos so we gotta unset it after
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) =>
+            {
+                if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
+                {
+                    // signal not-in-a-room
+                    self.objectInStomach.InDen = true;
+                    self.objectInStomach.pos.WashNode();
+                }
+            });
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
         }
     }
 
@@ -449,7 +666,11 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var oe))
         {
             if (!oe.isMine) return; // prevent execution
-            if (self.objectInStomach != null) self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
+            if (self.objectInStomach != null)
+            {
+                self.objectInStomach.pos = self.abstractCreature.pos; // so it picks up in room.addentity hook, otherwise skipped
+                self.objectInStomach.InDen = false;
+            }
         }
         orig(self);
     }
@@ -514,6 +735,10 @@ public partial class RainMeadow
         {
             if (otherObject is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (otherObject is Player) return false;
+        }
         return orig(self, otherObject);
     }
 
@@ -534,7 +759,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out var story) && !story.friendlyFire);
+            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire));
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);
@@ -551,24 +776,10 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            if (crit is Player) return false;
+        }
         return orig(self, crit);
-    }
-
-    // this WHOLE hook might be obsolete, todo check
-    private void SlugcatStats_ctor(On.SlugcatStats.orig_ctor orig, SlugcatStats self, SlugcatStats.Name slugcat, bool malnourished)
-    {
-        if (isStoryMode(out var storyGameMode))
-        {
-            slugcat = storyGameMode.avatarSettings.playingAs;
-        }
-        orig(self, slugcat, malnourished);
-
-        if (OnlineManager.lobby == null) return;
-        if (slugcat != Ext_SlugcatStatsName.OnlineSessionPlayer) return;
-
-        if (OnlineManager.lobby.gameMode is ArenaCompetitiveGameMode)
-        {
-            self.throwingSkill = 1;
-        }
     }
 }

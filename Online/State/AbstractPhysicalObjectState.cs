@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    public class PhysicalObjectEntityState : OnlineEntity.EntityState
+    public class AbstractPhysicalObjectState : OnlineEntity.EntityState
     {
         [OnlineField(group = "realized")]
         public WorldCoordinate pos;
@@ -16,8 +16,8 @@ namespace RainMeadow
         [OnlineField(group = "realized", nullable = true, polymorphic = true)]
         public RealizedPhysicalObjectState realizedObjectState;
 
-        public PhysicalObjectEntityState() : base() { }
-        public PhysicalObjectEntityState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
+        public AbstractPhysicalObjectState() : base() { }
+        public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             var realizedState = inResource is RoomSession;
             if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
@@ -43,8 +43,17 @@ namespace RainMeadow
 
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
-
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is Oracle oracle)
+            {
+                if (oracle.oracleBehavior is SLOracleBehavior)
+                {
+                    return new RealizedSLOracleState(onlineObject);
+                }
+                return new RealizedOracleState(onlineObject);
+            }
+            if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
+            if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
             if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
@@ -60,7 +69,6 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.isPending) { RainMeadow.Debug($"not syncing {onlineEntity} because pending"); return; }; // Don't sync if pending, reduces visibility and effect of lag
 
             var onlineObject = onlineEntity as OnlinePhysicalObject;
             var apo = onlineObject.apo;
@@ -69,42 +77,37 @@ namespace RainMeadow
             var wasPos = apo.pos;
             try
             {
-                if (pos.room == -1)
+                if (inDen != apo.InDen)
                 {
-                    if (wasPos.room != -1)
+                    if (inDen)
                     {
-                        if (apo.realizedObject is PhysicalObject po)
+                        RainMeadow.Debug("moving to den: " + onlineObject);
+                        if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession)
                         {
-                            po.RemoveFromRoom();
-                            apo.Abstractize(wasPos);
+                            storyGameSession.RemovePersistentTracker(apo);
                         }
-                        apo.Room.RemoveEntity(apo);
-                    }
-                }
-                else
-                {
-                    if (inDen != apo.InDen)
-                    {
-                        if (inDen)
-                        {
-                            RainMeadow.Debug("moving to den: " + onlineObject);
-                            apo.IsEnteringDen(pos);
-                        }
-                        else
-                        {
-                            RainMeadow.Debug("moving out of den: " + onlineObject);
-                            apo.IsExitingDen();
-                        }
-                    }
-                    if (wasPos.room != -1)
-                    {
-                        apo.Move(pos);
+                        apo.IsEnteringDen(pos);
                     }
                     else
                     {
-                        if (apo.world.IsRoomInRegion(pos.room)) apo.world.GetAbstractRoom(pos).AddEntity(apo);
+                        RainMeadow.Debug("moving out of den: " + onlineObject);
+                        if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession
+                            && ModManager.MMF && MoreSlugcats.MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(apo))
+                        {
+                            storyGameSession.AddNewPersistentTracker(apo);
+                            /* remix key item tracking TODO: get player that puked this up
+                            if (apo.Room.NOTRACKERS)
+                            {
+                                apo.tracker.lastSeenRegion = lastGoodTrackerSpawnRegion;
+                                apo.tracker.lastSeenRoom = lastGoodTrackerSpawnRoom;
+                                apo.tracker.ChangeDesiredSpawnLocation(lastGoodTrackerSpawnCoord);
+                            }
+                            */
+                        }
+                        apo.IsExitingDen();
                     }
                 }
+                apo.Move(pos);
             }
             catch (Exception e)
             {

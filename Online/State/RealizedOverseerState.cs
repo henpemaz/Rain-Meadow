@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // TODO: The overseer type isnt synced. (or atleast the guide, havent tested others).
-    //          we could technically do this here if we didnt mind resending the same information every packet lmao.
+    // TODO: The overseer type should be synced in abstractcreaturedef
+    //          maybe we could hijack the abscreature customdata?
     // TODO: When zipping, the body and the mycelium gets stretched along the zip.
     //          Should be fixable by ensuring DrawPosOfSegment returns what we want, 
     //          and throwing in a well timed reset on the graphics module
@@ -13,64 +13,50 @@ namespace RainMeadow
     public class RealizedOverseerState : RealizedCreatureState
     {
         [OnlineField]
+        private int ownerIterator;  // our guide is 1, vanilla goes from 0-5, sandbox uses 10+
+        [OnlineField]
         private Vector2 rootPos;
         [OnlineField]
         private IntVector2 rootTile;
         [OnlineField]
         private IntVector2 hoverTile;
-        [OnlineField]
+        [OnlineFieldHalf]
         private Vector2 lookAt;
         [OnlineField]
-        private byte mode;
+        private Overseer.Mode mode;
         [OnlineField]
         private float extended;
         [OnlineField(nullable = true)]
-        private OnlineEntity.EntityId? conversationPartner;
+        private OnlinePhysicalObject? conversationPartner;
 
         public RealizedOverseerState() { }
         public RealizedOverseerState(OnlineCreature entity) : base(entity)
         {
-            Overseer o = entity.apo.realizedObject as Overseer;
+            Overseer o = (Overseer)entity.apo.realizedObject;
 
+            ownerIterator = (o.abstractCreature.abstractAI as OverseerAbstractAI).ownerIterator;
             rootPos = o.rootPos;
             rootTile = o.rootTile;
             hoverTile = o.hoverTile;
-            mode = (byte)o.mode.index;
+            mode = o.mode;
             lookAt = o.AI.lookAt;
             extended = o.extended;
-
-            if (o.conversationPartner != null)
-            {
-                if (!OnlinePhysicalObject.map.TryGetValue(o.conversationPartner.abstractPhysicalObject, out var conversationPartner)) throw new System.InvalidOperationException("Conversation partner doesnt exist in online space!");
-                this.conversationPartner = conversationPartner.id;
-            }
-            else
-            {
-                this.conversationPartner = null;
-            }
+            conversationPartner = o.conversationPartner?.abstractCreature.GetOnlineObject();
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var overseer = ((OnlineCreature)onlineEntity).apo.realizedObject as Overseer;
-            if (overseer == null) return;
+            if ((onlineEntity as OnlineCreature).realizedCreature is not Overseer overseer) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            (overseer.abstractCreature.abstractAI as OverseerAbstractAI).ownerIterator = ownerIterator;
             overseer.rootPos = rootPos;
             overseer.rootTile = rootTile;
             overseer.hoverTile = hoverTile;
-            overseer.mode = new Overseer.Mode(Overseer.Mode.values.GetEntry(mode));
+            overseer.mode = mode;
             overseer.AI.lookAt = lookAt;
             overseer.extended = extended;
-
-            if (conversationPartner != null)
-            {
-                overseer.conversationPartner = (conversationPartner.FindEntity() as OnlineCreature).apo.realizedObject as Overseer;
-            }
-            else
-            {
-                conversationPartner = null;
-            }
+            overseer.conversationPartner = conversationPartner?.apo.realizedObject as Overseer;
         }
     }
 }

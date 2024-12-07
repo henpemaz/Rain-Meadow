@@ -252,14 +252,16 @@ namespace RainMeadow
                 RainMeadow.Debug("water jump");
                 OnJump();
                 this.jumpBoost = 8f;
-                var jumpdir = (cs[0].pos - cs[1].pos).normalized + inputDir;
-                for (int i = 0; i < cc; i++)
+                var jumpdir = ((cs[0].pos - cs[1].pos).normalized + inputDir * 2f + Vector2.up).normalized;
+                cs[0].vel *= 0.4f;
+                cs[0].vel += jumpdir * 13f * jumpFactor;
+                for (int i = 1; i < cc; i++)
                 {
                     cs[i].vel *= 0.4f;
-                    cs[i].vel += jumpdir * 8f * jumpFactor;
+                    cs[i].vel += jumpdir * 12f * jumpFactor;
                 }
                 creature.room.PlaySound(SoundID.Slugcat_Wall_Jump, mainBodyChunk, false, 1f, 1f);
-                canWaterJump = 0;
+                canWaterJump = -10; // cooldown
                 canGroundJump = 0;
             }
             else if (canWallJump != 0)
@@ -386,11 +388,20 @@ namespace RainMeadow
             // grip pole if no footing
             if (this.input[0].y > 0 && !HasFooting)
             {
+                //var tile0 = room.GetTile(basecoord);
+                //if (tile0.AnyBeam && !tile0.DeepWater)
+                //{
+                //    RainMeadow.Debug("grip!");
+                //    ClearMovementOverride();
+                //    GripPole(tile0);
+                //    toPos = basecoord;
+                //    return true;
+                //}
                 for (var i = 0; i < nc; i++)
                 {
                     for (int j = 0; j < 5; j++)
                     {
-                        var tile = creature.room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
+                        var tile = room.GetTile(chunks[i].pos + Custom.fourDirectionsAndZero[j].ToVector2() * chunks[i].rad);
                         if (tile.AnyBeam && !tile.DeepWater)
                         {
                             RainMeadow.Debug("grip!");
@@ -570,6 +581,20 @@ namespace RainMeadow
             }
         }
 
+        public override WorldCoordinate CurrentPathfindingPosition
+        {
+            get
+            {
+                var from = creature.room.GetTilePosition(creature.mainBodyChunk.pos);
+                for (int j = 0; j < 5; j++)
+                {
+                    var tile = from + Custom.fourDirectionsAndZero[j];
+                    if (TileAccessible(creature.room, tile)) return creature.room.GetWorldCoordinate(tile);
+                }
+                return base.CurrentPathfindingPosition;
+            }
+        }
+
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
@@ -604,7 +629,7 @@ namespace RainMeadow
                 if (localTrace) RainMeadow.Debug("can walljump");
                 this.canWallJump = 5 * wallValue;
             }
-            if (IsOnWaterSurface)
+            if (IsOnWaterSurface && canWaterJump >= 0) // negative = locked
             {
                 if (localTrace) RainMeadow.Debug("can water jump");
                 this.canWaterJump = 5;
@@ -741,6 +766,7 @@ namespace RainMeadow
             if (this.canGroundJump > 0) this.canGroundJump--;
             if (this.canCorridorBoost > 0) this.canCorridorBoost--;
             if (this.canWaterJump > 0) this.canWaterJump--;
+            else if (this.canWaterJump < 0) this.canWaterJump++;
 
             if (this.forceJump > 0) this.forceJump--;
             if (this.forceBoost > 0) this.forceBoost--;
