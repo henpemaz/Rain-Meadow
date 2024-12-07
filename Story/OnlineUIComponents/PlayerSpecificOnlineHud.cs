@@ -1,4 +1,5 @@
 ﻿using HUD;
+using RainMeadow.Arena.Nightcat;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,8 +15,14 @@ namespace RainMeadow
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
         public OnlinePlayerDeathBump deathBump;
+        //public NightcatHUD nightcatBump;
+
         public int deadCounter = -1;
+        public int nightcatCounter = -1;
+
         public int antiDeathBumpFlicker;
+        //public int antiNightcatFlicker;
+
         public List<OnlinePlayerHudPart> parts = new();
 
         public bool lastDead;
@@ -38,6 +45,14 @@ namespace RainMeadow
                 return Mathf.InverseLerp(40f, 0f, (float)this.deadCounter);
             }
         }
+
+        //public float NightcatFade
+        //{
+        //    get
+        //    {
+        //        return Mathf.InverseLerp(40f, 0f, (float)this.nightcatCounter);
+        //    }
+        //}
 
         public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(owner.hud)
         {
@@ -62,6 +77,22 @@ namespace RainMeadow
             }
         }
 
+        public bool PlayerInShelter
+        {
+            get
+            {
+                return abstractPlayer?.Room?.shelter ?? false;
+            }
+        }
+
+        public bool PlayerInGate
+        {
+            get
+            {
+                return abstractPlayer?.Room?.gate ?? false;
+            }
+        }
+
         public override void Update()
         {
             base.Update();
@@ -78,6 +109,11 @@ namespace RainMeadow
                         this.deathBump = null;
                     }
 
+                    //else if (this.parts[i] == this.nightcatBump)
+                    //{
+                    //    this.nightcatBump = null;
+                    //}
+
                     this.parts[i].ClearSprites();
                     this.parts.RemoveAt(i);
                 }
@@ -87,30 +123,25 @@ namespace RainMeadow
                 }
             }
 
-            if (!clientSettings.inGame) return;
+            this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
-            if (abstractPlayer == null)
+            if (!clientSettings.inGame) return;
+            if (clientSettings.avatars.Count == 0) return;
+            if (clientSettings.avatars[0]?.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
             {
-                RainMeadow.Debug("finding player abscrt for " + clientSettings.owner);
-                if (clientSettings.avatars.Count > 0 && clientSettings.avatars[0].FindEntity(true) is OnlineCreature oc) // todo these arrows should be per-avatar?
-                {
-                    abstractPlayer = oc.abstractCreature;
-                    customization = oc.GetData<SlugcatCustomization>();
-                }
-                else
-                {
-                    return;
-                }
+                abstractPlayer = oc.abstractCreature;
+                customization = oc.GetData<SlugcatCustomization>();
+            }
+            else
+            {
+                return;
             }
             if (this.playerDisplay == null)
             {
                 RainMeadow.Debug("adding player arrow for " + clientSettings.owner);
-                this.playerDisplay = new OnlinePlayerDisplay(this, customization);
+                this.playerDisplay = new OnlinePlayerDisplay(this, customization, clientSettings.owner);
                 this.parts.Add(this.playerDisplay);
             }
-
-            // tracking
-            this.found = false;
 
             Vector2 rawPos = new();
             // in this room
@@ -197,6 +228,7 @@ namespace RainMeadow
             lastCameraPos = camera.currentCameraPosition;
             lastAbstractRoom = camera.room.abstractRoom.index;
 
+
             if (this.antiDeathBumpFlicker > 0)
             {
                 this.antiDeathBumpFlicker--;
@@ -209,11 +241,14 @@ namespace RainMeadow
                     if (this.deadCounter == 10)
                     {
                         this.antiDeathBumpFlicker = 80;
-                        this.deathBump = new OnlinePlayerDeathBump(this);
+                        this.deathBump = new OnlinePlayerDeathBump(this, customization);
                         this.parts.Add(this.deathBump);
                     }
                 }
             }
+
+
+
             else if (this.lastDead)
             {
                 //Debug.Log("revivePlayer");
@@ -226,7 +261,38 @@ namespace RainMeadow
                 this.hud.PlaySound(SoundID.UI_Multiplayer_Player_Revive);
                 this.hud.fadeCircles.Add(new FadeCircle(this.hud, 10f, 10f, 0.82f, 30f, 4f, this.drawpos, this.hud.fContainers[1]));
             }
+
             this.lastDead = this.PlayerConsideredDead;
+
+            //if (this.antiNightcatFlicker > 0)
+            //{
+            //    this.antiNightcatFlicker--;
+            //}
+
+            //if (Nightcat.cooldownTimer == 0 && !Nightcat.notifiedPlayer && !Nightcat.firstTimeInitiating && RealizedPlayer != null && RealizedPlayer.SlugCatClass == SlugcatStats.Name.Night)
+            //{
+            //    if (this.antiNightcatFlicker < 1)
+            //    {
+            //        this.nightcatCounter++;
+            //        if (this.nightcatCounter == 10)
+            //        {
+            //            this.antiNightcatFlicker = 80;
+            //            this.nightcatBump = new NightcatHUD(this);
+            //            this.parts.Add(this.nightcatBump);
+            //            Nightcat.notifiedPlayer = true;
+            //        }
+            //    }
+            //}
+
+            //if (Nightcat.notifiedPlayer)
+            //{
+            //    if (this.nightcatBump != null)
+            //    {
+            //        this.nightcatBump.removeAsap = true;
+            //    }
+            //    this.nightcatCounter = -1;
+            //}
+
         }
 
         public override void Draw(float timeStacker)

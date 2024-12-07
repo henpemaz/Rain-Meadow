@@ -16,8 +16,25 @@ namespace RainMeadow
             public OnlinePhysicalObject player;
             public SimplerButton button;
             public SimplerSymbolButton? kickbutton;
-            public bool mutedPlayer;
-            private string clientMuteSymbol;
+            public bool mutePlayer
+            {
+                get => OnlineManager.lobby.gameMode.mutedPlayers.Contains(player.owner.id.name);
+                set
+                {
+                    var name = player.owner.id.name;
+                    if (value)
+                    {
+                        RainMeadow.Debug($"Added {name} to mute list");
+                        OnlineManager.lobby.gameMode.mutedPlayers.Add(name);
+                    }
+                    else
+                    {
+                        RainMeadow.Debug($"Removed {name} from mute list");
+                        OnlineManager.lobby.gameMode.mutedPlayers.Remove(name);
+                    }
+                }
+            }
+            private string clientMuteSymbol => mutePlayer ? "FriendA" : "Menu_Symbol_Clear_All";
             public Vector2 pos
             {
                 set
@@ -35,23 +52,10 @@ namespace RainMeadow
                 this.player = opo;
                 this.button = new SimplerButton(menu, menu.pages[0], opo.owner.id.name, pos, new Vector2(110, 30));
 
-                if (OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Contains(opo.owner.id.name)) {
-
-                    clientMuteSymbol = "FriendA"; // Mark as being friendly again next click
-                    mutedPlayer = true;
-                } else
-                {
-                    clientMuteSymbol = "Menu_Symbol_Clear_All"; // Mark as available to be muted
-                    mutedPlayer = false;
-
-                }
-
                 this.button.OnClick += (_) =>
                 {
-                    this.button.toggled = !this.button.toggled;
+                    this.button.toggled ^= true;
                     overlay.spectatee = this.button.toggled ? this.player.apo as AbstractCreature : null;
-                    OnlineManager.mePlayer.isActuallySpectating = overlay.spectatee == null || !this.player.isMine;
-
                 };
                 this.button.owner.subObjects.Add(button);
                 if (canKick)
@@ -65,21 +69,8 @@ namespace RainMeadow
                     this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], clientMuteSymbol, "MUTEPLAYER", pos + new Vector2(120, 0));
                     this.kickbutton.OnClick += (_) =>
                     {
-                        if (!mutedPlayer)
-                        {
-                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Add(opo.owner.id.name);
-                            RainMeadow.Debug($"Added  {opo.owner.id.name} to mute list");
-                            this.kickbutton.UpdateSymbol("FriendA");
-                            mutedPlayer = true;
-                        }
-                        else
-                        {
-                            OnlineManager.lobby.gameMode.usersIDontWantToChatWith.Remove(opo.owner.id.name);
-                            RainMeadow.Debug($"Removed  {opo.owner.id.name} from mute list");
-                            this.kickbutton.UpdateSymbol("Menu_Symbol_Clear_All");
-                            mutedPlayer = false;
-
-                        }
+                        mutePlayer ^= true;
+                        this.kickbutton.UpdateSymbol(clientMuteSymbol);
                     };
                     this.kickbutton.owner.subObjects.Add(kickbutton);
                 }
@@ -142,7 +133,7 @@ namespace RainMeadow
 
             foreach (var player in newPlayers)
             {
-                playerButtons.Add(new PlayerButton(this, player, pos, OnlineManager.lobby.isOwner && !player.isMine));
+                playerButtons.Add(new PlayerButton(this, player, pos, (OnlineManager.lobby.isOwner && !RainMeadow.isArenaMode(out var _)) && !player.isMine)); // can't remove during arena mid-game
                 pos -= offset;
             }
 

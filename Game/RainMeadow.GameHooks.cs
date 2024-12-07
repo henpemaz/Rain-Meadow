@@ -22,6 +22,8 @@ namespace RainMeadow
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
             On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
+            On.PlayerProgression.CopySaveFile += PlayerProgression_CopySaveFile;
+            On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
 
@@ -156,6 +158,18 @@ namespace RainMeadow
             return orig(self);
         }
 
+        private void PlayerProgression_CopySaveFile(On.PlayerProgression.orig_CopySaveFile orig, PlayerProgression self, string sourceName, string destinationDirectory)
+        {
+            orig(self, sourceName, destinationDirectory);
+            orig(self, "online_" + sourceName, destinationDirectory);
+        }
+
+        private void BackupManager_RestoreSaveFile(On.Menu.BackupManager.orig_RestoreSaveFile orig, Menu.BackupManager self, string sourceName)
+        {
+            orig(self, sourceName);
+            orig(self, "online_" + sourceName);
+        }
+
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
             if (OnlineManager.lobby != null)
@@ -227,19 +241,13 @@ namespace RainMeadow
             {
                 // if (room.physicalObjects[i][j] is Player)
                 //becomes
-                // if (room.physicalObjects[i][j] is Player && self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal())
+                // if (room.physicalObjects[i][j] is local Player)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchIsinst<Player>(),
-                    i => i.MatchBrfalse(out skip)
+                    i => i.MatchIsinst<Player>()
                     );
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc_0);
-                c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal());
-                c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((Player? player) => player?.IsLocal() is true ? player : null);  // null if remote player
             }
             catch (Exception e)
             {
@@ -265,11 +273,6 @@ namespace RainMeadow
             {
                 doneCutscene = false;
                 saveStateNumber = OnlineManager.lobby.gameMode.GetStorySessionPlayer(game);
-                if (isStoryMode(out var story))
-                {
-                    story.storyClientData.isDead = false;
-                    OnlineManager.mePlayer.isActuallySpectating = false;
-                }
             }
             orig(self, saveStateNumber, game);
         }
@@ -444,7 +447,7 @@ namespace RainMeadow
         {
             orig(self, player);
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaOnlineGameMode)
             {
                 return;
             }

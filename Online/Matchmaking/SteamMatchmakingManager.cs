@@ -212,6 +212,8 @@ namespace RainMeadow
             }
         }
 
+        public override List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(((SteamPlayerId)player.id).steamID, player.id.name)).ToList();
+
         public void UpdatePlayersList()
         {
             try
@@ -232,12 +234,12 @@ namespace RainMeadow
                 {
                     if (!oldplayers.Contains(p)) PlayerJoined(p);
                 }
-                List<PlayerInfo> playersinfo = new List<PlayerInfo>();
+                // OnlineManager.players will have been updated to match newplayers
                 foreach (CSteamID player in newplayers)
                 {
-                    playersinfo.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                    playerList.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
                 }
-                OnPlayerListReceived?.Invoke(playersinfo.ToArray());
+                OnPlayerListReceived?.Invoke(playerList.ToArray());
             }
             catch (Exception e)
             {
@@ -281,18 +283,7 @@ namespace RainMeadow
 
             if (OnlineManager.players.FirstOrDefault(op => (op.id as SteamPlayerId).steamID == p) is OnlinePlayer player)
             {
-                RainMeadow.Debug($"Handling player disconnect:{player}");
-                player.hasLeft = true;
-                OnlineManager.lobby?.OnPlayerDisconnect(player);
-                while (player.HasUnacknoledgedEvents())
-                {
-                    player.AbortUnacknoledgedEvents();
-                    OnlineManager.lobby?.OnPlayerDisconnect(player);
-                }
-                RainMeadow.Debug($"Actually removing player:{player}");
-                OnlineManager.players.Remove(player);
-
-                ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)} left the game.");
+                HandleDisconnect(player);
             }
         }
 

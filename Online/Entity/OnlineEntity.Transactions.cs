@@ -12,11 +12,17 @@
             if (!currentlyJoinedResource.isAvailable) throw new InvalidProgrammerException("in unavailable resource");
             if (!owner.hasLeft && currentlyJoinedResource.participants.Contains(owner))
             {
+                isTransfering = true;
                 pendingRequest = owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
             }
             else if (primaryResource.owner != null)
             {
+                isTransfering = true;
                 pendingRequest = primaryResource.owner.InvokeRPC(this.Requested).Then(this.ResolveRequest);
+            }
+            else
+            {
+                RainMeadow.Debug("Not transfering");
             }
         }
 
@@ -45,12 +51,11 @@
         }
 
         // my request has been answered to
-        // is this really needed?
-        // I thought of stuff like "breaking grasps" if a request for the grasped object failed
-        public void ResolveRequest(GenericResult requestResult)
+        public virtual void ResolveRequest(GenericResult requestResult)
         {
             RainMeadow.Debug(this);
             if (requestResult.referencedEvent == pendingRequest) pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {requestResult.referencedEvent}");
             if (requestResult is GenericResult.Ok) // I'm the new owner of this entity
             {
                 // no op, comes as state in the same tick
@@ -58,8 +63,8 @@
             else if (requestResult is GenericResult.Error) // Something went wrong, I should retry
             {
                 // todo retry logic
-                // abort pending grasps?
                 RainMeadow.Error("request failed for " + this);
+                isTransfering = false;
             }
             if (isMine) JoinOrLeavePending(); // keep ticking
         }
@@ -79,6 +84,7 @@
             }
             else if (primaryResource.owner != null)
             {
+                isTransfering = true;
                 this.pendingRequest = primaryResource.owner.InvokeRPC(Released, currentlyJoinedResource).Then(ResolveRelease);
             }
         }
@@ -116,6 +122,7 @@
         {
             RainMeadow.Debug(this);
             if (result.referencedEvent == pendingRequest) pendingRequest = null;
+            else RainMeadow.Error($"Weird event situation, pending is {pendingRequest} and referenced is {result.referencedEvent}");
             if (result is GenericResult.Ok)
             {
                 // no op
@@ -123,6 +130,7 @@
             else if (result is GenericResult.Error) // Something went wrong, I should retry
             {
                 RainMeadow.Error("request failed for " + this);
+                isTransfering = false;
                 if (isTransferable && isMine && !isPending)
                 {
                     Release();

@@ -40,7 +40,7 @@ namespace RainMeadow
             return new MeadowCollectibleState(this, inResource, tick);
         }
 
-        public class MeadowCollectibleState : PhysicalObjectEntityState
+        public class MeadowCollectibleState : AbstractPhysicalObjectState
         {
             [OnlineField]
             private bool placed;

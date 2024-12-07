@@ -61,10 +61,10 @@ namespace RainMeadow
                     SaveExtras(serializedObject.Substring(index + 4));
                 }
 
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
             }
 
-            protected virtual string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            protected virtual string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}<oA>{1}<oA>{2}",
                     new EntityID(apoSpawn == ushort.MaxValue ? -1 : apoSpawn, apoId).ToString(),
@@ -72,7 +72,7 @@ namespace RainMeadow
                     initialState.pos.SaveToString());
             }
 
-            public virtual string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            public virtual string MakeSerializedObject(AbstractPhysicalObjectState initialState)
             {
                 if (string.IsNullOrEmpty(extraData))
                 {
@@ -86,12 +86,13 @@ namespace RainMeadow
 
             public override OnlineEntity MakeEntity(OnlineResource inResource, OnlineEntity.EntityState initialState)
             {
-                return new OnlinePhysicalObject(this, inResource, (PhysicalObjectEntityState)initialState);
+                return new OnlinePhysicalObject(this, inResource, (AbstractPhysicalObjectState)initialState);
             }
         }
 
         public readonly AbstractPhysicalObject apo;
         public bool realized;
+        public bool lenientPos;
 
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
@@ -171,7 +172,7 @@ namespace RainMeadow
             }
         }
 
-        protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
 
@@ -193,7 +194,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, PhysicalObjectEntityState initialState) : base(entityDefinition, inResource, initialState)
+        public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {
             this.apo = ApoFromDef(entityDefinition, inResource, initialState);
             realized = initialState.realized;
@@ -223,7 +224,7 @@ namespace RainMeadow
 
         protected override EntityState MakeState(uint tick, OnlineResource inResource)
         {
-            return new PhysicalObjectEntityState(this, inResource, tick);
+            return new AbstractPhysicalObjectState(this, inResource, tick);
         }
 
         protected void AllMoving(bool set)
@@ -242,7 +243,7 @@ namespace RainMeadow
         protected override void JoinImpl(OnlineResource inResource, EntityState initialState)
         {
             // on joinimpl we've just read initialstate as well so some stuff is already set
-            var poState = initialState as PhysicalObjectEntityState;
+            var poState = initialState as AbstractPhysicalObjectState;
             var topos = poState.pos;
 
             RainMeadow.Debug($"{this} joining {inResource} at {poState.pos}");
@@ -261,6 +262,11 @@ namespace RainMeadow
                 else if (inResource is RoomSession newRoom)
                 {
                     RainMeadow.Debug($"room join");
+                    RainMeadow.Debug($"topos Tile defined? {topos.TileDefined}");
+                    RainMeadow.Debug($"topos Node defined? {topos.NodeDefined}");
+
+                    newRoom.absroom.AddEntity(apo);
+
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
                     {
@@ -286,6 +292,8 @@ namespace RainMeadow
                             if (topos.TileDefined)
                             {
                                 apo.Move(topos);
+
+
                                 if (apo.realizedObject is Creature c)
                                 {
                                     c.RemoveFromShortcuts();
@@ -299,10 +307,12 @@ namespace RainMeadow
                                 {
                                     RainMeadow.Debug($"early entity"); // room loading will place it
                                 }
+
                             }
-                            else // nodedefined
+                            else
                             {
                                 RainMeadow.Debug("node defined");
+
                                 apo.Move(topos);
                                 if (apo.realizedObject is Creature c)
                                 {
@@ -316,7 +326,17 @@ namespace RainMeadow
                                         RainMeadow.Debug($"spawning in shortcuts");
                                         ac2.Realize();
                                         ac2.realizedCreature.inShortcut = true;
-                                        ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        
+                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
+                                        {
+                                            ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        }
+                                        else
+                                        {
+
+                                            // noop, shortcut length / realized room is null
+                                        }
+
                                     }
                                     else
                                     {
@@ -419,38 +439,85 @@ namespace RainMeadow
             }
         }
 
+        public override void ResolveRequest(GenericResult requestResult)
+        {
+            base.ResolveRequest(requestResult);
+            if (requestResult is GenericResult.Ok)
+            {
+                if (apo.InDen && !apo.pos.NodeDefined)  // was stomach object
+                {
+                    apo.InDen = false;
+                    apo.Room.AddEntity(apo);
+                    if (apo.Room.realizedRoom is not null)
+                        apo.RealizeInRoom();
+                }
+            }
+            if (requestResult is GenericResult.Error && apo.realizedObject is not null)
+            {
+                foreach (var grasp in apo.realizedObject.grabbedBy)
+                {
+                    if (grasp.grabber.IsLocal())
+                    {
+                        grasp.grabber.ReleaseGrasp(grasp.graspUsed);
+                    }
+                }
+            }
+        }
+
         public override string ToString()
         {
             return $"{apo?.type} {base.ToString()}";
         }
 
         [RPCMethod]
-        public static void HitByWeapon(OnlinePhysicalObject objectHit, OnlinePhysicalObject weapon)
+        public void HitByWeapon(OnlinePhysicalObject weapon)
         {
-            objectHit?.apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
-        }
-        [RPCMethod]
-        public static void HitByExplosion(OnlinePhysicalObject objectHit, float hitfac)
-        {
-            objectHit?.apo.realizedObject?.HitByExplosion(hitfac, null, 0);
+            apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
 
         [RPCMethod]
-        public static void ScavengerBombExplode(OnlinePhysicalObject opo, Vector2 pos)
+        public void HitByExplosion(float hitfac)
         {
-            if (opo?.apo.realizedObject is not ScavengerBomb bomb) return;
-
-            bomb.bodyChunks[0].pos = pos;
-            bomb.Explode(null);
+            apo.realizedObject?.HitByExplosion(hitfac, null, 0);
         }
 
         [RPCMethod]
-        public static void SingularityBombExplode(OnlinePhysicalObject opo, Vector2 pos)
+        public void Trigger()
         {
-            if (opo?.apo.realizedObject is not MoreSlugcats.SingularityBomb bomb) return;
+            if (apo.realizedObject is null) return;
+            switch (apo.realizedObject)
+            {
+                case FirecrackerPlant bomb:
+                    bomb.Ignite(); return;
+                default:
+                    RainMeadow.Error($"unknown trigger {this}"); return;
+            }
+        }
 
-            bomb.bodyChunks[0].pos = pos;
-            bomb.Explode();
+        [RPCMethod]
+        public void Explode(Vector2 pos)
+        {
+            if (apo.realizedObject is null) return;
+            apo.realizedObject.bodyChunks[0].pos = pos;
+            switch (apo.realizedObject)
+            {
+                case ScavengerBomb bomb:
+                    bomb.Explode(null); return;
+                case MoreSlugcats.SingularityBomb bomb:
+                    bomb.Explode(); return;
+                case FlareBomb bomb:
+                    bomb.StartBurn(); return;
+                case FirecrackerPlant bomb:
+                    bomb.Explode(); return;
+                case PuffBall bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.FireEgg bomb:
+                    bomb.Explode(); return;
+                case MoreSlugcats.EnergyCell bomb:
+                    bomb.Explode(); return;
+                default:
+                    RainMeadow.Error($"unknown explode {this}"); return;
+            }
         }
     }
 }

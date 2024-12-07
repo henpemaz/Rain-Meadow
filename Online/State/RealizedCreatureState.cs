@@ -9,10 +9,12 @@ namespace RainMeadow
     {
         [OnlineField(nullable = true)]
         private DynamicOrderedStates<GraspRef> grasps;
-        [OnlineField]
+        [OnlineField(group = "counters")]
         public short stun;
         [OnlineField(nullable = true)]
         private IntVector2? enteringShortcut;
+        [OnlineField]
+        private WorldCoordinate transportationDestination;
 
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
@@ -23,17 +25,18 @@ namespace RainMeadow
                                         .ToList() ?? new());
             stun = (short)creature.stun;
             enteringShortcut = creature.enteringShortCut;
+            transportationDestination = creature.NPCTransportationDestination;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
             if (onlineEntity is not OnlineCreature onlineCreature) { RainMeadow.Error("target not onlinecreature: " + onlineEntity); return; }
             if (onlineCreature.apo.realizedObject is not Creature creature) { RainMeadow.Trace("target not realized: " + onlineEntity); return; }
 
             creature.stun = stun;
             creature.enteringShortCut = enteringShortcut;
+            creature.NPCTransportationDestination = transportationDestination;
 
             if (creature.grasps != null)
             {

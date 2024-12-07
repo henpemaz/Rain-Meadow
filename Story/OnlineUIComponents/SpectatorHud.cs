@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
-        private SpectatorOverlay? spectatorOverlay;
+        public  SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)
@@ -46,23 +46,9 @@ namespace RainMeadow
             base.Update();
             if (spectatorOverlay != null)
             {
-                if (RainMeadow.isStoryMode(out var _))
+                if (RainMeadow.isStoryMode(out _) || RainMeadow.isArenaMode(out _))
                 {
-                    if ((game.pauseMenu != null || camera.hud.map.visible || game.manager.upcomingProcess != null))
-                    {
-                        RainMeadow.Debug("Shutting down spectator overlay due to another process request");
-                        spectatorOverlay.ShutDownProcess();
-                        spectatorOverlay = null;
-                        return;
-                    }
-
-
-                }
-
-                if (RainMeadow.isArenaMode(out var _))
-                {
-
-                    if (game.arenaOverlay != null || game.pauseMenu != null || game.manager.upcomingProcess != null)
+                    if (game.pauseMenu != null || game.arenaOverlay != null || camera.hud?.map?.visible is true || game.manager.upcomingProcess != null)
                     {
                         RainMeadow.Debug("Shutting down spectator overlay due to another process request");
                         spectatorOverlay.ShutDownProcess();
@@ -74,16 +60,25 @@ namespace RainMeadow
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
             }
-            if (spectatee is AbstractCreature ac)
+
+            OnlineManager.mePlayer.isActuallySpectating = spectatee != null && !spectatee.IsLocal();
+            if (spectatee != null)
             {
                 camera.followAbstractCreature = spectatee;
-                if (spectatee.Room.realizedRoom == null)
+                if (spectatee.Room == null)
                 {
-                    this.game.world.ActivateRoom(spectatee.Room);
+                    RainMeadow.Debug($"spectatee {spectatee} not in room!");
                 }
-                if (camera.room.abstractRoom != spectatee.Room)
+                else
                 {
-                    camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                    if (spectatee.Room.realizedRoom == null)
+                    {
+                        this.game.world.ActivateRoom(spectatee.Room);
+                    }
+                    if (spectatee.Room.realizedRoom != null && camera.room.abstractRoom != spectatee.Room)
+                    {
+                        camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                    }
                 }
             }
         }

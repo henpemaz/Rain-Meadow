@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // main-ish component of PhysicalObjectEntityState
+    // main-ish component of AbstractPhysicalObjectState
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
@@ -22,13 +22,20 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (onlineEntity.owner.isMe || onlineEntity.isPending) { RainMeadow.Debug($"not syncing {this} because mine?{onlineEntity.owner.isMe} pending?{onlineEntity.isPending}"); return; }; // Don't sync if pending, reduces visibility and effect of lag
-            var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
-            for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
+            var opo = onlineEntity as OnlinePhysicalObject;
+            var po = opo.apo.realizedObject;
+            if (!opo.lenientPos)
             {
-                chunkStates[i].ReadTo(po.bodyChunks[i]);
+                for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+                {
+                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                }
             }
-            po.collisionLayer = collisionLayer;
+            if (po.collisionLayer != collisionLayer)
+            {
+                po.ChangeCollisionLayer(collisionLayer);
+            }
         }
     }
 
@@ -49,10 +56,10 @@ namespace RainMeadow
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref pos);
-            serializer.Serialize(ref vel);
+            serializer.SerializeHalf(ref vel);
         }
 
-        public void ReadTo(BodyChunk c)
+        public void ReadTo(BodyChunk c, float threshold = 0f)
         {
             c.pos = pos;
             c.vel = vel;
@@ -66,7 +73,7 @@ namespace RainMeadow
         public bool Equals(ChunkState other)
         {
             //return other != null && pos == other.pos && vel == other.vel;
-            return other as object != null && pos.CloseEnough(other.pos, 1f) && vel.CloseEnoughZeroSnap(other.vel, 1f);
+            return other as object != null && pos.CloseEnough(other.pos, 1 / 4f) && vel.CloseEnoughZeroSnap(other.vel, 1 / 256f);
         }
 
         public static bool operator ==(ChunkState lhs, ChunkState rhs)

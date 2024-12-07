@@ -57,11 +57,34 @@ namespace RainMeadow
 
 
         [RPCMethod]
+        public static void Arena_InitialSetupTimers(int setupTime, int saintMaxTime)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.setupTime = setupTime;
+                arena.arenaSaintAscendanceTimer = saintMaxTime;
+            }
+
+        }
+
+
+        [RPCMethod]
         public static void Arena_IncrementPlayersLeftt()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = arena.clientWaiting + 1;
+                arena.playerLeftGame = arena.playerLeftGame + 1;
+
+            }
+
+        }
+
+        [RPCMethod]
+        public static void Arena_IncrementPlayersJoined()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.playerEnteredGame = arena.playerEnteredGame + 1;
 
             }
 
@@ -72,7 +95,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.clientWaiting = 0;
+                arena.playerLeftGame = 0;
 
             }
 
@@ -119,17 +142,7 @@ namespace RainMeadow
 
                         if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
                         {
-                            if (currentColorIndex > 3 && ModManager.MSC)
-                            {
-                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + "41-" + Sluglist[currentColorIndex];
-
-                            }
-                            else
-                            {
-                                game.classButtons[i].portrait.fileName = "MultiplayerPortrait" + currentColorIndex + "1";
-                            }
-
-
+                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
                             game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
                         }
@@ -155,6 +168,7 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
+                arena.playersReadiedUp[userIsReady] = true;
 
                 try
                 {
@@ -165,6 +179,7 @@ namespace RainMeadow
                         {
 
                             game.classButtons[i].readyForCombat = true;
+
                         }
 
                     }

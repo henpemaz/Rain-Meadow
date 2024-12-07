@@ -871,6 +871,82 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeHalf(ref Vector2 data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(Mathf.FloatToHalf(data.x));
+                writer.Write(Mathf.FloatToHalf(data.y));
+            }
+            if (IsReading)
+            {
+                data.x = Mathf.HalfToFloat(reader.ReadUInt16());
+                data.y = Mathf.HalfToFloat(reader.ReadUInt16());
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeHalfNullable(ref Vector2? data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(data.HasValue);
+                if (data.HasValue)
+                {
+                    writer.Write(Mathf.FloatToHalf(data.Value.x));
+                    writer.Write(Mathf.FloatToHalf(data.Value.y));
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    data = new Vector2(Mathf.HalfToFloat(reader.ReadUInt16()), Mathf.HalfToFloat(reader.ReadUInt16()));
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void SerializeHalf(ref List<Vector2> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(Mathf.FloatToHalf(data[i].x));
+                    writer.Write(Mathf.FloatToHalf(data[i].y));
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    float x = Mathf.HalfToFloat(reader.ReadUInt16());
+                    float y = Mathf.HalfToFloat(reader.ReadUInt16());
+                    data.Add(new Vector2(x, y));
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
         // We cast to shorts as we assume that
         // all IntVector2 represent tile coordinates.
         // Sorry if this caused a bug, yell at DevLope and Henpemaz.
