@@ -1708,9 +1708,9 @@ namespace RainMeadow
             }
         }
 
-        bool ol1;
-        bool ol2 = true;
-        bool ol3;
+        //bool ol1;
+        //bool ol2 = true;
+        //bool ol3;
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
@@ -1735,24 +1735,24 @@ namespace RainMeadow
             
             }
 
-            if (Input.GetKey("f") && !ol2)
-            {
-                //RainMeadow.Debug("Manually fading out song");
-                //self.manager.musicPlayer.song.FadeOut(30f);
-            }
-            ol2 = Input.GetKey("f");
-
-
-            if (Input.GetKey("e") && !ol1)
-            {
-                agora++;
-            }
-            ol1 = Input.GetKey("e");
-            if (Input.GetKey("q") && !ol3)
-            {
-                agora--;
-            }
-            ol3 = Input.GetKey("q");
+            //if (Input.GetKey("f") && !ol2)
+            //{
+            //    //RainMeadow.Debug("Manually fading out song");
+            //    //self.manager.musicPlayer.song.FadeOut(30f);
+            //}
+            //ol2 = Input.GetKey("f");
+            //
+            //
+            //if (Input.GetKey("e") && !ol1)
+            //{
+            //    agora++;
+            //}
+            //ol1 = Input.GetKey("e");
+            //if (Input.GetKey("q") && !ol3)
+            //{
+            //    agora--;
+            //}
+            //ol3 = Input.GetKey("q");
         }
 
         private void SoundLoader_Update(On.SoundLoader.orig_Update orig, SoundLoader self)

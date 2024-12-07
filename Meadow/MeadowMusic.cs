@@ -747,6 +747,7 @@ namespace RainMeadow
             Song? song = await Task.Run(() => LoadSong(musicPlayer, songtobesang, timetobestarted));
             if (song == null)
             {
+                RainMeadow.Debug("Song was null");
                 if (ivebeenpatientlywaiting)
                 {
 
@@ -898,7 +899,7 @@ namespace RainMeadow
             var VibeRoomCreatures = creature.abstractCreature.Room.world.GetAbstractRoom(closestVibe);
             if (VibeRoomCreatures != null)
             { 
-                PlopMachine.agora = VibeRoomCreatures.creatures.Count(); //commented out for TESTING
+                PlopMachine.agora = VibeRoomCreatures.creatures.Count(); 
             }
 
             if (groupImIn == 0)
