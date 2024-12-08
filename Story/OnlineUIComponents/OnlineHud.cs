@@ -13,6 +13,8 @@ namespace RainMeadow
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
 
+        public int hudCounter;
+
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
             this.camera = camera;
@@ -62,6 +64,7 @@ namespace RainMeadow
         {
             base.Update();
             UpdatePlayers();
+            hudCounter++;
         }
     }
 }

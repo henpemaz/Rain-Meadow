@@ -85,6 +85,14 @@ namespace RainMeadow
             }
         }
 
+        public bool PlayerInAncientShelter
+        {
+            get
+            {
+                return abstractPlayer?.Room?.isAncientShelter ?? false;
+            }
+        }
+
         public bool PlayerInGate
         {
             get
