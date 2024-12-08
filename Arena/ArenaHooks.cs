@@ -97,7 +97,7 @@ namespace RainMeadow
             On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
             On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
-            On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;            
+            On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
         }
 
 
@@ -213,7 +213,6 @@ namespace RainMeadow
                     {
                         continue;
                     }
-
                     arena.onlineArenaGameMode.LandSpear(arena, self, player, target, self.arenaSitting.players[i]);
 
                 }
@@ -331,8 +330,8 @@ namespace RainMeadow
                     var wildLifeSyncKey = self.wildlifeArray.IDString;
                     int wildLifeSyncValue = self.GetGameTypeSetup.wildLifeSetting.index;
 
-                    //var spearsHitSync = self.spearsHitCheckbox.IDString; Not dealing with this logic.
-                    //var spearsHitValue = self.GetGameTypeSetup.spearsHitPlayers;
+                    var spearsHitSync = self.spearsHitCheckbox.IDString;
+                    var spearsHitValue = self.GetGameTypeSetup.spearsHitPlayers;
 
                     var aggroAISync = self.evilAICheckBox.IDString;
                     var aggroAISyncValue = self.GetGameTypeSetup.evilAI;
@@ -341,7 +340,7 @@ namespace RainMeadow
                     arena.onlineArenaSettingsInterfaceMultiChoice.Add(rainSyncKey, rainSyncValue);
                     arena.onlineArenaSettingsInterfaceMultiChoice.Add(wildLifeSyncKey, wildLifeSyncValue);
 
-                    // arena.onlineArenaSettingsInterfaceeBool.Add(spearsHitSync, spearsHitValue);
+                    arena.onlineArenaSettingsInterfaceeBool.Add(spearsHitSync, spearsHitValue);
                     arena.onlineArenaSettingsInterfaceeBool.Add(aggroAISync, aggroAISyncValue);
 
 
@@ -1272,7 +1271,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                
+
                 arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)
@@ -1294,6 +1293,10 @@ namespace RainMeadow
                             }
                             else
                             {
+                                if (self.Players[index].state.alive) // alive and without an owner? Die and remove
+                                {
+                                    self.Players[index].Die();
+                                }
                                 self.Players.RemoveAt(index);
                             }
                             index--;
