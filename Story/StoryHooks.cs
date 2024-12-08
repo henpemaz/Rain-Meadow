@@ -64,6 +64,7 @@ namespace RainMeadow
             On.RainWorldGame.GoToStarveScreen += RainWorldGame_GoToStarveScreen;
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+            On.RainWorldGame.GoToRedsGameOver += RainWorldGame_GoToRedsGameOver;
 
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
 
@@ -856,6 +857,28 @@ namespace RainMeadow
                 {
                     // only host can end the game
                     //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    return;
+                }
+            }
+
+            orig(self);
+        }
+
+        private void RainWorldGame_GoToRedsGameOver(On.RainWorldGame.orig_GoToRedsGameOver orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
                     return;
                 }
             }
