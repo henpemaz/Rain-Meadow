@@ -283,6 +283,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.RawUpdate(self, dt);
+                }
             }
         }
 

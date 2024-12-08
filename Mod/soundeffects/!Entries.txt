@@ -1,0 +1,26 @@
+Finga$L-4-3 L-4-5 L-4-7,L-3-4 L-3-5 L-3-6 L-2-1$Balaboo|Balaboo|Intermediary
+Balaboo$L-4-2 L-4-3 L-4-6,L-3-2 L-2-6 L-2-5$Triad|Midlowhigh2
+Heyolol$L-5-4 L-5-1 L-4-3,L-3-2 L-2-3$Finga|Auto
+Triad$L-4-1 L-4-3 L-4-5,L-3-1 L-3-3 L-2-5 L-2-6 L-2-4$Triad2|Finga|Uptwomore
+Triad2$L-4-1 L-4-3 L-4-5,L-3-1 L-3-3 L-2-5 L-2-6 L-2-4$Finga|Triad
+Auto$L-5-3 L-5-1 L-4-4,L-4-1 L-3-5$Uptwomore|TheFourthFinal
+MidOlora$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6 L-3-2$Midlowhigh2
+MidOlora2$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6 L-3-2$Susthing|Midlowhigh
+Susthing$L-5-5 L-5-4 L-5-1,L-4-5 L-4-4 L-3-6$Uptwomore
+Midlowhigh$L-5-3 L-4-7 L-4-5,L-4-2 L-3-5 L-3-4$Midlowhigh2|Midlowhigh2|Susthing2
+Uptwomore$L-5-5 L-5-3 L-4-6,L-4-4 L-4-3 L-3-6$MidOlora|TheFourthFinal
+TheFourthFinal$L-5-3 L-4-7,L-4-5 L-4-1 L-3-5$TwoThree
+TwoThree$L-5-3 L-5-1,L-4-6 L-4-3 L-3-6$Aeyyup|Aeyyup
+SADNESS$L-4-6 L-4-4,L-4-1 L-3-6 L-3-2$Final
+Final$L-5-1 L-4-6 L-4-5,L-4-3 L-3-5 L-3-1$Actuallysadthough|Butheythere
+Actuallysadthough$L-4-7 L-4-3,L-4-1 L-3-6 L-3-2$butaftersadness|Midlowhigh2
+NextHigh$L-5-6 L-5-4 L-5-2,L-4-4 L-4-1 L-3-5 L-3-2$Triad
+butaftersadness$L-5-3 L-5-1 L-4-4,L-4-1 L-3-6 L-3-4$NextHigh
+Butheythere$L-5-5 L-5-2 L-5-1,L-4-4 L-4-2 L-3-6$MidOlora3
+MidOlora3$L-5-5 L-5-2 L-4-6,L-4-3 L-3-6$Aeyyup
+Midlowhigh2$L-5-3 L-4-7 L-4-5,L-4-2 L-3-5 L-3-4$Midlowhigh|MidOlora2
+Susthing2$L-5-5 L-5-4 L-5-1,L-4-5 L-4-4 L-3-6$Uptwomore|Heyolol
+Aeyyup$L-5-4 L-5-1 L-4-6,L-4-4 L-3-6$SADNESS|Triad2
+Intermediary$L-6-1 L-5-4 L-5-2,L-4-2 L-4-1 L-3-5 L-3-4$SADNESS
+Balaboofake$L-4-2 L-4-3 L-4-6,L-3-2 L-2-6 L-2-5$Fingafake
+Fingafake$L-4-3 L-4-5 L-4-7,L-3-4 L-3-5 L-3-6 L-2-1$Balaboofake

@@ -1297,5 +1297,67 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
+        public void Serialize(ref List<KeyValuePair<ushort, byte>> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new List<KeyValuePair<ushort, byte>>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadUInt16();
+                    var value = reader.ReadByte();
+                    data.Add(new KeyValuePair<ushort, byte>(key, value));
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void Serialize(ref List<KeyValuePair<byte, ushort>> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                foreach (var kvp in data)
+                {
+                    writer.Write(kvp.Key);
+                    writer.Write(kvp.Value);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new List<KeyValuePair<byte, ushort>>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadByte();
+                    var value = reader.ReadUInt16();
+                    data.Add(new KeyValuePair<byte, ushort>(key, value));
+                }
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
     }
 }

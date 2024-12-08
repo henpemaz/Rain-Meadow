@@ -283,6 +283,10 @@ namespace RainMeadow
                     storyGameMode.changedRegions = true;
                     storyGameMode.readyForGate = 2;
                 }
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.NewWorld(self.activeWorld);
+                }
             }
             else
             {
