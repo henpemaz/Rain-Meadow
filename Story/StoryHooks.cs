@@ -66,7 +66,9 @@ namespace RainMeadow
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
             On.RainWorldGame.GoToRedsGameOver += RainWorldGame_GoToRedsGameOver;
 
-            IL.SaveState.SessionEnded += SaveState_SessionEnded;
+            On.SaveState.SessionEnded += SaveState_SessionEnded;
+            IL.SaveState.SessionEnded += SaveState_SessionEnded_DontAssumePlayerRealized;
+            On.SaveState.BringUpToDate += SaveState_BringUpToDate;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
@@ -983,17 +985,22 @@ namespace RainMeadow
                 }
                 else
                 {
+                    // this already syncs the denpos
                     currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                storyGameMode.myLastDenPos ??= storyGameMode.defaultDenPos;
-                if (storyGameMode.myLastDenPos is not null) currentSaveState.denPosition = storyGameMode.myLastDenPos;
-                if (OnlineManager.lobby.isOwner)
+                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+
+                if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || currentSaveState.denPosition != storyGameMode.defaultDenPos)
                 {
-                    storyGameMode.defaultDenPos = currentSaveState.denPosition;
+                    storyGameMode.myLastDenPos = currentSaveState.denPosition;
+                }
+                else
+                {
+                    currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
 
-                return currentSaveState;
+                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition}");
             }
 
             return currentSaveState;
@@ -1005,7 +1012,17 @@ namespace RainMeadow
             return orig(self, saveCurrentState, saveMaps, saveMiscProg);
         }
 
-        private void SaveState_SessionEnded(ILContext il)
+        private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
+        {
+            if (isStoryMode(out var storyGameMode) && storyGameMode.myLastDenPos is not (null or ""))
+            {
+                self.denPosition = storyGameMode.myLastDenPos;
+                if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+            }
+            orig(self, game, survived, newMalnourished);
+        }
+
+        private void SaveState_SessionEnded_DontAssumePlayerRealized(ILContext il)
         {
             // food += (game.session.Players[i].realizedCreature as Player).FoodInRoom(eatAndDestroy: true);
             //becomes
@@ -1039,6 +1056,15 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
+        {
+            if (isStoryMode(out _) && !game.manager.menuSetup.FastTravelInitCondition)
+            {
+                game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+            }
+            orig(self, game);
         }
 
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
