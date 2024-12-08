@@ -88,13 +88,13 @@ namespace MyNamespace
     }
 }
 ```
-5. Your new game mode will now be accessible in the online Arena menu!
+5. Your new game mode will now be accessible in the online Arena menu! Use the large arrows at the top of the menu to switch modes.
 
 
 
 ## Using ExternalGameMode's Hooks
 
-You can review all the hooks provided to you for your game mode in the BaseGameMode.cs file in the RainMeadow file [LINK HERE].
+You can review all the hooks provided to you for your game mode in [BaseGameMode.cs](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaOnlineGameModes/BaseGameMode.cs).
 
 ### Hook Types:
 If the function is virtual, you will inherit its contents unless you override it. Double check your hook if you are seeing unanticipated behavior. Some virtual functions are left blank since I had no need for them but decided it'd be nicer for others to have than performing an IL hook.
