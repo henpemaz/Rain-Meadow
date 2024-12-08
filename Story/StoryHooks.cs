@@ -47,6 +47,8 @@ namespace RainMeadow
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
             IL.MoreSlugcats.MSCRoomSpecificScript.SI_SAINTINTRO_tut.ctor += ClientDisableUAD;
 
+            IL.Menu.DreamScreen.Update += DreamScreen_Update_DisableArtiFlashbacks;
+
             IL.RegionGate.Update += RegionGate_Update;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
@@ -695,6 +697,27 @@ namespace RainMeadow
                 c.EmitDelegate((UpdatableAndDeletable self) => self.Destroy());
                 c.Emit(OpCodes.Ret);
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        // HACK: arti flashbacks use singleRoomWorlds which we don't handle well, disabling for now
+        // ideally this should be offline but that's another can of worms
+        private void DreamScreen_Update_DisableArtiFlashbacks(ILContext il)
+        {
+            try
+            {
+                // bool flag = ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                //becomes
+                // bool flag = !isStoryMode(out _) && ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchStloc(1)
+                    );
+                c.EmitDelegate((bool flag) => !isStoryMode(out _) && flag);
             }
             catch (Exception e)
             {
