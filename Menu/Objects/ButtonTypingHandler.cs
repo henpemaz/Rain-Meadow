@@ -6,9 +6,9 @@ namespace RainMeadow
 {
     public class ButtonTypingHandler : TypingHandler
     {
-        public string _lastInput = "";
-        public HashSet<ICanBeTyped> _assigned = new HashSet<ICanBeTyped>();
-        public ICanBeTyped? _focused;
+        public new string _lastInput = "";
+        public new HashSet<ICanBeTyped> _assigned = new HashSet<ICanBeTyped>();
+        public new ICanBeTyped? _focused;
         public void Update()
         {
             if (_assigned.Count < 1)
