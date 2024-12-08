@@ -41,6 +41,8 @@ namespace RainMeadow
             storyClientData?.Sanitize();
         }
 
+        public bool canJoinGame => isInGame && !changedRegions && readyForGate != 1 && !readyForWin;
+
         public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)

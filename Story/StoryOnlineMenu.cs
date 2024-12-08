@@ -106,7 +106,7 @@ namespace RainMeadow
             {
                 if (startButton != null)
                 {
-                    startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
+                    startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
                 }
                 if (onlineDifficultyLabel != null)
                 {
