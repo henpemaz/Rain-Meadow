@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public Color bodyColor;
-        public Color eyeColor;
+        public List<Color> customColors = new() { Color.white, Color.black };
+        public Color bodyColor { get => customColors[0]; set => customColors[0] = value; }
+        public Color eyeColor { get => customColors[1]; set => customColors[1] = value; }
         public SlugcatStats.Name playingAs;
         public string nickname;
 
@@ -14,12 +17,12 @@ namespace RainMeadow
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
-            originalBodyColor = new Color(Mathf.Clamp(bodyColor.r, 0.004f, 0.996f), Mathf.Clamp(bodyColor.g, 0.004f, 0.996f), Mathf.Clamp(bodyColor.b, 0.004f, 0.996f));
+            originalBodyColor = bodyColor.SafeColorRange();
         }
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
-            originalEyeColor = new Color(Mathf.Clamp(eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(eyeColor.b, 0.004f, 0.996f));
+            originalEyeColor = eyeColor.SafeColorRange();
         }
 
         internal Color SlugcatColor()
@@ -35,9 +38,7 @@ namespace RainMeadow
         public class State : EntityDataState
         {
             [OnlineFieldColorRgb]
-            public Color bodyColor;
-            [OnlineFieldColorRgb]
-            public Color eyeColor;
+            public Color[] customColors;
             [OnlineField(nullable = true)]
             public SlugcatStats.Name playingAs;
             [OnlineField]
@@ -46,8 +47,7 @@ namespace RainMeadow
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
-                bodyColor = slugcatCustomization.bodyColor;
-                eyeColor = slugcatCustomization.eyeColor;
+                customColors = slugcatCustomization.customColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
             }
@@ -55,15 +55,9 @@ namespace RainMeadow
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
                 var slugcatCustomization = (SlugcatCustomization)entityData;
-                slugcatCustomization.bodyColor = bodyColor;
-                slugcatCustomization.eyeColor = eyeColor;
+                slugcatCustomization.customColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
-
-                if (UnityEngine.Input.GetKey(KeyCode.L))
-                {
-                    RainMeadow.Debug("color? " + bodyColor);
-                }
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);
