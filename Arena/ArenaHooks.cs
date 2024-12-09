@@ -70,7 +70,7 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
 
-            // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
@@ -80,6 +80,7 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
+
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
             On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
@@ -1276,7 +1277,7 @@ namespace RainMeadow
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac) && ac.state.alive)
                         {
                             self.Players.Add(ac);
                         }
@@ -1290,27 +1291,30 @@ namespace RainMeadow
                     foreach (var s in self.arenaSitting.players)
                     {
                         var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
-
-                        int index = self.Players.Count - 1;
-                        while (index >= 0)
                         {
-                            var c = self.Players[index];
-                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC))
+                            for (int i = 0; i < self.Players.Count; i++)
                             {
-                                if (onlineC.owner == os && c.realizedCreature != null && !c.realizedCreature.State.dead)
+
+                                if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
                                 {
-                                    s.timeAlive++;
+                                    if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
+                                    {
+                                        s.timeAlive++;
+                                    }
+                                    if (onlineC.owner == os && (self.Players[i].realizedCreature != null && self.Players[i].realizedCreature.State.dead || self.Players[i].state.dead))
+                                    {
+                                        self.Players.Remove(self.Players[i]);
+                                    }
+                                }
+                                else
+                                {
+                                    if (self.Players[i].state.alive) // alive and without an owner? Die and remove
+                                    {
+                                        self.Players[i].Die();
+                                    }
+                                    self.Players.Remove(self.Players[i]);
                                 }
                             }
-                            else
-                            {
-                                if (self.Players[index].state.alive) // alive and without an owner? Die and remove
-                                {
-                                    self.Players[index].Die();
-                                }
-                                self.Players.RemoveAt(index);
-                            }
-                            index--;
                         }
 
                     }
