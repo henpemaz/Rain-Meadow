@@ -89,8 +89,32 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
+            On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+            On.Menu.PauseMenu.Singal += PauseMenu_Singal;
         }
 
+        private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
+        {
+            orig(self, sender, message);
+            if (isStoryMode(out var story))
+            {
+                if (message == "ONLINERESTARTCYCLE")
+                {
+                    story.wantsToRestartCycle = false;
+                    (self.game.cameras[0].hud.rainWorld.processManager.currentMainLoop as RainWorldGame).GoToDeathScreen();
+                }
+            }
+        }
+
+        private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
+        {
+            orig(self);
+            if (isStoryMode(out var story) && story.wantsToRestartCycle)
+            {
+                var restartCycleButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("Restart Cycle"), "ONLINERESTARTCYCLE", new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
+                self.pages[0].subObjects.Add(restartCycleButton);
+            }
+        }
 
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
@@ -236,11 +260,10 @@ namespace RainMeadow
                     self.restartNotAllowed = 1; // block GoToDeathScreen if we're typing
                     return;
                 }
-                if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
+                if (isStoryMode(out var story))
                 {
-                    self.restartNotAllowed = 1; // block clients from GoToDeathScreen
+                    self.restartNotAllowed = 1; // block from GoToDeathScreen
 
-                    // let clients still have access to pause menu
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
                     {
@@ -249,6 +272,10 @@ namespace RainMeadow
                     if (touchedInput)
                     {
                         self.gameOverMode = false;
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            story.wantsToRestartCycle = true;
+                        }
                     }
                 }
             }
