@@ -1281,7 +1281,8 @@ namespace RainMeadow
                     {
                         var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
                         {
-                            for (int i = 0; i < self.Players.Count; i++) {
+                            for (int i = 0; i < self.Players.Count; i++)
+                            {
 
                                 if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
                                 {
