@@ -1036,14 +1036,17 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Continue - host");
                     }
-                    else if (!gameMode.isInGame)
+                    else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)
+                    {
+                        RainMeadow.Debug("Continue - client");
+                    }
+                    else
                     {
                         sender.toggled = !sender.toggled;
                         isPlayerReady = sender.toggled;
                         RainMeadow.Debug(sender.toggled ? "Ready!" : "Cancelled!");
                         return;
                     }
-                    RainMeadow.Debug("Continue - client");
                 }
             }
             orig(self, sender, message);
@@ -1059,7 +1062,7 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (gameMode.isInGame)
+                else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
                 {
                     if (isPlayerReady)
                     {
