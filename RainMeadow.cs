@@ -134,6 +134,8 @@ namespace RainMeadow
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
+                BepInEx.Logging.Logger.Listeners.Add(new CustomLogListener($"meadowLog.{MeadowVersionStr}.{DateTime.Now.ToUniversalTime():yyyyMMddHHmmss}.log"));
+
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
                 sw.Stop();
