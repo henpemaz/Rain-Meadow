@@ -1,10 +1,8 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RainMeadow.Arena.Nightcat;
 using System;
 using System.Drawing;
 using System.Linq;
-using UnityEngine;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 
@@ -26,6 +24,7 @@ public partial class RainMeadow
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
         IL.Player.GrabUpdate += Player_GrabUpdate;
+        IL.Player.GrabUpdate += Player_GrabUpdate_FixSpearmasterNeedles;
         IL.Player.SwallowObject += Player_SwallowObject;
         On.Player.Regurgitate += Player_Regurgitate;
         On.Player.ThrowObject += Player_ThrowObject;
@@ -47,6 +46,45 @@ public partial class RainMeadow
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
+        IL.Player.ThrowObject += Player_ThrowObject1;
+
+    }
+
+
+    // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
+    private void Player_ThrowObject1(ILContext il)
+    {
+        try
+        {
+            var c = new ILCursor(il);
+            var skip = il.DefineLabel();
+            var skip2 = il.DefineLabel();
+
+            c.GotoNext(moveType: MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Player>("SlugCatClass"),
+                i => i.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>("Saint"),
+                i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Equality"),
+                i => i.MatchBrfalse(out skip)
+                );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.GotoNext(moveType: MoveType.After,
+            i => i.MatchLdfld<Creature.Grasp>("grabbed"),
+            i => i.MatchIsinst<Rock>(),
+            i => i.MatchBrfalse(out skip2)
+            );
+            c.EmitDelegate(() => isArenaMode(out var arena) && arena.sainot);
+            c.Emit(OpCodes.Brtrue, skip);
+
+            c.MarkLabel(skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+
     }
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
@@ -84,6 +122,7 @@ public partial class RainMeadow
                 if (arena.countdownInitiatedHoldFire)
                 {
                     PlayerMovementOverride.HoldFire(self);
+
                 }
 
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
@@ -129,6 +168,8 @@ public partial class RainMeadow
                 {
                     if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
                         return false;
+                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && storyGameMode.readyForWin)
+                        return true;
                     if (!self.abstractCreature.IsLocal()) // don't shelter if remote
                         return false;
                 }
@@ -281,6 +322,65 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
             c.Emit(OpCodes.Brfalse, skip);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
+    }
+
+    private void Player_GrabUpdate_FixSpearmasterNeedles(ILContext il)
+    {
+        try
+        {
+            // spearmaster needle set state before registering
+            var c = new ILCursor(il);
+            int loc = 0;
+            c.GotoNext(moveType: MoveType.After,
+                // AbstractSpear abstractSpear = new AbstractSpear(room.world, null, room.GetWorldCoordinate(base.mainBodyChunk.pos), room.game.GetNewID(), explosive: false);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("world"),
+                i => i.MatchLdnull(),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdarg(0),
+                i => i.MatchCall<Creature>("get_mainBodyChunk"),
+                i => i.MatchLdfld<BodyChunk>("pos"),
+                i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchLdfld<Room>("game"),
+                i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                i => i.MatchLdcI4(0),
+                i => i.MatchNewobj<AbstractSpear>(),
+                i => i.MatchStloc(out loc)
+                );
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = true;
+                }
+            });
+            c.GotoNext(moveType: MoveType.After,
+                // room.abstractRoom.AddEntity(abstractSpear);
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                i => i.MatchCallvirt<Room>("get_abstractRoom"),
+                i => i.MatchLdloc(19),
+                i => i.MatchCallvirt<AbstractRoom>("AddEntity")
+                );
+            // unset again because RealizeInRoom will assume dead
+            c.Emit(OpCodes.Ldloc, loc);
+            c.EmitDelegate((AbstractSpear asp) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    asp.needle = false;
+                }
+            });
         }
         catch (Exception e)
         {
@@ -659,7 +759,7 @@ public partial class RainMeadow
                 i => i.MatchLdfld<Options>("friendlyFire"),
                 i => i.MatchBrtrue(out _)
                 );
-            c.EmitDelegate(() => isStoryMode(out var story) && !story.friendlyFire);
+            c.EmitDelegate(() => (isStoryMode(out var story) && !story.friendlyFire) || (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire));
             c.Emit(OpCodes.Brtrue, skip);
             c.Index += 6;
             c.MarkLabel(skip);

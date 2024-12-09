@@ -172,16 +172,8 @@ namespace RainMeadow
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
-            if (OnlineManager.lobby != null)
-            {
-                if (RoomSession.map.TryGetValue(self.abstractRoom, out var rs))
-                {
-                    if (!rs.isOwner && critType == CreatureTemplate.Type.Fly)
-                    {
-                        return; // don't place fly in room if not owner
-                    }
-                }
-            }
+            // don't place if not roomsession owner
+            if (OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var rs) && !rs.isOwner) return;
             orig(self, critType);
         }
 
@@ -241,19 +233,13 @@ namespace RainMeadow
             {
                 // if (room.physicalObjects[i][j] is Player)
                 //becomes
-                // if (room.physicalObjects[i][j] is Player && self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal())
+                // if (room.physicalObjects[i][j] is local Player)
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchIsinst<Player>(),
-                    i => i.MatchBrfalse(out skip)
+                    i => i.MatchIsinst<Player>()
                     );
-                c.MoveAfterLabels();
-                c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc_0);
-                c.Emit(OpCodes.Ldloc_1);
-                c.EmitDelegate((RoomSpecificScript.SS_E08GradientGravity self, int i, int j) => self.room.physicalObjects[i][j].abstractPhysicalObject.IsLocal());
-                c.Emit(OpCodes.Brtrue, skip);
+                c.EmitDelegate((Player? player) => player?.IsLocal() is true ? player : null);  // null if remote player
             }
             catch (Exception e)
             {
@@ -289,6 +275,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.RawUpdate(self, dt);
+                }
             }
         }
 
@@ -449,7 +439,7 @@ namespace RainMeadow
         {
             orig(self, player);
 
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaCompetitiveGameMode)
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not ArenaOnlineGameMode)
             {
                 return;
             }

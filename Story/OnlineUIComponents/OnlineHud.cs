@@ -13,6 +13,8 @@ namespace RainMeadow
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
 
+        public int hudCounter;
+
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
             this.camera = camera;
@@ -45,7 +47,7 @@ namespace RainMeadow
         public void PlayerAdded(ClientSettings clientSettings)
         {
             RainMeadow.DebugMe();
-            PlayerSpecificOnlineHud indicator = new PlayerSpecificOnlineHud(this, camera, onlineGameMode, clientSettings);
+            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, clientSettings);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
@@ -62,6 +64,7 @@ namespace RainMeadow
         {
             base.Update();
             UpdatePlayers();
+            hudCounter++;
         }
     }
 }

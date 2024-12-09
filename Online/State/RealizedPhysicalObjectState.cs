@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // main-ish component of PhysicalObjectEntityState
+    // main-ish component of AbstractPhysicalObjectState
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
@@ -23,10 +23,14 @@ namespace RainMeadow
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
             if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
-            var po = (onlineEntity as OnlinePhysicalObject).apo.realizedObject;
-            for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+            var opo = onlineEntity as OnlinePhysicalObject;
+            var po = opo.apo.realizedObject;
+            if (!opo.lenientPos)
             {
-                chunkStates[i].ReadTo(po.bodyChunks[i]);
+                for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+                {
+                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                }
             }
             if (po.collisionLayer != collisionLayer)
             {
@@ -55,7 +59,7 @@ namespace RainMeadow
             serializer.SerializeHalf(ref vel);
         }
 
-        public void ReadTo(BodyChunk c)
+        public void ReadTo(BodyChunk c, float threshold = 0f)
         {
             c.pos = pos;
             c.vel = vel;

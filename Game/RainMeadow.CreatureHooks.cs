@@ -14,6 +14,8 @@ namespace RainMeadow
             On.OverseerAI.UpdateTempHoverPosition += OverseerAI_UpdateTempHoverPosition; // no teleporting
             On.OverseerAI.Update += OverseerAI_Update; // please look at what I tell you to
 
+            On.TentaclePlantAI.Update += TentaclePlantAI_Update;
+
             On.AbstractPhysicalObject.Update += AbstractPhysicalObject_Update; // Don't think
             On.AbstractCreature.Update += AbstractCreature_Update; // Don't think
             On.AbstractCreature.OpportunityToEnterDen += AbstractCreature_OpportunityToEnterDen; // Don't think
@@ -24,6 +26,9 @@ namespace RainMeadow
 
             IL.GarbageWorm.NewHole += GarbageWorm_NewHole;
             On.GarbageWormAI.Update += GarbageWormAI_Update;
+
+            On.DropBugAI.CeilingSitModule.Dislodge += DropBugAI_CeilingSitModule_Dislodge;
+            On.DropBugAI.CeilingSitModule.JumpFromCeiling += DropBugAI_CeilingSitModule_JumpFromCeiling;
 
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
@@ -155,6 +160,18 @@ namespace RainMeadow
             }
         }
 
+        private void DropBugAI_CeilingSitModule_Dislodge(On.DropBugAI.CeilingSitModule.orig_Dislodge orig, DropBugAI.CeilingSitModule self)
+        {
+            if (!self.AI.creature.IsLocal()) return;
+            orig(self);
+        }
+
+        private void DropBugAI_CeilingSitModule_JumpFromCeiling(On.DropBugAI.CeilingSitModule.orig_JumpFromCeiling orig, DropBugAI.CeilingSitModule self, BodyChunk targetChunk, Vector2 attackDir)
+        {
+            if (!self.AI.creature.IsLocal()) return;
+            orig(self, targetChunk, attackDir);
+        }
+
         private void AbstractCreature_IsEnteringDen(ILContext il)
         {
             try
@@ -177,6 +194,13 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void TentaclePlantAI_Update(On.TentaclePlantAI.orig_Update orig, TentaclePlantAI self)
+        {
+            var mostInterestingItem = self.mostInterestingItem;
+            orig(self);
+            if (!self.creature.IsLocal()) self.mostInterestingItem = mostInterestingItem;
         }
     }
 }

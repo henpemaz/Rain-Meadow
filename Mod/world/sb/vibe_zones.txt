@@ -1,1 +1,1 @@
-SB_D06,6000,Vibezones4
+SB_B02,3600,1000,Litri

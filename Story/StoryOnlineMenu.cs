@@ -1,100 +1,85 @@
-﻿using Menu;
-using Menu.Remix;
+﻿using HarmonyLib;
+using Menu;
 using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using HUD;
+
 namespace RainMeadow
 {
     public class StoryOnlineMenu : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
     {
-        int selectOneBtnIndex;
-        internal CheckBox clientWantsToOverwriteSave;
-        internal CheckBox friendlyFire;
-        internal EventfulSelectOneButton[] playerButtons = new EventfulSelectOneButton[0];
-        internal EventfulHoldButton hostStartButton;
-        internal EventfulHoldButton clientWaitingButton;
-        internal SlugcatCustomization personaSettings;
-        private PlayerInfo[] players;
-        internal bool resetSave;
-        private bool updateDefaultColors;
-        internal StoryGameMode storyGameMode;
-        internal MenuLabel campaignContainer;
-        internal MenuLabel onlineDifficultyLabel;
-        internal SimplerSymbolButton iHateCheckboxes;
-
-
-        internal SlugcatStats.Name customSelectedSlugcat = SlugcatStats.Name.White;
+        CheckBox clientWantsToOverwriteSave;
+        CheckBox friendlyFire;
+        List<SimplerButton> playerButtons = new();
+        SlugcatCustomization personaSettings;
+        EventfulSelectOneButton[] scugButtons;
+        StoryGameMode storyGameMode;
+        MenuLabel onlineDifficultyLabel;
+        Vector2 restartCheckboxPos;
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
+            ID = OnlineManager.lobby.gameMode.MenuProcessId();
+            storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
-            storyGameMode= OnlineManager.lobby.gameMode as StoryGameMode;
-
-            StoryMenuHelpers.SanitizeStoryClientSettings(storyGameMode.storyClientData);
-            StoryMenuHelpers.SanitizeStoryGameMode(storyGameMode);
-
+            storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
-            StoryMenuHelpers.RemoveExcessStoryObjects(this, storyGameMode);
-            StoryMenuHelpers.ModifyExistingMenuItems(this);
+            restartCheckboxPos = restartCheckbox.pos;
+
+            RemoveExcessStoryObjects();
+            ModifyExistingMenuItems();
 
             if (OnlineManager.lobby.isOwner)
             {
-                StoryMenuHelpers.SetupHostMenu(this, storyGameMode);
-                var hostSettings = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
-                storyGameMode.storyBoolRemixSettings = hostSettings.hostBoolSettings;
-                storyGameMode.storyFloatRemixSettings = hostSettings.hostFloatSettings;
-                storyGameMode.storyIntRemixSettings = hostSettings.hostIntSettings;
+                storyGameMode.saveToDisk = true;
+                (storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings) = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
             }
             else
             {
-                StoryMenuHelpers.SetupClientMenu(this, storyGameMode);
+                SetupClientOptions();
                 if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
                 {
-                    StoryMenuHelpers.CustomSlugcatSetup(this, storyGameMode);
+                    SetupSlugcatList();
                 }
-
             }
-            SteamSetup();
-            UpdatePlayerList();
-            StoryMenuHelpers.SetupOnlineMenuItems(this, storyGameMode);
 
-            StoryMenuHelpers.SetupOnlineCustomization(this);
+            SetupOnlineCustomization();
+
+            SetupOnlineMenuItems();
+            UpdatePlayerList();
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
         }
 
-        public void StartGame()
+        public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
-
-            RainMeadow.DebugMe();
-            if (!OnlineManager.lobby.isOwner) // I'm a client
+            if (OnlineManager.lobby.isOwner)
+            {
+                personaSettings.playingAs = storyGameMode.currentCampaign = storyGameCharacter;
+            }
+            else
             {
                 if (ModManager.MMF)
                 {
                     StoryMenuHelpers.SetClientStoryRemixSettings(storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
                 }
-                if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the hosts
+                if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the host's
                 {
                     personaSettings.playingAs = storyGameMode.currentCampaign;
                 }
             }
-            else //I'm the host
-            {
 
-
-                RainMeadow.Debug("CURRENT CAMPAIGN: " + StoryMenuHelpers.GetCurrentCampaignName(storyGameMode));
-                personaSettings.playingAs = storyGameMode.currentCampaign;
-            }
-
+            // TODO: figure out how to reuse vanilla StartGame
+            // * override singleplayer custom colours
+            // * fix intro cutscenes messing with resource acquisition
+            // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
             manager.arenaSitting = null;
             if (restartChecked)
             {
+                manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
             }
             else
@@ -108,21 +93,25 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (OnlineManager.lobby.isOwner && hostStartButton != null)
+            if (OnlineManager.lobby.isOwner)
             {
-                hostStartButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+                storyGameMode.region = CurrentRegion();
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                }
             }
             else
             {
-                clientWaitingButton.buttonBehav.greyedOut = !(storyGameMode.isInGame && !storyGameMode.changedRegions);
-                StoryMenuHelpers.GetRegionAndCampaignNameForClient(this, storyGameMode);
-
-            }
-
-
-            if (Mathf.Abs(this.lastScroll) > 0.5f && Mathf.Abs(this.scroll) <= 0.5f)
-            {
-                UpdatePlayerList();
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
+                }
+                if (onlineDifficultyLabel != null)
+                {
+                    onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : $" - {storyGameMode.region}");
+                }
             }
         }
 
@@ -137,90 +126,173 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
-
-        private void SteamSetup()
-        {
-
-            List<PlayerInfo> players = new List<PlayerInfo>();
-            foreach (OnlinePlayer player in OnlineManager.players)
-            {
-                CSteamID playerId;
-                if (player.id is LocalMatchmakingManager.LocalPlayerId)
-                {
-                    playerId = default;
-                }
-                else
-                {
-                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                }
-                players.Add(new PlayerInfo(playerId, player.id.name));
-            }
-            this.players = players.ToArray();
-        }
-
         private void UpdatePlayerList()
         {
-            for (int i = 0; i < playerButtons.Length; i++)
-            {
-                var playerbtn = playerButtons[i];
-                playerbtn.RemoveSprites();
-                this.pages[0].RemoveSubObject(playerbtn);
-            }
+            playerButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
+            playerButtons.Clear();
 
-            playerButtons = new EventfulSelectOneButton[players.Length];
+            var pos = new Vector2(194, 553);
 
-            for (int i = 0; i < players.Length; i++)
+            foreach (var playerInfo in MatchmakingManager.instance.playerList)
             {
-                var player = players[i];
-                var btn = new EventfulSelectOneButton(this, this.pages[0], player.name, "playerButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), playerButtons, i);
-                this.pages[0].subObjects.Add(btn);
-                playerButtons[i] = btn;
+                pos -= new Vector2(0, 38);
+                var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
                 btn.OnClick += (_) =>
                 {
-                    string url = $"https://steamcommunity.com/profiles/{player.id}";
-                    SteamFriends.ActivateGameOverlayToWebPage(url);
+                    if (playerInfo.id != default)
+                    {
+                        SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
+                    }
                 };
+                playerButtons.Add(btn);
             }
+            foreach (var btn in playerButtons)
+            {
+                this.pages[0].subObjects.Add(btn);
+            }
+
         }
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
-            this.players = players;
             UpdatePlayerList();
         }
 
-        public override void Singal(MenuObject sender, string message)
+        public int GetCurrentlySelectedOfSeries(string series) => series switch
         {
-            base.Singal(sender, message);
-
-            if (message == "PREV")
-            {
-
-                var index = slugcatPageIndex - 1 < 0 ? slugcatPages.Count - 1 : slugcatPageIndex - 1;
-                StoryMenuHelpers.TryGetRegion(this, storyGameMode, index);
-            }
-            if (message == "NEXT")
-            {
-                var index = slugcatPageIndex + 1 >= slugcatPages.Count ? 0 : slugcatPageIndex + 1;
-                StoryMenuHelpers.TryGetRegion(this, storyGameMode, index);
-
-            }
-
-        }
-
-        public int GetCurrentlySelectedOfSeries(string series)
-        {
-            return selectOneBtnIndex;
-        }
+            "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : slugcatPageIndex,
+            _ => -1,
+        };
 
         public void SetCurrentlySelectedOfSeries(string series, int to)
         {
-            selectOneBtnIndex = to;
+            switch (series)
+            {
+                case "scugButtons":
+                    slugcatPageIndex = to;
+                    return;
+            }
         }
 
+        public string GetCurrentCampaignName() => "Current Campaign: " + SlugcatStats.getSlugcatName(storyGameMode.currentCampaign);
+
+        private string CurrentRegion()
+        {
+            try
+            {
+                var shelterName = saveGameData[storyGameMode.currentCampaign]?.shelterName;
+                if (shelterName != null && shelterName.Length > 2)
+                {
+                    return Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Debug($"Error getting region name: {e}");
+            }
+            return "";
+        }
+
+        private void SetupSlugcatList()
+        {
+            onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
+            onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+            onlineDifficultyLabel.label.alpha = 0.5f;
+            pages[0].subObjects.Add(onlineDifficultyLabel);
+
+            var pos = new Vector2(394, 553);
+            pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true));
+
+            scugButtons = new EventfulSelectOneButton[slugcatColorOrder.Count];
+            for (var i = 0; i < slugcatColorOrder.Count; i++)
+            {
+                var scug = slugcatColorOrder[i];
+                pos -= new Vector2(0, 38);
+                var btn = new EventfulSelectOneButton(this, pages[0], SlugcatStats.getSlugcatName(scug), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
+                pages[0].subObjects.Add(btn);
+
+                btn.OnClick += (_) =>
+                {
+                    storyGameMode.avatarSettings.playingAs = scug;
+
+                    if (colorChecked)
+                    {
+                        RemoveColorButtons();
+                        AddColorButtons();
+                    }
+                };
+            }
+        }
+
+        private void SetupOnlineCustomization()
+        {
+            personaSettings = storyGameMode.avatarSettings;
+            personaSettings.playingAs = slugcatPages[slugcatPageIndex].slugcatNumber;
+            personaSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value.SafeColorRange();
+            personaSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value.SafeColorRange();
+        }
+
+        private void RemoveExcessStoryObjects()
+        {
+            if (!OnlineManager.lobby.isOwner)
+            {
+                StoryMenuHelpers.RemoveMenuObjects(restartCheckbox, nextButton, prevButton);
+
+                foreach (var page in slugcatPages)
+                {
+                    switch (page)
+                    {
+                        case SlugcatPageContinue continuePage:
+                            StoryMenuHelpers.RemoveMenuObjects(continuePage.regionLabel);
+                            foreach (var part in continuePage.hud.parts.Where(x => x is HUD.KarmaMeter or HUD.FoodMeter).ToList())
+                            {
+                                part.slatedForDeletion = true;
+                                part.ClearSprites();
+                                continuePage.hud.parts.Remove(part);
+                            }
+                            break;
+                        case SlugcatPageNewGame newPage:
+                            StoryMenuHelpers.RemoveMenuObjects(newPage.infoLabel, newPage.difficultyLabel);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void SetupOnlineMenuItems()
+        {
+            // Player lobby label
+            var lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
+            pages[0].subObjects.Add(lobbyLabel);
+
+            var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
+            invite.OnClick += (_) =>
+            {
+                SteamFriends.ActivateGameOverlay("friends");
+            };
+            pages[0].subObjects.Add(invite);
+
+            var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
+            friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
+            if (!OnlineManager.lobby.isOwner) friendlyFire.buttonBehav.greyedOut = true;
+            pages[0].subObjects.Add(friendlyFire);
+        }
+
+        private void ModifyExistingMenuItems()
+        {
+            foreach (var obj in pages[0].subObjects) // unfortunate locally declared variable.
+            {
+                if (obj is SimpleButton button && button.signalText == "BACK")
+                {
+                    button.pos = new Vector2(prevButton.pos.x - 140f, 50f);
+                }
+            }
+        }
+
+        private void SetupClientOptions()
+        {
+            clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
+            pages[0].subObjects.Add(clientWantsToOverwriteSave);
+        }
     }
-
-
-
-
 }

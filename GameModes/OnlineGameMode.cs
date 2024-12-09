@@ -26,7 +26,7 @@ namespace RainMeadow
         {
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
-            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) },
+            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaOnlineGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
@@ -49,13 +49,13 @@ namespace RainMeadow
         public Lobby lobby;
         public List<OnlineCreature> avatars = new();
         public ClientSettings clientSettings;
-        public List<string> usersIDontWantToChatWith;
+        public List<string> mutedPlayers;
 
 
         public OnlineGameMode(Lobby lobby)
         {
             this.lobby = lobby;
-            this.usersIDontWantToChatWith = new List<string>();
+            this.mutedPlayers = new List<string>();
         }
 
         public virtual void FilterItems(Room room)
@@ -135,6 +135,16 @@ namespace RainMeadow
                 this.avatars.Add(onlineCreature);
                 ConfigureAvatar(onlineCreature);
             }
+        }
+
+        internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
+        internal virtual void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
         }
 
         public abstract void ConfigureAvatar(OnlineCreature onlineCreature);

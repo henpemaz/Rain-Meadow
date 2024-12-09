@@ -4,12 +4,30 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal static class ArenaHelpers
+    public static class ArenaHelpers
     {
 
 
 
         public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
+
+        public static void SetProfileColor(ArenaOnlineGameMode arena)
+        {
+            int profileColor = 0;
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+                if (ArenaHelpers.BaseGameSlugcats().Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
+                {
+                    profileColor = UnityEngine.Random.Range(0, 4);
+                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                }
+                else
+                {
+                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                }
+            }
+        }
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
         public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
@@ -25,7 +43,7 @@ namespace RainMeadow
             return null;
         }
 
-        public static void ResetReadyUpLogic(ArenaCompetitiveGameMode arena, ArenaLobbyMenu lobby)
+        public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
             {
@@ -33,8 +51,12 @@ namespace RainMeadow
                 lobby.playButton.inactive = false;
 
             }
-            arena.allPlayersReadyLockLobby = false;
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.allPlayersReadyLockLobby = false;
+            }
             arena.clientsAreReadiedUp = 0;
+            lobby.clientReadiedUp = false;
             foreach (var player in OnlineManager.players)
             {
                 arena.playersReadiedUp[player.id.name] = false;
@@ -46,31 +68,44 @@ namespace RainMeadow
             }
 
             arena.isInGame = false;
-            // arena.returnToLobby = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
-
             //Nightcat.ResetNightcat();
 
 
         }
 
 
-        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaCompetitiveGameMode arena, int playerNumber)
+        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
         {
-
-            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            try
             {
-                if (playerNumber == i)
+                for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                 {
-                    return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    if (playerNumber == i)
+                    {
+                        return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    }
                 }
             }
+            catch
+            {
+                RainMeadow.Error("Error finding player");
 
+            }
             return null;
+
         }
 
-        public static void SetupOnlineArenaStting(ArenaCompetitiveGameMode arena, ProcessManager manager)
+        public static int FindOnlinePlayerNumber(ArenaOnlineGameMode arena, OnlinePlayer player)
         {
+
+            return arena.arenaSittingOnlineOrder.IndexOf(player.inLobbyId);
+
+
+        }
+        public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+
             manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
@@ -79,9 +114,10 @@ namespace RainMeadow
                 ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
                 {
                     playerNumber = i,
-                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. TODO: Try and find a way to go through avatarSettings for this
+                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. This is for the PlayerResult profile pics
                     hasEnteredGameArea = true
                 };
+
 
                 manager.arenaSitting.players.Add(newPlayer);
 
@@ -117,22 +153,52 @@ namespace RainMeadow
             return filteredList;
         }
 
-        public static void OverideSlugcatClassAbilities(Player player, ArenaCompetitiveGameMode arena)
+        public static List<SlugcatStats.Name> BaseGameSlugcats()
         {
-
-            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.countdownInitiatedHoldFire)
+            var baseGameSlugs = new List<SlugcatStats.Name>();
+            baseGameSlugs.Add(SlugcatStats.Name.White);
+            baseGameSlugs.Add(SlugcatStats.Name.Yellow);
+            baseGameSlugs.Add(SlugcatStats.Name.Red);
+            baseGameSlugs.Add(SlugcatStats.Name.Night);
+            if (ModManager.MSC)
             {
-                if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+            }
+            return baseGameSlugs;
+
+
+        }
+        public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
+        {
+            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            {
+                if (!arena.sainot)
                 {
-                    player.maxGodTime = arena.arenaSaintAscendanceTimer;
-                    player.ActivateAscension();
+                    if (!arena.countdownInitiatedHoldFire)
+                    {
+                        if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                        {
+                            player.maxGodTime = arena.arenaSaintAscendanceTimer;
+                            player.ActivateAscension();
+                        }
+                        if (player.wantToJump > 0 && player.monkAscension)
+                        {
+                            player.DeactivateAscension();
+                        }
+                    }
                 }
-                if (player.wantToJump > 0 && player.monkAscension)
+                else
                 {
-                    player.DeactivateAscension();
+                    if (player.slugcatStats.throwingSkill == 0)
+                    {
+                        player.slugcatStats.throwingSkill = 1;
+                    }
                 }
             }
-
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
             //    Nightcat.CheckInputForActivatingNightcat(player);

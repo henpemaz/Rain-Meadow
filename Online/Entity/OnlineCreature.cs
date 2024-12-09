@@ -57,10 +57,10 @@ namespace RainMeadow
                 }
 
                 this.creatureType = onlineCreature.creature.creatureTemplate.type; // we sneak this in here since this is called from apodef ctor before our own ctor
-                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new PhysicalObjectEntityState() { pos = onlinePhysicalObject.apo.pos }));
+                RainMeadow.Debug("resulting object would be: " + MakeSerializedObject(new AbstractPhysicalObjectState() { pos = onlinePhysicalObject.apo.pos }));
             }
 
-            public override string MakeSerializedObject(PhysicalObjectEntityState initialState)
+            public override string MakeSerializedObject(AbstractPhysicalObjectState initialState)
             {
                 if (string.IsNullOrEmpty(extraData))
                 {
@@ -72,7 +72,7 @@ namespace RainMeadow
                 }
             }
 
-            protected override string MakeSerializedObjectNoExtras(PhysicalObjectEntityState initialState)
+            protected override string MakeSerializedObjectNoExtras(AbstractPhysicalObjectState initialState)
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0}<cA>{1}<cA>{2}.{3}<cA>",  // trailing `<cA>` expected by game code
                     creatureType.ToString(),
@@ -136,7 +136,7 @@ namespace RainMeadow
             return abstractCreature;
         }
 
-        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, PhysicalObjectEntityState initialState)
+        protected override AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
             EntityID id = world.game.GetNewID();

@@ -31,7 +31,7 @@ namespace RainMeadow
 
             On.RegionGate.ctor += RegionGate_ctor;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone1;
-            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
+            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill1;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide1;
 
             On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick; // timer stuck
@@ -269,7 +269,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private bool RegionGate_PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        private bool RegionGate_PlayersStandingStill1(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
@@ -321,6 +321,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 self.activeWorld.rainCycle.timer = 800;
+                MeadowMusic.NewWorld(self.activeWorld);
             }
         }
 

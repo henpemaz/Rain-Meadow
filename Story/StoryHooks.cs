@@ -2,9 +2,11 @@ using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -45,22 +47,24 @@ namespace RainMeadow
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
             IL.MoreSlugcats.MSCRoomSpecificScript.SI_SAINTINTRO_tut.ctor += ClientDisableUAD;
 
-            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
-            On.RegionGate.PlayersStandingStill += PlayersStandingStill;
+            IL.Menu.DreamScreen.Update += DreamScreen_Update_DisableArtiFlashbacks;
+
+            IL.RegionGate.Update += RegionGate_Update;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
+            On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
+            On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
 
             On.GhostHunch.Update += GhostHunch_Update;
 
+            On.RainWorldGame.Win += RainWorldGame_Win;
+            On.RainWorldGame.GoToStarveScreen += RainWorldGame_GoToStarveScreen;
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
-            On.RainWorldGame.Win += RainWorldGame_Win;
 
-            On.SaveState.BringUpToDate += SaveState_BringUpToDate;
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
-            On.PuffBall.Explode += PuffBall_Explode;
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
@@ -69,6 +73,16 @@ namespace RainMeadow
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
+
+            On.Oracle.ctor += Oracle_ctor;
+            IL.Room.ReadyForAI += Room_ReadyForAI;
+            On.SLOracleWakeUpProcedure.SwarmerEnterRoom += SLOracleWakeUpProcedure_SwarmerEnterRoom;
+            IL.SLOracleWakeUpProcedure.Update += SLOracleWakeUpProcedure_Update;
+            IL.SLOracleBehavior.Update += SLOracleBehavior_Update;
+            On.SLOracleBehavior.Update += SLOracleBehavior_Update1;
+            On.SLOracleBehaviorHasMark.Update += SLOracleBehaviorHasMark_Update;
+            On.SLOracleBehaviorHasMark.PlayerPutItemOnGround += SLOracleBehaviorHasMark_PlayerPutItemOnGround;
+
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
@@ -301,52 +315,185 @@ namespace RainMeadow
 
         private void Oracle_SetUpSwarmers(On.Oracle.orig_SetUpSwarmers orig, Oracle self)
         {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
+            if (!self.IsLocal()) return;
+            orig(self);
+        }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (room.isOwner)
+        private void Room_ReadyForAI(ILContext il)
+        {
+            try
             {
-                orig(self); //Only setup the room if we are the room owner.
-                foreach (var swamer in self.mySwarmers)
+                // don't spawn oracles if room already contains oracle
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchOr(),
+                    i => i.MatchBrfalse(out skip)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Room room) =>
                 {
-                    var apo = swamer.abstractPhysicalObject;
-                    self.room.world.GetResource().ApoEnteringWorld(apo);
-                    self.room.abstractRoom.GetResource().ApoEnteringRoom(apo, apo.pos);
-                }
+                    if (OnlineManager.lobby == null) return false;
+                    RainMeadow.Debug($"existing oracle in room? {room.abstractRoom.GetResource().activeEntities.FirstOrDefault(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle)}");
+                    RainMeadow.Debug($"existing oracle in world? {room.world.GetResource().activeEntities.FirstOrDefault(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle)}");
+                    return room.world.GetResource().activeEntities.Any(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle);
+                });
+                //c.EmitDelegate((Room room) => OnlineManager.lobby != null && room.abstractRoom.GetResource().activeEntities.Any(x => x is OnlinePhysicalObject opo && opo.apo.type == AbstractPhysicalObject.AbstractObjectType.Oracle));
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
-        private void PuffBall_Explode(On.PuffBall.orig_Explode orig, PuffBall self)
+        private void SLOracleWakeUpProcedure_SwarmerEnterRoom(On.SLOracleWakeUpProcedure.orig_SwarmerEnterRoom orig, SLOracleWakeUpProcedure self, IntVector2 tilePos)
         {
-            if (OnlineManager.lobby == null)
+            if (!self.SLOracle.IsLocal()) return;
+            orig(self, tilePos);
+        }
+
+        private void SLOracleWakeUpProcedure_Update(ILContext il)
+        {
+            try
             {
-                orig(self);
-                return;
+                // remote don't spawn SLOracleSwarmer during GoToOracle phase
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("phase"),
+                    i => i.MatchLdsfld<SLOracleWakeUpProcedure.Phase>("GoToOracle"),
+                    i => i.MatchCall("ExtEnum`1<SLOracleWakeUpProcedure/Phase>", "op_Equality"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("SLOracleSwarmer"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("resqueSwarmer"),
+                    i => i.MatchCallvirt<PhysicalObject>("get_firstChunk"),
+                    i => i.MatchLdfld<BodyChunk>("pos"),
+                    i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("game"),
+                    i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                    i => i.MatchNewobj<AbstractPhysicalObject>(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchNewobj<SLOracleSwarmer>(),
+                    i => i.MatchStloc(4)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((SLOracleWakeUpProcedure wakeUpProcedure) => wakeUpProcedure.SLOracle?.IsLocal() ?? true);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<SLOracleWakeUpProcedure>("SLOracle"),
+                    i => i.MatchLdfld<Oracle>("mySwarmers"),
+                    i => i.MatchLdloc(4),
+                    i => i.MatchCallvirt("System.Collections.Generic.List`1<OracleSwarmer>", "Add")
+                );
+                c.MarkLabel(skip);
             }
-
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var onlineRoom);
-            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineSporePlant);
-
-            if (onlineSporePlant.isMine)
+            catch (Exception e)
             {
-                foreach (var kv in OnlineManager.lobby.playerAvatars)
-                {
-                    var playerAvatar = kv.Value;
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none || kv.Key.isMe) continue; // not in game or is me
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room == self.room.abstractRoom)
-                        {
-                            opo.owner.InvokeOnceRPC(ConsumableRPCs.explodePuffBall, onlineRoom, self.bodyChunks[0].pos, self.sporeColor, self.color);
-                        }
-                    }
-                }
-                orig(self);
-                return;
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleBehavior_Update(ILContext il)
+        {
+            try
+            {
+                // remote don't spawn converted SSSwarmer
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(MoveType.AfterLabel,
+                    // holdingObject = null;
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdnull(),
+                    i => i.MatchStfld<SLOracleBehavior>("holdingObject"),
+                    // SLOracleSwarmer sLOracleSwarmer = new SLOracleSwarmer(new AbstractPhysicalObject(oracle.room.world, AbstractPhysicalObject.AbstractObjectType.SLOracleSwarmer, null, oracle.room.GetWorldCoordinate(pos), oracle.room.game.GetNewID()), oracle.room.world);
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("SLOracleSwarmer"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdloc(4),
+                    i => i.MatchCallvirt<Room>("GetWorldCoordinate"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("game"),
+                    i => i.MatchCallvirt<RainWorldGame>("GetNewID"),
+                    i => i.MatchNewobj<AbstractPhysicalObject>(),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<OracleBehavior>("oracle"),
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchNewobj<SLOracleSwarmer>(),
+                    i => i.MatchStloc(5)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((SLOracleBehavior behavior) => behavior.oracle?.IsLocal() ?? true);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallvirt<SLOracleBehavior>("ConvertingSSSwarmer")
+                );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        // don't drop prematurely
+        private void SLOracleBehavior_Update1(On.SLOracleBehavior.orig_Update orig, SLOracleBehavior self, bool eu)
+        {
+            var holdingObject = self.holdingObject;
+            orig(self, eu);
+            if (!self.oracle.IsLocal()) self.holdingObject = holdingObject;
+        }
+
+        // don't drop prematurely
+        private void SLOracleBehaviorHasMark_Update(On.SLOracleBehaviorHasMark.orig_Update orig, SLOracleBehaviorHasMark self, bool eu)
+        {
+            var holdingObject = self.holdingObject;
+            orig(self, eu);
+            if (!self.oracle.IsLocal()) self.holdingObject = holdingObject;
+        }
+
+        // consider syncing via RPC
+        private void SLOracleBehaviorHasMark_PlayerPutItemOnGround(On.SLOracleBehaviorHasMark.orig_PlayerPutItemOnGround orig, SLOracleBehaviorHasMark self)
+        {
+            orig(self);
+            if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo) && !opo.isMine)
+            {
+                opo.Request();
+            }
+        }
+
+        private void Oracle_ctor(On.Oracle.orig_ctor orig, Oracle self, AbstractPhysicalObject abstractPhysicalObject, Room room)
+        {
+            orig(self, abstractPhysicalObject, room);
+            if (OnlineManager.lobby != null && abstractPhysicalObject.GetOnlineObject() is null)
+            {
+                room.abstractRoom.AddEntity(abstractPhysicalObject);
             }
         }
 
@@ -557,6 +704,27 @@ namespace RainMeadow
             }
         }
 
+        // HACK: arti flashbacks use singleRoomWorlds which we don't handle well, disabling for now
+        // ideally this should be offline but that's another can of worms
+        private void DreamScreen_Update_DisableArtiFlashbacks(ILContext il)
+        {
+            try
+            {
+                // bool flag = ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                //becomes
+                // bool flag = !isStoryMode(out _) && ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchStloc(1)
+                    );
+                c.EmitDelegate((bool flag) => !isStoryMode(out _) && flag);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -569,70 +737,181 @@ namespace RainMeadow
             }
         }
 
-        private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToGhostScreen, ghostID.value);
-            }
-            else
-            {
-                orig(self, ghostID);
-            }
-        }
-
-        private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    RPCs.MovePlayersToDeathScreen();
-                }
-            }
-            else
-            {
-                orig(self);
-            }
-        }
-
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
         {
             if (isStoryMode(out var storyGameMode))
             {
-                OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.MovePlayersToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    return;
+                }
             }
-            else
+
+            orig(self, malnourished);
+        }
+
+        private void RainWorldGame_GoToStarveScreen(On.RainWorldGame.orig_GoToStarveScreen orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
             {
-                orig(self, malnourished);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                    return;
+                }
             }
+
+            orig(self);
+        }
+
+        private void RainWorldGame_GhostShutDown(On.RainWorldGame.orig_GhostShutDown orig, RainWorldGame self, GhostWorldPresence.GhostID ghostID)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                    return;
+                }
+            }
+
+            orig(self, ghostID);
+        }
+
+        private void RainWorldGame_GoToDeathScreen(On.RainWorldGame.orig_GoToDeathScreen orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // only host can end the game
+                    //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    return;
+                }
+            }
+
+            orig(self);
+        }
+
+        public static readonly string[] joarxml = {
+            "<cA>",
+            "<cB>",
+            "<cC>",
+            "<coA>",
+            "<coB>",
+            "<dpA>",
+            "<dpB>",
+            "<dpC>",
+            "<dpD>",
+            "<egA>",
+            "<mpdA>",
+            "<mpdB>",
+            "<mpdC>",
+            "<mwA>",
+            "<mwB>",
+            "<oA>",
+            "<pOT>",
+            "<progDivA>",
+            "<progDivB>",
+            "<rA>",
+            "<rB>",
+            "<rgA>",
+            "<rgB>",
+            "<rgC>",
+            "<stkA>",
+            "<svA>",
+            "<svB>",
+            "<svC>",
+            "<svD>",
+            "<wsA>",
+        };
+
+        public static string DeflateJoarXML(string s)
+        {
+            if (s is null or "") return "";
+            for (var i = 0; i < joarxml.Length; i++)
+                s = s.Replace(joarxml[i], ((char)(i + 1)).ToString());
+            return s;
+        }
+
+        public static string InflateJoarXML(string s)
+        {
+            if (s is null or "") return "";
+            for (var i = 0; i < joarxml.Length; i++)
+                s = s.Replace(((char)(i + 1)).ToString(), joarxml[i]);
+            return s;
+        }
+
+        private static string? SaveStateToString(SaveState? saveState)
+        {
+            if (saveState is null) return null;
+
+            try
+            {
+                var s = saveState.SaveToString();
+                RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
+                s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
+                RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
+                s = DeflateJoarXML(s);
+                RainMeadow.Debug($"abbrSaveState[{s.Length}]");
+                return s;
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+            }
+            return null;
         }
 
         private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
         {
+            var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
-                var origLoadInProgress = self.loadInProgress;
-                if (!OnlineManager.lobby.isOwner && self.starvedSaveState is null) self.loadInProgress = true;  // don't load client save
-                var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-                self.loadInProgress = origLoadInProgress;
-
-                if (!OnlineManager.lobby.isOwner)
+                currentSaveState.progression ??= self;
+                if (OnlineManager.lobby.isOwner)
                 {
-                    currentSaveState.deathPersistentSaveData.ghostsTalkedTo.Clear();
-                    foreach (var kvp in storyGameMode.ghostsTalkedTo)
-                        if (ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), kvp.Key, ignoreCase: false, out var rawEnumBase))
-                            currentSaveState.deathPersistentSaveData.ghostsTalkedTo[(GhostWorldPresence.GhostID)rawEnumBase] = kvp.Value;
+                    storyGameMode.saveStateString = SaveStateToString(currentSaveState);
+                }
+                else
+                {
+                    currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                if (storyGameMode.myLastDenPos != null)
-                {
-                    currentSaveState.denPosition = storyGameMode.myLastDenPos;
-                }
-                else if (storyGameMode.defaultDenPos != null)
-                {
-                    storyGameMode.myLastDenPos = currentSaveState.denPosition = storyGameMode.defaultDenPos;
-                }
+                storyGameMode.myLastDenPos ??= storyGameMode.defaultDenPos;
+                if (storyGameMode.myLastDenPos is not null) currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 if (OnlineManager.lobby.isOwner)
                 {
                     storyGameMode.defaultDenPos = currentSaveState.denPosition;
@@ -641,7 +920,7 @@ namespace RainMeadow
                 return currentSaveState;
             }
 
-            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
+            return currentSaveState;
         }
 
         private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
@@ -686,20 +965,6 @@ namespace RainMeadow
             }
         }
 
-        private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
-        {
-            if (isStoryMode(out var gameMode))
-            {
-                var denPos = self.denPosition;
-                orig(self, game);
-                self.denPosition = denPos;
-            }
-            else
-            {
-                orig(self, game);
-            }
-        }
-
         private void KarmaLadderScreen_Singal(On.Menu.KarmaLadderScreen.orig_Singal orig, Menu.KarmaLadderScreen self, Menu.MenuObject sender, string message)
         {
             if (isStoryMode(out var gameMode))
@@ -710,7 +975,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Continue - host");
                     }
-                    else if (!gameMode.didStartCycle)
+                    else if (!gameMode.isInGame)
                     {
                         sender.toggled = !sender.toggled;
                         isPlayerReady = sender.toggled;
@@ -733,7 +998,7 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (gameMode.didStartCycle)
+                else if (gameMode.isInGame)
                 {
                     if (isPlayerReady)
                     {
@@ -762,109 +1027,95 @@ namespace RainMeadow
             }
         }
 
-        private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
+        private void RegionGate_Update(ILContext il)
         {
-
-            if (isStoryMode(out var storyGameMode))
+            // if (story.readyForGate == 1)
+            //     open gate
+            // else
+            //     story.storyClientData.readyForGate = true
+            try
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<RegionGate>("mode"),
+                    i => i.MatchLdsfld<RegionGate.Mode>("MiddleClosed"),
+                    i => i.MatchCall("ExtEnum`1<RegionGate/Mode>", "op_Equality"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.EmitDelegate(() =>
                 {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    if (isStoryMode(out var story))
                     {
-                        if (ac.pos.room == self.room.abstractRoom.index && (!self.letThroughDir || ac.pos.x < self.room.TileWidth / 2 + 3)
-                            && (self.letThroughDir || ac.pos.x > self.room.TileWidth / 2 - 4))
-                        {
-                            return false;
-                        }
+                        if (story.readyForGate == 1) return true;
+                        story.storyClientData.readyForGate = false;
                     }
-                    else
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdsfld<RegionGate.Mode>("ClosingAirLock"),
+                    i => i.MatchStfld<RegionGate>("mode")
+                );
+                c.EmitDelegate(() =>
+                {
+                    if (isStoryMode(out var story))
                     {
-                        return false; // not loaded
+                        story.storyClientData.readyForGate = true;
+                        return true;
                     }
-                }
-
-                self.room.game.cameras[0].hud.parts.Add(new OnlineHUD(self.room.game.cameras[0].hud, self.room.game.cameras[0], storyGameMode));
-                self.room.game.cameras[0].hud.parts.Add(new SpectatorHud(self.room.game.cameras[0].hud, self.room.game.cameras[0]));
-                self.room.game.cameras[0].hud.parts.Add(new Pointing(self.room.game.cameras[0].hud));
-                return true;
+                    return false;
+                });
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(skip);
             }
-
-            return orig(self);
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
-
 
         private int RegionGate_PlayersInZone(On.RegionGate.orig_PlayersInZone orig, RegionGate self)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
             {
-                int regionGateZone = -1;
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
+                    .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
                 {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room == self.room.abstractRoom)
-                        {
-                            int zone = self.DetectZone(ac);
-                            if (zone != regionGateZone && regionGateZone != -1)
-                            {
-                                return -1;
-                            }
-                            regionGateZone = zone;
-                        }
-                    }
-                    else
-                    {
-                        return -1; // not loaded
-                    }
+                    if (ac.Room.index != self.room.abstractRoom.index || ret != self.DetectZone(ac))
+                        return -1;
                 }
+            }
+            return ret;
+        }
 
-                return regionGateZone;
+        private bool RegionGate_PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
+                    .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
+                {
+                    if (ac.realizedCreature is Player p && p.touchedNoInputCounter < 20)
+                        return false;
+                }
             }
             return orig(self);
         }
 
-        private bool PlayersStandingStill(On.RegionGate.orig_PlayersStandingStill orig, RegionGate self)
+        private bool RegionGate_AllPlayersThroughToOtherSide(On.RegionGate.orig_AllPlayersThroughToOtherSide orig, RegionGate self)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
             {
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                    {
-                        if (ac.Room != self.room.abstractRoom
-                        || ((ac.realizedCreature as Player)?.touchedNoInputCounter ?? 0) < (ModManager.MMF ? 40 : 20))
-                        {
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        return false; // not loaded
-                    }
-                }
-
-                List<HudPart> partsToRemove = new List<HudPart>();
-
-                foreach (HudPart part in self.room.game.cameras[0].hud.parts)
-                {
-                    if (part is OnlineHUD || part is PlayerSpecificOnlineHud || part is SpectatorHud)
-                    {
-                        partsToRemove.Add(part);
-                    }
-                }
-
-                foreach (HudPart part in partsToRemove)
-                {
-                    part.slatedForDeletion = true;
-                    part.ClearSprites();
-                    self.room.game.cameras[0].hud.parts.Remove(part);
-                }
-                return true;
+                storyGameMode.storyClientData.readyForGate = !ret;
+                ret = storyGameMode.readyForGate == 0;
             }
-            return orig(self);
+            return ret;
         }
 
         private void GhostHunch_Update(On.GhostHunch.orig_Update orig, GhostHunch self, bool eu)
@@ -872,7 +1123,7 @@ namespace RainMeadow
             orig(self, eu);
             if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
             {
-                if (self.ghostNumber != null && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo[self.ghostNumber] > 0)
+                if (self.ghostNumber != null)
                     OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.TriggerGhostHunch, self.ghostNumber.value);
             }
         }

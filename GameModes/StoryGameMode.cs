@@ -8,39 +8,56 @@ namespace RainMeadow
         // these are synced by StoryLobbyData
         public bool isInGame = false;
         public bool changedRegions = false;
-        public bool didStartCycle = false;
+        public bool readyForWin = false;
+        public byte readyForGate = 0;
         public bool friendlyFire = false; // false until we manage it via UI
         public string? defaultDenPos;
-        public string? myLastDenPos = null;
         public string? region = null;
-
-        public bool hasSheltered = false;
         public SlugcatStats.Name currentCampaign;
-        public Dictionary<string, int> ghostsTalkedTo;
+        public string? saveStateString;
+
+        // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
-        public Dictionary<ushort, ushort[]> consumedItems;
-        public StoryClientSettingsData storyClientData;
-
-
-        public bool saveToDisk = false;
-      
 
         public SlugcatCustomization avatarSettings;
+        public StoryClientSettingsData storyClientData;
+
+        public string? myLastDenPos = null;
+        public bool hasSheltered = false;
+
+        public void Sanitize()
+        {
+            hasSheltered = false;
+            isInGame = false;
+            changedRegions = false;
+            readyForWin = false;
+            readyForGate = 0;
+            defaultDenPos = null;
+            myLastDenPos = null;
+            region = null;
+            saveStateString = null;
+            storyClientData?.Sanitize();
+        }
+
+        public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
+
         public override ProcessManager.ProcessID MenuProcessId()
         {
             return RainMeadow.Ext_ProcessID.StoryMenu;
         }
+
         public override bool AllowedInMode(PlacedObject item)
         {
             return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type) || OnlineGameModeHelpers.creatureRelatedItems.Contains(item.type);
         }
+
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)
         {
             if (OnlineManager.mePlayer.isActuallySpectating)
@@ -65,7 +82,6 @@ namespace RainMeadow
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-
             return true;
         }
 
@@ -73,6 +89,7 @@ namespace RainMeadow
         {
             return currentCampaign;
         }
+
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return currentCampaign;
@@ -104,13 +121,50 @@ namespace RainMeadow
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
+
             // could switch this based on rules? any vs all
             storyClientData.isDead = avatars.All(a => a.abstractCreature.state is PlayerState state && (state.dead || state.permaDead));
+
+            if (lobby.isOwner && lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
+            {
+                var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+
+                if (!readyForWin && inGameClientsData.Any(scs => scs.readyForWin) && inGameClientsData.All(scs => scs.readyForWin || scs.isDead))
+                {
+                    RainMeadow.Debug("ready for win!");
+                    readyForWin = true;
+                }
+
+                if (readyForGate == 0)
+                {
+                    if (inGameClientsData.All(scs => scs.readyForGate))
+                    {
+                        // make sure they're at the same region gate
+                        var rooms = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true)))
+                            .OfType<OnlinePhysicalObject>().Select(opo => opo.apo.pos.room);
+                        if (rooms.Distinct().Count() == 1)
+                        {
+                            RainMeadow.Debug($"ready for gate!");
+                            readyForGate = 1;
+                        }
+                    }
+                }
+                else if (readyForGate > 0)
+                {
+                    // wait for all players to pass through
+                    if (inGameClientsData.All(scs => !scs.readyForGate))
+                    {
+                        RainMeadow.Debug($"all through gate!");
+                        readyForGate = 0;
+                    }
+                }
+            }
         }
 
         public override void PlayerLeftLobby(OnlinePlayer player)
         {
             base.PlayerLeftLobby(player);
+            // XXX: does not work as expected, new lobby owner is assigned before we receive this
             if (player == lobby.owner)
             {
                 OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
@@ -129,24 +183,6 @@ namespace RainMeadow
         public override void ResourceActive(OnlineResource onlineResource)
         {
             base.ResourceActive(onlineResource);
-            if (onlineResource is WorldSession ws)
-            {
-                var regionState = ws.world.regionState;
-                if (lobby.isOwner)
-                {
-                    ghostsTalkedTo = regionState.saveState.deathPersistentSaveData.ghostsTalkedTo.ToDictionary(kvp => kvp.Key.value, kvp => kvp.Value);
-                    consumedItems = regionState.consumedItems
-                        .Concat(regionState.saveState.deathPersistentSaveData.consumedFlowers) // HACK: group karma flowers with items, room:index shouldn't overlap
-                        .GroupBy(x => x.originRoom)
-                        .ToDictionary(x => (ushort)x.Key, x => x.Select(y => (ushort)y.placedObjectIndex).ToArray());
-                }
-                else
-                {
-                    regionState.consumedItems = consumedItems
-                        .SelectMany(kvp => kvp.Value.Select(v => new RegionState.ConsumedItem(kvp.Key, v, 2))).ToList(); // must be >1
-                    regionState.saveState.deathPersistentSaveData.consumedFlowers = regionState.consumedItems;
-                }
-            }
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
@@ -168,19 +204,19 @@ namespace RainMeadow
             base.PreGameStart();
             changedRegions = false;
             hasSheltered = false;
-            storyClientData.isDead = false;
+            readyForWin = false;
+            readyForGate = 0;
+            storyClientData.Sanitize();
         }
 
         public override void PostGameStart(RainWorldGame game)
         {
             base.PostGameStart(game);
-            didStartCycle = true;
         }
 
         public override void GameShutDown(RainWorldGame game)
         {
             base.GameShutDown(game);
-            didStartCycle = false;
         }
     }
 }

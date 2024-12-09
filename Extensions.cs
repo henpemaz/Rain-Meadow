@@ -212,7 +212,7 @@ namespace RainMeadow
             }
         }
 
-        public static Color SafeColorRange(Color valuecolor)
+        public static Color SafeColorRange(this Color valuecolor)
         {
             return new Color(Mathf.Clamp(valuecolor.r, 1f / 255f, 1f), Mathf.Clamp(valuecolor.g, 1f / 255f, 1f), Mathf.Clamp(valuecolor.b, 1f / 255f, 1f));
         }
