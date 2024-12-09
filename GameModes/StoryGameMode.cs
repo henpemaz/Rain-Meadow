@@ -26,6 +26,7 @@ namespace RainMeadow
 
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
+        public bool wantsToRestartCycle = false;
 
         public void Sanitize()
         {
@@ -39,6 +40,7 @@ namespace RainMeadow
             region = null;
             saveStateString = null;
             storyClientData?.Sanitize();
+            wantsToRestartCycle = false; 
         }
 
         public bool saveToDisk = false;
