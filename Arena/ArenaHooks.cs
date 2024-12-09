@@ -70,7 +70,7 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
 
-            // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
