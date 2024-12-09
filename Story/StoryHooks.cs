@@ -38,6 +38,7 @@ namespace RainMeadow
             On.Menu.FastTravelScreen.StepRegion += FastTravelScreen_StepRegion;
             On.Menu.FastTravelScreen.InitiateRegionSwitch += FastTravelScreen_InitiateRegionSwitch;
             On.Menu.FastTravelScreen.Update += FastTravelScreen_Update;
+            On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal_ClientLoadGameNormally;
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
@@ -995,6 +996,21 @@ namespace RainMeadow
                     self.startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
                 }
             }
+        }
+
+        private void FastTravelScreen_Singal_ClientLoadGameNormally(On.Menu.FastTravelScreen.orig_Singal orig, Menu.FastTravelScreen self, Menu.MenuObject sender, string message)
+        {
+            if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
+            {
+                if (message == "HOLD TO START")
+                {
+                    self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+                    self.PlaySound(SoundID.MENU_Continue_Game);
+                    return;
+                }
+            }
+
+            orig(self, sender, message);
         }
 
         public static readonly string[] joarxml = {
