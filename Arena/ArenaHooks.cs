@@ -81,6 +81,7 @@ namespace RainMeadow
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
 
+            On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
             On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
@@ -101,6 +102,16 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
         }
 
+        private bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(On.MultiplayerUnlocks.orig_IsCreatureUnlockedForLevelSpawn orig, MultiplayerUnlocks self, CreatureTemplate.Type tp)
+        {
+            if (isArenaMode(out var _))
+            {
+
+                return true;
+
+            }
+            return orig(self, tp);
+        }
 
         private Color CreatureSymbol_ColorOfCreature(On.CreatureSymbol.orig_ColorOfCreature orig, IconSymbol.IconSymbolData iconData)
         {

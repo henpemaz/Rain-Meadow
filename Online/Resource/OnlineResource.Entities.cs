@@ -214,6 +214,8 @@ namespace RainMeadow
             EntitiesModified();
 
             oe.OnJoinedResource(this, initialState);
+
+            OnlineManager.lobby.gameMode.EntityEnteredResource(oe, this);
         }
 
         public void LocalEntityLeft(OnlineEntity oe)
@@ -284,8 +286,10 @@ namespace RainMeadow
             joinedEntities.Remove(oe.id);
             activeEntities.Remove(oe);
             EntitiesModified();
+
             if (!oe.isMine) oe.ExitResource(this);
             oe.OnLeftResource(this);
+            OnlineManager.lobby.gameMode.EntityLeftResource(oe, this);
         }
 
         public void LocalEntityTransfered(OnlineEntity oe, OnlinePlayer to)

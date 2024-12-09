@@ -48,7 +48,7 @@ namespace RainMeadow
 
             Vector2 buttonSize = new(130f, 30f);
             this.backTarget = ProcessManager.ProcessID.MainMenu;
-
+            
             // title at the top
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
@@ -178,10 +178,10 @@ namespace RainMeadow
             // buttons
             upButton = new EventfulScrollButton(this, mainPage, new(316, 581), 0, 100);
             mainPage.subObjects.Add(upButton);
-            upButton.OnClick += (_) => scrollTo -= 1f;
+            upButton.OnClick += (_) => scrollTo += 1f;
             downButton = new EventfulScrollButton(this, mainPage, new(316, 113), 2, 100);
             mainPage.subObjects.Add(downButton);
-            downButton.OnClick += (_) => scrollTo += 1f;
+            downButton.OnClick += (_) => scrollTo -= 1f;
 
             // searchbar
             lobbySearchInputBox = new OpTextBox(new Configurable<string>(""), new Vector2(214f, 550f), 304f);
@@ -207,6 +207,19 @@ namespace RainMeadow
             SteamNetworkingUtils.InitRelayNetworkAccess();
 #endif
             MatchmakingManager.instance.RequestLobbyList();
+
+            if (manager.musicPlayer != null)
+            {
+                manager.musicPlayer.MenuRequestsSong("Establish", 1, 0);
+                if (manager.musicPlayer.nextSong == null)
+                {
+                    manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                }
+                else
+                {
+                    manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                }
+            }
         }
 
         private void UpdateModeDescription()

@@ -150,8 +150,7 @@ namespace RainMeadow
                         ParameterExpression argVar = Expression.Variable(argType);
                         vars.Add(argVar);
                         expressions.Add(Expression.IfThen(Expression.Not(isReading), Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType))));
-                        var serializerMethod = Serializer.GetSerializationMethod(argType, !argType.IsValueType || Nullable.GetUnderlyingType(argType) != null, true, true);
-                        if (serializerMethod == null)
+                        var serializerMethod = Serializer.GetSerializationMethod(argType, !(argType.IsValueType || (argType.IsArray && argType.GetElementType().IsValueType)) || Nullable.GetUnderlyingType(argType) != null, true, true); if (serializerMethod == null)
                         {
                             throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {targetType}");
                         }

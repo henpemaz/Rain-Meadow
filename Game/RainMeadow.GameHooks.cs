@@ -172,16 +172,8 @@ namespace RainMeadow
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
         {
-            if (OnlineManager.lobby != null)
-            {
-                if (RoomSession.map.TryGetValue(self.abstractRoom, out var rs))
-                {
-                    if (!rs.isOwner && critType == CreatureTemplate.Type.Fly)
-                    {
-                        return; // don't place fly in room if not owner
-                    }
-                }
-            }
+            // don't place if not roomsession owner
+            if (OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var rs) && !rs.isOwner) return;
             orig(self, critType);
         }
 
@@ -283,6 +275,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                if(OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    MeadowMusic.RawUpdate(self, dt);
+                }
             }
         }
 

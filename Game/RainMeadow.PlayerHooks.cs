@@ -255,13 +255,13 @@ public partial class RainMeadow
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.ReinforceKarma);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ReinforceKarma);
                 }
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)
                     {
-                        player.InvokeOnceRPC(RPCs.PlayReinforceKarmaAnimation);
+                        player.InvokeOnceRPC(StoryRPCs.PlayReinforceKarmaAnimation);
                     }
                 }
             }
@@ -408,7 +408,7 @@ public partial class RainMeadow
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
-            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
     }
 
@@ -431,7 +431,7 @@ public partial class RainMeadow
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
-            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
     }
 
@@ -454,7 +454,7 @@ public partial class RainMeadow
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
-            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(RPCs.ChangeFood, (short)(newFood - origFood));
+            if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
     }
 
@@ -478,7 +478,7 @@ public partial class RainMeadow
             if (!OnlinePhysicalObject.map.TryGetValue((grasp.grabber as Player).abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             if (!onlineEntity.isMine) return;
 
-            OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.AddMushroomCounter);
+            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.AddMushroomCounter);
         }
     }
 

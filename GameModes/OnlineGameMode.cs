@@ -137,6 +137,16 @@ namespace RainMeadow
             }
         }
 
+        internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
+        internal virtual void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
         public abstract void ConfigureAvatar(OnlineCreature onlineCreature);
 
         public virtual void ResourceAvailable(OnlineResource onlineResource)

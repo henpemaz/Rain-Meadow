@@ -160,11 +160,6 @@ namespace RainMeadow
             ReadCharacterSettings();
 
             UpdateCharacterUI();
-
-            if (manager.musicPlayer != null)
-            {
-                manager.musicPlayer.MenuRequestsSong("me", 1, 0);
-            }
         }
 
         private void UpdateCharacterUI()
@@ -217,6 +212,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
             if (this.rainEffect != null)
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);
@@ -294,6 +290,11 @@ namespace RainMeadow
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
             MeadowProgression.SaveProgression();
+
+            if (manager.musicPlayer.song != null)
+            {
+                manager.musicPlayer.song.FadeOut(20f);
+            }
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();

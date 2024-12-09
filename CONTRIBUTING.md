@@ -12,7 +12,7 @@ Before you will be able to make a mod, you need the following:
 5. A .NET programming environment. You can view feasible options here: https://dotnet.microsoft.com/en-us/platform/tools
 6. Windows users will want Visual Studio (not Visual Studio Code, they are similar but not the same!)
 6. NET Framework 4.8 Developer Pack (not runtime!) which you can download here: https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
-
+	
 > Remove the plugins file in "Mod/" and replace with a folder named 'plugins' for the build output to work correctly
 
 ### Assemblies

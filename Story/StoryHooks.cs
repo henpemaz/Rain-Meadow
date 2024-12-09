@@ -47,6 +47,12 @@ namespace RainMeadow
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
             IL.MoreSlugcats.MSCRoomSpecificScript.SI_SAINTINTRO_tut.ctor += ClientDisableUAD;
 
+            IL.Menu.DreamScreen.Update += DreamScreen_Update_DisableArtiFlashbacks;
+            On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.Update += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_Update;
+            On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.TriggerBossFight += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_TriggerBossFight;
+            On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.TriggerFadeToEnding += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_TriggerFadeToEnding;
+            On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.SummonScavengers += MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_SummonScavengers;
+
             IL.RegionGate.Update += RegionGate_Update;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
@@ -58,6 +64,7 @@ namespace RainMeadow
             On.RainWorldGame.GoToStarveScreen += RainWorldGame_GoToStarveScreen;
             On.RainWorldGame.GhostShutDown += RainWorldGame_GhostShutDown;
             On.RainWorldGame.GoToDeathScreen += RainWorldGame_GoToDeathScreen;
+            On.RainWorldGame.GoToRedsGameOver += RainWorldGame_GoToRedsGameOver;
 
             IL.SaveState.SessionEnded += SaveState_SessionEnded;
 
@@ -702,6 +709,61 @@ namespace RainMeadow
             }
         }
 
+        // HACK: arti flashbacks use singleRoomWorlds which we don't handle well, disabling for now
+        // ideally this should be offline but that's another can of worms
+        private void DreamScreen_Update_DisableArtiFlashbacks(ILContext il)
+        {
+            try
+            {
+                // bool flag = ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                //becomes
+                // bool flag = !isStoryMode(out _) && ModManager.MSC && dreamID.Index >= MoreSlugcatsEnums.DreamID.ArtificerFamilyA.Index && dreamID.Index <= MoreSlugcatsEnums.DreamID.ArtificerNightmare.Index;
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchStloc(1)
+                    );
+                c.EmitDelegate((bool flag) => !isStoryMode(out _) && flag);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_Update(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self, bool eu)
+        {
+            if (isStoryMode(out _) && !(self.room.abstractRoom.GetResource()?.isOwner ?? true))
+            {
+                self.king = self.room.updateList.OfType<Scavenger>().FirstOrDefault(scav => scav.King);
+            }
+            orig(self, eu);
+        }
+
+        private void MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_TriggerBossFight(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_TriggerBossFight orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self)
+        {
+            if (isStoryMode(out _) && !(self.room.abstractRoom.GetResource()?.isOwner ?? true)) return;
+            orig(self);
+        }
+
+        private void MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_TriggerFadeToEnding(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_TriggerFadeToEnding orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self)
+        {
+            if (isStoryMode(out _))
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.LC_FINAL_TriggerFadeToEnding);
+                }
+            }
+
+            orig(self);
+        }
+
+        private void MoreSlugcats_MSCRoomSpecificScript_LC_FINAL_SummonScavengers(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_SummonScavengers orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self)
+        {
+            if (isStoryMode(out _) && !(self.room.abstractRoom.GetResource()?.isOwner ?? true)) return;
+            orig(self);
+        }
+
         private void HUD_InitSinglePlayerHud(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -722,13 +784,13 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
                     return;
                 }
             }
@@ -744,13 +806,13 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
                     return;
                 }
             }
@@ -766,13 +828,13 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToGhostScreen, ghostID);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToGhostScreen, ghostID);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToGhostScreen, ghostID);
                     return;
                 }
             }
@@ -788,13 +850,35 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToDeathScreen);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // only host can end the game
                     //OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.GoToDeathScreen);
+                    return;
+                }
+            }
+
+            orig(self);
+        }
+
+        private void RainWorldGame_GoToRedsGameOver(On.RainWorldGame.orig_GoToRedsGameOver orig, RainWorldGame self)
+        {
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
+                    }
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRedsGameOver);
                     return;
                 }
             }
@@ -851,7 +935,7 @@ namespace RainMeadow
             return s;
         }
 
-        private static string SaveStateToString(SaveState? saveState)
+        private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
 
@@ -859,7 +943,7 @@ namespace RainMeadow
             {
                 var s = saveState.SaveToString();
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
-                s = Regex.Replace(s, @">(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", ">");
+                s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
                 RainMeadow.Debug($"abbrSaveState[{s.Length}]");
@@ -952,14 +1036,17 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Continue - host");
                     }
-                    else if (!gameMode.isInGame)
+                    else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)
+                    {
+                        RainMeadow.Debug("Continue - client");
+                    }
+                    else
                     {
                         sender.toggled = !sender.toggled;
                         isPlayerReady = sender.toggled;
                         RainMeadow.Debug(sender.toggled ? "Ready!" : "Cancelled!");
                         return;
                     }
-                    RainMeadow.Debug("Continue - client");
                 }
             }
             orig(self, sender, message);
@@ -975,7 +1062,7 @@ namespace RainMeadow
                 {
                     self.continueButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-                else if (gameMode.isInGame)
+                else if (gameMode.isInGame || self.ID == MoreSlugcats.MoreSlugcatsEnums.ProcessID.KarmaToMinScreen)  // arti's ending continues into slideshow
                 {
                     if (isPlayerReady)
                     {
@@ -1101,7 +1188,7 @@ namespace RainMeadow
             if (isStoryMode(out _) && !OnlineManager.lobby.isOwner)
             {
                 if (self.ghostNumber != null)
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RPCs.TriggerGhostHunch, self.ghostNumber.value);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.TriggerGhostHunch, self.ghostNumber.value);
             }
         }
     }
