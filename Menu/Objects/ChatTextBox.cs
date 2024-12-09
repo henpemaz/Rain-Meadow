@@ -3,7 +3,9 @@ using UnityEngine;
 using System;
 using Menu.Remix.MixedUI;
 using System.Collections;
-using System.Linq;
+using MonoMod.RuntimeDetour;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace RainMeadow
 {
@@ -13,6 +15,8 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
+        private static List<IDetour> inputBlockers;
+        private static bool blockInput = false;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public static string lastSentMessage = "";
@@ -25,12 +29,14 @@ namespace RainMeadow
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
+            ShouldCapture(true);
         }
 
         public void DelayedUnload(float delay)
         {
             if (!isUnloading)
             {
+                ShouldCapture(false);
                 isUnloading = true;
                 typingHandler.StartCoroutine(Unload(delay));
             }
@@ -86,7 +92,61 @@ namespace RainMeadow
                 }
             }
             menuLabel.text = lastSentMessage;
-
         }
+
+        // input blocker for the sake of dev tools/other outside processes that make use of input keys
+        // thanks to SlimeCubed's dev console 
+        private static void ShouldCapture(bool shouldCapture)
+        {
+            if (shouldCapture && !blockInput)
+            {
+                blockInput = true;
+                if (inputBlockers == null)
+                {
+                    var input = typeof(Input);
+                    var self = typeof(ChatTextBox);
+
+                    Hook MakeHook(string method, params Type[] types)
+                    {
+                        Type[] toTypes = new Type[types.Length + 1];
+                        types.CopyTo(toTypes, 1);
+                        toTypes[0] = (types[0] == typeof(KeyCode)) ? typeof(Func<KeyCode, bool>) : typeof(Func<string, bool>);
+                        return new Hook(
+                            input.GetMethod(method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null, types, null),
+                            self.GetMethod(method, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null, toTypes, null)
+                        );
+                    }
+
+                    inputBlockers = new List<IDetour>()
+                    {
+                        MakeHook(nameof(GetKey), typeof(string)),
+                        MakeHook(nameof(GetKey), typeof(KeyCode)),
+                        MakeHook(nameof(GetKeyDown), typeof(string)),
+                        MakeHook(nameof(GetKeyDown), typeof(KeyCode)),
+                        MakeHook(nameof(GetKeyUp), typeof(string)),
+                        MakeHook(nameof(GetKeyUp), typeof(KeyCode)),
+                    };
+                }
+            }
+            else if (!shouldCapture && blockInput)
+            {
+                blockInput = false;
+            }
+        }
+
+        private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
+        private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
+        {
+            if (code == KeyCode.Return)
+            {
+                return orig(code);
+            }
+
+            return blockInput ? false : orig(code);
+        }
+        private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        private static bool GetKeyUp(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
     }
 }

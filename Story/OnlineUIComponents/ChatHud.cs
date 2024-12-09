@@ -84,7 +84,10 @@ namespace RainMeadow
             chatButtonOverlay?.GrafUpdate(timeStacker);
 
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) 
+            {
+                ShutDownChatButton();
+            }
 
         }
         public void ShutDownChatLog()
