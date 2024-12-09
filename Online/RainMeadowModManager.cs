@@ -8,54 +8,49 @@ namespace RainMeadow
     public class RainMeadowModManager
     {
         public static string[] GetActiveMods()
-        { 
+        {
             return ModManager.ActiveMods
                 .Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))
-                    || highImpactMods.Contains(mod.id)
-                    || cheatMods.Contains(mod.id))
+                    || blacklistMods.Contains(mod.id))
                 .Select(mod => mod.id)
                 .ToArray();
         }
-        
-        public static readonly string[] highImpactMods = {
-            "devtools",
-            "rwremix",
-            "moreslugcats",
-            "keepthatawayfromme",  // needs extra syncing to work
-            "no-damage-rng",
-        };
 
-        public static readonly string[] cheatMods = {
-            "maxi-mol.mousedrag",
-            "fyre.BeastMaster",
-            "slime-cubed.devconsole",
-            "zrydnoob.UnityExplorer",
-            "warp",
-            "presstopup",
-            "CandleSign.debugvisualizer",
-            "maxi-mol.freecam",
-            "henpemaz_spawnmenu",  //gotta be safe
-            "autodestruct",
-            "DieButton",
-            "emeralds_features",
-            "flirpy.rivuletunscammedlungcapacity",
-            "Aureuix.Kaboom",
-            "TM.PupMagnet",
-            "iwantbread.slugpupstuff",
-            "blujai.rocketficer",
-            "slugcatstatsconfig",
-            "explorite.slugpups_cap_configuration",
-        };
 
-        public static string[] GetCheatMods(string[] mods = null)
+        public static List<string> blacklistMods = new List<string>();
+
+        public static string[] GetBlackList(string[] mods)
         {
             if (mods is null) mods = ModManager.ActiveMods.Select(mod => mod.id).ToArray();
-            return mods.Intersect(cheatMods).ToArray();
+
+            string[] items = RainMeadow.rainMeadowOptions.ModBlacklist.Value.Split(',');
+            if (items.Length > 0)
+            {
+                foreach (string item in items)
+                {
+                    // Trim leading/trailing spaces from each substring
+                    string trimmedItem = item.Trim();
+
+                    // Add the cleaned substring to the list if it's not empty
+                    if (!string.IsNullOrEmpty(trimmedItem))
+                    {
+                        RainMeadow.Debug(trimmedItem);
+                        blacklistMods.Add(trimmedItem);
+                    }
+                }
+                blacklistMods.ToArray();
+
+            }
+
+            return mods.Intersect(blacklistMods).ToArray();
+
+
+
         }
         internal static void CheckMods(string[] lobbyMods, string[] localMods)
         {
-            var lobbyCheatMods = GetCheatMods(lobbyMods);
-            var localCheatMods = GetCheatMods(localMods);
+            var lobbyCheatMods = GetBlackList(lobbyMods);
+            var localCheatMods = GetBlackList(localMods);
             if (Enumerable.SequenceEqual(localMods.Except(localCheatMods), lobbyMods.Except(lobbyCheatMods))
                 && !(localCheatMods.Any() && !lobbyCheatMods.Any()))
             {

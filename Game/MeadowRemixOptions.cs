@@ -17,6 +17,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<bool> ArenaSAINOT;
+    public readonly Configurable<string> ModBlacklist;
 
 
 
@@ -42,6 +43,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        ModBlacklist = config.Bind("ModBlacklist", "");
 
 
     }
@@ -66,7 +68,7 @@ public class RainMeadowOptions : OptionInterface
 
             };
             meadowTab.AddItems(OnlineMeadowSettings);
-            GeneralUIArrPlayerOptions = new UIelement[15]
+            GeneralUIArrPlayerOptions = new UIelement[17]
             {
                 new OpLabel(10f, 550f, "General", bigText: true),
                 new OpLabel(10f, 530f, "Note: These inputs are not used in Meadow mode", bigText: false),
@@ -90,6 +92,12 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 125f, "Chat Button"),
                 new OpKeyBinder(ChatTalkingKey, new Vector2(10f, 95), new Vector2(150f, 30f)),
+
+                new OpLabel(10, 80f, "Mod blacklist, comma separated"),
+                new OpTextBox(ModBlacklist, new Vector2(10f, 45), 160f)
+                {
+                    accept = OpTextBox.Accept.StringASCII,
+                }
             };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
