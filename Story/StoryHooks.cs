@@ -96,6 +96,21 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
+
+            On.VoidSpawnKeeper.AddOneSpawn += VoidSpawnKeeper_AddOneSpawn;
+        
+        }
+
+        private void VoidSpawnKeeper_AddOneSpawn(On.VoidSpawnKeeper.orig_AddOneSpawn orig, VoidSpawnKeeper self)
+        {
+            if (isStoryMode(out var _) && !OnlineManager.lobby.isOwner)
+            {
+                return;
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
 
