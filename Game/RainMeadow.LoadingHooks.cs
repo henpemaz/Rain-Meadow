@@ -26,6 +26,19 @@ namespace RainMeadow
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
+                if (self.creatures.Count > 0) // We need to control the situation, creatures crush the network
+                {
+                    foreach (var c in self.creatures)
+                    {
+                        if (c.state.alive)
+                        {
+                            c.Die();
+                        }
+                        c.Destroy();
+                    }
+                    self.creatures.Clear();
+                    self.savCommunities = null;
+                }
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 Room room = absRoom.realizedRoom;
                 WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
@@ -71,8 +84,6 @@ namespace RainMeadow
                     if (manager.currentMainLoop is RainWorldGame)
                     {
 
-                        self.creatures.Clear();
-                        self.savCommunities = null;
 
                         self.firstGameAfterMenu = false;
 
