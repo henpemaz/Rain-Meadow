@@ -99,7 +99,7 @@ namespace RainMeadow
             orig(self);
             if (isStoryMode(out var story))
             {
-                var restartButton = new SimplerButton(self, self.pages[0], self.Translate("Restart"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
+                var restartButton = new SimplerButton(self, self.pages[0], self.Translate("RESTART"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
                 restartButton.OnClick += (_) =>
                 {
                     (self.game.cameras[0].hud.rainWorld.processManager.currentMainLoop as RainWorldGame).GoToDeathScreen();
