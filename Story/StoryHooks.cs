@@ -26,8 +26,6 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool showRestartButton = false;
-
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
@@ -99,12 +97,11 @@ namespace RainMeadow
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             orig(self);
-            if (isStoryMode(out var story) && showRestartButton)
+            if (isStoryMode(out var story))
             {
                 var restartCycle = new SimplerButton(self, self.pages[0], self.Translate("Restart"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
                 restartCycle.OnClick += (_) =>
                 {
-                    showRestartButton = false;
                     (self.game.cameras[0].hud.rainWorld.processManager.currentMainLoop as RainWorldGame).GoToDeathScreen();
                 };
                 self.pages[0].subObjects.Add(restartCycle);
@@ -267,10 +264,6 @@ namespace RainMeadow
                     if (touchedInput)
                     {
                         self.gameOverMode = false;
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            showRestartButton = true;
-                        }
                     }
                 }
             }
