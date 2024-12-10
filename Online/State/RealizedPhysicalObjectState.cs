@@ -25,11 +25,14 @@ namespace RainMeadow
             if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
-            if (!opo.lenientPos)
+            if (!opo.lenientPos && chunkStates != null)
             {
                 for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
                 {
-                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    if (po.bodyChunks.Length == chunkStates.Length)
+                    {
+                        chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    }
                 }
             }
             if (po.collisionLayer != collisionLayer)

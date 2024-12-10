@@ -986,7 +986,7 @@ namespace RainMeadow
                     currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                storyGameMode.myLastDenPos ??= storyGameMode.defaultDenPos;
+                storyGameMode.myLastDenPos ??= "SH_S07";
                 if (storyGameMode.myLastDenPos is not null) currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 if (OnlineManager.lobby.isOwner)
                 {
