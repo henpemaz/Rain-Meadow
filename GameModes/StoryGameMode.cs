@@ -39,7 +39,6 @@ namespace RainMeadow
             region = null;
             saveStateString = null;
             storyClientData?.Sanitize();
-
         }
 
         public bool saveToDisk = false;
