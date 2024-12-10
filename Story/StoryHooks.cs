@@ -255,7 +255,7 @@ namespace RainMeadow
                     self.restartNotAllowed = 1; // block GoToDeathScreen if we're typing
                     return;
                 }
-                if (isStoryMode(out var story))
+                if (isStoryMode(out _))
                 {
                     self.restartNotAllowed = 1; // block from GoToDeathScreen
 
