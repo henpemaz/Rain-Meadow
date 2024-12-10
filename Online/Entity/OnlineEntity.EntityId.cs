@@ -9,6 +9,7 @@
                 none,
                 settings,
                 apo,
+                placedobj,
                 uad,
                 custom,
             }

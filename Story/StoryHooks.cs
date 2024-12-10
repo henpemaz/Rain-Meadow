@@ -88,6 +88,9 @@ namespace RainMeadow
             On.SLOracleBehaviorHasMark.Update += SLOracleBehaviorHasMark_Update;
             On.SLOracleBehaviorHasMark.PlayerPutItemOnGround += SLOracleBehaviorHasMark_PlayerPutItemOnGround;
 
+            On.ScavengerOutpost.ctor += ScavengerOutpost_ctor_Online;
+            IL.ScavengerOutpost.PearlString.ctor += ScavengerOutpost_PearlString_ctor_ClientDisablePearls;
+
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
@@ -550,6 +553,47 @@ namespace RainMeadow
             else
             {
                 return;
+            }
+        }
+
+        private void ScavengerOutpost_ctor_Online(On.ScavengerOutpost.orig_ctor orig, ScavengerOutpost self, PlacedObject placedObj, Room room)
+        {
+            orig(self, placedObj, room);
+            if (OnlineManager.lobby is not null && room.abstractRoom.GetResource() is RoomSession rs && OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(room.game, rs))
+            {
+                var o = new OnlineScavengerOutpost(self);
+                RainMeadow.Debug(o);
+                o.EnterResource(rs);
+            }
+        }
+
+        private void ScavengerOutpost_PearlString_ctor_ClientDisablePearls(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = c.DefineLabel();
+                c.GotoNext(MoveType.AfterLabel,
+                    // DataPearl.AbstractDataPearl abstractDataPearl = new DataPearl.AbstractDataPearl(room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, room.GetWorldCoordinate(attachedPos), room.game.GetNewID(), -1, -1, null, DataPearl.AbstractDataPearl.DataPearlType.Misc);
+                    i => i.MatchLdarg(1),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("DataPearl")
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((ScavengerOutpost.PearlString self) => OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.outpost.room.game, self.outpost.room.abstractRoom.GetResource()));
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(MoveType.After,
+                    // pearls.Add((AbstractConsumable)abstractDataPearl);
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<ScavengerOutpost.PearlString>("pearls"),
+                    i => i.MatchLdloc(4),
+                    i => i.MatchCallvirt("System.Collections.Generic.List`1<AbstractConsumable>", "Add")
+                );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
