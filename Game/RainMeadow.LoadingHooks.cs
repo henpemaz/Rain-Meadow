@@ -33,8 +33,8 @@ namespace RainMeadow
                         if (c.state.alive)
                         {
                             c.Die();
-                            c.Destroy();
                         }
+                        c.Destroy();
                     }
                     self.creatures.Clear();
                     self.savCommunities = null;
