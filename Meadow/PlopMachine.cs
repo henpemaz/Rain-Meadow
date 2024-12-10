@@ -1696,45 +1696,47 @@ namespace RainMeadow
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
-
-            //if is meadowgamemode if not return lmao
-            var mic = self.cameras[0].virtualMicrophone;
-            CurrentRegion = self.world.region.name;
-            CurrentRegion ??= "sl";
-            //note to self, you can set a shit in  volumegroups     check virtualmicrophone
-            //there's 5 of them,
-
-            currentagora = Mathf.Lerp(currentagora, agora, 0.008f); 
-            if (MeadowMusic.AllowPlopping)
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                
-                debugstopwatch++;
-                float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
-                fichtean = (Mathf.Pow(x, 1/(currentagora/2 + 1))+x)/2;
-                PlayEntry();
-                DrumMachine.Update(mic, this);
-                ThanatosSlayGirl();
-            
-            }
+                //if is meadowgamemode if not return lmao
+                var mic = self.cameras[0].virtualMicrophone;
+                CurrentRegion = self.world.region.name;
+                CurrentRegion ??= "sl";
+                //note to self, you can set a shit in  volumegroups     check virtualmicrophone
+                //there's 5 of them,
 
-            //if (Input.GetKey("f") && !ol2)
-            //{
-            //    //RainMeadow.Debug("Manually fading out song");
-            //    //self.manager.musicPlayer.song.FadeOut(30f);
-            //}
-            //ol2 = Input.GetKey("f");
-            //
-            //
-            //if (Input.GetKey("e") && !ol1)
-            //{
-            //    agora++;
-            //}
-            //ol1 = Input.GetKey("e");
-            //if (Input.GetKey("q") && !ol3)
-            //{
-            //    agora--;
-            //}
-            //ol3 = Input.GetKey("q");
+                currentagora = Mathf.Lerp(currentagora, agora, 0.008f);
+                if (MeadowMusic.AllowPlopping)
+                {
+
+                    debugstopwatch++;
+                    float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
+                    fichtean = (Mathf.Pow(x, 1 / (currentagora / 2 + 1)) + x) / 2;
+                    PlayEntry();
+                    DrumMachine.Update(mic, this);
+                    ThanatosSlayGirl();
+
+                }
+
+                //if (Input.GetKey("f") && !ol2)
+                //{
+                //    //RainMeadow.Debug("Manually fading out song");
+                //    //self.manager.musicPlayer.song.FadeOut(30f);
+                //}
+                //ol2 = Input.GetKey("f");
+                //
+                //
+                //if (Input.GetKey("e") && !ol1)
+                //{
+                //    agora++;
+                //}
+                //ol1 = Input.GetKey("e");
+                //if (Input.GetKey("q") && !ol3)
+                //{
+                //    agora--;
+                //}
+                //ol3 = Input.GetKey("q");
+            }
         }
 
         private void SoundLoader_Update(On.SoundLoader.orig_Update orig, SoundLoader self)

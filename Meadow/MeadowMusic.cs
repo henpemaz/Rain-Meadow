@@ -720,14 +720,16 @@ namespace RainMeadow
         private static void MusicPiece_StartPlaying(On.Music.MusicPiece.orig_StartPlaying orig, MusicPiece self)
         {
             orig.Invoke(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                var creature = mgm.avatars[0];
+                var musicdata = creature.GetData<MeadowMusicData>();
 
-            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-            var creature = mgm.avatars[0];
-            var musicdata = creature.GetData<MeadowMusicData>();
-
-            musicdata.providedSong = self.name;
-            songHistory.Add(self.name);
-            while ( songHistory.Count >= 8 ) { songHistory.RemoveAt(0); }
+                musicdata.providedSong = self.name;
+                songHistory.Add(self.name);
+                while (songHistory.Count >= 8) { songHistory.RemoveAt(0); }
+            }
         }
 
         private static async Task PlaySong(MusicPlayer musicPlayer, string? songtobesang = null, float? timetobestarted = null)
@@ -800,86 +802,90 @@ namespace RainMeadow
         }
         private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, float? DJstartedat)
         {
-            loadingsong = true;
-            //just putting more and more technical debt onto songnames
-            AudioClip? clipclip = null;
-            string text1 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), providedsong, ".ogg" });
-            string text2 = AssetManager.ResolveFilePath(text1);
-            if (text2 != Path.Combine(Custom.RootFolderDirectory(), text1.ToLowerInvariant()) && File.Exists(text2))
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                RainMeadow.Debug("It can load the song safetly ");
-                clipclip = AssetManager.SafeWWWAudioClip("file://" + text2, false, true, AudioType.OGGVORBIS);
-            }
-            else
-            {
-                LoadedAssetBundle loadedAssetBundle2 = AssetBundleManager.GetLoadedAssetBundle("music_songs", out _);
-                if (loadedAssetBundle2 != null)
+                loadingsong = true;
+                //just putting more and more technical debt onto songnames
+                AudioClip? clipclip = null;
+                string text1 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), providedsong, ".ogg" });
+                string text2 = AssetManager.ResolveFilePath(text1);
+                if (text2 != Path.Combine(Custom.RootFolderDirectory(), text1.ToLowerInvariant()) && File.Exists(text2))
                 {
-                    RainMeadow.Debug("Loads the song unsafetly?");
-                    clipclip = loadedAssetBundle2.m_AssetBundle.LoadAsset<AudioClip>(providedsong);
+                    RainMeadow.Debug("It can load the song safetly ");
+                    clipclip = AssetManager.SafeWWWAudioClip("file://" + text2, false, true, AudioType.OGGVORBIS);
                 }
-            }
-
-            if (clipclip == null)
-            {
-                RainMeadow.Debug($"Could not fetch the clip to the requested song {providedsong}");
-                loadingsong = false;
-                return null;
-            }
-            
-            bool willfadein = false;
-            if (DJstartedat != null) //Here the todo
-            {
-                float hostsonglength = clipclip.length;
-                if (hostsonglength != 0)
+                else
                 {
-                    float hostsongprogress = (LobbyTime() - DJstartedat.Value) / hostsonglength;
-                    if (hostsongprogress < 0.95f)
+                    LoadedAssetBundle loadedAssetBundle2 = AssetBundleManager.GetLoadedAssetBundle("music_songs", out _);
+                    if (loadedAssetBundle2 != null)
                     {
-                        //RainMeadow.Debug("Meadow Music: Playing my DJs provided song: " + myDJsdata.providedSong + (ivebeenpatientlywaiting ? " supposedly from the beginning, after patiently waiting" : " from a specific point, since i haven't waited"));
-                        //_ = PlaySong(musicPlayer, myDJsdata.providedSong, ivebeenpatientlywaiting);
+                        RainMeadow.Debug("Loads the song unsafetly?");
+                        clipclip = loadedAssetBundle2.m_AssetBundle.LoadAsset<AudioClip>(providedsong);
+                    }
+                }
+
+                if (clipclip == null)
+                {
+                    RainMeadow.Debug($"Could not fetch the clip to the requested song {providedsong}");
+                    loadingsong = false;
+                    return null;
+                }
+
+                bool willfadein = false;
+                if (DJstartedat != null) //Here the todo
+                {
+                    float hostsonglength = clipclip.length;
+                    if (hostsonglength != 0)
+                    {
+                        float hostsongprogress = (LobbyTime() - DJstartedat.Value) / hostsonglength;
+                        if (hostsongprogress < 0.95f)
+                        {
+                            //RainMeadow.Debug("Meadow Music: Playing my DJs provided song: " + myDJsdata.providedSong + (ivebeenpatientlywaiting ? " supposedly from the beginning, after patiently waiting" : " from a specific point, since i haven't waited"));
+                            //_ = PlaySong(musicPlayer, myDJsdata.providedSong, ivebeenpatientlywaiting);
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("Meadow Music: I have my DJs song, and i've figured since my DJ is soon done, i'll stop and wait for a differently named song");
+                            musicPlayer.song?.FadeOut(20f);
+                            musicPlayer.nextSong = null;
+                            ivebeenpatientlywaiting = true;
+                            songtoavoid = providedsong;
+                            loadingsong = false;
+                            return null;
+                        }
                     }
                     else
                     {
-                        RainMeadow.Debug("Meadow Music: I have my DJs song, and i've figured since my DJ is soon done, i'll stop and wait for a differently named song");
-                        musicPlayer.song?.FadeOut(20f);
-                        musicPlayer.nextSong = null;
+                        RainMeadow.Error("Meadow Music: I don't have my DJs provided song [even after all those checks :< ]. Waiting for a differently named song");
                         ivebeenpatientlywaiting = true;
                         songtoavoid = providedsong;
                         loadingsong = false;
                         return null;
                     }
-                }
-                else
-                {
-                    RainMeadow.Error("Meadow Music: I don't have my DJs provided song [even after all those checks :< ]. Waiting for a differently named song");
-                    ivebeenpatientlywaiting = true;
-                    songtoavoid = providedsong;
-                    loadingsong = false;
-                    return null;
+
+                    if (!ivebeenpatientlywaiting)
+                    {
+                        RainMeadow.Debug("Fading it in slowly");
+                        willfadein = true;
+                    }
                 }
 
-                if (!ivebeenpatientlywaiting)
+                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
                 {
-                    RainMeadow.Debug("Fading it in slowly");
-                    willfadein = true;
-                }
+                    volume = 0
+                };
+
+                if (willfadein) song.fadeInTime = 120f;
+                else song.fadeInTime = 2f;
+                MusicPiece.SubTrack sub = song.subTracks[0];
+                sub.isStreamed = true;
+
+                sub.source.clip = clipclip;
+                sub.readyToPlay = true;
+                loadingsong = false;
+                return song;
             }
-
-            Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
-            {
-                volume = 0
-            };
-            
-            if (willfadein) song.fadeInTime = 120f;
-            else song.fadeInTime = 2f; 
-            MusicPiece.SubTrack sub = song.subTracks[0];
-            sub.isStreamed = true;
-
-            sub.source.clip = clipclip;
-			sub.readyToPlay = true;
-            loadingsong = false;
-            return song;
+            return null;
         }
 
         public static void TheThingTHatsCalledWhenPlayersUpdated()
