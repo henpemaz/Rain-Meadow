@@ -113,6 +113,7 @@ namespace RainMeadow
                 orig(self);
             }
         }
+
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             orig(self);
