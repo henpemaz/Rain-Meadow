@@ -79,13 +79,31 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
             // todo if two join at once, this first check is faulty
         }
-        static HashSet<AbstractPhysicalObject.AbstractObjectType> doNotSyncAPOs = new()
+        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
         };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            if (doNotSyncAPOs.Contains(apo.type))
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
             {
                 return false;
             }
