@@ -67,6 +67,7 @@ public class LobbyCreateMenu : SmartMenu
             allowSpace = true,
             description = "Lobby Password"
         };
+        passwordInputBox.PosX = modeDropDown.pos.x;
         passwordInputBox.label.text = "Password";
         new UIelementWrapper(this.tabWrapper, passwordInputBox);
 
