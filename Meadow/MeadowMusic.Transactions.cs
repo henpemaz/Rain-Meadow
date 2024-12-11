@@ -122,7 +122,7 @@ namespace RainMeadow
             if (musicPlayer != null)
             {
                 RainMeadow.Debug("yeah it's musicplayer time");
-                _ = PlaySong(musicPlayer, song);
+                PlaySong(musicPlayer, song);
             }
         }
 
