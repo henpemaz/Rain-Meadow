@@ -105,6 +105,7 @@ namespace RainMeadow
             thisPlayer.reset();
         }
 
+        // public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, string name)
         public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount)
         {
             sessionSetup(true);
