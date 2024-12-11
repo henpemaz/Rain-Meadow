@@ -97,23 +97,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
-
-            On.VoidSpawnKeeper.AddOneSpawn += VoidSpawnKeeper_AddOneSpawn;
         }
-
-
-        private void VoidSpawnKeeper_AddOneSpawn(On.VoidSpawnKeeper.orig_AddOneSpawn orig, VoidSpawnKeeper self)
-        {
-            if (isStoryMode(out var _) && !OnlineManager.lobby.isOwner)
-            {
-                return;
-            }
-            else
-            {
-                orig(self);
-            }
-        }
-
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             orig(self);
