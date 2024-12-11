@@ -167,8 +167,16 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+
+                if (classID == null)
+                {
+                    return "MultiplayerPortrait" + color + "2";
+                }
+
                 var slugList = ArenaHelpers.AllSlugcats();
                 var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+
+                RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
 
                 if (baseGameSlugs.Contains(classID) && color <= 3)
                 {
