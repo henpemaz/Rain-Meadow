@@ -81,7 +81,7 @@ namespace RainMeadow
             //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
             // Create the proper list
             var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
-            OnLobbyListReceived?.Invoke(true, new LobbyInfo[25] {
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[33] {
                 new LobbyInfo(fakeEndpoint, "Ancient Liberties", "Meadow", 2, true, 9),
                 new LobbyInfo(fakeEndpoint, "Lonesome Song", "Story", 8, false, 9),
                 new LobbyInfo(fakeEndpoint, "Cracked Crescents Abound", "ArenaCompetitive", 11, true, 18),
@@ -105,8 +105,16 @@ namespace RainMeadow
                 new LobbyInfo(fakeEndpoint, "The One Who Waits", "ArenaCompetitive", 11, true, 12),
                 new LobbyInfo(fakeEndpoint, "Fisher Price Pebbles (lmao)", "Meadow", 21, false, 26),
                 new LobbyInfo(fakeEndpoint, "notchoc", "Story", -7, true, -16),
-                new LobbyInfo(fakeEndpoint, "Glistening Sanctuaries", "ArenaCompetitive", 4, true, 15),
+                new LobbyInfo(fakeEndpoint, "Glistening Sanctuaries", "ArenaCompetitive", 4, false, 15),
                 new LobbyInfo(fakeEndpoint, "Flaming Hot Cheetos", "Meadow", 18, true, 17),
+                new LobbyInfo(fakeEndpoint, "Antiquated Anomalies", "Story", 18, false, 17),
+                new LobbyInfo(fakeEndpoint, "Persistent Pressure", "ArenaCompetitive", 18, true, 17),
+                new LobbyInfo(fakeEndpoint, "7 Birds in Dead Trees", "Meadow", 18, false, 17),
+                new LobbyInfo(fakeEndpoint, "Errant Experiences", "Story", 18, true, 17),
+                new LobbyInfo(fakeEndpoint, "Fail To Find", "ArenaCompetitive", 18, false, 17),
+                new LobbyInfo(fakeEndpoint, "Mist Upon the Moor", "Meadow", 18, true, 17),
+                new LobbyInfo(fakeEndpoint, "Organic Open Ocean", "Story", 18, false, 17),
+                new LobbyInfo(fakeEndpoint, "Nukes-The-Station", "ArenaCompetitive", 18, true, 17),
             });
         }
 

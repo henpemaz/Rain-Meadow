@@ -1,3 +1,7 @@
+// here be dragons
+// HACK this is all to be replaced by a commit with a 2000 line diff with the message "improved bad code"
+// maybe make this more generic and have lobby select menu handle lobby card stuff or smth idk figure it out later Timbits
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,7 +32,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         {
             get
             {
-                if (fade < 1 || (menu as LobbySelectMenu).creationMenuFade == 0) return false;
+                if (fade < 1) return false;
                 return base.CurrentlySelectableMouse;
             }
         }
@@ -36,7 +40,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         {
             get
             {
-                if (fade < 1 || (menu as LobbySelectMenu).creationMenuFade == 0) return false;
+                if (fade < 1) return false;
                 return base.CurrentlySelectableNonMouse;
             }
         }
@@ -56,7 +60,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
 
-            // OnClick += (obj) => 
+            OnClick += (obj) => (menu as LobbySelectMenu).RequestLobbyJoin(lobbyInfo);
         }
 
         public override void Update()
@@ -162,35 +166,13 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         }
     }
 
-    public class EventfulScrollButtonButICanOverwriteTheSelectableFields : EventfulScrollButton
-    {
-        public override bool CurrentlySelectableMouse
-        {
-            get
-            {
-                if ((menu as LobbySelectMenu).creationMenuFade == 0) return false;
-                return base.CurrentlySelectableMouse;
-            }
-        }
-        public override bool CurrentlySelectableNonMouse
-        {
-            get
-            {
-                if ((menu as LobbySelectMenu).creationMenuFade == 0) return false;
-                return base.CurrentlySelectableNonMouse;
-            }
-        }
-
-        public EventfulScrollButtonButICanOverwriteTheSelectableFields(Menu.Menu menu, MenuObject owner, Vector2 pos, int direction, float width) : base(menu, owner, pos, direction, width) { }
-    }
-
     public List<LobbyCard> lobbyCards;
     public List<LobbyInfo> filteredLobbies;
     public List<LobbyInfo> allLobbies;
     public LobbyCardsFilter filter;
     public float movementPercentage;
-    public EventfulScrollButtonButICanOverwriteTheSelectableFields scrollUpButton;
-    public EventfulScrollButtonButICanOverwriteTheSelectableFields scrollDownButton;
+    public EventfulScrollButton scrollUpButton;
+    public EventfulScrollButton scrollDownButton;
     public SimplerSymbolButton[] sideButtons;
     public MenuLabel[] sideButtonLabels;
     public float[,] sideButtonLabelsFade;
@@ -368,12 +350,12 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         myContainer = new FContainer();
         owner.Container.AddChild(myContainer);
 
-        scrollUpButton = new EventfulScrollButtonButICanOverwriteTheSelectableFields(menu, this, new Vector2(0.01f + size.x / 2f - 50f, size.y + 34f), 0, 24);
+        scrollUpButton = new EventfulScrollButton(menu, this, new Vector2(0.01f + size.x / 2f - 50f, size.y + 34f), 0, 24);
         scrollUpButton.size.x = 100f;
         scrollUpButton.roundedRect.size.x = 100f;
         scrollUpButton.OnClick += (_) => AddScroll(-1);
         subObjects.Add(scrollUpButton);
-        scrollDownButton = new EventfulScrollButtonButICanOverwriteTheSelectableFields(menu, this, new Vector2(0.01f + size.x / 2f - 50f, -34f), 2, 24);
+        scrollDownButton = new EventfulScrollButton(menu, this, new Vector2(0.01f + size.x / 2f - 50f, -34f), 2, 24);
         scrollDownButton.size.x = 100f;
         scrollDownButton.roundedRect.size.x = 100f;
         scrollDownButton.OnClick += (_) => AddScroll(1);
@@ -420,7 +402,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
     public override void Update()
     {
-        decimal creationMenuFade = (menu as LobbySelectMenu).creationMenuFade;
 
         if (MouseOver && menu.manager.menuesMouseMode && menu.mouseScrollWheelMovement != 0)
         {
@@ -434,11 +415,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
         base.Update();
 
-        // if ((menu as LobbySelectMenu).creationMenuEnabled && creationMenuFade > 0) creationMenuFade -= 0.1f;
-        // else if (!(menu as LobbySelectMenu).creationMenuEnabled && creationMenuFade < 1) creationMenuFade += 0.1f;
-
-        scrollDownButton.buttonBehav.greyedOut = scrollPos == LastPossibleScroll || creationMenuFade == 0;
-        scrollUpButton.buttonBehav.greyedOut = scrollPos == 0 || creationMenuFade == 0;
         float num = scrollPos;
 
         floatScrollPos = Custom.LerpAndTick(floatScrollPos, num, 0.01f, 0.01f);
@@ -454,7 +430,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         }
         else
         {
-            scrollSlider.buttonBehav.greyedOut = creationMenuFade == 0;
 
             if (sliderPulled)
             {
@@ -468,10 +443,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             }
         }
 
-        for (int i = 0; i < sideButtons.Length; i++)
-        {
-            sideButtons[i].buttonBehav.greyedOut = creationMenuFade == 0;
-        }
 
         for (int i = 0; i < sideButtonLabels.Length; i++)
         {
@@ -496,12 +467,10 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                 sideButtonLabelsFade[i, 0] = Custom.LerpAndTick(sideButtonLabelsFade[i, 0], 0f, 0.04f, 1f / 60f);
             }
         }
-        searchBar.greyedOut = creationMenuFade == 0;
     }
 
     public override void GrafUpdate(float timeStacker)
     {
-        decimal creationMenuFade = (menu as LobbySelectMenu).creationMenuFade;
 
         base.GrafUpdate(timeStacker);
 
@@ -520,20 +489,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         {
             sideButtonLabels[i].label.alpha = Mathf.Lerp(sideButtonLabelsFade[i, 1], sideButtonLabelsFade[i, 0], timeStacker);
         }
-
-        Container.alpha = (float)creationMenuFade;
-        searchBar.myContainer.alpha = (float)creationMenuFade;
-
-        // if (filter.enabled)
-        // {
-        //     pos.x = Mathf.Lerp(518f, 400f, movementPercentage);
-        //     searchBar.PosX = Mathf.Lerp(518f + 15f, 400f + 15f, movementPercentage);
-        // }
-        // else
-        // {
-        //     pos.x = Mathf.Lerp(400f, 518f, movementPercentage);
-        //     searchBar.PosX = Mathf.Lerp(400f + 15f, 518f + 15f, movementPercentage);
-        // }
     }
 
     public override void Singal(MenuObject sender, string message)
