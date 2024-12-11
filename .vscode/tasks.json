@@ -8,7 +8,8 @@
             "args": ["build", "${workspaceFolder}/Rain Meadow.csproj", "/property:GenerateFullPaths=true", "/consoleloggerparameters:NoSummary"],
             "problemMatcher": "$msCompile",
             "group": {
-                "kind": "build"
+                "kind": "build",
+                "isDefault": true
             }
         },
         {
