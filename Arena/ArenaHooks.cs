@@ -925,6 +925,8 @@ namespace RainMeadow
             }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
+                self.portrait.RemoveSprites();
+                menu.pages[0].RemoveSubObject(self.portrait);
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 var userNameBackup = "Unknown user";
@@ -937,8 +939,7 @@ namespace RainMeadow
                 {
                     self.playerNameLabel.text = userNameBackup;
                 }
-                self.portrait.RemoveSprites();
-                menu.pages[0].RemoveSubObject(self.portrait);
+
 
                 if (!ModManager.MSC)
                 {
