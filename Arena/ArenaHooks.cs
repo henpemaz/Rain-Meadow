@@ -927,7 +927,16 @@ namespace RainMeadow
             {
 
                 var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                self.playerNameLabel.text = currentName.id.name ?? "Unknown user";
+                var userNameBackup = "Unknown user";
+                try
+                {
+                    userNameBackup = currentName.id.name;
+                    self.playerNameLabel.text = userNameBackup;
+                }
+                catch
+                {
+                    self.playerNameLabel.text = userNameBackup;
+                }
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
@@ -945,7 +954,15 @@ namespace RainMeadow
                     }
                     else
                     {
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[userNameBackup] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
+                        else
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+
+                        }
 
                     }
                     self.subObjects.Add(self.portrait);
@@ -959,8 +976,15 @@ namespace RainMeadow
                     }
                     else
                     {
+                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
+                        else
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
 
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
                     }
                     self.subObjects.Add(self.portrait);
                 }
