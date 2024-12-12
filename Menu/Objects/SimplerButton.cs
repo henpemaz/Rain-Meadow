@@ -9,34 +9,29 @@ namespace RainMeadow
         private float initx;
         private float inity;
         private bool ispausemenu;
-        private float inittime;
+        private float xOffset;
+        public float progress = 0f;
 
-        private float hypox;
         public SimplerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "", bool ispausemenu = false) : base(menu, owner, displayText, "", pos, size)
         {
             this.description = description;
             this.initx = pos.x;
             this.inity = pos.y;
-            if (ispausemenu)
-            {
-                //pos.x = initx + Mathf.Sin((Time.time * 4f) + (((float)pos.y * Mathf.PI) / 200f)) * 5f;
-                //pos.y = inity + Mathf.Sin((Time.time * 3.5f) + (((float)pos.y * Mathf.PI) / 200f));
-                pos.x += 1000;
-            }
-            hypox = pos.x;
+            if (ispausemenu) pos.x += 600; 
+            xOffset = pos.x;
             base.pos = pos;
             base.lastPos = pos;
             this.ispausemenu = ispausemenu;
         }
-
-        public override void GrafUpdate(float timeStacker)
+        public override void Update()
         {
-            base.GrafUpdate(timeStacker);
+            base.Update(); 
             if (ispausemenu)
             {
-                hypox = Mathf.Lerp(hypox, initx, (0.035f+((inity/20000))*4)/1.5f);
-                pos.x =  Mathf.Sin((Time.time * 4f) + (((float)inity * Mathf.PI) / 200f)) * 5f + hypox;
-                pos.y = inity + Mathf.Sin((Time.time * 3.5f) + (((float)inity * Mathf.PI) / 200f)) ;
+                float targetxOffset = Mathf.Lerp(initx + 600f, initx, 1f - Mathf.Pow(1f - progress, 3));
+                xOffset = Mathf.Lerp(xOffset, targetxOffset, inity / (xOffset > targetxOffset ? 1800f : 520f) - 0.05f);
+                pos.x = xOffset + Mathf.Sin((Time.time * 3.5f) + (inity * Mathf.PI / 200f)) * progress * 3.5f;
+                pos.y = inity + Mathf.Sin((Time.time * 3f) + (inity * Mathf.PI / 200f)) * progress;
             }
         }
 

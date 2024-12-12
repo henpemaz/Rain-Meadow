@@ -1008,30 +1008,12 @@ namespace RainMeadow
                             {
                                 if (result[0].Key == groupImIn || result[1].Key == groupImIn)
                                 {
-                                    //groupdemistimer thingy
-                                    groupdemiseTimer = (result[0].Value + result[1].Value) * 6f;
                                     demiseTimer = null;
+                                    groupdemiseTimer = (result[0].Value + result[1].Value) * 6f;
                                 }
                                 else
                                 {
-                                    if (demiseTimer == null)
-                                    {
-                                        int i = 0;
-                                        foreach (var other in OnlineManager.lobby.playerAvatars.Select(kvp => kvp.Value))
-                                        {
-                                            if (other.FindEntity() is OnlineCreature oc)
-                                            {
-                                                var otherinGroup = mgrr2.playerGroups[oc.owner.inLobbyId];
-                                                if (otherinGroup == groupImIn)
-                                                {
-                                                    i++;
-                                                }
-                                            }
-                                        }
-                                        demiseTimer = 6f * i;
-                                    }
-                                    // intikus from the future, showing off over something that he doesn't wanna change stuff for cuz the thing above prob already works fine:
-                                    // if (demiseTimer == null) demiseTimer = 6f * OnlineManager.lobby.playerAvatars.Select(kvp => kvp.Value).Count(other => other.FindEntity() is OnlineCreature oc && mgrr2.playerGroups[oc.owner.inLobbyId] == groupImIn);
+                                    if (demiseTimer == null) demiseTimer = 6f * OnlineManager.lobby.playerAvatars.Select(kvp => kvp.Value).Count(other => other.FindEntity() is OnlineCreature oc && mgrr2.playerGroups[oc.owner.inLobbyId] == groupImIn); //fuck it, lol
                                     groupdemiseTimer = null;
                                 }
                             }
@@ -1039,8 +1021,8 @@ namespace RainMeadow
                             {
                                 if (result[0].Key == groupImIn)
                                 {
-                                    groupdemiseTimer = null;
                                     demiseTimer = null;
+                                    groupdemiseTimer = null;
                                 }
                                 else
                                 {
