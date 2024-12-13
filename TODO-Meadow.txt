@@ -1,9 +1,5 @@
 HIGH-PRIO
 
-lizard todo
-	could use proper lizard voice not default pink
-	red liz uses wrong seed sometimes? unconf
-
 scav todo
 	scav climbpos doesn't sync
 	pointing doesn't let go once let go?
@@ -64,6 +60,10 @@ trailer
 	splash art of many creatures
 	the trailer
 
+project
+	go over readme, contributing etc
+	workshop description
+	credits
 
 
 LOW-PRIO
@@ -82,6 +82,8 @@ creature todo
 - eggbug and lanternmouse are way too fast in zerog
 
 lizard todo
+	could use proper lizard voice not default pink
+	red liz uses wrong seed sometimes? unconf
 	blues have trouble sticking to the ceiling (retest)
 	blues have trouble climbing/pathing ledges (retest)
 	lizard wallclimb is slow, slows you down a lot in zerog movemen
