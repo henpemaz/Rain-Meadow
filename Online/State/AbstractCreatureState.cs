@@ -34,6 +34,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is DaddyLongLegs) return new RealizedDaddyLongLegsState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Deer) return new RealizedDeerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DropBug) return new RealizedDropBugState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Scavenger) return new RealizedScavengerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
