@@ -310,7 +310,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
         for (int i = 0; i < filteredLobbies.Count; i++)
         {
-            var card = new LobbyCard(menu, this, filteredLobbies[i], i);
+            var card = new LobbyCard(menu, this, filteredLobbies[i]);
 
             card.pos.x = 15f;
             card.pos.y = IdealYPosForItem(filteredLobbies.Count);
