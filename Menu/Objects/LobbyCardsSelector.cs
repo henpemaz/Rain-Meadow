@@ -24,7 +24,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         /// The LobbyInfo of a LobbyCard. Used for displaying lobby info on the card and joining lobby on click.
         /// </summary>
         public LobbyInfo lobbyInfo;
-        public LobbyCardsList lobbyCards;
         /// <summary>
         /// A float between 1 and 0, 1 meaning the card is not faded and 0 meaning the card is fully faded
         /// </summary>
