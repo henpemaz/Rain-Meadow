@@ -162,7 +162,7 @@ namespace RainMeadow
 
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
-                abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, oe.owner), customization.playingAs, isGhost: false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
 
             }
             else
