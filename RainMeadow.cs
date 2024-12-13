@@ -191,6 +191,7 @@ namespace RainMeadow
                 ItemHooks();
                 ObjectHooks();
 
+                IntroRollReplacement.OnEnable();
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
                 this.PlopMachine.OnEnable();
