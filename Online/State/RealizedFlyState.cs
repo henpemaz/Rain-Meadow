@@ -2,8 +2,7 @@
 
 namespace RainMeadow
 {
-    // 
-    public class RealizedFlyState : RealizedPhysicalObjectState
+    public class RealizedFlyState : RealizedCreatureState
     {
         [OnlineField]
         byte bites;
@@ -22,7 +21,7 @@ namespace RainMeadow
         [OnlineField]
         float lastFlapDepth;
         public RealizedFlyState() { }
-        public RealizedFlyState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedFlyState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             var fly = (Fly)onlineEntity.apo.realizedObject;
 
