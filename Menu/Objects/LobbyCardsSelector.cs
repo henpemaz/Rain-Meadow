@@ -24,6 +24,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         /// The LobbyInfo of a LobbyCard. Used for displaying lobby info on the card and joining lobby on click.
         /// </summary>
         public LobbyInfo lobbyInfo;
+        public LobbyCardsList lobbyCards;
         /// <summary>
         /// A float between 1 and 0, 1 meaning the card is not faded and 0 meaning the card is fully faded
         /// </summary>
@@ -60,7 +61,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
 
-            OnClick += (obj) => (menu as LobbySelectMenu).RequestLobbyJoin(lobbyInfo);
+            OnClick += (obj) => (menu as LobbySelectMenu).Play(lobbyInfo);
         }
 
         public override void Update()
@@ -309,7 +310,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
         for (int i = 0; i < filteredLobbies.Count; i++)
         {
-            var card = new LobbyCard(menu, this, filteredLobbies[i]);
+            var card = new LobbyCard(menu, this, filteredLobbies[i], i);
 
             card.pos.x = 15f;
             card.pos.y = IdealYPosForItem(filteredLobbies.Count);
