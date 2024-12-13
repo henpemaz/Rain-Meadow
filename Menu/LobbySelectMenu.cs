@@ -25,6 +25,7 @@ namespace RainMeadow
         private OpCheckBox filterPublicLobbiesOnly;
         private OpTextBox filterLobbyLimit;
         private LobbyCardsList lobbyList;
+        public LobbyInfo lastClickedLobby;
         private MenuDialogBox popupDialog;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -183,40 +184,35 @@ namespace RainMeadow
             lobbyList.FilterLobbies();
         }
 
-        private void Play(SimplerButton obj)
+        public void Play(LobbyInfo lobbyInfo)
         {
-            // if (obj is not LobbyInfoCard infoCard)
-            // {
-            //     ShowErrorDialog("Play was called by something other than a lobby card");
-            //     return;
-            // }
-            // if (ModManager.JollyCoop)
-            // {
-            //     ShowErrorDialog("Please disable JollyCoop before playing Online");
-            //     return;
-            // }
+
+            if (ModManager.JollyCoop)
+            {
+                ShowErrorDialog("Please disable JollyCoop before playing Online");
+                return;
+            }
+            lastClickedLobby = lobbyInfo;
 
 
-            // lastClickedLobbyButton = infoCard;
 
-            // var lobbyInfo = infoCard.lobbyInfo;
-            // MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
-            // if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
-            // {
-            //     ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
-            // }
-            // else
-            // {
-            //     if (lobbyInfo.hasPassword)
-            //     {
-            //         ShowPasswordRequestDialog();
-            //     }
-            //     else
-            //     {
-            //         ShowLoadingDialog("Joining lobby...");
-            //         RequestLobbyJoin(lobbyInfo);
-            //     }
-            // }
+            MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
+            if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
+            {
+                ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
+            }
+            else
+            {
+                if (lobbyInfo.hasPassword)
+                {
+                    ShowPasswordRequestDialog();
+                }
+                else
+                {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobbyInfo);
+                }
+            }
         }
 
         private void RefreshLobbyList(SymbolButton obj)
@@ -301,7 +297,7 @@ namespace RainMeadow
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
                     ShowLoadingDialog("Joining lobby...");
-                    // RequestLobbyJoin(lastClickedLobbyButton.lobbyInfo, password);
+                    RequestLobbyJoin(lastClickedLobby, password);
                     break;
             }
         }

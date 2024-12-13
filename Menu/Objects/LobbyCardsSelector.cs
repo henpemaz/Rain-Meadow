@@ -60,7 +60,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
 
-            OnClick += (obj) => (menu as LobbySelectMenu).RequestLobbyJoin(lobbyInfo);
+            OnClick += (obj) => (menu as LobbySelectMenu).Play(lobbyInfo);
         }
 
         public override void Update()
