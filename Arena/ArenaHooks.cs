@@ -913,6 +913,66 @@ namespace RainMeadow
             }
         }
 
+        #region PlayerResultsBox
+        private string GetUserName(ArenaOnlineGameMode arena, Menu.PlayerResultBox self)
+        {
+            try
+            {
+                var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
+                return currentName.id.name;
+            }
+            catch
+            {
+                return "Unknown user";
+            }
+        }
+
+        private int GetPortraitMapperForSlugcat(ArenaSitting.ArenaPlayer player)
+        {
+            int portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
+                  (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
+                  (player.playerClass == SlugcatStats.Name.Red) ? 2 :
+                  (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
+            return portaitMapper;
+        }
+        public void CreatePortrait(Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index, string portraitKey)
+        {
+            self.portrait = new Menu.MenuIllustration(menu, self, "", portraitKey, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+            self.subObjects.Add(self.portrait);
+        }
+
+        private void CreatePortraitForBaseGame(ArenaOnlineGameMode arena, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index, string userName)
+        {
+            if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+            {
+                int portaitMapper = GetPortraitMapperForSlugcat(player);
+                CreatePortrait(self, menu, owner, pos, size, player, index, "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"));
+            }
+            else
+            {
+                string portraitKey = arena.playerResultColors.ContainsKey(userName)
+                    ? "MultiplayerPortrait" + arena.playerResultColors[userName] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value
+                    : "MultiplayerPortrait0" + (self.DeadPortraint ? "0" : "1");
+
+                CreatePortrait(self, menu, owner, pos, size, player, index, portraitKey);
+            }
+        }
+        private void CreatePortraitForMSC(ArenaOnlineGameMode arena, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index, string userName)
+        {
+            if (player.playerClass == SlugcatStats.Name.Night)
+            {
+                // Special handling for "Night" class
+                CreatePortrait(self, menu, owner, pos, size, player, index, "MultiplayerPortrait3" + (self.DeadPortraint ? "0" : "1"));
+            }
+            else
+            {
+                string portraitKey = arena.playerResultColors.ContainsKey(userName)
+                    ? "MultiplayerPortrait" + arena.playerResultColors[userName] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value
+                    : "MultiplayerPortrait0" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value;
+
+                CreatePortrait(self, menu, owner, pos, size, player, index, portraitKey);
+            }
+        }
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
 
@@ -928,70 +988,21 @@ namespace RainMeadow
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
-                var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                var userNameBackup = "Unknown user";
-                try
-                {
-                    userNameBackup = currentName.id.name;
-                    self.playerNameLabel.text = userNameBackup;
-                }
-                catch
-                {
-                    self.playerNameLabel.text = userNameBackup;
-                }
-
+                string username = GetUserName(arena, self);
+                self.playerNameLabel.text = username;
 
                 if (!ModManager.MSC)
                 {
-                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
-                    {
-                        var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                              (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                              (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                              (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
-
-
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    }
-                    else
-                    {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[userNameBackup] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                        }
-                        else
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
-                        }
-
-                    }
-                    self.subObjects.Add(self.portrait);
-
+                    CreatePortraitForBaseGame(arena, self, menu, owner, pos, size, player, index, username);
                 }
-                if (ModManager.MSC)
+                else
                 {
-                    if (player.playerClass == SlugcatStats.Name.Night)
-                    {
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    }
-                    else
-                    {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                        }
-                        else
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
-                        }
-                    }
-                    self.subObjects.Add(self.portrait);
+                    CreatePortraitForMSC(arena, self, menu, owner, pos, size, player, index, username);
                 }
             }
 
         }
+        #endregion
 
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
