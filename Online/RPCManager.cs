@@ -47,6 +47,7 @@ namespace RainMeadow
                 catch (Exception e)
                 {
                     RainMeadow.Error(e);
+                    throw e;
                 }
             }
         }
