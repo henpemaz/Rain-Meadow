@@ -133,7 +133,7 @@ namespace RainMeadow
 
             foreach (var player in newPlayers)
             {
-                playerButtons.Add(new PlayerButton(this, player, pos, (OnlineManager.lobby.isOwner && !RainMeadow.isArenaMode(out var _)) && !player.isMine)); // can't remove during arena mid-game
+                playerButtons.Add(new PlayerButton(this, player, pos, OnlineManager.lobby.isOwner && !player.isMine));
                 pos -= offset;
             }
 

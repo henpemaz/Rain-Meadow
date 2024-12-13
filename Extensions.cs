@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -13,49 +14,50 @@ namespace RainMeadow
             return new Color(((value >> 16) & 0xff) / 255f, ((value >> 8) & 0xff) / 255f, (value & 0xff) / 255f);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static WorldSession? GetResource(this World world)
         {
             return WorldSession.map.TryGetValue(world, out var ws) ? ws : null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RoomSession? GetResource(this AbstractRoom room)
         {
             return RoomSession.map.TryGetValue(room, out var rs) ? rs : null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static OnlinePhysicalObject? GetOnlineObject(this AbstractPhysicalObject apo)
         {
             return OnlinePhysicalObject.map.TryGetValue(apo, out var oe) ? oe : null;
         }
 
-        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo) => (opo = GetOnlineObject(apo)) is not null;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool GetOnlineObject(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo) => OnlinePhysicalObject.map.TryGetValue(apo, out opo);
 
-        public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac)
-        {
-            return GetOnlineObject(ac) as OnlineCreature;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static OnlineCreature? GetOnlineCreature(this AbstractCreature ac) => GetOnlineObject(ac) as OnlineCreature;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool GetOnlineCreature(this AbstractCreature apo, out OnlineCreature? oc) => (oc = GetOnlineCreature(apo)) is not null;
 
-        public static bool IsLocal(this AbstractPhysicalObject apo)
-        {
-            return OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsLocal(this AbstractPhysicalObject apo) => OnlineManager.lobby is null || (GetOnlineObject(apo)?.isMine ?? true);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this AbstractPhysicalObject apo, out OnlinePhysicalObject? opo)
         {
             opo = null;
-            return OnlineManager.lobby is null || (GetOnlineObject(apo, out opo) && opo.isMine);
+            return OnlineManager.lobby is null || (OnlinePhysicalObject.map.TryGetValue(apo, out opo) && opo.isMine);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLocal(this PhysicalObject po) => IsLocal(po.abstractPhysicalObject);
 
-        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo)
-        {
-            opo = null;
-            return IsLocal(po.abstractPhysicalObject, out opo);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsLocal(this PhysicalObject po, out OnlinePhysicalObject? opo) => IsLocal(po.abstractPhysicalObject, out opo);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CanMove(this AbstractPhysicalObject apo, WorldCoordinate? newCoord=null, bool quiet=false)
         {
             if (!GetOnlineObject(apo, out var oe)) return true;

@@ -70,7 +70,7 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
 
-            // On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
@@ -80,6 +80,7 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
+
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
             On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
@@ -166,8 +167,16 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+
+                if (classID == null)
+                {
+                    return "MultiplayerPortrait" + color + "2";
+                }
+
                 var slugList = ArenaHelpers.AllSlugcats();
                 var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+
+                RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
 
                 if (baseGameSlugs.Contains(classID) && color <= 3)
                 {
@@ -916,11 +925,21 @@ namespace RainMeadow
             }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
-
-                var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                self.playerNameLabel.text = currentName.id.name ?? "Unknown user";
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
+
+                var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
+                var userNameBackup = "Unknown user";
+                try
+                {
+                    userNameBackup = currentName.id.name;
+                    self.playerNameLabel.text = userNameBackup;
+                }
+                catch
+                {
+                    self.playerNameLabel.text = userNameBackup;
+                }
+
 
                 if (!ModManager.MSC)
                 {
@@ -936,7 +955,15 @@ namespace RainMeadow
                     }
                     else
                     {
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[userNameBackup] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
+                        else
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+
+                        }
 
                     }
                     self.subObjects.Add(self.portrait);
@@ -950,8 +977,15 @@ namespace RainMeadow
                     }
                     else
                     {
+                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
+                        else
+                        {
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
 
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                        }
                     }
                     self.subObjects.Add(self.portrait);
                 }
@@ -1276,7 +1310,7 @@ namespace RainMeadow
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac) && ac.state.alive)
                         {
                             self.Players.Add(ac);
                         }
@@ -1290,27 +1324,30 @@ namespace RainMeadow
                     foreach (var s in self.arenaSitting.players)
                     {
                         var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
-
-                        int index = self.Players.Count - 1;
-                        while (index >= 0)
                         {
-                            var c = self.Players[index];
-                            if (OnlinePhysicalObject.map.TryGetValue(c, out var onlineC))
+                            for (int i = 0; i < self.Players.Count; i++)
                             {
-                                if (onlineC.owner == os && c.realizedCreature != null && !c.realizedCreature.State.dead)
+
+                                if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
                                 {
-                                    s.timeAlive++;
+                                    if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
+                                    {
+                                        s.timeAlive++;
+                                    }
+                                    if (onlineC.owner == os && (self.Players[i].realizedCreature != null && self.Players[i].realizedCreature.State.dead || self.Players[i].state.dead))
+                                    {
+                                        self.Players.Remove(self.Players[i]);
+                                    }
+                                }
+                                else
+                                {
+                                    if (self.Players[i].state.alive) // alive and without an owner? Die and remove
+                                    {
+                                        self.Players[i].Die();
+                                    }
+                                    self.Players.Remove(self.Players[i]);
                                 }
                             }
-                            else
-                            {
-                                if (self.Players[index].state.alive) // alive and without an owner? Die and remove
-                                {
-                                    self.Players[index].Die();
-                                }
-                                self.Players.RemoveAt(index);
-                            }
-                            index--;
                         }
 
                     }

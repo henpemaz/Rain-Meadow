@@ -25,7 +25,7 @@ namespace RainMeadow
         public bool cancelTimer;
         private Player? player;
         private bool countdownInitiated;
-        private int safetyCatchTimer;
+        public int safetyCatchTimer;
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaOnlineGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
 
@@ -70,7 +70,7 @@ namespace RainMeadow
             {
                 if (showMode == TimerMode.Waiting)
                 {
-                    arena.onlineArenaGameMode.TimerDirection(arena, safetyCatchTimer);
+                    safetyCatchTimer++;
                 }
 
                 if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
@@ -79,13 +79,20 @@ namespace RainMeadow
                     matchMode = TimerMode.Waiting;
                     modeLabel.text = showMode.ToString();
                     arena.countdownInitiatedHoldFire = true;
-
-
                 }
-                else if (arena.setupTime > 0)
+                else
+                {
+                    showMode = TimerMode.Countdown;
+                }
+
+                if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
+                {
+                    showMode = TimerMode.Countdown;
+                };
+
+                if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
                 {
                     arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
-                    showMode = TimerMode.Countdown;
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = arena.onlineArenaGameMode.TimerText();
                     arena.countdownInitiatedHoldFire = arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
@@ -100,12 +107,6 @@ namespace RainMeadow
                     ClearSprites();
                 }
 
-                if ((safetyCatchTimer > arena.trackSetupTime + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
-                {
-                    ClearSprites();
-                    arena.countdownInitiatedHoldFire = false;
-
-                };
 
 
 
