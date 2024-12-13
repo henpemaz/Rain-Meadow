@@ -1,9 +1,5 @@
 HIGH-PRIO
 
-scav todo
-	scav climbpos doesn't sync
-	pointing doesn't let go once let go?
-
 noot todo
 	noot gets stuck on water surface, seems to always go left?
 
