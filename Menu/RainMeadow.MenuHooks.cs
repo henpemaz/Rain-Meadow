@@ -13,6 +13,8 @@ namespace RainMeadow
     {
         private void MenuHooks()
         {
+            IntroRollReplacement.OnEnable();
+
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 

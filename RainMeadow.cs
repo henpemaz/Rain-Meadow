@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using RainMeadow.Menu;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -191,7 +192,6 @@ namespace RainMeadow
                 ItemHooks();
                 ObjectHooks();
 
-                IntroRollReplacement.OnEnable();
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
                 this.PlopMachine.OnEnable();
