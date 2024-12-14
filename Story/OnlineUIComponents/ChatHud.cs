@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using HUD;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,7 +13,7 @@ namespace RainMeadow
         private RainWorldGame game;
         public static bool chatLogActive = false;
         public static bool chatButtonActive = false;
-
+        
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
         private int chatCoolDown = 0;
@@ -30,11 +28,10 @@ namespace RainMeadow
             game = camera.game;
 
             ChatLogManager.Initialize(this);
-
-
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press 'Enter' to open chat and submit chat message, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to open/close the chat log"), 60, 160, false, true);
         }
 
-
+        // this may need to split between user and message to allow for colored usernames
         public void AddMessage(string message)
         {
             chatLog.Add($"{message}");
@@ -64,7 +61,7 @@ namespace RainMeadow
 
                 if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
             }
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
+            if (Input.GetKeyDown(KeyCode.Return) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
                 chatButtonOverlay = new ChatButtonOverlay(game.manager, game, chatLog);
@@ -84,7 +81,7 @@ namespace RainMeadow
             chatButtonOverlay?.GrafUpdate(timeStacker);
 
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) 
+            if (Input.GetKeyDown(KeyCode.Return) && chatButtonActive && chatTextButtonCooldown <= 0) 
             {
                 ShutDownChatButton();
             }

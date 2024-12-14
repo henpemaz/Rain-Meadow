@@ -44,10 +44,9 @@ namespace RainMeadow
                     color = new Color(0f, 0f, 0f),
                     anchorX = 0f,
                     anchorY = 0f,
-                    x = 0,
                     y = 32,
                     scaleY = 330,
-                    scaleX = 745,
+                    scaleX = 755,
                     alpha = 0.5f
                 };
                 pages[0].Container.AddChild(background);
