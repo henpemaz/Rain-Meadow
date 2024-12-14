@@ -8,9 +8,9 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedPhysicalObjectState : OnlineState
     {
-        [OnlineField] // todo field that does sequenceequals or type that handles these better
-        private ChunkState[] chunkStates; // pretty sure these get sent every time because the array comparison doesn't do sequenceequal but does referenceequal instead
-        [OnlineField]
+        [OnlineField(group = "chunkstate")]
+        private ChunkState[] chunkStates;
+        [OnlineField(group = "chunkstate")]
         private byte collisionLayer;
 
         public RealizedPhysicalObjectState() { }
@@ -59,7 +59,7 @@ namespace RainMeadow
             serializer.SerializeHalf(ref vel);
         }
 
-        public void ReadTo(BodyChunk c, float threshold = 0f)
+        public void ReadTo(BodyChunk c)
         {
             c.pos = pos;
             c.vel = vel;
