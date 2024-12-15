@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Linq;
+using System.Reflection;
 
 namespace RainMeadow
 {
@@ -15,6 +16,7 @@ namespace RainMeadow
         private void GameHooks()
         {
             On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
+            On.ModManager.ModApplyer.ApplyModsThread += ModApplyer_ApplyModsThread_ReloadOnlineGameModeHelpersExtEnums;
             On.RainWorldGame.ctor += RainWorldGame_ctor;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
@@ -147,6 +149,13 @@ namespace RainMeadow
         {
             //TODO: Impliment graceful exist
             orig(self);
+        }
+
+        private void ModApplyer_ApplyModsThread_ReloadOnlineGameModeHelpersExtEnums(On.ModManager.ModApplyer.orig_ApplyModsThread orig, ModManager.ModApplyer self)
+        {
+            orig(self);
+            ConstructorInfo constructor = typeof(OnlineGameModeHelpers).GetConstructor(BindingFlags.Static | BindingFlags.Public, null, new Type[0], null);
+            constructor.Invoke(null, null);
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
