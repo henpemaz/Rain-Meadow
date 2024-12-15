@@ -168,6 +168,12 @@ namespace RainMeadow
             throw new ArgumentException("no elements in sequence");
         }
 
+        public static int IndexOfOrLength<T>(this List<T> list, T item)
+        {
+            var index = list.IndexOf(item);
+            return index != -1 ? index : list.Count;
+        }
+
         public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
         {
             if (a == b) return true;
