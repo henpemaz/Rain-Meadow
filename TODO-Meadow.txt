@@ -1,8 +1,5 @@
 HIGH-PRIO
 
-noot todo
-	noot gets stuck on water surface, seems to always go left?
-
 eggbugg todo
 	voice call is slow-attack
 
