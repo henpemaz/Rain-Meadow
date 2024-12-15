@@ -99,6 +99,12 @@ namespace RainMeadow
         {
             if (enteredResources.Contains(resource)) { if (isMine) JoinOrLeavePending(); return; }
             RainMeadow.Debug($"{this} entering {resource}");
+            if (!resource.isActive)
+            {
+                RainMeadow.Debug($"queueing because resource inactive");
+                resource.pendingEntities.Add(this);
+                return;
+            }
             if (enteredResources.Count != 0 && resource.super != currentlyEnteredResource)
             {
                 RainMeadow.Debug("migrating from " + currentlyEnteredResource);
