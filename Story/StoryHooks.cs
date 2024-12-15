@@ -89,6 +89,7 @@ namespace RainMeadow
             On.SLOracleBehaviorHasMark.PlayerPutItemOnGround += SLOracleBehaviorHasMark_PlayerPutItemOnGround;
 
             IL.ScavengerOutpost.PearlString.ctor += ScavengerOutpost_PearlString_ctor_ClientDisablePearls;
+            IL.MoreSlugcats.HangingPearlString.ctor += HangingPearlString_ctor_ClientDisablePearls;
 
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
@@ -603,6 +604,49 @@ namespace RainMeadow
                 );
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((bool flag, ScavengerOutpost.PearlString self) => OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.outpost.room.game, self.outpost.room.abstractRoom.GetResource()) ? false : flag);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void HangingPearlString_ctor_ClientDisablePearls(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = c.DefineLabel();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((UpdatableAndDeletable uad, Room room) => { uad.room = room; });
+                c.GotoNext(MoveType.AfterLabel,
+                    // DataPearl.AbstractDataPearl abstractDataPearl = new DataPearl.AbstractDataPearl(room.world, AbstractPhysicalObject.AbstractObjectType.DataPearl, null, room.GetWorldCoordinate(attachedPos), room.game.GetNewID(), -1, -1, null, DataPearl.AbstractDataPearl.DataPearlType.Misc);
+                    i => i.MatchLdarg(1),
+                    i => i.MatchLdfld<Room>("world"),
+                    i => i.MatchLdsfld<AbstractPhysicalObject.AbstractObjectType>("DataPearl")
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((MoreSlugcats.HangingPearlString self) => OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.room.game, self.room.abstractRoom.GetResource()));
+                c.Emit(OpCodes.Brtrue, skip);
+                c.GotoNext(MoveType.After,
+                    // pearls.Add((AbstractConsumable)abstractDataPearl);
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<MoreSlugcats.HangingPearlString>("pearls"),
+                    i => i.MatchLdloc(out _),
+                    i => i.MatchCallvirt("System.Collections.Generic.List`1<AbstractConsumable>", "Add")
+                );
+                c.MarkLabel(skip);
+                c.GotoNext(MoveType.After,
+                    // activeConnections.Add(true);
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<MoreSlugcats.HangingPearlString>("activeConnections")
+                );
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchCallOrCallvirt("System.Collections.Generic.List`1<System.Boolean>", "Add")
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((bool flag, MoreSlugcats.HangingPearlString self) => OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.room.game, self.room.abstractRoom.GetResource()) ? false : flag);
             }
             catch (Exception e)
             {

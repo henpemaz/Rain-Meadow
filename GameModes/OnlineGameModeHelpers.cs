@@ -98,7 +98,7 @@ namespace RainMeadow
             PlacedObject.Type.Hazer,
             PlacedObject.Type.DeadHazer,
             PlacedObject.Type.VultureMask,          //MSC
-            //PlacedObject.Type.HangingPearls,      //MSC
+            PlacedObject.Type.HangingPearls,        //MSC
             PlacedObject.Type.Lantern
         };
     }

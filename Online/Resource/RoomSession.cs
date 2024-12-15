@@ -46,11 +46,12 @@ namespace RainMeadow
 
                 foreach (var uad in absroom.realizedRoom.updateList)
                 {
-                    (uad switch
+                    ((OnlineEntity?)(uad switch
                     {
                         ScavengerOutpost s => new OnlineScavengerOutpost(s),
+                        MoreSlugcats.HangingPearlString s => new OnlineHangingPearlString(s),
                         _ => null,
-                    })?.EnterResource(this);
+                    }))?.EnterResource(this);
                 }
             }
         }
