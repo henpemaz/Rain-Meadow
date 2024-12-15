@@ -18,7 +18,7 @@ namespace RainMeadow
             {
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
-                { ArenaCompetitive, "Within these walls, only the strong survive." },
+                { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }
 
