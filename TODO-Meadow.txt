@@ -1,8 +1,5 @@
 HIGH-PRIO
 
-eggbugg todo
-	voice call is slow-attack
-
 following others around is hard
 	player indicators could follow players "as they go offscreen"
 
