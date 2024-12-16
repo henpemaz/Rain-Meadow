@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Menu;
 using UnityEngine;
 
@@ -8,15 +9,19 @@ namespace RainMeadow
     {
         private List<FSprite> sprites;
         private List<string> chatLog;
+        private List<string> userLog;
+        private Color userColor;
         public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public ChatTextBox chat;
         private bool displayBg = false;
         private int ticker;
-        public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog, List<string> userLog, Color userColor) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
+            this.userLog = userLog;
             this.chatLog = chatLog;
+            this.userColor = userColor;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
             isReceived = true;
@@ -72,16 +77,26 @@ namespace RainMeadow
 
                 foreach (string message in chatLog)
                 {
-                    var partsOfMessage = message.Split(':');
-
-                    // Check if we have at least two parts (username and message)
-                    if (partsOfMessage.Length >= 2)
+                    foreach (string user in userLog)
                     {
-                        string username = partsOfMessage[0].Trim(); // Extract and trim the username
-                        if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(username))
+                        var partsOfMessage = user.Split(':'); // gotta make sure this works too
+
+                        // Check if we have at least two parts (username and message)
+                        if (partsOfMessage.Length >= 2)
                         {
-                            continue;
+                            string username = partsOfMessage[0].Trim(); // Extract and trim the username
+                            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(username))
+                            {
+                                continue;
+                            }
                         }
+
+                        
+
+                        var userLabel = new MenuLabel(this, pages[0], user, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                        userLabel.label.alignment = FLabelAlignment.Left;
+                        userLabel.label.color = userColor; // todo make it for player color
+                        pages[0].subObjects.Add(userLabel);
                     }
                     var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
