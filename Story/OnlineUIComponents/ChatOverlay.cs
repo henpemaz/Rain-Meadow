@@ -17,10 +17,13 @@ namespace RainMeadow
         public ChatTextBox chat;
         private bool displayBg = false;
         private int ticker;
+        private string username;
+        private Dictionary<string, Color> colorDictionary;
         public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog, List<string> userLog, Color userColor) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
             this.userLog = userLog;
             this.chatLog = chatLog;
+
             this.userColor = userColor;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
@@ -74,6 +77,31 @@ namespace RainMeadow
                     pages[0].RemoveSubObject(log);
                 }
 
+                colorDictionary = new Dictionary<string, Color>();
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                {
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    {
+                        if (!colorDictionary.ContainsKey(opo.owner.id.name))
+                        {
+                            if (opo.TryGetData<SlugcatCustomization>(out var customization))
+                            {
+                                {
+                                    colorDictionary.Add(opo.owner.id.name, customization.bodyColor);
+
+                                }
+                            }
+                            else
+                            {
+                                colorDictionary.Add(opo.owner.id.name, Color.white);
+
+                            }
+                        }
+
+
+                    }
+                }
 
                 foreach (string message in chatLog)
                 {
@@ -85,25 +113,30 @@ namespace RainMeadow
                         // Check if we have at least two parts (username and message)
                         if (partsOfMessage.Length >= 2)
                         {
-                            string username = partsOfMessage[0].Trim(); // Extract and trim the username
+                            username = partsOfMessage[0].Trim(); // Extract and trim the username
                             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(username))
                             {
                                 continue;
                             }
+
+                            var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                            userLabel.label.alignment = FLabelAlignment.Left;
+                            //userLabel.label.text = username;
+                            userLabel.label.color = colorDictionary[username];
+                            pages[0].subObjects.Add(userLabel);
+                            nameLength = username.Length;
                         }
 
-                        
 
-                        var userLabel = new MenuLabel(this, pages[0], user, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
-                        userLabel.label.alignment = FLabelAlignment.Left;
-                        userLabel.label.color = userColor;
-                        pages[0].subObjects.Add(userLabel);
-                        nameLength = user.Length;
                     }
+
+                    // I also tested userLabel down here Saddest. Think the yOffset maybe needs to be updated, im not sure.
+
                     var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (nameLength * 5) + 5, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
                     yOffSet += 20f;
+
                 }
             }
         }
