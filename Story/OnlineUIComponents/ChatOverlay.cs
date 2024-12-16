@@ -77,6 +77,7 @@ namespace RainMeadow
 
                 foreach (string message in chatLog)
                 {
+                    var nameLength = 0;
                     foreach (string user in userLog)
                     {
                         var partsOfMessage = user.Split(':'); // gotta make sure this works too
@@ -95,10 +96,11 @@ namespace RainMeadow
 
                         var userLabel = new MenuLabel(this, pages[0], user, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                         userLabel.label.alignment = FLabelAlignment.Left;
-                        userLabel.label.color = userColor; // todo make it for player color
+                        userLabel.label.color = userColor;
                         pages[0].subObjects.Add(userLabel);
+                        nameLength = user.Length;
                     }
-                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (nameLength * 5) + 5, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
                     yOffSet += 20f;
