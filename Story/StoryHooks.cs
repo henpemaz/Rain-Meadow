@@ -787,7 +787,7 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam));
+                self.AddPart(new ChatHud(self, cam, gameMode.avatarSettings.bodyColor));
             }
         }
 
