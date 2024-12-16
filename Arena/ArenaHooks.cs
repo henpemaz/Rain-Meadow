@@ -1118,12 +1118,6 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                self.AddPart(new TextPrompt(self));
-                self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, session.game.cameras[0], arena.avatarSettings.bodyColor));
-                self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
-                self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
-                self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
                 arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
             }
             else
