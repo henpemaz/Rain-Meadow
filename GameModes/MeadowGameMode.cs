@@ -16,6 +16,10 @@ namespace RainMeadow
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
             this.avatarData = new MeadowAvatarData();
+
+            MeadowProgression.ReloadProgression();
+            lobby.AddData(new MeadowLobbyData());
+            lobby.AddData(new MeadowMusic.LobbyMusicData());
         }
 
         public override void AddClientData()
@@ -37,6 +41,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("Registering new creature: " + oc);
                 oe.AddData(new MeadowCreatureData());
+                oe.AddData(new MeadowMusicData());
                 if (oc.realizedCreature != null && EmoteDisplayer.map.TryGetValue(oc.realizedCreature, out var d)) // migrate over on re-register
                 {
                     RainMeadow.Debug("re-register, migrating emotedisplayer");
@@ -46,6 +51,22 @@ namespace RainMeadow
                     d.ownerEntity = oc;
                     d.creatureData = oe.GetData<MeadowCreatureData>();
                 }
+            }
+        }
+
+        internal override void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            if (oe is OnlineCreature && inResource is RoomSession)
+            {
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
+            }
+        }
+
+        internal override void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            if (oe is OnlineCreature && inResource is RoomSession)
+            {
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
         }
 
@@ -83,8 +104,7 @@ namespace RainMeadow
 
             if (res is Lobby lobby)
             {
-                MeadowProgression.ReloadProgression();
-                lobby.AddData(new MeadowLobbyData());
+                // stuff runs in ctor
             }
             else if (res is WorldSession ws)
             {
@@ -93,6 +113,27 @@ namespace RainMeadow
             else if (res is RoomSession rs)
             {
                 rs.AddData(new MeadowRoomData());
+            }
+        }
+
+        public override void NewPlayerInLobby(OnlinePlayer player)
+        {
+            base.NewPlayerInLobby(player);
+            if (lobby.isOwner)
+            {
+                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
+                musicdata.playerGroups.Add(player.inLobbyId, 0);
+            }
+        }
+
+        public override void PlayerLeftLobby(OnlinePlayer player)
+        {
+            base.PlayerLeftLobby(player); 
+            if (lobby.isOwner)
+            {
+                var musicdata = lobby.GetData<MeadowMusic.LobbyMusicData>();
+                musicdata.PlayerLeaveGroups(player.inLobbyId);
+                musicdata.playerGroups.Remove(player.inLobbyId);
             }
         }
 

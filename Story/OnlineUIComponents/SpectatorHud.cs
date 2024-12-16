@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
-        private SpectatorOverlay? spectatorOverlay;
+        public  SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)

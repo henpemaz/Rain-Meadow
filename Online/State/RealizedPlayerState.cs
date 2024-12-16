@@ -2,8 +2,101 @@
 
 namespace RainMeadow
 {
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    public class VinePositionState : OnlineState
+    {
+        [OnlineField]
+        int vine;
+        [OnlineFieldHalf]
+        float floatPos;
+
+        public VinePositionState() { }
+        public VinePositionState(ClimbableVinesSystem.VinePosition vinePos)
+        {
+            vine = vinePos.vine;
+            floatPos = vinePos.floatPos;
+        }
+
+        public ClimbableVinesSystem.VinePosition GetVinePosition() => new(vine, floatPos);
+    }
+
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    public class PlayerInAntlersState : OnlineState
+    {
+        [OnlineField(nullable = true)]
+        public OnlinePhysicalObject? onlineDeer;
+        [OnlineField]
+        bool dangle;
+        [OnlineField(nullable = true)]
+        OnlineAntlerPoint? upperAntlerPoint;
+        [OnlineField(nullable = true)]
+        OnlineAntlerPoint? lowerAntlerPoint;
+
+        [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+        public class OnlineAntlerPoint : OnlineState
+        {
+            [OnlineField]
+            int part;
+            [OnlineField]
+            int segment;
+            [OnlineFieldHalf]
+            float side;
+
+            public OnlineAntlerPoint() { }
+            public OnlineAntlerPoint(Deer.PlayerInAntlers.AntlerPoint antlerPoint)
+            {
+                part = antlerPoint.part;
+                segment = antlerPoint.segment;
+                side = antlerPoint.side;
+            }
+
+            public Deer.PlayerInAntlers.AntlerPoint GetAntlerPoint() => new(part, segment, side);
+        }
+
+        public PlayerInAntlersState() { }
+        public PlayerInAntlersState(Deer.PlayerInAntlers playerInAntlers)
+        {
+            onlineDeer = playerInAntlers.deer?.abstractPhysicalObject.GetOnlineObject();
+            dangle = playerInAntlers.dangle;
+            if (playerInAntlers.stance is Deer.PlayerInAntlers.GrabStance stance)
+            {
+                upperAntlerPoint = stance.upper is null ? null : new(stance.upper);
+                lowerAntlerPoint = stance.lower is null ? null : new(stance.lower);
+            }
+        }
+
+        public void ReadTo(Deer.PlayerInAntlers playerInAntlers)
+        {
+            var deer = playerInAntlers.deer;
+            if (!deer.playersInAntlers.Contains(playerInAntlers))
+                deer.playersInAntlers.Add(playerInAntlers);
+            playerInAntlers.dangle = dangle;
+            if (playerInAntlers.stance is Deer.PlayerInAntlers.GrabStance stance)
+            {
+                stance.upper = upperAntlerPoint?.GetAntlerPoint();
+                stance.lower = lowerAntlerPoint?.GetAntlerPoint();
+            }
+        }
+
+        public void ReadTo(Player player)
+        {
+            if (onlineDeer?.apo.realizedObject is not Deer deer) { RainMeadow.Error("deer not found: " + onlineDeer); return; }
+            if (player.playerInAntlers is not null && player.playerInAntlers.deer != deer)  // we are on the wrong deer
+            {
+                player.playerInAntlers.playerDisconnected = true;
+                player.playerInAntlers = null;
+            }
+            player.playerInAntlers ??= new Deer.PlayerInAntlers(player, deer);
+            this.ReadTo(player.playerInAntlers);
+        }
+    }
+
     public class RealizedPlayerState : RealizedCreatureState
     {
+        [OnlineField(nullable = true)]
+        private VinePositionState? vinePosState;
+        [OnlineField(nullable = true)]
+        private PlayerInAntlersState? playerInAntlersState;
         [OnlineField]
         private byte animationIndex;
         [OnlineField]
@@ -74,9 +167,14 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
+            vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null ? null : new VinePositionState(p.vinePos);
+
+            playerInAntlersState = p.playerInAntlers is null ? null : new PlayerInAntlersState(p.playerInAntlers);
+
             analogInputX = i.analogueDir.x;
             analogInputY = i.analogueDir.y;
         }
+
         public Player.InputPackage GetInput()
         {
             RainMeadow.Trace(inputs);
@@ -96,44 +194,68 @@ namespace RainMeadow
             return i;
         }
 
+        private bool ShouldPosBeLenient(PhysicalObject po)
+        {
+            if (po is not Player p) { RainMeadow.Error("target is wrong type: " + po); return false; }
+
+            if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
+            if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
+
+            return false;
+        }
+
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
+            var oc = onlineEntity as OnlineCreature;
+            var p = oc?.apo.realizedObject as Player;
+            if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
-            if ((onlineEntity as OnlineCreature).apo.realizedObject is Player pl)
-            {
-                var wasAnimation = pl.animation;
-                pl.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
-                if (wasAnimation != pl.animation) pl.animationFrame = animationFrame;
-                pl.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
-                pl.standing = standing;
-                pl.glowing = glowing;
-                if (pl.playerState.isPup != isPup)
-                    pl.playerState.isPup = isPup;
-                if (pl.spearOnBack != null)
-                    pl.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
-                //if (pl.slugOnBack != null)
-                //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+            if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
-                if (pl.tongue is Player.Tongue tongue)
+            var wasAnimation = p.animation;
+            p.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
+            if (wasAnimation != p.animation) p.animationFrame = animationFrame;
+            p.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
+            p.standing = standing;
+            p.glowing = glowing;
+            if (p.playerState.isPup != isPup)
+                p.playerState.isPup = isPup;
+            if (p.spearOnBack != null)
+                p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
+            //if (pl.slugOnBack != null)
+            //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+            if (p.tongue is Player.Tongue tongue)
+            {
+                tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+                tongue.pos = tonguePos;
+                tongue.idealRopeLength = tongueIdealLength;
+                tongue.requestedRopeLength = tongueRequestedLength;
+                if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
                 {
-                    tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
-                    tongue.pos = tonguePos;
-                    tongue.idealRopeLength = tongueIdealLength;
-                    tongue.requestedRopeLength = tongueRequestedLength;
-                    if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
-                    {
-                        tongue.terrainStuckPos = tongue.pos;
-                    }
-                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
-                    {
-                        tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
-                    }
+                    tongue.terrainStuckPos = tongue.pos;
+                }
+                else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
+                {
+                    tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
                 }
             }
-            else
+
+            p.vinePos = vinePosState?.GetVinePosition();
+            if (vinePosState is not null)
             {
-                RainMeadow.Error("target not realized: " + onlineEntity);
+                p.room.climbableVines.ConnectChunkToVine(p.bodyChunks[0], p.vinePos, p.room.climbableVines.VineRad(p.vinePos));
+            }
+
+            if (playerInAntlersState is not null)
+            {
+                playerInAntlersState.ReadTo(p);
+            }
+            else if (p.playerInAntlers is not null)
+            {
+                p.playerInAntlers.playerDisconnected = true;
+                p.playerInAntlers = null;
             }
         }
     }

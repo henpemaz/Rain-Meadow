@@ -1,15 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace RainMeadow
 {
-    public class ArenaCompetitiveGameMode : OnlineGameMode
+    public class ArenaOnlineGameMode : OnlineGameMode
     {
+
+        public ExternalArenaGameMode onlineArenaGameMode;
+        public string currentGameMode;
+        public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
+
+        public bool registeredNewGameModes = false;
+
         public bool isInGame = false;
         public int playerLeftGame = 0;
         public int clientsAreReadiedUp = 0;
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
+
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -18,7 +29,7 @@ namespace RainMeadow
 
         public int playerEnteredGame = 0;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
-        public bool countdownInitiatedHoldFire = true;
+        public bool countdownInitiatedHoldFire;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -35,12 +46,14 @@ namespace RainMeadow
 
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
-        public ArenaCompetitiveGameMode(Lobby lobby) : base(lobby)
+        public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
+            registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
+
         }
 
         public void ResetGameTimer()
@@ -64,9 +77,35 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
+        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+        {
+            AbstractPhysicalObject.AbstractObjectType.BlinkingFlower
 
+        };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
             return true;
         }
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
@@ -126,5 +165,13 @@ namespace RainMeadow
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
             }
         }
+
+        public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
+        {
+            return onlineArenaGameMode.SpawnBatflies(self, spawnRoom);
+
+
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,7 +18,7 @@ namespace RainMeadow
             {
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
-                { ArenaCompetitive, "You sweaty bastards." },
+                { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }
 
@@ -26,7 +26,7 @@ namespace RainMeadow
         {
             { OnlineGameModeType.Meadow, typeof(MeadowGameMode) },
             { OnlineGameModeType.Story, typeof(StoryGameMode) },
-            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaCompetitiveGameMode) },
+            { OnlineGameModeType.ArenaCompetitive, typeof(ArenaOnlineGameMode) },
         };
 
         public static OnlineGameMode FromType(OnlineGameModeType onlineGameModeType, Lobby lobby)
@@ -135,6 +135,16 @@ namespace RainMeadow
                 this.avatars.Add(onlineCreature);
                 ConfigureAvatar(onlineCreature);
             }
+        }
+
+        internal virtual void EntityEnteredResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
+        }
+
+        internal virtual void EntityLeftResource(OnlineEntity oe, OnlineResource inResource)
+        {
+            
         }
 
         public abstract void ConfigureAvatar(OnlineCreature onlineCreature);

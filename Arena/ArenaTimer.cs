@@ -20,17 +20,17 @@ namespace RainMeadow
         private FLabel modeLabel;
         private Vector2 pos, lastPos;
         private float fade, lastFade;
-        public ArenaCompetitiveGameMode arena;
+        public ArenaOnlineGameMode arena;
         public ArenaGameSession session;
         public bool cancelTimer;
         private Player? player;
         private bool countdownInitiated;
-        private int safetyCatchTimer;
-        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaCompetitiveGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
+        public int safetyCatchTimer;
+        public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaOnlineGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
 
             session = arenaGameSession;
-            arena.trackSetupTime = arena.setupTime;
+            arena.trackSetupTime = arena.onlineArenaGameMode.SetTimer(arena);
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel("font", FormatTime(0))
@@ -73,24 +73,29 @@ namespace RainMeadow
                     safetyCatchTimer++;
                 }
 
-                arena.setupTime = System.Math.Max(0, arena.setupTime);
-
                 if (arena.playerEnteredGame < arena.arenaSittingOnlineOrder.Count)
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
                     modeLabel.text = showMode.ToString();
                     arena.countdownInitiatedHoldFire = true;
-
-
                 }
-                else if (arena.setupTime > 0)
+                else
                 {
-                    arena.setupTime--;
                     showMode = TimerMode.Countdown;
+                }
+
+                if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
+                {
+                    showMode = TimerMode.Countdown;
+                };
+
+                if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
+                {
+                    arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
                     matchMode = TimerMode.Countdown;
-                    modeLabel.text = $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
-                    arena.countdownInitiatedHoldFire = true;
+                    modeLabel.text = arena.onlineArenaGameMode.TimerText();
+                    arena.countdownInitiatedHoldFire = arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
                 }
 
                 else if (arena.setupTime <= 0 && !countdownInitiated)
@@ -102,12 +107,6 @@ namespace RainMeadow
                     ClearSprites();
                 }
 
-                if ((safetyCatchTimer > arena.trackSetupTime + 60 && arena.setupTime != 0)) // Something went wrong with the timer. Clear it.
-                {
-                    ClearSprites();
-                    arena.countdownInitiatedHoldFire = false;
-
-                };
 
 
 
