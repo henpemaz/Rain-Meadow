@@ -50,7 +50,7 @@ namespace RainMeadow
     {
         [OnlineFieldHalf(nullable = true)]
         private Vector2? gripPoint;
-        [OnlineField]
+        [OnlineField(nullable = true)]
         private Generics.DynamicOrderedStates<LizLimbState> limbState;
 
         public RealizedLizardState() { }
