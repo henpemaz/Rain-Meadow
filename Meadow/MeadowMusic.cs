@@ -185,12 +185,12 @@ namespace RainMeadow
             {
                 // haha fixed   shoddily bumbo --> is only called when you're a slugcat apperantly, fuck.
                 //RainMeadow.Debug("Game requesting a song");
-                if (self == null || 
-                   (self.song == null && self.nextSong != null && self.nextSong.name == musicEvent.songName) || 
+                if (self == null || loadingsong ||
                    (self.song != null && self.song.name == musicEvent.songName) ||
-                   songHistory.Contains(musicEvent.songName) ||
-                   loadingsong) return;
-                //NO NEED TO PLAY THE SONG IF YOU CAN'T OR ALREADY ARE, HAVE, OR WILL PLAY IT
+                   (self.song == null && self.nextSong != null && self.nextSong.name == musicEvent.songName) || 
+                   songHistory.Contains(musicEvent.songName)) 
+                   return;
+                //NO NEED TO REQUEST THE SONG IF YOU CAN'T/COULD PLAY IT OR ALREADY ARE, WILL, OR HAVE
                 RainMeadow.Debug("Checking if i'm in a group");
                 var smg = OnlineManager.lobby.GetData<LobbyMusicData>();
                 var groupImIn = smg.playerGroups[OnlineManager.mePlayer.inLobbyId];
@@ -537,7 +537,7 @@ namespace RainMeadow
                            * (IDontWantToGoToZero ? 1f : 0f);
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
                 //reminder set vibeintensity to null on occasions where you go to menu or some shit
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? (IDontWantToGoToZero?vibeIntensityTarget:0f) : vibeIntensity.Value, vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity ?? (IDontWantToGoToZero?vibeIntensityTarget:0f) , vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.05f;
                 if (musicPlayer != null && musicPlayer.song != null)
@@ -695,16 +695,18 @@ namespace RainMeadow
                         thisis = sosad switch { 0 or 4 or 7 or 15 => 'a', 1 or 6 => 'l', 2 => 'e', 3 => 'x', 5 => 'p', 8 => 'y', 9 or 13 => 't', 10 or 14 => 'r', 11 => 'i', 12 or 16 => 'p', _ => 'a' };
                         if (sosad == 17)
                         {
-                            sosad = 0; if (musicPlayer == null ||
-                                         (musicPlayer.manager.musicPlayer.song == null && musicPlayer.nextSong != null && musicPlayer.nextSong.name == "TripTrap X") ||
-                                         (musicPlayer.song != null && musicPlayer.song.name == "TripTrap X")) { }
+                            sosad = 0; 
+                            if (musicPlayer == null ||
+                               (musicPlayer.manager.musicPlayer.song == null && musicPlayer.nextSong != null && musicPlayer.nextSong.name == "TripTrap X") ||
+                               (musicPlayer.song != null && musicPlayer.song.name == "TripTrap X") ||
+                               songHistory.Contains("TripTrap X")) { }
                             else
                             {
                                 if (hostId == OnlineManager.mePlayer.inLobbyId)
                                 {
                                     OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.BroadcastInterruption, "Triptrap X");
-                                    _ = PlaySong(musicPlayer, "Triptrap X");
                                 }
+                                _ = PlaySong(musicPlayer, "Triptrap X");
                             }
                         }
                     }
@@ -721,6 +723,7 @@ namespace RainMeadow
         {
             orig.Invoke(self);
 
+            if (OnlineManager.lobby == null) { return; }
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
@@ -878,6 +881,8 @@ namespace RainMeadow
 
             sub.source.clip = clipclip;
 			sub.readyToPlay = true;
+            song.subTracks[0] = sub;
+
             loadingsong = false;
             return song;
         }
@@ -909,7 +914,7 @@ namespace RainMeadow
                     && e.TryGetData<MeadowMusicData>(out _))) // avatar
                 {
                     RainMeadow.Debug("There are other people here!");
-                    if (joinTimer == null) joinTimer = 5;
+                    joinTimer ??= 5;
                 }
                 else
                 {
@@ -968,7 +973,8 @@ namespace RainMeadow
 
                 if (!IAmWithMyFriends)
                 {
-                    if (demiseTimer == null) { demiseTimer = 12.5f; RainMeadow.Debug("Started Demisetimer due to not being with friends"); }
+                    demiseTimer ??= 12.5f;
+                    RainMeadow.Debug( demiseTimer == 12.5 ? "Started" : "Continuing" + " demisetimer due to not being with friends");
                     groupdemiseTimer = null;
                 }
                 else
@@ -1144,7 +1150,7 @@ namespace RainMeadow
                 if (minDist > activeZone.radius)
                 {
                     RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, set updatingtarget to false, and musicvolume set to max... ");
-                    if (vibeIntensity == null) vibeIntensity = 0f;
+                    vibeIntensity ??= 0f;
                     if (vibeIntensity == 1f) UpdateIntensity = true; 
                     IDontWantToGoToZero = false;
                 }

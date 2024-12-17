@@ -261,7 +261,8 @@ namespace RainMeadow
             this.cursor = new MeadowMouseCursor(this, hud.fContainers[1]);
             this.hud.AddPart(this.cursor);
         }
-
+        float initgridtime;
+        float initradialtime;
         public override void Update()
         {
             base.Update();
@@ -302,10 +303,13 @@ namespace RainMeadow
             {
                 if (toggleHidden) { toggleHidden = false; gridVisible = true; }
                 else gridVisible = !gridVisible;
+                initgridtime = Time.time;
+                hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
             }
 
             if (!toggleHidden && gridVisible && !radialPickerActive)
             {
+                gridDisplay.positionssss(initgridtime);
                 Vector2 offset = (mousePos - this.gridRect.position - new Vector2(0, gridRect.height)) * new Vector2(1, -1) / (EmoteGridDisplay.emotePreviewSize + EmoteGridDisplay.emotePreviewSpacing);
                 IntVector2 newHover = new IntVector2(Mathf.FloorToInt(offset.x), Mathf.FloorToInt(offset.y));
                 if (newHover.x < 0 || newHover.x >= gridColumns || newHover.y < 0 || newHover.y >= gridRows)
@@ -336,7 +340,12 @@ namespace RainMeadow
             {
                 if (toggleHidden) { toggleHidden = false; radialVisible = true; }
                 else radialVisible = !radialVisible;
+                //initradialtime = Time.time; 
+
+                hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
             }
+
+            if (radialVisible) radialDisplayer.positionssss(initradialtime, fliptotheright);
 
             if (!toggleHidden && radialVisible && !radialPickerActive) // mouse input
             {
@@ -435,7 +444,7 @@ namespace RainMeadow
                 if (!lastRadialPickerActive)
                 {
                     centerLabel.text = "CANCEL";
-                    FlipPage(-currentPage); // back to zero
+                    ZeroPage(); // back to zero
                     knobPos = Vector2.zero;
                     knobVel = Vector2.zero;
                     lastKnobPos = Vector2.zero;
@@ -483,7 +492,7 @@ namespace RainMeadow
                         radialSelected = -1;
                     }
                     radialDisplayer.ClearSelection();
-                    FlipPage(-currentPage); // back to zero
+                    ZeroPage(); 
                     knobPos = Vector2.zero;
                     knobVel = Vector2.zero;
                     lastKnobPos = Vector2.zero;
@@ -522,6 +531,7 @@ namespace RainMeadow
 
         bool toggleHidden;
         bool fullyHidden;
+        public static bool fliptotheright = false;
         private MeadowMouseCursor cursor;
 
         public override void Draw(float timeStacker)
@@ -622,9 +632,25 @@ namespace RainMeadow
             centerLabel.RemoveFromContainer();
         }
 
+        
+
         private void FlipPage(int v)
         {
             currentPage = (currentPage + radialPagesCount + v) % radialPagesCount;
+            if (v != 0)
+            {
+                initradialtime = Time.time;
+                fliptotheright = 0 < v;
+            }
+            radialDisplayer.SetEmotes(radialEmotes[currentPage], customization);
+        }
+        private void ZeroPage()
+        {
+            if (currentPage != 0)
+            {
+                initradialtime = Time.time;
+            }
+            currentPage = 0;
             radialDisplayer.SetEmotes(radialEmotes[currentPage], customization);
         }
 

@@ -161,11 +161,8 @@ namespace RainMeadow
                 //throw;
             }
 
-            if (WetController == null)
-            {
-                WetController = new DisembodiedLoopEmitter(0.3f, 1, 0);
-                RainMeadow.Debug("Created wetcontroller");
-            }
+            WetController ??= new DisembodiedLoopEmitter(0.3f, 1, 0); // RainMeadow.Debug("Created wetcontroller");
+
             if (WetLoop == null) 
             {
                 var mic = self.cameras[0].virtualMicrophone;
@@ -357,7 +354,7 @@ namespace RainMeadow
                 return;
             }
             float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * 0.5f * velocity;
-            float pan = (MeadowMusic.vibePan == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
+            float pan = MeadowMusic.vibePan ?? 0f * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
             //virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
             //RainMeadow. Debug($"Trying to play a {SoundId}, at {vol} volume, with {pan} pan");
             try
@@ -430,9 +427,9 @@ namespace RainMeadow
                 public int oct;
                 public Plop(string length, int octave, int semitone, float volume, float pan)
                 {
-                    if (WetLoop== null) return;
+                    if (WetLoop == null) return;
                     
-                    string acronym = (CurrentRegion == null) ? "sl" : CurrentRegion.ToUpper();
+                    string acronym = (CurrentRegion ?? "sl").ToUpper();
                     bool diditwork = MeadowMusic.vibeZonesDict.TryGetValue(acronym, out MeadowMusic.VibeZone[] newthings);
                     Wavetype = (diditwork ? newthings[0].sampleUsed : "Trisaw") switch
                     {
@@ -578,16 +575,9 @@ namespace RainMeadow
                 WetLoop.Update(20149109.0f, 901590.0625f); //doesn't matter what floats lol
 
                 CheckWetTrack();
-
-                if (MeadowMusic.vibeIntensity != null)// && MeadowMusic.vibeIntensity.Value != 0f) 
-                {
-                    PlopInititationVelocity = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f);
-                    PlopInititationPan = (MeadowMusic.vibePan == null || MeadowMusic.vibeIntensity == null) ? 0f : (float)MeadowMusic.vibePan * Mathf.Pow((1f - MeadowMusic.vibeIntensity.Value) * 0.7f + 0.125f, 1.65f);
-                }
-                else
-                {
-                    PlopInititationVelocity = 0;
-                }
+                //no need to update if we're in that room though
+                PlopInititationVelocity = MeadowMusic.vibeIntensity ?? 0;
+                PlopInititationPan = PlopInititationVelocity == 0 ? 0 : MeadowMusic.vibePan ?? 0f * Mathf.Pow((1f - PlopInititationVelocity) * 0.7f + 0.125f, 1.65f);
 
                 if (plops.Count > 0)
                 {
@@ -612,7 +602,7 @@ namespace RainMeadow
                 }
             }
 
-            static int? TrackCurrentQuarterBuffer;
+            static int? LastTrackQuarter;
             public static void Debug()
             {
                 RainMeadow.Debug("CHECKING OUT WET CONTROLLER");
@@ -648,18 +638,15 @@ namespace RainMeadow
                 var TrackClip = WetLoop.audioSource.clip;
                 int TrackCurrentSampleTime = WetLoop.audioSource.timeSamples;
                 int TrackSamples = (TrackClip.samples * TrackClip.channels);
-                int TrackCurrentQuarter = (int)((float)TrackCurrentSampleTime * 2f * 4f / (float)TrackSamples);
+                int TrackQuarter = (int)((float)TrackCurrentSampleTime * 2f * 4f / (float)TrackSamples);
 
-                if (TrackCurrentQuarterBuffer == null)
-                {
-                    TrackCurrentQuarterBuffer = TrackCurrentQuarter;
-                    return;
-                }
-                if (TrackCurrentQuarterBuffer != TrackCurrentQuarter)
+                LastTrackQuarter ??= TrackQuarter;
+
+                if (LastTrackQuarter != TrackQuarter)
                 {
                     flusheswithoutplop += 1;
                     //RainMeadow.Debug(TrackCurrentQuarterBuffer + "     " + TrackCurrentQuarter);
-                    int deletethissection = TrackCurrentQuarterBuffer.Value == 0 ? 3 : TrackCurrentQuarterBuffer.Value - 1;
+                    int deletethissection = LastTrackQuarter.Value == 0 ? 3 : LastTrackQuarter.Value - 1;
                     int sectionstartoffset = TrackSamples * deletethissection / 4;
 
                     float[] TrackClipData = new float[TrackSamples];
@@ -669,7 +656,7 @@ namespace RainMeadow
                     {
                         TrackClipData[i + sectionstartoffset] = 0;
                     }
-                    TrackCurrentQuarterBuffer = TrackCurrentQuarter;
+                    LastTrackQuarter = TrackQuarter;
                     TrackClip.SetData(TrackClipData, 0);
                 }
             }
