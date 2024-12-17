@@ -274,7 +274,7 @@ namespace RainMeadow
             SteamFriends.RequestUserInformation(p, true);
             OnlineManager.players.Add(new OnlinePlayer(new SteamPlayerId(p)));
 
-            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(p)}", " joined the game.");
+            ChatLogManager.LogMessage("", $"{SteamFriends.GetFriendPersonaName(p)} joined the game.");
         }
 
         private void PlayerLeft(CSteamID p)

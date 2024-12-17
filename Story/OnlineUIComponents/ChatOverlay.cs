@@ -54,7 +54,7 @@ namespace RainMeadow
                     color = new Color(0f, 0f, 0f),
                     anchorX = 0f,
                     anchorY = 0f,
-                    y = 32,
+                    y = -32,
                     scaleY = 330,
                     scaleX = 755,
                     alpha = 0.5f
@@ -91,17 +91,10 @@ namespace RainMeadow
                     {
                         if (!colorDictionary.ContainsKey(opo.owner.id.name))
                         {
-                            if (opo.TryGetData<SlugcatCustomization>(out var customization))
-                            {
-                                {
-                                    colorDictionary.Add(opo.owner.id.name, customization.bodyColor);
-
-                                }
-                            }
-                            else
-                            {
+                            if (opo.TryGetData<SlugcatCustomization>(out var customization)) {
+                                colorDictionary.Add(opo.owner.id.name, customization.bodyColor);
+                            } else {
                                 colorDictionary.Add(opo.owner.id.name, Color.white);
-
                             }
                         }
                     }
@@ -114,12 +107,20 @@ namespace RainMeadow
                         var partsOfMessage = user.Split(':');
                         if (partsOfMessage.Length >= 2) username = partsOfMessage[0].Trim(); // Extract and trim the username
                     }
-                    nameLength = username.Length;
-                    // I also tested userLabel down here Saddest. Think the yOffset maybe needs to be updated, im not sure.
 
-                    var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (nameLength * 5) + 5, 330f - yChatOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
-                    chatMessageLabel.label.alignment = FLabelAlignment.Left;
-                    pages[0].subObjects.Add(chatMessageLabel);
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    {
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                        {
+                            if (opo.TryGetData<SlugcatCustomization>(out var customization))
+                            {
+                                var chatMessageLabel = new MenuLabel(this, pages[0], $": {message}", new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (customization.nickname.Length * 5) + 10, 270f - yChatOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                                chatMessageLabel.label.alignment = FLabelAlignment.Left;
+                                pages[0].subObjects.Add(chatMessageLabel);
+                            }
+                        }
+                    }
                     yChatOffSet += 20f;
                 }
                 foreach (string user in userLog)
@@ -135,7 +136,7 @@ namespace RainMeadow
                             continue;
                         }
 
-                        var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yUserOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                        var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 270f - yUserOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                         userLabel.label.alignment = FLabelAlignment.Left;
 
                         pages[0].subObjects.Add(userLabel);

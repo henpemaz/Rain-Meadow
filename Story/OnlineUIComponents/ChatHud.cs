@@ -39,8 +39,11 @@ namespace RainMeadow
         {
             chatLog.Add($"{message}");
             userLog.Add($"{user}");
-            if (chatLog.Count > 13) chatLog.RemoveAt(0);
-            if (userLog.Count > 13) userLog.RemoveAt(0);
+            if (chatLog.Count > 13)
+            {
+                chatLog.RemoveAt(0);
+                userLog.RemoveAt(0);
+            }
         }
 
         public override void Draw(float timeStacker)
