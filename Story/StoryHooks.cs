@@ -1223,7 +1223,7 @@ namespace RainMeadow
                         Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
                         RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
                         opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
-                        opo.apo.realizedObject.room.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0f, 1f, 0.7f);
+                        opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
                         opo.apo.realizedObject.RemoveFromRoom();
                     }
                 }
