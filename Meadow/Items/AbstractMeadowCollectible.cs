@@ -9,7 +9,7 @@ namespace RainMeadow
         public bool collected;
         public TickReference collectedTR;
         public int collectedAt;
-        protected int duration = 40 * 10;
+        protected int duration = 40 * 60;
         private OnlinePhysicalObject _online;
         public OnlinePhysicalObject online
         {

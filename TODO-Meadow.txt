@@ -1,13 +1,5 @@
 HIGH-PRIO
 
-following others around is hard
-	player indicators could follow players "as they go offscreen"
-
-echo
-	echo sky animation is too slow needs to converge
-	echo reward anim is bad, fade to white is bad, no confetti??
-	echo tentacle bounces bet screens in long rooms
-
 ui
 	pause menu could have icons next to relevant buttons
 		hub - to hub

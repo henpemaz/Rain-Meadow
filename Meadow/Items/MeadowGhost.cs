@@ -51,7 +51,8 @@ namespace RainMeadow
 
         public MeadowGhost(AbstractMeadowGhost apo) : base(apo)
         {
-            this.scale = 0.25f;
+            this.origScale = 0.25f;
+            this.scale = origScale;
             this.lightSpriteScale = 2f;
 
             this.ncircles = abstractGhost.targetCount;
@@ -154,7 +155,7 @@ namespace RainMeadow
                 abstractGhost.currentCount = count;
                 RainMeadow.Trace($"counted {count}");
                 // if enough players
-                if (abstractGhost.currentCount >= abstractGhost.targetCount)
+                if (abstractGhost.currentCount >= abstractGhost.targetCount || (room.game.devToolsActive && Input.GetKey(KeyCode.G)))
                 {
                     // activate
                     abstractGhost.Activated();
@@ -176,7 +177,11 @@ namespace RainMeadow
                             //              collect
                             abstractCollectible.Collect();
                             //              start animating
-                            fadeOut = 0.01f;
+                            if(fadeOut == 0)
+                            {
+                                room.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker, pos, 0.8f, 1f);
+                                fadeOut = 0.01f;
+                            }
                         }
                     }
                 }
@@ -184,16 +189,17 @@ namespace RainMeadow
 
             // ghostiness
             this.ghostinessGoal = 0.3f + 0.7f * (abstractGhost.currentCount / (float)abstractGhost.targetCount) - fadeOut;
-            this.ghostiness = Mathf.Lerp(this.ghostiness, this.ghostinessGoal, 0.004f + fadeOut);
+            this.ghostiness = Custom.LerpAndTick(this.ghostiness, this.ghostinessGoal, 0.004f + fadeOut, 0.004f + fadeOut);
             this.room.game.cameras.Do(c => { if (c.room == this.room) c.ghostMode = this.ghostiness; });
 
             // if animating
             if (this.fadeOut > 0f)
             {
                 this.fadeOut = Mathf.Min(1f, this.fadeOut + 0.0125f);
+                this.scale = origScale * (1f - fadeOut);
                 if (this.fadeOut == 1f)
                 {
-                    RainMeadow.Debug("complete: ");
+                    room.PlaySound(SoundID.MENU_Karma_Ladder_Upper_Cap_Bump, pos, 0.8f, 1f);
                     this.RemoveFromRoom();
                     return;
                 }
@@ -369,10 +375,8 @@ namespace RainMeadow
             sLeaser.sprites[this.HeadMeshSprite].shader = rCam.game.rainWorld.Shaders["GhostSkin"];
             sLeaser.sprites[this.NeckConnectorSprite] = new FSprite("Circle20", true);
             sLeaser.sprites[this.FadeSprite] = new FSprite("Futile_White", true);
-            sLeaser.sprites[this.FadeSprite].scaleX = 87.5f;
-            sLeaser.sprites[this.FadeSprite].scaleY = 50f;
-            sLeaser.sprites[this.FadeSprite].x = rCam.game.rainWorld.screenSize.x / 2f;
-            sLeaser.sprites[this.FadeSprite].y = rCam.game.rainWorld.screenSize.y / 2f;
+            sLeaser.sprites[this.FadeSprite].scale = 37.5f;
+            sLeaser.sprites[this.FadeSprite].shader = rCam.room.game.rainWorld.Shaders["ShockWave"];
             sLeaser.sprites[this.FadeSprite].isVisible = false;
 
             for (int i = 0; i < ncircles; i++)
@@ -411,7 +415,7 @@ namespace RainMeadow
                 }
                 else if (i == this.FadeSprite)
                 {
-                    rCam.ReturnFContainer("Bloom").AddChild(sLeaser.sprites[i]);
+                    rCam.ReturnFContainer("Foreground").AddChild(sLeaser.sprites[i]);
                 }
                 else if (i <= CircleSprite(ncircles - 1))
                 {
@@ -431,12 +435,9 @@ namespace RainMeadow
             float num3 = 10f * this.scale;
             float num4 = Mathf.Lerp(this.lastFadeOut, this.fadeOut, timeStacker);
             sLeaser.sprites[this.FadeSprite].isVisible = num4 > 0f;
-            if (num4 > 0f)
-            {
-                sLeaser.sprites[this.FadeSprite].alpha = Mathf.InverseLerp(0f, 0.7f, num4);
-                float num5 = Custom.SCurve(Mathf.InverseLerp(0.5f, 1f, num4), 0.3f);
-                sLeaser.sprites[this.FadeSprite].color = new Color(1f - num5, 1f - num5, 1f - num5);
-            }
+            float num5 = Custom.SCurve(num4, 0.3f);
+            float num52 = Mathf.Clamp01(4 * -Mathf.Pow(0.5f - num5, 2f) + 1f); // up and down
+            
             this.rags.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             this.chains.DrawSprites(sLeaser, rCam, timeStacker, camPos);
             Vector2 vector = Vector2.Lerp(this.spine[this.spine.Length - 1].lastPos, this.spine[this.spine.Length - 1].pos, timeStacker);
@@ -472,11 +473,19 @@ namespace RainMeadow
             vector8.x = Mathf.Pow(Mathf.Abs(vector8.x), 8f) * Mathf.Sign(vector8.x);
             vector8 *= 40f * this.scale;
             vector8.y -= 7f * this.scale;
-            Vector2 vector9 = (this.pos + new Vector2(0f, -170f) + vector + vector8 + Vector2.Lerp(this.spine[5].lastPos, this.spine[5].pos, timeStacker)) / 3f;
+            Vector2 vector9 = (this.pos + new Vector2(0f, -60f) + vector + vector8 + Vector2.Lerp(this.spine[5].lastPos, this.spine[5].pos, timeStacker)) / 3f;
             FSprite distortionSprite = sLeaser.sprites[this.DistortionSprite];
             distortionSprite.x = vector9.x - camPos.x;
             distortionSprite.y = vector9.y - camPos.y;
             distortionSprite.scale = 933f * this.scale / 16f;
+            if (num4 > 0f)
+            {
+                FSprite fadeSprite = sLeaser.sprites[this.FadeSprite];
+                fadeSprite.x = vector9.x - camPos.x;
+                fadeSprite.y = vector9.y - camPos.y;
+                fadeSprite.scale = 40 * num52;
+                fadeSprite.color = new Color(num52, num5, num52);
+            }
             FSprite lightSprite = sLeaser.sprites[this.LightSprite];
             lightSprite.x = vector9.x - camPos.x;
             lightSprite.y = vector9.y - camPos.y;
@@ -749,6 +758,7 @@ namespace RainMeadow
             }
         }
 
+        private float origScale;
         private float scale;
 
         private float lightSpriteScale;
