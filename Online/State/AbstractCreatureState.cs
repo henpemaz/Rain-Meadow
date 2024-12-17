@@ -47,7 +47,7 @@ namespace RainMeadow
             {
                 if (destination.room != absAi.destination.room || destination.abstractNode != absAi.destination.abstractNode)
                 {
-                    absAi.SetDestination(destination);
+                    absAi.SetDestinationNoPathing(destination, migrate: true);
                 }
             }
         }
