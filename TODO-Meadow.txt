@@ -1,11 +1,5 @@
 HIGH-PRIO
 
-ui
-	pause menu could have icons next to relevant buttons
-		hub - to hub
-		survivor - to outskirts
-		shelter - passage
-
 emotes
 	eggbug emotes
 	emotes sometimes don't stop fading when new emotes are added
@@ -37,6 +31,11 @@ gameplay
 world
 	hubs as trees
 	accessibility pass on rooms
+
+progression
+	reset progression on release
+	remove cheat/reset button
+	add cheat/reset in remix ui
 
 trailer
 	splash art of many creatures

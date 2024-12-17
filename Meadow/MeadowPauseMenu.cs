@@ -38,31 +38,37 @@ namespace RainMeadow
                 RainMeadow.Debug($"hubzone: {hubZone.Value.room} : {hubZone.Key}");
                 targetHub = hubZone.Key;
             }
-            bool isOutskirts = world.name.ToLowerInvariant() == "SU".ToLowerInvariant();
             suco4 = RainWorld.roomNameToIndex.TryGetValue("SU_C04", out var val) ? val : -1;
             RainMeadow.Debug("suco4 is " + suco4);
 
             int buttonCount = 0;
-            SimplerButton AddButton(string localizedText, string localizedDescription, Action<SimplerButton> onClick, bool active = true)
+            SimplerButton AddButton(string localizedText, string localizedDescription, Action<SimplerButton> onClick, bool active = true, string emotesprite = null)
             {
                 Vector2 pos = new Vector2(
                     this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
                 pos.y -= (buttonCount) * 40f; 
-                SimplerButton button = new SimplerButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription, true);
+                SimplerButton button = new FloatyButton(this, this.pages[0], localizedText, pos, new Vector2(110f, 30f), localizedDescription);
                 button.OnClick += onClick;
                 button.nextSelectable[0] = button;
                 button.nextSelectable[2] = button;
                 button.buttonBehav.greyedOut = !active;
+
+                if (emotesprite != null)
+                {
+                    button.subObjects.Add(new MenuSprite(this, button, new FSprite(emotesprite) { scale = 30f / 240f }, new Vector2(-30f, 12f)));
+                }
+
                 this.pages[0].subObjects.Add(button);
                 buttonCount += 1;
                 return button;
             }
-            this.pages[this.currentPage].lastSelectedObject = this.continueButton = AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
-            AddButton(this.Translate("TO HUB"), this.Translate("Teleport to the closest hub"), this.ToHub, targetHub != -1);
-            AddButton(this.Translate("TO OUTSKIRTS"), this.Translate("Teleport to outskirts"), this.ToOutskirts, !isOutskirts && suco4 != -1);
-            AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter);
+            this.pages[this.currentPage].lastSelectedObject = this.continueButton = 
+                AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
+            AddButton(this.Translate("TO HUB"), this.Translate("Teleport to the closest hub"), this.ToHub, targetHub != -1, emotesprite: MeadowProgression.Emote.symbolTree.value.ToLowerInvariant());
+            AddButton(this.Translate("TO OUTSKIRTS"), this.Translate("Teleport to outskirts"), this.ToOutskirts, suco4 != -1, emotesprite: MeadowProgression.Emote.symbolSurvivor.value.ToLowerInvariant());
+            AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter, emotesprite: MeadowProgression.Emote.symbolShelter.value.ToLowerInvariant());
             AddButton(this.Translate("UNSTUCK"), this.Translate("Teleport to a nearby pipe"), this.Unstuck);
             AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby);
             this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu);
