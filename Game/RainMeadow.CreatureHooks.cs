@@ -32,6 +32,10 @@ namespace RainMeadow
 
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
+
+            On.EggBug.DropEggs += EggBug_DropEggs;
+            On.Vulture.DropMask += Vulture_DropMask;
+            On.BigSpider.BabyPuff += BigSpider_BabyPuff;
         }
 
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
@@ -201,6 +205,37 @@ namespace RainMeadow
             var mostInterestingItem = self.mostInterestingItem;
             orig(self);
             if (!self.creature.IsLocal()) self.mostInterestingItem = mostInterestingItem;
+        }
+
+        // HACK: doesn't play sounds, we should IL hook to disable just the eggs
+        private void EggBug_DropEggs(On.EggBug.orig_DropEggs orig, EggBug self)
+        {
+            if (!self.IsLocal())
+            {
+                self.dropEggs = false;
+                return;
+            }
+            orig(self);
+        }
+
+        private void Vulture_DropMask(On.Vulture.orig_DropMask orig, Vulture self, Vector2 violenceDir)
+        {
+            if (!self.IsLocal())
+            {
+                (self.State as Vulture.VultureState).mask = false;
+                return;
+            }
+            orig(self, violenceDir);
+        }
+
+        private void BigSpider_BabyPuff(On.BigSpider.orig_BabyPuff orig, BigSpider self)
+        {
+            if (!self.IsLocal())
+            {
+                self.spewBabies = true;
+                return;
+            }
+            orig(self);
         }
     }
 }

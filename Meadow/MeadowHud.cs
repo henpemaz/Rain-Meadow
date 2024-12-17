@@ -10,6 +10,7 @@ namespace RainMeadow
     internal class MeadowHud : HudPart
     {
         private List<MeadowPlayerIndicator> indicators = new();
+        private List<MeadowMapIndicator> mapIndicators = new();
         private RoomCamera camera;
         private Creature owner;
         private bool showPlayerNames;
@@ -38,6 +39,9 @@ namespace RainMeadow
             MeadowPlayerIndicator indicator = new MeadowPlayerIndicator(hud, camera, avatar, this);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
+            MeadowMapIndicator mapIndicator = new MeadowMapIndicator(hud.map, avatar, this);
+            this.mapIndicators.Add(mapIndicator);
+            hud.map.mapObjects.Add(mapIndicator);
         }
 
         public void AvatarRemoved(OnlineCreature avatar)
@@ -46,6 +50,9 @@ namespace RainMeadow
             var indicator = this.indicators.First(i => i.avatar == avatar);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;
+            var mapIndicator = this.mapIndicators.First(i => i.avatar == avatar);
+            this.mapIndicators.Remove(mapIndicator);
+            mapIndicator.Destroy();
         }
 
         public override void Update()
@@ -209,6 +216,59 @@ namespace RainMeadow
                 this.gradient.RemoveFromContainer();
                 this.arrowSprite.RemoveFromContainer();
                 this.label.RemoveFromContainer();
+            }
+        }
+
+        public class MeadowMapIndicator : Map.MapObject
+        {
+            public OnlineCreature avatar;
+            public MeadowAvatarData avatarSettings;
+            public MeadowHud meadowHud;
+            private CreatureSymbol symbol;
+
+            public MeadowMapIndicator(Map map, OnlineCreature avatar, MeadowHud meadowHud) : base(map)
+            {
+                this.avatar = avatar;
+                this.avatarSettings = avatar.GetData<MeadowAvatarData>();
+                this.meadowHud = meadowHud;
+
+                this.symbol = new CreatureSymbol(CreatureSymbol.SymbolDataFromCreature(avatar.abstractCreature), this.meadowHud.hud.map.inFrontContainer);
+                symbol.Show(false);
+                avatarSettings.ModifyBodyColor(ref symbol.myColor);
+            }
+
+            public override void Update()
+            {
+                base.Update();
+                symbol.Update();
+            }
+
+            public override void Draw(float timeStacker)
+            {
+                if (!this.map.visible)
+                {
+                    symbol.symbolSprite.isVisible = false;
+                    return;
+                }
+
+                symbol.symbolSprite.isVisible = true;
+                Vector2 drawPos;
+                if (avatar.abstractCreature.pos.TileDefined)
+                {
+                    drawPos = map.RoomToMapPos(avatar.abstractCreature.pos.Tile.ToVector2() * 20f, avatar.abstractCreature.pos.room, timeStacker);
+                }
+                else
+                {
+                    drawPos = map.RoomToMapPos(map.mapData.SizeOfRoom(avatar.abstractCreature.pos.room).ToVector2() * 10f, avatar.abstractCreature.pos.room, timeStacker);
+                }
+                symbol.Draw(timeStacker, drawPos);
+                symbol.symbolSprite.alpha = this.map.fade * Mathf.Lerp(this.map.Alpha(this.map.mapData.LayerOfRoom(avatar.abstractCreature.pos.room), 1f, true), 1f, 0.25f);
+            }
+
+            public override void Destroy()
+            {
+                symbol.RemoveSprites();
+                base.Destroy();
             }
         }
     }

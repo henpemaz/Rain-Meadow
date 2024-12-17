@@ -77,9 +77,35 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
+        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+        {
+            AbstractPhysicalObject.AbstractObjectType.BlinkingFlower
 
+        };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
+        {
+            if (blockList.Contains(apo.type))
+            {
+                return false;
+            }
             return true;
         }
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,9 +16,9 @@ namespace RainMeadow
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
-                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on your own." },
-                { Story, "Adventure together with friends in the world of Rain World, fight together and die together." },
-                { ArenaCompetitive, "You sweaty bastards." },
+                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
+                { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
+                { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }
 

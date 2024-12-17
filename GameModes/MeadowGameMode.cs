@@ -58,7 +58,7 @@ namespace RainMeadow
         {
             if (oe is OnlineCreature && inResource is RoomSession)
             {
-                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //for some reason it's calling enterresource instead of this for a slugcat entering the room next to you
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
         }
 
