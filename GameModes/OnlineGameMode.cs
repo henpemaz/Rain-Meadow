@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,7 +18,7 @@ namespace RainMeadow
             {
                 { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
                 { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
-                { ArenaCompetitive, "You sweaty bastards." },
+                { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }
 
