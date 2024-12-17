@@ -130,6 +130,12 @@ namespace RainMeadow
 
             ActivateImpl();
 
+            foreach (var oe in pendingEntities)
+            {
+                oe.EnterResource(this);
+            }
+            pendingEntities.Clear();
+
             if (latestState != null && !isOwner) // re-read since now resources are enumerated
             {
                 if (latestState is ResourceWithSubresourcesState withSubresources && withSubresources.subleaseState.list.Count != subresources.Count)

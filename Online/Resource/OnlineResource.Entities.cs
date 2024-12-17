@@ -8,6 +8,7 @@ namespace RainMeadow
         public Dictionary<OnlineEntity.EntityId, OnlineEntity.EntityDefinition> registeredEntities;
         public Dictionary<OnlineEntity.EntityId, EntityMembership> joinedEntities;
         public List<OnlineEntity> activeEntities;
+        public List<OnlineEntity> pendingEntities = new();  // tried to EnterResource before active
 
         // An entity I control has entered the resource, consider registering or joining
         // called from entity join logic - entities join on a queue of resources they need to join
