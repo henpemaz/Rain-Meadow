@@ -14,7 +14,7 @@ namespace RainMeadow
         private List<MeadowMapIndicator> mapIndicators = new();
         private RoomCamera camera;
         private Creature owner;
-        private bool showPlayerNames;
+        private bool displayNames;
         private bool arrowOnSelfNeeded;
         private bool lastMapDown;
 
@@ -61,10 +61,12 @@ namespace RainMeadow
             base.Update();
             UpdateAvatars();
             var mapDown = RWInput.CheckSpecificButton(0, RewiredConsts.Action.Map);
-            if (!mapDown && lastMapDown && hud.map.fade <= 0.8f)
+            if (!mapDown && lastMapDown && hud.map.fade <= 0.7f)
             {
-                showPlayerNames = !showPlayerNames;
+                MeadowProgression.progressionData.displayNames = !displayNames;
             }
+            displayNames = MeadowProgression.progressionData.displayNames; // can be changed through menus
+
             arrowOnSelfNeeded = (owner.room == null && owner.NPCTransportationDestination != default)
                 || mapDown;
             lastMapDown = mapDown;
@@ -257,7 +259,7 @@ namespace RainMeadow
 
                 alpha = Custom.LerpAndTick(alpha, targetAlpha, 0.1f, 0.033f);
 
-                this.showLabel = meadowHud.showPlayerNames;
+                this.showLabel = meadowHud.displayNames;
             }
 
 

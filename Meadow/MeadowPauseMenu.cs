@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class MeadowPauseMenu : PauseMenu
+    internal class MeadowPauseMenu : PauseMenu, Menu.CheckBox.IOwnCheckBox
     {
         private readonly MeadowGameMode mgm;
         private Creature avatarCreature;
@@ -72,6 +72,20 @@ namespace RainMeadow
             AddButton(this.Translate("UNSTUCK"), this.Translate("Teleport to a nearby pipe"), this.Unstuck);
             AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby);
             this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu);
+
+            Vector2 pos = new Vector2(
+                    this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
+                    Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
+                );
+            pos.y -= (buttonCount) * 40f + 40f;
+            var namesCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Display names"), "NAMES", true);
+            namesCb.subObjects.Add(new Floater(this, namesCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            pages[0].subObjects.Add(namesCb);
+            pos.y -= 40f;
+            var colCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Collision"), "COLLISION", true);
+            colCb.subObjects.Add(new Floater(this, colCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            pages[0].subObjects.Add(colCb);
+
 
             // Removes the tutorial sprites 
             this.controlMap.RemoveSprites();
@@ -150,6 +164,27 @@ namespace RainMeadow
                 return ihad.Description;
             }
             return base.UpdateInfoText();
+        }
+
+        // IOwnCheckBox
+        public bool GetChecked(CheckBox box)
+        {
+            if (box.IDString == "NAMES") return MeadowProgression.progressionData.displayNames;
+            if (box.IDString == "COLLISION") return MeadowProgression.progressionData.collisionOn;
+            return false;
+        }
+
+        public void SetChecked(CheckBox box, bool c)
+        {
+            if (box.IDString == "NAMES")
+            {
+                MeadowProgression.progressionData.displayNames = c;
+            }
+            if (box.IDString == "COLLISION")
+            {
+                MeadowProgression.progressionData.collisionOn = c;
+                avatarCreature.ChangeCollisionLayer(MeadowProgression.progressionData.collisionOn ? 1 : 0);
+            }
         }
     }
 }

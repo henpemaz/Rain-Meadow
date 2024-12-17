@@ -3,17 +3,7 @@ HIGH-PRIO
 emotes
 	eggbug emotes
 
-input
-	throw is for switching pages on hotwheel, but also call, specially on controller
-	rebindable keybinds for everything meadow
-		- controller emote input
-		- tab
-	- people don't like locking in place while pointing
-		// could combine with "look", after all just looking is kind of meh
-	- scav and scug don't stop pointing even when you let go of call
-
 gameplay
-	toggle collision as a setting
 	world state of onlineplayer is a lot of rot etc because no filters apply
 
 	music plays maybe too often
@@ -40,6 +30,11 @@ project
 
 
 LOW-PRIO
+
+Tutorialize
+	emote usage
+	emote wheel drag n drop
+	changing skins and creatures
 
 handholding
 	would be so nice to grab cicada be carried by liz etc etc
@@ -82,6 +77,14 @@ accessibility
 emotes
 	emotes go off-screen too often, need to show them in-screen near the creature when possible
 	emote bg tint too strong, same for text
+
+input
+	throw is for switching pages on hotwheel, but also call, specially on controller
+	rebindable keybinds for everything meadow
+		- controller emote input
+		- tab
+	- people don't like locking in place while pointing
+		// could combine with "look", after all just looking is kind of meh
 
 customization
 	could let one pick a tint "absolutely" limiting the range of the color-picker itself
