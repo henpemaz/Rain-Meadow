@@ -14,6 +14,7 @@ namespace RainMeadow
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
+        public bool requireCampaignSlugcat;
         public string? saveStateString;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)

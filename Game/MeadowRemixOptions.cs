@@ -108,13 +108,14 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 400, "[Experimental Features]", bigText: true),
                 new OpLabel(10f, 380, "WARNING: Experimental features may cause data corruption, back up your saves", bigText: false),
 
-                new OpLabel(10f, 350, "Custom Story Slugcat", bigText: false),
+                new OpLabel(10f, 350, "Custom Story Slugcat:", bigText: false),
 
-                new OpCheckBox(SlugcatCustomToggle, new Vector2(10f, 320)),
-                new OpLabel(40f, 320, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable. <LINE>Clients can choose their own Slugcats inside a host's Story campaign"))
+                new OpCheckBox(SlugcatCustomToggle, new Vector2(160f, 350)),
+
+                new OpLabel(40f, 320, RWCustom.Custom.ReplaceLineDelimeters("If selected, hosts can choose slugcat campaigns that are unstable."))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
-                },
+                }
            };
             storyTab.AddItems(OnlineStorySettings);
 
