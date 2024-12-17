@@ -108,7 +108,7 @@ namespace RainMeadow
                     var nameLength = 0;
                     foreach (string user in userLog)
                     {
-                        var partsOfMessage = user.Split(':'); // gotta make sure this works too
+                        var partsOfMessage = user.Split(':');
 
                         // Check if we have at least two parts (username and message)
                         if (partsOfMessage.Length >= 2)
@@ -125,18 +125,16 @@ namespace RainMeadow
                             userLabel.label.color = colorDictionary[username];
                             pages[0].subObjects.Add(userLabel);
                             nameLength = username.Length;
+                            break;
                         }
-
-
                     }
 
                     // I also tested userLabel down here Saddest. Think the yOffset maybe needs to be updated, im not sure.
-
+                 
                     var chatMessageLabel = new MenuLabel(this, pages[0], message, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (nameLength * 5) + 5, 330f - yOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
                     yOffSet += 20f;
-
                 }
             }
         }
