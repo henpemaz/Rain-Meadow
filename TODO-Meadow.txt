@@ -3,12 +3,6 @@ HIGH-PRIO
 emotes
 	eggbug emotes
 
-customization
-	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
-	could let one pick a tint "absolutely" limiting the range of the color-picker itself
-
-	wolfy commented on a white-but-highly-customizable skin
-
 input
 	throw is for switching pages on hotwheel, but also call, specially on controller
 	rebindable keybinds for everything meadow
@@ -59,6 +53,7 @@ handholding
 creature todo
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - eggbug and lanternmouse are way too fast in zerog
+- shortcutcolor for most creatures doesnt account for tint?
 
 lizard todo
 	could use proper lizard voice not default pink
@@ -87,6 +82,12 @@ accessibility
 emotes
 	emotes go off-screen too often, need to show them in-screen near the creature when possible
 	emote bg tint too strong, same for text
+
+customization
+	could let one pick a tint "absolutely" limiting the range of the color-picker itself
+		how do I do the same sanitization in the data though? I don't want hackers being fricks
+
+	wolfy commented on a white-but-highly-customizable skin
 
 menus
 	redo scavenger selectscreen
