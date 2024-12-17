@@ -2,8 +2,6 @@ HIGH-PRIO
 
 emotes
 	eggbug emotes
-	emotes sometimes don't stop fading when new emotes are added
-	rotating arrow symbol resets to up on remote when client lets go
 
 customization
 	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
