@@ -12,11 +12,11 @@ namespace RainMeadow
         {
             chatHud = hud;
         }
-        public static void LogMessage(string message)
+        public static void LogMessage(string user, string message)
         {
             if (chatHud != null)
             {
-                chatHud.AddMessage(message);
+                chatHud.AddMessage(user, message);
             } else
             {
                 RainMeadow.Error("Chat HUD not initialized yet");
