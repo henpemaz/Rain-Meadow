@@ -489,6 +489,10 @@ namespace RainMeadow
             {
                 case FirecrackerPlant bomb:
                     bomb.Ignite(); return;
+                case JellyFish o:
+                    o.Tossed(null); return;
+                case Snail o:
+                    o.Click(); return;
                 default:
                     RainMeadow.Error($"unknown trigger {this}"); return;
             }
