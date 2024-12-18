@@ -252,12 +252,19 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
+        public void GreyOutLobbyCards(bool greyedOut)
+        {
+            lobbyList.lobbyCards.Do(card => card.buttonBehav.greyedOut = greyedOut);
+        }
+
         public void ShowPasswordRequestDialog()
         {
             if (popupDialog != null) HideDialog();
 
             popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
+
+            GreyOutLobbyCards(true);
         }
 
         public void ShowLoadingDialog(string text)
@@ -283,6 +290,8 @@ namespace RainMeadow
             mainPage.RemoveSubObject(popupDialog);
             popupDialog.RemoveSprites();
             popupDialog = null;
+
+            GreyOutLobbyCards(false);
         }
 
         public override void Singal(MenuObject sender, string message)
