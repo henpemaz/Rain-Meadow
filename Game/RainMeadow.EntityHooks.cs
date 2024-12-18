@@ -33,6 +33,9 @@ namespace RainMeadow
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+
+            On.UpdatableAndDeletable.RemoveFromRoom += UpdatableAndDeletable_RemoveFromRoom;
+            On.UpdatableAndDeletable.Destroy += UpdatableAndDeletable_Destroy;
         }
 
         private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
@@ -320,6 +323,36 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private void UpdatableAndDeletable_RemoveFromRoom(On.UpdatableAndDeletable.orig_RemoveFromRoom orig, UpdatableAndDeletable self)
+        {
+            // TODO: expand this to other UADs
+            if (OnlineManager.lobby != null)
+            {
+                if (self is ScavengerOutpost scavengerOutpost && OnlineScavengerOutpost.map.TryGetValue(scavengerOutpost, out var oso))
+                {
+                    RainMeadow.Debug(oso);
+                    oso.ExitResource(self.room.abstractRoom.GetResource());
+                }
+            }
+
+            orig(self);
+        }
+
+        private void UpdatableAndDeletable_Destroy(On.UpdatableAndDeletable.orig_Destroy orig, UpdatableAndDeletable self)
+        {
+            // TODO: expand this to other UADs
+            if (OnlineManager.lobby != null)
+            {
+                if (self is ScavengerOutpost scavengerOutpost && OnlineScavengerOutpost.map.TryGetValue(scavengerOutpost, out var oso))
+                {
+                    RainMeadow.Debug(oso);
+                    oso.ExitResource(self.room.abstractRoom.GetResource());
+                }
+            }
+
+            orig(self);
         }
     }
 }

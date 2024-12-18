@@ -43,6 +43,15 @@ namespace RainMeadow
                         oe.Request(); // I am realizing this entity, let me have it
                     }
                 }
+
+                foreach (var uad in absroom.realizedRoom.updateList)
+                {
+                    (uad switch
+                    {
+                        ScavengerOutpost s => new OnlineScavengerOutpost(s),
+                        _ => null,
+                    })?.EnterResource(this);
+                }
             }
         }
 
