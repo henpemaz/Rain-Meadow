@@ -82,7 +82,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
 
-            ChatLogManager.LogMessage($"{player.id.name} left the game.");
+            ChatLogManager.LogMessage("", $"{player.id.name} left the game.");
         }
 
         public abstract MeadowPlayerId GetEmptyId();

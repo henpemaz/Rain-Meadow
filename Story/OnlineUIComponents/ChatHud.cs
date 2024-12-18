@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using HUD;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,30 +13,37 @@ namespace RainMeadow
         private RainWorldGame game;
         public static bool chatLogActive = false;
         public static bool chatButtonActive = false;
-
+        
         public static bool gamePaused;
         private List<string> chatLog = new List<string>();
+        private List<string> userLog = new List<string>();
+        private Color userColor;
         private int chatCoolDown = 0;
         private int chatTextButtonCooldown = 0;
 
         public static bool messageRecieved = false;
 
-        public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
+        public ChatHud(HUD.HUD hud, RoomCamera camera, Color userColor) : base(hud)
         {
             textPrompt = hud.textPrompt;
             this.camera = camera;
             game = camera.game;
 
             ChatLogManager.Initialize(this);
-
-
+            hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press 'Enter' to open chat and submit chat message, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to open/close the chat log"), 60, 160, false, true);
+            this.userColor = userColor;
         }
 
-
-        public void AddMessage(string message)
+        // this may need to split between user and message to allow for colored usernames
+        public void AddMessage(string user, string message)
         {
             chatLog.Add($"{message}");
-            if (chatLog.Count > 13) chatLog.RemoveAt(0);
+            userLog.Add($"{user}");
+            if (chatLog.Count > 13)
+            {
+                chatLog.RemoveAt(0);
+                userLog.RemoveAt(0);
+            }
         }
 
         public override void Draw(float timeStacker)
@@ -57,14 +62,14 @@ namespace RainMeadow
                 if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating overlay");
-                    chatOverlay = new ChatOverlay(game.manager, game, chatLog);
+                    chatOverlay = new ChatOverlay(game.manager, game, chatLog, userLog, userColor);
                     chatLogActive = true;
                     chatCoolDown = 1;
                 }
 
                 if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatLogActive && chatCoolDown <= 0) ShutDownChatLog();
             }
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
+            if (Input.GetKeyDown(KeyCode.Return) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
                 chatButtonOverlay = new ChatButtonOverlay(game.manager, game, chatLog);
@@ -74,7 +79,7 @@ namespace RainMeadow
                 if (chatOverlay == null && !chatLogActive)
                 {
                     RainMeadow.Debug("creating overlay");
-                    chatOverlay = new ChatOverlay(game.manager, game, chatLog);
+                    chatOverlay = new ChatOverlay(game.manager, game, chatLog, userLog, userColor);
                     chatLogActive = true;
                     chatCoolDown = 1;
                 }
@@ -84,7 +89,10 @@ namespace RainMeadow
             chatButtonOverlay?.GrafUpdate(timeStacker);
 
 
-            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatTalkingKey.Value) && chatButtonActive && chatTextButtonCooldown <= 0) ShutDownChatButton();
+            if (Input.GetKeyDown(KeyCode.Return) && chatButtonActive && chatTextButtonCooldown <= 0) 
+            {
+                ShutDownChatButton();
+            }
 
         }
         public void ShutDownChatLog()

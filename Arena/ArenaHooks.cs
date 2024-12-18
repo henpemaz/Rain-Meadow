@@ -1119,7 +1119,6 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
-
             }
             else
             {
