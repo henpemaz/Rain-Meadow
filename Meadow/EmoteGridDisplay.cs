@@ -9,6 +9,7 @@ namespace RainMeadow
         private FContainer container;
         private FSprite[] emoteDisplayers;
         private FSprite[] emoteTiles;
+        private Vector2[] emoteInitPositions;
 
         private int nr;
         private int nc;
@@ -34,7 +35,6 @@ namespace RainMeadow
             get { return container.alpha; }
             set { container.alpha = value; container.isVisible = (value > 0f); }
         }
-
         public EmoteGridDisplay(FContainer parent, MeadowAvatarData customization, Emote[,] emotes, Vector2 pos)
         {
             this.container = new();
@@ -43,6 +43,7 @@ namespace RainMeadow
 
             this.emoteDisplayers = new FSprite[nc * nr];
             this.emoteTiles = new FSprite[nc * nr];
+            this.emoteInitPositions = new Vector2[nc * nr];
 
             var alpha = emotePreviewOpacityInactive;
             for (int j = 0; j < nr; j++)
@@ -70,9 +71,34 @@ namespace RainMeadow
                         alpha = alpha,
                         color = customization.EmoteColor(emotes[j, i])
                     });
+                    emoteInitPositions[j * nc + i] = new Vector2(x, y);
                 }
             }
             parent.AddChild(container);
+        }
+        internal void positionssss(float inittime)
+        {
+            for (int j = 0; j < nr; j++)
+            {
+                for (int i = 0; i < nc; i++)
+                {
+                    if (emoteDisplayers[j * nc + i] == null) continue;
+                    float thing = inittime + ((j * nc + i) / 100f);
+                    float y = (1 - Custom.SCurve(Mathf.InverseLerp(thing, thing + 0.4f, Time.time + 0.16f), 0.65f)) * -20f;
+                    Vector2 newpos = emoteInitPositions[j * nc + i] + new Vector2(0, y);
+                    emoteDisplayers[j * nc + i].SetPosition(newpos);
+                    emoteTiles[j * nc + i].SetPosition(newpos);
+
+
+                    float thealpha = emoteDisplayers[j * nc + i].alpha;
+                    if (Time.time == inittime || (thealpha != emotePreviewOpacityInactive && thealpha != 1))
+                    {
+                        float alpha = Custom.SCurve(Mathf.InverseLerp(thing, thing + 0.4f, Time.time), 0.65f) * emotePreviewOpacityInactive;
+                        emoteDisplayers[j * nc + i].alpha = alpha;
+                        emoteTiles[j * nc + i].alpha = alpha;
+                    }
+                }
+            }
         }
 
         internal void SetSelected(IntVector2 selected)
@@ -82,8 +108,11 @@ namespace RainMeadow
                 for (int i = 0; i < nc; i++)
                 {
                     if (emoteDisplayers[j * nc + i] == null) continue;
-                    emoteDisplayers[j * nc + i].alpha = (selected.x == i && selected.y == j) ? 1 : emotePreviewOpacityInactive;
-                    emoteTiles[j * nc + i].alpha = (selected.x == i && selected.y == j) ? 1 : emotePreviewOpacityInactive;
+                    float thealpha = emoteDisplayers[j * nc + i].alpha;
+                    bool issellected = (selected.x == i && selected.y == j);
+                    if (thealpha == 1 || issellected) { } else { continue; }
+                    emoteDisplayers[j * nc + i].alpha = issellected ? 1 : emotePreviewOpacityInactive; //((emoteDisplayers[j * nc + i].alpha != emotePreviewOpacityInactive && emoteDisplayers[j * nc + i].alpha != 1) ? emoteDisplayers[j * nc + i].alpha:emotePreviewOpacityInactive);
+                    emoteTiles[j * nc + i].alpha = issellected ? 1 : emotePreviewOpacityInactive;
                 }
             }
         }
