@@ -1,5 +1,8 @@
 ﻿using Menu.Remix.MixedUI;
+using RainMeadow;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 public class RainMeadowOptions : OptionInterface
 {
@@ -59,13 +62,38 @@ public class RainMeadowOptions : OptionInterface
 
             Tabs = new OpTab[4] { meadowTab, opTab, arenaTab, storyTab };
 
-            OnlineMeadowSettings = new UIelement[1]
+            List<UIelement> meadowCheats;
+            OpTextBox meadowCheatBox;
+            OpSimpleButton cheatEmote;
+            OpSimpleButton cheatSkin;
+            OpSimpleButton cheatCharacter;
+            OpSimpleButton cheatReset;
+            float cheaty = 130f;
+            OnlineMeadowSettings = new UIelement[]
             {
-            new OpLabel(10f, 550f, "Meadow", bigText: true),
+                new OpLabel(10f, 550f, "Meadow", bigText: true),
 
+                meadowCheatBox = new OpTextBox(config.Bind("",""), new Vector2(10f, cheaty), 80f),
+                new OpLabel(110f, cheaty, "Input \"cheats\" to access cheats"),
+                new OpLabel(110f, cheaty - 24f, "Just make sure not to ruin the fun for yourself..."),
+                new OpLabel(110f, cheaty - 48f, "Emote and skin unlocks will affect the currently selected character"),
 
+                cheatEmote = new OpSimpleButton(new Vector2(10f, cheaty - 80f), new Vector2(110f, 30f), "Unlock Emote") { greyedOut = MeadowProgression.NextUnlockableEmote() == null},
+                cheatSkin = new OpSimpleButton(new Vector2(130f, cheaty - 80f), new Vector2(110f, 30f), "Unlock Skin") { greyedOut = MeadowProgression.NextUnlockableSkin() == null},
+                cheatCharacter = new OpSimpleButton(new Vector2(250f, cheaty - 80f), new Vector2(110f, 30f), "Unlock Character") { greyedOut = MeadowProgression.NextUnlockableCharacter() == null},
+                cheatReset = new OpSimpleButton(new Vector2(10f, cheaty - 120f), new Vector2(230f, 30f), "Reset all progression"),
             };
+            meadowCheats = OnlineMeadowSettings.Skip(OnlineMeadowSettings.IndexOf(meadowCheatBox) + 2).ToList();
+            meadowCheats.ForEach(cheat => cheat.Hidden = true);
+            meadowCheatBox.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "cheats") meadowCheats.ForEach(cheat => cheat.Show()); else meadowCheats.ForEach(cheat => cheat.Hide()); };
+            cheatEmote.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableEmote() != null) while (MeadowProgression.EmoteProgress() == null) ; (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableEmote() == null; };
+            cheatSkin.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableSkin() != null) while (MeadowProgression.SkinProgress() == null) ; (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableSkin() == null; };
+            cheatCharacter.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableCharacter() != null) while (MeadowProgression.CharacterProgress() == null) ;  (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableCharacter() == null; };
+            cheatReset.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker); MeadowProgression.progressionData = null; MeadowProgression.LoadDefaultProgression(); cheatEmote.greyedOut = cheatSkin.greyedOut = cheatCharacter.greyedOut = false; };
+
             meadowTab.AddItems(OnlineMeadowSettings);
+
+
             GeneralUIArrPlayerOptions = new UIelement[15]
             {
                 new OpLabel(10f, 550f, "General", bigText: true),
