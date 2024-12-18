@@ -75,8 +75,7 @@ namespace RainMeadow
             // mainPage.subObjects.Add(unlocksButton);
 
             // // display version
-            // MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
-            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"hehe funni text no version number 4 u :P", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
             versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             mainPage.subObjects.Add(versionLabel);
 
@@ -252,12 +251,19 @@ namespace RainMeadow
             base.ShutDownProcess();
         }
 
+        public void GreyOutLobbyCards(bool greyedOut)
+        {
+            lobbyList.lobbyCards.Do(card => card.buttonBehav.greyedOut = greyedOut);
+        }
+
         public void ShowPasswordRequestDialog()
         {
             if (popupDialog != null) HideDialog();
 
             popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
+
+            GreyOutLobbyCards(true);
         }
 
         public void ShowLoadingDialog(string text)
@@ -283,6 +289,8 @@ namespace RainMeadow
             mainPage.RemoveSubObject(popupDialog);
             popupDialog.RemoveSprites();
             popupDialog = null;
+
+            GreyOutLobbyCards(false);
         }
 
         public override void Singal(MenuObject sender, string message)

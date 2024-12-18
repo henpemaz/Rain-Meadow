@@ -7,25 +7,16 @@ namespace RainMeadow
 {
     public class ChatOverlay : Menu.Menu
     {
-        private List<FSprite> sprites;
-        private List<string> chatLog;
-        private List<string> userLog;
-        private Color userColor;
+        private ChatHud chatHud;
         public static bool isReceived = false;
         public RainWorldGame game;
         public ChatOverlay chatOverlay;
         public ChatTextBox chat;
-        private bool displayBg = false;
-        private int ticker;
-        private string username;
-        private Dictionary<string, Color> colorDictionary;
-        private List<MenuLabel> colorChatLogMenuLabels;
-        public ChatOverlay(ProcessManager manager, RainWorldGame game, List<string> chatLog, List<string> userLog, Color userColor) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
-        {
-            this.userLog = userLog;
-            this.chatLog = chatLog;
+        private Dictionary<string, Color> colorDictionary = new();
 
-            this.userColor = userColor;
+        public ChatOverlay(ChatHud chatHud, ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        {
+            this.chatHud = chatHud;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
             isReceived = true;
@@ -42,30 +33,8 @@ namespace RainMeadow
 
         public void UpdateLogDisplay()
         {
-            sprites = new();
-            float yChatOffSet = 0;
-            float yUserOffSet = 0;
-
-            if (!displayBg)
+            if (chatHud.chatLog.Count > 0)
             {
-                displayBg = true;
-                var background = new FSprite("pixel")
-                {
-                    color = new Color(0f, 0f, 0f),
-                    anchorX = 0f,
-                    anchorY = 0f,
-                    y = -32,
-                    scaleY = 330,
-                    scaleX = 755,
-                    alpha = 0.5f
-                };
-                pages[0].Container.AddChild(background);
-                sprites.Add(background);
-            }
-            if (chatLog.Count > 0)
-            {
-
-                var nameLength = 0;
                 var logsToRemove = new List<MenuObject>();
 
                 // First, collect all the logs to remove
@@ -81,80 +50,36 @@ namespace RainMeadow
                     pages[0].RemoveSubObject(log);
                 }
 
-                colorDictionary = new Dictionary<string, Color>();
-                colorChatLogMenuLabels = new List<MenuLabel>();
-
+                // username:color
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
                     {
-                        if (!colorDictionary.ContainsKey(opo.owner.id.name))
+                        if (!colorDictionary.ContainsKey(opo.owner.id.name) && opo.TryGetData<SlugcatCustomization>(out var customization))
                         {
-                            if (opo.TryGetData<SlugcatCustomization>(out var customization)) {
-                                colorDictionary.Add(opo.owner.id.name, customization.bodyColor);
-                            } else {
-                                colorDictionary.Add(opo.owner.id.name, Color.white);
-                            }
+                            colorDictionary.Add(opo.owner.id.name, customization.bodyColor);
                         }
                     }
                 }
 
-                foreach (string message in chatLog)
+                float yOffSet = 0;
+                foreach (var (username, message) in chatHud.chatLog)
                 {
-                    foreach (string user in userLog)
-                    {
-                        var partsOfMessage = user.Split(':');
-                        if (partsOfMessage.Length >= 2) username = partsOfMessage[0].Trim(); // Extract and trim the username
-                    }
+                    var usernameLabel = new MenuLabel(this, pages[0], username,
+                        new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet),
+                        new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                    usernameLabel.label.alignment = FLabelAlignment.Left;
+                    usernameLabel.label.color = colorDictionary.TryGetValue(username, out var color) ? color : Color.white;
 
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
-                        {
-                            if (opo.TryGetData<SlugcatCustomization>(out var customization))
-                            {
-                                var chatMessageLabel = new MenuLabel(this, pages[0], $": {message}", new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (customization.nickname.Length * 5) + 10, 270f - yChatOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
-                                chatMessageLabel.label.alignment = FLabelAlignment.Left;
-                                pages[0].subObjects.Add(chatMessageLabel);
-                            }
-                        }
-                    }
-                    yChatOffSet += 20f;
-                }
-                foreach (string user in userLog)
-                {
-                    var partsOfMessage = user.Split(':');
+                    var usernameWidth = username.Length * 5;
+                    var messageLabel = new MenuLabel(this, pages[0], $": {message}",
+                        new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + usernameWidth + 10, 330f - yOffSet),
+                        new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                    messageLabel.label.alignment = FLabelAlignment.Left;
 
-                    // Check if we have at least two parts (username and message)
-                    if (partsOfMessage.Length >= 2)
-                    {
-                        username = partsOfMessage[0].Trim(); // Extract and trim the username
-                        if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(username))
-                        {
-                            continue;
-                        }
-
-                        var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 270f - yUserOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
-                        userLabel.label.alignment = FLabelAlignment.Left;
-
-                        pages[0].subObjects.Add(userLabel);
-                        colorChatLogMenuLabels.Add(userLabel);
-                    }
-                    yUserOffSet += 20f;
-                }
-
-                foreach (var p in colorChatLogMenuLabels)
-                {
-                    if (colorDictionary.ContainsKey(p.text))
-                    {
-                        p.label.color = colorDictionary[p.text];
-                    }
-                    else
-                    {
-                        p.label.color = Color.white;
-                    }
+                    pages[0].subObjects.Add(usernameLabel);
+                    pages[0].subObjects.Add(messageLabel);
+                    yOffSet += 20f;
                 }
             }
         }
