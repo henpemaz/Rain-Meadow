@@ -1085,7 +1085,7 @@ namespace RainMeadow
                     _ => "1/32",
                 };
                 int liaisonwait = Wait.Until(period, 1, plopmachine.debugstopwatch);
-                int amountoftimes = UnityEngine.Random.Range(8 - (arprate/5 * 3), 23 - (3*(arprate/2)));
+                int amountoftimes = Mathf.Clamp(UnityEngine.Random.Range(8 - (arprate / 5 * 3), 23 - (3 * (arprate / 2))), 0, 23);
                 
                 bool[] mama = new bool[amountoftimes];
                 for (int i = 0; i < amountoftimes; i++)
