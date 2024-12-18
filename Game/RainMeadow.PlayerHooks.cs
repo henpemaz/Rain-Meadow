@@ -168,8 +168,8 @@ public partial class RainMeadow
                 {
                     if (OnlineManager.lobby.gameMode is MeadowGameMode) // meadow crashes with msc assuming slugpupbars is there
                         return false;
-                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && storyGameMode.readyForWin)
-                        return true;
+                    //if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && storyGameMode.readyForWin)
+                    //    return true;
                     if (!self.abstractCreature.IsLocal()) // don't shelter if remote
                         return false;
                 }
