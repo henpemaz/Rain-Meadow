@@ -1,14 +1,6 @@
 HIGH-PRIO
 
-emotes
-	eggbug emotes
-
-music
-	joining group in vibezone overrides vibe
-	plopmachine overflows over time (phanie has logs)
-
-world
-	world state of onlineplayer is a lot of rot etc because no filters apply
+MERGE TITLE THING
 
 trailer
 	the trailer
@@ -18,6 +10,16 @@ project
 	workshop description
 	credits
 
+MEDIUM-PRIO
+
+world
+	world state of onlineplayer is a lot of rot etc because no filters apply
+
+music
+	joining group in vibezone overrides vibe
+
+bugs
+	saving in missing region stays in missing region
 
 LOW-PRIO
 
@@ -94,3 +96,6 @@ customization
 menus
 	redo scavenger selectscreen
 	backing out of passage screen sends you to main menu? unconfirmed but plausible
+
+bugs
+	map seems to reset progression if map png changes size?
