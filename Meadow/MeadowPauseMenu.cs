@@ -93,11 +93,6 @@ namespace RainMeadow
             this.pages[0].subObjects.Remove(this.controlMap);
             //this.blackSprite.scaleX = manager.rainWorld.options.ScreenSize.x / 4f;
         }
-        public override void Update()
-        {
-            pages[0].subObjects.DoIf(c => c is SimplerButton simplerButton && simplerButton != null, c => ((SimplerButton)c).progress = blackFade);
-            base.Update();
-        }
 
         private void Continue(SimplerButton button)
         {

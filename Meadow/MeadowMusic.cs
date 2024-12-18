@@ -727,7 +727,7 @@ namespace RainMeadow
         private static void MusicPiece_StartPlaying(On.Music.MusicPiece.orig_StartPlaying orig, MusicPiece self)
         {
             orig.Invoke(self);
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm) return
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm) return;
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
 
