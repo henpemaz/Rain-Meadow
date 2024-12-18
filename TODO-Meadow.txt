@@ -5,25 +5,12 @@ emotes
 
 music
 	joining group in vibezone overrides vibe
-
-gameplay
-	world state of onlineplayer is a lot of rot etc because no filters apply
-
-	music plays maybe too often
-		rethink triggers
-		maybe options
+	plopmachine overflows over time (phanie has logs)
 
 world
-	hubs as trees
-	accessibility pass on rooms
-
-progression
-	reset progression on release
-	remove cheat/reset button
-	add cheat/reset in remix ui
+	world state of onlineplayer is a lot of rot etc because no filters apply
 
 trailer
-	splash art of many creatures
 	the trailer
 
 project
@@ -47,6 +34,10 @@ handholding
 		- be grabbed by, with no consequences
 			you are not heavier nor locked out of anything, no downsides
 			Sky has both, with the invite system, but also the "follow"->"hold hand"
+
+world
+	hubs as trees
+	accessibility pass on rooms
 
 creature todo
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
@@ -88,6 +79,11 @@ input
 		- tab
 	- people don't like locking in place while pointing
 		// could combine with "look", after all just looking is kind of meh
+
+music
+	music plays maybe too often
+		rethink triggers
+		maybe options
 
 customization
 	could let one pick a tint "absolutely" limiting the range of the color-picker itself
