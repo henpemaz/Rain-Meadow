@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -217,6 +218,18 @@ namespace RainMeadow
         public static Color SafeColorRange(this Color valuecolor)
         {
             return new Color(Mathf.Clamp(valuecolor.r, 1f / 255f, 1f), Mathf.Clamp(valuecolor.g, 1f / 255f, 1f), Mathf.Clamp(valuecolor.b, 1f / 255f, 1f));
+        }
+
+        public static Type[] GetTypesSafely(this Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e) // happens often with soft-dependencies, did you know
+            {
+                return e.Types.Where(x => x != null).ToArray();
+            }
         }
     }
 }

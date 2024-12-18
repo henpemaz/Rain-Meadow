@@ -64,17 +64,29 @@ namespace RainMeadow
             _ = StateType.Unknown; // runs static init
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
+                bool isMain = assembly == Assembly.GetExecutingAssembly();
+                bool hasState = false; // wether this assembly tried to register any onlinestates
                 try
                 {
-                    foreach (var type in assembly.GetTypes().ToList())
+                    foreach (var type in assembly.GetTypesSafely().ToList())
                     {
-                        OnlineState.RegisterState(type);
+                        try
+                        {
+                            hasState |= typeof(OnlineState).IsAssignableFrom(type);
+                            OnlineState.RegisterState(type);
+                        }
+                        catch (Exception e)
+                        {
+                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
+                            if (isMain || hasState) throw e;
+                            RainMeadow.Error(e);
+                        }
                     }
                 }
                 catch (Exception e)
                 {
+                    if (isMain || hasState) throw e;
                     RainMeadow.Error(e);
-                    throw e;
                 }
             }
         }

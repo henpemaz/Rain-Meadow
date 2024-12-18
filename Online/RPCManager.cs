@@ -37,17 +37,27 @@ namespace RainMeadow
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
+                bool isMain = assembly == Assembly.GetExecutingAssembly();
                 try
                 {
-                    foreach (var type in assembly.GetTypes().ToList())
+                    foreach (var type in assembly.GetTypesSafely().ToList())
                     {
-                        RegisterRPCs(type);
+                        try
+                        {
+                            RegisterRPCs(type);
+                        }
+                        catch (Exception e)
+                        {
+                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
+                            if (isMain) throw e; 
+                            RainMeadow.Error(e);
+                        }
                     }
                 }
                 catch (Exception e)
                 {
+                    if (isMain) throw e;
                     RainMeadow.Error(e);
-                    throw e;
                 }
             }
         }
