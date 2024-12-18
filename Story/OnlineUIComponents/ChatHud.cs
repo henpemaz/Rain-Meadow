@@ -15,8 +15,7 @@ namespace RainMeadow
         public static bool chatButtonActive = false;
         
         public static bool gamePaused;
-        private List<string> chatLog = new List<string>();
-        private List<string> userLog = new List<string>();
+        public List<(string, string)> chatLog = new();
         private Color userColor;
         private int chatCoolDown = 0;
         private int chatTextButtonCooldown = 0;
@@ -37,12 +36,11 @@ namespace RainMeadow
         // this may need to split between user and message to allow for colored usernames
         public void AddMessage(string user, string message)
         {
-            chatLog.Add($"{message}");
-            userLog.Add($"{user}");
+            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
+            chatLog.Add((user, message));
             if (chatLog.Count > 13)
             {
                 chatLog.RemoveAt(0);
-                userLog.RemoveAt(0);
             }
         }
 
@@ -62,7 +60,7 @@ namespace RainMeadow
                 if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value) && chatOverlay == null && !chatLogActive && !textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating overlay");
-                    chatOverlay = new ChatOverlay(game.manager, game, chatLog, userLog, userColor);
+                    chatOverlay = new ChatOverlay(this, game.manager, game);
                     chatLogActive = true;
                     chatCoolDown = 1;
                 }
@@ -72,14 +70,14 @@ namespace RainMeadow
             if (Input.GetKeyDown(KeyCode.Return) && chatButtonOverlay == null && !chatButtonActive && !textPrompt.pausedMode)
             {
                 RainMeadow.Debug("creating chat box");
-                chatButtonOverlay = new ChatButtonOverlay(game.manager, game, chatLog);
+                chatButtonOverlay = new ChatButtonOverlay(game.manager);
                 chatButtonActive = true;
                 chatTextButtonCooldown = 1;
 
                 if (chatOverlay == null && !chatLogActive)
                 {
                     RainMeadow.Debug("creating overlay");
-                    chatOverlay = new ChatOverlay(game.manager, game, chatLog, userLog, userColor);
+                    chatOverlay = new ChatOverlay(this, game.manager, game);
                     chatLogActive = true;
                     chatCoolDown = 1;
                 }
