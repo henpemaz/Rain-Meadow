@@ -19,10 +19,13 @@ namespace RainMeadow
         public BinaryWriter writer;
         public BinaryReader reader;
         public OnlinePlayer currPlayer;
-        private uint eventCount;
+        private uint eventCount; // todo make me ushort
         private long eventHeader;
-        private uint stateCount;
+        private uint stateCount;  // todo make me ushort
         private long stateHeader;
+        private byte sliceCount;
+        private long sliceHeader;
+
         public int zipTreshold = 4000;
 
         static Serializer scratchpad;
@@ -157,6 +160,50 @@ namespace RainMeadow
             stream.Position = temp;
         }
 
+        private void BeginWriteChunk(OnlinePlayer toPlayer)
+        {
+            if (toPlayer.OutgoingChunks.Count > 0)
+            {
+                DataChunk chunk = toPlayer.OutgoingChunks.Peek();
+                writer.Write(chunk.chunkId);
+                writer.Write((byte)chunk.chunkType); // maybe this is inside of the chunk data itself
+                writer.Write(chunk.totalSlices);
+
+
+                sliceCount = 0;
+                sliceHeader = stream.Position;
+                writer.Write(sliceCount); // fake write, we'll overwrite this later
+            }
+            else
+            {
+                sliceCount = 0;
+                writer.Write((byte)0);
+            }
+        }
+
+        private bool WriteSlice(DataChunk.Slice sliceMessage)
+        {
+            scratchpad.stream.Seek(0, SeekOrigin.Begin);
+            sliceMessage.CustomSerialize(scratchpad); // they're written one by one with indexes and array lenght, not suuuper optimal
+            if (scratchpad.Position < (capacity - Position - margin))
+            {
+                writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
+                sliceCount++;
+                return true;
+            }
+            return false;
+        }
+
+        private void EndWriteChunk()
+        {
+            if (sliceCount == 0) return; // no slice data
+            var temp = stream.Position;
+            stream.Position = sliceHeader;
+            writer.Write(sliceCount);
+            stream.Position = temp;
+        }
+
+
         public void EndWrite()
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
@@ -219,6 +266,29 @@ namespace RainMeadow
             return s;
         }
 
+        private byte BeginReadChunkData(OnlinePlayer fromPlayer)
+        {
+            var chunkId = reader.ReadByte();
+            byte totalSlices = 0;
+            byte chunkType = 0;
+            byte sliceCount = 0;
+            if (chunkId > 0)
+            {
+                chunkType = reader.ReadByte();
+                totalSlices = reader.ReadByte();
+                sliceCount = reader.ReadByte();
+            }
+            fromPlayer.IncomingChunkData(chunkId, chunkType, totalSlices);
+            return sliceCount;
+        }
+
+        private DataChunk.Slice ReadSlice()
+        {
+            var slice = new DataChunk.Slice();
+            slice.CustomSerialize(this);
+            return slice;
+        }
+
         public void EndRead()
         {
             currPlayer = null;
@@ -254,6 +324,19 @@ namespace RainMeadow
             for (uint ist = 0; ist < ns; ist++)
             {
                 OnlineManager.ProcessIncomingState(ReadState());
+            }
+
+            var nss = BeginReadChunkData(fromPlayer);
+            var incomingChunk = fromPlayer.IncomingChunk;
+            for (uint i = 0; i < nss; i++)
+            {
+                var slice = ReadSlice();
+                incomingChunk?.NewSlice(slice);
+            }
+            if(incomingChunk != null && incomingChunk.DoneReceiving())
+            {
+                OnlineManager.ProcessDataChunk(fromPlayer, incomingChunk);
+                fromPlayer.IncomingChunk = null;
             }
 
             EndRead();
@@ -303,6 +386,28 @@ namespace RainMeadow
             }
 
             EndWriteStates();
+
+            BeginWriteChunk(toPlayer);
+
+            if (toPlayer.OutgoingChunks.Count > 0)
+            {
+                var chunk = toPlayer.OutgoingChunks.Peek();
+
+                while (chunk.GetNextSlice() is DataChunk.SliceMessage sliceMessage) // sends until can no longer fit any // there might be a sweet spot on size
+                {
+                    if (WriteSlice(sliceMessage.slice))
+                    {
+                        sliceMessage.Sent();
+                    }
+                    else
+                    {
+                        sliceMessage.Unsent();
+                        break;
+                    }
+                }
+            }
+
+            EndWriteChunk();
 
             EndWrite();
 
