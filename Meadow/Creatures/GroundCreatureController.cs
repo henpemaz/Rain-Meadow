@@ -31,6 +31,21 @@ namespace RainMeadow
         {
             if (CreatureController.creatureControllers.TryGetValue(self.creature.realizedCreature, out var c))
             {
+                // in case of debugging break the glass
+                //if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath)
+                //{
+                //    RainMeadow.Debug("from:" + originPos);
+                //    var toret = default(MovementConnection);
+                //    if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
+                //    {
+                //        RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);
+                //        toret = new MovementConnection(MovementConnection.MovementType.Standard, originPos, self.destination, 1);
+                //    }
+                //    else toret = orig(self, originPos, actuallyFollowingThisPath);
+                //    RainMeadow.Debug("result:" + toret);
+                //    return toret;
+                //}
+
                 if (originPos == self.destination || (actuallyFollowingThisPath && self.lookingForImpossiblePath))
                 {
                     if (Input.GetKey(KeyCode.L) && actuallyFollowingThisPath) RainMeadow.Debug("returning override. lookingForImpossiblePath? " + self.lookingForImpossiblePath);

@@ -14,6 +14,7 @@ namespace RainMeadow
         public float tintAmount;
         public float effectiveTintAmount;
 
+        private HSLColor hslTint;
         private Color emoteBgColor;
         private Color symbolBgColor;
         private Color emoteColor;
@@ -28,7 +29,11 @@ namespace RainMeadow
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
             if (skinData.baseColor.HasValue) originalBodyColor = skinData.baseColor.Value;
-            originalBodyColor = Color.Lerp(originalBodyColor, tint, effectiveTintAmount);
+            if (effectiveTintAmount > 0f)
+            {
+                originalBodyColor = Color.Lerp(HSLColor.Lerp(originalBodyColor.ToHSL(), hslTint, effectiveTintAmount).rgb,
+                    Color.Lerp(originalBodyColor, tint, effectiveTintAmount), 0.5f); // lerp in average of hsl and rgb, neither is good on its own
+            }
         }
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
@@ -114,14 +119,13 @@ namespace RainMeadow
             this.characterData = MeadowProgression.characterData[skinData.character];
 
             this.tint = new(tint.r, tint.g, tint.b);
+            this.hslTint = tint.ToHSL();
             this.effectiveTintAmount = tintAmount * skinData.tintFactor;
 
             emoteBgColor = Color.Lerp(skinData.emoteColorOverride ?? characterData.emoteColor, this.tint, this.effectiveTintAmount);
             symbolBgColor = Color.white;
             emoteColor = Color.white;
-            var v = RWCustom.Custom.RGB2HSL(Color.Lerp(Color.white, this.tint, this.effectiveTintAmount));
-            // there used to be some hsl maths here
-            symbolColor = new HSLColor(v[0], v[1], v[2]).rgb;
+            symbolColor = Color.Lerp(Color.white, this.tint, this.effectiveTintAmount);
         }
     }
 }

@@ -1,3 +1,44 @@
+HIGH-PRIO
+
+emotes
+	eggbug emotes
+
+music
+	joining group in vibezone overrides vibe
+
+gameplay
+	world state of onlineplayer is a lot of rot etc because no filters apply
+
+	music plays maybe too often
+		rethink triggers
+		maybe options
+
+world
+	hubs as trees
+	accessibility pass on rooms
+
+progression
+	reset progression on release
+	remove cheat/reset button
+	add cheat/reset in remix ui
+
+trailer
+	splash art of many creatures
+	the trailer
+
+project
+	go over readme, contributing etc
+	workshop description
+	credits
+
+
+LOW-PRIO
+
+Tutorialize
+	emote usage
+	emote wheel drag n drop
+	changing skins and creatures
+
 handholding
 	would be so nice to grab cicada be carried by liz etc etc
 	"it's of uttermost importance to me that one cannot troll others with this"
@@ -8,66 +49,37 @@ handholding
 			Sky has both, with the invite system, but also the "follow"->"hold hand"
 
 creature todo
-- can get stuck
-	some rooms will get fixed
-		eventually :tm:
 - allow creature to change the creature-pipe they're going to mid-flight (very low prio)
 - eggbug and lanternmouse are way too fast in zerog
-
+- shortcutcolor for most creatures doesnt account for tint?
 
 lizard todo
-	blues have trouble sticking to the ceiling
-	blues have trouble climbing/pathing ledges
-	lizard wallclimb is slow, slows you down a lot in zerog movement
-	red and some more lizs are having trouble climbing
 	could use proper lizard voice not default pink
-
+	red liz uses wrong seed sometimes? unconf
+	blues have trouble sticking to the ceiling (retest)
+	blues have trouble climbing/pathing ledges (retest)
+	lizard wallclimb is slow, slows you down a lot in zerog movemen
 
 scav todo
-	scav climbpos doesn't sync
-	pointing doesn't let go once let go?
 	scav latching to pole with lots of momentum lets go? shelter room to drainage spot
 	scav has trouble walljumping, doesn't count as walljumpable sometimes, hic02 lower spot (check?)
 
-
-noot todo
-	noot gets stuck on water surface, seems to always go left?
-
-
 eggbugg todo
 	regains footing mid-jump
-	voice call is slow-attack
-
 
 following others around is hard
-	need map implemented
 	could use pipes flashing colors if room inhabited
 	player list on passage screen
 
-
-echo
-	echo sky animation is too slow needs to converge
-	echo reward anim is bad, fade to white is bad, no confetti??
-	echo tentacle bounces bet screens in long rooms
-	squid had trouble in dsb06 underwater poles?
-
-
 accessibility
+	squid had trouble in dsb06 underwater poles?
 	ds a09, the crawlspace on left, creatures don't snap to crawling in it
 	ds c03 exist is at water height wont path
 	dsa13 corner up lizard stuck
 
-
 emotes
-	wish there was a symbol for outskirts
 	emotes go off-screen too often, need to show them in-screen near the creature when possible
-	emotes sometimes don't stop fading when new emotes are added
-	rotating arrow symbol resets to up on remote when client lets go
 	emote bg tint too strong, same for text
-
-customization
-	tints could blend in HSL, currently blends towards desat always because of the nature of the maths
-
 
 input
 	throw is for switching pages on hotwheel, but also call, specially on controller
@@ -76,20 +88,13 @@ input
 		- tab
 	- people don't like locking in place while pointing
 		// could combine with "look", after all just looking is kind of meh
-	- scav and scug don't stop pointing even when you let go of call
 
+customization
+	could let one pick a tint "absolutely" limiting the range of the color-picker itself
+		how do I do the same sanitization in the data though? I don't want hackers being fricks
 
-gameplay
-	toggle collision as a setting
-	world state of onlineplayer is a lot of rot etc because no filters apply
-
-	music plays maybe too often
-		rethink triggers
-		maybe options
-
+	wolfy commented on a white-but-highly-customizable skin
 
 menus
 	redo scavenger selectscreen
-	on meadow-menu or lobby menu, esc doesn't go back
 	backing out of passage screen sends you to main menu? unconfirmed but plausible
-

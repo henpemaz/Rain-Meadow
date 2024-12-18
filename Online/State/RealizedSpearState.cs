@@ -1,3 +1,4 @@
+using RWCustom;
 using System;
 using UnityEngine;
 
@@ -5,7 +6,7 @@ namespace RainMeadow
 {
     public class RealizedSpearState : RealizedWeaponState
     {
-        [OnlineField(group = "spear", nullable = true)]
+        [OnlineFieldHalf(group = "spear", nullable = true)]
         private Vector2? stuckInWall;
         [OnlineField(group = "spear", nullable = true)]
         private BodyChunkRef? stuckInChunk;
@@ -13,10 +14,10 @@ namespace RainMeadow
         private AppendageRef? stuckInAppendage;
         [OnlineField(group = "spear")]
         private sbyte stuckBodyPart;
-        [OnlineField(group = "spear")]
+        [OnlineFieldHalf(group = "spear")]
         private float stuckRotation;
         [OnlineField(group = "spear")]
-        private int stuckInWallCycles;
+        private sbyte stuckInWallCycles;
         [OnlineField(group = "spear")]
         private bool needleActive = true;
 
@@ -25,7 +26,7 @@ namespace RainMeadow
         {
             var spear = (Spear)onlineEntity.apo.realizedObject;
             stuckInWall = spear.stuckInWall;
-            stuckInWallCycles = spear.abstractSpear.stuckInWallCycles;
+            stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
 
             if (spear.stuckInObject != null)

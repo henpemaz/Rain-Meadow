@@ -64,7 +64,7 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            self.AddPart(new ChatHud(self, session.game.cameras[0], arena.avatarSettings.bodyColor));
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
@@ -162,7 +162,7 @@ namespace RainMeadow
 
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
-                abstractCreature.state = new PlayerState(abstractCreature, ArenaHelpers.FindOnlinePlayerNumber(arena, oe.owner), customization.playingAs, isGhost: false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
 
             }
             else

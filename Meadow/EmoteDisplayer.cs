@@ -62,6 +62,7 @@ namespace RainMeadow
                 localVersion = creatureData.emotesVersion;
                 RainMeadow.Debug("Time since tick is: " + creatureData.emotesTick.TimeSinceTick());
                 startInGameClock = (int)(game.clock - creatureData.emotesTick.TimeSinceTick() * game.framesPerSecond);
+                rot = 0f; // reset thiss
             }
             this.timeToLive = this.creatureData.emotesLife;
             foreach (var e in creatureData.emotes.Except(tiles.Select(t => t.emote)))
@@ -92,23 +93,16 @@ namespace RainMeadow
                 Mathf.InverseLerp(timeToLive, timeToLive - 1f, time) // fade out
                 );
 
-            if (creatureController.specialInput[0].direction != Vector2.zero)
+            if (creatureData.specialInput.direction != Vector2.zero)
             {
                 rot = Custom.VecToDeg(creatureData.specialInput.direction);
-            }
-            else if (creatureController.inputDir != Vector2.zero)
-            {
-                rot = Custom.VecToDeg(creatureController.inputDir);
-            }
-            else if (tiles.Count == 0) // reset
-            {
-                rot = 0f;
             }
             if (ownerEntity.isMine && tiles.Count > 0 && time > timeToLive)
             {
                 Clear();
                 this.creatureData.emotes.Clear();
                 this.creatureData.emotesVersion++;
+                this.rot = 0f;
             }
         }
 
@@ -161,8 +155,10 @@ namespace RainMeadow
             }
             else
             {
-                timeToLive = initialLifetime;
-                this.creatureData.emotesLife = initialLifetime; // refresh
+                // we're "refreshing" time to live but it's not something that counts down
+                // instead the main time mechanism is a timestamp
+                timeToLive = time + initialLifetime; 
+                this.creatureData.emotesLife = timeToLive;
             }
 
             var tile = new EmoteTile(emoteType, this.tiles.Count, this);
@@ -286,14 +282,15 @@ namespace RainMeadow
 
             public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
             {
-                Vector2 newPos = Vector2.Lerp(this.lastPos, this.pos, timeStacker) - camPos;
-                var newAlpha = Mathf.Lerp(alpha, lastAlpha, timeStacker);
+                Vector2 usepos = Vector2.Lerp(this.lastPos, this.pos, timeStacker) - camPos;
+                var usealpha = Mathf.Lerp(alpha, lastAlpha, timeStacker);
+                var userot = Mathf.Lerp(rot, lastRot, timeStacker);
                 for (int i = 0; i < sLeaser.sprites.Length; i++)
                 {
                     FSprite fSprite = sLeaser.sprites[i];
-                    fSprite.SetPosition(newPos);
-                    fSprite.alpha = newAlpha;
-                    if (rotate) fSprite.rotation = rot;
+                    fSprite.SetPosition(usepos);
+                    fSprite.alpha = usealpha;
+                    if (rotate) fSprite.rotation = userot;
                 }
                 if (base.slatedForDeletetion || this.room != rCam.room)
                 {

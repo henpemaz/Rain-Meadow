@@ -277,7 +277,7 @@ namespace RainMeadow
                     }
                 }
 
-                if (isStoryMode(out var _) &&  !OnlineManager.lobby.isOwner)
+                if (isStoryMode(out var _) && !OnlineManager.lobby.isOwner)
                 {
                     sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
                     self.sceneOffset = new Vector2(-10f, 100f);
@@ -291,7 +291,7 @@ namespace RainMeadow
             if (OnlineManager.lobby?.gameMode is OnlineGameMode gameMode and not MeadowGameMode)
             {
                 // todo figure out a better way to do this proccess redirection, this isn't ideal
-                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu)
+                if (ID == ProcessManager.ProcessID.MainMenu || ID == ProcessManager.ProcessID.MultiplayerMenu || ID == ProcessManager.ProcessID.SlugcatSelect)
                 {
                     if (self.currentMainLoop.ID == gameMode.MenuProcessId())
                     {
@@ -315,22 +315,11 @@ namespace RainMeadow
 
         private void ProcessManager_PostSwitchMainProcess(On.ProcessManager.orig_PostSwitchMainProcess orig, ProcessManager self, ProcessManager.ProcessID ID)
         {
-            if (ID == Ext_ProcessID.LobbySelectMenu)
-            {
-                self.currentMainLoop = new LobbySelectMenu(self);
-            }
-            if (ID == Ext_ProcessID.ArenaLobbyMenu)
-            {
-                self.currentMainLoop = new ArenaLobbyMenu(self);
-            }
-            if (ID == Ext_ProcessID.MeadowMenu)
-            {
-                self.currentMainLoop = new MeadowMenu(self);
-            }
-            if (ID == Ext_ProcessID.StoryMenu)
-            {
-                self.currentMainLoop = new StoryOnlineMenu(self);
-            }
+            if (ID == Ext_ProcessID.LobbySelectMenu) self.currentMainLoop = new LobbySelectMenu(self);
+            if (ID == Ext_ProcessID.LobbyCreateMenu) self.currentMainLoop = new LobbyCreateMenu(self);
+            if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaLobbyMenu(self);
+            if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
+            if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
 
 #if !LOCAL_P2P
             if (ID == ProcessManager.ProcessID.IntroRoll)

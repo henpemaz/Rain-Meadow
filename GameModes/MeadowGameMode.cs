@@ -58,7 +58,7 @@ namespace RainMeadow
         {
             if (oe is OnlineCreature && inResource is RoomSession)
             {
-                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated(); //for some reason it's calling enterresource instead of this for a slugcat entering the room next to you
+                MeadowMusic.TheThingTHatsCalledWhenPlayersUpdated();
             }
         }
 
@@ -414,7 +414,7 @@ namespace RainMeadow
                 creature.abstractCreature.lavaImmune = true;
                 creature.abstractCreature.HypothermiaImmune = true;
 
-                creature.collisionLayer = 0; //collisions off
+                if (oc.isMine) creature.collisionLayer = MeadowProgression.progressionData.collisionOn ? 1 : 0;
             }
             else
             {

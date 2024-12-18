@@ -106,6 +106,8 @@ namespace RainMeadow
         [OnlineField]
         private bool standing;
         [OnlineField]
+        private bool flipDirection;
+        [OnlineField]
         private bool glowing;
         [OnlineField]
         private bool isPup;
@@ -140,6 +142,7 @@ namespace RainMeadow
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
             standing = p.standing;
+            flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             isPup = p.playerState.isPup;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -218,6 +221,7 @@ namespace RainMeadow
             if (wasAnimation != p.animation) p.animationFrame = animationFrame;
             p.bodyMode = new Player.BodyModeIndex(Player.BodyModeIndex.values.GetEntry(bodyModeIndex));
             p.standing = standing;
+            p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
             if (p.playerState.isPup != isPup)
                 p.playerState.isPup = isPup;

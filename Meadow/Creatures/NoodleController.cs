@@ -168,6 +168,31 @@ namespace RainMeadow
             }
             toPos = creature.room.GetWorldCoordinate(dest);
             magnitude = inputDir.magnitude;
+
+            bool localTrace = Input.GetKey(KeyCode.L);
+            // todo check here if pathfindable
+            // otherwise pathfinder follows path[0] left
+            // happens in deepwater it seems
+            // if can't path, apply force but don't pf don't forcemove
+            var pathFinder = creature.abstractCreature.abstractAI.RealAI.pathFinder;
+            if (pathFinder.PathingCellAtWorldCoordinate(basecoord).reachable)
+            {
+                if (localTrace) RainMeadow.Debug("pathable");
+            }
+            else
+            {
+                if (localTrace) RainMeadow.Debug("unpathable");
+                var wasWaterRelationship = template.waterRelationship; // could also be a hook but template helpers are such a hot-path...
+                template.waterRelationship = CreatureTemplate.WaterRelationship.Amphibious;
+                pathFinder.OutOfElement();
+                template.waterRelationship = wasWaterRelationship;
+
+                if (creature.room.GetTile(basecoord).WaterSurface && inputDir.y > 0) // give 'em a push!
+                {
+                    creature.mainBodyChunk.vel += 2f * this.inputDir;
+                }
+            }
+
             return true;
         }
 

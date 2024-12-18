@@ -201,7 +201,7 @@ namespace RainMeadow
                     else OnlineManager.lobby.owner.InvokeRPC(BroadcastInterruption, musicEvent.songName); 
                 }
                 //if (!this.manager.rainWorld.setup.playMusic) { return; } Noting down the cause of concern 
-                _ = PlaySong(self, musicEvent.songName);
+                PlaySong(self, musicEvent.songName);
             }
             else
             {
@@ -430,11 +430,16 @@ namespace RainMeadow
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (!timerStopped) time += dt;
+            if(OnlineManager.lobby?.gameMode is not MeadowGameMode mgm)
+            {
+                AllowPlopping = false;
+                return;
+            }
+
             MusicPlayer musicPlayer = self.manager.musicPlayer;
             var RoomImIn = self.cameras[0].room;
             var MyGuyMic = self.cameras[0].virtualMicrophone;
 
-            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
 
@@ -597,7 +602,7 @@ namespace RainMeadow
                         RainMeadow.Debug($"Yeah let's swtich gears dude");
                         if (musicPlayer != null)
                         {
-                            _ = PlaySong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt);
+                            PlaySong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt);
                         }
                     }
                 }
@@ -640,7 +645,7 @@ namespace RainMeadow
                         if (groupImIn == 0 || hostId == OnlineManager.mePlayer.inLobbyId)
                         {
 
-                            _ = PlaySong(musicPlayer);
+                            PlaySong(musicPlayer);
                             RainMeadow.Debug("Meadow Music: Playing ambient song: " + musicdata.providedSong);
 
                         }
@@ -659,7 +664,7 @@ namespace RainMeadow
                                 if (myDJsdata.providedSong != null)
                                 {
                                     RainMeadow.Debug("My host has a song, gonna try playing it");
-                                    _ = PlaySong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt);
+                                    PlaySong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt);
                                 }
                                 else
                                 {
@@ -706,7 +711,7 @@ namespace RainMeadow
                                 {
                                     OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.BroadcastInterruption, "Triptrap X");
                                 }
-                                _ = PlaySong(musicPlayer, "Triptrap X");
+                                PlaySong(musicPlayer, "Triptrap X");
                             }
                         }
                     }
@@ -722,11 +727,10 @@ namespace RainMeadow
         private static void MusicPiece_StartPlaying(On.Music.MusicPiece.orig_StartPlaying orig, MusicPiece self)
         {
             orig.Invoke(self);
-
-            if (OnlineManager.lobby == null) { return; }
-            var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm) return
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
+
 
             musicdata.providedSong = self.name;
             songHistory.Add(self.name);
@@ -744,10 +748,35 @@ namespace RainMeadow
             else if (songtobesang == "")
             {
                 musicPlayer.song?.FadeOut(20f);
+                RainMeadow.Debug("the song of silence");
                 return;
             }
+            RainMeadow.Debug(songtobesang);
+
             float timmmetaken = Time.time;
-            Song? song = await Task.Run(() => LoadSong(musicPlayer, songtobesang, timetobestarted));
+            if (UnityEngine.Debug.isDebugBuild) // debug build can't do certain things outside of main thread, go figure
+            {
+                var song = LoadSong(musicPlayer, songtobesang, timetobestarted);
+                PostLoadSong(song, timmmetaken, musicPlayer, songtobesang, timetobestarted);
+            }
+            else
+            {
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        var song = LoadSong(musicPlayer, songtobesang, timetobestarted);
+                        PostLoadSong(song, timmmetaken, musicPlayer, songtobesang, timetobestarted);
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error(e);
+                    }
+                });
+            }
+        }
+        private static void PostLoadSong(Song? song, float timmmetaken, MusicPlayer musicPlayer, string? songtobesang = null, float? timetobestarted = null)
+        {
             if (song == null)
             {
                 RainMeadow.Debug("Song was null");
@@ -775,7 +804,7 @@ namespace RainMeadow
                 {
                     musicdata.startedPlayingAt = timetobestarted.Value;
                     float calculatedthing = LobbyTime() - timetobestarted.Value;
-                    song.subTracks[0].source.time = calculatedthing + (Time.time-timmmetaken) + 1f + (!thisornext?(2f/3f):0f); //rough guesstimate, this is a *lazy* solution sponsored by line 158 186. In the future maybe we'd whip some cooler methodformulathingamajig up , maybe hooking onto musicplayer.Update ? ababa
+                    song.subTracks[0].source.time = calculatedthing + (Time.time - timmmetaken) + 1f + (!thisornext ? (2f / 3f) : 0f); //rough guesstimate, this is a *lazy* solution sponsored by line 158 186. In the future maybe we'd whip some cooler methodformulathingamajig up , maybe hooking onto musicplayer.Update ? ababa
                     RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + timetobestarted.Value + " which amounts to " + calculatedthing);
                     ivebeenpatientlywaiting = true; //for the next track, now that we're synced up.  Future installments might even get rid of thisone, because the only reason you'd be unsynced would be if someone joined a group and not been there when it started.
                 }
@@ -783,12 +812,13 @@ namespace RainMeadow
                 {
                     musicPlayer.song = song;
                     musicPlayer.song.playWhenReady = true;
-                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f)?0.3f:0f);
+                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f) ? 0.3f : 0f);
                 }
                 else
                 {
                     if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
                     {
+                        RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
                         return;
                     }
                     musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
@@ -798,7 +828,6 @@ namespace RainMeadow
                 musicdata.startedPlayingAt = LobbyTime();
                 RainMeadow.Debug("my song is now " + musicdata.providedSong);
                 RainMeadow.Debug("my song is to be " + song.name);
-
             }
         }
         private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, float? DJstartedat)
@@ -918,6 +947,7 @@ namespace RainMeadow
                 }
                 else
                 {
+                    RainMeadow.Debug("Nobody to join");
                     joinTimer = null;
                 }
             }
@@ -1109,9 +1139,11 @@ namespace RainMeadow
 
         static void NewRoomPatch(On.VirtualMicrophone.orig_NewRoom orig, VirtualMicrophone self, Room room)
         {
+            var waspos = self.listenerPoint;
             orig.Invoke(self, room);
             if(OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
+                self.listenerPoint = waspos; // no mmf bs fr fr
                 NewRoom(room);
             }
         }
