@@ -21,6 +21,7 @@ namespace RainMeadow
             Vector2 center = size / 2f;
             textBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
             textBox.accept = OpTextBox.Accept.StringASCII;
+            textBox.allowSpace = true;
             textBoxWrapper = new UIelementWrapper(this.tabWrapper, textBox);
 
             Vector2 where = new Vector2((center.x - 55f), 20f);
@@ -28,7 +29,7 @@ namespace RainMeadow
             continueButton = new SimpleButton(menu, this, menu.Translate("CONFIRM"), signalText, where, new Vector2(110f, 30f));
             subObjects.Add(continueButton);
 
-            cancelButton = new SymbolButton(menu, this, "Menu_Symbol_Clear_All", "CLOSE_DIALOG", size - new Vector2(40f, 40f));
+            cancelButton = new SymbolButton(menu, this, "Menu_Symbol_Clear_All", "HIDE_DIALOG", size - new Vector2(40f, 40f));
             subObjects.Add(cancelButton);
         }
         public override void RemoveSprites()
