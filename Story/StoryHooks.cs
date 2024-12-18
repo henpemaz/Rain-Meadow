@@ -97,9 +97,9 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+
+            On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
         }
-
-
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
@@ -1204,6 +1204,29 @@ namespace RainMeadow
             {
                 if (self.ghostNumber != null)
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.TriggerGhostHunch, self.ghostNumber.value);
+            }
+        }
+
+        private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
+        {
+            orig(self, eu);
+
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                {
+                    // do things with the AbstractCreature we found
+                    if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                    {
+                        
+                        Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
+                        RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
+                        opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
+                        opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
+                        opo.apo.realizedObject.RemoveFromRoom();
+                    }
+                }
             }
         }
     }
