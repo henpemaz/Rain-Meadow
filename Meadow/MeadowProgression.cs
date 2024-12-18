@@ -856,6 +856,11 @@ namespace RainMeadow
         public class ProgressionData
         {
             [JsonProperty]
+            public bool collisionOn;
+            [JsonProperty]
+            public bool displayNames;
+
+            [JsonProperty]
             public int characterUnlockProgress;
             [JsonProperty]
             public Character currentlySelectedCharacter { get => _currentlySelectedCharacter; set { _currentlySelectedCharacter = value; if (value != null && !characterProgress.ContainsKey(value)) characterProgress[value] = new CharacterProgressionData(value); } }

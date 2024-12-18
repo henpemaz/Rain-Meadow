@@ -861,7 +861,7 @@ namespace RainMeadow
             }
 
             var pointDir = specialInput[0].direction;
-            if (pointDir == Vector2.zero) pointDir = inputDir;
+            if (pointDir == Vector2.zero && pointCounter > 10) pointDir = inputDir;
 
             if (pointDir != Vector2.zero || pointCounter > 10)
             {

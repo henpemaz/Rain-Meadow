@@ -414,7 +414,7 @@ namespace RainMeadow
                 creature.abstractCreature.lavaImmune = true;
                 creature.abstractCreature.HypothermiaImmune = true;
 
-                creature.collisionLayer = 0; //collisions off
+                if (oc.isMine) creature.collisionLayer = MeadowProgression.progressionData.collisionOn ? 1 : 0;
             }
             else
             {
