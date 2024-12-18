@@ -6,46 +6,44 @@ namespace RainMeadow
 
     public class RealizedWeaponState : RealizedPhysicalObjectState
     {
-        // is all this data really necessary?
         [OnlineField]
-        protected byte mode;
+        protected Weapon.Mode mode;
         [OnlineFieldHalf]
-        private Vector2 rotation;
+        private float rotation;
         [OnlineFieldHalf]
-        private float rotationSpeed;
+        private float rotationSpeed;  // is this really necessary?
         [OnlineField(nullable = true)]
-        private OnlineEntity.EntityId? thrownBy;
+        private OnlineCreature? thrownBy;
         [OnlineField]
-        private IntVector2 thrownDir;
+        private byte throwDir;  // 00> 01v 10< 11^
 
         public RealizedWeaponState() { }
         public RealizedWeaponState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var weapon = (Weapon)onlineEntity.apo.realizedObject;
-            mode = (byte)weapon.mode;
-            rotation = weapon.rotation;
+            mode = weapon.mode;
+            rotation = Custom.AimFromOneVectorToAnother(Vector2.zero, weapon.rotation);
             rotationSpeed = weapon.rotationSpeed;
-            thrownBy = (weapon.thrownBy?.abstractCreature != null && OnlineCreature.map.TryGetValue(weapon.thrownBy.abstractCreature, out var oc)) ? oc?.id : null;
-            thrownDir = weapon.throwDir;
+            thrownBy = weapon.thrownBy?.abstractCreature?.GetOnlineCreature();
+            throwDir = (byte)((weapon.throwDir.x < 0 ? 0b10 : 0b00) | (weapon.throwDir.y < 0 ? 0b01 : 0b00));
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            var newMode = new Weapon.Mode(Weapon.Mode.values.GetEntry(mode));
+            var newMode = mode;
             if (weapon.room != null && weapon.mode != newMode)
             {
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
                 weapon.ChangeMode(newMode);
                 weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
             }
-            weapon.thrownBy = (thrownBy?.FindEntity() as OnlineCreature)?.realizedCreature;
+            weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            weapon.rotation = rotation;
+            weapon.rotation = Custom.DegToVec(rotation);
             weapon.rotationSpeed = rotationSpeed;
-            weapon.throwDir = thrownDir;
-
+            weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
         }
     }
 }
