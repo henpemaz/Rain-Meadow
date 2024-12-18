@@ -3,6 +3,9 @@ HIGH-PRIO
 emotes
 	eggbug emotes
 
+music
+	joining group in vibezone overrides vibe
+
 gameplay
 	world state of onlineplayer is a lot of rot etc because no filters apply
 
