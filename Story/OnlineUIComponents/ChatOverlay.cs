@@ -88,7 +88,7 @@ namespace RainMeadow
                         if (partsOfMessage.Length >= 2) username = partsOfMessage[0].Trim(); // Extract and trim the username
                     }
 
-                    var chatMessageLabel = new MenuLabel(this, pages[0], $": {message}", new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (username.Length * 5) + 10, 270f - yChatOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                    var chatMessageLabel = new MenuLabel(this, pages[0], $": {message}", new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + (username.Length * 5) + 10, 330f - yChatOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                     chatMessageLabel.label.alignment = FLabelAlignment.Left;
                     pages[0].subObjects.Add(chatMessageLabel);
                     yChatOffSet += 20f;
@@ -106,7 +106,7 @@ namespace RainMeadow
                             continue;
                         }
 
-                        var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 270f - yUserOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                        var userLabel = new MenuLabel(this, pages[0], username, new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yUserOffSet), new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                         userLabel.label.alignment = FLabelAlignment.Left;
 
                         pages[0].subObjects.Add(userLabel);
