@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using MoreSlugcats;
 
 namespace RainMeadow
 {
-    public static class OnlineGameModeHelpers
+    public partial class OnlineGameMode
     {
-        public static HashSet<PlacedObject.Type> cosmeticItems = new()
+        public HashSet<PlacedObject.Type> cosmeticItems = new()
         {
             PlacedObject.Type.None,
             PlacedObject.Type.LightSource,
@@ -41,8 +42,13 @@ namespace RainMeadow
             PlacedObject.Type.CustomDecal,
             PlacedObject.Type.InsectGroup,
             PlacedObject.Type.PlayerPushback,
+            MoreSlugcatsEnums.PlacedObjectType.MSArteryPush,
             PlacedObject.Type.GoldToken,
             PlacedObject.Type.BlueToken,
+            MoreSlugcatsEnums.PlacedObjectType.GreenToken,
+            MoreSlugcatsEnums.PlacedObjectType.WhiteToken,
+            MoreSlugcatsEnums.PlacedObjectType.RedToken,
+            MoreSlugcatsEnums.PlacedObjectType.DevToken,
             PlacedObject.Type.DeadTokenStalk,
             PlacedObject.Type.BrokenShelterWaterLevel,
             PlacedObject.Type.Filter,
@@ -63,15 +69,23 @@ namespace RainMeadow
             PlacedObject.Type.LocalBlizzard,
             PlacedObject.Type.NeuronSpawner,
             PlacedObject.Type.ExitSymbolAncientShelter,
-            PlacedObject.Type.BlinkingFlower
+            PlacedObject.Type.BlinkingFlower,
+            MoreSlugcatsEnums.PlacedObjectType.OEsphere,
+            MoreSlugcatsEnums.PlacedObjectType.KarmaShrine,
         };
-        public static HashSet<PlacedObject.Type> creatureRelatedItems = new()
+
+        public HashSet<PlacedObject.Type> creatureRelatedItems = new()
         {
+            MoreSlugcatsEnums.PlacedObjectType.BigJellyFish,
+            MoreSlugcatsEnums.PlacedObjectType.RotFlyPaper,
+            MoreSlugcatsEnums.PlacedObjectType.Stowaway,
             //PlacedObject.Type.TempleGuard,
+            //MoreSlugcatsEnums.PlacedObjectType.HRGuard,
             //PlacedObject.Type.StuckDaddy,
             //PlacedObject.Type.CentipedeAttractor,
         };
-        public static HashSet<PlacedObject.Type> PlayerGrabbableItems = new()
+
+        public HashSet<PlacedObject.Type> playerGrabbableItems = new()
         {
             PlacedObject.Type.FlareBomb,
             PlacedObject.Type.PuffBall,          //Weird behavior between thrower and everyone else when throwing 
@@ -99,7 +113,12 @@ namespace RainMeadow
             PlacedObject.Type.DeadHazer,
             PlacedObject.Type.VultureMask,          //MSC
             //PlacedObject.Type.HangingPearls,      //MSC
-            PlacedObject.Type.Lantern
+            PlacedObject.Type.Lantern,
+            MoreSlugcatsEnums.PlacedObjectType.GooieDuck,
+            MoreSlugcatsEnums.PlacedObjectType.LillyPuck,
+            MoreSlugcatsEnums.PlacedObjectType.GlowWeed,
+            MoreSlugcatsEnums.PlacedObjectType.MoonCloak,
+            MoreSlugcatsEnums.PlacedObjectType.DandelionPeach,
         };
     }
 }
