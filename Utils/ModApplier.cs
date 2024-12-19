@@ -72,14 +72,16 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             };
 
-            if (unknownMods.Any())
-            {
-                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
-            }
-            else
-            {
-                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
-            }
+            // disable auto-apply for now
+            //if (unknownMods.Any())
+            //{
+            //    checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
+            //}
+            //else
+            //{
+            //    checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+            //}
+            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
 
             manager.ShowDialog(checkUserConfirmation);
         }
