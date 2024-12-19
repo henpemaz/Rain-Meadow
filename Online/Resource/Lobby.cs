@@ -14,7 +14,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] mods = RainMeadowModManager.GetActiveMods();
+        public string[] requiredmods = RainMeadowModManager.GetRequiredMods();
+        public string[] bannedmods = RainMeadowModManager.GetBannedMods();
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
@@ -176,7 +177,9 @@ namespace RainMeadow
             [OnlineField]
             public ushort nextId;
             [OnlineField]
-            public string[] mods;
+            public string[] requiredmods;
+            [OnlineField]
+            public string[] bannedmods;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -189,9 +192,9 @@ namespace RainMeadow
                 nextId = lobby.nextId;
                 players = new(lobby.participants.Select(p => p.id).ToList());
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
-                mods = lobby.mods;
+                requiredmods = lobby.requiredmods;
+                bannedmods = lobby.bannedmods;
                 bannedUsers = lobby.bannedUsers;
-
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -234,11 +237,11 @@ namespace RainMeadow
                     lobby.bannedUsersChecked = true;
                 }
 
-
-
                 if (!lobby.modsChecked)
                 {
-                    RainMeadowModManager.CheckMods(this.mods, lobby.mods);
+                    RainMeadowModManager.CheckMods(requiredmods, bannedmods);
+                    lobby.requiredmods = requiredmods;
+                    lobby.bannedmods = bannedmods;
                     lobby.modsChecked = true;
                 }
 
