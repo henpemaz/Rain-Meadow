@@ -129,7 +129,7 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            return base.AllowedInMode(item) || OnlineGameModeHelpers.PlayerGrabbableItems.Contains(item.type);
+            return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
