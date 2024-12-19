@@ -33,6 +33,7 @@ public partial class RainMeadow
         IL.Player.Collide += Player_Collide;
         On.Player.SlugSlamConditions += Player_SlugSlamConditions;
         IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer;
+        IL.Player.PyroDeath += PhysicalObject_Explode;
         On.Player.CanMaulCreature += Player_CanMaulCreature;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;

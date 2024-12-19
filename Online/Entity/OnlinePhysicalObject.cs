@@ -519,6 +519,8 @@ namespace RainMeadow
                     bomb.Explode(); return;
                 case MoreSlugcats.EnergyCell bomb:
                     bomb.Explode(); return;
+                case Player arti:
+                    arti.PyroDeath(); return;
                 default:
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
