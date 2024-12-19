@@ -143,6 +143,7 @@ namespace RainMeadow
             storyClientData = clientSettings.AddData(new StoryClientSettingsData());
         }
 
+        private string? gateRoom;
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
@@ -153,6 +154,7 @@ namespace RainMeadow
             if (lobby.isOwner && lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
             {
                 var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+                var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
 
                 if (!readyForWin && inGameClientsData.Any(scs => scs.readyForWin) && inGameClientsData.All(scs => scs.readyForWin || scs.isDead))
                 {
@@ -162,14 +164,15 @@ namespace RainMeadow
 
                 if (readyForGate == 0)
                 {
+                    gateRoom = null;
                     if (inGameClientsData.All(scs => scs.readyForGate))
                     {
                         // make sure they're at the same region gate
-                        var rooms = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true)))
-                            .OfType<OnlinePhysicalObject>().Select(opo => opo.apo.pos.room);
+                        var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
                         if (rooms.Distinct().Count() == 1)
                         {
-                            RainMeadow.Debug($"ready for gate!");
+                            RainWorld.roomIndexToName.TryGetValue(rooms.First(), out gateRoom);
+                            RainMeadow.Debug($"ready for gate {gateRoom}!");
                             readyForGate = 1;
                         }
                     }
@@ -177,9 +180,11 @@ namespace RainMeadow
                 else if (readyForGate > 0)
                 {
                     // wait for all players to pass through
-                    if (inGameClientsData.All(scs => !scs.readyForGate))
+                    if (inGameClientsData.All(scs => !scs.readyForGate)
+                        || (gateRoom is not null && !inGameAvatarOPOs.Select(opo => opo.apo.Room?.name).Contains(gateRoom))  // HACK: AllPlayersThroughToOtherSide may not get called if warp, which softlocks gates
+                        )
                     {
-                        RainMeadow.Debug($"all through gate!");
+                        RainMeadow.Debug($"all through gate {gateRoom}!");
                         readyForGate = 0;
                     }
                 }
