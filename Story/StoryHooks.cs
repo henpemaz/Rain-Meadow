@@ -147,6 +147,11 @@ namespace RainMeadow
                     return storyGameMode.friendlyFire;
                 }
 
+                if (box.IDString == "CAMPAIGNSLUGONLY")
+                {
+                    return storyGameMode.requireCampaignSlugcat;
+
+                }
                 return false;
             }
             else
@@ -189,6 +194,12 @@ namespace RainMeadow
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
+
+                }
+
+                if (box.IDString == "CAMPAIGNSLUGONLY")
+                {
+                    storyGameMode.requireCampaignSlugcat = c;
 
                 }
             }
