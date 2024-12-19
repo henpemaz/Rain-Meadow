@@ -254,11 +254,6 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && self.currentlyShowing == TextPrompt.InfoID.GameOver)
             {
-                if (ChatHud.chatButtonActive)
-                {
-                    self.restartNotAllowed = 1; // block GoToDeathScreen if we're typing
-                    return;
-                }
                 if (isStoryMode(out _))
                 {
                     self.restartNotAllowed = 1; // block from GoToDeathScreen
@@ -787,7 +782,7 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam, gameMode.avatarSettings.bodyColor));
+                self.AddPart(new ChatHud(self, cam));
             }
         }
 
