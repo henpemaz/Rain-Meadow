@@ -1068,7 +1068,12 @@ namespace RainMeadow
 
             try
             {
+                // HACK: sub in empty objectTrackers to fix SaveState.SaveToString nullref at IL_0767
+                var objectTrackers = saveState.objectTrackers;
+                saveState.objectTrackers = new();
                 var s = saveState.SaveToString();
+                saveState.objectTrackers = objectTrackers;
+
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
