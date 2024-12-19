@@ -265,7 +265,6 @@ namespace RainMeadow
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
             ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}", $"{message}");
-            ChatOverlay.isReceived = true;
         }
 
         private void PlayerJoined(CSteamID p)
