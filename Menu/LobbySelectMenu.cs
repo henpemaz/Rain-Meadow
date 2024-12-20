@@ -44,6 +44,15 @@ namespace RainMeadow
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
             this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
+            var creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
+            creditsButton.OnClick += (_) =>
+            {
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowCredits);
+                PlaySound(SoundID.MENU_Switch_Page_In);
+            };
+            mainPage.subObjects.Add(creditsButton);
+
+
             createButton = new SimplerButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
             createButton.OnClick += (_) =>
             {
