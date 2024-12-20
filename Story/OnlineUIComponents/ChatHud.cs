@@ -12,6 +12,7 @@ namespace RainMeadow
 
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
+        public bool chatInputActive => chatInputOverlay is not null;
         private bool showChatLog = false;
         
         public List<(string, string)> chatLog = new();
