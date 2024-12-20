@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -16,6 +17,7 @@ namespace RainMeadow
 
         public static void LogMessage(string user, string message)
         {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(chatHud => chatHud.AddMessage(user, message));
         }
     }
