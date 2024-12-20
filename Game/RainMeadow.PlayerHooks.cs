@@ -108,7 +108,7 @@ public partial class RainMeadow
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (self.room.world.game.cameras[0]?.hud is HUD.HUD hud
+            if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
                 && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive)))
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
