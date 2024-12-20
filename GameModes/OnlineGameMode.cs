@@ -71,7 +71,7 @@ namespace RainMeadow
 
         public virtual bool AllowedInMode(PlacedObject item)
         {
-            return OnlineGameModeHelpers.cosmeticItems.Contains(item.type);
+            return cosmeticItems.Contains(item.type);
         }
 
         public virtual bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)

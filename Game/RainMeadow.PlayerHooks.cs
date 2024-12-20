@@ -33,6 +33,7 @@ public partial class RainMeadow
         IL.Player.Collide += Player_Collide;
         On.Player.SlugSlamConditions += Player_SlugSlamConditions;
         IL.Player.ClassMechanicsArtificer += Player_ClassMechanicsArtificer;
+        IL.Player.PyroDeath += PhysicalObject_Explode;
         On.Player.CanMaulCreature += Player_CanMaulCreature;
         On.Player.AddFood += Player_AddFood;
         On.Player.AddQuarterFood += Player_AddQuarterFood;
@@ -107,16 +108,6 @@ public partial class RainMeadow
         orig(self);
         if (OnlineManager.lobby != null)
         {
-            if (
-                self.room.world.game.cameras[0] != null &&
-                self.room.world.game.cameras[0].hud != null &&
-                self.room.world.game.cameras[0].hud.textPrompt != null &&
-                self.room.world.game.cameras[0].hud.textPrompt.pausedMode ||
-                ChatHud.chatButtonActive)
-            {
-                PlayerMovementOverride.StopPlayerMovement(self);
-            }
-
             if (isArenaMode(out var arena))
             {
                 if (arena.countdownInitiatedHoldFire)

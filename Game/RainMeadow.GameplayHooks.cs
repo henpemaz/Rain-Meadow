@@ -60,14 +60,14 @@ namespace RainMeadow
                             Error($"Entity {self} doesn't exist in online space!");
                             return true;
                         }
-                        if (opo.roomSession.isOwner)
+                        if (opo.roomSession.isOwner && (opo.isMine || RPCEvent.currentRPCEvent is not null || self is not Player))
                         {
-                            opo.BroadcastRPCInRoom(opo.Trigger, self.bodyChunks[0].pos);
+                            opo.BroadcastRPCInRoom(opo.Trigger);
                         }
                         else if (RPCEvent.currentRPCEvent is null)
                         {
                             if (!opo.isMine) return false;  // wait to be RPC'd
-                            opo.roomSession.owner.InvokeOnceRPC(opo.Trigger, self.bodyChunks[0].pos);
+                            opo.roomSession.owner.InvokeOnceRPC(opo.Trigger);
                         }
                     }
                     return true;
@@ -98,7 +98,7 @@ namespace RainMeadow
                             Error($"Entity {self} doesn't exist in online space!");
                             return true;
                         }
-                        if (opo.roomSession.isOwner)
+                        if (opo.roomSession.isOwner && (opo.isMine || RPCEvent.currentRPCEvent is not null || self is not Player))
                         {
                             opo.BroadcastRPCInRoom(opo.Explode, self.bodyChunks[0].pos);
                         }
