@@ -1,10 +1,6 @@
 HIGH-PRIO
 
-trailer
-	the trailer
-
 project
-	workshop description
 	credits
 
 MEDIUM-PRIO

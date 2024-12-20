@@ -3,8 +3,8 @@
   "name": "Rain Meadow",
   "version": "0.1.0",
   "target_game_version": "v1.9.15",
-  "authors": "Henpemaz",
-  "description": "A multiplayer engine, custom game mode inspired by Might & Delight's 'Meadow', and online arena / story experience.",
+  "authors": "Henpemaz, Wolfycatt, Intikus, and many more",
+  "description": "A multiplayer engine, custom game mode inspired by Might & Delight's 'Meadow', and online arena / story experience.<LINE><LINE>For the full credits see the workshop or the credits page in the Meadow menu.",
   "requirements": [],
   "requirements_names": [],
   "checksum_override_version": false
