@@ -193,7 +193,14 @@ namespace RainMeadow
             orig(self);
             if (OnlineManager.lobby != null && apo is not null)
             {
-                self.Room.GetResource()?.ApoLeavingRoom(apo);
+                if (apo.destroyOnAbstraction && apo.GetOnlineObject(out var opo) && opo.primaryResource is not RoomSession)
+                {
+                    RainMeadow.Debug($"{opo} not leaving {self.Room.GetResource()} because destroyOnAbstraction");
+                }
+                else
+                {
+                    self.Room.GetResource()?.ApoLeavingRoom(apo);
+                }
                 self.world.GetResource().ApoLeavingWorld(apo);
             }
         }
