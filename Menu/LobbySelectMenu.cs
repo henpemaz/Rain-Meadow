@@ -27,6 +27,10 @@ namespace RainMeadow
         private LobbyCardsList lobbyList;
         public LobbyInfo lastClickedLobby;
         private MenuDialogBox popupDialog;
+        private MenuLabel statisticsLabel;
+
+        public int playerCount;
+        public int lobbyCount;
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
         public LobbySelectMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbySelectMenu)
@@ -82,6 +86,11 @@ namespace RainMeadow
             // var unlocksButton = new SimplerButton(this, mainPage, Translate("UNLOCKS"), where, new Vector2(110f, 30f));
             // unlocksButton.buttonBehav.greyedOut = true;
             // mainPage.subObjects.Add(unlocksButton);
+
+            // Status
+            statisticsLabel = new MenuLabel(this, pages[0], $"Online: {playerCount} | Lobbies: {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
+            statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
+            mainPage.subObjects.Add(statisticsLabel);
 
             // // display version
             MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
@@ -177,10 +186,18 @@ namespace RainMeadow
 
             // passwordInputBox.greyedOut = !setpassword;
             // if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
+
+            // Statistics
+            if (statisticsLabel != null)
+            {
+                statisticsLabel.text = $"Online: {playerCount} | Lobbies: {lobbyCount}";
+                statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
+            }
         }
 
         public override void GrafUpdate(float timeStacker)
         {
+            
             base.GrafUpdate(timeStacker);
         }
 
@@ -241,7 +258,18 @@ namespace RainMeadow
             {
                 lobbyList.allLobbies = lobbies.ToList();
                 lobbyList.FilterLobbies();
+                UpdateStats(lobbyList);
             }
+        }
+
+        private void UpdateStats(LobbyCardsList lobbyList)
+        {
+            playerCount = 0;
+            lobbyList.allLobbies.ForEach(lobby =>
+            {
+                playerCount += lobby.playerCount;
+            });
+            lobbyCount = lobbyList.allLobbies.Count();
         }
 
         private void OnlineManager_OnLobbyJoined(bool ok, string error)
