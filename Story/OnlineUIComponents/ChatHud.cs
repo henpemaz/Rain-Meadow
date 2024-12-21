@@ -17,6 +17,8 @@ namespace RainMeadow
         
         public List<(string, string)> chatLog = new();
 
+        public bool Active => game.processActive;
+
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;
@@ -33,6 +35,9 @@ namespace RainMeadow
 
         public void AddMessage(string user, string message)
         {
+            if (!Active) return;
+            if (OnlineManager.lobby == null) return;
+
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             chatLog.Add((user, message));
             while (chatLog.Count > 13) chatLog.RemoveAt(0);
