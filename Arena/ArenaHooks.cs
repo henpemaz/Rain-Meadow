@@ -766,16 +766,23 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-                if (self.room == null)
+                for (int i = 0; i < self.room.shortcuts.Length; i++)
                 {
-                    return;
-                }
-                if (self.room.shortcuts == null)
-                {
-                    return;
+                    // Ensure that i is within bounds for both arrays
+                    if (i < self.entranceSprites.GetLength(0) && self.entranceSprites[i, 0] != null)
+                    {
+                        if (self.room.shortcuts[i].shortCutType == ShortcutData.Type.RoomExit)
+                        {
+                            self.entranceSprites[i, 0].element = Futile.atlasManager.GetElementWithName(toShelters ? "ShortcutShelter" : "ShortcutDots");
+                        }
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Index out of bounds for entranceSprites or entranceSprites[i, 0] is null.");
+                    }
                 }
 
-                orig(self, toShelters);
+
             }
             else
             {
