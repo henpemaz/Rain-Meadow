@@ -95,6 +95,7 @@ namespace RainMeadow
                     {
 
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                        arena.returnToLobby = true;
 
                         if (!OnlineManager.lobby.isOwner)
                         {

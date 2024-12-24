@@ -52,7 +52,6 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
-                arena.returnToLobby = true;
                 arena.ResetGameTimer();
             }
 
@@ -578,7 +577,6 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _))
             {
-                arena.clientsAreReadiedUp = 0;
                 RainMeadow.Debug(players);
                 for (int i = usernameButtons.Length - 1; i >= 1; i--)
                 {
