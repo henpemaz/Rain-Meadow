@@ -168,7 +168,7 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Error("Could not get online owner for spawned player!");
-                abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, self.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].playerClass, isGhost: false);
             }
 
             RainMeadow.Debug("Arena: Realize Creature!");
