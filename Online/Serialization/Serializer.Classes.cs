@@ -5,19 +5,19 @@ namespace RainMeadow
 {
     public partial class Serializer
     {
-        // todo make this load-order independent. How? map strings to indexes at lobby level don't rely on the .Index
         public void SerializeExtEnum<T>(ref T extEnum) where T : ExtEnum<T>
         {
             if (IsWriting)
             {
-                writer.Write((byte)extEnum.Index);
+                writer.Write((byte)OnlineManager.lobby.enumMapToRemote[typeof(T)][extEnum.Index]);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
             }
             if (IsReading)
             {
-                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                extEnum = (T)Activator.CreateInstance(typeof(T),
+                    new object[] { ExtEnum<T>.values.GetEntry(OnlineManager.lobby.enumMapToLocal[typeof(T)][reader.ReadByte()]), false });
             }
         }
 
