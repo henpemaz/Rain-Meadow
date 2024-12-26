@@ -53,6 +53,7 @@ namespace RainMeadow
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
                 arena.ResetGameTimer();
+                arena.clientsAreReadiedUp = 0;
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
