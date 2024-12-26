@@ -44,6 +44,8 @@ namespace RainMeadow
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
 
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
@@ -70,11 +72,9 @@ namespace RainMeadow
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
 
-            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
 
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
-            IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
@@ -153,14 +153,14 @@ namespace RainMeadow
         private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
         {
             orig();
-            if (isArenaMode(out var arena))
-            {
-                foreach (var kvp in arena.registeredGameModes)
-                {
-                    ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(kvp.Value);
-                }
+            //if (isArenaMode(out var arena))
+            //{
+            //    foreach (var kvp in arena.registeredGameModes)
+            //    {
+            //        ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(kvp.Value);
+            //    }
 
-            }
+            //}
 
         }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
@@ -1044,6 +1044,7 @@ namespace RainMeadow
 
                 if (message != null)
                 {
+                    arena.returnToLobby = true;
                     if (message == "CONTINUE")
                     {
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
@@ -1061,7 +1062,6 @@ namespace RainMeadow
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
                     self.ArenaSitting.players.Clear();
-                    arena.returnToLobby = true;
 
 
 
