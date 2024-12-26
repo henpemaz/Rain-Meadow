@@ -128,6 +128,11 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
+            if (item.type == PlacedObject.Type.SporePlant)
+            {
+                return false;
+            }
+
             return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
         }
 
