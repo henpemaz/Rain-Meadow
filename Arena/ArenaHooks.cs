@@ -69,12 +69,14 @@ namespace RainMeadow
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
             On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
+
             On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
             On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
             On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
-            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
+            On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
@@ -91,6 +93,15 @@ namespace RainMeadow
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
+        {
+            if (message == "EXIT" && isArenaMode(out var arena))
+            {
+                arena.returnToLobby = true;                
+            }
+            orig(self, sender, message);
         }
 
         private bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(On.MultiplayerUnlocks.orig_IsCreatureUnlockedForLevelSpawn orig, MultiplayerUnlocks self, CreatureTemplate.Type tp)
