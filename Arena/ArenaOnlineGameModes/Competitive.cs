@@ -5,7 +5,7 @@ namespace RainMeadow
     public class Competitive : ExternalArenaGameMode
     {
 
-        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: true);
+        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: false);
 
         private int _timerDuration;  // Backing field for TimerDuration
 
