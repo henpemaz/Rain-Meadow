@@ -24,6 +24,8 @@ namespace RainMeadow
             return false;
         }
 
+        public static bool inVoidSea = false;
+
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
@@ -278,7 +280,7 @@ namespace RainMeadow
                     {
                         touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
                     }
-                    if (touchedInput)
+                    if (touchedInput || inVoidSea)
                     {
                         self.gameOverMode = false;
                     }
@@ -1337,6 +1339,8 @@ namespace RainMeadow
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
         {
             orig(self, eu);
+
+            if (!inVoidSea) inVoidSea = true;
 
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
