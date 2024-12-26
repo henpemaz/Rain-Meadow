@@ -142,10 +142,6 @@ namespace RainMeadow
 
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
-            this.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-            this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
-            this.GetGameTypeSetup.savingAndLoadingSession = false;
-            this.GetGameTypeSetup.saveCreatures = false;
         }
 
         private void BindSettings()

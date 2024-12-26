@@ -47,10 +47,7 @@ namespace RainMeadow
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
 
-
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
-
-
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -58,21 +55,26 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
 
-
-
             On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
 
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
+
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
-
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
-
-
+            On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
+            On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
+            On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
+            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
+            On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
+            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
+            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
@@ -80,24 +82,13 @@ namespace RainMeadow
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
-
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
-            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
-            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
-            On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
-            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
 
-            On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
-            On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
-            On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
-
-            On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
-            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
-            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
         }
@@ -150,19 +141,6 @@ namespace RainMeadow
 
         }
 
-        private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
-        {
-            orig();
-            //if (isArenaMode(out var arena))
-            //{
-            //    foreach (var kvp in arena.registeredGameModes)
-            //    {
-            //        ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(kvp.Value);
-            //    }
-
-            //}
-
-        }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {
             if (isArenaMode(out var arena))
