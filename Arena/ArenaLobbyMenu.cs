@@ -52,8 +52,8 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.arenaSittingOnlineOrder = new List<ushort>();
-                arena.returnToLobby = true;
                 arena.ResetGameTimer();
+                arena.clientsAreReadiedUp = 0;
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -142,10 +142,6 @@ namespace RainMeadow
 
             this.backButton.signalText = "BACKTOLOBBY";
             this.playButton.signalText = "STARTARENAONLINEGAME";
-            this.GetGameTypeSetup.denEntryRule = ArenaSetup.GameTypeSetup.DenEntryRule.Standard;
-            this.GetGameTypeSetup.rainWhenOnePlayerLeft = false; // TODO:  Hook this to update logic due to level switching if we want it
-            this.GetGameTypeSetup.savingAndLoadingSession = false;
-            this.GetGameTypeSetup.saveCreatures = false;
         }
 
         private void BindSettings()
@@ -578,7 +574,6 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var _))
             {
-                arena.clientsAreReadiedUp = 0;
                 RainMeadow.Debug(players);
                 for (int i = usernameButtons.Length - 1; i >= 1; i--)
                 {

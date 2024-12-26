@@ -78,7 +78,6 @@ namespace RainMeadow
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
                     modeLabel.text = showMode.ToString();
-                    arena.countdownInitiatedHoldFire = true;
                 }
                 else
                 {
@@ -89,20 +88,20 @@ namespace RainMeadow
                 {
                     showMode = TimerMode.Countdown;
                 };
-
+                
+                arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
+                
+                
                 if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
                 {
                     arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = arena.onlineArenaGameMode.TimerText();
-                    arena.countdownInitiatedHoldFire = arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
                 }
 
                 else if (arena.setupTime <= 0 && !countdownInitiated)
                 {
                     countdownInitiated = true;
-                    arena.countdownInitiatedHoldFire = false;
-
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                 }

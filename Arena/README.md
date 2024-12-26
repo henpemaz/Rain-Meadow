@@ -83,7 +83,7 @@ namespace MyNamespace
     public class MyNewExternalArenaGameMode : ExternalArenaGameMode
     {
 
-        public static ArenaSetup.GameTypeID MyGameModeName = new ArenaSetup.GameTypeID("MyGameModeName", register: true);
+        public static ArenaSetup.GameTypeID MyGameModeName = new ArenaSetup.GameTypeID("MyGameModeName", register: false);
         }
     }
 }
