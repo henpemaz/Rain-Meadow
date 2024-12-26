@@ -93,7 +93,6 @@ namespace RainMeadow
 
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
-
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
 
                         if (!OnlineManager.lobby.isOwner)

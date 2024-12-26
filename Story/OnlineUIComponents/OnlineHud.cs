@@ -24,6 +24,12 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
+
+            if (!RainMeadow.rainMeadowOptions.FriendViewClickToActivate.Value)
+                RainMeadow.rainMeadowOptions.ShowFriends.Value = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
+            else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
+                RainMeadow.rainMeadowOptions.ShowFriends.Value ^= true;
+
             base.Draw(timeStacker);
         }
 

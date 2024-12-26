@@ -5,7 +5,7 @@ namespace RainMeadow
     public class Competitive : ExternalArenaGameMode
     {
 
-        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: true);
+        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: false);
 
         private int _timerDuration;  // Backing field for TimerDuration
 
@@ -56,7 +56,14 @@ namespace RainMeadow
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
-            return arena.countdownInitiatedHoldFire = true;
+            if (arena.setupTime > 0)
+            {
+                return arena.countdownInitiatedHoldFire = true;
+            }
+            else
+            {
+                return arena.countdownInitiatedHoldFire = false;
+            }
         }
 
         public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)

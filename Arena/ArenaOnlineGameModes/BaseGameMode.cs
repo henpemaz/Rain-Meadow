@@ -90,9 +90,14 @@ namespace RainMeadow
 
 
             List<OnlinePlayer> list2 = new List<OnlinePlayer>();
+
+
             for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
             {
-                list2.Add(OnlineManager.players[j]);
+                if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
+                {
+                    list2.Add(OnlineManager.players[j]);
+                }
             }
 
             while (list2.Count > 0)
@@ -168,7 +173,7 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Error("Could not get online owner for spawned player!");
-                abstractCreature.state = new PlayerState(abstractCreature, 0, self.characterStats_Mplayer[0].name, isGhost: false);
+                abstractCreature.state = new PlayerState(abstractCreature, 0, self.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].playerClass, isGhost: false);
             }
 
             RainMeadow.Debug("Arena: Realize Creature!");
@@ -210,9 +215,12 @@ namespace RainMeadow
             {
 
                 var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                if (!getPlayer.isMe)
+                if (getPlayer != null)
                 {
-                    getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    if (!getPlayer.isMe)
+                    {
+                        getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    }
                 }
             }
         }
