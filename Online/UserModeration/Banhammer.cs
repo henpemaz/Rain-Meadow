@@ -42,7 +42,7 @@ namespace RainMeadow
             {
                 OnlineManager.lobby.bannedUsers.list.Add(steamUser.id);
             }
-            OnlineManager.lobby.OnPlayerDisconnect(steamUser);
+            //MatchmakingManager.instance.HandleDisconnect(steamUser);
 
         }
 
