@@ -770,6 +770,7 @@ namespace RainMeadow
                         {
                             classButtons[localIndex].kickButton.OnClick += (_) =>
                             {
+                                RainMeadow.Debug("Kicked User: " + OnlineManager.players[localIndex]);
                                 BanHammer.BanUser(OnlineManager.players[localIndex]);
                             };
                         }
