@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Rewired.Runtime">
+      <HintPath>D:\SteamLibrary\steamapps\common\Rain World\RainWorld_Data\Managed\Rewired.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
