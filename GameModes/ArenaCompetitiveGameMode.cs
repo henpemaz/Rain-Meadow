@@ -64,7 +64,6 @@ namespace RainMeadow
 
         public void ResetViolence()
         {
-            countdownInitiatedHoldFire = true;
             playerEnteredGame = 0;
         }
 
