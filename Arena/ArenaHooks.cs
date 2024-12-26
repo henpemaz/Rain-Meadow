@@ -1333,7 +1333,6 @@ namespace RainMeadow
                         {
                             for (int i = 0; i < self.Players.Count; i++)
                             {
-                                RainMeadow.Debug(self.Players[i].state.alive);
                                 if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
                                 {
                                     if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
