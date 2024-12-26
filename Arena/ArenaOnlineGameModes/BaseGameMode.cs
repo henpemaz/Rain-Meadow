@@ -90,9 +90,14 @@ namespace RainMeadow
 
 
             List<OnlinePlayer> list2 = new List<OnlinePlayer>();
+
+
             for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
             {
-                list2.Add(OnlineManager.players[j]);
+                if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
+                {
+                    list2.Add(OnlineManager.players[j]);
+                }
             }
 
             while (list2.Count > 0)
@@ -210,9 +215,12 @@ namespace RainMeadow
             {
 
                 var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                if (!getPlayer.isMe)
+                if (getPlayer != null)
                 {
-                    getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    if (!getPlayer.isMe)
+                    {
+                        getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
+                    }
                 }
             }
         }
