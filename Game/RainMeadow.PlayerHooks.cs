@@ -578,9 +578,15 @@ public partial class RainMeadow
                 throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
             }
         }
+        if (onlineEntity != null)
+        {
+            onlineEntity.isTransferable = true;
+        }
         if (onlineEntity != null && !onlineEntity.isMine) return;
         RainMeadow.Debug($"%%% DIE {onlineEntity}");
+        
         orig(self);
+
     }
 
     private void Player_Destroy(On.Player.orig_Destroy orig, Player self)

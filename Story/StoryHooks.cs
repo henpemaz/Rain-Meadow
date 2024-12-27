@@ -107,7 +107,15 @@ namespace RainMeadow
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
+            On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         }
+
+        private bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
+        {
+            return true;
+        }
+
+        
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
