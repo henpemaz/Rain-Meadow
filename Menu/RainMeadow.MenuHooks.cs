@@ -320,6 +320,7 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaLobbyMenu(self);
             if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
+            if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
 #if !LOCAL_P2P
             if (ID == ProcessManager.ProcessID.IntroRoll)

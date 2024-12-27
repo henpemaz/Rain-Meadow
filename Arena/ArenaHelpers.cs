@@ -55,11 +55,18 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = false;
             }
-            arena.clientsAreReadiedUp = 0;
-            lobby.clientReadiedUp = false;
+            if (arena.returnToLobby)
+            {
+                arena.clientsAreReadiedUp = 0;
+                lobby.clientReadiedUp = false;
+                foreach (var player in OnlineManager.players)
+                {
+                    arena.playersReadiedUp[player.id.name] = false;
+                }
+            }
+
             foreach (var player in OnlineManager.players)
             {
-                arena.playersReadiedUp[player.id.name] = false;
                 if (player != OnlineManager.lobby.owner)
                 {
 

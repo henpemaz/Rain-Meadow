@@ -64,7 +64,6 @@ namespace RainMeadow
 
         public void ResetViolence()
         {
-            countdownInitiatedHoldFire = true;
             playerEnteredGame = 0;
         }
 
@@ -79,7 +78,9 @@ namespace RainMeadow
         }
         static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
-            AbstractPhysicalObject.AbstractObjectType.BlinkingFlower
+            AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
+            AbstractPhysicalObject.AbstractObjectType.SporePlant
+
 
         };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
@@ -129,6 +130,11 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
+            if (item.type == PlacedObject.Type.SporePlant)
+            {
+                return false;
+            }
+
             return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
         }
 

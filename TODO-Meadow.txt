@@ -1,11 +1,6 @@
 HIGH-PRIO
 
-trailer
-	the trailer
-
 project
-	go over readme, contributing etc
-	workshop description
 	credits
 
 MEDIUM-PRIO
@@ -46,7 +41,7 @@ creature todo
 
 lizard todo
 	could use proper lizard voice not default pink
-	red liz uses wrong seed sometimes? unconf
+	red liz gets wrong cosmetics with Remix on
 	blues have trouble sticking to the ceiling (retest)
 	blues have trouble climbing/pathing ledges (retest)
 	lizard wallclimb is slow, slows you down a lot in zerog movemen
@@ -93,7 +88,7 @@ customization
 
 menus
 	redo scavenger selectscreen
-	backing out of passage screen sends you to main menu? unconfirmed but plausible
+	backing out of passage screen sends you to main menu
 
 bugs
 	map seems to reset progression if map png changes size?

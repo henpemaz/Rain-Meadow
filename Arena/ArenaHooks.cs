@@ -44,11 +44,10 @@ namespace RainMeadow
             On.ArenaGameSession.ctor += ArenaGameSession_ctor;
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
-
+            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
-
-
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -56,50 +55,53 @@ namespace RainMeadow
             On.ArenaBehaviors.Evilifier.Update += Evilifier_Update;
             On.ArenaBehaviors.RespawnFlies.Update += RespawnFlies_Update;
 
-
-
             On.ShortcutGraphics.ChangeAllExitsToSheltersOrDots += ShortcutGraphics_ChangeAllExitsToSheltersOrDots;
 
             On.ArenaCreatureSpawner.SpawnArenaCreatures += ArenaCreatureSpawner_SpawnArenaCreatures;
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
+
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
-
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
+            On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
+            On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
+            On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
 
-            On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
-
+            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
+            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
+            On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
+            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
+            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
+            On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
-            IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
-
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
-            On.Menu.LevelSelector.LevelToPlaylist += LevelSelector_LevelToPlaylist;
-            On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
 
-            On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
-            On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
 
-            On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
-            On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
-            On.Menu.ArenaSettingsInterface.ctor += ArenaSettingsInterface_ctor;
+
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
-            On.ArenaSetup.GameTypeID.Init += GameTypeID_Init;
-            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
-            On.Menu.ArenaSettingsInterface.Update += ArenaSettingsInterface_Update;
-
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
+        {
+            if (message == "EXIT" && isArenaMode(out var arena))
+            {
+                arena.returnToLobby = true;                
+            }
+            orig(self, sender, message);
         }
 
         private bool MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn(On.MultiplayerUnlocks.orig_IsCreatureUnlockedForLevelSpawn orig, MultiplayerUnlocks self, CreatureTemplate.Type tp)
@@ -150,19 +152,6 @@ namespace RainMeadow
 
         }
 
-        private void GameTypeID_Init(On.ArenaSetup.GameTypeID.orig_Init orig)
-        {
-            orig();
-            if (isArenaMode(out var arena))
-            {
-                foreach (var kvp in arena.registeredGameModes)
-                {
-                    ExtEnum<ArenaSetup.GameTypeID>.values.AddEntry(kvp.Value);
-                }
-
-            }
-
-        }
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {
             if (isArenaMode(out var arena))
@@ -766,16 +755,23 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-                if (self.room == null)
+                for (int i = 0; i < self.room.shortcuts.Length; i++)
                 {
-                    return;
-                }
-                if (self.room.shortcuts == null)
-                {
-                    return;
+                    // Ensure that i is within bounds for both arrays
+                    if (i < self.entranceSprites.GetLength(0) && self.entranceSprites[i, 0] != null)
+                    {
+                        if (self.room.shortcuts[i].shortCutType == ShortcutData.Type.RoomExit)
+                        {
+                            self.entranceSprites[i, 0].element = Futile.atlasManager.GetElementWithName(toShelters ? "ShortcutShelter" : "ShortcutDots");
+                        }
+                    }
+                    else
+                    {
+                        RainMeadow.Debug("Index out of bounds for entranceSprites or entranceSprites[i, 0] is null.");
+                    }
                 }
 
-                orig(self, toShelters);
+
             }
             else
             {
@@ -1037,6 +1033,7 @@ namespace RainMeadow
 
                 if (message != null)
                 {
+                    arena.returnToLobby = true;
                     if (message == "CONTINUE")
                     {
                         self.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
@@ -1054,7 +1051,6 @@ namespace RainMeadow
                         self.PlaySound(SoundID.MENU_Switch_Page_In);
                     }
                     self.ArenaSitting.players.Clear();
-                    arena.returnToLobby = true;
 
 
 
@@ -1326,25 +1322,19 @@ namespace RainMeadow
                         {
                             for (int i = 0; i < self.Players.Count; i++)
                             {
-
                                 if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
                                 {
                                     if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
                                     {
                                         s.timeAlive++;
                                     }
-                                    if (onlineC.owner == os && (self.Players[i].realizedCreature != null && self.Players[i].realizedCreature.State.dead || self.Players[i].state.dead))
-                                    {
-                                        self.Players.Remove(self.Players[i]);
-                                    }
                                 }
                                 else
                                 {
-                                    if (self.Players[i].state.alive) // alive and without an owner? Die and remove
+                                    if (self.Players[i].state.alive) // alive and without an owner? Die
                                     {
                                         self.Players[i].Die();
                                     }
-                                    self.Players.Remove(self.Players[i]);
                                 }
                             }
                         }
