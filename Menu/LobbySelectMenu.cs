@@ -124,9 +124,12 @@ namespace RainMeadow
                 if (manager.musicPlayer.nextSong == null)
                 {
                     manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
+                    manager.musicPlayer.song.baseVolume = 0.23f;
+                    manager.musicPlayer.song.volume = manager.musicPlayer.mainSongMix * manager.musicPlayer.song.baseVolume;
                 }
                 else
                 {
+                    manager.musicPlayer.nextSong.baseVolume = 0.23f;
                     manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
                 }
             }

@@ -80,11 +80,11 @@ namespace RainMeadow
                 );
             pos.y -= (buttonCount) * 40f + 40f;
             var namesCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Display names"), "NAMES", true);
-            namesCb.subObjects.Add(new Floater(this, namesCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            namesCb.subObjects.Add(new Floater(this, namesCb, 0.7f, new Vector2(750f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
             pages[0].subObjects.Add(namesCb);
             pos.y -= 40f;
             var colCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Collision"), "COLLISION", true);
-            colCb.subObjects.Add(new Floater(this, colCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            colCb.subObjects.Add(new Floater(this, colCb, 0.5f, new Vector2(750f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
             pages[0].subObjects.Add(colCb);
 
 
@@ -93,7 +93,16 @@ namespace RainMeadow
             this.pages[0].subObjects.Remove(this.controlMap);
             //this.blackSprite.scaleX = manager.rainWorld.options.ScreenSize.x / 4f;
         }
-
+        public override void Update()
+        {
+            foreach (var c in pages[0].subObjects)
+            {
+                if (c == null) return;
+                if (c is FloatyButton button) button.progress = blackFade;
+                if (c is CheckBox ohoh) c.subObjects.DoIf(b => b is Floater, b => ((Floater)b).progress = blackFade);
+            }
+            base.Update();
+        }
         private void Continue(SimplerButton button)
         {
             RainMeadow.DebugMe();
