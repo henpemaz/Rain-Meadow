@@ -162,13 +162,13 @@ namespace RainMeadow
                 //throw;
             }
 
-            WetController ??= new DisembodiedLoopEmitter(0.3f, 1, 0); // RainMeadow.Debug("Created wetcontroller");
+            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume, 1, 0); // RainMeadow.Debug("Created wetcontroller");
 
             if (WetLoop == null) 
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, 0.3f, 1, false);
+                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume, 1, false);
 
                 WetLoop.gameObject.AddComponent<AudioLowPassFilter>();
                 WetLoop.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = 23000;
