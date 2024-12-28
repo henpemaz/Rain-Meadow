@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Menu;
 using Steamworks;
 using System;
@@ -93,6 +93,14 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner) 
             {
+
+                if (onlineDifficultyLabel == null)
+                {
+                    onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
+                    onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+                    onlineDifficultyLabel.label.alpha = 0.5f;
+                    pages[0].subObjects.Add(onlineDifficultyLabel);
+                }
                 // Remove all buttons scug buttons if requireCampaignSlugcat is on.
                 if (scugButtons != null && storyGameMode.requireCampaignSlugcat) 
                 {
@@ -101,8 +109,8 @@ namespace RainMeadow
                     };
 
                     scugButtons = null;
-                } 
-                // Reall buttons scug buttons if requireCampaignSlugcat is off.
+                }
+                // Recall buttons scug buttons if requireCampaignSlugcat is off.
                 else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat) 
                 {
                     SetupSlugcatList();
@@ -123,7 +131,7 @@ namespace RainMeadow
             {
                 if (startButton != null)
                 {
-                    startButton.buttonBehav.greyedOut = !storyGameMode.isInGame || storyGameMode.changedRegions || storyGameMode.readyForGate == 1 || storyGameMode.readyForWin;
+                    startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
                 }
                 if (onlineDifficultyLabel != null)
                 {
@@ -212,10 +220,6 @@ namespace RainMeadow
 
         private void SetupSlugcatList()
         {
-            onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
-            onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
-            onlineDifficultyLabel.label.alpha = 0.5f;
-            pages[0].subObjects.Add(onlineDifficultyLabel);
 
             var pos = new Vector2(394, 553);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true));
