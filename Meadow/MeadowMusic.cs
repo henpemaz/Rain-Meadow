@@ -12,6 +12,7 @@ namespace RainMeadow
 {
     public partial class MeadowMusic
     {
+        public const float defaultMusicVolume = 0.27f; // maybe this could be a slider somewhere
         public static void EnableMusic()
         {
             CheckFiles();
@@ -553,7 +554,7 @@ namespace RainMeadow
                     }
                     else 
                     { 
-                        musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2.5f) * 0.3f; 
+                        musicPlayer.song.baseVolume = Mathf.Pow(1f - (float)vibeIntensity, 2.5f) * defaultMusicVolume; 
                     }
                 }
                 if (vibeIntensity < 0.001f && vibeIntensityTarget == 0f)
@@ -561,7 +562,7 @@ namespace RainMeadow
                     RainMeadow.Debug("vibe intensity locked to the zero... :(");
                     UpdateIntensity = false;
                     vibeIntensity = 0f;
-                    if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = 0.3f;
+                    if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = defaultMusicVolume;
                 }
                 else if (vibeIntensity > 0.999f && vibeIntensityTarget == 1f)
                 {
@@ -812,7 +813,7 @@ namespace RainMeadow
                 {
                     musicPlayer.song = song;
                     musicPlayer.song.playWhenReady = true;
-                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f) ? 0.3f : 0f);
+                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
                 }
                 else
                 {
