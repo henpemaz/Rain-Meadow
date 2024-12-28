@@ -13,6 +13,7 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
+            IL.OverWorld.WorldLoaded += OverWorld_WorldLoaded_MergeEntityLists;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -211,73 +212,69 @@ namespace RainMeadow
             }
         }
 
-        // world transition at gates
-        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
+        private bool OverWorld_ShouldEntityBeMovedToNewRegion(On.OverWorld.orig_ShouldEntityBeMovedToNewRegion orig, OverWorld self, AbstractWorldEntity ent)
         {
             if (OnlineManager.lobby != null)
             {
-                AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
-                AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
-                WorldSession oldWorldSession = WorldSession.map.GetValue(oldAbsroom.world, (w) => throw new KeyNotFoundException());
-                WorldSession newWorldSession = WorldSession.map.GetValue(newAbsroom.world, (w) => throw new KeyNotFoundException());
-                List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
-                List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
+                // if they're not ours, don't move
+                if (ent is AbstractPhysicalObject apo && !apo.IsLocal())
+                    return false;
+                // if they're the overseer and it isn't the host moving it, that's bad as well
+                // something about hardcoded overseer IDs (see WorldLoader.GeneratePopulation)
+                if (ent is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !(self.worldLoader.world.GetResource()?.isOwner ?? true))
+                    return false;
+            }
 
-                Room room = null;
+            return orig(self, ent);
+        }
 
-                // Regular gate switch
-                // pre: remove remote entities
-                if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
+        // world transition at gates
+        private void OverWorld_WorldLoaded_MergeEntityLists(ILContext il)
+        {
+            try
+            {
+                // if room is remote, merge entitylists
+                int abstractRoomLoc = 2, abstractRoom2Loc = 3;
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdloc(out abstractRoom2Loc),
+                    i => i.MatchLdloc(out abstractRoomLoc),
+                    i => i.MatchLdfld<AbstractRoom>("entities"),
+                    i => i.MatchStfld<AbstractRoom>("entities")
+                    );
+                c.Emit(OpCodes.Ldloc, abstractRoomLoc);
+                c.Emit(OpCodes.Ldloc, abstractRoom2Loc);
+                c.EmitDelegate((AbstractRoom abstractRoom, AbstractRoom abstractRoom2) =>
                 {
-                    // we go over all APOs in the room
-                    Debug("Gate switchery 1");
-                    room = self.reportBackToGate.room;
-                    var entities = room.abstractRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
+                    if (OnlineManager.lobby != null && abstractRoom2.GetResource()?.isOwner is false)
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
-                        {
-                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
-                            {
-                                // not-online-aware removal
-                                Debug("removing remote entity from game " + opo);
-                                opo.beingMoved = true;
-                                if (apo.realizedObject is Creature c && c.inShortcut)
-                                {
-                                    c.RemoveFromShortcuts();
-                                }
-                                entities.Remove(apo);
-                                room.abstractRoom.creatures.Remove(apo as AbstractCreature);
-                                room.RemoveObject(apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(apo.realizedObject);
-                                opo.beingMoved = false;
-                            }
-                        }
+                        abstractRoom.entities.AddRange(abstractRoom2.entities);
+                        abstractRoom.creatures.AddRange(abstractRoom2.creatures);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
+        {
+            orig(self);
+
+            if (OnlineManager.lobby != null)
+            {
+                //self.reportBackToGate?.room?.abstractRoom.GetResource()?.Activate();
+
+                foreach (var absplayer in self.game.Players)
+                {
+                    if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                    {
+                       self.worldLoader.world.GetResource()?.ApoEnteringWorld(apo);
                     }
                 }
 
-                orig(self); // this replace the list of entities in new world with that from old world
-
-                // post: we add our entities to the new world
-                if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
-                {
-                    room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
-                    room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
-                    roomSession2.Activate();
-
-                    foreach (var absplayer in self.game.Players)
-                    {
-                        if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
-                        {
-                            newWorldSession.ApoEnteringWorld(apo);
-                        }
-                    }
-
-                    oldWorldSession.Deactivate();
-                    oldWorldSession.NotNeeded(); // done? let go
-                }
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
                     storyGameMode.changedRegions = true;
@@ -287,10 +284,6 @@ namespace RainMeadow
                 {
                     MeadowMusic.NewWorld(self.activeWorld);
                 }
-            }
-            else
-            {
-                orig(self);
             }
         }
 
