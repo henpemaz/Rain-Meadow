@@ -14,6 +14,7 @@ namespace RainMeadow
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
+        public bool requireCampaignSlugcat;
         public string? saveStateString;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
@@ -55,8 +56,15 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.StoryMenu;
         }
 
+        public HashSet<PlacedObject.Type> disallowedPlacedObjects = new()
+        {
+            PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
+            PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
+        };
+
         public override bool AllowedInMode(PlacedObject item)
         {
+            if (disallowedPlacedObjects.Contains(item.type)) return false;
             return true;  // base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type) || creatureRelatedItems.Contains(item.type);
         }
 
@@ -81,34 +89,29 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
             // todo if two join at once, this first check is faulty
         }
-        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+
+        public HashSet<AbstractPhysicalObject.AbstractObjectType> unsyncedAbstractObjectTypes = new()
         {
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
+            AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
+            AbstractPhysicalObject.AbstractObjectType.AttachedBee,
         };
+
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            if (blockList.Contains(apo.type))
-            {
-                return false;
-            }
+            if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
 
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
-            if (blockList.Contains(apo.type))
-            {
-                return false;
-            }
+            if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
-            if (blockList.Contains(apo.type))
-            {
-                return false;
-            }
+            if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
 
