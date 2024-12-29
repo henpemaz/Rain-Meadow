@@ -88,11 +88,9 @@ namespace RainMeadow
         {
             List<OnlinePlayer> list = new List<OnlinePlayer>();
 
-
             List<OnlinePlayer> list2 = new List<OnlinePlayer>();
 
-
-            for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
+            for (int j = 0; j < OnlineManager.players.Count; j++)
             {
                 if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
                 {
@@ -106,7 +104,6 @@ namespace RainMeadow
                 list.Add(list2[index]);
                 list2.RemoveAt(index);
             }
-
 
             int totalExits = self.game.world.GetAbstractRoom(0).exits;
             int[] exitScores = new int[totalExits];
@@ -145,6 +142,7 @@ namespace RainMeadow
                     highestScore = score;
                 }
             }
+            RainMeadow.Debug("=====FIVE");
 
             RainMeadow.Debug("Trying to create an abstract creature");
             RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
