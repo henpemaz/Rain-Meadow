@@ -80,6 +80,7 @@ namespace RainMeadow
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
+            IL.MoreSlugcats.Bullet.Update += Bullet_Update_ClientDontSpawnExplodeStuff;
 
             On.Oracle.CreateMarble += Oracle_CreateMarble;
             On.Oracle.SetUpMarbles += Oracle_SetUpMarbles;
@@ -643,6 +644,36 @@ namespace RainMeadow
                 swollenWaterNut.AbstrConsumable.isFresh = abstractSwollenWaterNut.isFresh;
                 onlineSwollenWaterNut.realized = true;
                 self.Destroy();
+            }
+        }
+
+        private void Bullet_Update_ClientDontSpawnExplodeStuff(ILContext il)
+        {
+            // explode spawns object and triggers it (puffball, flashbang)
+            // don't let clients spawn those
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<MoreSlugcats.Bullet>("get_abstractBullet"),
+                    i => i.MatchLdfld<MoreSlugcats.AbstractBullet>("timeToLive"),
+                    i => i.MatchLdcI4(0),
+                    i => i.MatchBgt(out _)
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((MoreSlugcats.Bullet bullet) => bullet.IsLocal());
+                c.Emit(OpCodes.Brfalse, skip);
+                c.GotoNext(moveType: MoveType.AfterLabel,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallvirt<UpdatableAndDeletable>("Destroy")
+                    );
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
