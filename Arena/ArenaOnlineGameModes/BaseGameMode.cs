@@ -142,7 +142,6 @@ namespace RainMeadow
                     highestScore = score;
                 }
             }
-            RainMeadow.Debug("=====FIVE");
 
             RainMeadow.Debug("Trying to create an abstract creature");
             RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
