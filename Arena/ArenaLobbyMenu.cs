@@ -754,7 +754,10 @@ namespace RainMeadow
                     classButtons[l].buttonBehav.greyedOut = true;
 
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                    var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
+                    if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[l].id.name, out var currentColorIndex))
+                    {
+                        currentColorIndex = 0;
+                    }
 
                     classButtons[l].portrait.fileName = ArenaImage(allSlugs[currentColorIndex], currentColorIndex);
 
