@@ -24,8 +24,6 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool inVoidSea = false;
-
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
@@ -291,7 +289,7 @@ namespace RainMeadow
                     {
                         touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
                     }
-                    if (touchedInput || inVoidSea)
+                    if (touchedInput)
                     {
                         self.gameOverMode = false;
                     }
@@ -1108,7 +1106,6 @@ namespace RainMeadow
             var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
-                inVoidSea = false;
                 currentSaveState.progression ??= self;
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -1354,25 +1351,15 @@ namespace RainMeadow
 
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && !opo.isMine && opo.apo.realizedObject is PhysicalObject po)
                 {
-                    // do things with the AbstractCreature we found
-                    if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                    if (po.Submersion > 0.5f)
                     {
-                        Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
+                        Vector2 position = po.bodyChunks[0].pos;
                         RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
-                        opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
-                        opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
-                        opo.apo.realizedObject.RemoveFromRoom();
-                    }
-                    else if (ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
-                    {
-                        inVoidSea = true;
-                    }
-                    else if (ac.IsLocal() && !(opo.apo.realizedObject.Submersion > 0.5f))
-                    {
-                        inVoidSea = false;
+                        po.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
+                        po.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
+                        po.RemoveFromRoom();
                     }
                 }
             }
