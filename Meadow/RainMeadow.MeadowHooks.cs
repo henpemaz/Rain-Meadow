@@ -35,8 +35,10 @@ namespace RainMeadow
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide1;
 
             On.RainWorldGame.AllowRainCounterToTick += RainWorldGame_AllowRainCounterToTick; // timer stuck
-            On.ShelterDoor.Close += ShelterDoor_Close; // door stuck
             On.OverWorld.LoadFirstWorld += OverWorld_LoadFirstWorld; // timer stuck past cycle start
+
+            IL.ShelterDoor.ctor += ShelterDoor_ctor; // don't you player[0] me, tutorial
+            On.ShelterDoor.Close += ShelterDoor_Close; // door stuck
 
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms; // displayer follow creature
 
@@ -323,6 +325,28 @@ namespace RainMeadow
                 self.activeWorld.rainCycle.timer = 800;
                 MeadowMusic.NewWorld(self.activeWorld);
             }
+        }
+
+        private void ShelterDoor_ctor(ILContext il)
+        {
+            // tutorials (big if block at the end) shoulnd't happen in meadow-mode
+            // most of them use player[0], no good
+            // we add
+            // if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode) return;
+            // after the expedition check that does the same thing
+            var c = new ILCursor(il);
+            c.Index = c.Instrs.Count - 1; // from bottom
+            ILLabel noExpedition = null;
+            c.GotoPrev(MoveType.AfterLabel,
+                i=>i.MatchLdsfld<ModManager>("Expedition"),
+                i=>i.MatchBrfalse(out noExpedition)
+                );
+            c.GotoLabel(noExpedition); // code after return (expedition is off)
+            var skip = c.DefineLabel();
+            c.EmitDelegate(() => OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode);
+            c.Emit(OpCodes.Brfalse, skip);
+            c.Emit(OpCodes.Ret);
+            c.MarkLabel(skip);
         }
 
         private void ShelterDoor_Close(On.ShelterDoor.orig_Close orig, ShelterDoor self)
