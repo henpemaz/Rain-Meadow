@@ -79,8 +79,8 @@ namespace RainMeadow
         static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
-            AbstractPhysicalObject.AbstractObjectType.SporePlant
-
+            AbstractPhysicalObject.AbstractObjectType.SporePlant,
+            AbstractPhysicalObject.AbstractObjectType.AttachedBee
 
         };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
