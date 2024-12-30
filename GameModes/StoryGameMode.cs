@@ -100,18 +100,21 @@ namespace RainMeadow
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.realizedObject is Player { playerState.isGhost: true }) return false;
             return true;
         }
 
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.realizedObject is Player { playerState.isGhost: true }) return false;
             return true;
         }
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.realizedObject is Player { playerState.isGhost: true }) return false;
             return true;
         }
 

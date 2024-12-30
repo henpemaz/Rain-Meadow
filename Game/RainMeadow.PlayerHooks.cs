@@ -579,7 +579,7 @@ public partial class RainMeadow
             }
         }
         if (onlineEntity != null && !onlineEntity.isMine) return;
-        RainMeadow.Debug($"%%% DIE {onlineEntity}");
+        RainMeadow.Debug($"%%% DIE {onlineEntity} {Environment.StackTrace}");
         orig(self);
     }
 
