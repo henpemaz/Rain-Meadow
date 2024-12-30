@@ -288,7 +288,7 @@ namespace RainMeadow
         protected override void LookImpl(Vector2 pos)
         {
             var dir = Custom.DirVec(mouse.mainBodyChunk.pos, pos);
-            (mouse.graphicsModule as MouseGraphics).lookDir = (mouse.mainBodyChunk.pos - pos) / 500f;
+            if (mouse.graphicsModule is MouseGraphics mouseGraphics) mouseGraphics.lookDir = (mouse.mainBodyChunk.pos - pos) / 500f;
             if (HasFooting)
             {
                 mouse.bodyChunks[0].vel += 0.5f * dir;
