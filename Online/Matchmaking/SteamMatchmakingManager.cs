@@ -6,6 +6,14 @@ using System.Linq;
 
 namespace RainMeadow
 {
+    public class SteamLobbyInfo : LobbyInfo {
+        public CSteamID iD;
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount) : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+            iD = id;
+        }
+    }
+
     public class SteamMatchmakingManager : MatchmakingManager
     {
         public class SteamPlayerId : MeadowPlayerId
@@ -35,6 +43,16 @@ namespace RainMeadow
             {
                 return steamID.GetHashCode();
             }
+
+            public string GetPersonaName() {
+                return SteamFriends.GetFriendPersonaName(steamID);
+            }
+
+            public override bool canOpenProfileLink { get => true; }
+            public override void OpenProfileLink() {
+                string url = $"https://steamcommunity.com/profiles/{steamID}";
+                SteamFriends.ActivateGameOverlayToWebPage(url);
+            }
         }
 
         public override MeadowPlayerId GetEmptyId()
@@ -58,6 +76,7 @@ namespace RainMeadow
 
         public SteamMatchmakingManager()
         {
+            SteamNetworkingUtils.InitRelayNetworkAccess();
             RainMeadow.DebugMe();
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
@@ -95,7 +114,7 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
+                        lobbies[i] = new SteamLobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
                     }
                 }
 
@@ -126,7 +145,7 @@ namespace RainMeadow
         public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             lobbyPassword = password;
-            m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
+            m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }
 
         public override void JoinLobby(bool success)
@@ -212,7 +231,7 @@ namespace RainMeadow
             }
         }
 
-        public override List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(((SteamPlayerId)player.id).steamID, player.id.name)).ToList();
+        public override List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(() => player.id.OpenProfileLink(), player.id.name)).ToList();
 
         public void UpdatePlayersList()
         {
@@ -237,7 +256,7 @@ namespace RainMeadow
                 // OnlineManager.players will have been updated to match newplayers
                 foreach (CSteamID player in newplayers)
                 {
-                    playerList.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                    playerList.Add(new PlayerInfo(() => SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{player}"), SteamFriends.GetFriendPersonaName(player)));
                 }
                 OnPlayerListReceived?.Invoke(playerList.ToArray());
             }
@@ -384,7 +403,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
+                OnlineManager.currentlyJoiningLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
@@ -425,6 +444,10 @@ namespace RainMeadow
         public override string GetLobbyID()
         {
             return lobbyID.ToString();
+        }
+
+        public override void OpenInvitationOverlay() {
+            SteamFriends.ActivateGameOverlayInviteDialog(lobbyID);
         }
     }
 }
