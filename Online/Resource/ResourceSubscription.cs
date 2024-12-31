@@ -28,7 +28,7 @@ namespace RainMeadow
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
 
-            if (NetIO.IsNewerOrEqual(player.latestTickAck, resource.lastModified)) // player has acked latest relevant changes
+            if (EventMath.IsNewerOrEqual(player.latestTickAck, resource.lastModified)) // player has acked latest relevant changes
             {
                 if (cooldown > 0) // don't spam
                 {
@@ -42,7 +42,7 @@ namespace RainMeadow
 
             if (player.recentlyAckdTicks.Count > 0)
             {
-                while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
+                while (OutgoingStates.Count > 0 && EventMath.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Discarding obsolete:" + OutgoingStates.Peek().tick);
                     OutgoingStates.Dequeue(); // discard obsolete
