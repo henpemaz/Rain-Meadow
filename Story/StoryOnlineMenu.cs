@@ -180,13 +180,8 @@ namespace RainMeadow
             {
                 pos -= new Vector2(0, 38);
                 var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
-                btn.OnClick += (_) =>
-                {
-                    if (playerInfo.id != default)
-                    {
-                        SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
-                    }
-                };
+                btn.OnClick += (_) => playerInfo.openProfile();
+                
                 playerButtons.Add(btn);
             }
             foreach (var btn in playerButtons)
@@ -305,10 +300,7 @@ namespace RainMeadow
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
-            invite.OnClick += (_) =>
-            {
-                SteamFriends.ActivateGameOverlay("friends");
-            };
+            invite.OnClick += (_) => MatchmakingManager.instance.OpenInvitationOverlay();
             pages[0].subObjects.Add(invite);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
