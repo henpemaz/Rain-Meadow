@@ -401,7 +401,7 @@ namespace RainMeadow
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick))
+                while (stateQueue.Count > 0 && EventMath.IsNewer(newState.baseline, stateQueue.Peek().tick))
                 {
                     var discarded = stateQueue.Dequeue();
                     RainMeadow.Trace("discarding old event from tick " + discarded.tick);

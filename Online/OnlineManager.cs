@@ -9,6 +9,7 @@ namespace RainMeadow
     // is a mainloopprocess so update bound to game update? worth it? idk
     public class OnlineManager : MainLoopProcess
     {
+        public static NetIO netIO;
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
@@ -25,6 +26,11 @@ namespace RainMeadow
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
+            // if steam installed 
+            netIO = new SteamNetIO();
+            // else 
+            // netIO = new LocalNetIO();
+
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
             milisecondsPerFrame = 1000 / framesPerSecond;
@@ -77,7 +83,7 @@ namespace RainMeadow
         public override void RawUpdate(float dt)
         {
             myTimeStacker += dt * (float)framesPerSecond;
-            NetIO.Update(); // incoming data
+            netIO.Update(); // incoming data
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
@@ -94,10 +100,10 @@ namespace RainMeadow
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-#if !LOCAL_P2P
-            SteamAPI.RunCallbacks();
-#endif
-            NetIO.Update();
+// #if !LOCAL_P2P
+//             SteamAPI.RunCallbacks();
+// #endif
+            netIO.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
@@ -158,7 +164,7 @@ namespace RainMeadow
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
-                NetIO.SendSessionData(toPlayer);
+                netIO.SendSessionData(toPlayer);
             }
         }
 
@@ -205,7 +211,7 @@ namespace RainMeadow
         {
             OnlinePlayer fromPlayer = onlineEvent.from;
             fromPlayer.needsAck = true;
-            if (NetIO.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
+            if (EventMath.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;

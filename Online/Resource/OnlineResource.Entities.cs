@@ -119,7 +119,7 @@ namespace RainMeadow
                 return;
             }
 
-            if (oe.primaryResource is OnlineResource otherResource && otherResource != this && NetIO.IsNewer(otherResource.registeredEntities[oe.id].version, entityDefinition.version))
+            if (oe.primaryResource is OnlineResource otherResource && otherResource != this && EventMath.IsNewer(otherResource.registeredEntities[oe.id].version, entityDefinition.version))
             {
                 // recently registered elsewhere, to not move back here
                 RainMeadow.Trace($"Entity moved recently: " + oe);
