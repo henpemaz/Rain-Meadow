@@ -51,7 +51,7 @@ namespace RainMeadow
             {
                 DebugOverlay.playersRead.addPlayer(currPlayer);
                 var newTick = reader.ReadUInt32();
-                if (!NetIO.IsNewer(newTick, currPlayer.tick))
+                if (!EventMath.IsNewer(newTick, currPlayer.tick))
                 {
                     AbortRead();
                     return;

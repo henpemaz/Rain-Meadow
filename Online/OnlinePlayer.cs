@@ -94,7 +94,7 @@ namespace RainMeadow
             tick = newTick;
             recentTicks.Enqueue(tick);
             var windowstart = tick - 15;
-            while (NetIO.IsNewer(windowstart, recentTicks.Peek())) recentTicks.Dequeue();
+            while (EventMath.IsNewer(windowstart, recentTicks.Peek())) recentTicks.Dequeue();
             recentTicksToAckBitpack = recentTicks.Select(t => (int)(uint)(tick - t)).Aggregate((ushort)0, (s, e) => (ushort)(s | (ushort)(1 << e)));
             needsAck = true;
             RainMeadow.Trace(this + " - " + tick);
@@ -105,7 +105,7 @@ namespace RainMeadow
         {
             this.recentlyAckedEvents.Clear();
             this.lastAckFromRemote = lastAck;
-            while (OutgoingEvents.Count > 0 && NetIO.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
+            while (OutgoingEvents.Count > 0 && EventMath.IsNewerOrEqual(lastAck, OutgoingEvents.Peek().eventId))
             {
                 var e = OutgoingEvents.Dequeue();
                 RainMeadow.Debug($"{this} ackd {e}");
@@ -118,13 +118,13 @@ namespace RainMeadow
             var timeSinceLastTick = (int)Math.Floor(Math.Max(1, (UnityEngine.Time.realtimeSinceStartup - OnlineManager.lastReceive) * 1000));
             ping = (int)(OnlineManager.mePlayer.tick - tickAck) * OnlineManager.instance.milisecondsPerFrame + timeSinceLastTick;
 
-            if (NetIO.IsNewerOrEqual(tickAck, latestTickAck) && (recentTickAcks & 1) == 1)
+            if (EventMath.IsNewerOrEqual(tickAck, latestTickAck) && (recentTickAcks & 1) == 1)
             {
                 //RainMeadow.Debug(tickAck);
                 //RainMeadow.Debug(Convert.ToString(recentTickAcks, 2));
                 this.latestTickAck = tickAck;
                 this.oldestTickToConsider = tickAck - 64;
-                recentlyAckdTicks.RemoveWhere(t => NetIO.IsNewer(oldestTickToConsider, t)); // keep a bigger window from previous acks
+                recentlyAckdTicks.RemoveWhere(t => EventMath.IsNewer(oldestTickToConsider, t)); // keep a bigger window from previous acks
                 for (int i = 0; i < 16; i++)
                 {
                     if ((recentTickAcks & (1 << i)) != 0)
