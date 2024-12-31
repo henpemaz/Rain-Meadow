@@ -10,7 +10,7 @@ namespace RainMeadow
             {
                 (MatchmakingManager.instance as LocalMatchmakingManager).LocalPlayerLeft(processingPlayer);
 
-                NetIO.SendP2P(processingPlayer, new SessionEndPacket(), NetIO.SendType.Unreliable);
+                OnlineManager.netIO.SendP2P(processingPlayer, new SessionEndPacket(), NetIO.SendType.Unreliable);
             }
         }
     }

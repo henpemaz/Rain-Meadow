@@ -29,7 +29,7 @@ namespace RainMeadow
 
         public bool canRelease => !isPending // no ongoing transaction
             && (!isActive || !subresources.Any(s => s.isAvailable || s.isPending)) // no subresource available or pending
-            && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified)))); // state broadcasted
+            && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => EventMath.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
 
