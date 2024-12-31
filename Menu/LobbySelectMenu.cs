@@ -6,9 +6,6 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 
 
-#if !LOCAL_P2P
-using Steamworks;
-#endif
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -131,9 +128,9 @@ namespace RainMeadow
             // // Lobby machine go!
             MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-#if !LOCAL_P2P
-            SteamNetworkingUtils.InitRelayNetworkAccess();
-#endif
+// #if !LOCAL_P2P
+//             SteamNetworkingUtils.InitRelayNetworkAccess();
+// #endif
             MatchmakingManager.instance.RequestLobbyList();
 
             if (manager.musicPlayer != null)

@@ -2,10 +2,19 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using Menu;
+using Menu.Remix;
 using static RainMeadow.NetIO;
 
 namespace RainMeadow
 {
+    class LocalLobbyInfo : LobbyInfo {
+        public IPEndPoint endPoint;
+        public LocalLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+            this.endPoint = endPoint;
+        }
+    }
     public class LocalMatchmakingManager : MatchmakingManager
     {
 #if ARENAP2P
@@ -20,6 +29,10 @@ namespace RainMeadow
 
         public class LocalPlayerId : MeadowPlayerId
         {
+            override public void OpenProfileLink() {
+                OnlineManager.instance.manager.ShowDialog(new DialogNotify("You need Steam active to play Rain Meadow", OnlineManager.instance.manager, null));
+            }
+
             public int id;
             public IPEndPoint? endPoint;
             public bool isHost;
@@ -81,7 +94,9 @@ namespace RainMeadow
             //OnLobbyListReceived?.Invoke(true, new LobbyInfo[0] { });
             // Create the proper list
             var fakeEndpoint = new IPEndPoint(IPAddress.Loopback, UdpPeer.STARTING_PORT);
-            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { new LobbyInfo(fakeEndpoint, "local", localGameMode, 1, false, MAX_LOBBY), new LobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true, MAX_LOBBY) });
+            OnLobbyListReceived?.Invoke(true, new LobbyInfo[2] { 
+                new LocalLobbyInfo(fakeEndpoint, "local", localGameMode, 1, false, MAX_LOBBY), 
+                new LocalLobbyInfo(fakeEndpoint, "local:HasPassword", localGameMode, 1, true, MAX_LOBBY) });
         }
 
         public void sessionSetup(bool isHost)
@@ -127,7 +142,9 @@ namespace RainMeadow
                 return;
             }
             RainMeadow.Debug("Trying to join local game...");
-            if (lobby.ipEndpoint == null)
+
+            var lobbyInfo = (LocalLobbyInfo)lobby;
+            if (lobbyInfo.endPoint == null)
             {
                 RainMeadow.Debug("Failed to join local game...");
                 return;
@@ -136,7 +153,7 @@ namespace RainMeadow
             var memory = new MemoryStream(16);
             var writer = new BinaryWriter(memory);
             Packet.Encode(new RequestJoinPacket(), writer, null);
-            UdpPeer.Send(lobby.ipEndpoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
+            UdpPeer.Send(lobbyInfo.endPoint, memory.GetBuffer(), (int)memory.Position, UdpPeer.PacketType.Reliable);
         }
         public void LobbyJoined()
         {
@@ -235,6 +252,10 @@ namespace RainMeadow
         public override string GetLobbyID()
         {
             return "some_id";
+        }
+
+        public override void OpenInvitationOverlay() {
+            OnlineManager.instance.manager.ShowDialog(new DialogNotify("This feature is not available in local multiplayer.", OnlineManager.instance.manager, null));
         }
     }
 }

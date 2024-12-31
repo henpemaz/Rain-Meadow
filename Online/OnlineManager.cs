@@ -27,9 +27,11 @@ namespace RainMeadow
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             // if steam installed 
-            netIO = new SteamNetIO();
-            // else 
-            // netIO = new LocalNetIO();
+            // if (SteamManager.Instance.m_bInitialized)
+            if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
+                netIO = new SteamNetIO();
+            }
+            
 
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
@@ -83,7 +85,7 @@ namespace RainMeadow
         public override void RawUpdate(float dt)
         {
             myTimeStacker += dt * (float)framesPerSecond;
-            netIO.Update(); // incoming data
+            netIO?.Update(); // incoming data
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
@@ -103,7 +105,7 @@ namespace RainMeadow
 // #if !LOCAL_P2P
 //             SteamAPI.RunCallbacks();
 // #endif
-            netIO.Update();
+            netIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
@@ -164,7 +166,7 @@ namespace RainMeadow
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
-                netIO.SendSessionData(toPlayer);
+                netIO?.SendSessionData(toPlayer);
             }
         }
 
