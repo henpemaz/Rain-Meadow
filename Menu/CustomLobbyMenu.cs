@@ -1,5 +1,4 @@
 ﻿using Menu;
-using Steamworks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -48,16 +47,7 @@ namespace RainMeadow
             List<PlayerInfo> players = new List<PlayerInfo>();
             foreach (OnlinePlayer player in OnlineManager.players)
             {
-                CSteamID playerId;
-                if (player.id is LocalMatchmakingManager.LocalPlayerId)
-                {
-                    playerId = default;
-                }
-                else
-                {
-                    playerId = (player.id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                }
-                players.Add(new PlayerInfo(playerId, player.id.name));
+                players.Add(new PlayerInfo(() => player.id.OpenProfileLink(), player.id.name));
             }
             this.players = players.ToArray();
             CreatePlayerCards();

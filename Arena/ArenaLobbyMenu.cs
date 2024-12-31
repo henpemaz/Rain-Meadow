@@ -2,7 +2,6 @@ using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
 using RWCustom;
-using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -761,21 +760,10 @@ namespace RainMeadow
         {
 
             string name = OnlineManager.mePlayer.id.name;
-            CSteamID playerId;
-            if (OnlineManager.players[0].id is LocalMatchmakingManager.LocalPlayerId)
-            {
-                playerId = default;
-            }
-            else
-            {
-                playerId = (OnlineManager.mePlayer.id as SteamMatchmakingManager.SteamPlayerId).steamID;
-            }
-
             meUsernameButton = new SimplerButton(this, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f), 40f), new Vector2(num - 20f, 30f));
             (meUsernameButton as SimplerButton).OnClick += (_) =>
             {
-                string url = $"https://steamcommunity.com/profiles/{playerId}";
-                SteamFriends.ActivateGameOverlayToWebPage(url);
+                OnlineManager.mePlayer.id.OpenProfileLink();
             };
 
             meUsernameButton.buttonBehav.greyedOut = false;
@@ -848,21 +836,10 @@ namespace RainMeadow
                     }
 
                     string name = OnlineManager.players[k].id.name;
-                    CSteamID playerId;
-                    if (OnlineManager.players[k].id is LocalMatchmakingManager.LocalPlayerId)
-                    {
-                        playerId = default;
-                    }
-                    else
-                    {
-                        playerId = (OnlineManager.players[k].id as SteamMatchmakingManager.SteamPlayerId).steamID;
-                    }
-
                     usernameButtons[k] = new SimplerButton(this, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
                     (usernameButtons[k] as SimplerButton).OnClick += (_) =>
                     {
-                        string url = $"https://steamcommunity.com/profiles/{playerId}";
-                        SteamFriends.ActivateGameOverlayToWebPage(url);
+                        OnlineManager.players[k].id.OpenProfileLink();
                     };
 
                     usernameButtons[k].buttonBehav.greyedOut = false;

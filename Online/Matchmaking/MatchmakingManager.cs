@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -58,7 +57,7 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
-        public virtual List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(default, player.id.name)).ToList();
+        public virtual List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(() => player.id.OpenProfileLink(), player.id.name)).ToList();
 
         // the idea here was to decide by ping some day
         public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
@@ -88,5 +87,6 @@ namespace RainMeadow
         public abstract MeadowPlayerId GetEmptyId();
 
         public abstract string GetLobbyID();
+        public abstract void OpenInvitationOverlay();
     }
 }
