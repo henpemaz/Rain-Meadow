@@ -52,7 +52,7 @@ namespace RainMeadow
             SetupOnlineMenuItems();
             UpdatePlayerList();
 
-            MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.currentInstance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
@@ -172,7 +172,7 @@ namespace RainMeadow
 
             var pos = new Vector2(194, 553);
 
-            foreach (var playerInfo in MatchmakingManager.instance.playerList)
+            foreach (var playerInfo in MatchmakingManager.currentInstance.playerList)
             {
                 pos -= new Vector2(0, 38);
                 var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
@@ -296,7 +296,7 @@ namespace RainMeadow
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
-            invite.OnClick += (_) => MatchmakingManager.instance.OpenInvitationOverlay();
+            invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
             pages[0].subObjects.Add(invite);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;

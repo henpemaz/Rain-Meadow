@@ -1,13 +1,37 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Unity.Services.Analytics.Internal;
 
 namespace RainMeadow
 {
 
     public abstract class MatchmakingManager
     {
-        public static MatchmakingManager instance;
+        public class MatchMaker: ExtEnum<MatchMaker> {
+            public MatchMaker(string name, bool register) : base(name, register) { }
+
+            public static MatchMaker Local = new MatchMaker("Local", true);
+            public static MatchMaker Steam = new MatchMaker("Steam", true);
+
+
+        };
+
+
+        public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
+        public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
+
+        private static MatchMaker _Matchmaker = MatchMaker.Steam;
+
+        public static MatchMaker currentMatchMaker { get { return _Matchmaker; } set { 
+                        var last = _Matchmaker; 
+                        _Matchmaker = value; 
+                        changedMatchMaker.Invoke(last, _Matchmaker);  }} 
+        public static MatchmakingManager currentInstance { get => instances[currentMatchMaker]; }
+        public static Dictionary<MatchMaker, MatchmakingManager> instances = new Dictionary<MatchMaker, MatchmakingManager>();
+
+
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
@@ -17,11 +41,9 @@ namespace RainMeadow
 
         public static void InitLobbyManager()
         {
-#if LOCAL_P2P
-            instance = new LocalMatchmakingManager();
-#else
-            instance = new SteamMatchmakingManager();
-#endif
+            instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
+            if (OnlineManager.netIO is SteamNetIO)
+                instances.TryAdd(MatchMaker.Steam, new SteamMatchmakingManager());
         }
 
         public enum LobbyVisibility

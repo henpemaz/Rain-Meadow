@@ -30,11 +30,9 @@ namespace RainMeadow
             for (int i = 0; i < players.Length; i++)
             {
                 var player = players[i].id as LocalMatchmakingManager.LocalPlayerId;
-                writer.Write(player.id);
-
-                if (modifyOperation != Operation.Add) continue;
-
-                writer.Write((ushort)player.endPoint.Port);
+                writer.Write(player.endPoint.Address.GetAddressBytes().Length);
+                writer.Write(player.endPoint.Address.GetAddressBytes());
+                writer.Write(player.endPoint.Port);
             }
         }
 
@@ -44,25 +42,27 @@ namespace RainMeadow
             players = new OnlinePlayer[reader.ReadInt32()];
             for (int i = 0; i < players.Length; i++)
             {
-                int netId = reader.ReadInt32();
+                int address_size = reader.ReadInt32();
+                byte[] address = reader.ReadBytes(address_size);
+                int port = reader.ReadInt32();
+                IPEndPoint endPoint = new IPEndPoint(new IPAddress(address), port);
 
                 switch (modifyOperation)
                 {
                     case Operation.Add:
-                        var endPoint = new IPEndPoint(IPAddress.Loopback, reader.ReadUInt16());
                         //players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
                         //    ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
-                        players[i] = (MatchmakingManager.instance as LocalMatchmakingManager).GetPlayerLocal(netId);
+                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(endPoint);
                         if (players[i] == null)
                         {
-                            RainMeadow.Debug("Player not found: " + netId);
-                            players[i] = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                            RainMeadow.Debug("Player not found: " + endPoint.ToString());
+                            players[i] = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(-1, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
                         }
                         break;
 
 
                     case Operation.Remove:
-                        players[i] = (MatchmakingManager.instance as LocalMatchmakingManager).GetPlayerLocal(netId);
+                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(endPoint);
                         break;
                 }
             }
@@ -76,7 +76,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
                     for (int i = 0; i < players.Length; i++)
                     {
-                        (MatchmakingManager.instance as LocalMatchmakingManager).LocalPlayerJoined(players[i]);
+                        (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).AcknoledgeLANPlayer(players[i]);
                     }
                     break;
 
@@ -84,7 +84,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Removing players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
                     for (int i = 0; i < players.Length; i++)
                     {
-                        (MatchmakingManager.instance as LocalMatchmakingManager).LocalPlayerLeft(players[i]);
+                        (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).RemoveLANPlayer(players[i]);
                     }
                     break;
             }
