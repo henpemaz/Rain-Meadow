@@ -6,7 +6,7 @@ namespace RainMeadow
 
         public override void Process()
         {
-            (MatchmakingManager.instance as LocalMatchmakingManager).LobbyJoined();
+            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).LobbyAcknoledgedUs();
         }
     }
 }

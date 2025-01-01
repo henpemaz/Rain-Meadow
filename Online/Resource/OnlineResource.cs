@@ -445,7 +445,7 @@ namespace RainMeadow
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
-                NewOwner(MatchmakingManager.instance.GetLobbyOwner());
+                NewOwner(MatchmakingManager.currentInstance.GetLobbyOwner());
             }
 
             // first transfer recursivelly, then remove recursivelly
@@ -483,7 +483,7 @@ namespace RainMeadow
             if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
             OnlinePlayer newOwner;
 
-            newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+            newOwner = MatchmakingManager.currentInstance.BestTransferCandidate(this, participants);
 
             if (newOwner != owner)
             {

@@ -8,7 +8,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                (MatchmakingManager.instance as LocalMatchmakingManager).sessionShutdown();
+                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).sessionShutdown();
             }
         }
     }
