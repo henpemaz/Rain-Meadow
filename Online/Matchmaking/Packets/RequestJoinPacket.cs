@@ -9,7 +9,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 // Hello packet from joining peer
-                (MatchmakingManager.instance as LocalMatchmakingManager).LocalPlayerJoined(processingPlayer);
+                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).AcknoledgeLANPlayer(processingPlayer);
 
                 // Tell them they are in
                 OnlineManager.netIO.SendP2P(processingPlayer, new JoinLobbyPacket(), NetIO.SendType.Reliable);

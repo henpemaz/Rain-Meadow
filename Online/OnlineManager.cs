@@ -38,7 +38,7 @@ namespace RainMeadow
             milisecondsPerFrame = 1000 / framesPerSecond;
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -61,7 +61,7 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-            MatchmakingManager.instance.LeaveLobby();
+            MatchmakingManager.currentInstance.LeaveLobby();
             lobby = null;
 
             subscriptions = new();

@@ -7,8 +7,14 @@ using System.Runtime.InteropServices;
 
 namespace RainMeadow
 {
-    class SteamNetIO : NetIO {
+    class SteamNetIO : LANNetIO {
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType) {
+            base.SendP2P(player, packet, sendType);
+
+            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
+                return;
+            }
+
             if (player.id is SteamMatchmakingManager.SteamPlayerId playerid) {
                 var steamNetId = playerid.oid;
                 unsafe {
@@ -30,6 +36,11 @@ namespace RainMeadow
         override public void RecieveData()
         {
 
+            base.RecieveData();
+
+            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
+                return;
+            }
 
             lock (OnlineManager.serializer)
             {
@@ -46,10 +57,10 @@ namespace RainMeadow
                             if (OnlineManager.lobby != null)
                             {
 
-                                if (MatchmakingManager.instance is SteamMatchmakingManager manager) {
-                                    var fromPlayer = (MatchmakingManager.instance as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
-                                    if (fromPlayer == null) {
-                                        RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                if (MatchmakingManager.currentInstance is SteamMatchmakingManager manager) {
+                                    var fromPlayer = (MatchmakingManager.currentInstance as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
+                                    if (fromPlayer != null) {
+                                        // RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
                                         continue;
                                     }
 

@@ -13,7 +13,8 @@ namespace RainMeadow
             JoinLobby,
             ModifyPlayerList,
             Session,
-            SessionEnd
+            SessionEnd,
+            RejectRequest,
         }
 
         public abstract Type type { get; }
