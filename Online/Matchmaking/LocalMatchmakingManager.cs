@@ -8,15 +8,17 @@ using static RainMeadow.NetIO;
 
 namespace RainMeadow
 {
-    class LocalLobbyInfo : LobbyInfo {
-        public IPEndPoint endPoint;
-        public LocalLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
-            this.endPoint = endPoint;
-        }
-    }
+
     public class LocalMatchmakingManager : MatchmakingManager
     {
+        public class LocalLobbyInfo : LobbyInfo {
+            public IPEndPoint endPoint;
+            public LocalLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
+                base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+                this.endPoint = endPoint;
+            }
+        }
+
 #if ARENAP2P
         public static string localGameMode = "ArenaCompetitive";
 #elif STORYP2P
@@ -102,7 +104,6 @@ namespace RainMeadow
         public void sessionSetup(bool isHost)
         {
             RainMeadow.DebugMe();
-            UdpPeer.Startup();
             me = UdpPeer.port;
             isHost = me == UdpPeer.STARTING_PORT;
             var thisPlayer = (LocalPlayerId)OnlineManager.mePlayer.id;

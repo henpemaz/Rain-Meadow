@@ -126,12 +126,12 @@ namespace RainMeadow
             // }
 
             // // Lobby machine go!
-            MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.currentInstance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
 // #if !LOCAL_P2P
 //             SteamNetworkingUtils.InitRelayNetworkAccess();
 // #endif
-            MatchmakingManager.instance.RequestLobbyList();
+            MatchmakingManager.currentInstance.RequestLobbyList();
 
             if (manager.musicPlayer != null)
             {
@@ -239,13 +239,13 @@ namespace RainMeadow
 
         private void RefreshLobbyList(SymbolButton obj)
         {
-            MatchmakingManager.instance.RequestLobbyList();
+            MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
+            MatchmakingManager.currentInstance.RequestJoinLobby(lobby, password);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
@@ -280,8 +280,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            MatchmakingManager.currentInstance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.currentInstance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 

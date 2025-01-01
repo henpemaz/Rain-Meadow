@@ -52,7 +52,7 @@ namespace RainMeadow
             this.players = players.ToArray();
             CreatePlayerCards();
 
-            MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.currentInstance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
         public override void Update()
@@ -118,7 +118,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.OnPlayerListReceived -= OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.currentInstance.OnPlayerListReceived -= OnlineManager_OnPlayerListReceived;
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 OnlineManager.LeaveLobby();
