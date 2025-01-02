@@ -30,6 +30,8 @@ namespace RainMeadow
             return false;
         }
 
+        public static bool killedCreatures; 
+
         private void ArenaHooks()
         {
 
@@ -38,6 +40,7 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaGameSession.EndSession += ArenaGameSession_EndSession;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
@@ -93,6 +96,67 @@ namespace RainMeadow
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private void ArenaGameSession_EndSession(On.ArenaGameSession.orig_EndSession orig, ArenaGameSession self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                if (!killedCreatures)
+                {
+                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                    {
+                        // we go over all APOs in the room
+                        var entities = self.room.abstractRoom.entities;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe) && apo is AbstractCreature ac && ac.creatureTemplate.type.value != CreatureTemplate.Type.Slugcat.value)
+                            {
+                                for (int num = ac.stuckObjects.Count - 1; num >= 0; num--)
+                                {
+                                    if (ac.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && ac.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && ac.stuckObjects[num].A.realizedObject != null)
+                                    {
+                                        (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                                    }
+                                }
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                                {
+                                    ac.realizedCreature.Die();
+                                }
+
+                                oe.apo.LoseAllStuckObjects();
+                                if (!oe.isMine)
+                                {
+                                    // not-online-aware removal
+                                    Debug("removing remote entity from game " + oe);
+                                    oe.beingMoved = true;
+
+                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    {
+                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                    }
+
+                                    entities.Remove(oe.apo);
+
+                                    self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+
+                                    self.room.RemoveObject(oe.apo.realizedObject);
+                                    self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    oe.beingMoved = false;
+                                }
+                                else // mine leave the old online world elegantly
+                                {
+                                    Debug("removing my entity from online " + oe);
+                                    oe.ExitResource(roomSession);
+                                    oe.ExitResource(roomSession.worldSession);
+                                }
+                            }
+                        }
+                    }
+                        killedCreatures = true;
+                }
+            }
         }
 
         private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
@@ -696,6 +760,7 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
+                killedCreatures = false;
                 if (!ModManager.MSC)
                 {
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
