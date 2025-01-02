@@ -332,7 +332,8 @@ namespace RainMeadow
         internal static void NewGame()
         {
             time = null;
-
+            timeleftofsong = null;
+            songHistory.Clear();
             // there's proooobably more stuff that needs resetting here
         }
 
@@ -347,6 +348,7 @@ namespace RainMeadow
         static string[] ambienceSongArray = null;
 
         static float? time = 0f;
+        static float? timeleftofsong;
         static bool loadingsong = false;
 
         static int[] shufflequeue = new int[0];
@@ -429,6 +431,8 @@ namespace RainMeadow
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (time.HasValue) time += dt;
+            if (timeleftofsong.HasValue) timeleftofsong -= dt;
+
             if(OnlineManager.lobby?.gameMode is not MeadowGameMode mgm)
             {
                 AllowPlopping = false;
@@ -528,10 +532,11 @@ namespace RainMeadow
                 Vector2 PlayerPos = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
                 //RainMeadow.Debug("Has made vectors to viberoom and player");
                 float vibeIntensityTarget =
+                             !IDontWantToGoToZero ? 0f : (
                              Mathf.Pow(Mathf.InverseLerp(activeZone.radius, activeZone.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
                            * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f) //activeZone.room also works   <--- DOES NOT ??? <--- YES IT DOES??? we got overloads on that bitch
-                           * (IDontWantToGoToZero ? 1f : 0f);
+                             );
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
                 //reminder set vibeintensity to null on occasions where you go to menu or some shit
                 vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity ?? (IDontWantToGoToZero?vibeIntensityTarget:0f) , vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
@@ -555,17 +560,11 @@ namespace RainMeadow
                     vibeIntensity = 1f;
                     if (musicPlayer != null && musicPlayer.song != null) musicPlayer.song.baseVolume = 0f;
                 }
-                //RainMeadow.Debug("Has assigned vibeintensity, plopping, and maybe musicvolume.");
             }
 
             var lmd = OnlineManager.lobby.GetData<LobbyMusicData>();
             var groupImIn = lmd.playerGroups[OnlineManager.mePlayer.inLobbyId];
             ushort hostId = groupImIn == 0 ? (ushort)0U : lmd.groupHosts[groupImIn];
-
-            //RainMeadow.Debug("ingroup: " + groupImIn);
-            //RainMeadow.Debug("hostid: " + hostId);
-
-            //Todo: so the guys without music? how will they cooope...
 
             if (groupImIn != 0 && groupImIn != inGroupbuffer)
             {
@@ -584,7 +583,7 @@ namespace RainMeadow
                     if (musicdata.providedSong != myDJsdata.providedSong || Math.Abs(musicdata.startedPlayingAt - myDJsdata.startedPlayingAt) > 5)
                     {
                         RainMeadow.Debug($"Yeah let's switch gears dude");
-                        if (musicPlayer != null) { QueueSong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt); } 
+                        QueueSong(musicPlayer, myDJsdata.providedSong, myDJsdata.startedPlayingAt);
                     }
                 }
                 else
@@ -593,9 +592,10 @@ namespace RainMeadow
                 }
             }
             inGroupbuffer = groupImIn;
-            if (musicPlayer != null && musicPlayer.song == null && musicPlayer.nextSong == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
+            if ((timeleftofsong ?? -1f) < 10) musicdata.providedSong = "";
+            if ((timeleftofsong ?? -1f) < 0 && !loadingsong) //if (musicPlayer != null && musicPlayer.song == null && musicPlayer.nextSong == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
             {
-                musicdata.providedSong = "";
+                timeleftofsong = null;
                 time ??= 0f;
                 if (groupImIn == 0 || hostId == OnlineManager.mePlayer.inLobbyId)
                 {
@@ -741,11 +741,11 @@ namespace RainMeadow
             while ( songHistory.Count >= 8 ) { songHistory.RemoveAt(0); }
         }
         static string latestrequest = "";
-        private static async Task QueueSong(MusicPlayer musicPlayer, string songtobesang, float? timetobestarted = null) //start the brain worm of accounting for muted folks by making queuesong nullable lol
+        private static async Task QueueSong(MusicPlayer? musicPlayer, string songtobesang, float? timetobestarted = null) //start the brain worm of accounting for muted folks by making queuesong nullable lol
         {
             if (songtobesang == "" || songtobesang == null)
             {
-                musicPlayer.song?.FadeOut(20f);
+                musicPlayer?.song?.FadeOut(20f);
                 RainMeadow.Debug("the song of silence");
                 return;
             }
@@ -758,7 +758,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Loading song");
                 Song? song = LoadSong(musicPlayer, songtobesang, timetobestarted);
                 RainMeadow.Debug("Playing song");
-                PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
+                if (musicPlayer != null) PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
             }
             else
             {
@@ -768,9 +768,8 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Loading song");
                         Song? song = LoadSong(musicPlayer, songtobesang, timetobestarted);
-                        RainMeadow.Debug("Loaded song");
-                        PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
-                        RainMeadow.Debug("Played song");
+                        RainMeadow.Debug("Playing song");
+                        if (musicPlayer != null) PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
                     }
                     catch (Exception e)
                     {
@@ -830,14 +829,14 @@ namespace RainMeadow
                     musicPlayer.nextSong.playWhenReady = false;
                     if (!UpdateIntensity) musicPlayer.nextSong.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
                 }
-                musicdata.providedSong = song.name;
-                musicdata.startedPlayingAt = LobbyTime();
+                //musicdata.providedSong = song.name;
+                if (timetobestarted == null) musicdata.startedPlayingAt = LobbyTime();
                 RainMeadow.Debug("my song is now " + musicdata.providedSong);
                 RainMeadow.Debug("my song is to be " + song.name);
             }
             loadingsong = false;
         }
-        private static Song? LoadSong(MusicPlayer musicPlayer, string providedsong, float? DJstartedat)
+        private static Song? LoadSong(MusicPlayer? musicPlayer, string providedsong, float? DJstartedat)
         {
             RainMeadow.Debug("Loading song");
             //just putting more and more technical debt onto songnames
@@ -879,8 +878,11 @@ namespace RainMeadow
                     else
                     {
                         RainMeadow.Debug("Meadow Music: I have my DJs song, but i've figured since my DJ is soon done, i'll stop and wait for a differently named song");
-                        musicPlayer.song?.FadeOut(20f);
-                        musicPlayer.nextSong = null;
+                        if (musicPlayer != null)
+                        {
+                            musicPlayer.song?.FadeOut(20f);
+                            musicPlayer.nextSong = null;
+                        }
                         songtoavoid = providedsong;
                         return null;
                     }
@@ -893,21 +895,32 @@ namespace RainMeadow
                 }
             }
 
-            Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
+            if (providedsong == latestrequest) timeleftofsong = clipclip.length - (DJstartedat.HasValue ? (LobbyTime() - DJstartedat.Value) : 0f);
+
+            if (musicPlayer == null)
             {
-                volume = 0 // what
-            };
-            
-            if (willfadein) song.fadeInTime = 120f;
-            else song.fadeInTime = 2f; 
-            MusicPiece.SubTrack sub = song.subTracks[0];
-            sub.isStreamed = true;
-
-            sub.source.clip = clipclip;
-			sub.readyToPlay = true;
-            song.subTracks[0] = sub;
-
-            return song;
+                var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                var creature = mgm.avatars[0];
+                var musicdata = creature.GetData<MeadowMusicData>();
+                musicdata.startedPlayingAt = DJstartedat ?? LobbyTime();
+                musicdata.providedSong = providedsong;
+                return null;
+            }
+            else
+            {
+                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
+                {
+                    volume = 0 // what
+                };
+                if (willfadein) song.fadeInTime = 120f;
+                else song.fadeInTime = 2f;
+                MusicPiece.SubTrack sub = song.subTracks[0];
+                sub.isStreamed = true;
+                sub.source.clip = clipclip;
+                sub.readyToPlay = true;
+                song.subTracks[0] = sub;
+                return song;
+            }
         }
 
         public static void TheThingTHatsCalledWhenPlayersUpdated()
