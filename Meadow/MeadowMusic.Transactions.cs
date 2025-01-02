@@ -121,8 +121,8 @@ namespace RainMeadow
             var musicPlayer = game.manager.musicPlayer;
             if (musicPlayer != null)
             {
-                RainMeadow.Debug("yeah it's musicplayer time");
-                PlaySong(musicPlayer, song);
+                RainMeadow.Debug("And i *do* have musicplayer");
+                QueueSong(musicPlayer, song);
             }
         }
 

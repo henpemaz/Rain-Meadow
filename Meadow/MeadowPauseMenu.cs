@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Menu;
+using RWCustom;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -161,9 +163,8 @@ namespace RainMeadow
                 var room = creature.room;
                 creature.RemoveFromRoom();
                 room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
-                var node = creature.coord.abstractNode;
-                if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
-                creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                ShortcutData closestShortcut = room.shortcuts.Where(thing => thing.shortCutType == ShortcutData.Type.RoomExit).MinBy(cut => (IntVector2.ToVector2(cut.startCoord.Tile - creature.coord.Tile)).magnitude);
+                creature.SpitOutOfShortCut(closestShortcut.startCoord.Tile, room, true);
             }
         }
 

@@ -162,13 +162,13 @@ namespace RainMeadow
                 //throw;
             }
 
-            WetController ??= new DisembodiedLoopEmitter(0.3f, 1, 0); // RainMeadow.Debug("Created wetcontroller");
+            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume, 1, 0); // RainMeadow.Debug("Created wetcontroller");
 
             if (WetLoop == null) 
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, 0.3f, 1, false);
+                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume, 1, false);
 
                 WetLoop.gameObject.AddComponent<AudioLowPassFilter>();
                 WetLoop.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = 23000;
@@ -354,7 +354,7 @@ namespace RainMeadow
                 */
                 return;
             }
-            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * 0.5f * velocity;
+            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultMusicVolume * velocity;
             float pan = MeadowMusic.vibePan ?? 0f * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
             //virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
             //RainMeadow. Debug($"Trying to play a {SoundId}, at {vol} volume, with {pan} pan");
