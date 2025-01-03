@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using UnityEngine;
 
 namespace RainMeadow
@@ -220,11 +222,27 @@ namespace RainMeadow
             }
         }
 
-        public static bool Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint)
+        static byte[]? _machash = null;
+        public static byte[] getOurMacHash() {
+            if (_machash == null) {
+                var processbuffer = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(Process.GetCurrentProcess().Id));
+                _machash = new MD5CryptoServiceProvider().ComputeHash(
+                            processbuffer.Concat(NetworkInterface.GetAllNetworkInterfaces().Where(
+                                x=>x.OperationalStatus == OperationalStatus.Up).FirstOrDefault().GetPhysicalAddress().GetAddressBytes()).ToArray()
+                        );
+            }
+
+            return _machash;
+
+        }
+
+        public static bool Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint, out byte[] machash)
         {
             remoteEndpoint = new IPEndPoint(IPAddress.Any, 0);
             MemoryStream netStream = new MemoryStream(udpClient.Receive(ref remoteEndpoint));
             netReader = new BinaryReader(netStream);
+            // TODO
+            machash = null;
 
             PacketType type = (PacketType)netReader.ReadByte();
             //RainMeadow.Debug("Got packet meta-type: " + type);

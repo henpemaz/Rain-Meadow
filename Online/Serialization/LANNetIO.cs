@@ -16,14 +16,11 @@ namespace RainMeadow
                 return;
             }
 
-            var localPlayerId = player.id as LANMatchmakingManager.LANPlayerId;
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
             Packet.Encode(packet, writer, player);
-            byte[] bytes = memory.GetBuffer();
-
-            UdpPeer.Send(localPlayerId.endPoint, bytes, (int)memory.Position,
+            UdpPeer.Send(((LANMatchmakingManager.LANPlayerId)player.id).endPoint, memory.GetBuffer(), (int)memory.Position,
                 sendType switch
                 {
                      NetIO.SendType.Reliable => UdpPeer.PacketType.Reliable,
@@ -44,15 +41,16 @@ namespace RainMeadow
                 try
                 {
                     //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
+                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint, out byte[] machash))
                         continue;
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
                     var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(remoteEndpoint);
                     if (player == null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
-                        player = new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(remoteEndpoint, 
-                            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local].GetLobbyOwner()?.id as LANMatchmakingManager.LANPlayerId)?.endPoint == remoteEndpoint));
+                        var playerid = new LANMatchmakingManager.LANPlayerId(remoteEndpoint, false);
+                        playerid.machash = machash;
+                        player = new OnlinePlayer(playerid);
                     }
 
                     Packet.Decode(netReader, player);
