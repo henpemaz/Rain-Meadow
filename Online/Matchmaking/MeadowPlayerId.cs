@@ -6,6 +6,9 @@ namespace RainMeadow
     {
         public string name;
 
+        public abstract void OpenProfileLink();
+        public virtual bool canOpenProfileLink { get => false; }
+
         protected MeadowPlayerId() { }
         protected MeadowPlayerId(string name)
         {

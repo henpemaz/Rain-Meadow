@@ -84,7 +84,7 @@ namespace RainMeadow
 
             if (!reorder && !disable.Any() && !enable.Any()) return;
 
-            var lobbyID = MatchmakingManager.instance.GetLobbyID();
+            var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
             RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             OnlineManager.LeaveLobby();
 

@@ -1,6 +1,7 @@
 ﻿using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -9,6 +10,7 @@ namespace RainMeadow
     // is a mainloopprocess so update bound to game update? worth it? idk
     public class OnlineManager : MainLoopProcess
     {
+        public static NetIO netIO;
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
@@ -25,12 +27,19 @@ namespace RainMeadow
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
+            // if steam installed 
+            // if (SteamManager.Instance.m_bInitialized)
+            if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
+                netIO = new SteamNetIO();
+            }
+            
+
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
             milisecondsPerFrame = 1000 / framesPerSecond;
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -53,7 +62,7 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-            MatchmakingManager.instance.LeaveLobby();
+            MatchmakingManager.currentInstance.LeaveLobby();
             lobby = null;
 
             subscriptions = new();
@@ -77,7 +86,7 @@ namespace RainMeadow
         public override void RawUpdate(float dt)
         {
             myTimeStacker += dt * (float)framesPerSecond;
-            NetIO.Update(); // incoming data
+            netIO?.Update(); // incoming data
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
@@ -94,10 +103,10 @@ namespace RainMeadow
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-#if !LOCAL_P2P
-            SteamAPI.RunCallbacks();
-#endif
-            NetIO.Update();
+// #if !LOCAL_P2P
+//             SteamAPI.RunCallbacks();
+// #endif
+            netIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
@@ -158,7 +167,7 @@ namespace RainMeadow
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
-                NetIO.SendSessionData(toPlayer);
+                netIO?.SendSessionData(toPlayer);
             }
         }
 
@@ -205,7 +214,7 @@ namespace RainMeadow
         {
             OnlinePlayer fromPlayer = onlineEvent.from;
             fromPlayer.needsAck = true;
-            if (NetIO.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
+            if (EventMath.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;

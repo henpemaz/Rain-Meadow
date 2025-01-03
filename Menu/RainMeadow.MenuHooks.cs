@@ -1,7 +1,6 @@
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using Steamworks;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -333,7 +332,10 @@ namespace RainMeadow
                         if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
                         {
                             Debug($"joining lobby with id {id} from the command line");
-                            MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
+                            // MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
+                            // I'm unsure how to implement this right now.
+                            Debug("Unimplemented");
+                            throw new System.NotImplementedException();
                         }
                         else
                         {
@@ -364,7 +366,7 @@ namespace RainMeadow
             self.AddMainMenuButton(meadowButton, () =>
             {
 #if !LOCAL_P2P
-                if (!SteamManager.Instance.m_bInitialized || !SteamUser.BLoggedOn())
+                if (OnlineManager.netIO == null)
                 {
                     self.manager.ShowDialog(new DialogNotify("You need Steam active to play Rain Meadow", self.manager, null));
                     return;

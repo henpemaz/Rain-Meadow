@@ -251,6 +251,19 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         return 1;
     }
 
+    public void ClearLobbies() {
+        foreach (var card in lobbyCards)
+        {
+            if (card == null) continue;
+            card.RemoveSprites();
+            owner.RemoveSubObject(card);
+        }
+
+        allLobbies.Clear();
+        filteredLobbies.Clear();
+        lobbyCards.Clear();
+    }
+
     public void FilterLobbies()
     {
         filteredLobbies = new List<LobbyInfo>();

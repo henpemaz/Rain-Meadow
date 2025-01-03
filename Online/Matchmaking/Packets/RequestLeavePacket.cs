@@ -8,9 +8,8 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                (MatchmakingManager.instance as LocalMatchmakingManager).LocalPlayerLeft(processingPlayer);
-
-                NetIO.SendP2P(processingPlayer, new SessionEndPacket(), NetIO.SendType.Unreliable);
+                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).RemoveLANPlayer(processingPlayer);
+                OnlineManager.netIO.SendP2P(processingPlayer, new SessionEndPacket(), NetIO.SendType.Unreliable);
             }
         }
     }

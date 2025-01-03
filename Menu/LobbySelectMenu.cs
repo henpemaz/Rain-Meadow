@@ -6,9 +6,6 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 
 
-#if !LOCAL_P2P
-using Steamworks;
-#endif
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -21,6 +18,7 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
+        private OpComboBox2 matchMakerMode;
         private OpComboBox2 filterModeDropDown;
         private OpCheckBox filterPublicLobbiesOnly;
         private OpTextBox filterLobbyLimit;
@@ -123,18 +121,57 @@ namespace RainMeadow
             filterLobbyLimit.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
 
+            //
+            where = new Vector2(manager.rainWorld.screenSize.x - 320f , 400f);
+
+
+            var directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
+            directConnectButton.OnClick += (_) =>
+            {   
+                if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local)
+                {
+                    ShowErrorDialog("Direct Connection is only available in the Local Matchmaker");
+                    return;
+                }
+                ShowDirectConnectionDialogue();
+            };
+
+            where.y -= 30;
+            var domainlabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Domain"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(domainlabel);
+            where.y -= 27;
+
+
+            mainPage.subObjects.Add(directConnectButton);
+            
+            var domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMaker>(
+                MatchmakingManager.currentMatchMaker), where, 160f - 35f, 
+                OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.MatchMaker)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            domainDropDown.OnChange += () => {
+                MatchmakingManager.currentMatchMaker = new MatchmakingManager.MatchMaker(domainDropDown.value, false);
+                lobbyList.ClearLobbies();
+                lobbyList.CreateCards();
+                RefreshLobbyList(null);
+            };
+
+
+
+
+            new UIelementWrapper(this.tabWrapper, domainDropDown);
+    
+
             // if (OnlineManager.currentlyJoiningLobby != default)
             // {
             //     ShowLoadingDialog("Joining lobby...");
             // }
 
             // // Lobby machine go!
-            MatchmakingManager.instance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-#if !LOCAL_P2P
-            SteamNetworkingUtils.InitRelayNetworkAccess();
-#endif
-            MatchmakingManager.instance.RequestLobbyList();
+            MatchmakingManager.currentInstance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+// #if !LOCAL_P2P
+//             SteamNetworkingUtils.InitRelayNetworkAccess();
+// #endif
+            MatchmakingManager.currentInstance.RequestLobbyList();
 
             if (manager.musicPlayer != null)
             {
@@ -242,13 +279,13 @@ namespace RainMeadow
 
         private void RefreshLobbyList(SymbolButton obj)
         {
-            MatchmakingManager.instance.RequestLobbyList();
+            MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.instance.RequestJoinLobby(lobby, password);
+            MatchmakingManager.currentInstance.RequestJoinLobby(lobby, password);
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)
@@ -283,8 +320,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            MatchmakingManager.instance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.instance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            MatchmakingManager.currentInstance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.currentInstance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 
@@ -298,6 +335,19 @@ namespace RainMeadow
             if (popupDialog != null) HideDialog();
 
             popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
+
+            GreyOutLobbyCards(true);
+        }
+
+
+        public void ShowDirectConnectionDialogue()
+        {
+            if (popupDialog != null) HideDialog();
+
+            popupDialog = new DirectConnectionDialogue(this, mainPage,
+                new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 
+                new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
 
             GreyOutLobbyCards(true);
@@ -343,6 +393,16 @@ namespace RainMeadow
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
                     ShowLoadingDialog("Joining lobby...");
                     RequestLobbyJoin(lastClickedLobby, password);
+                    break;
+                case "DIRECT_JOIN": 
+                    var dialogue = popupDialog as DirectConnectionDialogue;
+                    var endpoint = DirectConnectionDialogue.GetEndPointByName(dialogue.IPBox.value);
+                    if (endpoint != null) {
+                        ShowLoadingDialog("Joining lobby...");
+                        RequestLobbyJoin(new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2));
+                    } else {
+                        ShowErrorDialog("Invalid Address, addresse format should be xxx.xxx.xxx.xxx:port");
+                    }
                     break;
             }
         }

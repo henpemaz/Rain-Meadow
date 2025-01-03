@@ -49,7 +49,7 @@ namespace RainMeadow
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state from {newState.from} for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (incomingState.Count > 0 && NetIO.IsNewer(newState.baseline, incomingState.Peek().tick))
+                while (incomingState.Count > 0 && EventMath.IsNewer(newState.baseline, incomingState.Peek().tick))
                 {
                     var discarded = incomingState.Dequeue();
                     RainMeadow.Trace("discarding old state from tick " + discarded.tick);
@@ -132,7 +132,7 @@ namespace RainMeadow
                             {
                                 var inResource = ent.currentlyJoinedResource;
                                 // in super, or in other but older there
-                                if (inResource == resource.super || (resource.IsSibling(inResource) && inResource.joinedEntities.TryGetValue(ent.id, out var otherJoin) && NetIO.IsNewer(entityJoin.version, otherJoin.version)))
+                                if (inResource == resource.super || (resource.IsSibling(inResource) && inResource.joinedEntities.TryGetValue(ent.id, out var otherJoin) && EventMath.IsNewer(entityJoin.version, otherJoin.version)))
                                 {
                                     try
                                     {

@@ -51,7 +51,7 @@ namespace RainMeadow
             {
                 DebugOverlay.playersRead.addPlayer(currPlayer);
                 var newTick = reader.ReadUInt32();
-                if (!NetIO.IsNewer(newTick, currPlayer.tick))
+                if (!EventMath.IsNewer(newTick, currPlayer.tick))
                 {
                     AbortRead();
                     return;
@@ -674,7 +674,7 @@ namespace RainMeadow
                 ids = new(count);
                 for (int i = 0; i < count; i++)
                 {
-                    MeadowPlayerId s = MatchmakingManager.instance.GetEmptyId();
+                    MeadowPlayerId s = MatchmakingManager.currentInstance.GetEmptyId();
                     s.CustomSerialize(this);
                     ids.Add(s);
                 }

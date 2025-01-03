@@ -1,14 +1,37 @@
-﻿using Steamworks;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Unity.Services.Analytics.Internal;
 
 namespace RainMeadow
 {
 
     public abstract class MatchmakingManager
     {
-        public static MatchmakingManager instance;
+        public class MatchMaker: ExtEnum<MatchMaker> {
+            public MatchMaker(string name, bool register) : base(name, register) { }
+
+            public static MatchMaker Local = new MatchMaker("Local", true);
+            public static MatchMaker Steam = new MatchMaker("Steam", true);
+
+
+        };
+
+
+        public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
+        public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
+
+        private static MatchMaker _Matchmaker = MatchMaker.Steam;
+
+        public static MatchMaker currentMatchMaker { get { return _Matchmaker; } set { 
+                        var last = _Matchmaker; 
+                        _Matchmaker = value; 
+                        changedMatchMaker.Invoke(last, _Matchmaker);  }} 
+        public static MatchmakingManager currentInstance { get => instances[currentMatchMaker]; }
+        public static Dictionary<MatchMaker, MatchmakingManager> instances = new Dictionary<MatchMaker, MatchmakingManager>();
+
+
         public static string CLIENT_KEY = "client";
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
@@ -18,11 +41,13 @@ namespace RainMeadow
 
         public static void InitLobbyManager()
         {
-#if LOCAL_P2P
-            instance = new LocalMatchmakingManager();
-#else
-            instance = new SteamMatchmakingManager();
-#endif
+            instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
+            if (OnlineManager.netIO is SteamNetIO)
+                instances.TryAdd(MatchMaker.Steam, new SteamMatchmakingManager());
+            currentInstance.initializeMePlayer();
+            changedMatchMaker += (last, current) => {
+                currentInstance.initializeMePlayer();
+            };
         }
 
         public enum LobbyVisibility
@@ -42,6 +67,7 @@ namespace RainMeadow
         public delegate void PlayerListReceived_t(PlayerInfo[] players);
         public delegate void LobbyJoined_t(bool ok, string error = "");
 
+        public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
 
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);
@@ -58,7 +84,7 @@ namespace RainMeadow
             return OnlineManager.players.FirstOrDefault(p => p.id == id);
         }
 
-        public virtual List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(default, player.id.name)).ToList();
+        public virtual List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(() => player.id.OpenProfileLink(), player.id.name)).ToList();
 
         // the idea here was to decide by ping some day
         public virtual OnlinePlayer BestTransferCandidate(OnlineResource onlineResource, List<OnlinePlayer> subscribers)
@@ -88,5 +114,6 @@ namespace RainMeadow
         public abstract MeadowPlayerId GetEmptyId();
 
         public abstract string GetLobbyID();
+        public abstract void OpenInvitationOverlay();
     }
 }
