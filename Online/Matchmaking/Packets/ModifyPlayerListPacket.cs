@@ -29,7 +29,7 @@ namespace RainMeadow
             writer.Write(players.Length);
             for (int i = 0; i < players.Length; i++)
             {
-                var player = players[i].id as LocalMatchmakingManager.LocalPlayerId;
+                var player = players[i].id as LANMatchmakingManager.LANPlayerId;
                 writer.Write(player.endPoint.Address.GetAddressBytes().Length);
                 writer.Write(player.endPoint.Address.GetAddressBytes());
                 writer.Write(player.endPoint.Port);
@@ -56,7 +56,7 @@ namespace RainMeadow
                         if (players[i] == null)
                         {
                             RainMeadow.Debug("Player not found: " + endPoint.ToString());
-                            players[i] = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(-1, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                            players[i] = new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
                         }
                         break;
 
