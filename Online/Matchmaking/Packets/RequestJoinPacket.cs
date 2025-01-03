@@ -6,13 +6,21 @@ namespace RainMeadow
 
         public override void Process()
         {
-            if (OnlineManager.lobby != null)
+            RainMeadow.DebugMe();
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner && MatchmakingManager.currentMatchMaker == MatchmakingManager.MatchMaker.Local)
             {
+                var matchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager);
                 // Hello packet from joining peer
-                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).AcknoledgeLANPlayer(processingPlayer);
+                matchmaker.AcknoledgeLANPlayer(processingPlayer);
 
                 // Tell them they are in
-                OnlineManager.netIO.SendP2P(processingPlayer, new JoinLobbyPacket(), NetIO.SendType.Reliable);
+                OnlineManager.netIO.SendP2P(processingPlayer, new JoinLobbyPacket(
+                    matchmaker.maxplayercount,
+                    "LAN Lobby",
+                    OnlineManager.lobby.hasPassword,
+                    OnlineManager.lobby.gameModeType.value,
+                    OnlineManager.players.Count
+                ), NetIO.SendType.Reliable);
             }
         }
     }

@@ -44,6 +44,10 @@ namespace RainMeadow
             instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
             if (OnlineManager.netIO is SteamNetIO)
                 instances.TryAdd(MatchMaker.Steam, new SteamMatchmakingManager());
+            currentInstance.initializeMePlayer();
+            changedMatchMaker += (last, current) => {
+                currentInstance.initializeMePlayer();
+            };
         }
 
         public enum LobbyVisibility
@@ -63,6 +67,7 @@ namespace RainMeadow
         public delegate void PlayerListReceived_t(PlayerInfo[] players);
         public delegate void LobbyJoined_t(bool ok, string error = "");
 
+        public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
 
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);

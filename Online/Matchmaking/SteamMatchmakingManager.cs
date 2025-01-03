@@ -88,6 +88,11 @@ namespace RainMeadow
             m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageReceived);
 
             me = SteamUser.GetSteamID();
+        }
+
+        public override void initializeMePlayer()
+        {
+            RainMeadow.DebugMe();
             OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
         }
 

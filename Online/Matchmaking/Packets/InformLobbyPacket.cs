@@ -4,11 +4,11 @@ namespace RainMeadow
 {
     public class InformLobbyPacket : Packet
     {
-        int currentplayercount = default;
-        int maxplayers = default;
-        bool passwordprotected = default;
-        string name = "";
-        string mode = "";
+        public int currentplayercount = default;
+        public int maxplayers = default;
+        public bool passwordprotected = default;
+        public string name = "";
+        public string mode = "";
 
         public InformLobbyPacket(): base() {}
         public InformLobbyPacket(int maxplayers, string name, bool passwordprotected, string mode, int currentplayercount)
@@ -45,9 +45,15 @@ namespace RainMeadow
 
         public override void Process()
         {
-            var lobbyinfo = new LANMatchmakingManager.LANLobbyInfo(
-                (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint, name, mode, currentplayercount, passwordprotected, maxplayers); 
+            RainMeadow.DebugMe();
+            var lobbyinfo = MakeLobbyInfo();
             (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).addLobby(lobbyinfo);
         }
+
+        public LANMatchmakingManager.LANLobbyInfo MakeLobbyInfo() {
+            return new LANMatchmakingManager.LANLobbyInfo(
+                (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint, name, mode, currentplayercount, passwordprotected, maxplayers); 
+        }
+
     }
 }
