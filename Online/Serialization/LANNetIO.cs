@@ -16,7 +16,7 @@ namespace RainMeadow
                 return;
             }
 
-            var localPlayerId = player.id as LocalMatchmakingManager.LocalPlayerId;
+            var localPlayerId = player.id as LANMatchmakingManager.LANPlayerId;
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
@@ -51,7 +51,8 @@ namespace RainMeadow
                     if (player == null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
-                        player = new OnlinePlayer(new LocalMatchmakingManager.LocalPlayerId(remoteEndpoint.Port, remoteEndpoint, remoteEndpoint.Port == UdpPeer.STARTING_PORT));
+                        player = new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(remoteEndpoint, 
+                            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local].GetLobbyOwner()?.id as LANMatchmakingManager.LANPlayerId)?.endPoint == remoteEndpoint));
                     }
 
                     Packet.Decode(netReader, player);
