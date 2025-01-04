@@ -66,6 +66,7 @@ namespace RainMeadow
                         arena.playersReadiedUp[player.id.name] = false;
                     }
                 }
+                arena.returnToLobby = false;
             }
 
             foreach (var player in OnlineManager.players)

@@ -288,11 +288,6 @@ namespace RainMeadow
             }
 
             ArenaHelpers.SetProfileColor(arena);
-            arena.returnToLobby = false;
-
-            //
-
-            //
             if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
             {
                 arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
@@ -383,6 +378,7 @@ namespace RainMeadow
         {
             base.Update();
 
+
             if (this.totalClientsReadiedUpOnPage != null)
             {
                 UpdateReadyUpLabel();
@@ -406,6 +402,12 @@ namespace RainMeadow
 
             if (this.playButton != null)
             {
+
+                if (arena.clientsAreReadiedUp == 0 && arena.returnToLobby)
+                {
+                    this.playButton.menuLabel.text = "READY?";
+                    this.playButton.inactive = false;
+                }
 
                 if (OnlineManager.players.Count == 1)
                 {
