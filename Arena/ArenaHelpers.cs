@@ -61,7 +61,10 @@ namespace RainMeadow
                 lobby.clientReadiedUp = false;
                 foreach (var player in OnlineManager.players)
                 {
-                    arena.playersReadiedUp[player.id.name] = false;
+                    if (arena.playersReadiedUp.TryGetValue(player.id.name, out _))
+                    {
+                        arena.playersReadiedUp[player.id.name] = false;
+                    }
                 }
             }
 

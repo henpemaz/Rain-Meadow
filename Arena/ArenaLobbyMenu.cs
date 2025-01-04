@@ -58,12 +58,12 @@ namespace RainMeadow
 
             allSlugs = ArenaHelpers.AllSlugcats();
             holdPlayerPosition = 3; // the position we want to use for changing as we navigate
+            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
 
-            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
@@ -338,6 +338,13 @@ namespace RainMeadow
                     arena.clientsAreReadiedUp++;
 
                 }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    if (!arena.playersReadiedUp.TryGetValue(OnlineManager.mePlayer.id.name, out _))
+                    {
+                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.id.name, true);
+                    }
+                }
 
                 if (OnlineManager.players.Count > 1 && !clientReadiedUp)
                 {
@@ -375,7 +382,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
 
             if (this.totalClientsReadiedUpOnPage != null)
             {
@@ -623,7 +629,7 @@ namespace RainMeadow
 
                             if (arena.playersReadiedUp.TryGetValue(player.id.name, out var alreadyReady))
                             {
-                                RainMeadow.Debug("Player already exists in readiedUp dictionary");
+                                RainMeadow.Debug($"Player {player.id.name} already exists in readiedUp dictionary");
                             }
                             else
                             {
@@ -752,6 +758,7 @@ namespace RainMeadow
                     int localIndex = l;
                     classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].readyForCombat = arena.playersReadiedUp.TryGetValue(OnlineManager.players[l].id.name, out _) && arena.playersReadiedUp[OnlineManager.players[l].id.name];
 
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[l].id.name, out var currentColorIndex))
