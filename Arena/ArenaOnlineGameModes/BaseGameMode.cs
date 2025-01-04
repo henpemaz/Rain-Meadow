@@ -183,6 +183,11 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+            if ((abstractCreature.realizedCreature as Player).SlugCatClass != SlugcatStats.Name.Yellow &&
+                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0)
+            {
+                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+            }
             if (ModManager.MSC)
             {
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
@@ -203,8 +208,16 @@ namespace RainMeadow
                     self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
                 }
 
-
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                {
+                    if (!arena.sainot) // ascendance saint
+                    {
+                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 0;
+                    }
+                }
             }
+
+
 
             self.playersSpawned = true;
             arena.playerEnteredGame++;

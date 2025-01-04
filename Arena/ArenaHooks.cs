@@ -94,7 +94,6 @@ namespace RainMeadow
 
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
         }
@@ -371,21 +370,6 @@ namespace RainMeadow
             {
                 var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-        }
-
-
-        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
-        {
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                if (self.slugcatStats.throwingSkill == 0)
-                {
-                    self.slugcatStats.throwingSkill = 1; // don't let them push you around
-                    // Nightcat.ResetSneak(self);
-                }
 
             }
         }
