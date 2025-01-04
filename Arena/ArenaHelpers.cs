@@ -202,13 +202,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                else
-                {
-                    if (player.slugcatStats.throwingSkill == 0)
-                    {
-                        player.slugcatStats.throwingSkill = 1;
-                    }
-                }
             }
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
