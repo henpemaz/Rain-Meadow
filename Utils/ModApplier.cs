@@ -36,6 +36,7 @@ namespace RainMeadow
             if (IsFinished())
             {
                 On.RainWorld.Update -= RainWorld_Update;
+                if (dialogBox is not null) manager.StopSideProcess(dialogBox);
 
                 manager.rainWorld.options.Save();
                 OnFinish?.Invoke(this);
@@ -72,16 +73,14 @@ namespace RainMeadow
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             };
 
-            // disable auto-apply for now
-            //if (unknownMods.Any())
-            //{
-            //    checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
-            //}
-            //else
-            //{
-            //    checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
-            //}
-            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
+            if (unknownMods.Count > 0)
+            {
+                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
+            }
+            else
+            {
+                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+            }
 
             manager.ShowDialog(checkUserConfirmation);
         }
