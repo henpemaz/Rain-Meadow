@@ -30,7 +30,7 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool killedCreatures; 
+        public static bool killedCreatures;
 
         private void ArenaHooks()
         {
@@ -82,6 +82,7 @@ namespace RainMeadow
             On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
+            On.CreatureCommunities.LikeOfPlayer += CreatureCommunities_LikeOfPlayer;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
@@ -96,6 +97,15 @@ namespace RainMeadow
             On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
 
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private float CreatureCommunities_LikeOfPlayer(On.CreatureCommunities.orig_LikeOfPlayer orig, CreatureCommunities self, CreatureCommunities.CommunityID commID, int region, int playerNumber)
+        {
+            if (isArenaMode(out var _))
+            {
+                playerNumber = 0;
+            }
+            return orig(self, commID, region, playerNumber);
         }
 
         private void ArenaGameSession_EndSession(On.ArenaGameSession.orig_EndSession orig, ArenaGameSession self)
@@ -154,7 +164,7 @@ namespace RainMeadow
                             }
                         }
                     }
-                        killedCreatures = true;
+                    killedCreatures = true;
                 }
             }
         }
@@ -163,7 +173,7 @@ namespace RainMeadow
         {
             if (message == "EXIT" && isArenaMode(out var arena))
             {
-                arena.returnToLobby = true;                
+                arena.returnToLobby = true;
             }
             orig(self, sender, message);
         }
