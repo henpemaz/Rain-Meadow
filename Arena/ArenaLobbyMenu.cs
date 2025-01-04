@@ -610,6 +610,31 @@ namespace RainMeadow
 
                 }
 
+                if (arena.playersReadiedUp.Count > OnlineManager.players.Count) // someone readied up then left
+                {
+                    RainMeadow.Debug("readyUpDictionary is greater than the number of players. Somebody left who was ready!");
+                    List<string> keysToRemove = new List<string>();
+
+                    for (int i = 0; i < arena.playersReadiedUp.Count; i++)
+                    {
+                        foreach (var kvp in arena.playersReadiedUp)
+                        {
+                            if (!OnlineManager.players.Any(player => player.id.name.Equals(kvp.Key)))
+                            {
+                                RainMeadow.Debug("Removing player who left from readyUpDictionary");
+                                keysToRemove.Add(kvp.Key);
+
+                            }
+                        }
+                    }
+
+                    for (int j = 0; j < keysToRemove.Count; j++)
+                    {
+                        arena.playersReadiedUp.Remove(keysToRemove[j]);
+                    }
+                    arena.clientsAreReadiedUp = arena.playersReadiedUp.Count;
+                }
+
 
                 if (OnlineManager.players.Count > 1)
                 {
