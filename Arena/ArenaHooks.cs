@@ -859,59 +859,43 @@ namespace RainMeadow
                     Error("Error getting targetAbsCreature");
                 }
 
-                foreach (var onlinePlayer in OnlineManager.players)
+                if (self.sessionEnded || (ModManager.MSC && player.AI != null))
                 {
-                    if (!onlinePlayer.isMe)
-                    {
-                        //self.playersContinueButtons = null;
-                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
-                    }
-                    else
-                    {
-                        if (self.sessionEnded || (ModManager.MSC && player.AI != null))
-                        {
-                            return;
-                        }
-
-                        IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
-
-                        for (int i = 0; i < self.arenaSitting.players.Count; i++)
-                        {
-                            RainMeadow.Debug("HIT YOU WITH SPEAR!");
-                            if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
-                            {
-                                arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
-
-                                if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
-                                {
-                                    self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                                    self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                                }
-
-                                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                                if (index >= 0)
-                                {
-                                    self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
-                                }
-                                else
-                                {
-                                    self.arenaSitting.players[i].AddSandboxScore(0);
-                                }
-
-                                break;
-                            }
-
-                        }
-                        if (!CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
-                        {
-                            return;
-                        }
-
-                    }
-
-
+                    return;
                 }
 
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+                    if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    {
+                        arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
+
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                        {
+                            self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        }
+
+                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        if (index >= 0)
+                        {
+                            self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
+                        }
+                        else
+                        {
+                            self.arenaSitting.players[i].AddSandboxScore(0);
+                        }
+
+                        break;
+                    }
+
+                }
+                if (!CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                {
+                    return;
+                }
             }
             else
             {
