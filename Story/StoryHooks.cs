@@ -1351,7 +1351,7 @@ namespace RainMeadow
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
         {
             orig(self, eu);
-
+            if (isStoryMode(out _) {
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
                 if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -1377,5 +1377,6 @@ namespace RainMeadow
                 }
             }
         }
+      }
     }
 }
