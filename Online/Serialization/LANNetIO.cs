@@ -19,6 +19,8 @@ namespace RainMeadow
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
+            writer.Write((int)UdpPeer.getOurMacHash().Length);
+            writer.Write((byte[])UdpPeer.getOurMacHash());
             Packet.Encode(packet, writer, player);
             UdpPeer.Send(((LANMatchmakingManager.LANPlayerId)player.id).endPoint, memory.GetBuffer(), (int)memory.Position,
                 sendType switch
@@ -29,22 +31,34 @@ namespace RainMeadow
                  });
         }
 
+        public override void Update()
+        {
+            base.Update();
+            UdpPeer.Update();
+        }
+
         public override void RecieveData()
+        {
+            LANRecieveData();
+        }
+
+        public void LANRecieveData()
         {
             if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local) {
                 return;
             }
 
-            UdpPeer.Update();
+            
             while (UdpPeer.IsPacketAvailable())
             {
                 try
                 {
                     //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint, out byte[] machash))
+                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
                         continue;
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(remoteEndpoint);
+                    byte[] machash = netReader.ReadBytes(netReader.ReadInt32());
+                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(machash);
                     if (player == null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
@@ -53,6 +67,8 @@ namespace RainMeadow
                         player = new OnlinePlayer(playerid);
                     }
 
+                    RainMeadow.Debug($"Recieved packet from: {remoteEndpoint.ToString()}");
+                    
                     Packet.Decode(netReader, player);
                 }
                 catch (Exception e)
