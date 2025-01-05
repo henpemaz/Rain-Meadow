@@ -199,42 +199,21 @@ namespace RainMeadow
 
         private bool ShouldPosBeLenient(PhysicalObject po)
         {
+
+
             if (po is not Player p) { RainMeadow.Error("target is wrong type: " + po); return false; }
-
-            if (p is not null && OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var onlineP) && onlineP.beingCarried)
+            if (p is not null && p.State.dead && OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var onlineP))
             {
-                return true;
-            }
-
-            if (p is not null && p.State.dead && (p.grabbedBy.Count == 0 && OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var carriedPlayer) && carriedPlayer.beingCarried))
-            {
-                carriedPlayer.beingCarried = false; // nobody's carrying me, set to false
-                return false;
-            }
-
-            if (p is not null && p.State.dead && (p.grabbedBy is null || p.grabbedBy.Count == 0))
-            {
-                return false;
-            }
-
-
-            if (p is not null && p.State.dead && p.grabbedBy.Count > 0 && OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var onlinePl) && !onlinePl.beingCarried) // check who's grabbing me
-            {
-                for (int num = p.grabbedBy.Count - 1; num >= 0; num--)
+                if (onlineP.beingCarried)
                 {
-
-                    if (p.grabbedBy[num].grabber is Player pl) // a player? let's make it a lenient
-                    {
-                        onlinePl.beingCarried = true;
-                        return true;
-                    }
-                    else
-                    {
-                        onlinePl.beingCarried = false;
-                        return false;
-                    }
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             }
+
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
 
@@ -246,7 +225,12 @@ namespace RainMeadow
             RainMeadow.Trace(this + " - " + onlineEntity);
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
-            if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
+            if (p is not null)
+            {
+                oc.lenientPos = ShouldPosBeLenient(p);
+                RainMeadow.Debug("carried?" + oc.beingCarried);
+                RainMeadow.Debug("lean?" + ShouldPosBeLenient(p));
+            }
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 

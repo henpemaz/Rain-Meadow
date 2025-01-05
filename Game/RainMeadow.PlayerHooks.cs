@@ -50,12 +50,61 @@ public partial class RainMeadow
         IL.Player.ThrowObject += Player_ThrowObject1;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.GrabUpdate += Player_GrabUpdate1;
+        On.Player.SlugcatGrab += Player_SlugcatGrab;
+        On.Player.ReleaseGrasp += Player_ReleaseGrasp;
+        On.Player.SlugOnBack.SlugToBack += SlugOnBack_SlugToBack;
 
+    }
+
+    private void SlugOnBack_SlugToBack(On.Player.SlugOnBack.orig_SlugToBack orig, Player.SlugOnBack self, Player playerToBack)
+    {
+        orig(self, playerToBack);
+        if (OnlineManager.lobby != null)
+        {
+            if (OnlinePhysicalObject.map.TryGetValue(playerToBack.abstractCreature, out var onlinePlayerToBack))
+            {
+                onlinePlayerToBack.beingCarried = true;
+            }
+        }
+
+    }
+
+    private void Player_ReleaseGrasp(On.Player.orig_ReleaseGrasp orig, Player self, int grasp)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            for (int i = 0; i < self.grasps?.Length; i++)
+            {
+                if (self.grasps[i]?.grabbed is Player pl)
+                {
+                    OnlinePhysicalObject.map.TryGetValue(pl.abstractPhysicalObject, out var onlineGrabbedPlayer);
+                    onlineGrabbedPlayer.beingCarried = false;
+                }
+            }
+        }
+        orig(self, grasp);
+
+    }
+
+    private void Player_SlugcatGrab(On.Player.orig_SlugcatGrab orig, Player self, PhysicalObject obj, int graspUsed)
+    {
+       orig(self, obj, graspUsed);
+        if (OnlineManager.lobby != null)
+        {
+            if (obj is not null && obj is Player p && p.State.dead)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var carriedPlayer))
+                {
+                    carriedPlayer.beingCarried = true;
+                }
+            }
+        }
     }
 
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
+
         if (ModManager.MSC && OnlineManager.lobby != null)
         {
             if (self.slugOnBack != null && self.slugOnBack.HasASlug && (self.room.abstractRoom.gate || self.room.abstractRoom.shelter))
@@ -63,9 +112,11 @@ public partial class RainMeadow
 
                 for (int i = 0; i < self.grasps?.Length; i++)
                 {
-                    if (self.grasps[i]?.grabbed is Player)
+                    if (self.grasps[i]?.grabbed is Player pl2)
                     {
                         self.ReleaseGrasp(i);
+                        OnlinePhysicalObject.map.TryGetValue(pl2.abstractPhysicalObject, out var onlineGrabbedPlayer);
+                        onlineGrabbedPlayer.beingCarried = false;
                     }
                 }
             }

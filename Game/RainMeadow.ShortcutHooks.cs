@@ -232,13 +232,27 @@ namespace RainMeadow
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
 
-                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                if (self is Player pl && pl.slugOnBack.HasASlug)
+                if (self is Player pl)
                 {
-                    OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack);
-                    onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                    if (pl.grasps != null) // we're  dragging
+                    {
+                        for (int num = pl.grasps.Length - 1; num >= 0; num--)
+                        {
+                            if (pl.grasps[num] != null && pl.grasps[num].grabbed is Player grabbedPlayer)
+                            {
+                                OnlinePhysicalObject.map.TryGetValue(grabbedPlayer.abstractPhysicalObject, out var onlineSlugBeingDragged);
+                                onlineSlugBeingDragged.BroadcastRPCInRoom((onlineSlugBeingDragged as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                            }
+                        }
+                    }
 
+                    if (ModManager.MSC && pl.slugOnBack != null && pl.slugOnBack.HasASlug) // we're backpacking
+                    {
+                        OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack);
+                        onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                    }
                 }
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
             }
             else
