@@ -48,7 +48,48 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
+        On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
+        On.Player.GrabUpdate += Player_GrabUpdate1;
 
+    }
+
+    private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+    {
+        orig(self, eu);
+        if (ModManager.MSC && OnlineManager.lobby != null)
+        {
+            if (self.slugOnBack != null && self.slugOnBack.HasASlug && (self.room.abstractRoom.gate || self.room.abstractRoom.shelter))
+            {
+
+                for (int i = 0; i < self.grasps?.Length; i++)
+                {
+                    if (self.grasps[i]?.grabbed is Player)
+                    {
+                        self.ReleaseGrasp(i);
+                    }
+                }
+            }
+        }
+    }
+
+    private bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
+    {
+        if (ModManager.MSC && OnlineManager.lobby != null)
+        {
+
+            if (pickUpCandidate != null && pickUpCandidate.State.dead && (!pickUpCandidate.room.abstractRoom.gate && !pickUpCandidate.room.abstractRoom.shelter))
+            {
+                for (int num = pickUpCandidate.abstractCreature.stuckObjects.Count - 1; num >= 0; num--)
+                {
+                    if (pickUpCandidate.abstractCreature.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && pickUpCandidate.abstractCreature.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject != null)
+                    {
+                        (pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                    }
+                }
+                return true;
+            }
+        }
+        return orig(self, pickUpCandidate);
     }
 
 

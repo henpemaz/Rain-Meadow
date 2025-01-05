@@ -231,7 +231,14 @@ namespace RainMeadow
             {
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
+
                 onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (self is Player pl && pl.slugOnBack.HasASlug)
+                {
+                    OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack);
+                    onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+
+                }
                 orig(self, entrancePos, carriedByOther);
             }
             else

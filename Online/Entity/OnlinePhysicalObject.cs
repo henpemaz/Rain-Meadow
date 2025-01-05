@@ -95,6 +95,7 @@ namespace RainMeadow
         public bool lenientPos;
 
         public bool beingMoved;
+        public bool beingCarried;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
