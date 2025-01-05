@@ -53,6 +53,7 @@ namespace RainMeadow
             }
             else
             {
+                RainMeadow.Debug("Requesting lobby");
                 RequestLobby(password);
             }
 
