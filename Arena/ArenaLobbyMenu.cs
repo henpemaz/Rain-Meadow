@@ -716,7 +716,7 @@ namespace RainMeadow
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
                 arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
 
-                if (OnlineManager.players.Count > 1 && !arena.allPlayersReadyLockLobby) // stop unnecessary RPCs
+                if (OnlineManager.players.Count > 1) // stop unnecessary RPCs
                 {
                     foreach (var player in OnlineManager.players)
                     {
