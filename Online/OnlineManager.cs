@@ -29,10 +29,13 @@ namespace RainMeadow
         {
             // if steam installed 
             // if (SteamManager.Instance.m_bInitialized)
-            if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
-                netIO = new SteamNetIO();
-            }
+            // if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
+            //     netIO = new SteamNetIO();
+            // }
             
+            if (netIO == null) {
+                netIO = new LANNetIO();
+            }
 
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?

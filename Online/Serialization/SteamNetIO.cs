@@ -28,16 +28,14 @@ namespace RainMeadow
             }
         }
 
-        override public void Update() {
+        override public void RecieveData() {
             SteamAPI.RunCallbacks();
-            base.Update();
+            LANRecieveData();
+            SteamRecieveData();
         }
 
-        override public void RecieveData()
+        public void SteamRecieveData()
         {
-
-            base.RecieveData();
-
             if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
                 return;
             }
