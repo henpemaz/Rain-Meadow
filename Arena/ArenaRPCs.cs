@@ -127,14 +127,14 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
+                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
+
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 if (game.manager.upcomingProcess != null)
                 {
                     return;
                 }
                 var Sluglist = ArenaHelpers.AllSlugcats();
-                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
-
                 try
                 {
                     for (int i = 1; i < game.usernameButtons.Length; i++)
