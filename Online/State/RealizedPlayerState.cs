@@ -228,8 +228,6 @@ namespace RainMeadow
             if (p is not null)
             {
                 oc.lenientPos = ShouldPosBeLenient(p);
-                RainMeadow.Debug("carried?" + oc.beingCarried);
-                RainMeadow.Debug("lean?" + ShouldPosBeLenient(p));
             }
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
