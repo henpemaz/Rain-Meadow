@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ namespace RainMeadow
         public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
         public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
 
-        private static MatchMaker _Matchmaker = MatchMaker.Steam;
+        private static MatchMaker _Matchmaker = MatchMaker.Local;
 
         public static MatchMaker currentMatchMaker { get { return _Matchmaker; } set { 
                         var last = _Matchmaker; 
@@ -39,11 +40,22 @@ namespace RainMeadow
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
 
+        static public readonly List<MatchMaker> supported_matchmakers = new();
+
         public static void InitLobbyManager()
         {
-            instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
-            if (OnlineManager.netIO is SteamNetIO)
+            supported_matchmakers.Clear();
+            instances.Clear();
+
+            if (OnlineManager.netIO is SteamNetIO) {
                 instances.TryAdd(MatchMaker.Steam, new SteamMatchmakingManager());
+                supported_matchmakers.Add(MatchMaker.Steam);
+            }
+
+            supported_matchmakers.Add(MatchMaker.Local); 
+            instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
+            currentMatchMaker = supported_matchmakers[0];
+                
             currentInstance.initializeMePlayer();
             changedMatchMaker += (last, current) => {
                 currentInstance.initializeMePlayer();

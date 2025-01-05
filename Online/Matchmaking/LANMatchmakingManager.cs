@@ -128,8 +128,8 @@ namespace RainMeadow {
             }
         }
 
-        public OnlinePlayer GetPlayerLAN(IPEndPoint endPoint) {
-            return OnlineManager.players.FirstOrDefault(p => (p.id as LANPlayerId).endPoint == endPoint);
+        public OnlinePlayer GetPlayerLAN(byte[] machash) {
+            return OnlineManager.players.FirstOrDefault(p => (p.id as LANPlayerId).machash == machash);
         }
 
         public int maxplayercount = 0;
@@ -206,6 +206,7 @@ namespace RainMeadow {
                     return;
                 }
                 
+                RainMeadow.Debug("Sending Request to join lobby...");
                 OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint, false)), 
                     new RequestJoinPacket(), NetIO.SendType.Reliable);
             } else {
@@ -216,6 +217,7 @@ namespace RainMeadow {
         public override void JoinLobby(bool success) {
             if (success)
             {
+                RainMeadow.Debug("Joining lobby");
                 OnLobbyJoined?.Invoke(true);
             }
             else
@@ -232,7 +234,7 @@ namespace RainMeadow {
                 if (!OnlineManager.lobby.isOwner && currentLobbyHost != null)
                 {
                     OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(currentLobbyHost, false)), 
-                        new RequestJoinPacket(), NetIO.SendType.Reliable);
+                        new SessionEndPacket(), NetIO.SendType.Reliable);
                 }
             }
         }

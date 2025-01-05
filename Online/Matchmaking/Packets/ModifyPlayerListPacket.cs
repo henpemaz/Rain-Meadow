@@ -33,6 +33,8 @@ namespace RainMeadow
                 writer.Write(player.endPoint.Address.GetAddressBytes().Length);
                 writer.Write(player.endPoint.Address.GetAddressBytes());
                 writer.Write(player.endPoint.Port);
+                writer.Write(player.machash.Length);
+                writer.Write(player.machash);
             }
         }
 
@@ -45,6 +47,9 @@ namespace RainMeadow
                 int address_size = reader.ReadInt32();
                 byte[] address = reader.ReadBytes(address_size);
                 int port = reader.ReadInt32();
+
+                int mac_hashsize = reader.ReadInt32();
+                byte[] mac_hash = reader.ReadBytes(mac_hashsize);
                 IPEndPoint endPoint = new IPEndPoint(new IPAddress(address), port);
 
                 switch (modifyOperation)
@@ -52,17 +57,19 @@ namespace RainMeadow
                     case Operation.Add:
                         //players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
                         //    ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
-                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(endPoint);
+                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(mac_hash);
                         if (players[i] == null)
                         {
                             RainMeadow.Debug("Player not found: " + endPoint.ToString());
-                            players[i] = new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
+                            var id = new LANMatchmakingManager.LANPlayerId(endPoint, false);
+                            id.machash = mac_hash;
+                            players[i] = new OnlinePlayer(id);
                         }
                         break;
 
 
                     case Operation.Remove:
-                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(endPoint);
+                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(mac_hash);
                         break;
                 }
             }

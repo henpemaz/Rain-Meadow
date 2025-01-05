@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -146,7 +147,7 @@ namespace RainMeadow
             
             var domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMaker>(
                 MatchmakingManager.currentMatchMaker), where, 160f - 35f, 
-                OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.MatchMaker)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+                MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value)).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
                 MatchmakingManager.currentMatchMaker = new MatchmakingManager.MatchMaker(domainDropDown.value, false);
                 lobbyList.ClearLobbies();
