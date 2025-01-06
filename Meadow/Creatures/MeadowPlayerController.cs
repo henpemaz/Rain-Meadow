@@ -46,6 +46,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     self.airInLungs = 1f;
+                    self.playerState.isPup = false; // there's no pups here you dirty little cheater
                 }
                 p.Update(eu);
             }
@@ -89,7 +90,6 @@ namespace RainMeadow
         {
             base.ConsciousUpdate();
             player.pickUpCandidate = null; // prevent whiplash grab
-
         }
 
         protected override void OnCall()
