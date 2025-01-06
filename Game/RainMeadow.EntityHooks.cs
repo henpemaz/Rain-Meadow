@@ -267,7 +267,7 @@ namespace RainMeadow
                             // if they're the overseer and it isn't the host moving it, that's bad as well
                             if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
-                                if (opo.apo is AbstractCreature slug && slug.creatureTemplate.type.value == CreatureTemplate.Type.Slugcat.value)
+                                if (opo.apo is AbstractCreature slug && slug.creatureTemplate.type.value == CreatureTemplate.Type.Slugcat.value && isStoryMode(out var _))
                                 {
                                     continue; // we will clean up later after client rejoins
                                 }
