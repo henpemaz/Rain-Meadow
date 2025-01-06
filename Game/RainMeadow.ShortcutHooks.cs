@@ -250,16 +250,20 @@ namespace RainMeadow
                         {
                             if (pl.grasps[num] != null && pl.grasps[num].grabbed is Player grabbedPlayer)
                             {
-                                OnlinePhysicalObject.map.TryGetValue(grabbedPlayer.abstractPhysicalObject, out var onlineSlugBeingDragged);
-                                onlineSlugBeingDragged.BroadcastRPCInRoom((onlineSlugBeingDragged as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                                if (OnlinePhysicalObject.map.TryGetValue(grabbedPlayer.abstractPhysicalObject, out var onlineSlugBeingDragged))
+                                {
+                                    onlineSlugBeingDragged.BroadcastRPCInRoom((onlineSlugBeingDragged as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                                }
                             }
                         }
                     }
 
                     if (ModManager.MSC && pl.slugOnBack != null && pl.slugOnBack.HasASlug) // we're backpacking
                     {
-                        OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack);
-                        onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                        if (OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack))
+                        {
+                            onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                        }
                     }
                 }
                 onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
