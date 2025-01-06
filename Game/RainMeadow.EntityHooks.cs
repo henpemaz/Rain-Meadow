@@ -108,7 +108,7 @@ namespace RainMeadow
         // get real, and customize
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 UnityEngine.Random.seed = self.ID.RandomSeed;
             }
@@ -229,6 +229,31 @@ namespace RainMeadow
                 // pre: remove remote entities
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
+
+                    foreach (var absplayer in self.game.Players)
+                    {
+                        if (absplayer.realizedCreature is Player player)
+                        {
+                            if (ModManager.MSC)
+                            {
+                                if (player.slugOnBack != null && player.slugOnBack.HasASlug)
+                                {
+                                    player.slugOnBack.DropSlug();
+                                }
+                            }
+
+                            if (player.grasps != null)
+                            {
+                                for (int i = 0; i < player.grasps.Length; i++)
+                                {
+                                    if (player.grasps[i] != null && player.grasps[i].grabbed is Player)
+                                    {
+                                        player.ReleaseGrasp(i);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     // we go over all APOs in the room
                     Debug("Gate switchery 1");
                     room = self.reportBackToGate.room;
@@ -244,9 +269,12 @@ namespace RainMeadow
                                 // not-online-aware removal
                                 Debug("removing remote entity from game " + opo);
                                 opo.beingMoved = true;
-                                if (apo.realizedObject is Creature c && c.inShortcut)
+                                if (apo.realizedObject is Creature c)
                                 {
-                                    c.RemoveFromShortcuts();
+                                    if (c.inShortcut)
+                                    {
+                                        c.RemoveFromShortcuts();
+                                    }
                                 }
                                 entities.Remove(apo);
                                 room.abstractRoom.creatures.Remove(apo as AbstractCreature);
@@ -282,7 +310,7 @@ namespace RainMeadow
                 {
                     storyGameMode.changedRegions = true;
                     storyGameMode.readyForGate = 2;
-                }
+                    }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     MeadowMusic.NewWorld(self.activeWorld);

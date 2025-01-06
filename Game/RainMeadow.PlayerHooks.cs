@@ -53,7 +53,6 @@ public partial class RainMeadow
         On.Player.SlugcatGrab += Player_SlugcatGrab;
         On.Player.ReleaseGrasp += Player_ReleaseGrasp;
         On.Player.SlugOnBack.SlugToBack += SlugOnBack_SlugToBack;
-
     }
 
     private void SlugOnBack_SlugToBack(On.Player.SlugOnBack.orig_SlugToBack orig, Player.SlugOnBack self, Player playerToBack)
@@ -77,8 +76,10 @@ public partial class RainMeadow
             {
                 if (self.grasps[i]?.grabbed is Player pl)
                 {
-                    OnlinePhysicalObject.map.TryGetValue(pl.abstractPhysicalObject, out var onlineGrabbedPlayer);
-                    onlineGrabbedPlayer.beingCarried = false;
+                    if (OnlinePhysicalObject.map.TryGetValue(pl.abstractPhysicalObject, out var onlineGrabbedPlayer))
+                    {
+                        onlineGrabbedPlayer.beingCarried = false;
+                    }
                 }
             }
         }
@@ -88,10 +89,10 @@ public partial class RainMeadow
 
     private void Player_SlugcatGrab(On.Player.orig_SlugcatGrab orig, Player self, PhysicalObject obj, int graspUsed)
     {
-       orig(self, obj, graspUsed);
+        orig(self, obj, graspUsed);
         if (OnlineManager.lobby != null)
         {
-            if (obj is not null && obj is Player p && p.State.dead)
+            if (obj is not null && obj is Player p)
             {
                 if (OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var carriedPlayer))
                 {
@@ -104,21 +105,13 @@ public partial class RainMeadow
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
-
-        if (ModManager.MSC && OnlineManager.lobby != null)
+        if (self.slugOnBack != null)
         {
-            if (self.slugOnBack != null && self.slugOnBack.HasASlug && (self.room.abstractRoom.gate || self.room.abstractRoom.shelter))
+            RainMeadow.Debug(self.slugOnBack.HasASlug);
+            if (self.slugOnBack.slugcat != null)
             {
-
-                for (int i = 0; i < self.grasps?.Length; i++)
-                {
-                    if (self.grasps[i]?.grabbed is Player pl2)
-                    {
-                        self.ReleaseGrasp(i);
-                        OnlinePhysicalObject.map.TryGetValue(pl2.abstractPhysicalObject, out var onlineGrabbedPlayer);
-                        onlineGrabbedPlayer.beingCarried = false;
-                    }
-                }
+                RainMeadow.Debug(self.slugOnBack.slugcat);
+                RainMeadow.Debug(self.slugOnBack.slugcat.IsLocal());
             }
         }
     }
@@ -128,13 +121,16 @@ public partial class RainMeadow
         if (ModManager.MSC && OnlineManager.lobby != null)
         {
 
-            if (pickUpCandidate != null && pickUpCandidate.State.dead && (!pickUpCandidate.room.abstractRoom.gate && !pickUpCandidate.room.abstractRoom.shelter))
+            if (pickUpCandidate != null)
             {
-                for (int num = pickUpCandidate.abstractCreature.stuckObjects.Count - 1; num >= 0; num--)
+                if (pickUpCandidate.abstractCreature.stuckObjects != null)
                 {
-                    if (pickUpCandidate.abstractCreature.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && pickUpCandidate.abstractCreature.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject != null)
+                    for (int num = pickUpCandidate.abstractCreature.stuckObjects.Count - 1; num >= 0; num--)
                     {
-                        (pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                        if (pickUpCandidate.abstractCreature.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && pickUpCandidate.abstractCreature.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject != null)
+                        {
+                            (pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                        }
                     }
                 }
                 return true;
