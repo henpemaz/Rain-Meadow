@@ -41,7 +41,6 @@ namespace RainMeadow
         }
 
         //Game music hooks 
-        private static void MusicPlayer_RainRequestStopSong(On.Music.MusicPlayer.orig_RainRequestStopSong orig, MusicPlayer self) { if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) orig.Invoke(self); } //hehe Just in Case lmao
 
         private static void SSSong_Update(On.Music.SSSong.orig_Update orig, SSSong self)
         {
@@ -91,26 +90,24 @@ namespace RainMeadow
                 }
                 else
                 {
+                    var omd = OnlineManager.lobby.GetData<LobbyMusicData>(); // this might be super expensive to let run 4 times every frame dudes. hey henp is this ok  answer here   "  "  and with your  signature here :  "   "  intkkus signature: "yarrrr"
+                    var groupImIn = omd.playerGroups[OnlineManager.mePlayer.inLobbyId];
+                    ushort hostId = groupImIn == 0 ? (ushort)0U : omd.groupHosts[groupImIn];
+                    if (groupImIn != 0 && hostId != OnlineManager.mePlayer.inLobbyId) return;
+                    AbstractCreature featuringthe = mgm.avatars[0].creature;
+
                     if (self.eventTrigger.type == EventTrigger.TriggerType.Spot) // && self.eventTrigger.tEvent is MusicEvent find some fucking fucking way to find this out here if you even need to
                     {
-                        var omd = OnlineManager.lobby.GetData<LobbyMusicData>(); // this might be super expensive to let run 4 times every frame dudes. hey henp is this ok  answer here   "  "  and with your  signature here :  "   "  intkkus signature: "yarrrr"
-                        var groupImIn = omd.playerGroups[OnlineManager.mePlayer.inLobbyId];
-                        ushort hostId = groupImIn == 0 ? (ushort)0U : omd.groupHosts[groupImIn];
-                        if (groupImIn != 0 && hostId != OnlineManager.mePlayer.inLobbyId) return;
 
-                        OnlineCreature creature = mgm.avatars[0]; //supposedly mine
-                        if (creature.creature.Room == self.room.abstractRoom)
+                        if (featuringthe.Room == self.room.abstractRoom)
                         {
-                            AbstractCreature featuringthe = creature.creature;
                             if (self.wait > 0)
                             {
                                 self.wait--;
                             }
                             else if (//(self.eventTrigger.entrance < 0 || featuringthe.pos.abstractNode == self.eventTrigger.entrance)  &&
-                                       featuringthe.realizedCreature != null 
-                                   && !featuringthe.realizedCreature.inShortcut 
-                                   //&& (featuringthe.realizedCreature as Player).Karma >= self.eventTrigger.karma 
-                                   //&& !self.room.game.GameOverModeActive 
+                                           featuringthe.realizedCreature != null 
+                                       && !featuringthe.realizedCreature.inShortcut 
                                    && Custom.DistLess(featuringthe.realizedCreature.mainBodyChunk.pos, (self.eventTrigger as SpotTrigger).pos, 
                                                      (self.eventTrigger as SpotTrigger).rad)) //Dereference of a possibly null type? reference of possybly my dick 
                             {
@@ -119,11 +116,20 @@ namespace RainMeadow
                         }
                         return;
                     }
+                    //if (self.eventTrigger.type switch { EventTrigger.TriggerType.PreRegionBump => 0, EventTrigger.TriggerType.RegionBump => 1, _ => 2 } < 2)
                     if (self.eventTrigger.type == EventTrigger.TriggerType.PreRegionBump || self.eventTrigger.type == EventTrigger.TriggerType.RegionBump)
                     {
                         if (self.eventTrigger.tEvent is MusicEvent)
                         {
-                            RainMeadow.Debug("HEY THERE'S A (PRE)REGIONBUMP EVENTTRIGGER HERE WITH A MUSICEVENT WE ACTUALLY CARE ABOUT, REMEMBER TO @ INTIKUS ONE MILLION TIMES IN RAIN MEADOW SERVER YOU HAVE HIS PERMISSION DUDES  SIGNED INTIKUS YEAH");
+                            //Inti - electing to simplify the game code because it's not assigning a subregion tracker because we're using our own ownertype??? the fact its another creature 
+                            if (featuringthe.Room == self.room.abstractRoom)
+                            {
+                                if (self.room.game.cameras.Select(c=>c.followAbstractCreature).Contains(featuringthe) &&
+                                    featuringthe.realizedCreature != null && !featuringthe.realizedCreature.inShortcut)
+                                {
+                                    self.Positive();
+                                }
+                            }
                         }
                         /*
                         for (int j = 0; j < self.room.game.Players.Count; j++)
@@ -131,12 +137,35 @@ namespace RainMeadow
                             if (self.room.game.Players[j].Room == self.room.abstractRoom)
                             {
                                 int k = 0;
+
+                                var omd = OnlineManager.lobby.GetData<LobbyMusicData>(); // this might be super expensive to let run 4 times every frame dudes. 
+                                var groupImIn = omd.playerGroups[OnlineManager.mePlayer.inLobbyId];
+                                ushort hostId = groupImIn == 0 ? (ushort)0U : omd.groupHosts[groupImIn]; // maybe make this into an optimized thingy :)
+                                if (groupImIn != 0 && hostId != OnlineManager.mePlayer.inLobbyId) return;
+
+                                AbstractCreature featuringthe = mgm.avatars[0].creature;
+                                RainMeadow.Debug("A");
                                 while (k < self.room.game.cameras.Length)
                                 {
-                                    if (self.room.game.cameras[k].followAbstractCreature == self.room.game.Players[j] && self.TriggerConditions(j) && self.room.game.cameras[k].hud != null && self.room.game.cameras[k].hud.textPrompt != null && self.room.game.cameras[k].hud.textPrompt.subregionTracker != null)
+                                    RainMeadow.Debug("B");
+                                    if (self.room.game.cameras[k].followAbstractCreature == self.room.game.Players[j]
+                                        && featuringthe.realizedCreature != null && !featuringthe.realizedCreature.inShortcut)
                                     {
-                                        if ((self.eventTrigger.type == EventTrigger.TriggerType.PreRegionBump && self.room.game.cameras[k].hud.textPrompt.subregionTracker.PreRegionBump) || (self.eventTrigger.type == EventTrigger.TriggerType.RegionBump && self.room.game.cameras[k].hud.textPrompt.subregionTracker.RegionBump))
+                                        RainMeadow.Debug("C");
+                                        RainMeadow.Debug(self.room.game.cameras[k].hud != null);
+                                        RainMeadow.Debug(self.room.game.cameras[k].hud.textPrompt != null);
+                                        RainMeadow.Debug(self.room.game.cameras[k].hud.textPrompt.subregionTracker != null); // <--- this is always null? 
+
+                                        RainMeadow.Debug(self.room.game.cameras[k].hud?.textPrompt?.subregionTracker is HUD.SubregionTracker thingy);
+                                        RainMeadow.Debug(self.eventTrigger.type == EventTrigger.TriggerType.PreRegionBump);
+                                        RainMeadow.Debug(self.eventTrigger.type == EventTrigger.TriggerType.RegionBump);
+
+                                        if (self.room.game.cameras[k].hud?.textPrompt?.subregionTracker is HUD.SubregionTracker thing
+                                            &&
+                                            ((self.eventTrigger.type == EventTrigger.TriggerType.PreRegionBump && thing.PreRegionBump) 
+                                            || (self.eventTrigger.type == EventTrigger.TriggerType.RegionBump && thing.RegionBump)))
                                         {
+                                            RainMeadow.Debug("D");
                                             self.Positive();
                                             break;
                                         }
@@ -158,7 +187,6 @@ namespace RainMeadow
                 orig.Invoke(self, eu);
             }
         }
-
         private static void ActiveTriggerChecker_FireEvent(On.ActiveTriggerChecker.orig_FireEvent orig, ActiveTriggerChecker self)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
@@ -174,14 +202,14 @@ namespace RainMeadow
                 else if (self.eventTrigger.tEvent.type == TriggeredEvent.EventType.StopMusicEvent)
                 { 
                     self.room.game.manager.musicPlayer?.GameRequestsSongStop(self.eventTrigger.tEvent as StopMusicEvent); 
-                }// for when i need to destroy a song that loops (although, this isn't what destroys a song when exiting to lobby, nor does it stop random gods, etc. do i really need this?)
+                } //for when i need to destroy a song that loops (although, this isn't what destroys a song when exiting to lobby, nor does it stop random gods, etc. do i really need this?)
             }
             else
             {
                 orig.Invoke(self);
             }
         }
-
+        private static void MusicPlayer_RainRequestStopSong(On.Music.MusicPlayer.orig_RainRequestStopSong orig, MusicPlayer self) { if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode) orig.Invoke(self); } //hehe Just in Case lmao
         private static void MusicPlayer_GameRequestsSong(On.Music.MusicPlayer.orig_GameRequestsSong orig, MusicPlayer self, MusicEvent musicEvent)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)

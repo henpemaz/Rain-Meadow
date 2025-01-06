@@ -12,10 +12,8 @@ namespace RainMeadow
         public void OnEnable()
         {
             On.RainWorldGame.Update += RainWorldGame_Update; //actually usefull
-                                                             //On.PlayerGraphics.DrawSprites += hehedrawsprites;
             On.SoundLoader.Update += SoundLoader_Update;
             On.RainWorldGame.ctor += RainWorldGame_ctor; //actually usefull 
-            On.VirtualMicrophone.SoundObject.Destroy += SoundObject_Destroy;
         }
 
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
@@ -162,13 +160,13 @@ namespace RainMeadow
                 //throw;
             }
 
-            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume, 1, 0); // RainMeadow.Debug("Created wetcontroller");
+            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume*0.8f, 1, 0); // RainMeadow.Debug("Created wetcontroller");
 
             if (WetLoop == null) 
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume, 1, false);
+                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume*0.8f, 1, false);
 
                 WetLoop.gameObject.AddComponent<AudioLowPassFilter>();
                 WetLoop.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = 23000;
@@ -242,27 +240,14 @@ namespace RainMeadow
 
             WetData.Plop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
         }
-        private void PushKeyModulation(int diff)
-        {
-            CurrentKey += diff;
-            while (CurrentKey < -6 ||  CurrentKey > 6)
-            {
-                if (CurrentKey < 1) CurrentKey += 12;
-                else CurrentKey -= 12;
-            }
-        }
-        private void PushScaleModulation(bool majorscaling)
-        {
-            inmajorscale = majorscaling;
-        }
         private void InfluenceModulation(int Strength)
         {
             int dicedsign = UnityEngine.Random.Range(-5, 3);
-            if (dicedsign <= 0) dicedsign = -1; else dicedsign = 1; //6/8th chance to go downwards, unstable by choice
+            dicedsign = (dicedsign <= 0) ? -1 : 1; //6/8th chance to go downwards, unstable by choice
             int dicedint = UnityEngine.Random.Range(0, 777) / (Math.Abs(Strength) + 1);
-            if (dicedint <= 77 && dicedint > 44) CurrentKey += 1 * dicedsign;
-            if (dicedint <= 44 && dicedint > 7) CurrentKey += 2 * dicedsign;
-            if (dicedint <= 7) CurrentKey += 3 * dicedsign;
+            if (dicedint <= 7)          CurrentKey += 3 * dicedsign;
+            else if (dicedint <= 44)    CurrentKey += 2 * dicedsign;
+            else if (dicedint <= 77)    CurrentKey += 1 * dicedsign;
 
             if (UnityEngine.Random.Range(0, 101) < 4) { inmajorscale = !inmajorscale; }
 
@@ -354,50 +339,9 @@ namespace RainMeadow
                 */
                 return;
             }
-            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultMusicVolume * velocity;
+            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultMusicVolume * velocity*0.5f;
             float pan = MeadowMusic.vibePan ?? 0f * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
-            //virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
-            //RainMeadow. Debug($"Trying to play a {SoundId}, at {vol} volume, with {pan} pan");
-            try
-            {
-                if (virtualMicrophone.visualize)
-                {
-                    virtualMicrophone.Log(SoundId);
-                }
-
-                if (!virtualMicrophone.AllowSound(SoundId))
-                {
-                    RainMeadow.Debug($"Too many sounds playing, denying a {SoundId}");
-                    return;
-                }
-                SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(SoundId, -1);
-                if (virtualMicrophone.SoundClipReady(soundData))
-                {
-                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 22) DestroyOldestPlop();
-                    if (virtualMicrophone.soundObjects.Count * 2 - AliveList.Count > 24) DestroyOldestPlop();
-                    var thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, speed, false, 0);
-                    //thissound.volumeGroup = 3;
-                    //var clipclip = thissound.audioSource;
-                    //FeedAudioWetTrack(clipclip, vol, speed); TESTING
-                    virtualMicrophone.soundObjects.Add(thissound);
-                    InfoThingy thingy = new(thissound, vol, false, 0);
-                    AliveList.Add(thingy);
-                }
-                else
-                {
-                    RainMeadow.Debug($"Soundclip not ready");
-                    return;
-                }
-
-                if (RainWorld.ShowLogs)
-                {
-                    //RainMeadow.Debug($"the note that played: {SoundId} at {speed}");
-                }
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Debug($"Log {e}");
-            }
+            virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
         }
         public enum Wavetype
         {
@@ -662,74 +606,6 @@ namespace RainMeadow
                 }
             }
         }
-
-        private void SoundObject_Destroy(On.VirtualMicrophone.SoundObject.orig_Destroy orig, VirtualMicrophone.SoundObject self)
-        {
-            //just straight up kill that guy immediatly     //Debug("Hi");
-            orig(self);
-            int indextodelete = AliveList.FindIndex(c => c.soundObject == self);
-            if (indextodelete != -1) AliveList.RemoveAt(indextodelete);
-        }
-        
-        private void DestroyOldestPlop()
-        {
-            InfoThingy KillThisFucker;
-            for (int righthere = 0; righthere < AliveList.Count; righthere++)
-            {
-                InfoThingy aliverrr = AliveList[righthere];
-                if (!aliverrr.dying)
-                {
-                    KillThisFucker = aliverrr;
-                    KillThisFucker.dying = true;
-                    AliveList[righthere] = KillThisFucker;
-                    break;
-                }
-            }
-        }
-        struct InfoThingy
-        {
-            public InfoThingy(VirtualMicrophone.SoundObject soundObject, float initvolume, bool dying, float dyingpercent)
-            {
-                this.soundObject = soundObject;
-                this.initvolume = initvolume;
-                this.dying = dying;
-                this.dyingpercent = dyingpercent;
-            }
-            public VirtualMicrophone.SoundObject soundObject;
-            public float initvolume;
-            public bool dying;
-            public float dyingpercent;
-        }
-
-        List<InfoThingy> AliveList = new List<InfoThingy>();
-
-        private void ThanatosSlayGirl()
-        {
-            bool breakkill = AliveList.Count == 0;
-            if (!breakkill)
-            {
-                for (int i = 0; i < AliveList.Count; i++)
-                {
-                    InfoThingy thingy = AliveList[i];
-                    if (thingy.dying)
-                    {
-                        float hah = thingy.dyingpercent;
-                        hah = (hah * 0.1f) + 0.175f + hah;
-
-                        if (hah >= 1f || true) //TESTING true
-                        {
-                            RainMeadow.Debug("I removed one");
-                            thingy.soundObject.Destroy();
-                        }
-                        else
-                        {
-                            thingy.soundObject.SetVolume = thingy.initvolume * (1 - hah);
-                        }
-                    }
-                }
-            }
-        }
-
         struct Liaison
         {
             public Liaison(string note, int stopwatch, bool[] pattern, int patternindex, string period)
@@ -819,11 +695,10 @@ namespace RainMeadow
             {
                 if (ismodulation)
                 {//modulation
-                    plopMachine.PushKeyModulation(-differencebuffer);
-                    if (hasswitchedscales)
-                    {
-                        plopMachine.PushScaleModulation(!plopMachine.inmajorscale);
-                    }
+
+                    plopMachine.CurrentKey -= differencebuffer;
+                    while (Math.Abs(plopMachine.CurrentKey) < 6) plopMachine.CurrentKey += (plopMachine.CurrentKey < 1) ? 12 : -12;
+                    if (hasswitchedscales) plopMachine.inmajorscale = !plopMachine.inmajorscale;
                 }
                 else
                 {
@@ -1062,15 +937,7 @@ namespace RainMeadow
             public static void Add(string note, PlopMachine plopmachine)
             {
                 if (LiaisonList.Exists(L => L.note == note.Substring(2))) return;
-                string period = arprate switch //is 4 - 16 here
-                {
-                    0 => "1/8",
-                    1 => "1/12",
-                    2 => "1/16",
-                    3 => "1/24",
-                    4 => "1/32",
-                    _ => "1/32",
-                };
+                string period = "1/" + arprate switch { 0 => "8", 1 => "12", 2 => "16", 3 => "24", 4 => "32", _ => "32" };
                 int liaisonwait = Wait.Until(period, 1, plopmachine.debugstopwatch);
                 int amountoftimes = Mathf.Clamp(UnityEngine.Random.Range(8 - (arprate / 5 * 3), 23 - (3 * (arprate / 2))), 0, 23);
                 
@@ -1702,7 +1569,6 @@ namespace RainMeadow
                     fichtean = (Mathf.Pow(x, 1 / (currentagora / 2 + 1)) + x) / 2;
                     PlayEntry();
                     DrumMachine.Update(mic, this);
-                    ThanatosSlayGirl();
                 }
 
                 //if (Input.GetKey("f") && !ol2)
@@ -1733,7 +1599,7 @@ namespace RainMeadow
         }
 
         public static readonly SoundID twentysecsilence = new SoundID("twentysecsilence", register: true);
-        public static readonly SoundID Kick = new SoundID("Kick", register: true);
+        public static readonly SoundID Kick  = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
         public static readonly SoundID HiHat = new SoundID("HiHat", register: true);
     }
