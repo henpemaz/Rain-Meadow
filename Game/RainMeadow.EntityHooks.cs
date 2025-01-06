@@ -274,13 +274,10 @@ namespace RainMeadow
                                 // not-online-aware removal
                                 Debug("removing remote entity from game " + opo);
                                 opo.beingMoved = true;
-                                if (apo.realizedObject is Creature c)
+                                if (apo.realizedObject is Creature c && c.inShortcut)
                                 {
-                                    if (c.inShortcut)
-                                    {
-                                        c.RemoveFromShortcuts();
-                                    }
-                                }           
+                                    c.RemoveFromShortcuts();
+                                }
                                 entities.Remove(apo);
                                 room.abstractRoom.creatures.Remove(apo as AbstractCreature);
                                 room.RemoveObject(apo.realizedObject);
