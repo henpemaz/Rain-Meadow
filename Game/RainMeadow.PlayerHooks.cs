@@ -49,7 +49,6 @@ public partial class RainMeadow
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
-        On.Player.GrabUpdate += Player_GrabUpdate1;
         On.Player.SlugcatGrab += Player_SlugcatGrab;
         On.Player.ReleaseGrasp += Player_ReleaseGrasp;
         On.Player.SlugOnBack.SlugToBack += SlugOnBack_SlugToBack;
@@ -102,19 +101,6 @@ public partial class RainMeadow
         }
     }
 
-    private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
-    {
-        orig(self, eu);
-        if (self.slugOnBack != null)
-        {
-            RainMeadow.Debug(self.slugOnBack.HasASlug);
-            if (self.slugOnBack.slugcat != null)
-            {
-                RainMeadow.Debug(self.slugOnBack.slugcat);
-                RainMeadow.Debug(self.slugOnBack.slugcat.IsLocal());
-            }
-        }
-    }
 
     private bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
     {

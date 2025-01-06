@@ -216,6 +216,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
+
                 AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
                 AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
                 WorldSession oldWorldSession = WorldSession.map.GetValue(oldAbsroom.world, (w) => throw new KeyNotFoundException());
@@ -266,6 +267,10 @@ namespace RainMeadow
                             // if they're the overseer and it isn't the host moving it, that's bad as well
                             if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
+                                if (opo.apo is AbstractCreature slug && slug.creatureTemplate.type.value == CreatureTemplate.Type.Slugcat.value) // test 
+                                {
+                                    continue; // we will clean up later
+                                }
                                 // not-online-aware removal
                                 Debug("removing remote entity from game " + opo);
                                 opo.beingMoved = true;
@@ -275,7 +280,7 @@ namespace RainMeadow
                                     {
                                         c.RemoveFromShortcuts();
                                     }
-                                }
+                                }           
                                 entities.Remove(apo);
                                 room.abstractRoom.creatures.Remove(apo as AbstractCreature);
                                 room.RemoveObject(apo.realizedObject);
@@ -310,7 +315,7 @@ namespace RainMeadow
                 {
                     storyGameMode.changedRegions = true;
                     storyGameMode.readyForGate = 2;
-                    }
+                }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     MeadowMusic.NewWorld(self.activeWorld);

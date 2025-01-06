@@ -34,6 +34,7 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor += RoomSettings_ctor;
+            On.Room.Update += Room_Update1;
 
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
@@ -50,6 +51,27 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        }
+
+        private void Room_Update1(On.Room.orig_Update orig, Room self)
+        {
+            orig(self);
+            // Maybe there's somewhere more efficient to run this
+            if (isStoryMode(out var _))
+            {
+                if (self.IsGateRoom())
+                {
+                    for (int i = 0; i < self.abstractRoom.entities.Count; i++)
+                    {
+                        if (self.abstractRoom.entities[i] is AbstractCreature ac && ac.IsLocal() && ac.creatureTemplate.type == CreatureTemplate.Type.Slugcat && !self.abstractRoom.world.game.GetStorySession.Players.Contains(ac))
+                        {
+                            self.abstractRoom.creatures.Remove(ac);
+                            self.RemoveObject(ac.realizedObject);
+                            self.CleanOutObjectNotInThisRoom(ac.realizedObject);
+                        }
+                    }
+                }
+            }
         }
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
