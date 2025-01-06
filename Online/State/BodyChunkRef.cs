@@ -30,7 +30,6 @@ namespace RainMeadow
                 }
                 return null;
             }
-            //throw new InvalidProgrammerException("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
             return new BodyChunkRef(oe, bodyChunk.index);
         }
 
