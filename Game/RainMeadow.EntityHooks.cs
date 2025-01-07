@@ -13,6 +13,7 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
+            On.RegionGate.Update += RegionGate_Update1;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -33,6 +34,23 @@ namespace RainMeadow
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+        }
+
+        private void RegionGate_Update1(On.RegionGate.orig_Update orig, RegionGate self, bool eu)
+        {
+            orig(self, eu);
+            if (self.mode == RegionGate.Mode.Waiting || self.mode == RegionGate.Mode.ClosingAirLock)
+            {
+                for (int i = 0; i < self.room.abstractRoom.entities.Count; i++)
+                {
+                    if (self.room.abstractRoom.entities[i] is AbstractCreature ac && ac.IsLocal() && ac.creatureTemplate.type == CreatureTemplate.Type.Slugcat && !self.room.abstractRoom.world.game.GetStorySession.Players.Contains(ac))
+                    {
+                        self.room.abstractRoom.creatures.Remove(ac);
+                        self.room.RemoveObject(ac.realizedObject);
+                        self.room.CleanOutObjectNotInThisRoom(ac.realizedObject);
+                    }
+                }
+            }
         }
 
         private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
