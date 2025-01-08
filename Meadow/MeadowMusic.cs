@@ -14,7 +14,7 @@ namespace RainMeadow
 {
     public partial class MeadowMusic
     {
-        public const float defaultMusicVolume = 0.27f; // maybe this could be a slider somewhere
+        public const float defaultMusicVolume = 0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
         public static void EnableMusic()
         {
             CheckFiles();
@@ -38,7 +38,14 @@ namespace RainMeadow
             On.ActiveTriggerChecker.Update += ActiveTriggerChecker_Update;
 
             On.Music.MusicPiece.StartPlaying += MusicPiece_StartPlaying;
+
+            //On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
         }
+        //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
+        //private static void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
+        //{
+            //fuckoff
+        //}
 
         //Game music hooks 
 
@@ -219,7 +226,8 @@ namespace RainMeadow
                 if (self == null || loadingsong ||
                    (self.song != null && self.song.name == musicEvent.songName) ||
                    (self.song == null && self.nextSong != null && self.nextSong.name == musicEvent.songName) || 
-                   songHistory.Contains(musicEvent.songName)) 
+                   songHistory.Contains(musicEvent.songName) ||
+                   self.song != null && self.song.subTracks[0].source.time > 20)
                    return;
                 //NO NEED TO REQUEST THE SONG IF YOU CAN'T/COULD PLAY IT OR ALREADY ARE, WILL, OR HAVE
                 RainMeadow.Debug("Checking if i'm in a group");
@@ -365,7 +373,7 @@ namespace RainMeadow
             // there's proooobably more stuff that needs resetting here
         }
 
-        const int waitSecs = 6;
+        const int waitSecs = 30;
 
         static bool filesChecked = false;
 
@@ -456,6 +464,10 @@ namespace RainMeadow
         static bool gamedontload = false;
         static char thisis = 'a';
         static int sosad = 0;
+
+        //static string[] meadowsongnames = new string[] { "403rings", "71104", "Cascen", "DustAshWrong", "Establish", "Eyes Vain", "Eyto", "Folkada", "Grasp", "Gray Orange", "Icy Parchment", "Indufor", "Live more.", "Me", "MTC", "Nevertop Side", "Ones", "Pedal Petal", "Porls", "Purple Puff", "Significance", "Slightly Ill", "Smoothed Ash", "Soup", "StepsSteps", "Swan ode", "The Crewmate", "tredjeplanen", "Triptrap X", "Trists", "Void Genesis", "Walked", "Well Phoe", "Woodback", "NA_40 - Unseen Lands" };
+        //static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
+        //static int queuething = 1;
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (time.HasValue) time += dt;
@@ -685,6 +697,15 @@ namespace RainMeadow
                         thisis = 'a';
                         sosad = 0;
                     }
+                    /*
+                    if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
+                    if (Input.GetKey(KeyCode.Delete)) QueueSong(musicPlayer, "");
+                    if (Input.GetKey(KeyCode.PageUp)) QueueSong(musicPlayer, meadowsongnames[queuething = ((queuething + 1) >= meadowsongnames.Length) ? 0 : (queuething + 1)]);
+                    if (musicPlayer != null && musicPlayer.song != null) {
+                        if (Input.GetKey(KeyCode.PageDown)) musicPlayer.song.subTracks[0].source.time += 10;
+                        if (Input.GetKey(KeyCode.End)     ) musicPlayer.song.subTracks[0].volume -= 0.25f; //starts at 1 
+                        if (Input.GetKey(KeyCode.Home)    ) musicPlayer.song.subTracks[0].isSynced = true;
+                    } */
                 }
                 gamedontload = Input.anyKey;
             }
@@ -807,63 +828,6 @@ namespace RainMeadow
             }
             RainMeadow.Debug("Done queueing song " + songtobesang);
         }
-        private static void PlaySong(MusicPlayer musicPlayer, Song? song, float timmmetaken, float? timetobestarted = null)
-        {
-            RainMeadow.Debug("Playing song");
-            if (song == null)
-            {
-                RainMeadow.Debug("Song was null");
-            }
-            else if (song.name != latestrequest)
-            {
-                RainMeadow.Debug("Song was fucking SUPID i DONT like this one");
-                return;
-            }
-            else
-            {
-                var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
-                var creature = mgm.avatars[0];
-                var musicdata = creature.GetData<MeadowMusicData>();
-
-                song.priority = 255_207_64f; // :) I trust my DJ's songs to be tantamount :)
-                song.stopAtDeath = false; //well, just to be sure!
-                song.stopAtGate = false;
-                song.lp = song.name == "NA_41 - Random Gods"; //a name that's right next to "NA_40 - Unseen Lands", funny
-
-                bool assignedtosong = musicPlayer.song == null;
-                if (timetobestarted != null)
-                {
-                    musicdata.startedPlayingAt = timetobestarted.Value;
-                    float calculatedthing = LobbyTime() - timetobestarted.Value;
-                    song.subTracks[0].source.time = calculatedthing + (Time.time - timmmetaken) + 1f + (!assignedtosong ? (2f / 3f) : 0f); //rough guesstimate, this is a *lazy* solution sponsored by line 158 186. In the future maybe we'd whip some cooler methodformulathingamajig up , maybe hooking onto musicplayer.Update ? ababa
-                    RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + timetobestarted.Value + " which amounts to " + calculatedthing);
-                    //ivebeenpatientlywaiting = true; //for the next track, now that we're synced up.  Future installments might even get rid of thisone, because the only reason you'd be unsynced would be if someone joined a group and not been there when it started. // the future is here
-                }
-                if (assignedtosong)
-                {
-                    musicPlayer.song = song;
-                    musicPlayer.song.playWhenReady = true;
-                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
-                }
-                else
-                {
-                    if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
-                    {
-                        RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
-                        loadingsong = false;
-                        return;
-                    }
-                    musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
-                    musicPlayer.nextSong.playWhenReady = false;
-                    if (!UpdateIntensity) musicPlayer.nextSong.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
-                }
-                //musicdata.providedSong = song.name;
-                if (timetobestarted == null) musicdata.startedPlayingAt = LobbyTime();
-                RainMeadow.Debug("my song is now " + musicdata.providedSong);
-                RainMeadow.Debug("my song is to be " + song.name);
-            }
-            loadingsong = false;
-        }
         private static Song? LoadSong(MusicPlayer? musicPlayer, string providedsong, float? DJstartedat)
         {
             RainMeadow.Debug("Loading song");
@@ -936,21 +900,77 @@ namespace RainMeadow
             }
             else
             {
-                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode)
-                {
-                    volume = 0 // what
-                };
+                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode);
                 if (willfadein) song.fadeInTime = 120f;
-                else song.fadeInTime = 2f;
                 MusicPiece.SubTrack sub = song.subTracks[0];
-                sub.isStreamed = true;
+                sub.source.Pause();
                 sub.source.clip = clipclip;
+                sub.isStreamed = true;
+                if (sub.piece.musicPlayer.manager.rainWorld.OptionsReady) sub.source.volume = Mathf.Pow((sub.volume * sub.piece.volume * sub.piece.musicPlayer.manager.rainWorld.options.musicVolume), sub.piece.musicPlayer.manager.soundLoader.volumeExponent); 
+                //&& !sub.piece.startedPlaying
+                //sub.requestPlay = true;
                 sub.readyToPlay = true;
+                sub.isSynced = false;
                 song.subTracks[0] = sub;
                 return song;
             }
         }
+        private static void PlaySong(MusicPlayer musicPlayer, Song? song, float timmmetaken, float? timetobestarted = null)
+        {
+            RainMeadow.Debug("Playing song");
+            if (song == null)
+            {
+                RainMeadow.Debug("Song was null");
+            }
+            else if (song.name != latestrequest)
+            {
+                RainMeadow.Debug("Song was fucking SUPID i DONT like this one");
+                return;
+            }
+            else
+            {
+                var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
+                var creature = mgm.avatars[0];
+                var musicdata = creature.GetData<MeadowMusicData>();
 
+                song.priority = 255_207_64f; // :) I trust my DJ's songs to be tantamount :)
+                song.stopAtDeath = false; //well, just to be sure!
+                song.stopAtGate = false;
+                song.lp = song.name == "NA_41 - Random Gods"; //a name that's right next to "NA_40 - Unseen Lands", funny
+
+                bool assignedtosong = musicPlayer.song == null;
+                if (timetobestarted != null)
+                {
+                    musicdata.startedPlayingAt = timetobestarted.Value;
+                    float calculatedthing = LobbyTime() - timetobestarted.Value;
+                    song.subTracks[0].source.time = calculatedthing + (Time.time - timmmetaken) + 1f + (!assignedtosong ? (2f / 3f) : 0f); //rough guesstimate, this is a *lazy* solution sponsored by line 158 186. In the future maybe we'd whip some cooler methodformulathingamajig up , maybe hooking onto musicplayer.Update ? ababa
+                    RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + timetobestarted.Value + " which amounts to " + calculatedthing);
+                }
+                if (assignedtosong && false) //lol i still don't know why it jolts when you place it right on musicplayer song so COPE
+                {
+                    musicPlayer.song = song;
+                    musicPlayer.song.playWhenReady = true;
+                    if (!UpdateIntensity) musicPlayer.song.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
+                }
+                else
+                {
+                    if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
+                    {
+                        RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
+                        loadingsong = false;
+                        return;
+                    }
+                    musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
+                    musicPlayer.nextSong.playWhenReady = false;
+                    if (!UpdateIntensity) musicPlayer.nextSong.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
+                }
+                //musicdata.providedSong = song.name;
+                if (timetobestarted == null) musicdata.startedPlayingAt = LobbyTime();
+                RainMeadow.Debug("my song is now " + musicdata.providedSong);
+                RainMeadow.Debug("my song is to be " + song.name);
+            }
+            loadingsong = false;
+        }
         public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
             var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
