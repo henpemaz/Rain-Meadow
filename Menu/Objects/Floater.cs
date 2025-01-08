@@ -36,7 +36,7 @@ namespace RainMeadow
         {
             base.Update();
             Vector2 targetPos = Vector2.Lerp(target + initOffset, target, 1f - Mathf.Pow(1f - progress, 2.4f));
-            rootPos = Vector2.Lerp(rootPos, targetPos, Mathf.Lerp((velocityorsmthlol / (lastprogress < progress ? 10f : 2f)), 0.9f, (lastprogress < progress ? 0f : (Mathf.Pow(1f-progress, 4)))));
+            rootPos = Vector2.Lerp(rootPos, targetPos, Mathf.Lerp((velocityorsmthlol / (lastprogress < progress ? 10f : 2f)), 0.9f, (lastprogress < progress ? 0f : (Mathf.Pow(1f - progress, 2.5f)))));
             //actually, what if instead of all this big damn formula, we just made them fade out? Whatever.
             lastprogress = progress;
             anchorlastpos = powner.pos;
