@@ -7,10 +7,11 @@ namespace RainMeadow
         public override void Process()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner && MatchmakingManager.currentMatchMaker == MatchmakingManager.MatchMaker.Local)
+            if (OnlineManager.lobby != null && MatchmakingManager.currentMatchMaker == MatchmakingManager.MatchMaker.Local)
             {
                 var matchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager);
-                // Hello packet from joining peer
+                // Tell everyone else about them
+                RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);
 
                 // Tell them they are in
@@ -21,6 +22,11 @@ namespace RainMeadow
                     OnlineManager.lobby.gameModeType.value,
                     OnlineManager.players.Count
                 ), NetIO.SendType.Reliable);
+
+                
+
+
+
             }
         }
     }

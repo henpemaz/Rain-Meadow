@@ -20,6 +20,14 @@ namespace RainMeadow
         };
 
 
+        public static event LobbyListReceived_t OnLobbyListReceived = delegate {};
+        public static event PlayerListReceived_t OnPlayerListReceived = delegate {};
+        public static event LobbyJoined_t OnLobbyJoined = delegate {};
+
+        protected static void OnLobbyJoinedEvent(bool ok, string error = "") => OnLobbyJoined?.Invoke(ok, error);
+        protected static void OnPlayerListReceivedEvent(PlayerInfo[] players) => OnPlayerListReceived?.Invoke(players);
+        protected static void OnLobbyListReceivedEvent(bool ok, LobbyInfo[] lobbies) => OnLobbyListReceived?.Invoke(ok, lobbies);
+
         public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
         public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
 
@@ -72,9 +80,6 @@ namespace RainMeadow
             Private
         }
 
-        public abstract event LobbyListReceived_t OnLobbyListReceived;
-        public abstract event PlayerListReceived_t OnPlayerListReceived;
-        public abstract event LobbyJoined_t OnLobbyJoined;
         public delegate void LobbyListReceived_t(bool ok, LobbyInfo[] lobbies);
         public delegate void PlayerListReceived_t(PlayerInfo[] players);
         public delegate void LobbyJoined_t(bool ok, string error = "");

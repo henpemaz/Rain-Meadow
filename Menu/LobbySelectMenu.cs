@@ -167,8 +167,8 @@ namespace RainMeadow
             // }
 
             // // Lobby machine go!
-            MatchmakingManager.currentInstance.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
 // #if !LOCAL_P2P
 //             SteamNetworkingUtils.InitRelayNetworkAccess();
 // #endif
@@ -310,8 +310,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
-            MatchmakingManager.currentInstance.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
-            MatchmakingManager.currentInstance.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
+            MatchmakingManager.OnLobbyListReceived -= OnlineManager_OnLobbyListReceived;
+            MatchmakingManager.OnLobbyJoined -= OnlineManager_OnLobbyJoined;
             base.ShutDownProcess();
         }
 

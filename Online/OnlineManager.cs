@@ -42,7 +42,7 @@ namespace RainMeadow
             milisecondsPerFrame = 1000 / framesPerSecond;
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
-            MatchmakingManager.currentInstance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -165,11 +165,17 @@ namespace RainMeadow
 
         public static void SendData(OnlinePlayer toPlayer)
         {
+            RainMeadow.Debug(toPlayer.id.name);
+            RainMeadow.Debug(toPlayer.isMe);
+            RainMeadow.Debug(toPlayer.OutgoingEvents.Count);
             if (toPlayer.isMe)
                 return;
+            
+            
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
+                RainMeadow.DebugMe();
                 netIO?.SendSessionData(toPlayer);
             }
         }
