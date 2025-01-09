@@ -29,8 +29,8 @@ namespace RainMeadow
         }
 
         override public void RecieveData() {
+            base.RecieveData();
             SteamAPI.RunCallbacks();
-            LANRecieveData();
             SteamRecieveData();
         }
 

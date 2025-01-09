@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Net;
 
 namespace RainMeadow
@@ -26,53 +27,29 @@ namespace RainMeadow
         public override void Serialize(BinaryWriter writer)
         {
             writer.Write((byte)modifyOperation);
-            writer.Write(players.Length);
-            for (int i = 0; i < players.Length; i++)
-            {
-                var player = players[i].id as LANMatchmakingManager.LANPlayerId;
-                writer.Write(player.endPoint.Address.GetAddressBytes().Length);
-                writer.Write(player.endPoint.Address.GetAddressBytes());
-                writer.Write(player.endPoint.Port);
-                writer.Write(player.machash.Length);
-                writer.Write(player.machash);
+            var lanids = players.Select(x => (LANMatchmakingManager.LANPlayerId)x.id);
+            lanids = lanids.Where(x => x.endPoint != null);
+
+            bool includeme = true;
+            if (lanids.FirstOrDefault(x => x.isLoopback()) is null) {
+                includeme = false;
             }
+
+            lanids = lanids.Where(x => !x.isLoopback());
+            var processinglanid = (LANMatchmakingManager.LANPlayerId)processingPlayer.id;
+            UDPPeerManager.SerializeEndPoints(writer, lanids.Select(x => x.endPoint).ToArray(), processinglanid.endPoint, includeme);
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             modifyOperation = (Operation)reader.ReadByte();
-            players = new OnlinePlayer[reader.ReadInt32()];
-            for (int i = 0; i < players.Length; i++)
-            {
-                int address_size = reader.ReadInt32();
-                byte[] address = reader.ReadBytes(address_size);
-                int port = reader.ReadInt32();
+            var endpoints = UDPPeerManager.DeserializeEndPoints(reader, (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint);
+            var lanmatchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager);
 
-                int mac_hashsize = reader.ReadInt32();
-                byte[] mac_hash = reader.ReadBytes(mac_hashsize);
-                IPEndPoint endPoint = new IPEndPoint(new IPAddress(address), port);
-
-                switch (modifyOperation)
-                {
-                    case Operation.Add:
-                        //players[i] = (LobbyManager.instance as LocalLobbyManager).GetPlayerLocal(netId)
-                        //    ?? new OnlinePlayer(new LocalLobbyManager.LocalPlayerId(netId, endPoint, endPoint.Port == UdpPeer.STARTING_PORT));
-                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(mac_hash);
-                        if (players[i] == null)
-                        {
-                            RainMeadow.Debug("Player not found: " + endPoint.ToString());
-                            var id = new LANMatchmakingManager.LANPlayerId(endPoint, false);
-                            id.machash = mac_hash;
-                            players[i] = new OnlinePlayer(id);
-                        }
-                        break;
-
-
-                    case Operation.Remove:
-                        players[i] = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(mac_hash);
-                        break;
-                }
-            }
+            if (modifyOperation == Operation.Add)
+                players = endpoints.Select(x => new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(x))).ToArray();
+            else if (modifyOperation == Operation.Remove)
+                players = endpoints.Select(x => lanmatchmaker.GetPlayerLAN(x)).ToArray();
         }
 
         public override void Process()
@@ -83,6 +60,10 @@ namespace RainMeadow
                     RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
                     for (int i = 0; i < players.Length; i++)
                     {
+                        if (((LANMatchmakingManager.LANPlayerId)players[i].id).isLoopback()) {
+                            continue; // that's me
+                        }
+
                         (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).AcknoledgeLANPlayer(players[i]);
                     }
                     break;

@@ -8,8 +8,9 @@ namespace RainMeadow
 
         public override void Process()
         {
+            RainMeadow.DebugMe();
             OnlineManager.currentlyJoiningLobby = MakeLobbyInfo();
-            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).LobbyAcknoledgedUs();
+            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).LobbyAcknoledgedUs(processingPlayer);
         }
     }
 }

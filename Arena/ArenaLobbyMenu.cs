@@ -68,7 +68,7 @@ namespace RainMeadow
 
 
 
-            MatchmakingManager.currentInstance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             initiatedStartGameForClient = false;
             if (arena.currentGameMode == "" || arena.currentGameMode is null)
             {

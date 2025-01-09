@@ -7,6 +7,8 @@ using System.Net.NetworkInformation;
 using System.Security.Policy;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using System.Collections.Generic;
+using RWCustom;
 
 
 namespace RainMeadow {
@@ -24,25 +26,24 @@ namespace RainMeadow {
         public class LANPlayerId : MeadowPlayerId
         {
             override public void OpenProfileLink() {
-                OnlineManager.instance.manager.ShowDialog(new DialogNotify("You need Steam active to play Rain Meadow", OnlineManager.instance.manager, null));
+                OnlineManager.instance.manager.ShowDialog(new DialogNotify("This player does not have a profile.", OnlineManager.instance.manager, null));
             }
 
             public IPEndPoint? endPoint;
-            public byte[] machash = new byte[0];
 
             public LANPlayerId() { }
-            public LANPlayerId(IPEndPoint endPoint, bool makemachash) : base(endPoint.ToString())
+            public LANPlayerId(IPEndPoint endPoint) : base(endPoint?.ToString() ?? "Unknown Enpoint")
             {
                 this.endPoint = endPoint;
-                if (makemachash) {
-                    var buffer = UdpPeer.getOurMacHash();
-                } 
             }
 
             public void reset()
             {
                 this.endPoint = default;
-                this.machash = new byte[0];
+            }
+
+            public override int GetHashCode() {
+                return this.endPoint?.GetHashCode() ?? 0;
             }
 
             public override void CustomSerialize(Serializer serializer)
@@ -51,112 +52,110 @@ namespace RainMeadow {
                 var port = endPoint?.Port ?? 0;
                 serializer.Serialize(ref endpointBytes);
                 serializer.Serialize(ref port);
-                serializer.Serialize(ref machash);
 
                 if (serializer.IsReading) {
                     endPoint = new IPEndPoint(new IPAddress(endpointBytes), port);
                 }
             }
 
-            public override bool Equals(MeadowPlayerId other)
-            {
-                if (other is LANPlayerId otherL) {
-                    return machash == otherL.machash;
-                } else return false;
+            public bool isLoopback() {
+                bool sameport = false;
+                if (OnlineManager.netIO is LANNetIO netio) {
+                    sameport = netio.manager.port == endPoint?.Port;
+                }
+                return (endPoint?.Address == IPAddress.Loopback || endPoint?.Address == IPAddress.IPv6Loopback) && sameport;
             }
 
-            public override int GetHashCode() {
-                return endPoint?.GetHashCode() ?? 0;
+            public override bool Equals(MeadowPlayerId other)
+            {
+                if (other is LANPlayerId lanid) {
+                    if (endPoint != null && lanid.endPoint != null)
+                        return UDPPeerManager.CompareIPEndpoints(endPoint, lanid.endPoint); 
+                }
+                return false;
             }
         }
         public override void initializeMePlayer() {
-            if (UdpPeer.udpClient == null) {
-                return;
-            }
-
-            OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(UdpPeer.ownEndPoint, true)) { isMe = true };
-        }
-        public void sessionSetup(bool isHost)
-        {
-            RainMeadow.DebugMe();
-            UdpPeer.Startup();
-            initializeMePlayer();
+            if (OnlineManager.netIO is LANNetIO netio) {
+                OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(IPAddress.Loopback, netio.manager.port))) { isMe = true };
+            } 
+            
         }
 
-        public void sessionShutdown()
-        {
-            UdpPeer.Shutdown();
-            var thisPlayer = (LANPlayerId)OnlineManager.mePlayer.id;
-            thisPlayer.reset();
-        }
-
-        public IPEndPoint? currentLobbyHost = null;
-
-        public override event LobbyListReceived_t OnLobbyListReceived;
-        public override event PlayerListReceived_t OnPlayerListReceived;
-        public override event LobbyJoined_t OnLobbyJoined;
-
-        public OnlinePlayer broadcastPlayer = new OnlinePlayer(
-                new LANPlayerId(new IPEndPoint(IPAddress.Broadcast, UdpPeer.STARTING_PORT), false)
-            );
+        public OnlinePlayer currentLobbyHost = null;
         
-        static LANLobbyInfo[] lobbyinfo = new LANLobbyInfo[0];
+        static List<LANLobbyInfo> lobbyinfo = new();
         public override void RequestLobbyList() {
-            lobbyinfo = new LANLobbyInfo[1] { new LANLobbyInfo(new IPEndPoint(IPAddress.Any, 0), "LOCAL_MEADOW", "Meadow", 0, false, 32) };
-            OnLobbyListReceived?.Invoke(true, lobbyinfo);
+            
             // To create a proper list, we need to send a message to the broadcast endpoint.
             // and wait for responces from possible hosts.
-            var memory = new MemoryStream(16);
-            var writer = new BinaryWriter(memory);
-            OnlineManager.netIO.SendP2P(broadcastPlayer, new RequestLobbyPacket(), NetIO.SendType.Reliable);
+            for (int i = 0; i < 8; i++) {
+                if (OnlineManager.netIO is LANNetIO lanentio) {
+                    using (MemoryStream memoryStream = new())
+                    using (BinaryWriter writer = new(memoryStream)) {
+                        (new RequestLobbyPacket()).Serialize(writer);
+                        lanentio.manager.SendBroadcast(memoryStream.GetBuffer().Take((int)memoryStream.Position).ToArray());
+                    }
+                }
+
+            }
+                
         }
 
         public void addLobby(LANLobbyInfo lobby) {
             RainMeadow.Debug($"Added lobby {lobby}");
-            lobbyinfo = lobbyinfo.Append(lobby).ToArray();
-            OnLobbyListReceived?.Invoke(true, lobbyinfo);
+            lobbyinfo.Add(lobby);
+            OnLobbyListReceivedEvent(true,  lobbyinfo.ToArray());
         }
 
 
-        public void SendLobbyInfo(IPEndPoint other) {
+        public void SendLobbyInfo(OnlinePlayer other) {
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner) {
-                var memory = new MemoryStream(16);
-                var writer = new BinaryWriter(memory);
-                OnlineManager.netIO.SendP2P(broadcastPlayer, new InformLobbyPacket(
-                    maxplayercount, "LAN Lobby", OnlineManager.lobby.hasPassword,
-                    OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count), NetIO.SendType.Reliable);
+                if (OnlineManager.netIO is LANNetIO lannetio) {
+                    var packet = new InformLobbyPacket(
+                        maxplayercount, "LAN Lobby", OnlineManager.lobby.hasPassword,
+                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count);
+                    OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Reliable);
+                }
             }
         }
 
-        public OnlinePlayer GetPlayerLAN(byte[] machash) {
-            return OnlineManager.players.FirstOrDefault(p => (p.id as LANPlayerId).machash == machash);
+        public OnlinePlayer GetPlayerLAN(IPEndPoint other) {
+            return OnlineManager.players.FirstOrDefault(p => {
+                if (p.id is LANPlayerId lanid)
+                    if (lanid.endPoint != null)
+                        return UDPPeerManager.CompareIPEndpoints(lanid.endPoint, other);
+                return false;
+            });
         }
 
         public int maxplayercount = 0;
         public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount) {
             maxplayercount = maxPlayerCount ?? 0;
-            sessionSetup(true);
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer, password);
-            OnLobbyJoined?.Invoke(true);
+            MatchmakingManager.OnLobbyJoinedEvent(true, "");
         }
 
-        public void LobbyAcknoledgedUs()
+        public void LobbyAcknoledgedUs(OnlinePlayer owner)
         {
+            RainMeadow.DebugMe();
+            currentLobbyHost = owner;
             OnlineManager.lobby = new Lobby(
                 new OnlineGameMode.OnlineGameModeType(OnlineManager.currentlyJoiningLobby.mode, false), 
                 GetLobbyOwner(), lobbyPassword);
-            currentLobbyHost = (OnlineManager.currentlyJoiningLobby as LANLobbyInfo)?.endPoint;
         }
 
 
         public void AcknoledgeLANPlayer(OnlinePlayer joiningPlayer)
         {
+            RainMeadow.DebugMe();
             if (OnlineManager.players.Contains(joiningPlayer)) { return; }
-            RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
             OnlineManager.players.Add(joiningPlayer);
+            RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
             {
+                
                 // Tell the other players to create this player
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
@@ -167,11 +166,13 @@ namespace RainMeadow {
                         NetIO.SendType.Reliable);
                 }
 
+                
                 // Tell joining peer to create everyone in the server
-                OnlineManager.netIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, OnlineManager.players.ToArray()), 
+                OnlineManager.netIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, 
+                    OnlineManager.players.Append(OnlineManager.mePlayer).ToArray()), 
                     NetIO.SendType.Reliable);
             }
-            OnPlayerListReceived?.Invoke(playerList.ToArray());
+            OnPlayerListReceivedEvent(playerList.ToArray());
         }
 
         public void RemoveLANPlayer(OnlinePlayer leavingPlayer)
@@ -191,11 +192,12 @@ namespace RainMeadow {
                         NetIO.SendType.Reliable);
                 }
             }
-            OnPlayerListReceived?.Invoke(playerList.ToArray());
+            OnPlayerListReceivedEvent(playerList.ToArray());
         }
 
         string lobbyPassword = "";
         public override void RequestJoinLobby(LobbyInfo lobby, string? password) {
+            RainMeadow.DebugMe();
             if (lobby is LANLobbyInfo lobbyinfo) {
                 lobbyPassword = password ?? "";
                 OnlineManager.currentlyJoiningLobby = lobby;
@@ -207,7 +209,7 @@ namespace RainMeadow {
                 }
                 
                 RainMeadow.Debug("Sending Request to join lobby...");
-                OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint, false)), 
+                OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
                     new RequestJoinPacket(), NetIO.SendType.Reliable);
             } else {
                 RainMeadow.Error("Invalid lobby type");
@@ -218,13 +220,13 @@ namespace RainMeadow {
             if (success)
             {
                 RainMeadow.Debug("Joining lobby");
-                OnLobbyJoined?.Invoke(true);
+                OnLobbyJoinedEvent(true);
             }
             else
             {
                 LeaveLobby();
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoined?.Invoke(false, "Wrong password!");
+                OnLobbyJoinedEvent(false, "Wrong password!");
             }
         }
 
@@ -233,24 +235,18 @@ namespace RainMeadow {
             {
                 if (!OnlineManager.lobby.isOwner && currentLobbyHost != null)
                 {
-                    OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(currentLobbyHost, false)), 
+                    OnlineManager.netIO.SendP2P(currentLobbyHost, 
                         new SessionEndPacket(), NetIO.SendType.Reliable);
                 }
             }
         }
 
         public override OnlinePlayer GetLobbyOwner() {
-            return OnlineManager.players.FirstOrDefault((p) => {
-                if (p.id is LANPlayerId lanid) {
-                    return lanid.endPoint == (OnlineManager.currentlyJoiningLobby as LANLobbyInfo)?.endPoint;
-                }
-
-                return false;
-            });
+            return currentLobbyHost;
         }   
 
         public override MeadowPlayerId GetEmptyId() {
-            return new LANPlayerId(null, false);
+            return new LANPlayerId(null);
         }
 
         public override string GetLobbyID() {
