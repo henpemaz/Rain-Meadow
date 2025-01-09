@@ -15,7 +15,7 @@ namespace RainMeadow
     public partial class MeadowMusic
     {
         public const float defaultMusicVolume = 0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
-        public const float defaultPlopVolume = 0.6f; 
+        public const float defaultPlopVolume = 0.55f; 
         
         public static void EnableMusic()
         {
