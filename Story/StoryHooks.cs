@@ -1351,7 +1351,7 @@ namespace RainMeadow
 
         private void PlayerGhosts_AddGhost(On.VoidSea.PlayerGhosts.orig_AddGhost orig, VoidSea.PlayerGhosts self)
         {
-            if (isStoryMode(out _))
+            if (OnlineManager.lobby != null)
             {
                 Vector2 vector = self.originalPlayer.mainBodyChunk.pos + Custom.RNV() * 2000f;
                 AbstractCreature abstractCreature = new AbstractCreature(self.voidSea.room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, self.voidSea.room.GetWorldCoordinate(vector), new EntityID(-1, -1));
@@ -1372,8 +1372,6 @@ namespace RainMeadow
                 }
 
                 abstractCreature.RealizeInRoom();  // PlaceInRoom after applying our customization
-
-                return;
             }
             else
             {
