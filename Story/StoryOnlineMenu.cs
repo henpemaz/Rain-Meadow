@@ -49,7 +49,7 @@ namespace RainMeadow
             SetupOnlineMenuItems();
             UpdatePlayerList();
 
-            MatchmakingManager.currentInstance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
