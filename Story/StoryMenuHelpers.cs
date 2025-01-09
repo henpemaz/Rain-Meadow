@@ -9,7 +9,7 @@ namespace RainMeadow
     internal static class StoryMenuHelpers
     {
 
-        internal static void RemoveMenuObjects(params MenuObject?[] objs)
+        public static void RemoveMenuObjects(params MenuObject?[] objs)
         {
             foreach (var obj in objs)
             {
