@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -21,13 +22,12 @@ namespace RainMeadow
             if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
             {
-                for (int num = 0; num < bodyChunk.owner.abstractPhysicalObject.stuckObjects.Count; num++)
-                {
-                    if (bodyChunk.owner.abstractPhysicalObject.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && bodyChunk.owner.abstractPhysicalObject.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && bodyChunk.owner.abstractPhysicalObject.stuckObjects[num].A.realizedObject != null)
-                    {
-                        (bodyChunk.owner.abstractPhysicalObject.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
-                    }
-                }
+                bodyChunk.owner.abstractPhysicalObject.stuckObjects
+                    .OfType<AbstractPhysicalObject.AbstractObjectStick>()
+                    .Where(stick => stick.A.realizedObject != null)
+                    .ToList()
+                    .ForEach(stick => (stick.A.realizedObject as Weapon)?.ChangeMode(Weapon.Mode.Free));
+
                 return null;
             }
             return new BodyChunkRef(oe, bodyChunk.index);
