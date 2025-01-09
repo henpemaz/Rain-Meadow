@@ -46,12 +46,6 @@ namespace RainMeadow
             public int quarterfood;
             [OnlineField]
             public int mushroomCounter;
-            [OnlineField]
-            public Dictionary<string, bool> storyBoolRemixSettings;
-            [OnlineField]
-            public Dictionary<string, float> storyFloatRemixSettings;
-            [OnlineField]
-            public Dictionary<string, int> storyIntRemixSettings;
             [OnlineField(nullable = true)]
             public string? saveStateString;
             [OnlineField]
@@ -66,9 +60,6 @@ namespace RainMeadow
 
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
-                storyBoolRemixSettings = storyGameMode.storyBoolRemixSettings;
-                storyFloatRemixSettings = storyGameMode.storyFloatRemixSettings;
-                storyIntRemixSettings = storyGameMode.storyIntRemixSettings;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
@@ -126,9 +117,6 @@ namespace RainMeadow
                     }
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
-                (lobby.gameMode as StoryGameMode).storyBoolRemixSettings = storyBoolRemixSettings;
-                (lobby.gameMode as StoryGameMode).storyFloatRemixSettings = storyFloatRemixSettings;
-                (lobby.gameMode as StoryGameMode).storyIntRemixSettings = storyIntRemixSettings;
 
                 (lobby.gameMode as StoryGameMode).requireCampaignSlugcat = requireCampaignSlugcat;
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
