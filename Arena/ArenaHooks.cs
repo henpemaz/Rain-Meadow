@@ -48,6 +48,7 @@ namespace RainMeadow
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
@@ -94,8 +95,19 @@ namespace RainMeadow
 
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
+        {
+            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)) {
+
+                return;
+            }
+            else
+            {
+                orig(self, room, placedObj);
+            }
         }
 
         private float CreatureCommunities_LikeOfPlayer(On.CreatureCommunities.orig_LikeOfPlayer orig, CreatureCommunities self, CreatureCommunities.CommunityID commID, int region, int playerNumber)
