@@ -1375,6 +1375,10 @@ namespace RainMeadow
 
                 return;
             }
+            else
+            {
+                orig(self);
+            }
         }
 
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
