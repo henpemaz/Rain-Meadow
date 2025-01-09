@@ -1351,27 +1351,30 @@ namespace RainMeadow
 
         private void PlayerGhosts_AddGhost(On.VoidSea.PlayerGhosts.orig_AddGhost orig, VoidSea.PlayerGhosts self)
         {
-            Vector2 vector = self.originalPlayer.mainBodyChunk.pos + Custom.RNV() * 2000f;
-            AbstractCreature abstractCreature = new AbstractCreature(self.voidSea.room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, self.voidSea.room.GetWorldCoordinate(vector), new EntityID(-1, -1));
-            abstractCreature.state = new PlayerState(abstractCreature, self.originalPlayer.playerState.playerNumber, self.originalPlayer.SlugCatClass, true);
-            self.voidSea.room.abstractRoom.AddEntity(abstractCreature);
-            abstractCreature.Realize();  // don't RealizeInRoom yet because that would call PlaceInRoom and ApplyPalette
-            for (int i = 0; i < abstractCreature.realizedCreature.bodyChunks.Length; i++)
+            if (isStoryMode(out _))
             {
-                abstractCreature.realizedCreature.bodyChunks[i].restrictInRoomRange = float.MaxValue;
+                Vector2 vector = self.originalPlayer.mainBodyChunk.pos + Custom.RNV() * 2000f;
+                AbstractCreature abstractCreature = new AbstractCreature(self.voidSea.room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, self.voidSea.room.GetWorldCoordinate(vector), new EntityID(-1, -1));
+                abstractCreature.state = new PlayerState(abstractCreature, self.originalPlayer.playerState.playerNumber, self.originalPlayer.SlugCatClass, true);
+                self.voidSea.room.abstractRoom.AddEntity(abstractCreature);
+                abstractCreature.Realize();  // don't RealizeInRoom yet because that would call PlaceInRoom and ApplyPalette
+                for (int i = 0; i < abstractCreature.realizedCreature.bodyChunks.Length; i++)
+                {
+                    abstractCreature.realizedCreature.bodyChunks[i].restrictInRoomRange = float.MaxValue;
+                }
+                abstractCreature.realizedCreature.CollideWithTerrain = false;
+
+                self.ghosts.Add(new VoidSea.PlayerGhosts.Ghost(self, abstractCreature.realizedCreature as Player));
+
+                if (RainMeadow.creatureCustomizations.TryGetValue(self.originalPlayer, out var customization))
+                {
+                    RainMeadow.creatureCustomizations.GetValue(self.ghosts.Last().creature, (c) => customization);
+                }
+
+                abstractCreature.RealizeInRoom();  // PlaceInRoom after applying our customization
+
+                return;
             }
-            abstractCreature.realizedCreature.CollideWithTerrain = false;
-
-            self.ghosts.Add(new VoidSea.PlayerGhosts.Ghost(self, abstractCreature.realizedCreature as Player));
-
-            if (RainMeadow.creatureCustomizations.TryGetValue(self.originalPlayer, out var customization))
-            {
-                RainMeadow.creatureCustomizations.GetValue(self.ghosts.Last().creature, (c) => customization);
-            }
-
-            abstractCreature.RealizeInRoom();  // PlaceInRoom after applying our customization
-
-            return;
         }
 
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
