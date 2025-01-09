@@ -41,13 +41,28 @@ namespace RainMeadow
             orig(self, eu);
             if (self.mode == RegionGate.Mode.Waiting || self.mode == RegionGate.Mode.ClosingAirLock)
             {
-                for (int i = 0; i < self.room.abstractRoom.entities.Count; i++)
+                foreach (var absplayer in self.room.game.Players)
                 {
-                    if (self.room.abstractRoom.entities[i] is AbstractCreature ac && ac.IsLocal() && ac.creatureTemplate.type == CreatureTemplate.Type.Slugcat && !self.room.abstractRoom.world.game.GetStorySession.Players.Contains(ac))
+                    if (absplayer.realizedCreature is Player player)
                     {
-                        self.room.abstractRoom.creatures.Remove(ac);
-                        self.room.RemoveObject(ac.realizedObject);
-                        self.room.CleanOutObjectNotInThisRoom(ac.realizedObject);
+                        if (ModManager.MSC)
+                        {
+                            if (player.slugOnBack != null && player.slugOnBack.HasASlug)
+                            {
+                                player.slugOnBack.DropSlug();
+                            }
+                        }
+
+                        if (player.grasps != null)
+                        {
+                            for (int i = 0; i < player.grasps.Length; i++)
+                            {
+                                if (player.grasps[i] != null && player.grasps[i].grabbed is Player)
+                                {
+                                    player.ReleaseGrasp(i);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -249,30 +264,6 @@ namespace RainMeadow
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
 
-                    foreach (var absplayer in self.game.Players)
-                    {
-                        if (absplayer.realizedCreature is Player player)
-                        {
-                            if (ModManager.MSC)
-                            {
-                                if (player.slugOnBack != null && player.slugOnBack.HasASlug)
-                                {
-                                    player.slugOnBack.DropSlug();
-                                }
-                            }
-
-                            if (player.grasps != null)
-                            {
-                                for (int i = 0; i < player.grasps.Length; i++)
-                                {
-                                    if (player.grasps[i] != null && player.grasps[i].grabbed is Player)
-                                    {
-                                        player.ReleaseGrasp(i);
-                                    }
-                                }
-                            }
-                        }
-                    }
                     // we go over all APOs in the room
                     Debug("Gate switchery 1");
                     room = self.reportBackToGate.room;
@@ -285,10 +276,6 @@ namespace RainMeadow
                             // if they're the overseer and it isn't the host moving it, that's bad as well
                             if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
-                                if (opo.apo is AbstractCreature slug && slug.creatureTemplate.type.value == CreatureTemplate.Type.Slugcat.value && isStoryMode(out var _))
-                                {
-                                    continue; // we will clean up later after client rejoins
-                                }
                                 // not-online-aware removal
                                 Debug("removing remote entity from game " + opo);
                                 opo.beingMoved = true;
@@ -300,7 +287,7 @@ namespace RainMeadow
                                 room.abstractRoom.creatures.Remove(apo as AbstractCreature);
                                 room.RemoveObject(apo.realizedObject);
                                 room.CleanOutObjectNotInThisRoom(apo.realizedObject);
-                                opo.beingMoved = false;
+                                opo.beingMoved = false;                               
                             }
                         }
                     }
