@@ -12,3 +12,4 @@
 [ADD]Snare : Snare
 [ADD]HiHat : HiHat
 [ADD]Perc1 : Perc1
+[ADD]OpenHat : OpenHat

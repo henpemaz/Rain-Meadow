@@ -7,7 +7,6 @@ using System;
 using UnityEngine;
 using System.Threading.Tasks;
 using AssetBundles;
-using IL.MoreSlugcats;
 #pragma warning disable CS4014 // "Because this call is not awaited, execution of the current method continues before the call is completed" whatever boomer i want that
 
 namespace RainMeadow
@@ -15,7 +14,7 @@ namespace RainMeadow
     public partial class MeadowMusic
     {
         public const float defaultMusicVolume = 0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
-        public const float defaultPlopVolume = 0.55f; 
+        public const float defaultPlopVolume = 0.575f; 
         
         public static void EnableMusic()
         {
@@ -401,7 +400,6 @@ namespace RainMeadow
         public static float? vibePan = null;
         static bool UpdateIntensity;
         static int DegreesOfAwayness;
-        static bool IDontWantToGoToZero;
 
         static List<string> songHistory = new();
 
@@ -575,14 +573,14 @@ namespace RainMeadow
                 Vector2 PlayerPos = self.world.RoomToWorldPos(MyGuyMic.listenerPoint, RoomImIn.abstractRoom.index);
                 //RainMeadow.Debug("Has made vectors to viberoom and player");
                 float vibeIntensityTarget =
-                             !IDontWantToGoToZero ? 0f : (
+                             (
                              Mathf.Pow(Mathf.InverseLerp(activeZone.radius, activeZone.minradius, Vector2.Distance(PlayerPos, VibeRoomCenterPos)), 1.425f)
                            * Mathf.Clamp01(1f - (float)((float)DegreesOfAwayness * 0.3f))
                            * ((RoomImIn.abstractRoom.layer == self.world.GetAbstractRoom(closestVibe).layer) ? 1f : 0.75f) //activeZone.room also works   <--- DOES NOT ??? <--- YES IT DOES??? we got overloads on that bitch
                              );
                 //RainMeadow.Debug("Has Figured out TargetIntensity");
                 //reminder set vibeintensity to null on occasions where you go to menu or some shit
-                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity ?? (IDontWantToGoToZero?vibeIntensityTarget:0f) , vibeIntensityTarget, 0, dt * 0.2f * (IDontWantToGoToZero?1f:3f)); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
+                vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity ?? vibeIntensityTarget, vibeIntensityTarget, 0, dt * 0.2f); //lol   vibeIntensityTarget = Custom.LerpAndTick(vibeIntensity == null ? 0 : vibeIntensity.Value, vibeIntensityTarget, 0.005f, 0.002f); // 0.025, 0.002 Actually we probably shouldn't calculate this here, in *raw update*, yknow?
                 vibeIntensity = vibeIntensityTarget;
                 AllowPlopping = vibeIntensity.Value >= 0.05f;
                 if (musicPlayer != null && musicPlayer.song != null)
@@ -1211,13 +1209,11 @@ namespace RainMeadow
                     RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, set updatingtarget to false, and musicvolume set to max... ");
                     vibeIntensity ??= 0f;
                     if (vibeIntensity == 1f) UpdateIntensity = true; 
-                    IDontWantToGoToZero = false;
                 }
                 else if (minDist < activeZone.radius)
                 {
                     RainMeadow.Debug("Meadow Music: Inside of vibezone radius, started updating intensity...");
                     UpdateIntensity = true; //we're jumpstarting it for *every* room we traverse, if it's continuously
-                    IDontWantToGoToZero = true;
                 }
             }
             

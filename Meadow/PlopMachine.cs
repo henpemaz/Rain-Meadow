@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -98,7 +97,7 @@ namespace RainMeadow
         int chordsequenceiteration;
 
         public static int agora = 0;
-        float currentagora = 0f;
+        float currentAgora = 0f;
 
         public static string? CurrentRegion = "sl"; 
 
@@ -176,6 +175,11 @@ namespace RainMeadow
                 //WE'RE SO FUCKING BACK
                 RainMeadow.Debug("Created wetloop");
             }
+            else
+            {
+                var mic = self.cameras[0].virtualMicrophone;
+                WetLoop.mic = mic;
+            }
         }
         public int IndexTOCKInt(int index)
         {
@@ -202,7 +206,7 @@ namespace RainMeadow
             transposition += extratranspose; //If to the power is smart(can take negative numbers), this can work
 
             float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(0.3f, 1f);
-            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-0.12f, 0.12f);
+            float humanizingrandomnesspanlol = UnityEngine.Random.Range(-0.18f, 0.18f);
 
             WetLoop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
         }
@@ -305,7 +309,7 @@ namespace RainMeadow
                 */
                 return;
             }
-            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultPlopVolume * MeadowMusic.defaultMusicVolume * velocity; 
+            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultPlopVolume * MeadowMusic.defaultMusicVolume * velocity * 0.8f; 
             float pan = (MeadowMusic.vibePan ?? 0f) * Mathf.Pow((1f-MeadowMusic.vibeIntensity.Value) * 0.7f + 0.125f, 1.65f);
             try
             {
@@ -317,6 +321,7 @@ namespace RainMeadow
                 {
                     VirtualMicrophone.DisembodiedSound thissound = new(virtualMicrophone, soundData, pan, vol, speed, false, 3);
                     thissound.audioSource.volume = Mathf.Clamp01(Mathf.Pow(vol * thissound.soundData.vol * thissound.mic.volumeGroups[thissound.volumeGroup] * thissound.mic.camera.game.rainWorld.options.musicVolume, thissound.mic.soundLoader.volumeExponent));
+                    //WetLoop.SampleWetPlop(thissound.audioSource.clip, speed, vol, pan);
                     virtualMicrophone.soundObjects.Add(thissound);
                 }
                 else
@@ -482,8 +487,8 @@ namespace RainMeadow
                             if (LiaisonList.Count != 0) 
                             { 
                                 if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
-                                arpcounterstopwatch += plopmachine.fichtean * 12 + 4;
                                 int waitnumber = arprate switch { 0 => 4, 1 => 6, 2 => 8, 3 => 12, 4 => 16, _ => 16, };
+                                arpcounterstopwatch += plopmachine.fichtean * (arprate + 4);
                                 int arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
                                 if (arprate != arpcurrentfreq && plopmachine.chordtimer < 96)
                                 {
@@ -1070,6 +1075,14 @@ namespace RainMeadow
             private static float linearToDb(float linear) { return Mathf.Pow(linear / 20f, 10); }
             private static float dbToLinear(float db) { return Mathf.Log(db) * 20f; }
             //private static float velocityToDb(float velocity) { return }
+            enum DrumGender
+            {
+                None,
+                Kick,
+                Snare,
+                HiHat,
+                Perc
+            }
             struct Fill
             {
                 public Fill(float velocity, string pausefor, int rests, float chancetoplay = 1)
@@ -1087,7 +1100,7 @@ namespace RainMeadow
             }
             struct Track
             {
-                public Track(Fill[] sequence, SoundID sample, int inttrack)
+                public Track(Fill[] sequence, SoundID sample, DrumGender inttrack)
                 {
                     this.sequence = sequence;
                     this.sample = sample;
@@ -1100,14 +1113,14 @@ namespace RainMeadow
                 {
                     this.sequence = sequence;
                     sample = SoundID.None;
-                    track = -1;
+                    track = DrumGender.None;
                     timer = 1;
                     sequenceindex = 0;
                 }
 
                 public Fill[] sequence;
                 public SoundID sample;
-                public int track;
+                public DrumGender track;
                 public int timer;
                 public int sequenceindex;
                 public void Reset()
@@ -1139,49 +1152,95 @@ namespace RainMeadow
                 {
                     Track track = tracks[i];
                     Fill? step = track.Update(plopMachine);
-                    tracks[i] = track; //Hi henp is there an easier way to modify this list shit?
+                    tracks[i] = track; 
                     if (step != null && step.Value.velocity != 0)
                     {
-                        if (step.Value.chance != 1f && step.Value.chance < (UnityEngine.Random.Range(0f, 1f)))
-                        {
-                            continue;
-                        }
-                        float trackvol = track.track switch
-                        {
-                            0 => Mathf.Clamp01(plopMachine.currentagora * 0.4f - 0.5f),
-                            1 => Mathf.Clamp01(plopMachine.currentagora * 0.5f - 1f),
-                            2 => Mathf.Clamp01(plopMachine.currentagora * 0.35f - 1f),
-                            3 => Mathf.Clamp01(plopMachine.currentagora * 0.27f - 1.6f),
-                            _ => 0f,
-                        };
-                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol, 1, mic); 
+                        if (step.Value.chance != 1f && step.Value.chance < UnityEngine.Random.Range(0f, 1f)) continue;
+                        PlayDrum(track.track, step.Value.velocity, mic, plopMachine);
                     }
                 }
                 //impulse from a main loop will trigger a random fill of x length
                 //impulse from a main thingy will trigger every loop to reset.
             }
+            static float? velOfLastOpenHat;
+            private static void PlayDrum(DrumGender gender, float vel, VirtualMicrophone mic, PlopMachine plopMachine)
+            {
+                SoundID sample = Perc1;
+                float trackvol = 0;
+                float speed = 1f;
+
+                switch (gender)
+                {
+                    case DrumGender.None:
+                        trackvol = 0f;
+                        sample = Perc1;
+                        break;
+
+                    case DrumGender.Kick:
+                        trackvol = Mathf.Clamp01(plopMachine.currentAgora * 0.4f - 0.5f);
+                        sample = Kick;
+                        break;
+
+                    case DrumGender.Snare:
+                        trackvol = Mathf.Clamp01(plopMachine.currentAgora * 0.5f - 1f);
+                        sample = Snare;
+                        break;
+
+                    case DrumGender.HiHat:
+                        trackvol = Mathf.Clamp01(plopMachine.currentAgora * 0.35f - 1f);
+
+                        if (velOfLastOpenHat.HasValue)
+                        {
+                            if (mic.soundObjects.FirstOrDefault(c => c.soundData.soundID == OpenHat) is VirtualMicrophone.DisembodiedSound thingy) thingy.Destroy();
+                            vel = velOfLastOpenHat.Value;
+                            velOfLastOpenHat = null;
+                        }
+                        sample = HiHat;
+                        if (plopMachine.currentAgora > 4 && UnityEngine.Random.Range(0f, 1f) < Mathf.Clamp01(plopMachine.currentAgora * 0.5f - 2.4f) * 0.05f)
+                        {
+                            sample = OpenHat;
+                            velOfLastOpenHat = vel;
+                        }
+                        break;
+
+                    case DrumGender.Perc:
+                        trackvol = Mathf.Clamp01(plopMachine.currentAgora * 0.27f - 1.6f);
+                        sample = Perc1;
+                        int semitones = UnityEngine.Random.Range(0, 8) switch { 0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 1, 5 => 2, 6 => 4, 7 => 7, _ => -16 };
+                        speed *= Mathf.Pow(2, semitones / 12f);
+                        break;
+
+                    default:
+                        trackvol = 0f;
+                        sample = Perc1;
+                        break;
+                }
+                plopMachine.PlayThing(sample, vel * trackvol, speed, mic);
+            }
+
+
             static List<Track> tracks = new();
             public static void StartthefuckingWaitDicthehe()
             {
                 tracks.Add(new Track (new Fill[] {
                     new(1f, "1/4", 3),
                     new(0.4f, "1/4", 1, 0.6f) }, 
-                Kick, 0));
+                Kick, DrumGender.Kick));
 
                 tracks.Add(new Track(new Fill[] {
                     new(0f, "1/2", 1), 
                     new(0.85f, "1/2", 1) }, 
-                Snare, 1));
+                Snare, DrumGender.Snare));
 
                 tracks.Add(new Track(new Fill[] {
                     new(0.3f, "1/8", 1),
                     new(0.55f, "1/8", 1, 0.8f)},
-                HiHat, 2));
+                HiHat, DrumGender.HiHat));
 
                 tracks.Add(new Track(new Fill[] {
-                    new(0.66f, "1/16", 6), 
-                    new(0.57f, "1/16", 3, 0.3f) }, 
-                Perc1, 3));
+                    new(0.69f, "1/16", 6), 
+                    new(0.53f, "1/16", 3, 0.3f) }, 
+                Perc1, DrumGender.Perc));
             }
         }
 
@@ -1261,13 +1320,12 @@ namespace RainMeadow
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 CurrentRegion = self.world?.region?.name ?? "sl";
-
-                currentagora = Mathf.Lerp(currentagora, agora, 0.008f);
+                currentAgora = RWCustom.Custom.LerpAndTick(currentAgora, agora, 0.008f, 0.0005f);
                 if (MeadowMusic.AllowPlopping)
                 {
                     debugstopwatch++;
                     float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
-                    fichtean = (Mathf.Pow(x, 1 / (currentagora / 2 + 1)) + x) / 2;
+                    fichtean = (Mathf.Pow(x, 1 / (currentAgora / 2 + 1)) + x) / 2;
                     PlayEntry();
                     DrumMachine.Update(mic, this);
                 }
@@ -1297,6 +1355,7 @@ namespace RainMeadow
         public static readonly SoundID Kick  = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
         public static readonly SoundID HiHat = new SoundID("HiHat", register: true);
+        public static readonly SoundID OpenHat = new SoundID("OpenHat", register: true);
         public static readonly SoundID Perc1 = new SoundID("Perc1", register: true);
     }
 }

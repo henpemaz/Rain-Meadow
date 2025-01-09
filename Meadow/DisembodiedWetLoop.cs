@@ -60,7 +60,9 @@ namespace RainMeadow
             BandNoiseOhhhhManYourTheBasicButTheBest
         }
         public List<Plop> plops = new();
+        //public List<SamplePlop> sampleplops = new();
         static public List<Plop> plopstoremove = new();
+        //static public List<SamplePlop> sampleplopstoremove = new();
         public bool Fading = false;
         static public float PlopInititationVelocity;
         static public float PlopInititationPan;
@@ -80,9 +82,7 @@ namespace RainMeadow
             if (this.mic.camera.game.rainWorld.OptionsReady) {
                 this.audioSource.volume = Mathf.Clamp01(Mathf.Pow(controller.volume * this.soundData.vol * this.mic.volumeGroups[this.volumeGroup] * this.mic.camera.game.rainWorld.options.musicVolume, this.mic.soundLoader.volumeExponent));
             }
-            else {
-                audioSource.volume = 0f;
-            }
+            else { audioSource.volume = 0f; }
             //reminder to self, you're starting wetloop off as zero
             if (flusheswithoutplop > 4) return;
             CheckWetTrack();
@@ -99,6 +99,18 @@ namespace RainMeadow
                 int float2 = DateTime.Now.Millisecond;
                 if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop ({plops.Count}) calculations: " + (float2 - float1));
             }
+
+            /*if (sampleplops.Count > 0)
+            {
+                int float1 = DateTime.Now.Millisecond;
+                for (int i = sampleplops.Count - 1; i >= 0; --i)
+                {
+                    SamplePlop plop = sampleplops[i];
+                    plop.Update(power);
+                };
+                int float2 = DateTime.Now.Millisecond;
+                if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop ({plops.Count}) calculations: " + (float2 - float1));
+            }*/
             if (plopstoremove.Count > 0)
             {
                 foreach (Plop plop in plopstoremove)
@@ -107,6 +119,14 @@ namespace RainMeadow
                 }
                 plopstoremove.Clear();
             }
+            /*if (sampleplopstoremove.Count > 0)
+            {
+                foreach (SamplePlop plop in sampleplopstoremove)
+                {
+                    sampleplops.Remove(plop);
+                }
+                plopstoremove.Clear();
+            }*/
         }
         private void CheckWetTrack() //flushes the previous quarter of the loop when entering a new quarter.
         {
@@ -142,6 +162,13 @@ namespace RainMeadow
             plops.Add(new Plop(this, length, octave, semitone, volume, pan));
             //RainMeadow.Debug("Should play " + "   " + length + "   " + octave + "   " + semitone + "   " + volume + "   " + pan + "   " + plops.Count);
         }
+        /*public void SampleWetPlop(AudioClip clip, float speed, float volume, float pan)
+        {
+            flusheswithoutplop = 0;
+            if ((MeadowMusic.vibeIntensity ?? 0) == 0) return;
+            sampleplops.Add(new SamplePlop(this, clip, speed, volume, pan));
+            //RainMeadow.Debug("Should play " + "   " + length + "   " + octave + "   " + semitone + "   " + volume + "   " + pan + "   " + plops.Count);
+        }*/
         public class Plop 
         {
             public float Frequency;
@@ -156,6 +183,7 @@ namespace RainMeadow
             public float lan;
             public float ran;
             public float phase;
+            public float tremolofreq;
             public int oct;
             DisembodiedWetLoop owner;
             public Plop(DisembodiedWetLoop owner, string length, int octave, int semitone, float volume, float pan)
@@ -188,7 +216,7 @@ namespace RainMeadow
                 plopreleasemonosamples = (int)(releasetime * 44100);
                 ploptotallength = 2 * (plopattackmonosamples + plopreleasemonosamples);
                 ploprendered = 0;
-
+                this.tremolofreq = ((Mathf.Pow(UnityEngine.Random.Range(0f, 1f), 2.5f))+0.2f) * 10f * Mathf.PI * 2f;
                 this.phase = UnityEngine.Random.Range(0f, 1f);
                 this.volume = volume * 0.2f * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
                 this.pan = pan + PlopInititationPan;
@@ -200,7 +228,7 @@ namespace RainMeadow
             public void Update(float power)
             {
                 int samplestorender = (int)(8820 * power); 
-                                            //0.2 second a tick
+                                            //0.1 second a tick
                                             //RainMeadow.Debug("Rendering " + ploprendered + "  " + (ploprendered + samplestorender));
                                             //RainMeadow.Debug(ploprendered + "    " + plopattackmonosamples + "   " + ploptotallength + "   " + TrackClipData.Length + "   " + TotalWetSamples);
                 Wavetype type = this.Wavetype;
@@ -234,7 +262,9 @@ namespace RainMeadow
                     }
                     else //we have no decay nor sustain here to worry about bro we're just impulses
                     {
-                        CurrentAmplitude = Mathf.Pow((1.0f - (((float)(ii - plopattackmonosamples)) / plopreleasemonosamples)), 3);
+                        float amp = ((float)(ii - plopattackmonosamples)) / plopreleasemonosamples;
+                        CurrentAmplitude = Mathf.Pow((1.0f - amp), 3);
+                        CurrentAmplitude *= (Mathf.Clamp01(1.0f - (amp * 7 * Mathf.Sin(amp*tremolofreq + phase))));
                     }
                     float iValue = volume * CurrentAmplitude * ipan * attenuation;
 
@@ -253,7 +283,7 @@ namespace RainMeadow
                         Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude => ((((iPhase / (Mathf.PI * 2)) % 1f) * 2) - 1f) * iValue,
                         Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest => Mathf.Sin(iPhase) * iValue,//Todo :D Make something cool
                         _ => Mathf.Sin(iPhase) * iValue,
-                    }; ;
+                    };
                     //Previous Formulas for Amplitudes
                     //CurrentAmplitude = (Mathf.Pow(2, 16f * attackexponent * ((float)ii / (float)MonoSamplesOfAttack)) - 1f) / (Mathf.Pow(2, 16.0f * attackexponent) - 1f);
                     //CurrentAmplitude = 1.0f - (Mathf.Pow(2, 16.0f * releaseexponent * ((float)(ii - MonoSamplesOfAttack) / (float)(WaveData.Length - MonoSamplesOfAttack))) - 1) / (Mathf.Pow(2, 16.0f * releaseexponent) - 1f);
@@ -279,5 +309,84 @@ namespace RainMeadow
                 }
             }
         }
+
+        /*
+        public class SamplePlop
+        {
+            public float Frequency;
+            public int TrackSampleStartsAt;
+            public int plopattackmonosamples;
+            public int plopreleasemonosamples;
+            public int ploptotallength;
+            public int ploprendered;
+            public AudioClip clip;
+            public float volume;
+            public float speed;
+            public float pan; //-1 for left, 1 for right
+            public float lan;
+            public float ran;
+            public float phase;
+            public float tremolofreq;
+            public int oct;
+            DisembodiedWetLoop owner;
+            public SamplePlop(DisembodiedWetLoop owner, AudioClip clip, float speed, float volume, float pan)
+            {
+                this.owner = owner;
+                
+                this.clip = clip;
+                TrackSampleStartsAt = owner.audioSource.timeSamples;
+                //TrackSampleStartsAt += 0; //initial delay
+                this.speed = speed;
+                ploptotallength = clip.samples;
+                ploprendered = 0;
+                this.volume = volume * Mathf.Min(PlopInititationVelocity, 1f); //mathf just for safetly
+                this.pan = pan + PlopInititationPan;
+
+                lan = Mathf.Pow(Mathf.Clamp01(1f - this.pan), 2);
+                ran = Mathf.Pow(Mathf.Clamp01(1f + this.pan), 2);
+            }
+
+            public void Update(float power)
+            {
+                int samplestorender = (int)(8820 * power);
+                //0.1 second a tick
+                //RainMeadow.Debug("Rendering " + ploprendered + "  " + (ploprendered + samplestorender));
+                //RainMeadow.Debug(ploprendered + "    " + plopattackmonosamples + "   " + ploptotallength + "   " + TrackClipData.Length + "   " + TotalWetSamples);
+
+                if (samplestorender + (ploprendered * 2) > ploptotallength)
+                {
+                    samplestorender = ploptotallength - (ploprendered * 2);
+                    if (samplestorender <= 0)
+                    {
+                        //RainMeadow.Debug("Removed a plop");
+                        sampleplopstoremove.Add(this);
+                        return;
+                    }
+                }
+                AudioClip TrackClip = owner.audioSource.clip;
+                float[] TrackClipData = new float[samplestorender * 2];
+                TrackClip.GetData(TrackClipData, TrackSampleStartsAt + ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
+
+                AudioClip Sampleclip = this.clip;
+                float[] SampleClipData = new float[samplestorender * 2];
+                Sampleclip.GetData(SampleClipData, ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
+
+                Parallel.For(ploprendered * 2, ploprendered * 2 + TrackClipData.Length, i =>
+                {
+                    int ii = (i % 2 == 0 ? i / 2 : (i - 1) / 2);
+
+                    TrackClipData[i - (ploprendered * 2)] += SampleClipData[i];
+                    
+                });
+                TrackClip.SetData(TrackClipData, TrackSampleStartsAt + ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
+                ploprendered += samplestorender;
+                if (ploprendered * 2 >= ploptotallength)
+                {
+                    //RainMeadow.Debug("Removed a plop");
+                    sampleplopstoremove.Add(this);
+                }
+            }
+        }
+        */
     }
 }
