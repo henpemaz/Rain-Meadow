@@ -6,15 +6,10 @@ using System.Reflection;
 
 namespace RainMeadow
 {
-    public static class StoryMenuHelpers
+    internal static class StoryMenuHelpers
     {
-        #region Remix
 
-        // TODO: make this per-gamemode?
-       
-        #endregion
-
-        public static void RemoveMenuObjects(params MenuObject?[] objs)
+        internal static void RemoveMenuObjects(params MenuObject?[] objs)
         {
             foreach (var obj in objs)
             {
