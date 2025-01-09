@@ -160,13 +160,13 @@ namespace RainMeadow
                 //throw;
             }
 
-            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume*0.8f, 1, 0); // RainMeadow.Debug("Created wetcontroller");
+            WetController ??= new DisembodiedLoopEmitter(MeadowMusic.defaultMusicVolume * MeadowMusic.defaultPlopVolume, 1, 0); // RainMeadow.Debug("Created wetcontroller");
 
             if (WetLoop == null) 
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new VirtualMicrophone.DisembodiedLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume*0.8f, 1, false);
+                WetLoop = new DisenbodiedWetLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume * MeadowMusic.defaultPlopVolume, 1, false);
 
                 WetLoop.gameObject.AddComponent<AudioLowPassFilter>();
                 WetLoop.gameObject.GetComponent<AudioLowPassFilter>().cutoffFrequency = 23000;
@@ -339,21 +339,48 @@ namespace RainMeadow
                 */
                 return;
             }
-            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultMusicVolume * velocity*0.5f;
-            float pan = MeadowMusic.vibePan ?? 0f * Mathf.Pow(MeadowMusic.vibeIntensity.Value * 0.7f + 0.125f, 1.65f);
-            virtualMicrophone.PlaySound(SoundId, vol, pan, speed);
-        }
-        public enum Wavetype
-        {
-            sineiloveyousineohmygodhavemybabies,
-            square,
-            triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
-            smoothsquareiwouldeatmyarmforthishoe,
-            sawwaveiguesswhyareyouherewearenotevendubsteprndude,
-            BandNoiseOhhhhManYourTheBasicButTheBest
+            float vol = Mathf.Pow(MeadowMusic.vibeIntensity.Value, 1.65f) * MeadowMusic.defaultPlopVolume * MeadowMusic.defaultMusicVolume * velocity; 
+            float pan = (MeadowMusic.vibePan ?? 0f) * Mathf.Pow((1f-MeadowMusic.vibeIntensity.Value) * 0.7f + 0.125f, 1.65f);
+            try
+            {
+                if (virtualMicrophone.visualize) virtualMicrophone.Log(SoundId);
+                if (!virtualMicrophone.AllowSound(SoundId)) { RainMeadow.Debug($"Too many sounds playing, denying a {SoundId}"); return; }
+                
+                SoundLoader.SoundData soundData = virtualMicrophone.GetSoundData(SoundId, -1);
+                if (virtualMicrophone.SoundClipReady(soundData))
+                {
+                    VirtualMicrophone.DisembodiedSound thissound = new VirtualMicrophone.DisembodiedSound(virtualMicrophone, soundData, pan, vol, speed, false, 3);
+                    thissound.audioSource.volume = Mathf.Clamp01(Mathf.Pow(vol * thissound.soundData.vol * thissound.mic.volumeGroups[thissound.volumeGroup] * thissound.mic.camera.game.rainWorld.options.musicVolume, thissound.mic.soundLoader.volumeExponent));
+                    //var thissound = new DisenbodiedMusicSound(virtualMicrophone, soundData, pan, vol, speed, false, 3)
+                    virtualMicrophone.soundObjects.Add(thissound);
+                }
+                else
+                {
+                    RainMeadow.Debug($"Soundclip not ready");
+                    return;
+                }
+
+                if (RainWorld.ShowLogs)
+                {
+                    //RainMeadow.Debug($"the note that played: {SoundId} at {speed}");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Debug($"Log {e}");
+            }
         }
         public static class WetData
         {
+            public enum Wavetype
+            {
+                sineiloveyousineohmygodhavemybabies,
+                square,
+                triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
+                smoothsquareiwouldeatmyarmforthishoe,
+                sawwaveiguesswhyareyouherewearenotevendubsteprndude,
+                BandNoiseOhhhhManYourTheBasicButTheBest
+            }
             public static List<Plop> plops = new();
             public class Plop
             {
@@ -409,7 +436,6 @@ namespace RainMeadow
                     lan = Mathf.Pow(Mathf.Clamp01(1f - this.pan), 2);
                     ran = Mathf.Pow(Mathf.Clamp01(1f + this.pan), 2);   
                 }
-
                 public static void WetPlop(string length, int octave, int semitone, float volume, float pan)
                 {
                     if (flusheswithoutplop > 4)
@@ -522,7 +548,7 @@ namespace RainMeadow
                 CheckWetTrack();
                 //no need to update if we're in that room though
                 PlopInititationVelocity = MeadowMusic.vibeIntensity ?? 0;
-                PlopInititationPan = PlopInititationVelocity == 0 ? 0 : MeadowMusic.vibePan ?? 0f * Mathf.Pow((1f - PlopInititationVelocity) * 0.7f + 0.125f, 1.65f);
+                PlopInititationPan = PlopInititationVelocity == 0 ? 0 : ((MeadowMusic.vibePan ?? 0f) * Mathf.Pow((1f - PlopInititationVelocity) * 0.7f + 0.125f, 1.65f));
 
                 if (plops.Count > 0)
                 {
@@ -532,7 +558,7 @@ namespace RainMeadow
                     {
                         Plop plop = plops[i];
                         plop.Update();
-                    };
+                    };  
                     int float2 = DateTime.Now.Millisecond;
                     if ((float2 - float1) > 15) RainMeadow.Debug($"Big amount of elapsed time in plop ({plops.Count}) calculations: " + (float2 - float1));
 
@@ -674,14 +700,7 @@ namespace RainMeadow
                 else
                 {//transposition
                     do { differencebuffer = UnityEngine.Random.Range(-2, 3); } while (differencebuffer == 0);
-                    string appendedaccidentals = differencebuffer switch
-                    {
-                        2 => "##",
-                        1 => "#",
-                        -1 => "b",
-                        -2 => "bb",
-                        _ => ""
-                    };
+                    string appendedaccidentals = differencebuffer switch { 2 => "##", 1 => "#", -1 => "b", -2 => "bb", _ => "" };
 
                     for (int i = 0; i < LiaisonList.Count; i++)
                     {
@@ -1362,10 +1381,14 @@ namespace RainMeadow
 
         public static class DrumMachine
         {
+            private static float linearToDb(float linear) { return Mathf.Pow(linear / 20f, 10); }
+            private static float dbToLinear(float db) { return Mathf.Log(db) * 20f; }
+            //private static float velocityToDb(float velocity) { return }
             struct Fill
             {
                 public Fill(float velocity, string pausefor, int rests, float chancetoplay = 1)
                 {
+                    //if (velocity < 0f || velocity > 1f) velocity = dbToLinear(velocity);
                     this.velocity = velocity;
                     restvalue = pausefor;
                     restcount = rests;
@@ -1439,53 +1462,48 @@ namespace RainMeadow
                         }
                         float trackvol = track.track switch
                         {
-                            0 => Mathf.Clamp01((plopMachine.currentagora * 0.4f - 0.5f)),
+                            0 => Mathf.Clamp01(plopMachine.currentagora * 0.4f - 0.5f),
                             1 => Mathf.Clamp01(plopMachine.currentagora * 0.5f - 1f),
                             2 => Mathf.Clamp01(plopMachine.currentagora * 0.35f - 1f),
                             3 => Mathf.Clamp01(plopMachine.currentagora * 0.27f - 1.6f),
                             _ => 0f,
                         };
-                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol * 0.2f, 1, mic); 
+                        plopMachine.PlayThing(track.sample, step.Value.velocity * trackvol, 1, mic); 
                     }
                 }
                 //impulse from a main loop will trigger a random fill of x length
                 //impulse from a main thingy will trigger every loop to reset.
             }
-
             static List<Track> tracks = new();
             public static void StartthefuckingWaitDicthehe()
             {
-                Fill[]? fuck = new Fill[2];
-                fuck[0] = new Fill(1f, "1/4", 3);
-                fuck[1] = new Fill(0.4f, "1/4", 1, 0.6f);
-                Track kicks = new Track(fuck, Kick, 0);
+                tracks.Add(new Track (new Fill[] {
+                    new(1f, "1/4", 3),
+                    new(0.4f, "1/4", 1, 0.6f) }, 
+                Kick, 0));
 
-                Fill[]? fuck2 = new Fill[2];
-                fuck2[0] = new Fill(0f, "1/2", 1);
-                fuck2[1] = new Fill(1f, "1/2", 1);
-                Track snares = new Track(fuck2, Snare, 1);
+                tracks.Add(new Track(new Fill[] {
+                    new(0f, "1/2", 1), 
+                    new(0.85f, "1/2", 1) }, 
+                Snare, 1));
 
-                Fill[]? fuck3 = new Fill[2];
-                fuck3[0] = new Fill(0.2f, "1/8", 1);
-                fuck3[1] = new Fill(0.4f, "1/8", 1, 0.8f);
-                Track hats = new Track(fuck3, HiHat, 2);
+                tracks.Add(new Track(new Fill[] {
+                    new(0.3f, "1/8", 1),
+                    new(0.55f, "1/8", 1, 0.8f)},
+                HiHat, 2));
 
-                tracks.Add(kicks);
-                tracks.Add(hats);
-                tracks.Add(snares);
+                tracks.Add(new Track(new Fill[] {
+                    new(0.66f, "1/16", 6), 
+                    new(0.57f, "1/16", 3, 0.3f) }, 
+                Perc1, 3));
             }
-
         }
 
         static Dictionary<string, int> WaitDict = new();
         public void StartthefuckingWaitDict()
         {
             DrumMachine.StartthefuckingWaitDicthehe();
-            ChitChat.steppattern = new bool[4];
-            ChitChat.steppattern[0] = true;
-            ChitChat.steppattern[1] = true;
-            ChitChat.steppattern[2] = true;
-            ChitChat.steppattern[3] = false;
+            ChitChat.steppattern = new bool[4] { true, true, true, false };
 
             WaitDict.Add("bar", 96);
             WaitDict.Add("half", 48);
@@ -1533,7 +1551,6 @@ namespace RainMeadow
                 if (waits <= 0) waits = 1;
                 bool isvalidname = WaitDict.TryGetValue(waittype, out int waitvalue);
                 if (!isvalidname) { waitvalue = 24; RainMeadow.Debug("INVALID NAME: " + waittype); }
-                //RainMeadow.Debug($"{waits} is the amount, {waitvalue} is the type time, {waittype} is the name, {waits-1 * waitvalue}");
                 return Leftof(waittype, atthistimeofyear) + ((waits - 1) * waitvalue);
             }
             public static int Untils(string waittype, int mininclusive, int maxinclusive, int atthistimeofyear)
@@ -1545,9 +1562,10 @@ namespace RainMeadow
             }
         }
 
-        //bool ol1;
-        //bool ol2 = true;
-        //bool ol3;
+
+        bool ol1;
+        bool ol2 = true;
+        bool ol3;
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
@@ -1557,9 +1575,6 @@ namespace RainMeadow
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 CurrentRegion = self.world?.region?.name ?? "sl";
-
-                //note to self, you can set a shit in  volumegroups     check virtualmicrophone
-                //there's 5 of them,
 
                 currentagora = Mathf.Lerp(currentagora, agora, 0.008f);
                 if (MeadowMusic.AllowPlopping)
@@ -1571,24 +1586,24 @@ namespace RainMeadow
                     DrumMachine.Update(mic, this);
                 }
 
-                //if (Input.GetKey("f") && !ol2)
-                //{
-                //    //RainMeadow.Debug("Manually fading out song");
-                //    //self.manager.musicPlayer.song.FadeOut(30f);
-                //}
-                //ol2 = Input.GetKey("f");
-                //
-                //
-                //if (Input.GetKey("e") && !ol1)
-                //{
-                //    agora++;
-                //}
-                //ol1 = Input.GetKey("e");
-                //if (Input.GetKey("q") && !ol3)
-                //{
-                //    agora--;
-                //}
-                //ol3 = Input.GetKey("q");
+                if (Input.GetKey("f") && !ol2)
+                {
+                    //RainMeadow.Debug("Manually fading out song");
+                    //self.manager.musicPlayer.song.FadeOut(30f);
+                }
+                ol2 = Input.GetKey("f");
+                
+                
+                if (Input.GetKey("e") && !ol1)
+                {
+                    agora++;
+                }
+                ol1 = Input.GetKey("e");
+                if (Input.GetKey("q") && !ol3)
+                {
+                    agora--;
+                }
+                ol3 = Input.GetKey("q");
             }
         }
 
@@ -1602,5 +1617,6 @@ namespace RainMeadow
         public static readonly SoundID Kick  = new SoundID("Kick", register: true);
         public static readonly SoundID Snare = new SoundID("Snare", register: true);
         public static readonly SoundID HiHat = new SoundID("HiHat", register: true);
+        public static readonly SoundID Perc1 = new SoundID("Perc1", register: true);
     }
 }

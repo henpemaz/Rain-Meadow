@@ -11,3 +11,4 @@
 [ADD]Kick : Kick
 [ADD]Snare : Snare
 [ADD]HiHat : HiHat
+[ADD]Perc1 : Perc1

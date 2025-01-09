@@ -15,6 +15,8 @@ namespace RainMeadow
     public partial class MeadowMusic
     {
         public const float defaultMusicVolume = 0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
+        public const float defaultPlopVolume = 0.6f; 
+        
         public static void EnableMusic()
         {
             CheckFiles();
@@ -39,13 +41,13 @@ namespace RainMeadow
 
             On.Music.MusicPiece.StartPlaying += MusicPiece_StartPlaying;
 
-            On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
+            //On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
         }
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
-        private static void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
-        {
+        //private static void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
+        //{
           //fuckoff
-        }
+        //}
 
         //Game music hooks 
 
@@ -369,6 +371,7 @@ namespace RainMeadow
         {
             time = null;
             timeleftofsong = null;
+            PlopMachine.agora = 0;
             songHistory.Clear();
             // there's proooobably more stuff that needs resetting here
         }
@@ -965,7 +968,7 @@ namespace RainMeadow
             var VibeRoomCreatures = creature.abstractCreature.Room.world.GetAbstractRoom(closestVibe);
             if (VibeRoomCreatures != null)
             { 
-                PlopMachine.agora = VibeRoomCreatures.creatures.Count(); 
+                //PlopMachine.agora = VibeRoomCreatures.creatures.Count(); 
             }
 
             if (groupImIn == 0)
