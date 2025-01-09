@@ -1,13 +1,20 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
 namespace RainMeadow
 {
+    
     public class LANNetIO : NetIO {
+        public readonly UDPPeerManager manager;
         public LANNetIO() {
-            UdpPeer.Startup();
+            manager = new();
         }
 
 
@@ -19,55 +26,51 @@ namespace RainMeadow
             MemoryStream memory = new MemoryStream(128);
             BinaryWriter writer = new BinaryWriter(memory);
 
-            writer.Write((int)UdpPeer.getOurMacHash().Length);
-            writer.Write((byte[])UdpPeer.getOurMacHash());
             Packet.Encode(packet, writer, player);
-            UdpPeer.Send(((LANMatchmakingManager.LANPlayerId)player.id).endPoint, memory.GetBuffer(), (int)memory.Position,
-                sendType switch
+            manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, sendType switch
                 {
-                     NetIO.SendType.Reliable => UdpPeer.PacketType.Reliable,
-                     NetIO.SendType.Unreliable => UdpPeer.PacketType.Unreliable,
-                     _ => UdpPeer.PacketType.Unreliable,
-                 });
+                     NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
+                     NetIO.SendType.Unreliable => UDPPeerManager.PacketType.Unreliable,
+                     _ => UDPPeerManager.PacketType.Unreliable,
+                 }, true);
         }
 
         public override void Update()
         {
             base.Update();
-            UdpPeer.Update();
+            manager.Update();
         }
 
         public override void RecieveData()
-        {
-            LANRecieveData();
-        }
-
-        public void LANRecieveData()
         {
             if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local) {
                 return;
             }
 
             
-            while (UdpPeer.IsPacketAvailable())
+            while (manager.IsPacketAvailable())
             {
                 try
                 {
                     //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                    if (!UdpPeer.Read(out BinaryReader netReader, out IPEndPoint remoteEndpoint))
-                        continue;
+                    byte[]? data = manager.Recieve(out EndPoint remoteEndpoint);
+                    if (data == null) continue;
+                    IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
+                    if (iPEndPoint is null) continue;
+                    
+                    MemoryStream netStream = new MemoryStream(data);
+                    BinaryReader netReader = new BinaryReader(netStream);
+                    
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    byte[] machash = netReader.ReadBytes(netReader.ReadInt32());
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(machash);
+                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
                     if (player == null)
                     {
-                        RainMeadow.Debug("Player not found! Instantiating new at: " + remoteEndpoint.Port);
-                        var playerid = new LANMatchmakingManager.LANPlayerId(remoteEndpoint, false);
-                        playerid.machash = machash;
+                        RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);
+                        var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);
                         player = new OnlinePlayer(playerid);
                     }
 
-                    RainMeadow.Debug($"Recieved packet from: {remoteEndpoint.ToString()}");
+                    RainMeadow.Debug($"Recieved packet from: {iPEndPoint.ToString()}");
                     
                     Packet.Decode(netReader, player);
                 }
@@ -78,5 +81,6 @@ namespace RainMeadow
                 }
             }
         }
+
     }
 }
