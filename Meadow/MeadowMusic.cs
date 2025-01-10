@@ -371,6 +371,7 @@ namespace RainMeadow
             time = null;
             timeleftofsong = null;
             PlopMachine.agora = 0;
+            vibeIntensity = 0;
             songHistory.Clear();
             // there's proooobably more stuff that needs resetting here
         }
@@ -467,8 +468,8 @@ namespace RainMeadow
         static int sosad = 0;
 
         //static string[] meadowsongnames = new string[] { "403rings", "71104", "Cascen", "DustAshWrong", "Establish", "Eyes Vain", "Eyto", "Folkada", "Grasp", "Gray Orange", "Icy Parchment", "Indufor", "Live more.", "Me", "MTC", "Nevertop Side", "Ones", "Pedal Petal", "Porls", "Purple Puff", "Significance", "Slightly Ill", "Smoothed Ash", "Soup", "StepsSteps", "Swan ode", "The Crewmate", "tredjeplanen", "Triptrap X", "Trists", "Void Genesis", "Walked", "Well Phoe", "Woodback", "NA_40 - Unseen Lands" };
-        //static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
-        //static int queuething = 1;
+        static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
+        static int queuething = 1;
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (time.HasValue) time += dt;
@@ -675,7 +676,7 @@ namespace RainMeadow
                     thisis = sosad switch { 0 or 4 or 7 or 15 => 'a', 1 or 6 => 'l', 2 => 'e', 3 => 'x', 5 => 'p', 8 => 'y', 9 or 13 => 't', 10 or 14 => 'r', 11 => 'i', 12 or 16 => 'p', _ => 'a' };
                     if (sosad == 17)
                     {
-                        sosad = 0; 
+                        sosad = 0;
                         if (musicPlayer == null ||
                             (musicPlayer.manager.musicPlayer.song == null && musicPlayer.nextSong != null && musicPlayer.nextSong.name == "TripTrap X") ||
                             (musicPlayer.song != null && musicPlayer.song.name == "TripTrap X") ||
@@ -692,18 +693,21 @@ namespace RainMeadow
                 }
                 else
                 {
+                    if (sosad == 5)
+                    {
+                        if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
+                        if (Input.GetKey(KeyCode.Delete)) QueueSong(musicPlayer, "");
+                        if (Input.GetKey(KeyCode.PageUp)) QueueSong(musicPlayer, meadowsongnames[queuething = ((queuething + 1) >= meadowsongnames.Length) ? 0 : (queuething + 1)]);
+                        if (musicPlayer != null && musicPlayer.song != null) {
+                            if (Input.GetKey(KeyCode.PageDown)) musicPlayer.song.subTracks[0].source.time += 10;
+                            if (Input.GetKey(KeyCode.End)) musicPlayer.song.subTracks[0].volume -= 0.25f; //starts at 1 
+                            if (Input.GetKey(KeyCode.Home)) musicPlayer.song.subTracks[0].isSynced = true;
+                        }
+                    }
+
                     thisis = 'a';
                     sosad = 0;
                 }
-                /*
-                if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
-                if (Input.GetKey(KeyCode.Delete)) QueueSong(musicPlayer, "");
-                if (Input.GetKey(KeyCode.PageUp)) QueueSong(musicPlayer, meadowsongnames[queuething = ((queuething + 1) >= meadowsongnames.Length) ? 0 : (queuething + 1)]);
-                if (musicPlayer != null && musicPlayer.song != null) {
-                    if (Input.GetKey(KeyCode.PageDown)) musicPlayer.song.subTracks[0].source.time += 10;
-                    if (Input.GetKey(KeyCode.End)     ) musicPlayer.song.subTracks[0].volume -= 0.25f; //starts at 1 
-                    if (Input.GetKey(KeyCode.Home)    ) musicPlayer.song.subTracks[0].isSynced = true;
-                } */
             }
             gamedontload = Input.anyKey;
         }
@@ -894,13 +898,21 @@ namespace RainMeadow
             }
             else
             {
-                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode);
+                Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode) { priority = 255_207_64, stopAtDeath = false, stopAtGate = false, lp = providedsong == "NA_41 - Random Gods" }; // :) I trust my songs to be tantamount :) also NA_41 is right next to "NA_40 - Unseen Lands", funny
                 if (willfadein) song.fadeInTime = 120f;
                 MusicPiece.SubTrack sub = song.subTracks[0];
                 sub.source.Pause();
                 sub.source.clip = clipclip;
                 sub.isStreamed = true;
-                if (sub.piece.musicPlayer.manager.rainWorld.OptionsReady) sub.source.volume = Mathf.Pow((sub.volume * sub.piece.volume * sub.piece.musicPlayer.manager.rainWorld.options.musicVolume), sub.piece.musicPlayer.manager.soundLoader.volumeExponent); 
+                float volumeeeee = 0f;
+                if (!UpdateIntensity) volumeeeee = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
+                else volumeeeee = Mathf.Pow(1f - (vibeIntensity ?? 0f), 2.5f) * defaultMusicVolume;
+
+                song.baseVolume = volumeeeee;
+                musicPlayer.mainSongMix = (song.fadeInTime == 0f) ? 1f : 0f;
+                song.volume = song.baseVolume * musicPlayer.mainSongMix;
+
+                if (sub.piece.musicPlayer.manager.rainWorld.OptionsReady) sub.source.volume = Mathf.Pow((sub.volume * sub.piece.volume * sub.piece.musicPlayer.manager.rainWorld.options.musicVolume), sub.piece.musicPlayer.manager.soundLoader.volumeExponent);
                 //&& !sub.piece.startedPlaying
                 //sub.requestPlay = true;
                 sub.readyToPlay = true;
@@ -924,11 +936,6 @@ namespace RainMeadow
             else
             {
                 var musicdata = ((MeadowGameMode)OnlineManager.lobby.gameMode).avatars[0].GetData<MeadowMusicData>();
-                song.priority = 255_207_64f; // :) I trust my DJ's songs to be tantamount :)
-                song.stopAtDeath = false; //well, just to be sure!
-                song.stopAtGate = false;
-                song.lp = song.name == "NA_41 - Random Gods"; //a name that's right next to "NA_40 - Unseen Lands", funny
-
                 if (timetobestarted != null)
                 {
                     musicdata.startedPlayingAt = timetobestarted.Value;
@@ -937,15 +944,23 @@ namespace RainMeadow
                     RainMeadow.Debug("Playing from a point " + LobbyTime() + " " + timetobestarted.Value + " which amounts to " + calculatedthing);
                 }
                 else musicdata.startedPlayingAt = LobbyTime();
-                if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
+                if (musicPlayer.song == null)
                 {
-                    RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
-                    loadingsong = false;
-                    return;
+                    musicPlayer.song = song;
+                    musicPlayer.song.playWhenReady = true;
+                    if (musicPlayer.nextSong != null) musicPlayer.nextSong = null; //extremely unlikely, but fuck it.
                 }
-                musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
-                musicPlayer.nextSong.playWhenReady = false;
-                if (!UpdateIntensity) musicPlayer.nextSong.baseVolume = ((vibeIntensity == 0f) ? defaultMusicVolume : 0f);
+                else
+                {
+                    if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
+                    {
+                        RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
+                        loadingsong = false;
+                        return;
+                    }
+                    musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
+                    musicPlayer.nextSong.playWhenReady = false;
+                }
                 RainMeadow.Debug("my song is now " + musicdata.providedSong);
                 RainMeadow.Debug("my song is to be " + song.name);
             }

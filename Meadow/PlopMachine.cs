@@ -321,7 +321,6 @@ namespace RainMeadow
                 {
                     VirtualMicrophone.DisembodiedSound thissound = new(virtualMicrophone, soundData, pan, vol, speed, false, 3);
                     thissound.audioSource.volume = Mathf.Clamp01(Mathf.Pow(vol * thissound.soundData.vol * thissound.mic.volumeGroups[thissound.volumeGroup] * thissound.mic.camera.game.rainWorld.options.musicVolume, thissound.mic.soundLoader.volumeExponent));
-                    //WetLoop.SampleWetPlop(thissound.audioSource.clip, speed, vol, pan);
                     virtualMicrophone.soundObjects.Add(thissound);
                 }
                 else
