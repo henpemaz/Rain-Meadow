@@ -28,10 +28,9 @@ namespace RainMeadow
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
             // if steam installed 
-            // if (SteamManager.Instance.m_bInitialized)
-            // if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
-            //     netIO = new SteamNetIO();
-            // }
+            if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
+                netIO = new SteamNetIO();
+            }
             
             if (netIO == null) {
                 netIO = new LANNetIO();
@@ -165,9 +164,6 @@ namespace RainMeadow
 
         public static void SendData(OnlinePlayer toPlayer)
         {
-            RainMeadow.Debug(toPlayer.id.name);
-            RainMeadow.Debug(toPlayer.isMe);
-            RainMeadow.Debug(toPlayer.OutgoingEvents.Count);
             if (toPlayer.isMe)
                 return;
             
