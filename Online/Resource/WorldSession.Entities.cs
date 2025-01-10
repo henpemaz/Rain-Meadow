@@ -44,6 +44,8 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode.ShouldSyncAPOInWorld(this, apo))
                 {
                     RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                    var oe2 = OnlinePhysicalObject.RegisterPhysicalObject(apo);
+                    oe2.ExitResource(this);
                 }
             }
         }
