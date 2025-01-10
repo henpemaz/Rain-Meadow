@@ -69,8 +69,6 @@ namespace RainMeadow
                         var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);
                         player = new OnlinePlayer(playerid);
                     }
-
-                    RainMeadow.Debug($"Recieved packet from: {iPEndPoint.ToString()}");
                     
                     Packet.Decode(netReader, player);
                 }
