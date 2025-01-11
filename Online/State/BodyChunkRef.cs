@@ -22,11 +22,13 @@ namespace RainMeadow
             if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
             {
-                bodyChunk.owner.abstractPhysicalObject.stuckObjects
-                    .OfType<AbstractPhysicalObject.AbstractObjectStick>()
-                    .Where(stick => stick.A.realizedObject != null)
-                    .ToList()
-                    .ForEach(stick => (stick.A.realizedObject as Weapon)?.ChangeMode(Weapon.Mode.Free));
+                foreach (var stick in bodyChunk.owner.abstractPhysicalObject.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                {
+                    if (stick.A.realizedObject is Weapon weapon)
+                    {
+                        weapon.ChangeMode(Weapon.Mode.Free);
+                    }
+                }
 
                 return null;
             }
