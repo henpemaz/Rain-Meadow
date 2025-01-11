@@ -52,6 +52,25 @@ public partial class RainMeadow
         On.Player.SlugcatGrab += Player_SlugcatGrab;
         On.Player.ReleaseGrasp += Player_ReleaseGrasp;
         On.Player.SlugOnBack.SlugToBack += SlugOnBack_SlugToBack;
+
+        new Hook(typeof(Player).GetProperty("MapDiscoveryActive").GetGetMethod(), this.Player_mapDiscoveryActive);
+
+    }
+
+    private bool Player_mapDiscoveryActive(Func<Player, bool> orig, Player self)
+    {
+        if (OnlineManager.lobby != null)
+        {            
+            if (self.Consious && self.AI == null && self.room != null && !self.room.world.singleRoomWorld && self.abstractCreature != null && self.abstractCreature.Room != null && self.abstractCreature.Room.realizedRoom != null && self.dangerGrasp == null && self.mainBodyChunk.pos.x > 0f && self.mainBodyChunk.pos.x < self.abstractCreature.Room.realizedRoom.PixelWidth && self.mainBodyChunk.pos.y > 0f)
+            {
+                return self.mainBodyChunk.pos.y < self.abstractCreature.Room.realizedRoom.PixelHeight;
+            }
+
+            return false;
+
+        }
+
+        return orig(self);
     }
 
     private void SlugOnBack_SlugToBack(On.Player.SlugOnBack.orig_SlugToBack orig, Player.SlugOnBack self, Player playerToBack)
