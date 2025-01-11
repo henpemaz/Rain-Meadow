@@ -199,6 +199,13 @@ namespace RainMeadow
         public static void Arena_NextLevelCall()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+
+            if (lobby != null)
+            {
+                return;
+            }
+            
             if (game.manager.upcomingProcess != null)
             {
                 return;
@@ -212,6 +219,12 @@ namespace RainMeadow
         {
 
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+
+            if (lobby != null)
+            {
+                return;
+            }
             if (game.manager.upcomingProcess != null)
             {
                 return;
