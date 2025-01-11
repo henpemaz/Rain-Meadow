@@ -20,6 +20,8 @@ namespace RainMeadow
         private static float num3 = num - num2;
         public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
+        public MenuLabel currentLevelProgression;
+
         public MenuLabel displayCurrentGameMode;
 
         private SimplerSymbolButton viewNextPlayer;
@@ -54,6 +56,7 @@ namespace RainMeadow
                 arena.arenaSittingOnlineOrder = new List<ushort>();
                 arena.ResetGameTimer();
                 arena.clientsAreReadiedUp = 0;
+                arena.currentLevel = 0;
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -172,12 +175,20 @@ namespace RainMeadow
 
             }
 
-            // Ready up label
-            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(meUsernameButton.pos.x + 30f, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
-            this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
 
             this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode: {arena.currentGameMode}"), new Vector2(this.meUsernameButton.pos.x, meUsernameButton.pos.y + 200f), new Vector2(10f, 10f), true);
+            this.displayCurrentGameMode.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(displayCurrentGameMode);
+            // Ready up label
+            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 170f), new Vector2(10f, 10f), false);
+            this.totalClientsReadiedUpOnPage.label.alignment = FLabelAlignment.Left;
+
+            this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
+
+
+            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Session Progress: {arena.currentLevel} / {arena.totalLevelCount}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
+            this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
+            this.pages[0].subObjects.Add(currentLevelProgression);
 
 
         }
@@ -277,6 +288,7 @@ namespace RainMeadow
                     }
 
                 }
+                arena.totalLevelCount = manager.arenaSitting.levelPlaylist.Count;
 
             }
 
@@ -382,6 +394,11 @@ namespace RainMeadow
             if (this.totalClientsReadiedUpOnPage != null)
             {
                 UpdateReadyUpLabel();
+            }
+
+            if (this.currentLevelProgression != null)
+            {
+                UpdateLevelCounter();
             }
 
             if (this.displayCurrentGameMode != null)
@@ -859,7 +876,13 @@ namespace RainMeadow
 
         private void UpdateReadyUpLabel()
         {
-            this.totalClientsReadiedUpOnPage.text = $"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}";
+            this.totalClientsReadiedUpOnPage.text = this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}");
+
+        }
+
+        private void UpdateLevelCounter()
+        {
+            this.currentLevelProgression.text = this.Translate($"Session Progress: {arena.currentLevel} / {arena.totalLevelCount}");
 
         }
         private void UpdateGameModeLabel()
