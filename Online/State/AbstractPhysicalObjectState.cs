@@ -20,7 +20,13 @@ namespace RainMeadow
         public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
             var realizedState = inResource is RoomSession;
-            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized) { RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}"); }
+            if (realizedState && onlineEntity.isMine && onlineEntity.apo.realizedObject != null && !onlineEntity.realized)
+            {
+                RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}");
+
+                this.realizedObjectState = GetRealizedState(onlineEntity);
+
+            }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
                 RainMeadow.Trace($"asked for realized state, not realized: {onlineEntity} in resource {inResource}");
