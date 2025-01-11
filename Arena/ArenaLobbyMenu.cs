@@ -186,7 +186,7 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
 
 
-            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Session Progress: {arena.currentLevel} / {arena.totalLevelCount}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
+            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Progress: {arena.currentLevel} / {arena.totalLevelCount}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
             this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(currentLevelProgression);
 
@@ -882,7 +882,7 @@ namespace RainMeadow
 
         private void UpdateLevelCounter()
         {
-            this.currentLevelProgression.text = this.Translate($"Session Progress: {arena.currentLevel} / {arena.totalLevelCount}");
+            this.currentLevelProgression.text = this.Translate($"Progress: {arena.currentLevel} / {arena.totalLevelCount}");
 
         }
         private void UpdateGameModeLabel()
