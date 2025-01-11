@@ -107,6 +107,13 @@ namespace RainMeadow
             return newOe;
         }
 
+        public static void RegisterAndCleanOutRemoteEntity(AbstractPhysicalObject apo, OnlineResource rs)
+        {
+            RainMeadow.Debug("Unregistered entity being registered and exiting...");
+            var opo = RegisterPhysicalObject(apo);
+            opo.ExitResource(rs);
+
+        }
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
             bool transferable = !RainMeadow.sSpawningAvatar;
