@@ -24,7 +24,7 @@ namespace RainMeadow
                             if ((OnlineManager.lobby?.owner is OnlinePlayer owner && owner == player) ||
                                 (OnlineManager.lobby?.isOwner ?? true)
                             ) {
-                                ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN]).RemoveLANPlayer(player);
+                                ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
                             }
                         }
                     }
@@ -35,7 +35,7 @@ namespace RainMeadow
 
 
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
 
@@ -53,7 +53,7 @@ namespace RainMeadow
 
 
         public void SendAcknoledgement(OnlinePlayer player, bool start_conversation = false) {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
 
@@ -77,7 +77,7 @@ namespace RainMeadow
 
         public override void RecieveData()
         {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
 
@@ -96,7 +96,7 @@ namespace RainMeadow
                     BinaryReader netReader = new BinaryReader(netStream);
                     
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
+                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
                     if (player == null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);

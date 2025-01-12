@@ -42,7 +42,7 @@ namespace RainMeadow
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
             MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-            MatchmakingManager.changedMatchMaker += (MatchmakingManager.MatchMaker last, MatchmakingManager.MatchMaker current) => {
+            MatchmakingManager.changedMatchMaker += (MatchmakingManager.MatchMakingDomain last, MatchmakingManager.MatchMakingDomain current) => {
                 MatchmakingManager.instances[last].LeaveLobby();
                 LeaveLobby();
             };
