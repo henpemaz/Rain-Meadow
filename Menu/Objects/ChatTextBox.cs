@@ -22,7 +22,7 @@ namespace RainMeadow
         public static string lastSentMessage = "";
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
         {
-            steamMatchmakingManager = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Steam] as SteamMatchmakingManager);
+            steamMatchmakingManager = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager);
             lastSentMessage = "";
             this.menu = menu;
             gameObject ??= new GameObject();
@@ -68,7 +68,7 @@ namespace RainMeadow
                 {
                     if (MatchmakingManager.currentInstance is SteamMatchmakingManager)
                     {
-                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instances[MatchmakingManager.MatchMaker.Steam] as SteamMatchmakingManager).lobbyID, lastSentMessage);
+                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).lobbyID, lastSentMessage);
                     }
 
                     foreach (var player in OnlineManager.players)

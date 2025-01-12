@@ -19,7 +19,7 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
-        private OpComboBox2 matchMakerMode;
+        private OpComboBox2 matchMakingDomain;
         private OpComboBox2 filterModeDropDown;
         private OpCheckBox filterPublicLobbiesOnly;
         private OpTextBox filterLobbyLimit;
@@ -129,7 +129,7 @@ namespace RainMeadow
             var directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
             directConnectButton.OnClick += (_) =>
             {   
-                if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN)
+                if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN)
                 {
                     ShowErrorDialog("Direct Connection is only available in the Local Matchmaker");
                     return;
@@ -145,11 +145,11 @@ namespace RainMeadow
 
             mainPage.subObjects.Add(directConnectButton);
             
-            var domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMaker>(
-                MatchmakingManager.currentMatchMaker), where, 160f - 35f, 
+            var domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
+                MatchmakingManager.currentDomain), where, 160f - 35f, 
                 MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value)).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
-                MatchmakingManager.currentMatchMaker = new MatchmakingManager.MatchMaker(domainDropDown.value, false);
+                MatchmakingManager.currentDomain = new MatchmakingManager.MatchMakingDomain(domainDropDown.value, false);
                 lobbyList.ClearLobbies();
                 lobbyList.CreateCards();
                 RefreshLobbyList(null);

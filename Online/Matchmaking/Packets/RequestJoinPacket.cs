@@ -7,9 +7,9 @@ namespace RainMeadow
         public override void Process()
         {
             RainMeadow.DebugMe();
-            if (OnlineManager.lobby != null && MatchmakingManager.currentMatchMaker == MatchmakingManager.MatchMaker.LAN)
+            if (OnlineManager.lobby != null && MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
             {
-                var matchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager);
+                var matchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager);
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);

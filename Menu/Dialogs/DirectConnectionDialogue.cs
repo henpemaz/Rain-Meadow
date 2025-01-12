@@ -61,7 +61,7 @@ namespace RainMeadow
             passwordBox.allowSpace = true;
 
             passwordBoxWrapper = new UIelementWrapper(this.tabWrapper, passwordBox);
-            passwordCheckBox = new CheckBox(menu, this, this, center + new Vector2(-60f, -60f), 0, "", "");
+            passwordCheckBox = new CheckBox(menu, this, this, center + new Vector2(-110f, -60f), 0, "", "");
             subObjects.Add(passwordCheckBox);
 
 
