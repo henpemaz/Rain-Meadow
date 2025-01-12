@@ -42,6 +42,10 @@ namespace RainMeadow
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
             MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.changedMatchMaker += (MatchmakingManager.MatchMaker last, MatchmakingManager.MatchMaker current) => {
+                MatchmakingManager.instances[last].LeaveLobby();
+                LeaveLobby();
+            };
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -77,7 +81,8 @@ namespace RainMeadow
 
             RainMeadowModManager.Reset();
 
-            mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
+            
+            MatchmakingManager.currentInstance.initializeMePlayer();
             players = new List<OnlinePlayer>() { mePlayer };
 
             instance.manager.rainWorld.progression.Destroy();
@@ -166,12 +171,9 @@ namespace RainMeadow
         {
             if (toPlayer.isMe)
                 return;
-            
-            
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
-                RainMeadow.DebugMe();
                 netIO?.SendSessionData(toPlayer);
             }
         }
