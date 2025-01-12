@@ -44,7 +44,7 @@ namespace RainMeadow
                 return steamID.GetHashCode();
             }
 
-            public string GetPersonaName() {
+            public override string GetPersonaName() {
                 return SteamFriends.GetFriendPersonaName(steamID);
             }
 
@@ -266,15 +266,14 @@ namespace RainMeadow
                 throw;
             }
         }
-
-        public void SendChatMessage(CSteamID lobbyID, string message)
-        {
+        public override bool canSendChatMessages => true;
+        public override void SendChatMessage(string message) {
             byte[] msgBytes = System.Text.Encoding.UTF8.GetBytes(message);
             bool outputted = SteamMatchmaking.SendLobbyChatMsg(lobbyID, msgBytes, msgBytes.Length);
 
             if (!outputted) RainMeadow.Debug($"Failed to send message: {msgBytes} {msgBytes.Length}");
         }
-
+        
         private void LobbyChatMessageReceived(LobbyChatMsg_t callback)
         {
             CSteamID senderID;
@@ -283,7 +282,7 @@ namespace RainMeadow
 
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
-            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}", $"{message}");
+            RecieveChatMessage(GetPlayerSteam(senderID.m_SteamID), message);
         }
 
         private void PlayerJoined(CSteamID p)
@@ -291,9 +290,10 @@ namespace RainMeadow
             RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
             if (p == me) return;
             SteamFriends.RequestUserInformation(p, true);
-            OnlineManager.players.Add(new OnlinePlayer(new SteamPlayerId(p)));
+            var player = new OnlinePlayer(new SteamPlayerId(p));
+            OnlineManager.players.Add(player);
 
-            ChatLogManager.LogMessage("", $"{SteamFriends.GetFriendPersonaName(p)} joined the game.");
+            HandleJoin(player);
         }
 
         private void PlayerLeft(CSteamID p)

@@ -810,7 +810,9 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam));
+
+                if (MatchmakingManager.currentInstance.canSendChatMessages)
+                    self.AddPart(new ChatHud(self, cam));
             }
         }
 
