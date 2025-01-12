@@ -7,6 +7,7 @@ namespace RainMeadow
         public override void Process() {
             if (OnlineManager.lobby != null) {
                 (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).SendLobbyInfo(processingPlayer);
+                OnlineManager.netIO.ForgetPlayer(processingPlayer);
             }
 
         }
