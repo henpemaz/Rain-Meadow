@@ -564,25 +564,31 @@ namespace RainMeadow
         const int DEFAULT_PORT = 8720;
         const int FIND_PORT_ATTEMPTS = 8; // 8 players somehow hosting from the same machine is ridiculous.
         public UDPPeerManager() {
-            this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            this.socket.EnableBroadcast = true;
+            try {
+                this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                this.socket.EnableBroadcast = true;
 
-            port = DEFAULT_PORT;
-            var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
-            bool alreadyinuse = false;
-            for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) { 
-                port = DEFAULT_PORT + i;
-                alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
-                if (!alreadyinuse)
-                    break;
+                port = DEFAULT_PORT;
+                var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
+                bool alreadyinuse = false;
+                for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) { 
+                    port = DEFAULT_PORT + i;
+                    alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
+                    if (!alreadyinuse)
+                        break;
+                }
+
+                if (alreadyinuse) {
+                    throw new Exception("Failed to claim a socket port");
+                }
+
+
+                socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            } catch (SocketException except) {
+                RainMeadow.Error(except.SocketErrorCode);
+                throw except;
             }
-
-            if (alreadyinuse) {
-                throw new Exception("Failed to claim a socket port");
-            }
-
-
-            socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            
         }
 
         List<RemotePeer> peers = new();
@@ -632,7 +638,8 @@ namespace RainMeadow
         }
 
         public void ForgetAllPeers() {
-            foreach (RemotePeer peer in peers) {
+            var remove_peers = peers.ToList();
+            foreach (RemotePeer peer in remove_peers) {
                 ForgetPeer(peer);
             }
         }
@@ -695,17 +702,19 @@ namespace RainMeadow
                 RemotePeer peer = peers[i];
                 ++peer.TicksSinceLastPacket;
                 if (peer.TicksSinceLastPacket >= PEER_TIMEOUT) {
-                    peers.RemoveAt(i);
+                    peersToRemove.Add(peer);
                     continue;
                 }
                 if (peer.TicksSinceLastPacket % 40 == 0) { // send a heartbeat every 4 ticks (1/10th of a second)
                     if (peer.outgoingpacket.Count > 0) {
                         SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
                     } else if (peer.TicksSinceLastPacket > HEARTBEAT_TIME) {
-                        // SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                        SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
                     }
                 }
             }
+
+            foreach (var peer in peersToRemove) ForgetPeer(peer);
         }
         public bool IsPacketAvailable() { return socket.Available > 0; }
         public static void SerializeEndPoints(BinaryWriter writer, IPEndPoint[] endPoints, IPEndPoint addressedto, bool includeme = true) {

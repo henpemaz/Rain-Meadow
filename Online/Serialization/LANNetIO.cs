@@ -17,6 +17,9 @@ namespace RainMeadow
         public LANNetIO() {
             manager = new();
             manager.OnPeerForgotten += (peer) => {
+                if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+                    return;
+                }
                 foreach (OnlinePlayer player in OnlineManager.players) {
                     if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
                         if (lanid.endPoint is null) continue;
