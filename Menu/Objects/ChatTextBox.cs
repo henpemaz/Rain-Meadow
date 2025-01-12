@@ -11,7 +11,6 @@ namespace RainMeadow
 {
     public class ChatTextBox : ChatTemplate, ICanBeTyped
     {
-        private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
@@ -24,7 +23,6 @@ namespace RainMeadow
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
-            steamMatchmakingManager = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager);
             lastSentMessage = "";
             this.menu = menu;
             gameObject ??= new GameObject();
@@ -68,11 +66,7 @@ namespace RainMeadow
             {
                 if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
                 {
-                    if (MatchmakingManager.currentInstance is SteamMatchmakingManager)
-                    {
-                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).lobbyID, lastSentMessage);
-                    }
-
+                    MatchmakingManager.currentInstance.SendChatMessage(lastSentMessage);
                     foreach (var player in OnlineManager.players)
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);

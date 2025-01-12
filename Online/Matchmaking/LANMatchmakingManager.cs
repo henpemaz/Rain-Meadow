@@ -132,6 +132,14 @@ namespace RainMeadow {
             });
         }
 
+        public override bool canSendChatMessages => true;
+        public override void SendChatMessage(string message) {
+            foreach (OnlinePlayer player in OnlineManager.players) {
+                if (player.isMe) continue;
+                OnlineManager.netIO.SendP2P(player, new ChatMessagePacket(message), NetIO.SendType.Reliable);
+            }
+        }
+
         public int maxplayercount = 0;
         public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount) {
             maxplayercount = maxPlayerCount ?? 0;

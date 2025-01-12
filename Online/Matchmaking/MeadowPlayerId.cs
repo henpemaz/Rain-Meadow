@@ -6,6 +6,7 @@ namespace RainMeadow
     {
         public string name;
 
+        public virtual string GetPersonaName() { return name; }
         public abstract void OpenProfileLink();
         public virtual bool canOpenProfileLink { get => false; }
 
