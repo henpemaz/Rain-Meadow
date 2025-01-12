@@ -129,7 +129,7 @@ namespace RainMeadow
             var directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
             directConnectButton.OnClick += (_) =>
             {   
-                if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local)
+                if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN)
                 {
                     ShowErrorDialog("Direct Connection is only available in the Local Matchmaker");
                     return;
@@ -362,6 +362,16 @@ namespace RainMeadow
             mainPage.subObjects.Add(popupDialog);
         }
 
+        public void ShowNotLocalDialogue(string text, Action ok)
+        {
+            if (popupDialog != null) HideDialog();
+            
+            popupDialog = new NotLocalWarningDialog(this, mainPage,
+                new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 
+                new Vector2(480f, 320f), text, false, ok, () => HideDialog());
+            mainPage.subObjects.Add(popupDialog);
+        }
+
         public void ShowErrorDialog(string error)
         {
             if (popupDialog != null) HideDialog();
@@ -397,10 +407,26 @@ namespace RainMeadow
                     break;
                 case "DIRECT_JOIN": 
                     var dialogue = popupDialog as DirectConnectionDialogue;
-                    var endpoint = DirectConnectionDialogue.GetEndPointByName(dialogue.IPBox.value);
+                    var endpoint = DirectConnectionDialogue.GetEndPointByName(dialogue?.IPBox?.value ?? "");
                     if (endpoint != null) {
-                        ShowLoadingDialog("Joining lobby...");
-                        RequestLobbyJoin(new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2));
+                        Action join = () => {
+                            ShowLoadingDialog("Joining lobby...");
+                            RequestLobbyJoin(new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2),
+                                    dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null);
+                        };
+                        
+
+                        if (!UDPPeerManager.isEndpointLocal(endpoint)) {
+                            ShowNotLocalDialogue(
+                                                "This address is possibly not local to your current network.\n" +
+                                                "All clients might be required to port forward [8720].\n" +
+                                                "Port forwarding can compromise your network and expose your network.\n" +
+                                                "Are you SURE you know what you're doing?",
+                                join);
+                            mainPage.subObjects.Add(popupDialog);
+                        } else join.Invoke();
+
+
                     } else {
                         ShowErrorDialog("Invalid Address, addresse format should be xxx.xxx.xxx.xxx:port");
                     }

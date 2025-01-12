@@ -40,7 +40,12 @@ namespace RainMeadow
 
         }
 
-        public abstract void SendP2P(OnlinePlayer player, Packet packet, SendType sendType);
+        public virtual void ForgetPlayer(OnlinePlayer player) {}
+        public virtual void ForgetEverything() {}
+
+        // If using a domain requires you to start a conversation, then any packet sent before before starting a conversation is ignored.
+        // otherwise, the parameter "start_conversation" is ignored.
+        public abstract void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false);
 
         // public void SendP2P(OnlinePlayer player, Packet packet, SendType sendType)
         // {

@@ -34,6 +34,11 @@ namespace RainMeadow {
             public LANPlayerId() { }
             public LANPlayerId(IPEndPoint endPoint) : base(endPoint?.ToString() ?? "Unknown Enpoint")
             {
+                if (endPoint == null) {
+                    System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
+                    RainMeadow.Debug(t.ToString());
+                }
+
                 this.endPoint = endPoint;
             }
 
@@ -82,7 +87,6 @@ namespace RainMeadow {
             
         }
 
-        public OnlinePlayer currentLobbyHost = null;
         
         static List<LANLobbyInfo> lobbyinfo = new();
         public override void RequestLobbyList() {
@@ -139,18 +143,23 @@ namespace RainMeadow {
         public void LobbyAcknoledgedUs(OnlinePlayer owner)
         {
             RainMeadow.DebugMe();
-            currentLobbyHost = owner;
             OnlineManager.lobby = new Lobby(
                 new OnlineGameMode.OnlineGameModeType(OnlineManager.currentlyJoiningLobby.mode, false), 
-                GetLobbyOwner(), lobbyPassword);
+                owner, lobbyPassword);
         }
 
 
         public void AcknoledgeLANPlayer(OnlinePlayer joiningPlayer)
         {
+            var lanid = joiningPlayer.id as LANPlayerId;
+            if (lanid is null) return;
+            if (lanid.isLoopback()) return; 
+
+
             RainMeadow.DebugMe();
             if (OnlineManager.players.Contains(joiningPlayer)) { return; }
             OnlineManager.players.Add(joiningPlayer);
+            ((LANNetIO)OnlineManager.netIO).SendAcknoledgement(joiningPlayer, false);
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
@@ -192,6 +201,7 @@ namespace RainMeadow {
                         NetIO.SendType.Reliable);
                 }
             }
+            OnlineManager.netIO.ForgetPlayer(leavingPlayer);
             OnPlayerListReceivedEvent(playerList.ToArray());
         }
 
@@ -210,7 +220,7 @@ namespace RainMeadow {
                 
                 RainMeadow.Debug("Sending Request to join lobby...");
                 OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
-                    new RequestJoinPacket(), NetIO.SendType.Reliable);
+                    new RequestJoinPacket(), NetIO.SendType.Reliable, true);
             } else {
                 RainMeadow.Error("Invalid lobby type");
             }
@@ -233,16 +243,21 @@ namespace RainMeadow {
         public override void LeaveLobby() {
             if (OnlineManager.lobby != null)
             {
-                if (!OnlineManager.lobby.isOwner && currentLobbyHost != null)
+                if (!OnlineManager.lobby.isOwner && GetLobbyOwner() is OnlinePlayer owner)
                 {
-                    OnlineManager.netIO.SendP2P(currentLobbyHost, 
-                        new SessionEndPacket(), NetIO.SendType.Reliable);
+                    OnlineManager.netIO.ForgetEverything();
+                    OnlineManager.netIO.SendP2P(owner, 
+                        new RequestLeavePacket(), NetIO.SendType.Reliable, true);
                 }
             }
         }
 
         public override OnlinePlayer GetLobbyOwner() {
-            return currentLobbyHost;
+            if (OnlineManager.lobby == null) {
+                throw new Exception("We're not in a lobby.");
+            }
+
+            return OnlineManager.lobby.owner;
         }   
 
         public override MeadowPlayerId GetEmptyId() {
@@ -250,10 +265,14 @@ namespace RainMeadow {
         }
 
         public override string GetLobbyID() {
-            throw new NotImplementedException();
+            if (OnlineManager.lobby != null) {
+                return (OnlineManager.lobby.owner.id as LANPlayerId).name + "'s Lobby";
+            }
+
+            return "unknown lan lobby";
         }
         public override void OpenInvitationOverlay() {
-            throw new NotImplementedException();
+            OnlineManager.instance.manager.ShowDialog(new DialogNotify("You cannot use this feature here.", OnlineManager.instance.manager, null));
         }
     }
 }
