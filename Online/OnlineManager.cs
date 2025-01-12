@@ -68,7 +68,9 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
+
             MatchmakingManager.currentInstance.LeaveLobby();
+            netIO?.ForgetEverything();
             lobby = null;
 
             subscriptions = new();
