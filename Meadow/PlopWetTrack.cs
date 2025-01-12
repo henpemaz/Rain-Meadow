@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class DisembodiedWetLoop : VirtualMicrophone.DisembodiedLoop
+    internal class PlopWetTrack : VirtualMicrophone.DisembodiedLoop
     {
-        public DisembodiedWetLoop(VirtualMicrophone mic, SoundLoader.SoundData sData, DisembodiedLoopEmitter controller, float pan, float volume, float pitch, bool startAtRandomTime) : base(mic, sData, controller, pan, volume, pitch, startAtRandomTime)
+        public PlopWetTrack(VirtualMicrophone mic, SoundLoader.SoundData sData, DisembodiedLoopEmitter controller, float pan, float volume, float pitch, bool startAtRandomTime) : base(mic, sData, controller, pan, volume, pitch, startAtRandomTime)
         {
             PlopInititationVelocity = MeadowMusic.vibeIntensity ?? 0;
 
@@ -156,8 +156,8 @@ namespace RainMeadow
             public float phase;
             public float tremolofreq;
             public int oct;
-            DisembodiedWetLoop owner;
-            public Plop(DisembodiedWetLoop owner, string length, int octave, int semitone, float volume, float pan)
+            PlopWetTrack owner;
+            public Plop(PlopWetTrack owner, string length, int octave, int semitone, float volume, float pan)
             {
                 this.owner = owner;
                 string acronym = (PlopMachine.CurrentRegion ?? "sl").ToUpper();

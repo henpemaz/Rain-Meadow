@@ -61,7 +61,6 @@ namespace RainMeadow
             }
             orig(self);
         }
-
         private static void SSOracleBehavior_TurnOffSSMusic(On.SSOracleBehavior.orig_TurnOffSSMusic orig, SSOracleBehavior self, bool abruptEnd)
         {
             orig.Invoke(self, abruptEnd);
@@ -286,7 +285,6 @@ namespace RainMeadow
             }
             orig.Invoke(self, currentProcess);
         }
-
         private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
         {
             // replace vanilla handling, ours is better
@@ -365,7 +363,6 @@ namespace RainMeadow
             orig(self);
             self.source?.clip?.UnloadAudioData();
         } 
-
         internal static void NewGame()
         {
             time = null;
@@ -657,7 +654,7 @@ namespace RainMeadow
                 else if (TryGetIfIShouldPlaySongNameThatThisIdProvides(hostId, out MeadowMusicData hostMusicData)) //hmmm, maybe we don't wanna run this *every frame*. Optimise pls? Get some cache method thingy? which updates when dj updates or switches
                 {
                     RainMeadow.Debug("My host now has a song i care 'bout, gonna try playing it");
-                    QueueSong(musicPlayer, hostMusicData.providedSong); //fuck it always returns the same fucking song
+                    QueueSong(musicPlayer, hostMusicData.providedSong);
                 }
                 else
                 {
@@ -678,7 +675,7 @@ namespace RainMeadow
                     {
                         sosad = 0;
                         if (musicPlayer == null ||
-                            (musicPlayer.manager.musicPlayer.song == null && musicPlayer.nextSong != null && musicPlayer.nextSong.name == "TripTrap X") ||
+                            (musicPlayer.song == null && musicPlayer.nextSong != null && musicPlayer.nextSong.name == "TripTrap X") ||
                             (musicPlayer.song != null && musicPlayer.song.name == "TripTrap X") ||
                             songHistory.Contains("TripTrap X")) { }
                         else
@@ -946,6 +943,7 @@ namespace RainMeadow
                 else musicdata.startedPlayingAt = LobbyTime();
                 if (musicPlayer.song == null)
                 {
+                    ((RainWorldGame)musicPlayer.manager.currentMainLoop).cameras[0].hud.textPrompt.AddMusicMessage(song.name, 120);
                     musicPlayer.song = song;
                     musicPlayer.song.playWhenReady = true;
                     if (musicPlayer.nextSong != null) musicPlayer.nextSong = null; //extremely unlikely, but fuck it.
@@ -958,6 +956,7 @@ namespace RainMeadow
                         loadingsong = false;
                         return;
                     }
+                    ((RainWorldGame)musicPlayer.manager.currentMainLoop).cameras[0].hud.textPrompt.AddMusicMessage(song.name, 180); //this is shoddy and bad, i just want to push my branch
                     musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
                     musicPlayer.nextSong.playWhenReady = false;
                 }

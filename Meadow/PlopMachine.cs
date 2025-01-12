@@ -104,7 +104,7 @@ namespace RainMeadow
         bool fileshavebeenchecked = false;
         string[][]? ChordInfos;
 
-        DisembodiedWetLoop? WetLoop;
+        PlopWetTrack? WetLoop;
         static DisembodiedLoopEmitter? WetController;
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
@@ -171,7 +171,7 @@ namespace RainMeadow
             {
                 var mic = self.cameras[0].virtualMicrophone;
                 SoundLoader.SoundData sounddata = mic.GetSoundData(twentysecsilence, -1);
-                WetLoop = new DisembodiedWetLoop(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume * MeadowMusic.defaultPlopVolume, 1, false);
+                WetLoop = new PlopWetTrack(mic, sounddata, WetController, 0, MeadowMusic.defaultMusicVolume * MeadowMusic.defaultPlopVolume, 1, false);
                 //WE'RE SO FUCKING BACK
                 RainMeadow.Debug("Created wetloop");
             }
