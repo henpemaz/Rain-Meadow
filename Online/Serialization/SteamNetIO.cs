@@ -19,7 +19,13 @@ namespace RainMeadow
                 var steamNetId = playerid.oid;
                 unsafe {
                     fixed (byte* dataPointer = OnlineManager.serializer.buffer) {
-                        SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
+                        SteamNetworkingMessages.SendMessageToUser(ref steamNetId, 
+                            (IntPtr)dataPointer, 
+                            (uint)OnlineManager.serializer.Position, 
+                            sendType switch {
+                                SendType.Unreliable =>  Constants.k_nSteamNetworkingSend_Unreliable,
+                                SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable
+                                    }, 0);
                     }
                 }
             } else {
