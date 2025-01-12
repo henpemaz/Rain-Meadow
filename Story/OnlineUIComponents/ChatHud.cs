@@ -19,6 +19,8 @@ namespace RainMeadow
 
         public bool Active => game.processActive;
 
+        public static bool isLogToggled; // Lets us keep chat log toggled across process switches.
+
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;
@@ -30,6 +32,13 @@ namespace RainMeadow
             {
                 hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press 'Enter' to chat, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to toggle the chat log"), 60, 160, false, true);
                 ChatLogManager.shownChatTutorial = true;
+            }
+
+            if (isLogToggled)
+            {
+                RainMeadow.Debug("creating log");
+                chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                showChatLog = true;
             }
         }
 
@@ -54,12 +63,14 @@ namespace RainMeadow
                 {
                     ShutDownChatLog();
                     showChatLog = false;
+                    isLogToggled = false;
                 }
                 else if (!textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating log");
                     chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
                     showChatLog = true;
+                    isLogToggled = true;
                 }
             }
 
