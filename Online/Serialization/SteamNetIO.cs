@@ -11,7 +11,7 @@ namespace RainMeadow
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
             base.SendP2P(player, packet, sendType, start_conversation);
 
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.Steam) {
                 return;
             }
 
@@ -36,7 +36,7 @@ namespace RainMeadow
 
         public void SteamRecieveData()
         {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.Steam) {
                 return;
             }
 
