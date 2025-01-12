@@ -47,7 +47,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             var lobbyinfo = MakeLobbyInfo();
-            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).addLobby(lobbyinfo);
+            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).addLobby(lobbyinfo);
         }
 
         public LANMatchmakingManager.LANLobbyInfo MakeLobbyInfo() {

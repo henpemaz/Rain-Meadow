@@ -599,10 +599,42 @@ namespace RainMeadow
         public static bool CompareIPEndpoints(IPEndPoint a, IPEndPoint b) {
             return a.Address.MapToIPv4().Equals(b.Address.MapToIPv4()) && a.Port.Equals(b.Port);
         }
+        public static bool isEndpointLocal(IPEndPoint endpoint) {
+            var addressbytes = endpoint.Address.GetAddressBytes();
+            if (endpoint.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
+                if (addressbytes[0] == 10) return true;
+
+                if (addressbytes[0] == 172)
+                if (addressbytes[1] >= 16 && addressbytes[1] <= 31) return true;
+
+
+                if (addressbytes[0] == 192)
+                if (addressbytes[1] == 168) return true;
+
+                if (endpoint.Address.Equals(IPAddress.Loopback)) return true;
+            }
+            return false;
+        }
+
+        public delegate void OnPeerForgotten_t(IPEndPoint endPoint);
+        public event OnPeerForgotten_t OnPeerForgotten = delegate { };
         
         
+        public void ForgetPeer(RemotePeer peer) {
+            OnPeerForgotten.Invoke(peer.PeerEndPoint);
+            peers.Remove(peer);
+        }
         public void ForgetPeer(IPEndPoint endPoint) {
-            peers.RemoveAll(x => CompareIPEndpoints(endPoint, x.PeerEndPoint));
+            var remove_peers = peers.FindAll(x => CompareIPEndpoints(endPoint, x.PeerEndPoint));
+            foreach (RemotePeer peer in remove_peers) {
+                ForgetPeer(peer);
+            }
+        }
+
+        public void ForgetAllPeers() {
+            foreach (RemotePeer peer in peers) {
+                ForgetPeer(peer);
+            }
         }
 
         public void Send(byte[] packet, IPEndPoint endPoint, PacketType packet_type = PacketType.Reliable, bool begin_conversation = false) {
@@ -616,6 +648,7 @@ namespace RainMeadow
                 } else {
                     SendRaw(packet, peer, packet_type);
                 }
+
             }
 
         }
@@ -623,17 +656,17 @@ namespace RainMeadow
         const int BROADCAST_ATTEMPTS = 4;
 
         public void SendBroadcast(byte[] packet) {
+            IPAddress broadcast = IPAddress.Parse("192.168.1.255");
             for (int broadcast_port  = DEFAULT_PORT; broadcast_port < (DEFAULT_PORT + FIND_PORT_ATTEMPTS); broadcast_port++) 
             for (int i = 0; i < BROADCAST_ATTEMPTS; i++) {
                 using (MemoryStream stream = new(packet.Length + 1)) 
                 using (BinaryWriter writer = new(stream)) {
                     writer.Write((byte)PacketType.UnreliableBroadcast);
                     writer.Write(packet);
-                    socket.SendTo(stream.GetBuffer().Take((int)stream.Position).ToArray(), 
-                        new IPEndPoint(IPAddress.Broadcast, broadcast_port));
+                    socket.SendTo(stream.GetBuffer(), (int)stream.Position, SocketFlags.None, 
+                        new IPEndPoint(broadcast, broadcast_port));
                 }
             }
-            
         }
 
         public void SendRaw(byte[] packet, RemotePeer peer, PacketType packet_type, bool begin_conversation = false) {
