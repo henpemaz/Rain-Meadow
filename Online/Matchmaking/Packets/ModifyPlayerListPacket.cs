@@ -44,7 +44,7 @@ namespace RainMeadow
         {
             modifyOperation = (Operation)reader.ReadByte();
             var endpoints = UDPPeerManager.DeserializeEndPoints(reader, (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint);
-            var lanmatchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager);
+            var lanmatchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager);
 
             if (modifyOperation == Operation.Add)
                 players = endpoints.Select(x => new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(x))).ToArray();
@@ -64,7 +64,7 @@ namespace RainMeadow
                             continue; // that's me
                         }
 
-                        (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).AcknoledgeLANPlayer(players[i]);
+                        (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).AcknoledgeLANPlayer(players[i]);
                     }
                     break;
 
@@ -72,7 +72,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Removing players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
                     for (int i = 0; i < players.Length; i++)
                     {
-                        (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).RemoveLANPlayer(players[i]);
+                        (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).RemoveLANPlayer(players[i]);
                     }
                     break;
             }

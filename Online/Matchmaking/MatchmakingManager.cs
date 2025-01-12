@@ -10,11 +10,11 @@ namespace RainMeadow
 
     public abstract class MatchmakingManager
     {
-        public class MatchMaker: ExtEnum<MatchMaker> {
-            public MatchMaker(string name, bool register) : base(name, register) { }
+        public class MatchMakingDomain: ExtEnum<MatchMakingDomain> {
+            public MatchMakingDomain(string name, bool register) : base(name, register) { }
 
-            public static MatchMaker LAN = new MatchMaker("Local", true);
-            public static MatchMaker Steam = new MatchMaker("Steam", true);
+            public static MatchMakingDomain LAN = new MatchMakingDomain("Local", true);
+            public static MatchMakingDomain Steam = new MatchMakingDomain("Steam", true);
 
 
         };
@@ -28,17 +28,17 @@ namespace RainMeadow
         protected static void OnPlayerListReceivedEvent(PlayerInfo[] players) => OnPlayerListReceived?.Invoke(players);
         protected static void OnLobbyListReceivedEvent(bool ok, LobbyInfo[] lobbies) => OnLobbyListReceived?.Invoke(ok, lobbies);
 
-        public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
-        public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
+        public static event ChangedMatchMakingDomain_t changedMatchMaker = delegate { };
+        public delegate void ChangedMatchMakingDomain_t(MatchMakingDomain last, MatchMakingDomain current);
 
-        private static MatchMaker _Matchmaker = MatchMaker.LAN;
+        private static MatchMakingDomain _Domain = MatchMakingDomain.LAN;
 
-        public static MatchMaker currentMatchMaker { get { return _Matchmaker; } set { 
-                        var last = _Matchmaker; 
-                        _Matchmaker = value; 
-                        changedMatchMaker.Invoke(last, _Matchmaker);  }} 
-        public static MatchmakingManager currentInstance { get => instances[currentMatchMaker]; }
-        public static Dictionary<MatchMaker, MatchmakingManager> instances = new Dictionary<MatchMaker, MatchmakingManager>();
+        public static MatchMakingDomain currentDomain { get { return _Domain; } set { 
+                        var last = _Domain; 
+                        _Domain = value; 
+                        changedMatchMaker.Invoke(last, _Domain);  }} 
+        public static MatchmakingManager currentInstance { get => instances[currentDomain]; }
+        public static Dictionary<MatchMakingDomain, MatchmakingManager> instances = new Dictionary<MatchMakingDomain, MatchmakingManager>();
 
 
         public static string CLIENT_KEY = "client";
@@ -48,7 +48,7 @@ namespace RainMeadow
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
 
-        static public readonly List<MatchMaker> supported_matchmakers = new();
+        static public readonly List<MatchMakingDomain> supported_matchmakers = new();
 
         public static void InitLobbyManager()
         {
@@ -56,13 +56,13 @@ namespace RainMeadow
             instances.Clear();
 
             if (OnlineManager.netIO is SteamNetIO) {
-                instances.Add(MatchMaker.Steam, new SteamMatchmakingManager());
-                supported_matchmakers.Add(MatchMaker.Steam);
+                instances.Add(MatchMakingDomain.Steam, new SteamMatchmakingManager());
+                supported_matchmakers.Add(MatchMakingDomain.Steam);
             }
 
-            supported_matchmakers.Add(MatchMaker.LAN); 
-            instances.Add(MatchMaker.LAN, new LANMatchmakingManager());
-            currentMatchMaker = supported_matchmakers[0];
+            supported_matchmakers.Add(MatchMakingDomain.LAN); 
+            instances.Add(MatchMakingDomain.LAN, new LANMatchmakingManager());
+            currentDomain = supported_matchmakers[0];
                 
             currentInstance.initializeMePlayer();
             changedMatchMaker += (last, current) => {
