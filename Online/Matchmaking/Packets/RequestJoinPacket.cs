@@ -9,7 +9,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (OnlineManager.lobby != null && MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
             {
-                var matchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager);
+                var matchmaker = (LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN];
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);

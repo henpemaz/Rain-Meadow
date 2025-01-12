@@ -35,8 +35,8 @@ namespace RainMeadow {
             public LANPlayerId(IPEndPoint endPoint) : base(endPoint?.ToString() ?? "Unknown Enpoint")
             {
                 if (endPoint == null) {
-                    System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
-                    RainMeadow.Debug(t.ToString());
+                    // System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
+                    // RainMeadow.Debug(t.ToString());
                 }
 
                 this.endPoint = endPoint;
@@ -103,7 +103,6 @@ namespace RainMeadow {
                 }
 
             }
-                
         }
 
         public void addLobby(LANLobbyInfo lobby) {
@@ -186,7 +185,10 @@ namespace RainMeadow {
 
         public void RemoveLANPlayer(OnlinePlayer leavingPlayer)
         {
+            if (leavingPlayer.isMe) return; 
             if (!OnlineManager.players.Contains(leavingPlayer)) { return; }
+            OnPlayerListReceivedEvent(playerList.ToArray());
+
             HandleDisconnect(leavingPlayer);
 
             if (OnlineManager.lobby.isOwner)
@@ -202,7 +204,6 @@ namespace RainMeadow {
                 }
             }
             OnlineManager.netIO.ForgetPlayer(leavingPlayer);
-            OnPlayerListReceivedEvent(playerList.ToArray());
         }
 
         string lobbyPassword = "";
@@ -248,13 +249,24 @@ namespace RainMeadow {
                     OnlineManager.netIO.ForgetEverything();
                     OnlineManager.netIO.SendP2P(owner, 
                         new RequestLeavePacket(), NetIO.SendType.Reliable, true);
+                } else if (OnlineManager.lobby.isOwner) {
+                    foreach (OnlinePlayer p in  OnlineManager.players) {
+                        OnlineManager.netIO.SendP2P(p, 
+                            new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { OnlineManager.mePlayer }), 
+                                NetIO.SendType.Reliable);
+                        OnlineManager.netIO.SendP2P(p, 
+                            new SessionEndPacket(), 
+                                NetIO.SendType.Reliable);
+                    }
                 }
             }
         }
 
         public override OnlinePlayer GetLobbyOwner() {
-            if (OnlineManager.lobby == null) {
-                throw new Exception("We're not in a lobby.");
+            if (OnlineManager.lobby.owner.hasLeft == true || OnlineManager.lobby == null) {
+                // select a new owner. 
+                // The order of players should be 
+                return currentInstance.BestTransferCandidate(OnlineManager.lobby, OnlineManager.lobby.participants);
             }
 
             return OnlineManager.lobby.owner;

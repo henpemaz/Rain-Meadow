@@ -6,10 +6,7 @@ namespace RainMeadow
 
         public override void Process()
         {
-            if (OnlineManager.lobby != null)
-            {
-                (OnlineManager.netIO as LANNetIO)?.ForgetPlayer(processingPlayer);
-            }
+            OnlineManager.netIO.ForgetPlayer(processingPlayer);
         }
     }
 }
