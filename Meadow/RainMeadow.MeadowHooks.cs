@@ -2,6 +2,7 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -225,6 +226,10 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 return;
+            }
+            if (!self.dead) // Prevent death messages from firing 987343 times.
+            {
+                DeathMessage.CreatureDeath(self);
             }
             orig(self);
         }
