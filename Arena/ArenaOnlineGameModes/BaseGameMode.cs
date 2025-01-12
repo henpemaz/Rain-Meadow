@@ -67,7 +67,10 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            
+            if (MatchmakingManager.currentInstance.canSendChatMessages) 
+                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+                
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));

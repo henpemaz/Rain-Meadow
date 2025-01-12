@@ -111,6 +111,15 @@ namespace RainMeadow
             return subscribers.FirstOrDefault(p => !p.hasLeft && OnlineManager.lobby.gameMode.PlayerCanOwnResource(p, onlineResource));
         }
 
+        public virtual bool canSendChatMessages => false;
+        public virtual void SendChatMessage(string message) { }
+        public virtual void RecieveChatMessage(OnlinePlayer player, string message) { 
+            ChatLogManager.LogMessage($"{player.id.GetPersonaName()}", $"{message}");
+        }
+
+        public void HandleJoin(OnlinePlayer player) {
+            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} joined the game.");
+        }
         public void HandleDisconnect(OnlinePlayer player)
         {
             RainMeadow.Debug($"Handling player disconnect:{player}");
@@ -125,7 +134,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
 
-            ChatLogManager.LogMessage("", $"{player.id.name} left the game.");
+            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} left the game.");
         }
 
         public abstract MeadowPlayerId GetEmptyId();

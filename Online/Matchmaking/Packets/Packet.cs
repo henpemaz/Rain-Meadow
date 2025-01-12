@@ -16,6 +16,7 @@ namespace RainMeadow
             SessionEnd,
             RequestLobby,
             InformLobby,
+            ChatMessage,
         }
 
         public abstract Type type { get; }
