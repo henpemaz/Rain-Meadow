@@ -8,8 +8,8 @@ using System.Runtime.InteropServices;
 namespace RainMeadow
 {
     class SteamNetIO : LANNetIO {
-        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType) {
-            base.SendP2P(player, packet, sendType);
+        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
+            base.SendP2P(player, packet, sendType, start_conversation);
 
             if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Steam) {
                 return;

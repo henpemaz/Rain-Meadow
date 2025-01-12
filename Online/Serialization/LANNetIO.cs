@@ -11,15 +11,31 @@ using System.Runtime.InteropServices;
 namespace RainMeadow
 {
     
+
     public class LANNetIO : NetIO {
         public readonly UDPPeerManager manager;
         public LANNetIO() {
             manager = new();
+            manager.OnPeerForgotten += (peer) => {
+                foreach (OnlinePlayer player in OnlineManager.players) {
+                    if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
+                        if (lanid.endPoint is null) continue;
+                        if (UDPPeerManager.CompareIPEndpoints(lanid.endPoint, peer)) {
+                            if ((OnlineManager.lobby?.owner is OnlinePlayer owner && owner == player) ||
+                                (OnlineManager.lobby?.isOwner ?? true)
+                            ) {
+                                ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN]).RemoveLANPlayer(player);
+                            }
+                        }
+                    }
+                }
+
+            };
         }
 
 
-        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType) {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local) {
+        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
+            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
                 return;
             }
 
@@ -32,7 +48,25 @@ namespace RainMeadow
                      NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
                      NetIO.SendType.Unreliable => UDPPeerManager.PacketType.Unreliable,
                      _ => UDPPeerManager.PacketType.Unreliable,
-                 }, true);
+                 }, start_conversation);
+        }
+
+
+        public void SendAcknoledgement(OnlinePlayer player, bool start_conversation = false) {
+            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
+                return;
+            }
+
+            manager.Send(Array.Empty<byte>(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                UDPPeerManager.PacketType.Reliable, true);
+        }
+
+        public override void ForgetPlayer(OnlinePlayer player) {
+            manager.ForgetPeer(((LANMatchmakingManager.LANPlayerId)player.id).endPoint);
+        }
+
+        public override void ForgetEverything() {
+            manager.ForgetAllPeers();
         }
 
         public override void Update()
@@ -43,7 +77,7 @@ namespace RainMeadow
 
         public override void RecieveData()
         {
-            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.Local) {
+            if (MatchmakingManager.currentMatchMaker != MatchmakingManager.MatchMaker.LAN) {
                 return;
             }
 
@@ -62,7 +96,7 @@ namespace RainMeadow
                     BinaryReader netReader = new BinaryReader(netStream);
                     
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
+                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
                     if (player == null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);

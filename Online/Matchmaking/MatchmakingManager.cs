@@ -13,7 +13,7 @@ namespace RainMeadow
         public class MatchMaker: ExtEnum<MatchMaker> {
             public MatchMaker(string name, bool register) : base(name, register) { }
 
-            public static MatchMaker Local = new MatchMaker("Local", true);
+            public static MatchMaker LAN = new MatchMaker("Local", true);
             public static MatchMaker Steam = new MatchMaker("Steam", true);
 
 
@@ -31,7 +31,7 @@ namespace RainMeadow
         public static event ChangedMatchMaker_t changedMatchMaker = delegate { };
         public delegate void ChangedMatchMaker_t(MatchMaker last, MatchMaker current);
 
-        private static MatchMaker _Matchmaker = MatchMaker.Local;
+        private static MatchMaker _Matchmaker = MatchMaker.LAN;
 
         public static MatchMaker currentMatchMaker { get { return _Matchmaker; } set { 
                         var last = _Matchmaker; 
@@ -56,12 +56,12 @@ namespace RainMeadow
             instances.Clear();
 
             if (OnlineManager.netIO is SteamNetIO) {
-                instances.TryAdd(MatchMaker.Steam, new SteamMatchmakingManager());
+                instances.Add(MatchMaker.Steam, new SteamMatchmakingManager());
                 supported_matchmakers.Add(MatchMaker.Steam);
             }
 
-            supported_matchmakers.Add(MatchMaker.Local); 
-            instances.TryAdd(MatchMaker.Local, new LANMatchmakingManager());
+            supported_matchmakers.Add(MatchMaker.LAN); 
+            instances.Add(MatchMaker.LAN, new LANMatchmakingManager());
             currentMatchMaker = supported_matchmakers[0];
                 
             currentInstance.initializeMePlayer();

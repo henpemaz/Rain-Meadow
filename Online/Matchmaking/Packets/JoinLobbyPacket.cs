@@ -10,7 +10,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             OnlineManager.currentlyJoiningLobby = MakeLobbyInfo();
-            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).LobbyAcknoledgedUs(processingPlayer);
+            (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).LobbyAcknoledgedUs(processingPlayer);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace RainMeadow
 
         public override void Process() {
             if (OnlineManager.lobby != null) {
-                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.Local] as LANMatchmakingManager).SendLobbyInfo(processingPlayer);
+                (MatchmakingManager.instances[MatchmakingManager.MatchMaker.LAN] as LANMatchmakingManager).SendLobbyInfo(processingPlayer);
             }
 
         }
