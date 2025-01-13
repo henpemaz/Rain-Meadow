@@ -71,7 +71,7 @@ namespace RainMeadow
                         usernameLabel.label.color = colorDictionary.TryGetValue(username, out var color) ? color : Color.white;
                         pages[0].subObjects.Add(usernameLabel);
 
-                        var usernameWidth = username.Length * 5;
+                        var usernameWidth = usernameLabel.size.x;
                         var messageLabel = new MenuLabel(this, pages[0], $": {message}",
                             new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + usernameWidth + 10, 330f - yOffSet),
                             new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
