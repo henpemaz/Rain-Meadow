@@ -15,9 +15,9 @@ namespace RainMeadow
             public static OnlineGameModeType Story = new("Story", true);
             public static OnlineGameModeType ArenaCompetitive = new("ArenaCompetitive", true);
 
-            public Dictionary<string, bool> storyBoolRemixSettings;
-            public Dictionary<string, float> storyFloatRemixSettings;
-            public Dictionary<string, int> storyIntRemixSettings;
+            public Dictionary<string, bool> boolRemixSettings;
+            public Dictionary<string, float> floatRemixSettings;
+            public Dictionary<string, int> intRemixSettings;
 
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
@@ -28,16 +28,16 @@ namespace RainMeadow
             };
         }
 
-        public static List<string> nonGameplayRemixSettings = new() { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
+        public virtual List<string> nonGameplayRemixSettings { get; set; } = new() { "cfgSpeedrunTimer", "cfgHideRainMeterNoThreat", "cfgLoadingScreenTips", "cfgExtraTutorials", "cfgClearerDeathGradients", "cfgShowUnderwaterShortcuts", "cfgBreathTimeVisualIndicator", "cfgCreatureSense", "cfgTickTock", "cfgFastMapReveal", "cfgThreatMusicPulse", "cfgExtraLizardSounds", "cfgQuieterGates", "cfgDisableScreenShake", "cfgHunterBatflyAutograb", "cfgNoMoreTinnitus" };
 
-        public static (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostBoolStoryRemixSettings()
+        public static (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostRemixSettings(OnlineGameMode mode)
         {
             Dictionary<string, bool> configurableBools = new();
             Dictionary<string, float> configurableFloats = new();
             Dictionary<string, int> configurableInts = new();
 
-            if (ModManager.MMF)
-            {
+            if (ModManager.MMF && mode.nonGameplayRemixSettings != null)
+            {  
                 Type type = typeof(MoreSlugcats.MMF);
 
                 FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Static);
@@ -45,7 +45,7 @@ namespace RainMeadow
 
                 foreach (FieldInfo field in sortedFields)
                 {
-                    if (nonGameplayRemixSettings.Contains(field.Name)) continue;
+                    if (mode.nonGameplayRemixSettings.Contains(field.Name)) continue;
                     var reflectedValue = field.GetValue(null);
                     if (reflectedValue is Configurable<bool> boolOption)
                     {
@@ -69,7 +69,7 @@ namespace RainMeadow
 
             return (configurableBools, configurableFloats, configurableInts);
         }
-        internal static void SetClientStoryRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
+        internal static void SetClientRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
             Type type = typeof(MoreSlugcats.MMF);
 

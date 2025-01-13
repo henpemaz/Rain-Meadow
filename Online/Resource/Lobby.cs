@@ -48,7 +48,7 @@ namespace RainMeadow
             if (isOwner)
             {
                 this.password = password;
-                (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostBoolStoryRemixSettings();
+                (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
 
             }
             else
@@ -261,9 +261,9 @@ namespace RainMeadow
                     RainMeadowModManager.CheckMods(requiredmods, bannedmods);
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
-                    if (ModManager.MMF)
+                    if (ModManager.MMF && lobby.gameMode.nonGameplayRemixSettings != null)
                     {
-                        OnlineGameMode.SetClientStoryRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
+                        OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
                     }
                     lobby.modsChecked = true;
                 }
