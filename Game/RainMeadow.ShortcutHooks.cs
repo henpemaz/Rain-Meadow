@@ -244,23 +244,23 @@ namespace RainMeadow
 
                 onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
-                if (self is Player pl)
+                if (self is Player pl && pl.IsLocal())
                 {
                     if (pl.grasps != null) // we're  dragging
                     {
-                        for (int num = pl.grasps.Length - 1; num >= 0; num--)
+                        for (int num =  0; num < pl.grasps.Length; num++)
                         {
-                            if (pl.grasps[num] != null && pl.grasps[num].grabbed is Player grabbedPlayer)
+                            if (pl.grasps[num] != null && !pl.grasps[num].grabbed.IsLocal())
                             {
-                                if (OnlinePhysicalObject.map.TryGetValue(grabbedPlayer.abstractPhysicalObject, out var onlineSlugBeingDragged))
+                                if (OnlinePhysicalObject.map.TryGetValue(pl.grasps[num].grabbed.abstractPhysicalObject, out var onlineEntityBeingGrabbed))
                                 {
-                                    onlineSlugBeingDragged.BroadcastRPCInRoom((onlineSlugBeingDragged as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                                    onlineEntityBeingGrabbed.BroadcastRPCInRoom((onlineEntityBeingGrabbed as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
                                 }
                             }
                         }
                     }
 
-                    if (ModManager.MSC && pl.slugOnBack != null && pl.slugOnBack.HasASlug) // we're backpacking
+                    if (ModManager.MSC && pl.slugOnBack != null && pl.slugOnBack.HasASlug && !pl.slugOnBack.slugcat.IsLocal()) // we're backpacking
                     {
                         if (OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack))
                         {
