@@ -243,6 +243,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
 
                 onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                orig(self, entrancePos, carriedByOther);
                 if (self is Player pl)
                 {
                     if (pl.grasps != null) // we're  dragging
@@ -267,7 +268,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                orig(self, entrancePos, carriedByOther);
             }
             else
             {
