@@ -108,6 +108,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
+            On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
         }
 
@@ -1348,31 +1349,63 @@ namespace RainMeadow
             }
         }
 
+        private void PlayerGhosts_AddGhost(On.VoidSea.PlayerGhosts.orig_AddGhost orig, VoidSea.PlayerGhosts self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                Vector2 vector = self.originalPlayer.mainBodyChunk.pos + Custom.RNV() * 2000f;
+                AbstractCreature abstractCreature = new AbstractCreature(self.voidSea.room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, self.voidSea.room.GetWorldCoordinate(vector), new EntityID(-1, -1));
+                abstractCreature.state = new PlayerState(abstractCreature, self.originalPlayer.playerState.playerNumber, self.originalPlayer.SlugCatClass, true);
+                self.voidSea.room.abstractRoom.AddEntity(abstractCreature);
+                abstractCreature.Realize();  // don't RealizeInRoom yet because that would call PlaceInRoom and ApplyPalette
+                for (int i = 0; i < abstractCreature.realizedCreature.bodyChunks.Length; i++)
+                {
+                    abstractCreature.realizedCreature.bodyChunks[i].restrictInRoomRange = float.MaxValue;
+                }
+                abstractCreature.realizedCreature.CollideWithTerrain = false;
+
+                self.ghosts.Add(new VoidSea.PlayerGhosts.Ghost(self, abstractCreature.realizedCreature as Player));
+
+                if (RainMeadow.creatureCustomizations.TryGetValue(self.originalPlayer, out var customization))
+                {
+                    RainMeadow.creatureCustomizations.GetValue(self.ghosts.Last().creature, (c) => customization);
+                }
+
+                abstractCreature.RealizeInRoom();  // PlaceInRoom after applying our customization
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
         {
             orig(self, eu);
-
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            if (isStoryMode(out _))
             {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
-                    // do things with the AbstractCreature we found
-                    if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
-                        RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
-                        opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
-                        opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
-                        opo.apo.realizedObject.RemoveFromRoom();
-                    }
-                    else if (ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
-                    {
-                        inVoidSea = true;
-                    }
-                    else if (ac.IsLocal() && !(opo.apo.realizedObject.Submersion > 0.5f))
-                    {
-                        inVoidSea = false;
+                        // do things with the AbstractCreature we found
+                        if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                        {
+                            Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
+                            RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
+                            opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
+                            opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
+                            opo.apo.realizedObject.RemoveFromRoom();
+                        }
+                        else if (ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                        {
+                            inVoidSea = true;
+                        }
+                        else if (ac.IsLocal() && !(opo.apo.realizedObject.Submersion > 0.5f))
+                        {
+                            inVoidSea = false;
+                        }
                     }
                 }
             }

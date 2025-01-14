@@ -20,6 +20,8 @@ namespace RainMeadow
         private static float num3 = num - num2;
         public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
+        public MenuLabel currentLevelProgression;
+
         public MenuLabel displayCurrentGameMode;
 
         private SimplerSymbolButton viewNextPlayer;
@@ -54,16 +56,17 @@ namespace RainMeadow
                 arena.arenaSittingOnlineOrder = new List<ushort>();
                 arena.ResetGameTimer();
                 arena.clientsAreReadiedUp = 0;
+                arena.currentLevel = 0;
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
             holdPlayerPosition = 3; // the position we want to use for changing as we navigate
+            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
 
-            ArenaHelpers.ResetReadyUpLogic(arena, this);
 
 
             MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
@@ -172,12 +175,20 @@ namespace RainMeadow
 
             }
 
-            // Ready up label
-            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(meUsernameButton.pos.x + 30f, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
-            this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
 
             this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode: {arena.currentGameMode}"), new Vector2(this.meUsernameButton.pos.x, meUsernameButton.pos.y + 200f), new Vector2(10f, 10f), true);
+            this.displayCurrentGameMode.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(displayCurrentGameMode);
+            // Ready up label
+            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 170f), new Vector2(10f, 10f), false);
+            this.totalClientsReadiedUpOnPage.label.alignment = FLabelAlignment.Left;
+
+            this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
+
+
+            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Progress: {arena.currentLevel} / {arena.totalLevelCount}"), new Vector2(displayCurrentGameMode.pos.x, meUsernameButton.pos.y + 150f), new Vector2(10f, 10f), false);
+            this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
+            this.pages[0].subObjects.Add(currentLevelProgression);
 
 
         }
@@ -277,6 +288,7 @@ namespace RainMeadow
                     }
 
                 }
+                arena.totalLevelCount = manager.arenaSitting.levelPlaylist.Count;
 
             }
 
@@ -288,11 +300,6 @@ namespace RainMeadow
             }
 
             ArenaHelpers.SetProfileColor(arena);
-            arena.returnToLobby = false;
-
-            //
-
-            //
             if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
             {
                 arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
@@ -338,6 +345,13 @@ namespace RainMeadow
                     arena.clientsAreReadiedUp++;
 
                 }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    if (!arena.playersReadiedUp.TryGetValue(OnlineManager.mePlayer.id.name, out _))
+                    {
+                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.id.name, true);
+                    }
+                }
 
                 if (OnlineManager.players.Count > 1 && !clientReadiedUp)
                 {
@@ -382,6 +396,11 @@ namespace RainMeadow
                 UpdateReadyUpLabel();
             }
 
+            if (this.currentLevelProgression != null)
+            {
+                UpdateLevelCounter();
+            }
+
             if (this.displayCurrentGameMode != null)
             {
                 UpdateGameModeLabel();
@@ -400,6 +419,12 @@ namespace RainMeadow
 
             if (this.playButton != null)
             {
+
+                if (arena.clientsAreReadiedUp == 0 && arena.returnToLobby)
+                {
+                    this.playButton.menuLabel.text = "READY?";
+                    this.playButton.inactive = false;
+                }
 
                 if (OnlineManager.players.Count == 1)
                 {
@@ -604,6 +629,31 @@ namespace RainMeadow
 
                 }
 
+                if (arena.playersReadiedUp.Count > OnlineManager.players.Count) // someone readied up then left
+                {
+                    RainMeadow.Debug("readyUpDictionary is greater than the number of players. Somebody left who was ready!");
+                    List<string> keysToRemove = new List<string>();
+
+                    for (int i = 0; i < arena.playersReadiedUp.Count; i++)
+                    {
+                        foreach (var kvp in arena.playersReadiedUp)
+                        {
+                            if (!OnlineManager.players.Any(player => player.id.name.Equals(kvp.Key)))
+                            {
+                                RainMeadow.Debug("Removing player who left from readyUpDictionary");
+                                keysToRemove.Add(kvp.Key);
+
+                            }
+                        }
+                    }
+
+                    for (int j = 0; j < keysToRemove.Count; j++)
+                    {
+                        arena.playersReadiedUp.Remove(keysToRemove[j]);
+                    }
+                    arena.clientsAreReadiedUp = arena.playersReadiedUp.Count;
+                }
+
 
                 if (OnlineManager.players.Count > 1)
                 {
@@ -623,7 +673,7 @@ namespace RainMeadow
 
                             if (arena.playersReadiedUp.TryGetValue(player.id.name, out var alreadyReady))
                             {
-                                RainMeadow.Debug("Player already exists in readiedUp dictionary");
+                                RainMeadow.Debug($"Player {player.id.name} already exists in readiedUp dictionary");
                             }
                             else
                             {
@@ -683,7 +733,7 @@ namespace RainMeadow
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
                 arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
 
-                if (OnlineManager.players.Count > 1 && !arena.allPlayersReadyLockLobby) // stop unnecessary RPCs
+                if (OnlineManager.players.Count > 1) // stop unnecessary RPCs
                 {
                     foreach (var player in OnlineManager.players)
                     {
@@ -752,9 +802,13 @@ namespace RainMeadow
                     int localIndex = l;
                     classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
+                    classButtons[l].readyForCombat = arena.playersReadiedUp.TryGetValue(OnlineManager.players[l].id.name, out _) && arena.playersReadiedUp[OnlineManager.players[l].id.name];
 
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
-                    var currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.players[l].id.name];
+                    if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[l].id.name, out var currentColorIndex))
+                    {
+                        currentColorIndex = 0;
+                    }
 
                     classButtons[l].portrait.fileName = ArenaImage(allSlugs[currentColorIndex], currentColorIndex);
 
@@ -822,7 +876,13 @@ namespace RainMeadow
 
         private void UpdateReadyUpLabel()
         {
-            this.totalClientsReadiedUpOnPage.text = $"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}";
+            this.totalClientsReadiedUpOnPage.text = this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}");
+
+        }
+
+        private void UpdateLevelCounter()
+        {
+            this.currentLevelProgression.text = this.Translate($"Progress: {arena.currentLevel} / {arena.totalLevelCount}");
 
         }
         private void UpdateGameModeLabel()

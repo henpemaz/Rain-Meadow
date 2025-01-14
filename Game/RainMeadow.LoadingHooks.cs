@@ -90,6 +90,10 @@ namespace RainMeadow
 
                     RainMeadow.Debug("Arena: Moving to next level");
                     self.currentLevel++;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.currentLevel = self.currentLevel;
+                    }
 
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
