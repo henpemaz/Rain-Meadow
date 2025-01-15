@@ -24,8 +24,6 @@ namespace RainMeadow
             {
                 RainMeadow.Error($"have realized object, but entity not marked as realized??: {onlineEntity} in resource {inResource}");
 
-                this.realizedObjectState = GetRealizedState(onlineEntity);
-
             }
             if (realizedState && onlineEntity.isMine && !onlineEntity.realized)
             {
