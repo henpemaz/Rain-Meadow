@@ -1078,6 +1078,13 @@ namespace RainMeadow
             return s;
         }
 
+        private static List<Func<string, string>> saveStateStringFilter = new();
+        public static event Func<string, string> SaveStateStringFilter
+        {
+            add => saveStateStringFilter.Add(value);
+            remove => saveStateStringFilter.Remove(value);
+        }
+
         private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
@@ -1091,6 +1098,11 @@ namespace RainMeadow
                 saveState.objectTrackers = objectTrackers;
 
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
+                if (saveStateStringFilter.Count > 0)
+                {
+                    foreach (var del in saveStateStringFilter) s = del(s);
+                    RainMeadow.Debug($"filtSaveState[{s.Length}]:{s}");
+                }
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
