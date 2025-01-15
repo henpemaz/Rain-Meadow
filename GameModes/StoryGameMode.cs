@@ -9,8 +9,15 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool readyForWin = false;
-        public byte readyForGate = 0;
-        public bool friendlyFire = false; // false until we manage it via UI
+        public enum ReadyForGate : byte
+        {
+            Closed,
+            MeetRequirement,
+            Opening,
+            Crossed,
+        }
+        public ReadyForGate readyForGate = ReadyForGate.Closed;
+        public bool friendlyFire = false;
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
@@ -34,7 +41,7 @@ namespace RainMeadow
             isInGame = false;
             changedRegions = false;
             readyForWin = false;
-            readyForGate = 0;
+            readyForGate = ReadyForGate.Closed;
             defaultDenPos = null;
             myLastDenPos = null;
             region = null;
@@ -42,7 +49,7 @@ namespace RainMeadow
             storyClientData?.Sanitize();
         }
 
-        public bool canJoinGame => isInGame && !changedRegions && readyForGate != 1 && !readyForWin;
+        public bool canJoinGame => isInGame && !changedRegions && readyForGate == ReadyForGate.Closed && !readyForWin;
 
         public bool saveToDisk = false;
 
@@ -167,7 +174,7 @@ namespace RainMeadow
                     readyForWin = true;
                 }
 
-                if (readyForGate == 0)
+                if (readyForGate == ReadyForGate.MeetRequirement)
                 {
                     gateRoom = null;
                     if (inGameClientsData.All(scs => scs.readyForGate))
@@ -178,19 +185,19 @@ namespace RainMeadow
                         {
                             RainWorld.roomIndexToName.TryGetValue(rooms.First(), out gateRoom);
                             RainMeadow.Debug($"ready for gate {gateRoom}!");
-                            readyForGate = 1;
+                            readyForGate = ReadyForGate.Opening;
                         }
                     }
                 }
-                else if (readyForGate > 0)
+                else if (readyForGate == ReadyForGate.Crossed)
                 {
-                    // wait for all players to pass through
+                    // wait for all players to pass through OR leave the gate room
                     if (inGameClientsData.All(scs => !scs.readyForGate)
                         || (gateRoom is not null && !inGameAvatarOPOs.Select(opo => opo.apo.Room?.name).Contains(gateRoom))  // HACK: AllPlayersThroughToOtherSide may not get called if warp, which softlocks gates
                         )
                     {
                         RainMeadow.Debug($"all through gate {gateRoom}!");
-                        readyForGate = 0;
+                        readyForGate = ReadyForGate.Closed;
                     }
                 }
             }
@@ -240,7 +247,7 @@ namespace RainMeadow
             changedRegions = false;
             hasSheltered = false;
             readyForWin = false;
-            readyForGate = 0;
+            readyForGate = ReadyForGate.Closed;
             storyClientData.Sanitize();
         }
 
