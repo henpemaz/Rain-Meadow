@@ -74,7 +74,7 @@ namespace RainMeadow
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
-                readyForGate = storyGameMode.readyForGate;
+                readyForGate = (byte)storyGameMode.readyForGate;
                 saveStateString = storyGameMode.saveStateString;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -134,7 +134,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
-                (lobby.gameMode as StoryGameMode).readyForGate = readyForGate;
+                (lobby.gameMode as StoryGameMode).readyForGate = (StoryGameMode.ReadyForGate)readyForGate;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
 
