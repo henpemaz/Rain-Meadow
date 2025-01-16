@@ -22,18 +22,7 @@ namespace RainMeadow
             if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
             {
-                if (bodyChunk.owner.abstractPhysicalObject.stuckObjects != null)
-                {
-                    foreach (var stick in bodyChunk.owner.abstractPhysicalObject.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
-                    {
-                        if (stick.A.realizedObject is Weapon weapon)
-                        {
-                            weapon.ChangeMode(Weapon.Mode.Free);
-                        }
-                    }
-                }
-
-                return null;
+                throw new InvalidProgrammerException("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
             }
             return new BodyChunkRef(oe, bodyChunk.index);
         }
