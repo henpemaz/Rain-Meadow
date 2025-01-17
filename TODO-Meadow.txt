@@ -13,6 +13,7 @@ many crashes still
 does self disconnecting detects?
 
 tint amount still unintuitive
+	V if just-switched-from-default, set tint amount to 1
 
 going to fresh lobby still the most efficient
 
