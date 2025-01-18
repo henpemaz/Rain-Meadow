@@ -20,7 +20,7 @@ public static class RainMeadowModManager
     public static string[] GetBannedMods()
     {
         var highImpactMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
-        var bannedMods = RainMeadowModInfoManager.MergedModInfo.BannedMods;
+        var bannedMods = RainMeadowModInfoManager.MergedModInfo.OnlineBannedMods;
 
         // (high impact + banned) - enabled
         return highImpactMods.Concat(bannedMods)

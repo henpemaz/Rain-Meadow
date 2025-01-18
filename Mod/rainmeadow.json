@@ -1,9 +1,9 @@
 {
-    "required_mods": [
+    "client_required_mods": [
         "rwremix",
         "moreslugcats"
     ],
-    "banned_mods": [
+    "online_banned_mods": [
         "maxi-mol.mousedrag",
         "fyre.BeastMaster",
         "slime-cubed.devconsole",

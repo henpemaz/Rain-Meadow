@@ -14,8 +14,8 @@ public sealed class RainMeadowModInfo
     /// <summary>
     /// Mods that are banned from being enabled in online game modes.
     /// </summary>
-    [JsonProperty("banned_mods")]
-    public List<string> BannedMods { get; set; } = new();
+    [JsonProperty("online_banned_mods")]
+    public List<string> OnlineBannedMods { get; set; } = new();
 
 
     /// <summary>
@@ -25,6 +25,6 @@ public sealed class RainMeadowModInfo
     public void MergeInfoFrom(RainMeadowModInfo modInfo)
     {
         ClientRequiredMods.AddDistinctRange(modInfo.ClientRequiredMods);
-        BannedMods.AddDistinctRange(modInfo.BannedMods);
+        OnlineBannedMods.AddDistinctRange(modInfo.OnlineBannedMods);
     }
 }
