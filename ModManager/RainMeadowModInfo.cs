@@ -5,8 +5,8 @@ namespace RainMeadow;
 
 public sealed class RainMeadowModInfo
 {
-    [JsonProperty("high_impact_mods")]
-    public List<string> HighImpactMods { get; set; } = new();
+    [JsonProperty("required_mods")]
+    public List<string> RequiredMods { get; set; } = new();
 
     [JsonProperty("banned_mods")]
     public List<string> BannedMods { get; set; } = new();
@@ -19,7 +19,7 @@ public sealed class RainMeadowModInfo
     /// <returns>The provided mod info with the data from this mod info added.</returns>
     public void AddInfoTo(RainMeadowModInfo modInfo)
     {
-        modInfo.HighImpactMods.AddRange(HighImpactMods);
+        modInfo.RequiredMods.AddRange(RequiredMods);
         modInfo.BannedMods.AddRange(BannedMods);
     }
 }

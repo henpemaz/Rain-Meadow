@@ -34,18 +34,9 @@ public static class RainMeadowModInfoManager
 
         foreach (var mod in ModManager.ActiveMods)
         {
-            RainMeadow.Debug(mod.basePath);
-            RainMeadow.Debug(mod.path);
+            var filePath = GetFileFromMod(mod, ModInfoFileName);
 
-            var filePath = Path.Combine(mod.basePath, ModInfoFileName);
-            var fileName = Path.GetFileName(filePath);
-
-            if (fileName != ModInfoFileName)
-            {
-                continue;
-            }
-
-            if (!IsNewestModFile(filePath))
+            if (filePath is null)
             {
                 continue;
             }
@@ -126,36 +117,35 @@ public static class RainMeadowModInfoManager
         return null;
     }
 
-    private static bool IsNewestModFile(string path)
+    private static string? GetFileFromMod(ModManager.Mod mod, string filePath)
     {
-        var fullPath = Path.GetFullPath(path);
-
-        foreach(var mod in ModManager.ActiveMods)
+        if (mod.hasTargetedVersionFolder)
         {
-            var targetedPath = Path.GetFullPath(mod.TargetedPath) + Path.DirectorySeparatorChar;
-            var newestPath = Path.GetFullPath(mod.NewestPath) + Path.DirectorySeparatorChar;
-            var defaultPath = Path.GetFullPath(mod.path) + Path.DirectorySeparatorChar;
+            var targetedPath = Path.Combine(mod.TargetedPath, filePath.ToLowerInvariant());
 
-            if (mod.hasTargetedVersionFolder && fullPath.StartsWith(targetedPath, StringComparison.InvariantCultureIgnoreCase))
+            if (File.Exists(targetedPath))
             {
-                return true;
-            }
-
-            if (mod.hasNewestFolder && fullPath.StartsWith(newestPath, StringComparison.InvariantCultureIgnoreCase))
-            {
-                var relativePath = fullPath.Substring(newestPath.Length);
-
-                return !mod.hasTargetedVersionFolder || !File.Exists(Path.Combine(mod.TargetedPath, relativePath));
-            }
-
-            if (fullPath.StartsWith(defaultPath, StringComparison.InvariantCultureIgnoreCase))
-            {
-                var relativePath = fullPath.Substring(defaultPath.Length);
-
-                return (!mod.hasTargetedVersionFolder || !File.Exists(Path.Combine(mod.TargetedPath, relativePath))) && (!mod.hasNewestFolder || !File.Exists(Path.Combine(mod.NewestPath, relativePath)));
+                return targetedPath;
             }
         }
 
-        return true;
+        if (mod.hasNewestFolder)
+        {
+            var newestPath = Path.Combine(mod.NewestPath, filePath.ToLowerInvariant());
+
+            if (File.Exists(newestPath))
+            {
+                return newestPath;
+            }
+        }
+
+        var defaultPath = Path.Combine(mod.path, filePath.ToLowerInvariant());
+
+        if (File.Exists(defaultPath))
+        {
+            return defaultPath;
+        }
+
+        return null;
     }
 }
