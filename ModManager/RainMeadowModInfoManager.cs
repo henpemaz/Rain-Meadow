@@ -54,6 +54,9 @@ public static class RainMeadowModInfoManager
         LoadUserModInfo();
 
         RefreshMergedModInfo();
+
+        MergedModInfo.BannedMods.ForEach(x => RainMeadow.Debug(x));
+        MergedModInfo.RequiredMods.ForEach(x => RainMeadow.Debug(x));
     }
 
     private static void LoadUserModInfo()

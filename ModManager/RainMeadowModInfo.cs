@@ -19,7 +19,7 @@ public sealed class RainMeadowModInfo
     /// <returns>The provided mod info with the data from this mod info added.</returns>
     public void AddInfoTo(RainMeadowModInfo modInfo)
     {
-        modInfo.RequiredMods.AddRange(RequiredMods);
-        modInfo.BannedMods.AddRange(BannedMods);
+        modInfo.RequiredMods.AddDistinctRange(RequiredMods);
+        modInfo.BannedMods.AddDistinctRange(BannedMods);
     }
 }
