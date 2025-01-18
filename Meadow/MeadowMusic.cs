@@ -13,9 +13,9 @@ namespace RainMeadow
 {
     public partial class MeadowMusic
     {
-        public const float defaultMusicVolume = 0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
-        public const float defaultPlopVolume = 0.575f; 
-        
+        public static float defaultMusicVolume = 0.3f; //0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
+        public static float defaultPlopVolume = 0.575f; //0.575f;
+
         public static void EnableMusic()
         {
             CheckFiles();
@@ -465,8 +465,8 @@ namespace RainMeadow
         static int sosad = 0;
 
         //static string[] meadowsongnames = new string[] { "403rings", "71104", "Cascen", "DustAshWrong", "Establish", "Eyes Vain", "Eyto", "Folkada", "Grasp", "Gray Orange", "Icy Parchment", "Indufor", "Live more.", "Me", "MTC", "Nevertop Side", "Ones", "Pedal Petal", "Porls", "Purple Puff", "Significance", "Slightly Ill", "Smoothed Ash", "Soup", "StepsSteps", "Swan ode", "The Crewmate", "tredjeplanen", "Triptrap X", "Trists", "Void Genesis", "Walked", "Well Phoe", "Woodback", "NA_40 - Unseen Lands" };
-        static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
-        static int queuething = 1;
+        //static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
+        //static int queuething = 1;
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (time.HasValue) time += dt;
@@ -492,7 +492,7 @@ namespace RainMeadow
                 {
                     //LeaveGroup
                     RainMeadow.Debug("I will be asking to leave");
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 1, 0.5f, 1);
                     OnlineManager.lobby.owner.InvokeRPC(AskNowLeave);
                     demiseTimer = null;
                 }
@@ -502,11 +502,6 @@ namespace RainMeadow
                 groupdemiseTimer -= dt;
                 if (groupdemiseTimer < 0)
                 {
-                    //Squash the room together 
-                    //generate an array of all the players in your current room and feed that tooooooooooo
-                    //MeadowPlayerId[] ballers = new MeadowPlayerId[4]; //temp
-
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
                     List<OnlineCreature> InThisRoom = new List<OnlineCreature>();
                     foreach (var entity in creature.roomSession.activeEntities.Where(v => v is OnlineCreature))
                     {
@@ -515,6 +510,7 @@ namespace RainMeadow
                     }
                     ushort[] ballers = InThisRoom.Select(v => v.owner.inLobbyId).ToArray();
                     OnlineManager.lobby.owner.InvokeRPC(AskNowSquashPlayers, ballers);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 1, 0.5f, 1);
                     groupdemiseTimer = null;
                 }
             }
@@ -551,7 +547,8 @@ namespace RainMeadow
                         RainMeadow.Debug("I will ask to join this ID " + the);
                         OnlinePlayer who = playersWithMe.First(p => mgms.playerGroups[p.inLobbyId] == the);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who);
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
+                        self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another DJ group", 80);
+                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 1, 0.5f, 1);
                     }
                     else 
                     {
@@ -559,7 +556,8 @@ namespace RainMeadow
                         var who = playersWithMe[UnityEngine.Random.Range(0, playersWithMe.Count)];
                         RainMeadow.Debug("I will ask to join this player named " + who);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who); // the ordering
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, creature.owner.inLobbyId == 1 ? -0.8f : 0.8f, 1, 1);
+                        self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another DJ group", 80);
+                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 1, 0.5f, 1);
                     }
                 }
             }
@@ -679,7 +677,7 @@ namespace RainMeadow
                             (musicPlayer.song != null && musicPlayer.song.name == "TripTrap X") ||
                             songHistory.Contains("TripTrap X")) { }
                         else
-                        {
+                            {
                             if (hostId == OnlineManager.mePlayer.inLobbyId)
                             {
                                 OnlineManager.lobby.owner.InvokeRPC(MeadowMusic.BroadcastInterruption, "Triptrap X");
@@ -690,6 +688,7 @@ namespace RainMeadow
                 }
                 else
                 {
+                    /*
                     if (sosad == 5)
                     {
                         if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
@@ -701,7 +700,7 @@ namespace RainMeadow
                             if (Input.GetKey(KeyCode.Home)) musicPlayer.song.subTracks[0].isSynced = true;
                         }
                     }
-
+                    */
                     thisis = 'a';
                     sosad = 0;
                 }

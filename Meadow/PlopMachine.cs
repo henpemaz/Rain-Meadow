@@ -1205,8 +1205,9 @@ namespace RainMeadow
                     case DrumGender.Perc:
                         trackvol = Mathf.Clamp01(plopMachine.currentAgora * 0.27f - 1.6f);
                         sample = Perc1;
-                        int semitones = UnityEngine.Random.Range(0, 8) switch { 0 => 0, 1 => 0, 2 => 0, 3 => 0, 4 => 1, 5 => 2, 6 => 4, 7 => 7, _ => -16 };
-                        speed *= Mathf.Pow(2, semitones / 12f);
+                        int index = UnityEngine.Random.Range(0, 8) switch { 0 => 1, 1 => 1, 2 => 1, 3 => 1, 4 => 2, 5 => 3, 6 => 5, 7 => 7, _ => 7 };
+                        int semitone = plopMachine.IndexTOCKInt(index);
+                        speed *= Mathf.Pow(2, semitone / 12f);
                         break;
 
                     default:

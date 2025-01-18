@@ -71,6 +71,7 @@ namespace RainMeadow
         static int LastTime;
         public override void Update(float timeStacker, float timeSpeed)
         {
+            controller.volume = MeadowMusic.defaultMusicVolume * MeadowMusic.defaultPlopVolume;
             base.Update(timeStacker, timeSpeed); //RainMeadow.Debug(timeStacker + "    " +  timeSpeed);
             int dt = DateTime.Now.Millisecond - LastTime;
             float power = 1;
@@ -174,7 +175,7 @@ namespace RainMeadow
                 };
                 //var TrackClip = WetLoop.audioSource.clip;
                 TrackSampleStartsAt = owner.audioSource.timeSamples;
-                //TrackSampleStartsAt += 0; //initial delay
+                TrackSampleStartsAt += UnityEngine.Random.Range(1, 1000 * length switch { "L" => 3, "M" => 2, "S" => 1, _ => 1}); //initial delay
                 this.oct = octave;
                 this.Frequency = 440f * Mathf.Pow(2, octave - 5) * Mathf.Pow(2, (float)(semitone + 3) / (float)12);
 
