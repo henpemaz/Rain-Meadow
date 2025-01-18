@@ -2,98 +2,99 @@
 using System.IO;
 using System.Linq;
 
-namespace RainMeadow;
-
-public static class RainMeadowModManager
+namespace RainMeadow
 {
-    public static string[] GetRequiredMods()
+    public static class RainMeadowModManager
     {
-        var requiredMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
-
-        return ModManager.ActiveMods
-            .Where(mod => requiredMods.Contains(mod.id)
-                          || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
-            .Select(mod => mod.id)
-            .ToArray();
-    }
-
-    public static string[] GetBannedMods()
-    {
-        var highImpactMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
-        var bannedMods = RainMeadowModInfoManager.MergedModInfo.OnlineBannedMods;
-
-        // (high impact + banned) - enabled
-        return highImpactMods.Concat(bannedMods)
-            .Except(ModManager.ActiveMods.Select(mod => mod.id))
-            .ToArray();
-    }
-
-    internal static void CheckMods(string[] requiredMods, string[] bannedMods)
-    {
-        RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
-        RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
-        var active = ModManager.ActiveMods.Select(mod => mod.id);
-        bool reorder = false;
-        var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active);
-        var enable = requiredMods.Except(active);
-
-        RainMeadow.Debug($"active:  [ {string.Join(", ", active)} ]");
-        RainMeadow.Debug($"enable:  [ {string.Join(", ", enable)} ]");
-        RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
-
-        if (!reorder && !disable.Any() && !enable.Any()) return;
-
-        var lobbyID = MatchmakingManager.instance.GetLobbyID();
-        RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-        OnlineManager.LeaveLobby();
-
-        List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
-        List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
-
-        List<string> missingMods = new();
-        List<ModManager.Mod> modsToEnable = new(), modsToDisable = new();
-
-        foreach (var id in enable)
+        public static string[] GetRequiredMods()
         {
-            int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
-            if (index == -1) missingMods.Add(id);
-            else
-            {
-                pendingEnabled[index] = true;
-                modsToEnable.Add(ModManager.InstalledMods[index]);
-            }
+            var requiredMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
+
+            return ModManager.ActiveMods
+                .Where(mod => requiredMods.Contains(mod.id)
+                              || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+                .Select(mod => mod.id)
+                .ToArray();
         }
 
-        foreach (var id in disable)
+        public static string[] GetBannedMods()
         {
-            int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
-            pendingEnabled[index] = false;
-            modsToDisable.Add(ModManager.InstalledMods[index]);
+            var highImpactMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
+            var bannedMods = RainMeadowModInfoManager.MergedModInfo.OnlineBannedMods;
+
+            // (high impact + banned) - enabled
+            return highImpactMods.Concat(bannedMods)
+                .Except(ModManager.ActiveMods.Select(mod => mod.id))
+                .ToArray();
         }
 
-        ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
-
-        modApplier.ShowConfirmation(modsToEnable, modsToDisable, missingMods);
-
-        modApplier.OnFinish += (ModApplier modApplyer) =>
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods)
         {
-            RainMeadow.Debug("Finished applying");
+            RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
+            RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
+            var active = ModManager.ActiveMods.Select(mod => mod.id);
+            bool reorder = false;
+            var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active);
+            var enable = requiredMods.Except(active);
 
-            if (modApplier.requiresRestart)
+            RainMeadow.Debug($"active:  [ {string.Join(", ", active)} ]");
+            RainMeadow.Debug($"enable:  [ {string.Join(", ", enable)} ]");
+            RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
+
+            if (!reorder && !disable.Any() && !enable.Any()) return;
+
+            var lobbyID = MatchmakingManager.instance.GetLobbyID();
+            RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            OnlineManager.LeaveLobby();
+
+            List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
+            List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
+
+            List<string> missingMods = new();
+            List<ModManager.Mod> modsToEnable = new(), modsToDisable = new();
+
+            foreach (var id in enable)
             {
-                Utils.Restart($"+connect_lobby {lobbyID}");
+                int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
+                if (index == -1) missingMods.Add(id);
+                else
+                {
+                    pendingEnabled[index] = true;
+                    modsToEnable.Add(ModManager.InstalledMods[index]);
+                }
             }
-        };
-    }
 
-    internal static void Reset()
-    {
-        if (ModManager.MMF)
+            foreach (var id in disable)
+            {
+                int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
+                pendingEnabled[index] = false;
+                modsToDisable.Add(ModManager.InstalledMods[index]);
+            }
+
+            ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
+
+            modApplier.ShowConfirmation(modsToEnable, modsToDisable, missingMods);
+
+            modApplier.OnFinish += (ModApplier modApplyer) =>
+            {
+                RainMeadow.Debug("Finished applying");
+
+                if (modApplier.requiresRestart)
+                {
+                    Utils.Restart($"+connect_lobby {lobbyID}");
+                }
+            };
+        }
+
+        internal static void Reset()
         {
-            RainMeadow.Debug("Restoring config settings");
+            if (ModManager.MMF)
+            {
+                RainMeadow.Debug("Restoring config settings");
 
-            var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
-            MachineConnector.ReloadConfig(mmfOptions);
+                var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
+                MachineConnector.ReloadConfig(mmfOptions);
+            }
         }
     }
 }
