@@ -27,6 +27,7 @@ namespace RainMeadow
             rainMeadowOptions = new RainMeadowOptions(this);
 
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+            On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
             On.RainWorld.Update += RainWorld_Update;
             On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
             On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
@@ -119,6 +120,20 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
                 throw;
+            }
+        }
+
+        private void ModManagerOnRefreshModsLists(On.ModManager.orig_RefreshModsLists orig, RainWorld rainworld)
+        {
+            orig(rainworld);
+
+            try
+            {
+                MeadowModInfoManager.RefreshMeadowModInfos();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Error loading Meadow mod info files:\n{e}\n{e.StackTrace}");
             }
         }
 
