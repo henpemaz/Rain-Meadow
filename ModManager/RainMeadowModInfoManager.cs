@@ -105,7 +105,7 @@ public static class RainMeadowModInfoManager
 
         if (mod.modifiesRegions)
         {
-            modInfo.ClientRequiredMods.Add(mod.id);
+            modInfo.SyncRequiredMods.Add(mod.id);
         }
 
         return modInfo;

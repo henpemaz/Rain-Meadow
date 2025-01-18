@@ -8,7 +8,7 @@ namespace RainMeadow
     {
         public static string[] GetRequiredMods()
         {
-            var requiredMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
+            var requiredMods = RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods;
 
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id)
@@ -19,8 +19,8 @@ namespace RainMeadow
 
         public static string[] GetBannedMods()
         {
-            var highImpactMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
-            var bannedMods = RainMeadowModInfoManager.MergedModInfo.OnlineBannedMods;
+            var highImpactMods = RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods;
+            var bannedMods = RainMeadowModInfoManager.MergedModInfo.BannedOnlineMods;
 
             // (high impact + banned) - enabled
             return highImpactMods.Concat(bannedMods)
