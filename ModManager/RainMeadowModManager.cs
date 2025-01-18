@@ -8,7 +8,7 @@ public static class RainMeadowModManager
 {
     public static string[] GetRequiredMods()
     {
-        var requiredMods = RainMeadowModInfoManager.MergedModInfo.RequiredMods;
+        var requiredMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
 
         return ModManager.ActiveMods
             .Where(mod => requiredMods.Contains(mod.id)
@@ -19,7 +19,7 @@ public static class RainMeadowModManager
 
     public static string[] GetBannedMods()
     {
-        var highImpactMods = RainMeadowModInfoManager.MergedModInfo.RequiredMods;
+        var highImpactMods = RainMeadowModInfoManager.MergedModInfo.ClientRequiredMods;
         var bannedMods = RainMeadowModInfoManager.MergedModInfo.BannedMods;
 
         // (high impact + banned) - enabled

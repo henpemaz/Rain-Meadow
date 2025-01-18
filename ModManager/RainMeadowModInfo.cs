@@ -5,21 +5,26 @@ namespace RainMeadow;
 
 public sealed class RainMeadowModInfo
 {
-    [JsonProperty("required_mods")]
-    public List<string> RequiredMods { get; set; } = new();
+    /// <summary>
+    /// Mods that, if they are active on a host, are required to be active on any client who wishes to connect.
+    /// </summary>
+    [JsonProperty("client_required_mods")]
+    public List<string> ClientRequiredMods { get; set; } = new();
 
+    /// <summary>
+    /// Mods that are banned from being enabled in online game modes.
+    /// </summary>
     [JsonProperty("banned_mods")]
     public List<string> BannedMods { get; set; } = new();
 
 
     /// <summary>
-    /// Adds the contents of this mod info to the provided mod info.
+    /// Merges the contents of the provided mod info into this mod info, ignoring duplicate values.
     /// </summary>
-    /// <param name="modInfo">The mod info to add to.</param>
-    /// <returns>The provided mod info with the data from this mod info added.</returns>
-    public void AddInfoTo(RainMeadowModInfo modInfo)
+    /// <param name="modInfo">The mod info take from.</param>
+    public void MergeInfoFrom(RainMeadowModInfo modInfo)
     {
-        modInfo.RequiredMods.AddDistinctRange(RequiredMods);
-        modInfo.BannedMods.AddDistinctRange(BannedMods);
+        ClientRequiredMods.AddDistinctRange(modInfo.ClientRequiredMods);
+        BannedMods.AddDistinctRange(modInfo.BannedMods);
     }
 }

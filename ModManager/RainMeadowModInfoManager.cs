@@ -23,59 +23,58 @@ public static class RainMeadowModInfoManager
     /// <summary>
     /// Additional Rain Meadow mod info file defined in StreamingAssets, allows users to add their own ids to banned_mods for instance.
     /// </summary>
-    public static RainMeadowModInfo? UserModInfo { get; set; }
+    public static RainMeadowModInfo? UserDefinedModInfo { get; set; }
 
 
     internal static void RefreshRainMeadowModInfos()
     {
         MergedModInfo = new();
         ModInfos.Clear();
-        UserModInfo = null;
+        UserDefinedModInfo = null;
 
         foreach (var mod in ModManager.ActiveMods)
         {
-            var filePath = GetFileFromMod(mod, ModInfoFileName);
+            var generatedModInfo = GetGeneratedModInfo(mod);
 
-            if (filePath is null)
+            var filePath = GetFileFromModOrNull(mod, ModInfoFileName);
+
+            if (filePath is not null)
             {
-                continue;
+                var loadedModInfo = GetLoadedModInfoOrNull(filePath);
+
+                if (loadedModInfo is not null)
+                {
+                    generatedModInfo.MergeInfoFrom(loadedModInfo);
+                }
             }
 
-            var modInfo = LoadModInfo(filePath);
-
-            if (modInfo is null)
-            {
-                continue;
-            }
-
-            ModInfos[mod.id] = modInfo;
+            ModInfos[mod.id] = generatedModInfo;
         }
 
-        LoadUserModInfo();
+        LoadUserDefinedModInfo();
 
         RefreshMergedModInfo();
-
-        MergedModInfo.BannedMods.ForEach(x => RainMeadow.Debug(x));
-        MergedModInfo.RequiredMods.ForEach(x => RainMeadow.Debug(x));
     }
 
-    private static void LoadUserModInfo()
+    internal static void RefreshUserDefinedModInfo() // TODO: call it when
     {
-        var userModInfoFilePath = AssetManager.ResolveFilePath(ModInfoFileName);
+        LoadUserDefinedModInfo();
 
-        if (!File.Exists(userModInfoFilePath))
+        RefreshMergedModInfo();
+    }
+
+    private static void LoadUserDefinedModInfo()
+    {
+        var filePath = AssetManager.ResolveFilePath(ModInfoFileName);
+
+        var modInfo = GetLoadedModInfoOrNull(filePath);
+
+        if (modInfo is null)
         {
             return;
         }
 
-        var userModInfo = LoadModInfo(userModInfoFilePath);
-
-        if (userModInfo is null)
-        {
-            return;
-        }
-
-        UserModInfo = userModInfo;
+        UserDefinedModInfo = modInfo;
     }
 
     private static void RefreshMergedModInfo()
@@ -84,21 +83,40 @@ public static class RainMeadowModInfoManager
 
         var modInfos = ModInfos.Values.ToList();
 
-        if (UserModInfo is not null)
+        if (UserDefinedModInfo is not null)
         {
-            modInfos.Add(UserModInfo);
+            modInfos.Add(UserDefinedModInfo);
         }
 
         foreach (var modInfo in modInfos)
         {
-            modInfo.AddInfoTo(mergedModInfo);
+            mergedModInfo.MergeInfoFrom(modInfo);
         }
 
         MergedModInfo = mergedModInfo;
     }
 
-    private static RainMeadowModInfo? LoadModInfo(string filePath)
+
+    // Generates a new mod info class, automatically adding any mandatory tags (e.g. if it modifies regions, then it needs a mod info with itself added to the required_mods list)
+    private static RainMeadowModInfo GetGeneratedModInfo(ModManager.Mod mod)
     {
+        var modInfo = new RainMeadowModInfo();
+
+        if (mod.modifiesRegions)
+        {
+            modInfo.ClientRequiredMods.Add(mod.id);
+        }
+
+        return modInfo;
+    }
+
+    private static RainMeadowModInfo? GetLoadedModInfoOrNull(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            return null;
+        }
+
         try
         {
             var contents = File.ReadAllText(filePath);
@@ -114,13 +132,13 @@ public static class RainMeadowModInfoManager
         }
         catch (Exception e)
         {
-            RainMeadow.Debug($"Error loading Meadow mod info:\n{e}\n{e.StackTrace}");
+            RainMeadow.Debug($"Error loading Meadow mod info:\n{e}\n{e.StackTrace}"); // TODO: use a proper debug error log
         }
 
         return null;
     }
 
-    private static string? GetFileFromMod(ModManager.Mod mod, string filePath)
+    private static string? GetFileFromModOrNull(ModManager.Mod mod, string filePath)
     {
         if (mod.hasTargetedVersionFolder)
         {
