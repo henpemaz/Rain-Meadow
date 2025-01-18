@@ -30,6 +30,8 @@ namespace RainMeadow
             return false;
         }
 
+        public static bool killedCreatures;
+
         private void ArenaHooks()
         {
 
@@ -38,6 +40,7 @@ namespace RainMeadow
 
             On.ArenaGameSession.SpawnPlayers += ArenaGameSession_SpawnPlayers;
             On.ArenaGameSession.Update += ArenaGameSession_Update;
+            On.ArenaGameSession.EndSession += ArenaGameSession_EndSession;
             On.ArenaGameSession.EndOfSessionLogPlayerAsAlive += ArenaGameSession_EndOfSessionLogPlayerAsAlive;
             On.ArenaGameSession.Killing += ArenaGameSession_Killing;
             On.ArenaGameSession.SpawnCreatures += ArenaGameSession_SpawnCreatures;
@@ -45,6 +48,7 @@ namespace RainMeadow
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
+            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
 
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
@@ -79,6 +83,7 @@ namespace RainMeadow
             On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
+            On.CreatureCommunities.LikeOfPlayer += CreatureCommunities_LikeOfPlayer;
             On.RWInput.PlayerRecentController_int += RWInput_PlayerRecentController_int;
             On.RWInput.PlayerInputLogic_int_int += RWInput_PlayerInputLogic_int_int;
             On.RWInput.PlayerUIInput_int += RWInput_PlayerUIInput_int;
@@ -90,16 +95,96 @@ namespace RainMeadow
 
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
-            On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass1;
-
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+        }
+
+        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
+        {
+            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)) {
+
+                return;
+            }
+            else
+            {
+                orig(self, room, placedObj);
+            }
+        }
+
+        private float CreatureCommunities_LikeOfPlayer(On.CreatureCommunities.orig_LikeOfPlayer orig, CreatureCommunities self, CreatureCommunities.CommunityID commID, int region, int playerNumber)
+        {
+            if (isArenaMode(out var _))
+            {
+                playerNumber = 0;
+            }
+            return orig(self, commID, region, playerNumber);
+        }
+
+        private void ArenaGameSession_EndSession(On.ArenaGameSession.orig_EndSession orig, ArenaGameSession self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                if (!killedCreatures)
+                {
+                    if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
+                    {
+                        // we go over all APOs in the room
+                        var entities = self.room.abstractRoom.entities;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe) && apo is AbstractCreature ac && ac.creatureTemplate.type.value != CreatureTemplate.Type.Slugcat.value)
+                            {
+                                for (int num = ac.stuckObjects.Count - 1; num >= 0; num--)
+                                {
+                                    if (ac.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && ac.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && ac.stuckObjects[num].A.realizedObject != null)
+                                    {
+                                        (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                                    }
+                                }
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                                {
+                                    ac.realizedCreature.Die();
+                                }
+
+                                oe.apo.LoseAllStuckObjects();
+                                if (!oe.isMine)
+                                {
+                                    // not-online-aware removal
+                                    Debug("removing remote entity from game " + oe);
+                                    oe.beingMoved = true;
+
+                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    {
+                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                    }
+
+                                    entities.Remove(oe.apo);
+
+                                    self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+
+                                    self.room.RemoveObject(oe.apo.realizedObject);
+                                    self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    oe.beingMoved = false;
+                                }
+                                else // mine leave the old online world elegantly
+                                {
+                                    Debug("removing my entity from online " + oe);
+                                    oe.ExitResource(roomSession);
+                                    oe.ExitResource(roomSession.worldSession);
+                                }
+                            }
+                        }
+                    }
+                    killedCreatures = true;
+                }
+            }
         }
 
         private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
         {
             if (message == "EXIT" && isArenaMode(out var arena))
             {
-                arena.returnToLobby = true;                
+                arena.returnToLobby = true;
             }
             orig(self, sender, message);
         }
@@ -297,21 +382,6 @@ namespace RainMeadow
             {
                 var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-        }
-
-
-        private void Player_GetInitialSlugcatClass1(On.Player.orig_GetInitialSlugcatClass orig, Player self)
-        {
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                if (self.slugcatStats.throwingSkill == 0)
-                {
-                    self.slugcatStats.throwingSkill = 1; // don't let them push you around
-                    // Nightcat.ResetSneak(self);
-                }
 
             }
         }
@@ -696,6 +766,7 @@ namespace RainMeadow
             orig(self, game);
             if (isArenaMode(out var arena))
             {
+                killedCreatures = false;
                 if (!ModManager.MSC)
                 {
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
@@ -800,59 +871,43 @@ namespace RainMeadow
                     Error("Error getting targetAbsCreature");
                 }
 
-                foreach (var onlinePlayer in OnlineManager.players)
+                if (self.sessionEnded || (ModManager.MSC && player.AI != null))
                 {
-                    if (!onlinePlayer.isMe)
-                    {
-                        //self.playersContinueButtons = null;
-                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_Killing, absPlayerCreature, targetAbsCreature, onlinePlayer.id.name);
-                    }
-                    else
-                    {
-                        if (self.sessionEnded || (ModManager.MSC && player.AI != null))
-                        {
-                            return;
-                        }
-
-                        IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
-
-                        for (int i = 0; i < self.arenaSitting.players.Count; i++)
-                        {
-                            RainMeadow.Debug("HIT YOU WITH SPEAR!");
-                            if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
-                            {
-                                arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
-
-                                if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
-                                {
-                                    self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                                    self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                                }
-
-                                int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                                if (index >= 0)
-                                {
-                                    self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
-                                }
-                                else
-                                {
-                                    self.arenaSitting.players[i].AddSandboxScore(0);
-                                }
-
-                                break;
-                            }
-
-                        }
-                        if (!CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
-                        {
-                            return;
-                        }
-
-                    }
-
-
+                    return;
                 }
 
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
+
+                for (int i = 0; i < self.arenaSitting.players.Count; i++)
+                {
+                    if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    {
+                        arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
+
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                        {
+                            self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                        }
+
+                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
+                        if (index >= 0)
+                        {
+                            self.arenaSitting.players[i].AddSandboxScore(self.arenaSitting.gameTypeSetup.killScores[index]);
+                        }
+                        else
+                        {
+                            self.arenaSitting.players[i].AddSandboxScore(0);
+                        }
+
+                        break;
+                    }
+
+                }
+                if (!CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
+                {
+                    return;
+                }
             }
             else
             {

@@ -186,7 +186,7 @@ namespace RainMeadow
 
         public override void GrafUpdate(float timeStacker)
         {
-            
+
             base.GrafUpdate(timeStacker);
         }
 

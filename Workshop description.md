@@ -1,6 +1,3 @@
-# Rain Meadow
-
-## Overview
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
 ## How it works
@@ -27,13 +24,11 @@ The community-maintained mod compatibility spreadsheet can be found [here](https
 
 ### Story
 
-#### Campaigns
 - Survivor campaign is available by default
 - Access other campaigns through the "Experimental Features" remix option
   - Clients can select slugcats other than the current campaign
 - Currently-supported campaigns: Survivor, Monk, Hunter, Artificer, Gourmand
 
-#### Gameplay
 - Food requirement is determined by the current campaign
 - Food nourishment is determined by the player's slugcat regardless of current campaign
   - e.g. Hunter in Survivor's campaign can eat meat
@@ -45,7 +40,6 @@ The community-maintained mod compatibility spreadsheet can be found [here](https
 
 ### Arena
 
-#### Gameplay
 - Currently offers Competitive (PvP) mode
 - Dens open when the rain comes or when there's only one scug left standing
 - Countdown timer ensures all players have a chance to grab weapons before attacking; Prevents some slugcat abilties
@@ -70,10 +64,12 @@ Some examples of custom gamemodes using Rain Meadow's multiplayer engine:
 - [Arena custom game modes documentation & examples](https://github.com/6fears7/Arena-Online/tree/main)
 
 ## Credits
-Henpemaz - Lead Developer			Wolfycatt(Ana) - Lead Artist		Intikus - Lead Audio Designer
+```
+Henpemaz - Lead Developer		Wolfycatt(Ana) - Lead Artist		Intikus - Lead Audio Designer
 Noircatto - Programming, engine		HelloThere - Programming, sound		A1iex - UI Design
 FranklyGD - Programming, engine		MC41Games - Programming, menus		Silvyger - Programming, arena
-Vigaro - Programming, menus			BitiLope - Programming, story		Pudgy Turtle - Programming, story
+Vigaro - Programming, menus		BitiLope - Programming, story		Pudgy Turtle - Programming, story
 ddemile - Programming, modsync		UO - Programming, story, arena		Saddest - Programming, UI, chat
-notchoc - Programming, story		phanie_ - Illustration				Timbits - Programming, UI, menus
+notchoc - Programming, story		phanie_ - Illustration			Timbits - Programming, UI, menus
 Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	
+```

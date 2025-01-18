@@ -17,6 +17,8 @@ namespace RainMeadow
         public bool isInGame = false;
         public int playerLeftGame = 0;
         public int clientsAreReadiedUp = 0;
+        public int currentLevel = 0;
+        public int totalLevelCount = 0;
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
@@ -26,9 +28,10 @@ namespace RainMeadow
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
+        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
+
 
         public int playerEnteredGame = 0;
-        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
         public bool countdownInitiatedHoldFire;
 
         public ArenaPrepTimer arenaPrepTimer;
@@ -79,8 +82,8 @@ namespace RainMeadow
         static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
-            AbstractPhysicalObject.AbstractObjectType.SporePlant
-
+            AbstractPhysicalObject.AbstractObjectType.SporePlant,
+            AbstractPhysicalObject.AbstractObjectType.AttachedBee
 
         };
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)

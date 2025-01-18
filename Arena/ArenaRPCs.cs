@@ -127,14 +127,14 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
+                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
+
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 if (game.manager.upcomingProcess != null)
                 {
                     return;
                 }
                 var Sluglist = ArenaHelpers.AllSlugcats();
-                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
-
                 try
                 {
                     for (int i = 1; i < game.usernameButtons.Length; i++)
@@ -196,59 +196,16 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_Killing(OnlinePhysicalObject absCreaturePlayer, OnlinePhysicalObject target, string username)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-
-                if (game.GetArenaGameSession.sessionEnded)
-                {
-                    return;
-                }
-                var killedCrit = (target.apo as AbstractCreature);
-
-                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit);
-
-                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
-                {
-
-                    if (absCreaturePlayer.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
-                    {
-
-                        if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.realizedCreature.Template.type))
-                        {
-                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
-                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                        }
-
-                        int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
-                        if (index >= 0)
-                        {
-                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(game.GetArenaGameSession.arenaSitting.gameTypeSetup.killScores[index]);
-                        }
-                        else
-                        {
-                            game.GetArenaGameSession.arenaSitting.players[i].AddSandboxScore(0);
-                        }
-
-                        break;
-                    }
-
-                }
-            }
-
-        }
-
-        [RPCMethod]
         public static void Arena_NextLevelCall()
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+
+            if (lobby != null)
+            {
+                return;
+            }
+            
             if (game.manager.upcomingProcess != null)
             {
                 return;
@@ -262,6 +219,12 @@ namespace RainMeadow
         {
 
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+
+            if (lobby != null)
+            {
+                return;
+            }
             if (game.manager.upcomingProcess != null)
             {
                 return;

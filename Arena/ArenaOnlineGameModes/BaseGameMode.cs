@@ -88,11 +88,9 @@ namespace RainMeadow
         {
             List<OnlinePlayer> list = new List<OnlinePlayer>();
 
-
             List<OnlinePlayer> list2 = new List<OnlinePlayer>();
 
-
-            for (int j = 0; j < arena.arenaSittingOnlineOrder.Count; j++)
+            for (int j = 0; j < OnlineManager.players.Count; j++)
             {
                 if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[j].inLobbyId))
                 {
@@ -106,7 +104,6 @@ namespace RainMeadow
                 list.Add(list2[index]);
                 list2.RemoveAt(index);
             }
-
 
             int totalExits = self.game.world.GetAbstractRoom(0).exits;
             int[] exitScores = new int[totalExits];
@@ -186,6 +183,11 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+            if ((abstractCreature.realizedCreature as Player).SlugCatClass != SlugcatStats.Name.Yellow &&
+                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0)
+            {
+                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+            }
             if (ModManager.MSC)
             {
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
@@ -206,8 +208,16 @@ namespace RainMeadow
                     self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
                 }
 
-
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                {
+                    if (!arena.sainot) // ascendance saint
+                    {
+                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 0;
+                    }
+                }
             }
+
+
 
             self.playersSpawned = true;
             arena.playerEnteredGame++;

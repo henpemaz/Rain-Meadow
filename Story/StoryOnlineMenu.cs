@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Menu;
 using Steamworks;
 using System;
@@ -12,9 +12,10 @@ namespace RainMeadow
     {
         CheckBox clientWantsToOverwriteSave;
         CheckBox friendlyFire;
+        CheckBox reqCampaignSlug;
         List<SimplerButton> playerButtons = new();
         SlugcatCustomization personaSettings;
-        EventfulSelectOneButton[] scugButtons;
+        EventfulSelectOneButton[]? scugButtons;
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
@@ -34,16 +35,12 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
+                storyGameMode.requireCampaignSlugcat = false; // Default option is in remix menu.
                 storyGameMode.saveToDisk = true;
-                (storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings) = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
             }
             else
             {
                 SetupClientOptions();
-                if (RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value)
-                {
-                    SetupSlugcatList();
-                }
             }
 
             SetupOnlineCustomization();
@@ -62,11 +59,7 @@ namespace RainMeadow
             }
             else
             {
-                if (ModManager.MMF)
-                {
-                    StoryMenuHelpers.SetClientStoryRemixSettings(storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
-                }
-                if (!RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value) // I'm a client and I want to match the host's
+                if (storyGameMode.requireCampaignSlugcat) // I'm a client and I want to match the host's
                 {
                     personaSettings.playingAs = storyGameMode.currentCampaign;
                 }
@@ -92,6 +85,33 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            if (!OnlineManager.lobby.isOwner) 
+            {
+
+                if (onlineDifficultyLabel == null)
+                {
+                    onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
+                    onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+                    onlineDifficultyLabel.label.alpha = 0.5f;
+                    pages[0].subObjects.Add(onlineDifficultyLabel);
+                }
+                // Remove all buttons scug buttons if requireCampaignSlugcat is on.
+                if (scugButtons != null && storyGameMode.requireCampaignSlugcat) 
+                {
+                    foreach (var button in scugButtons) {
+                        pages[0].subObjects.Remove(button);
+                    };
+
+                    scugButtons = null;
+                }
+                // Recall buttons scug buttons if requireCampaignSlugcat is off.
+                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat) 
+                {
+                    SetupSlugcatList();
+                }
+            }
+
 
             if (OnlineManager.lobby.isOwner)
             {
@@ -195,10 +215,6 @@ namespace RainMeadow
 
         private void SetupSlugcatList()
         {
-            onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
-            onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
-            onlineDifficultyLabel.label.alpha = 0.5f;
-            pages[0].subObjects.Add(onlineDifficultyLabel);
 
             var pos = new Vector2(394, 553);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true));
@@ -274,8 +290,13 @@ namespace RainMeadow
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
-            if (!OnlineManager.lobby.isOwner) friendlyFire.buttonBehav.greyedOut = true;
+            reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
+            if (!OnlineManager.lobby.isOwner) {
+                friendlyFire.buttonBehav.greyedOut = true;
+                reqCampaignSlug.buttonBehav.greyedOut = true;
+            }
             pages[0].subObjects.Add(friendlyFire);
+            pages[0].subObjects.Add(reqCampaignSlug);
         }
 
         private void ModifyExistingMenuItems()

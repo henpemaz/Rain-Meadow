@@ -278,10 +278,10 @@ namespace RainMeadow
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
-                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && OnlineManager.lobby.isOwner)
                 {
                     storyGameMode.changedRegions = true;
-                    storyGameMode.readyForGate = 2;
+                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
                 }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

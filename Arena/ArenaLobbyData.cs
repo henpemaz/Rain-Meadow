@@ -33,11 +33,18 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
             [OnlineField]
+            public Dictionary<string, bool> playersReadiedUp;
+
+            [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
             public int playerEnteredGame;
             [OnlineField]
             public int clientsAreReadiedUp;
+            [OnlineField]
+            public int currentLevel;
+            [OnlineField]
+            public int totalLevels;
             [OnlineField]
             public int arenaSetupTime;
             [OnlineField]
@@ -55,6 +62,7 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
+                playersReadiedUp = arena.playersReadiedUp;
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
@@ -63,6 +71,8 @@ namespace RainMeadow
                 arenaSetupTime = arena.setupTime;
                 sainot = arena.sainot;
                 currentGameMode = arena.currentGameMode;
+                currentLevel = arena.currentLevel;
+                totalLevels = arena.totalLevelCount;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -76,6 +86,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
+                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
+
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
@@ -83,6 +95,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
+                (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
+                (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
+
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

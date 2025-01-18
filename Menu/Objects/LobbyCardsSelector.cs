@@ -115,12 +115,12 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             All,
             Meadow,
             Story,
-            Arena
+            ArenaCompetitive
         }
 
         public LobbyCardsFilter()
         {
-            enabled = false;
+            enabled = true;
             lobbyName = "";
             sortingOrder = "Ping";
             gameMode = "All";
@@ -193,8 +193,8 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
     public int LastPossibleScroll => Math.Max(0, TotalItems - MaxVisibleItems);
     public float CardHeight => 70;
     public SimplerSymbolButton RefreshButton => sideButtons[0];
-    public SimplerSymbolButton FilterButton => sideButtons[1];
-    public SimplerSymbolButton OrderButton => sideButtons[2];
+    //public SimplerSymbolButton FilterButton => sideButtons[1];
+    public SimplerSymbolButton OrderButton => sideButtons[1];
     private float LowerBound => 0;
     private float UpperBound => size.y;
 
@@ -272,7 +272,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
     public void ToggleFilterEnabled(SymbolButton obj)
     {
-        filter.enabled = !filter.enabled;
+        //filter.enabled = !filter.enabled;
         movementPercentage = 0;
         FilterLobbies();
     }
@@ -361,7 +361,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         scrollDownButton.OnClick += (_) => AddScroll(1);
         subObjects.Add(scrollDownButton);
 
-        rightLines = new FSprite[4];
+        rightLines = new FSprite[3];
         for (int i = 0; i < rightLines.Length; i++)
         {
             rightLines[i] = new FSprite("pixel");
@@ -371,17 +371,17 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             Container.AddChild(rightLines[i]);
         }
 
-        sideButtons = new SimplerSymbolButton[3];
+        sideButtons = new SimplerSymbolButton[2];
         sideButtons[0] = new SimplerSymbolButton(menu, this, "Menu_Symbol_Repeats", "", new Vector2(size.x - 8f + 0.01f, 14.01f));
         subObjects.Add(sideButtons[0]);
-        sideButtons[1] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Filter", "", sideButtons[0].pos + new Vector2(0, 30f));
-        sideButtons[1].OnClick += ToggleFilterEnabled;
+        //sideButtons[1] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Filter", "", sideButtons[0].pos + new Vector2(0, 30f));
+        //sideButtons[1].OnClick += ToggleFilterEnabled;
+        //subObjects.Add(sideButtons[1]);
+        sideButtons[1] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Ping", "", sideButtons[0].pos + new Vector2(0, 30f));
+        sideButtons[1].OnClick += CycleSortOrder;
         subObjects.Add(sideButtons[1]);
-        sideButtons[2] = new SimplerSymbolButton(menu, this, "Meadow_Menu_Ping", "", sideButtons[1].pos + new Vector2(0, 30f));
-        sideButtons[2].OnClick += CycleSortOrder;
-        subObjects.Add(sideButtons[2]);
 
-        sideButtonLabels = new MenuLabel[3];
+        sideButtonLabels = new MenuLabel[1];
         sideButtonLabelsFade = new float[sideButtonLabels.Length, 2];
         for (int j = 0; j < sideButtonLabels.Length; j++)
         {
@@ -453,11 +453,11 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
                 switch (i)
                 {
+                    //case 1:
+                    //    sideButtonLabels[1].text = filter.enabled ? "Disable Filters" : "Enable Filters";
+                    //    sideButtons[1].UpdateSymbol(filter.enabled ? "Meadow_Menu_Cancel_Filter" : "Meadow_Menu_Filter");
+                    //    break;
                     case 1:
-                        sideButtonLabels[1].text = filter.enabled ? "Disable Filters" : "Enable Filters";
-                        sideButtons[1].UpdateSymbol(filter.enabled ? "Meadow_Menu_Cancel_Filter" : "Meadow_Menu_Filter");
-                        break;
-                    case 2:
                         sideButtonLabels[2].text = filter.GetFormattedSortingOrderName();
                         break;
                 }

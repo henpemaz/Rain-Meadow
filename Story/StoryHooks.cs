@@ -24,6 +24,8 @@ namespace RainMeadow
             return false;
         }
 
+        public static bool inVoidSea = false;
+
         private void StoryHooks()
         {
             On.PlayerProgression.GetOrInitiateSaveState += PlayerProgression_GetOrInitiateSaveState;
@@ -63,6 +65,7 @@ namespace RainMeadow
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement_StorySync);
 
             On.GhostHunch.Update += GhostHunch_Update;
 
@@ -106,6 +109,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
+            On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
         }
 
@@ -155,6 +159,11 @@ namespace RainMeadow
                     return storyGameMode.friendlyFire;
                 }
 
+                if (box.IDString == "CAMPAIGNSLUGONLY")
+                {
+                    return storyGameMode.requireCampaignSlugcat;
+
+                }
                 return false;
             }
             else
@@ -197,6 +206,12 @@ namespace RainMeadow
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
+
+                }
+
+                if (box.IDString == "CAMPAIGNSLUGONLY")
+                {
+                    storyGameMode.requireCampaignSlugcat = c;
 
                 }
             }
@@ -278,7 +293,7 @@ namespace RainMeadow
                     {
                         touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
                     }
-                    if (touchedInput)
+                    if (touchedInput || inVoidSea)
                     {
                         self.gameOverMode = false;
                     }
@@ -1064,6 +1079,13 @@ namespace RainMeadow
             return s;
         }
 
+        private static List<Func<string, string>> saveStateStringFilter = new();
+        public static event Func<string, string> SaveStateStringFilter
+        {
+            add => saveStateStringFilter.Add(value);
+            remove => saveStateStringFilter.Remove(value);
+        }
+
         private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
@@ -1077,6 +1099,11 @@ namespace RainMeadow
                 saveState.objectTrackers = objectTrackers;
 
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
+                if (saveStateStringFilter.Count > 0)
+                {
+                    foreach (var del in saveStateStringFilter) s = del(s);
+                    RainMeadow.Debug($"filtSaveState[{s.Length}]:{s}");
+                }
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
@@ -1095,6 +1122,7 @@ namespace RainMeadow
             var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
             if (isStoryMode(out var storyGameMode))
             {
+                inVoidSea = false;
                 currentSaveState.progression ??= self;
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -1235,7 +1263,7 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForGate == 1)
+            // if (story.readyForGate >= Opening)
             //     open gate
             // else
             //     story.storyClientData.readyForGate = true
@@ -1254,7 +1282,7 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForGate == 1) return true;
+                        if (story.readyForGate >= StoryGameMode.ReadyForGate.Opening) return true;
                         story.storyClientData.readyForGate = false;
                     }
                     return false;
@@ -1319,7 +1347,18 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 storyGameMode.storyClientData.readyForGate = !ret;
-                ret = storyGameMode.readyForGate == 0;
+                ret = storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed;
+            }
+            return ret;
+        }
+
+        public bool RegionGate_MeetRequirement_StorySync(orig_RegionGateBool orig, RegionGate self)
+        {
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (ret) StoryRPCs.RegionGateMeetRequirement();
+                ret = storyGameMode.readyForGate >= StoryGameMode.ReadyForGate.MeetRequirement;
             }
             return ret;
         }
@@ -1334,24 +1373,63 @@ namespace RainMeadow
             }
         }
 
+        private void PlayerGhosts_AddGhost(On.VoidSea.PlayerGhosts.orig_AddGhost orig, VoidSea.PlayerGhosts self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                Vector2 vector = self.originalPlayer.mainBodyChunk.pos + Custom.RNV() * 2000f;
+                AbstractCreature abstractCreature = new AbstractCreature(self.voidSea.room.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Slugcat), null, self.voidSea.room.GetWorldCoordinate(vector), new EntityID(-1, -1));
+                abstractCreature.state = new PlayerState(abstractCreature, self.originalPlayer.playerState.playerNumber, self.originalPlayer.SlugCatClass, true);
+                self.voidSea.room.abstractRoom.AddEntity(abstractCreature);
+                abstractCreature.Realize();  // don't RealizeInRoom yet because that would call PlaceInRoom and ApplyPalette
+                for (int i = 0; i < abstractCreature.realizedCreature.bodyChunks.Length; i++)
+                {
+                    abstractCreature.realizedCreature.bodyChunks[i].restrictInRoomRange = float.MaxValue;
+                }
+                abstractCreature.realizedCreature.CollideWithTerrain = false;
+
+                self.ghosts.Add(new VoidSea.PlayerGhosts.Ghost(self, abstractCreature.realizedCreature as Player));
+
+                if (RainMeadow.creatureCustomizations.TryGetValue(self.originalPlayer, out var customization))
+                {
+                    RainMeadow.creatureCustomizations.GetValue(self.ghosts.Last().creature, (c) => customization);
+                }
+
+                abstractCreature.RealizeInRoom();  // PlaceInRoom after applying our customization
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
         private void VoidSeaScene_Update(On.VoidSea.VoidSeaScene.orig_Update orig, VoidSea.VoidSeaScene self, bool eu)
         {
             orig(self, eu);
-
-            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            if (isStoryMode(out _))
             {
-                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
-                    // do things with the AbstractCreature we found
-                    if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
-                        
-                        Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
-                        RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
-                        opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
-                        opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
-                        opo.apo.realizedObject.RemoveFromRoom();
+                        // do things with the AbstractCreature we found
+                        if (!ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                        {
+                            Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
+                            RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
+                            opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
+                            opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
+                            opo.apo.realizedObject.RemoveFromRoom();
+                        }
+                        else if (ac.IsLocal() && opo.apo.realizedObject.Submersion > 0.5f)
+                        {
+                            inVoidSea = true;
+                        }
+                        else if (ac.IsLocal() && !(opo.apo.realizedObject.Submersion > 0.5f))
+                        {
+                            inVoidSea = false;
+                        }
                     }
                 }
             }
