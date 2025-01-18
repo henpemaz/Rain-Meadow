@@ -28,7 +28,6 @@ public static class RainMeadowModInfoManager
 
     internal static void RefreshRainMeadowModInfos()
     {
-        MergedModInfo = new();
         ModInfos.Clear();
         UserDefinedModInfo = null;
 
@@ -56,8 +55,10 @@ public static class RainMeadowModInfoManager
         RefreshMergedModInfo();
     }
 
-    internal static void RefreshUserDefinedModInfo() // TODO: call it when
+    internal static void RefreshUserDefinedModInfo() // TODO: call it when a lobby is loaded maybe
     {
+        UserDefinedModInfo = null;
+
         LoadUserDefinedModInfo();
 
         RefreshMergedModInfo();
@@ -65,7 +66,7 @@ public static class RainMeadowModInfoManager
 
     private static void LoadUserDefinedModInfo()
     {
-        var filePath = AssetManager.ResolveFilePath(ModInfoFileName);
+        var filePath = Path.Combine(RWCustom.Custom.RootFolderDirectory(), ModInfoFileName);
 
         var modInfo = GetLoadedModInfoOrNull(filePath);
 
