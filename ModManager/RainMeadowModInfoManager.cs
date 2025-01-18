@@ -6,51 +6,41 @@ using Newtonsoft.Json;
 
 namespace RainMeadow;
 
-public static class MeadowModInfoManager
+public static class RainMeadowModInfoManager
 {
-    private static string MeadowModInfoFileName => "meadow.json";
-    private static Dictionary<string, MeadowModInfo> MeadowModInfos { get; } = new();
+    private static string ModInfoFileName => "rainmeadow.json";
+
+    /// <summary>
+    /// All the loaded Rain Meadow mod infos merged together, so that all information can be accessed at once.
+    /// </summary>
+    public static RainMeadowModInfo MergedModInfo { get; private set; } = new();
+
+    /// <summary>
+    /// Dictionary of mod id to rain meadow mod info
+    /// </summary>
+    public static Dictionary<string, RainMeadowModInfo> ModInfos { get; } = new();
+
+    /// <summary>
+    /// Additional Rain Meadow mod info file defined in StreamingAssets, allows users to add their own ids to banned_mods for instance.
+    /// </summary>
+    public static RainMeadowModInfo? UserModInfo { get; set; }
 
 
-    public static MeadowModInfo? GetMeadowModInfo(string modId)
+    internal static void RefreshRainMeadowModInfos()
     {
-        if (TryGetMeadowModInfo(modId, out var meadowModInfo))
-        {
-            return meadowModInfo;
-        }
-
-        return null;
-    }
-
-    public static bool TryGetMeadowModInfo(string modId, out MeadowModInfo meadowModInfo)
-    {
-        return MeadowModInfos.TryGetValue(modId, out meadowModInfo);
-    }
-
-    public static Dictionary<string, MeadowModInfo> GetMeadowModInfoModIdMap()
-    {
-        return MeadowModInfos;
-    }
-
-    public static List<MeadowModInfo> GetMeadowModInfos()
-    {
-        return MeadowModInfos.Values.ToList();
-    }
-
-
-    internal static void RefreshMeadowModInfos()
-    {
-        MeadowModInfos.Clear();
+        MergedModInfo = new();
+        ModInfos.Clear();
+        UserModInfo = null;
 
         foreach (var mod in ModManager.ActiveMods)
         {
             RainMeadow.Debug(mod.basePath);
             RainMeadow.Debug(mod.path);
 
-            var filePath = Path.Combine(mod.basePath, MeadowModInfoFileName);
+            var filePath = Path.Combine(mod.basePath, ModInfoFileName);
             var fileName = Path.GetFileName(filePath);
 
-            if (fileName != MeadowModInfoFileName)
+            if (fileName != ModInfoFileName)
             {
                 continue;
             }
@@ -60,31 +50,73 @@ public static class MeadowModInfoManager
                 continue;
             }
 
-            var meadowModInfo = LoadMeadowModInfo(filePath);
+            var modInfo = LoadModInfo(filePath);
 
-            if (meadowModInfo is null)
+            if (modInfo is null)
             {
                 continue;
             }
 
-            MeadowModInfos[mod.id] = meadowModInfo;
+            ModInfos[mod.id] = modInfo;
         }
+
+        LoadUserModInfo();
+
+        RefreshMergedModInfo();
     }
 
-    private static MeadowModInfo? LoadMeadowModInfo(string filePath)
+    private static void LoadUserModInfo()
+    {
+        var userModInfoFilePath = AssetManager.ResolveFilePath(ModInfoFileName);
+
+        if (!File.Exists(userModInfoFilePath))
+        {
+            return;
+        }
+
+        var userModInfo = LoadModInfo(userModInfoFilePath);
+
+        if (userModInfo is null)
+        {
+            return;
+        }
+
+        UserModInfo = userModInfo;
+    }
+
+    private static void RefreshMergedModInfo()
+    {
+        var mergedModInfo = new RainMeadowModInfo();
+
+        var modInfos = ModInfos.Values.ToList();
+
+        if (UserModInfo is not null)
+        {
+            modInfos.Add(UserModInfo);
+        }
+
+        foreach (var modInfo in modInfos)
+        {
+            modInfo.AddInfoTo(mergedModInfo);
+        }
+
+        MergedModInfo = mergedModInfo;
+    }
+
+    private static RainMeadowModInfo? LoadModInfo(string filePath)
     {
         try
         {
             var contents = File.ReadAllText(filePath);
 
-            var meadowModInfo = JsonConvert.DeserializeObject<MeadowModInfo>(contents);
+            var rainMeadowModInfo = JsonConvert.DeserializeObject<RainMeadowModInfo>(contents);
 
-            if (meadowModInfo is null)
+            if (rainMeadowModInfo is null)
             {
                 throw new Exception("Deserializer returned null.");
             }
 
-            return meadowModInfo;
+            return rainMeadowModInfo;
         }
         catch (Exception e)
         {

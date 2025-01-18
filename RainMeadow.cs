@@ -129,7 +129,7 @@ namespace RainMeadow
 
             try
             {
-                MeadowModInfoManager.RefreshMeadowModInfos();
+                RainMeadowModInfoManager.RefreshRainMeadowModInfos();
             }
             catch (Exception e)
             {
