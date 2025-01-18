@@ -208,7 +208,7 @@ namespace RainMeadow
             float humanizingrandomnessinvelocitylol = UnityEngine.Random.Range(0.3f, 1f);
             float humanizingrandomnesspanlol = UnityEngine.Random.Range(-0.18f, 0.18f);
 
-            WetLoop.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
+            WetLoop?.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
         }
         private void InfluenceModulation(int Strength)
         {
