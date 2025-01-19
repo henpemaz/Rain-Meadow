@@ -150,7 +150,6 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            //arena.avatarSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             var deserializedColors = JsonConvert.DeserializeObject<List<UnityEngine.Color>>(RainMeadow.rainMeadowOptions.CustomColorList.Value);
             arena.avatarSettings.customColors = deserializedColors;
             arena.avatarSettings.playingAs = SlugcatStats.Name.White;
