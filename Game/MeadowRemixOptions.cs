@@ -38,7 +38,7 @@ public class RainMeadowOptions : OptionInterface
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
-        CustomColorList = config.Bind("CustomColorList", "Color.white");
+        CustomColorList = config.Bind("CustomColorList", "");
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
