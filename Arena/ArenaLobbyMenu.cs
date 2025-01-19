@@ -1,4 +1,4 @@
-﻿using Kittehface.Framework20;
+using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
 using RWCustom;
@@ -932,7 +932,7 @@ namespace RainMeadow
                 }
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes next
-                //ArenaHelpers.HandlePlayerKick(currentPlayerPosition, holdPlayerPosition, classButtons);
+                
 
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
@@ -988,7 +988,7 @@ namespace RainMeadow
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes previous
 
-                //ArenaHelpers.HandlePlayerKick(currentPlayerPosition, holdPlayerPosition, classButtons);
+                
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
                 {
