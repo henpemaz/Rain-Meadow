@@ -93,46 +93,66 @@ namespace RainMeadow
 
         private void PlayerGraphics_ApplyPalette_SlugcatCustomization(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
-            try
+            if (OnlineManager.lobby != null)
             {
-                creatureCustomizations.TryGetValue(self.player, out var customization);
-                hackySlugcatCustomization = customization as SlugcatCustomization;
+                try
+                {
+                    creatureCustomizations.TryGetValue(self.player, out var customization);
+                    hackySlugcatCustomization = customization as SlugcatCustomization;
+                    orig(self, sLeaser, rCam, palette);
+                }
+                finally
+                {
+                    hackySlugcatCustomization = null;
+                }
+            } else
+            {
                 orig(self, sLeaser, rCam, palette);
-            }
-            finally
-            {
-                hackySlugcatCustomization = null;
             }
         }
 
         private void PlayerGraphics_DrawSprites_SlugcatCustomization(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
-            try
+            if (OnlineManager.lobby != null)
             {
-                creatureCustomizations.TryGetValue(self.player, out var customization);
-                hackySlugcatCustomization = customization as SlugcatCustomization;
+                try
+                {
+                    creatureCustomizations.TryGetValue(self.player, out var customization);
+                    hackySlugcatCustomization = customization as SlugcatCustomization;
+                    orig(self, sLeaser, rCam, timeStacker, camPos);
+                }
+                finally
+                {
+                    hackySlugcatCustomization = null;
+                }
+            } else
+            {
                 orig(self, sLeaser, rCam, timeStacker, camPos);
+
             }
-            finally
-            {
-                hackySlugcatCustomization = null;
-            }
+
         }
 
         private bool PlayerGraphics_CustomColorsEnabled_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorsEnabled orig)
         {
-            if (hackySlugcatCustomization is not null)
+            if (OnlineManager.lobby != null)
             {
-                return true;
+                if (hackySlugcatCustomization is not null)
+                {
+                    return true;
+                }
             }
             return orig();
         }
 
         private Color PlayerGraphics_CustomColorSafety_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorSafety orig, int staticColorIndex)
         {
-            if (hackySlugcatCustomization is not null && hackySlugcatCustomization.customColors.Count > staticColorIndex)
+            if (OnlineManager.lobby != null)
             {
-                return hackySlugcatCustomization.customColors[staticColorIndex];
+                if (hackySlugcatCustomization is not null && hackySlugcatCustomization.customColors.Count > staticColorIndex)
+                {
+                    return hackySlugcatCustomization.customColors[staticColorIndex];
+                }
             }
             return orig(staticColorIndex);
         }
