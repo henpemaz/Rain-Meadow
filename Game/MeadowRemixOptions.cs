@@ -13,6 +13,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> FriendViewClickToActivate;
     public readonly Configurable<Color> BodyColor;
     public readonly Configurable<Color> EyeColor;
+    public readonly Configurable<string> CustomColorList;
     public readonly Configurable<KeyCode> SpectatorKey;
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
@@ -37,6 +38,7 @@ public class RainMeadowOptions : OptionInterface
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
+        CustomColorList = config.Bind("CustomColorList", "Color.white");
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);

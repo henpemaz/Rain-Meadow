@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Linq;
+using Newtonsoft.Json;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
@@ -149,8 +150,9 @@ namespace RainMeadow
 
         private void BindSettings()
         {
-            arena.avatarSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
-            arena.avatarSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
+            //arena.avatarSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
+            var deserializedColors = JsonConvert.DeserializeObject<List<UnityEngine.Color>>(RainMeadow.rainMeadowOptions.CustomColorList.Value);
+            arena.avatarSettings.customColors = deserializedColors;
             arena.avatarSettings.playingAs = SlugcatStats.Name.White;
         }
 

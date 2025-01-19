@@ -1,12 +1,12 @@
 using HarmonyLib;
 using Menu;
+using Newtonsoft.Json;
 using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public class StoryOnlineMenu : SlugcatSelectMenu, SelectOneButton.SelectOneButtonOwner
@@ -87,6 +87,7 @@ namespace RainMeadow
                 val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
             }
             personaSettings.customColors = val;
+            RainMeadow.rainMeadowOptions.CustomColorList.Value = JsonConvert.SerializeObject(val.ConvertAll(c => new { c.r, c.g, c.b, c.a }));
 
             manager.arenaSitting = null;
             if (restartChecked)
