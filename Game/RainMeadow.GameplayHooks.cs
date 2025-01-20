@@ -36,9 +36,34 @@ namespace RainMeadow
 
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
-            On.PhysicalObject.TerrainImpact += PhysicalObject_TerrainImpact;            
+            On.PhysicalObject.TerrainImpact += PhysicalObject_TerrainImpact;
+            IL.Player.TerrainImpact += Player_TerrainImpact;
         }
 
+        private void Player_TerrainImpact(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdstr("Fall damage death")
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Player self) =>
+                {
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
+                    {
+                        DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                    }
+
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
 
         private void PhysicalObject_TerrainImpact(On.PhysicalObject.orig_TerrainImpact orig, PhysicalObject self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
         {
@@ -47,7 +72,7 @@ namespace RainMeadow
                 if (self is Player pl)
                 {
                     float num = (pl.isGourmand ? 80f : 60f);
-                    if (speed > num && pl.immuneToFallDamage <= 0 && direction.y < 0 && (!ModManager.MSC || ((pl.tongue == null || !pl.tongue.Attached) && (pl.grabbedBy.Count <= 0 || !(pl.grabbedBy[0].grabber is Player)))))
+                    if (speed > num && pl.immuneToFallDamage <= 0)
                     {
                         DeathMessage.EnvironmentalDeathMessage(pl, DeathMessage.DeathType.FallDamage);
 
