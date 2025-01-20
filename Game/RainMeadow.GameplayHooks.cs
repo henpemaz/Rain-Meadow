@@ -42,7 +42,6 @@ namespace RainMeadow
 
         private void PhysicalObject_TerrainImpact(On.PhysicalObject.orig_TerrainImpact orig, PhysicalObject self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
         {
-            orig(self, chunk, direction, speed, firstContact);
             if (OnlineManager.lobby != null)
             {
                 if (self is Player pl)
@@ -55,6 +54,8 @@ namespace RainMeadow
                     }
                 }
             }
+            orig(self, chunk, direction, speed, firstContact);
+
 
         }
 
