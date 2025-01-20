@@ -36,7 +36,6 @@ namespace RainMeadow
 
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
-            On.PhysicalObject.TerrainImpact += PhysicalObject_TerrainImpact;
             IL.Player.TerrainImpact += Player_TerrainImpact;
         }
 
@@ -63,25 +62,6 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
-        }
-
-        private void PhysicalObject_TerrainImpact(On.PhysicalObject.orig_TerrainImpact orig, PhysicalObject self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (self is Player pl)
-                {
-                    float num = (pl.isGourmand ? 80f : 60f);
-                    if (speed > num && pl.immuneToFallDamage <= 0)
-                    {
-                        DeathMessage.EnvironmentalDeathMessage(pl, DeathMessage.DeathType.FallDamage);
-
-                    }
-                }
-            }
-            orig(self, chunk, direction, speed, firstContact);
-
-
         }
 
         private void Creature_Die(On.Creature.orig_Die orig, Creature self)
