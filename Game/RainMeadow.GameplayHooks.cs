@@ -35,8 +35,45 @@ namespace RainMeadow
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
 
             On.RoomRealizer.Update += RoomRealizer_Update;
+            On.Creature.Die += Creature_Die; // do not die!
+            On.PhysicalObject.TerrainImpact += PhysicalObject_TerrainImpact;            
         }
 
+
+        private void PhysicalObject_TerrainImpact(On.PhysicalObject.orig_TerrainImpact orig, PhysicalObject self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact)
+        {
+            orig(self, chunk, direction, speed, firstContact);
+            if (OnlineManager.lobby != null)
+            {
+                if (self is Player pl)
+                {
+                    float num = (pl.isGourmand ? 80f : 60f);
+                    if (speed > num && pl.immuneToFallDamage <= 0 && direction.y < 0 && (!ModManager.MSC || ((pl.tongue == null || !pl.tongue.Attached) && (pl.grabbedBy.Count <= 0 || !(pl.grabbedBy[0].grabber is Player)))))
+                    {
+                        DeathMessage.EnvironmentalDeathMessage(pl, DeathMessage.DeathType.FallDamage);
+
+                    }
+                }
+            }
+
+        }
+
+        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    return;
+                }
+
+                if (!self.dead) // Prevent death messages from firing 987343 times.
+                {
+                    DeathMessage.CreatureDeath(self);
+                }
+            }
+            orig(self);
+        }
         private void Spear_makeNeedle(On.Spear.orig_Spear_makeNeedle orig, Spear self, int type, bool active)
         {
             // apo.realize defaults to inactive even if remote is active
@@ -384,9 +421,12 @@ namespace RainMeadow
                     }
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
+
+                        DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
                         self.State.alive = false;
+
                     }
                 }
             }

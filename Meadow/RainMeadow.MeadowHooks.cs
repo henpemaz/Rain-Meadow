@@ -2,7 +2,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
-using RainMeadow.Story.OnlineUIComponents;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -51,8 +50,6 @@ namespace RainMeadow
             new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement);
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
             new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
-
-            On.Creature.Die += Creature_Die; // do not die!
 
             On.WormGrass.IsTileAccessible += WormGrass_IsTileAccessible; // always accessible
             On.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature;
@@ -219,19 +216,6 @@ namespace RainMeadow
             }
 
             orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly);
-        }
-
-        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                return;
-            }
-            if (!self.dead) // Prevent death messages from firing 987343 times.
-            {
-                DeathMessage.CreatureDeath(self);
-            }
-            orig(self);
         }
 
         public delegate bool orig_RegionGateBool(RegionGate self);
