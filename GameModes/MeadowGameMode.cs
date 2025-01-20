@@ -21,6 +21,12 @@ namespace RainMeadow
             lobby.AddData(new MeadowLobbyData());
             lobby.AddData(new MeadowMusic.LobbyMusicData());
         }
+        public override List<string> nonGameplayRemixSettings
+        {
+            get => null;
+            set { }  
+        }
+
 
         public override void AddClientData()
         {

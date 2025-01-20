@@ -21,6 +21,10 @@ namespace RainMeadow
         public bool modsChecked;
         public bool bannedUsersChecked = false;
 
+        public Dictionary<string, bool> configurableBools;
+        public Dictionary<string, float> configurableFloats;
+        public Dictionary<string, int> configurableInts;
+
         public string? password;
         public bool hasPassword => password != null;
 
@@ -37,9 +41,15 @@ namespace RainMeadow
             isNeeded = true;
             NewOwner(owner);
 
+            configurableBools = new Dictionary<string, bool>();
+            configurableFloats = new Dictionary<string, float>();
+            configurableInts = new Dictionary<string, int>();
+
             if (isOwner)
             {
                 this.password = password;
+                (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
+
             }
             else
             {
@@ -186,6 +196,12 @@ namespace RainMeadow
             public Generics.DynamicOrderedPlayerIDs players;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedUshorts inLobbyIds;
+            [OnlineField]
+            public Dictionary<string, bool> onlineBoolRemixSettings;
+            [OnlineField]
+            public Dictionary<string, float> onlineFloatRemixSettings;
+            [OnlineField]
+            public Dictionary<string, int> onlineIntRemixSettings;
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -195,6 +211,9 @@ namespace RainMeadow
                 requiredmods = lobby.requiredmods;
                 bannedmods = lobby.bannedmods;
                 bannedUsers = lobby.bannedUsers;
+                onlineBoolRemixSettings = lobby.configurableBools;
+                onlineFloatRemixSettings = lobby.configurableFloats;
+                onlineIntRemixSettings = lobby.configurableInts;
             }
 
             public override void ReadTo(OnlineResource resource)
@@ -242,6 +261,10 @@ namespace RainMeadow
                     RainMeadowModManager.CheckMods(requiredmods, bannedmods);
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
+                    if (ModManager.MMF && lobby.gameMode.nonGameplayRemixSettings != null)
+                    {
+                        OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
+                    }
                     lobby.modsChecked = true;
                 }
 

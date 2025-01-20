@@ -1,4 +1,4 @@
-﻿using Kittehface.Framework20;
+using Kittehface.Framework20;
 using Menu;
 using Menu.Remix;
 using RWCustom;
@@ -820,14 +820,13 @@ namespace RainMeadow
                     {
 
                         classButtons[localIndex].kickButton = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(classButtons[localIndex].pos.x + 40f, classButtons[localIndex].pos.y + 110f));
-                        if (OnlineManager.players.Count <= 4)
+
+                        classButtons[localIndex].kickButton.OnClick += (_) =>
                         {
-                            classButtons[localIndex].kickButton.OnClick += (_) =>
-                            {
-                                RainMeadow.Debug("Kicked User: " + OnlineManager.players[localIndex]);
-                                BanHammer.BanUser(OnlineManager.players[localIndex]);
-                            };
-                        }
+                            RainMeadow.Debug("Kicked User: " + OnlineManager.players[localIndex]);
+                            BanHammer.BanUser(OnlineManager.players[localIndex]);
+                        };
+
                         this.pages[0].subObjects.Add(classButtons[localIndex].kickButton);
                     }
                 }
@@ -925,35 +924,38 @@ namespace RainMeadow
             viewNextPlayer.OnClick += (_) =>
             {
 
+                currentPlayerPosition++;
 
                 if (viewPrevPlayer != null && viewPrevPlayer.buttonBehav.greyedOut)
                 {
                     viewPrevPlayer.buttonBehav.greyedOut = false;
                 }
 
-                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition + 1].id.name; // current becomes next
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes next
+                
+
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
                 {
+                    classButtons[holdPlayerPosition].kickButton.ResetSubscriptions();
                     classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
                     {
-                        BanHammer.BanUser(OnlineManager.players[localIndex + 1]);
+                        RainMeadow.Debug($"Kicking player {OnlineManager.players[localIndex]} at index {localIndex}");
+                        BanHammer.BanUser(OnlineManager.players[localIndex]);
                     };
                 }
 
-                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition + 1].id.name]);
+                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition].id.name]);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition + 1].id.name];
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition].id.name];
                 }
                 catch
                 {
                     classButtons[holdPlayerPosition].readyForCombat = false;
                 }
-
-                currentPlayerPosition++;
 
                 if (currentPlayerPosition + 1 >= OnlineManager.players.Count)
                 {
@@ -978,35 +980,38 @@ namespace RainMeadow
             viewPrevPlayer.OnClick += (_) =>
             {
 
-
+                currentPlayerPosition--;
                 if (viewNextPlayer != null && viewNextPlayer.buttonBehav.greyedOut)
                 {
                     viewNextPlayer.buttonBehav.greyedOut = false;
                 }
 
-                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition - 1].id.name; // current becomes previous
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes previous
+
+                
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
                 {
+                    classButtons[holdPlayerPosition].kickButton.ResetSubscriptions();
                     classButtons[holdPlayerPosition].kickButton.OnClick += (_) =>
                     {
-                        BanHammer.BanUser(OnlineManager.players[localIndex - 1]);
+                        RainMeadow.Debug($"Kicking player {OnlineManager.players[localIndex]} at index {localIndex}");
+                        BanHammer.BanUser(OnlineManager.players[localIndex]);
                     };
                 }
 
-                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition - 1].id.name]);
+                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition].id.name]], arena.playersInLobbyChoosingSlugs[OnlineManager.players[currentPlayerPosition].id.name]);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition - 1].id.name];
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition].id.name];
                 }
                 catch
                 {
                     classButtons[holdPlayerPosition].readyForCombat = false;
                 }
 
-                currentPlayerPosition--;
                 if (currentPlayerPosition - 1 <= 3)
                 {
                     RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);

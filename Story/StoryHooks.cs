@@ -65,6 +65,7 @@ namespace RainMeadow
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement_StorySync);
 
             On.GhostHunch.Update += GhostHunch_Update;
 
@@ -1078,6 +1079,13 @@ namespace RainMeadow
             return s;
         }
 
+        private static List<Func<string, string>> saveStateStringFilter = new();
+        public static event Func<string, string> SaveStateStringFilter
+        {
+            add => saveStateStringFilter.Add(value);
+            remove => saveStateStringFilter.Remove(value);
+        }
+
         private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
@@ -1091,6 +1099,11 @@ namespace RainMeadow
                 saveState.objectTrackers = objectTrackers;
 
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
+                if (saveStateStringFilter.Count > 0)
+                {
+                    foreach (var del in saveStateStringFilter) s = del(s);
+                    RainMeadow.Debug($"filtSaveState[{s.Length}]:{s}");
+                }
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
@@ -1250,7 +1263,7 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForGate == 1)
+            // if (story.readyForGate >= Opening)
             //     open gate
             // else
             //     story.storyClientData.readyForGate = true
@@ -1269,7 +1282,7 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForGate == 1) return true;
+                        if (story.readyForGate >= StoryGameMode.ReadyForGate.Opening) return true;
                         story.storyClientData.readyForGate = false;
                     }
                     return false;
@@ -1334,7 +1347,18 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 storyGameMode.storyClientData.readyForGate = !ret;
-                ret = storyGameMode.readyForGate == 0;
+                ret = storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed;
+            }
+            return ret;
+        }
+
+        public bool RegionGate_MeetRequirement_StorySync(orig_RegionGateBool orig, RegionGate self)
+        {
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (ret) StoryRPCs.RegionGateMeetRequirement();
+                ret = storyGameMode.readyForGate >= StoryGameMode.ReadyForGate.MeetRequirement;
             }
             return ret;
         }

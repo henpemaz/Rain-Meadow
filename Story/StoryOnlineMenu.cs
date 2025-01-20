@@ -37,7 +37,6 @@ namespace RainMeadow
             {
                 storyGameMode.requireCampaignSlugcat = false; // Default option is in remix menu.
                 storyGameMode.saveToDisk = true;
-                (storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings) = StoryMenuHelpers.GetHostBoolStoryRemixSettings();
             }
             else
             {
@@ -60,10 +59,6 @@ namespace RainMeadow
             }
             else
             {
-                if (ModManager.MMF)
-                {
-                    StoryMenuHelpers.SetClientStoryRemixSettings(storyGameMode.storyBoolRemixSettings, storyGameMode.storyFloatRemixSettings, storyGameMode.storyIntRemixSettings); // Set client remix settings to Host's on StartGame()
-                }
                 if (storyGameMode.requireCampaignSlugcat) // I'm a client and I want to match the host's
                 {
                     personaSettings.playingAs = storyGameMode.currentCampaign;
