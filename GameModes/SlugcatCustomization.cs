@@ -10,6 +10,7 @@ namespace RainMeadow
         public List<Color> customColors = new() { Color.white, Color.black };
         public Color bodyColor { get => customColors[0]; set => customColors[0] = value; }
         public Color eyeColor { get => customColors[1]; set => customColors[1] = value; }
+        public List<Color>? defaultColors = null;
         public SlugcatStats.Name playingAs;
         public string nickname;
 
@@ -28,6 +29,26 @@ namespace RainMeadow
         internal Color SlugcatColor()
         {
             return bodyColor;
+        }
+
+        public Color GetColor(int staticColorIndex)
+        {
+            if (staticColorIndex < customColors.Count)
+            {
+                return customColors[staticColorIndex];
+            }
+
+            if (defaultColors is null)
+            {
+                // caching this should be fine
+                defaultColors = PlayerGraphics.DefaultBodyPartColorHex(playingAs).Select(x => RWCustom.Custom.hexToColor(x)).ToList();
+            }
+            if (staticColorIndex < defaultColors.Count)
+            {
+                return defaultColors[staticColorIndex];
+            }
+
+            return Color.black;
         }
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)

@@ -130,9 +130,9 @@ namespace RainMeadow
 
         private Color PlayerGraphics_CustomColorSafety_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorSafety orig, int staticColorIndex)
         {
-            if (hackySlugcatCustomization is not null && hackySlugcatCustomization.customColors.Count > staticColorIndex)
+            if (hackySlugcatCustomization is not null)
             {
-                return hackySlugcatCustomization.customColors[staticColorIndex];
+                return hackySlugcatCustomization.GetColor(staticColorIndex);
             }
             return orig(staticColorIndex);
         }
