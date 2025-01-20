@@ -38,7 +38,7 @@ public static class DeathMessage
                 case DeathType.Oracle:
                     ChatLogManager.LogMessage("", $"{t} was killed through unknown means.");
                     break;
-                case DeathType.Acid:
+                case DeathType.Burn:
                     ChatLogManager.LogMessage("", $"{t} tried to swim in burning liquid.");
                     break;
                 case DeathType.PyroDeath:
@@ -147,7 +147,7 @@ public static class DeathMessage
 
                 if (player.Submersion > 0.2f && player.room.waterObject != null && player.room.waterObject.WaterIsLethal && !player.abstractCreature.lavaImmune)
                 {
-                    EnvironmentalDeathMessage(player, DeathType.Acid);
+                    EnvironmentalDeathMessage(player, DeathType.Burn);
                     return;
                 }
                
@@ -164,7 +164,7 @@ public static class DeathMessage
         Drown,
         FallDamage,
         Oracle,
-        Acid,
+        Burn,
         PyroDeath,
         Freeze,
     }
