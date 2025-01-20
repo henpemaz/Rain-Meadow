@@ -72,11 +72,5 @@ namespace RainMeadow
             aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
 
         }
-
-        public override void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
-        {
-            base.Killing(arena, orig, self, player, killedCrit, playerIndex);
-            DeathMessage.PlayerKillCreature(player, killedCrit);
-        }
     }
 }
