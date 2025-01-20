@@ -65,6 +65,7 @@ namespace RainMeadow
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement_StorySync);
 
             On.GhostHunch.Update += GhostHunch_Update;
 
@@ -1262,7 +1263,7 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForGate == 1)
+            // if (story.readyForGate >= Opening)
             //     open gate
             // else
             //     story.storyClientData.readyForGate = true
@@ -1281,7 +1282,7 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForGate == 1) return true;
+                        if (story.readyForGate >= StoryGameMode.ReadyForGate.Opening) return true;
                         story.storyClientData.readyForGate = false;
                     }
                     return false;
@@ -1346,7 +1347,18 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 storyGameMode.storyClientData.readyForGate = !ret;
-                ret = storyGameMode.readyForGate == 0;
+                ret = storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed;
+            }
+            return ret;
+        }
+
+        public bool RegionGate_MeetRequirement_StorySync(orig_RegionGateBool orig, RegionGate self)
+        {
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (ret) StoryRPCs.RegionGateMeetRequirement();
+                ret = storyGameMode.readyForGate >= StoryGameMode.ReadyForGate.MeetRequirement;
             }
             return ret;
         }
