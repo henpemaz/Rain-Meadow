@@ -16,17 +16,9 @@ namespace RainMeadow
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
-            On.Creature.SpitOutOfShortCut += Creature_SpitOutOfShortCut;
         }
 
-        private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks)
-        {
-            if (self is Player && !self.IsLocal())
-            {
-                self.collisionLayer = 0; // doesn't help non-MSC
-            }
-            orig(self, pos, newRoom, spitOutAllSticks);
-        }
+
 
         // adds to entities already so no need to hook it!
         // private void AbstractRoom_MoveEntityOutOfDen(On.AbstractRoom.orig_MoveEntityOutOfDen orig, AbstractRoom self, AbstractWorldEntity ent) { }
