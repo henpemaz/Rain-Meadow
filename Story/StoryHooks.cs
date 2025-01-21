@@ -108,6 +108,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
+            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
@@ -233,16 +234,6 @@ namespace RainMeadow
             {
                 RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
                 RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
-            }
-        }
-
-        private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
-        {
-            orig(self, menu, owner, pos, slugcatID, names, defaultColors);
-            if (isStoryMode(out _))
-            {
-                self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
-                self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
             }
         }
 
