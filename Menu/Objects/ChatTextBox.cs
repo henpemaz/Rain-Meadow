@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace RainMeadow
 {
-    public class ChatTextBox : SimpleButton, ICanBeTyped
+    public class ChatTextBox : ChatButton, ICanBeTyped
     {
         private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
@@ -20,7 +20,7 @@ namespace RainMeadow
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public static string lastSentMessage = "";
-        public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, "", pos, size)
+        public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
             steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
             lastSentMessage = "";
