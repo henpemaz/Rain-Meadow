@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
+using Menu.Remix.MixedUI;
 using UnityEngine;
 
 namespace RainMeadow
@@ -81,9 +82,9 @@ namespace RainMeadow
                         usernameLabel.label.color = colorNew;
                         pages[0].subObjects.Add(usernameLabel);
 
-                        var usernameWidth = usernameLabel.size.x;
+                        var usernameWidth = LabelTest.GetWidth(usernameLabel.label.text);
                         var messageLabel = new MenuLabel(this, pages[0], $": {message}",
-                            new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + usernameWidth + 10, 330f - yOffSet),
+                            new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + usernameWidth + 2f, 330f - yOffSet),
                             new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                         messageLabel.label.alignment = FLabelAlignment.Left;
                         pages[0].subObjects.Add(messageLabel);
