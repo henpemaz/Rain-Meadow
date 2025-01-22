@@ -101,7 +101,7 @@ namespace RainMeadow
         public void ShutDownChatInput()
         {
             RainMeadow.DebugMe();
-            if (chatInputOverlay != null )
+            if (chatInputOverlay != null)
             {
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.ShutDownProcess();
