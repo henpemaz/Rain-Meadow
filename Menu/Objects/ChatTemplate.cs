@@ -4,7 +4,7 @@ using Menu.Remix.MixedUI;
 
 namespace RainMeadow
 {
-    public abstract class ChatButton : ButtonTemplate
+    public abstract class ChatTemplate : ButtonTemplate
     {
         public HSLColor labelColor;
         public MenuLabel menuLabel;
@@ -14,7 +14,7 @@ namespace RainMeadow
         public float _cursorWidth;
         public FSpriteWrap cursorWrap;
 
-        public ChatButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+        public ChatTemplate(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
             roundedRect = new RoundedRect(menu, owner, new Vector2(0f, 0f), size, true);

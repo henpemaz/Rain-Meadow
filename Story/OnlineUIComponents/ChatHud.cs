@@ -28,9 +28,11 @@ namespace RainMeadow
             ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
             {
-                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press 'Enter' to chat, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to toggle the chat log"), 60, 160, false, true);
+                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press '{RainMeadow.rainMeadowOptions.ChatButtonKey.Value}' to chat, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to toggle the chat log"), 60, 160, false, true);
                 ChatLogManager.shownChatTutorial = true;
             }
+
+            ChatTextBox.OnShutDownRequest += ShutDownChatInput;
         }
 
         public void AddMessage(string user, string message)
@@ -63,7 +65,7 @@ namespace RainMeadow
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
             {
                 if (chatInputOverlay is not null)
                 {
@@ -99,7 +101,7 @@ namespace RainMeadow
         public void ShutDownChatInput()
         {
             RainMeadow.DebugMe();
-            if (chatInputOverlay != null)
+            if (chatInputOverlay != null )
             {
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.ShutDownProcess();
@@ -109,6 +111,7 @@ namespace RainMeadow
 
         public void Destroy()
         {
+            ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
             ChatLogManager.Unsubscribe(this);
         }
 
