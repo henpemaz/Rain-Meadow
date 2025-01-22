@@ -11,11 +11,6 @@ namespace RainMeadow
             Container.AddChild(fSprite);
         }
 
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-        }
-
         public override void RemoveSprites()
         {
             base.RemoveSprites();

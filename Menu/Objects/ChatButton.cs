@@ -34,9 +34,8 @@ namespace RainMeadow
         public override void Update()
         {
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text, false);
-            RainMeadow.Debug(_cursorWidth);
-            cursorWrap.sprite.x = _cursorWidth + 20f;
-            RainMeadow.Debug(cursorWrap.sprite.x);
+            cursorWrap.sprite.x = _cursorWidth + 17f;
+            cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             base.Update();
             this.buttonBehav.Update();
             this.roundedRect.fillAlpha = buttonBehav.col;
