@@ -1,25 +1,45 @@
 ﻿using UnityEngine;
 using Menu;
+using Menu.Remix.MixedUI;
 
 namespace RainMeadow
 {
     public abstract class ChatButton : ButtonTemplate
     {
         public HSLColor labelColor;
-
         public MenuLabel menuLabel;
-
         public RoundedRect roundedRect;
+
+        public FSprite _cursor;
+        public float _cursorWidth;
+        public FSpriteWrap cursorWrap;
 
         public ChatButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
-            RainMeadow.Error("This is my parent constructor coming to life");
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
             roundedRect = new RoundedRect(menu, owner, new Vector2(0f, 0f), size, true);
             this.subObjects.Add(roundedRect);
+
             menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f, 0f), size, false);
             menuLabel.label.alignment = FLabelAlignment.Left;
             this.subObjects.Add(menuLabel);
+
+            this._cursor = new FSprite("modInputCursor", true);
+            this._cursor.SetPosition(menuLabel.size.x, (float)(this.size.y * 0.5));
+            cursorWrap = new FSpriteWrap(menu, owner, _cursor);
+            this.subObjects.Add(cursorWrap);
+
+        }
+
+        public override void Update()
+        {
+            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text, false);
+            RainMeadow.Debug(_cursorWidth);
+            cursorWrap.sprite.x = _cursorWidth + 20f;
+            RainMeadow.Debug(cursorWrap.sprite.x);
+            base.Update();
+            this.buttonBehav.Update();
+            this.roundedRect.fillAlpha = buttonBehav.col;
         }
     }
 }
