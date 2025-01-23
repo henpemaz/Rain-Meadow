@@ -117,7 +117,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-            RainMeadow.Debug(showChatLog);
             base.Update();
 
             if (slatedForDeletion) { Destroy(); return; }
