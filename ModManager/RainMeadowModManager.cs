@@ -8,8 +8,8 @@ namespace RainMeadow
     public static class RainMeadowModManager
     {
         // TODO: possibly rename these
-        public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
-        public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
+        public static string SyncRequiredModsFileName => "meadow-syncrequiredmods.txt";
+        public static string BannedOnlineModsFileName => "meadow-bannedonlinemods.txt";
 
         /// <summary>
         /// Prefix that indicates a line should be ignored in one of the user defined files.
