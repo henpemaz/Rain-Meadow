@@ -11,25 +11,25 @@ public static class RainMeadowModInfoManager
     private static string ModInfoFileName => "rainmeadow.json";
 
     /// <summary>
-    /// All the loaded Rain Meadow mod infos merged together, so that all information can be accessed at once.
+    /// All the loaded Rain Meadow modinfos merged together, so that all information can be accessed at once.
     /// </summary>
     public static RainMeadowModInfo MergedModInfo { get; private set; } = new();
 
     /// <summary>
-    /// Dictionary of mod id to rain meadow mod info
+    /// Dictionary of mod ID to Rain Meadow modinfo.
     /// </summary>
     public static Dictionary<string, RainMeadowModInfo> ModInfos { get; } = new();
 
     /// <summary>
-    /// Additional Rain Meadow mod info file defined in StreamingAssets, allows users to add their own ids to banned_mods for instance.
+    /// Additional rainmeadow.json modinfo file defined in StreamingAssets, allows info to be loaded without needing to add it to any particular mod.
     /// </summary>
-    public static RainMeadowModInfo? UserDefinedModInfo { get; set; }
+    public static RainMeadowModInfo? DebugModInfo { get; set; }
 
 
     internal static void RefreshRainMeadowModInfos()
     {
         ModInfos.Clear();
-        UserDefinedModInfo = null;
+        DebugModInfo = null;
 
         foreach (var mod in ModManager.ActiveMods)
         {
@@ -50,21 +50,21 @@ public static class RainMeadowModInfoManager
             ModInfos[mod.id] = generatedModInfo;
         }
 
-        LoadUserDefinedModInfo();
+        LoadDebugModInfo();
 
         RefreshMergedModInfo();
     }
 
-    internal static void RefreshUserDefinedModInfo()
+    internal static void RefreshDebugModInfo()
     {
-        UserDefinedModInfo = null;
+        DebugModInfo = null;
 
-        LoadUserDefinedModInfo();
+        LoadDebugModInfo();
 
         RefreshMergedModInfo();
     }
 
-    private static void LoadUserDefinedModInfo()
+    private static void LoadDebugModInfo()
     {
         var filePath = Path.Combine(RWCustom.Custom.RootFolderDirectory(), ModInfoFileName);
 
@@ -75,7 +75,7 @@ public static class RainMeadowModInfoManager
             return;
         }
 
-        UserDefinedModInfo = modInfo;
+        DebugModInfo = modInfo;
     }
 
     private static void RefreshMergedModInfo()
@@ -84,9 +84,9 @@ public static class RainMeadowModInfoManager
 
         var modInfos = ModInfos.Values.ToList();
 
-        if (UserDefinedModInfo is not null)
+        if (DebugModInfo is not null)
         {
-            modInfos.Add(UserDefinedModInfo);
+            modInfos.Add(DebugModInfo);
         }
 
         foreach (var modInfo in modInfos)

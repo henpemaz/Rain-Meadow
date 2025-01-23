@@ -33,7 +33,7 @@ namespace RainMeadow
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
 
-            RainMeadowModInfoManager.RefreshUserDefinedModInfo();
+            RainMeadowModInfoManager.RefreshDebugModInfo();
 
             requiredmods = RainMeadowModManager.GetRequiredMods();
             bannedmods = RainMeadowModManager.GetBannedMods();
