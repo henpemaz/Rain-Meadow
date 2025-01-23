@@ -120,8 +120,8 @@ namespace RainMeadow
             {
                 if (c == null) return;
                 if (c is FloatyButton button) button.progress = blackFade;
-                if (c is FloatyCheckBox ohoh) c.subObjects.DoIf(b => b is Floater, b => ((Floater)b).progress = blackFade);
-                if (c is FloatySlider ohoh2) { c.subObjects.DoIf(b => b is Floater, b => ((Floater)b).progress = blackFade); }
+                if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
+                if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
             }
             base.Update();
         }
