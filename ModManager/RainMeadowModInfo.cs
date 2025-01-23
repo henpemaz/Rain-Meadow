@@ -12,10 +12,28 @@ public sealed class RainMeadowModInfo
     public List<string> SyncRequiredMods { get; set; } = new();
 
     /// <summary>
+    /// Override for the above, allows the following to be de-synced despite being on the list.
+    /// </summary>
+    [JsonProperty("sync_required_mods_override")]
+    public List<string> SyncRequiredModsOverride { get; set; } = new();
+
+    /// <summary>
     /// Mods that are banned from being enabled in online game modes.
     /// </summary>
     [JsonProperty("banned_online_mods")]
     public List<string> BannedOnlineMods { get; set; } = new();
+
+    /// <summary>
+    /// Override for the above, allows the following to be active despite being on the list.
+    /// </summary>
+    [JsonProperty("banned_online_mods_override")]
+    public List<string> BannedOnlineModsOverride { get; set; } = new();
+
+    /// <summary>
+    /// Users that are banned from joining lobbies hosted on this device.
+    /// </summary>
+    [JsonProperty("banned_users")]
+    public List<string> BannedUsers { get; set; } = new();
 
 
     /// <summary>
