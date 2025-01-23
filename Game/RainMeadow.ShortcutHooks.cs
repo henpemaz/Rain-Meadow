@@ -18,6 +18,8 @@ namespace RainMeadow
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
 
+
+
         // adds to entities already so no need to hook it!
         // private void AbstractRoom_MoveEntityOutOfDen(On.AbstractRoom.orig_MoveEntityOutOfDen orig, AbstractRoom self, AbstractWorldEntity ent) { }
 
@@ -231,8 +233,36 @@ namespace RainMeadow
             {
                 // tell everyone else that I am about to enter a shortcut!
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
-                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+
+
                 orig(self, entrancePos, carriedByOther);
+                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                if (self is Player pl && pl.IsLocal())
+                {
+                    if (pl.grasps != null) // we're  dragging
+                    {
+                        for (int num =  0; num < pl.grasps.Length; num++)
+                        {
+                            if (pl.grasps[num] != null && !pl.grasps[num].grabbed.IsLocal())
+                            {
+                                if (OnlinePhysicalObject.map.TryGetValue(pl.grasps[num].grabbed.abstractPhysicalObject, out var onlineEntityBeingGrabbed))
+                                {
+                                    onlineEntityBeingGrabbed.beingCarried = false;
+                                    onlineEntityBeingGrabbed.BroadcastRPCInRoom((onlineEntityBeingGrabbed as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                                }
+                            }
+                        }
+                    }
+
+                    if (ModManager.MSC && pl.slugOnBack != null && pl.slugOnBack.HasASlug && !pl.slugOnBack.slugcat.IsLocal()) // we're backpacking
+                    {
+                        if (OnlinePhysicalObject.map.TryGetValue(pl.slugOnBack.slugcat.abstractPhysicalObject, out var onlineSlugOnBack))
+                        {
+                            onlineSlugOnBack.beingCarried = false; // set this to true on shortcut exit?
+                            onlineSlugOnBack.BroadcastRPCInRoom((onlineSlugOnBack as OnlineCreature).SuckedIntoShortCut, entrancePos, carriedByOther);
+                        }
+                    }
+                }
             }
             else
             {

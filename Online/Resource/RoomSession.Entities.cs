@@ -33,6 +33,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode.ShouldSyncAPOInRoom(this, apo))
                 {
                     RainMeadow.Error($"Unregistered entity leaving {this} : {apo} - {Environment.StackTrace}");
+                    OnlinePhysicalObject.RegisterAndCleanOutRemoteEntity(apo, this);
                 }
             }
         }

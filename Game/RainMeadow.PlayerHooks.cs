@@ -48,7 +48,100 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
+        On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
+        On.Player.SlugcatGrab += Player_SlugcatGrab;
+        On.Player.ReleaseGrasp += Player_ReleaseGrasp;
+        On.Player.SlugOnBack.SlugToBack += SlugOnBack_SlugToBack;
 
+        new Hook(typeof(Player).GetProperty("MapDiscoveryActive").GetGetMethod(), this.Player_mapDiscoveryActive);
+
+    }
+
+    private bool Player_mapDiscoveryActive(Func<Player, bool> orig, Player self)
+    {
+        if (OnlineManager.lobby != null)
+        {            
+            if (self.Consious && self.AI == null && self.room != null && !self.room.world.singleRoomWorld && self.abstractCreature != null && self.abstractCreature.Room != null && self.abstractCreature.Room.realizedRoom != null && self.dangerGrasp == null && self.mainBodyChunk.pos.x > 0f && self.mainBodyChunk.pos.x < self.abstractCreature.Room.realizedRoom.PixelWidth && self.mainBodyChunk.pos.y > 0f)
+            {
+                return self.mainBodyChunk.pos.y < self.abstractCreature.Room.realizedRoom.PixelHeight;
+            }
+
+            return false;
+
+        }
+
+        return orig(self);
+    }
+
+    private void SlugOnBack_SlugToBack(On.Player.SlugOnBack.orig_SlugToBack orig, Player.SlugOnBack self, Player playerToBack)
+    {
+        orig(self, playerToBack);
+        if (OnlineManager.lobby != null)
+        {
+            if (OnlinePhysicalObject.map.TryGetValue(playerToBack.abstractCreature, out var onlinePlayerToBack))
+            {
+                onlinePlayerToBack.beingCarried = true;
+            }
+        }
+
+    }
+
+    private void Player_ReleaseGrasp(On.Player.orig_ReleaseGrasp orig, Player self, int grasp)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            for (int i = 0; i < self.grasps?.Length; i++)
+            {
+                if (self.grasps[i]?.grabbed is Player pl)
+                {
+                    if (OnlinePhysicalObject.map.TryGetValue(pl.abstractPhysicalObject, out var onlineGrabbedPlayer))
+                    {
+                        onlineGrabbedPlayer.beingCarried = false;
+                    }
+                }
+            }
+        }
+        orig(self, grasp);
+
+    }
+
+    private void Player_SlugcatGrab(On.Player.orig_SlugcatGrab orig, Player self, PhysicalObject obj, int graspUsed)
+    {
+        orig(self, obj, graspUsed);
+        if (OnlineManager.lobby != null)
+        {
+            if (obj is not null && obj is Player p)
+            {
+                if (OnlinePhysicalObject.map.TryGetValue(p.abstractCreature, out var carriedPlayer))
+                {
+                    carriedPlayer.beingCarried = true;
+                }
+            }
+        }
+    }
+
+
+    private bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
+    {
+        if (ModManager.MSC && OnlineManager.lobby != null)
+        {
+
+            if (pickUpCandidate != null)
+            {
+                if (pickUpCandidate.abstractCreature.stuckObjects != null)
+                {
+                    for (int num = pickUpCandidate.abstractCreature.stuckObjects.Count - 1; num >= 0; num--)
+                    {
+                        if (pickUpCandidate.abstractCreature.stuckObjects[num] is AbstractPhysicalObject.AbstractSpearStick && pickUpCandidate.abstractCreature.stuckObjects[num].A.type == AbstractPhysicalObject.AbstractObjectType.Spear && pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject != null)
+                        {
+                            (pickUpCandidate.abstractCreature.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+        return orig(self, pickUpCandidate);
     }
 
 
