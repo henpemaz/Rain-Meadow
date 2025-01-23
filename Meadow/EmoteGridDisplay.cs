@@ -91,11 +91,22 @@ namespace RainMeadow
 
 
                     float thealpha = emoteDisplayers[j * nc + i].alpha;
-                    if (Time.time == inittime || (thealpha != emotePreviewOpacityInactive && thealpha != 1))
+
+                    if (Time.time == inittime || (MeadowEmoteHud.newEmote == new IntVector2(j, i) && (Time.time - MeadowEmoteHud.newTime) < 4) || (thealpha != emotePreviewOpacityInactive && thealpha != 1))
                     {
-                        float alpha = Custom.SCurve(Mathf.InverseLerp(thing, thing + 0.4f, Time.time), 0.65f) * emotePreviewOpacityInactive;
-                        emoteDisplayers[j * nc + i].alpha = alpha;
-                        emoteTiles[j * nc + i].alpha = alpha;
+                        if (MeadowEmoteHud.newEmote == new IntVector2(j, i))
+                        {
+                            float alpha = emotePreviewOpacityInactive + ((1f - emotePreviewOpacityInactive) * (Mathf.Sin(Time.time * 2 * Mathf.PI * 1.5f) * 0.5f + 0.5f) * Mathf.InverseLerp(MeadowEmoteHud.newTime + 5.4f, MeadowEmoteHud.newTime + 4.4f, Time.time));
+                            alpha *= Custom.SCurve(Mathf.InverseLerp(MeadowEmoteHud.newTime, MeadowEmoteHud.newTime + 0.8f, Time.time), 0.65f);
+                            emoteDisplayers[j * nc + i].alpha = alpha;
+                            emoteTiles[j * nc + i].alpha = alpha;
+                        }
+                        else
+                        {
+                            float alpha = Custom.SCurve(Mathf.InverseLerp(thing, thing + 0.4f, Time.time), 0.65f) * emotePreviewOpacityInactive;
+                            emoteDisplayers[j * nc + i].alpha = alpha;
+                            emoteTiles[j * nc + i].alpha = alpha;
+                        }
                     }
                 }
             }

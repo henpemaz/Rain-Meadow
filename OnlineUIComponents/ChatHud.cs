@@ -77,7 +77,7 @@ namespace RainMeadow
                     RainMeadow.Debug("creating input");
                     chatInputOverlay = new ChatInputOverlay(game.manager);
                     if (chatLogOverlay is null)
-                    {
+                    { 
                         RainMeadow.Debug("creating log");
                         chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
                     }

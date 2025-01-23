@@ -118,12 +118,7 @@ namespace RainMeadow
             RainMeadow.Debug("Im getting my song interrupted");
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
             if (game == null) return; //if not in game, don't do this
-            var musicPlayer = game.manager.musicPlayer;
-            if (musicPlayer != null)
-            {
-                RainMeadow.Debug("yeah it's musicplayer time");
-                PlaySong(musicPlayer, song);
-            }
+            QueueSong(game.manager.musicPlayer, song);
         }
 
         [RPCMethod]
