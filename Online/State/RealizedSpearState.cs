@@ -20,7 +20,7 @@ namespace RainMeadow
         private sbyte stuckInWallCycles;
         [OnlineField(group = "spear")]
         private bool needleActive = true;
-        [OnlineField]
+        [OnlineFieldHalf(group = "spear")]
         private float spearDamageBonus;
 
         public RealizedSpearState() { }
