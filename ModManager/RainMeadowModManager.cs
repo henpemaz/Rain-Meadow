@@ -14,7 +14,7 @@ namespace RainMeadow
 
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id)
-                              || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+                              || Directory.Exists(Path.Combine(mod.path, "modify", "world"))) // TODO: check if this is still necessary, see GetGeneratedModInfo()
                 .Select(mod => mod.id)
                 .ToArray();
         }

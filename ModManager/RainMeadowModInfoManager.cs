@@ -55,7 +55,7 @@ public static class RainMeadowModInfoManager
         RefreshMergedModInfo();
     }
 
-    internal static void RefreshUserDefinedModInfo() // TODO: call it when a lobby is loaded maybe
+    internal static void RefreshUserDefinedModInfo()
     {
         UserDefinedModInfo = null;
 
