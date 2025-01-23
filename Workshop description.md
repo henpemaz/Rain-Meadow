@@ -26,6 +26,7 @@ The community-maintained mod compatibility spreadsheet can be found [here](https
 
 - Survivor campaign is available by default
 - Access other campaigns through the "Experimental Features" remix option
+  - Host can only play as the campaign slugcat
   - Clients can select slugcats other than the current campaign
 - Currently-supported campaigns: Survivor, Monk, Hunter, Artificer, Gourmand
 
