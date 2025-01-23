@@ -29,7 +29,7 @@ public static class DeathMessage
                     if (player.grabbedBy.Count > 0)
                     {
                         ChatLogManager.LogMessage("", $"{t} was drowned by {player.grabbedBy[0].grabber.Template.name}.");
-                         break;
+                        break;
                     }
                     ChatLogManager.LogMessage("", $"{t} drowned.");
                     break;

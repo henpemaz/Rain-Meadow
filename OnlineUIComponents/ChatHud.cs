@@ -13,7 +13,7 @@ namespace RainMeadow
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
         public bool chatInputActive => chatInputOverlay is not null;
-        private bool showChatLog = false;
+        public bool showChatLog = RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
 
         public List<(string, string)> chatLog = new();
 
@@ -57,7 +57,7 @@ namespace RainMeadow
                     ShutDownChatLog();
                     showChatLog = false;
                 }
-                else if (!textPrompt.pausedMode)
+                else if (!textPrompt.pausedMode && !showChatLog)
                 {
                     RainMeadow.Debug("creating log");
                     chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
@@ -117,6 +117,7 @@ namespace RainMeadow
 
         public override void Update()
         {
+            RainMeadow.Debug(showChatLog);
             base.Update();
 
             if (slatedForDeletion) { Destroy(); return; }
@@ -126,7 +127,13 @@ namespace RainMeadow
             if (game.pauseMenu != null || camera.hud?.map?.visible is true || game.manager.upcomingProcess != null)
             {
                 if (chatInputOverlay != null) ShutDownChatInput();
-                if (chatLogOverlay != null) ShutDownChatLog();
+                if (!showChatLog && chatLogOverlay != null) ShutDownChatLog();
+            }
+
+            if (showChatLog && chatLogOverlay == null) 
+            {
+                RainMeadow.Debug("Creating a new log from update");
+                chatLogOverlay = new ChatLogOverlay(this, game.manager, game); 
             }
 
             chatLogOverlay?.Update();

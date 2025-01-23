@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Numerics;
 using Menu;
 using Menu.Remix.MixedUI;
 using UnityEngine;
@@ -13,6 +11,8 @@ namespace RainMeadow
         private ChatHud chatHud;
         public RainWorldGame game;
         private Dictionary<string, Color> colorDictionary = new();
+
+        public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
 
         public ChatLogOverlay(ChatHud chatHud, ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
@@ -63,6 +63,7 @@ namespace RainMeadow
                             new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet),
                             new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
                         messageLabel.label.alignment = FLabelAlignment.Left;
+                        messageLabel.label.color = SYSTEM_COLOR;
                         pages[0].subObjects.Add(messageLabel);
                     }
                     else
