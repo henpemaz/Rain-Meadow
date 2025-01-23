@@ -99,7 +99,7 @@ public static class DeathMessage
         {
             var k = killer.abstractPhysicalObject.GetOnlineObject().owner.id.name;
             var t = target.Template.name;
-            ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
+            if (target.TotalMass > 0.2f) ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
         }
         catch (Exception e)
         {
