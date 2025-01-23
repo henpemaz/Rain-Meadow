@@ -69,6 +69,9 @@ namespace RainMeadow
         private Player.InputPackage package;
         private float uiLastFade;
 
+        public static IntVector2 newEmote; //intikus was here, kill him
+        public static float newTime;
+
         UnityEngine.KeyCode[] alphakeys = new KeyCode[] { KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8 };
 
         public MeadowEmoteHud(HUD.HUD hud, RoomCamera camera, Creature owner) : base(hud)
@@ -85,6 +88,7 @@ namespace RainMeadow
 
             RainMeadow.Debug($"MeadowEmoteHud for {owner}, oc is {creatureController.onlineCreature}");
 
+            Emote? newemote = MeadowProgressionHud.newEmote;
             // grid
             int iconsPerColumn = 3;
             var emoteColumns = (emotes.Count - 1) / iconsPerColumn + 1;
@@ -101,6 +105,7 @@ namespace RainMeadow
                     if (n < emotes.Count)
                     {
                         gridEmotes[j, i] = emotes[n];
+                        if (gridEmotes[j, i] == newemote) { newEmote = new IntVector2(j, i); }
                     }
                     else break;
                 }
@@ -117,6 +122,7 @@ namespace RainMeadow
                     else break;
                 }
             }
+            newTime = (newEmote == new IntVector2(0, 0)) ? -30 : Time.time;
 
             gridRows = iconsPerColumn;
             gridColumns = emoteColumns + symbolColumns;
@@ -304,7 +310,7 @@ namespace RainMeadow
                 if (toggleHidden) { toggleHidden = false; gridVisible = true; }
                 else gridVisible = !gridVisible;
                 initgridtime = Time.time;
-                hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
+                hud.owner.PlayHUDSound( gridVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck );
             }
 
             if (!toggleHidden && gridVisible && !radialPickerActive)
@@ -341,8 +347,8 @@ namespace RainMeadow
                 if (toggleHidden) { toggleHidden = false; radialVisible = true; }
                 else radialVisible = !radialVisible;
                 //initradialtime = Time.time; 
-
-                hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Check);
+                
+                hud.owner.PlayHUDSound(radialVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             }
 
             if (radialVisible) radialDisplayer.positionssss(initradialtime, fliptotheright);
@@ -669,7 +675,6 @@ namespace RainMeadow
             displayer.ClearEmotes();
             hud.owner.PlayHUDSound(SoundID.MENU_Checkbox_Uncheck);
         }
-
         internal void Refresh()
         {
             if (slatedForDeletion) { return; }

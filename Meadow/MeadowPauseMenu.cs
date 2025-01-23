@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Menu;
+using RWCustom;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -11,7 +13,8 @@ namespace RainMeadow
         private Creature avatarCreature;
         private int targetHub;
         private int suco4;
-
+        
+        public static Slider.SliderID Thingy = new Slider.SliderID("Thingy", true);
         public MeadowPauseMenu(ProcessManager manager, RainWorldGame game, MeadowGameMode mgm) : base(manager, game)
         {
             RainMeadow.DebugMe();
@@ -78,13 +81,19 @@ namespace RainMeadow
                     this.ContinueAndExitButtonsXPos - 250.2f - this.moveLeft - this.manager.rainWorld.options.SafeScreenOffset.x,
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
-            pos.y -= (buttonCount) * 40f + 40f;
-            var namesCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Display names"), "NAMES", true);
-            namesCb.subObjects.Add(new Floater(this, namesCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            
+            pos.y -= (buttonCount) * 40f;
+            var slider = new FloatySlider(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), Thingy, false);
+            slider.subObjects.Add(new Floater(this, slider, 0.7f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f)));
+            pages[0].subObjects.Add(slider);
+
+            pos.y -= 40f;
+            var namesCb = new FloatyCheckBox(this, pages[0], this, pos, 70f, this.Translate("Display names"), "NAMES", true);
+            namesCb.subObjects.Add(new Floater(this, namesCb, 0.6f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
             pages[0].subObjects.Add(namesCb);
             pos.y -= 40f;
-            var colCb = new Menu.CheckBox(this, pages[0], this, pos, 70f, this.Translate("Collision"), "COLLISION", true);
-            colCb.subObjects.Add(new Floater(this, colCb, new Vector2(1000f, 0f), new Vector2(4f, 3.5f), new Vector2(5f, 1f)));
+            var colCb = new FloatyCheckBox(this, pages[0], this, pos, 70f, this.Translate("Collision"), "COLLISION", true);
+            colCb.subObjects.Add(new Floater(this, colCb, 0.5f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
             pages[0].subObjects.Add(colCb);
 
 
@@ -94,6 +103,28 @@ namespace RainMeadow
             //this.blackSprite.scaleX = manager.rainWorld.options.ScreenSize.x / 4f;
         }
 
+        public override void SliderSetValue(Slider slider, float f)
+        {
+            if (slider.ID == Thingy)
+            {
+                MeadowMusic.defaultPlopVolume = f * 0.575f;
+            }
+        }
+        public override float ValueOfSlider(Slider slider)
+        {
+            return MeadowMusic.defaultPlopVolume/0.575f;
+        }
+        public override void Update()
+        {
+            foreach (var c in pages[0].subObjects)
+            {
+                if (c == null) return;
+                if (c is FloatyButton button) button.progress = blackFade;
+                if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
+                if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
+            }
+            base.Update();
+        }
         private void Continue(SimplerButton button)
         {
             RainMeadow.DebugMe();
@@ -152,9 +183,8 @@ namespace RainMeadow
                 var room = creature.room;
                 creature.RemoveFromRoom();
                 room.CleanOutObjectNotInThisRoom(creature); // we need it this frame
-                var node = creature.coord.abstractNode;
-                if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
-                creature.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
+                ShortcutData closestShortcut = room.shortcuts.Where(thing => thing.shortCutType == ShortcutData.Type.RoomExit).MinBy(cut => (IntVector2.ToVector2(cut.startCoord.Tile - creature.coord.Tile)).magnitude);
+                creature.SpitOutOfShortCut(closestShortcut.startCoord.Tile, room, true);
             }
         }
 
