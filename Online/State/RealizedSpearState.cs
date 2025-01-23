@@ -20,6 +20,8 @@ namespace RainMeadow
         private sbyte stuckInWallCycles;
         [OnlineField(group = "spear")]
         private bool needleActive = true;
+        [OnlineFieldHalf(group = "spear")]
+        private float spearDamageBonus;
 
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
@@ -28,6 +30,7 @@ namespace RainMeadow
             stuckInWall = spear.stuckInWall;
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
+            spearDamageBonus = spear.spearDamageBonus;
 
             if (spear.stuckInObject != null)
             {
@@ -44,6 +47,7 @@ namespace RainMeadow
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
+            spear.spearDamageBonus = spearDamageBonus;
             if (!stuckInWall.HasValue)
                 spear.addPoles = false;
             spear.spearmasterNeedle_hasConnection = needleActive;
