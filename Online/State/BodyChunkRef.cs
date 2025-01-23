@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -20,7 +21,9 @@ namespace RainMeadow
         {
             if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
+            {
                 throw new InvalidProgrammerException("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
+            }
             return new BodyChunkRef(oe, bodyChunk.index);
         }
 
