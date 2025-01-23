@@ -16,6 +16,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> SpectatorKey;
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
+    public readonly Configurable<KeyCode> ChatButtonKey;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<bool> ArenaSAINOT;
@@ -40,6 +41,7 @@ public class RainMeadowOptions : OptionInterface
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
         PointingKey = config.Bind("PointingKey", KeyCode.Mouse0);
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
+        ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
@@ -90,7 +92,7 @@ public class RainMeadowOptions : OptionInterface
             cheatReset.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker); MeadowProgression.progressionData = null; MeadowProgression.LoadDefaultProgression(); cheatEmote.greyedOut = cheatSkin.greyedOut = cheatCharacter.greyedOut = false; };
 
             meadowTab.AddItems(OnlineMeadowSettings);
-            GeneralUIArrPlayerOptions = new UIelement[13]
+            GeneralUIArrPlayerOptions = new UIelement[15]
             {
                 new OpLabel(10f, 550f, "General", bigText: true),
                 new OpLabel(10f, 530f, "Note: These inputs are not used in Meadow mode", bigText: false),
@@ -111,6 +113,9 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 180f, "Chat Log Toggle"),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
+
+                new OpLabel(10, 115f, "Chat Talk Button"),
+                new OpKeyBinder(ChatButtonKey, new Vector2(10f, 85), new Vector2(150f, 30f)),
             };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
