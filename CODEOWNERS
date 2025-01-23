@@ -5,6 +5,7 @@
 /Game/		
 /GameModes/	
 /Menu/		
+/OnlineUIComponents/
 /Utils/		
 /Online/RPCs.cs	
 /Online/ConsumableRPCs.cs	
