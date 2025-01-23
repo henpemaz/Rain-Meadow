@@ -9,25 +9,25 @@ public sealed class RainMeadowModInfo
     /// Mods that must be synced between the host and clients in order to allow a connection.
     /// </summary>
     [JsonProperty("sync_required_mods")]
-    public List<string> SyncRequiredMods { get; set; } = new();
+    public List<string> SyncRequiredMods { get; set; } = [];
 
     /// <summary>
     /// Override for the above, allows the following to be de-synced despite being on the list.
     /// </summary>
     [JsonProperty("sync_required_mods_override")]
-    public List<string> SyncRequiredModsOverride { get; set; } = new();
+    public List<string> SyncRequiredModsOverride { get; set; } = [];
 
     /// <summary>
     /// Mods that are banned from being enabled in online game modes.
     /// </summary>
     [JsonProperty("banned_online_mods")]
-    public List<string> BannedOnlineMods { get; set; } = new();
+    public List<string> BannedOnlineMods { get; set; } = [];
 
     /// <summary>
     /// Override for the above, allows the following to be active despite being on the list.
     /// </summary>
     [JsonProperty("banned_online_mods_override")]
-    public List<string> BannedOnlineModsOverride { get; set; } = new();
+    public List<string> BannedOnlineModsOverride { get; set; } = [];
 
 
     /// <summary>

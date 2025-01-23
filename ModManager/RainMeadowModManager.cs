@@ -1,16 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using RWCustom;
 
 namespace RainMeadow
 {
     public static class RainMeadowModManager
     {
+        // TODO: possibly rename these
+        public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
+        public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
+
+        /// <summary>
+        /// Prefix that indicates a line should be ignored in one of the user defined files.
+        /// </summary>
+        public static string IgnoredLinePrefix => "//";
+
         public static string[] GetRequiredMods()
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride);
+            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods);
 
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id)
@@ -23,8 +35,11 @@ namespace RainMeadow
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride);
-            var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride);
+            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
+
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods);
+            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods);
 
             // (required + banned) - enabled
             return requiredMods.Concat(bannedMods)
@@ -99,6 +114,31 @@ namespace RainMeadow
                 var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
                 MachineConnector.ReloadConfig(mmfOptions);
             }
+        }
+
+        private static List<string> UpdateFromOrWriteToFile(string path, List<string> newLines)
+        {
+            path = Path.Combine(Custom.RootFolderDirectory(), path);
+
+            if (!File.Exists(path))
+            {
+                File.WriteAllLines(path, newLines);
+                return newLines;
+            }
+
+            var lines = File.ReadAllLines(path).ToList();
+
+            var ignoredLines = lines
+                .Where(x => x.StartsWith(IgnoredLinePrefix))
+                .Select(x => x.TrimStart(IgnoredLinePrefix));
+
+            var linesToAdd = newLines.Except(ignoredLines);
+
+            lines.AddDistinctRange(linesToAdd);
+
+            File.WriteAllLines(path, lines);
+
+            return lines;
         }
     }
 }

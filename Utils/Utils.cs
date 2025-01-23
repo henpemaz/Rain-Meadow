@@ -57,5 +57,28 @@ namespace RainMeadow
                 self.Add(item);
             }
         }
+
+        /// <summary>
+        /// Trims an occurence of a string from the start of another.
+        /// </summary>
+        /// <param name="target">String to be trimmed.</param>
+        /// <param name="trimString">String to trim from the target.</param>
+        /// <returns>The trimmed string.</returns>
+        public static string TrimStart(this string target, string trimString)
+        {
+            if (string.IsNullOrEmpty(trimString))
+            {
+                return target;
+            }
+
+            var result = target;
+
+            while (result.StartsWith(trimString))
+            {
+                result = result.Substring(trimString.Length);
+            }
+
+            return result;
+        }
     }
 }
