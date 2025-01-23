@@ -35,6 +35,12 @@ public sealed class RainMeadowModInfo
     [JsonProperty("banned_users")]
     public List<string> BannedUsers { get; set; } = new();
 
+    /// <summary>
+    /// Users that are banned from joining lobbies hosted on this device.
+    /// </summary>
+    [JsonProperty("chat_filtered_words")]
+    public List<string> ChatFilteredWords { get; set; } = new();
+
 
     /// <summary>
     /// Merges the contents of the provided mod info into this mod info, ignoring duplicate values.
@@ -43,6 +49,12 @@ public sealed class RainMeadowModInfo
     public void MergeInfoFrom(RainMeadowModInfo modInfo)
     {
         SyncRequiredMods.AddDistinctRange(modInfo.SyncRequiredMods);
+        SyncRequiredModsOverride.AddDistinctRange(modInfo.SyncRequiredModsOverride);
+
         BannedOnlineMods.AddDistinctRange(modInfo.BannedOnlineMods);
+        BannedOnlineModsOverride.AddDistinctRange(modInfo.BannedOnlineModsOverride);
+
+        BannedUsers.AddDistinctRange(modInfo.BannedUsers);
+        ChatFilteredWords.AddDistinctRange(modInfo.ChatFilteredWords);
     }
 }
