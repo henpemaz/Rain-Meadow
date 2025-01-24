@@ -51,8 +51,6 @@ namespace RainMeadow
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
             new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
 
-            On.Creature.Die += Creature_Die; // do not die!
-
             On.WormGrass.IsTileAccessible += WormGrass_IsTileAccessible; // always accessible
             On.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature1;
@@ -218,15 +216,6 @@ namespace RainMeadow
             }
 
             orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly);
-        }
-
-        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                return;
-            }
-            orig(self);
         }
 
         public delegate bool orig_RegionGateBool(RegionGate self);
