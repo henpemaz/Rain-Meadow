@@ -50,6 +50,8 @@ namespace RainMeadow
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
+            IL.Player.ctor += Player_ctor_NonHunterCampaignClientDisableRedsIllness;
+
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
@@ -706,6 +708,25 @@ namespace RainMeadow
                     i => i.MatchBrfalse(out _)
                     );
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void Player_ctor_NonHunterCampaignClientDisableRedsIllness(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchLdfld<SaveState>("redExtraCycles"),
+                        i => i.MatchCall<RedsIllness>("RedsCycles"),
+                        i => i.MatchBlt(out _),
+                        i => i.MatchLdsfld<ModManager>("CoopAvailable")
+                        );
+                c.EmitDelegate((bool coopAvailable) => coopAvailable || OnlineManager.lobby != null);
             }
             catch (Exception e)
             {
