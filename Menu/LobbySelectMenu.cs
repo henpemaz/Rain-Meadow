@@ -4,8 +4,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
-
-
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +18,7 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
-        private OpComboBox2 matchMakingDomain;
+        private OpComboBox2 domainDropDown;
         private OpComboBox2 filterModeDropDown;
         private OpCheckBox filterPublicLobbiesOnly;
         private OpTextBox filterLobbyLimit;
@@ -145,7 +144,7 @@ namespace RainMeadow
 
             mainPage.subObjects.Add(directConnectButton);
             
-            var domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
+            domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
                 MatchmakingManager.currentDomain), where, 160f - 35f, 
                 MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value)).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
@@ -169,9 +168,10 @@ namespace RainMeadow
             // // Lobby machine go!
             MatchmakingManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-// #if !LOCAL_P2P
-//             SteamNetworkingUtils.InitRelayNetworkAccess();
-// #endif
+            if (MatchmakingManager.supported_matchmakers.Contains(MatchmakingManager.MatchMakingDomain.Steam)) {
+                SteamNetworkingUtils.InitRelayNetworkAccess();
+            }   
+            
             MatchmakingManager.currentInstance.RequestLobbyList();
 
             if (manager.musicPlayer != null)
@@ -247,8 +247,33 @@ namespace RainMeadow
             lobbyList.FilterLobbies();
         }
 
+        public bool VerifyPlay(LobbyInfo lobbyInfo, bool care_about_lobby_size = true) {
+            domainDropDown.greyedOut = true;
+            if (ModManager.JollyCoop)
+            {
+                ShowErrorDialog("Please disable JollyCoop before playing Online");
+                return false;
+            }
+            lastClickedLobby = lobbyInfo;
+
+
+            if (care_about_lobby_size) {
+                MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
+                if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
+                {
+                    ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public void Play(LobbyInfo lobbyInfo)
         {
+            if (!VerifyPlay(lobbyInfo)) {
+                return;
+            }
 
             if (ModManager.JollyCoop)
             {
@@ -257,24 +282,19 @@ namespace RainMeadow
             }
             lastClickedLobby = lobbyInfo;
 
+            if (lobbyInfo is LANMatchmakingManager.LANLobbyInfo) {
+                RainMeadow.DebugMe();
+                RainMeadow.Debug($"{lobbyInfo.name}, {lobbyInfo.maxPlayerCount}, {lobbyInfo.mode}, {lobbyInfo.playerCount}, {lobbyInfo.hasPassword}");
+            }
 
-
-            MatchmakingManager.MAX_LOBBY = lobbyInfo.maxPlayerCount;
-            if (lobbyInfo.playerCount >= lobbyInfo.maxPlayerCount)
+            if (lobbyInfo.hasPassword)
             {
-                ShowErrorDialog("Failed to join lobby.<LINE> Lobby is full");
+                ShowPasswordRequestDialog();
             }
             else
             {
-                if (lobbyInfo.hasPassword)
-                {
-                    ShowPasswordRequestDialog();
-                }
-                else
-                {
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobbyInfo);
-                }
+                ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin(lobbyInfo);
             }
         }
 
@@ -328,6 +348,7 @@ namespace RainMeadow
 
         public void GreyOutLobbyCards(bool greyedOut)
         {
+            domainDropDown.greyedOut = greyedOut;
             lobbyList.lobbyCards.ForEach(card => card.buttonBehav.greyedOut = greyedOut);
         }
 
@@ -370,6 +391,7 @@ namespace RainMeadow
                 new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 
                 new Vector2(480f, 320f), text, false, ok, () => HideDialog());
             mainPage.subObjects.Add(popupDialog);
+            GreyOutLobbyCards(true);
         }
 
         public void ShowErrorDialog(string error)
@@ -378,6 +400,7 @@ namespace RainMeadow
 
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
+            GreyOutLobbyCards(true);
         }
 
         public void HideDialog()
@@ -406,20 +429,26 @@ namespace RainMeadow
                     RequestLobbyJoin(lastClickedLobby, password);
                     break;
                 case "DIRECT_JOIN": 
+                    if (ModManager.JollyCoop) {
+                        ShowErrorDialog("Please disable JollyCoop before playing Online");
+                        break;
+                    }
+
                     var dialogue = popupDialog as DirectConnectionDialogue;
-                    var endpoint = DirectConnectionDialogue.GetEndPointByName(dialogue?.IPBox?.value ?? "");
+                    var endpoint = UDPPeerManager.GetEndPointByName(dialogue?.IPBox?.value ?? "");
                     if (endpoint != null) {
+                        var fakelobbyinfo = new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
                         Action join = () => {
                             ShowLoadingDialog("Joining lobby...");
-                            RequestLobbyJoin(new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2),
+                            RequestLobbyJoin(fakelobbyinfo,
                                     dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null);
                         };
                         
-
+                        if (VerifyPlay(fakelobbyinfo))
                         if (!UDPPeerManager.isEndpointLocal(endpoint)) {
                             ShowNotLocalDialogue(
                                                 "This address is possibly not local to your current network.\n" +
-                                                "All clients might be required to port forward [8720].\n" +
+                                                "If so, all clients may be required to port forward [8720].\n" +
                                                 "Port forwarding can compromise your network and expose your network.\n" +
                                                 "Are you SURE you know what you're doing?",
                                 join);
@@ -428,7 +457,7 @@ namespace RainMeadow
 
 
                     } else {
-                        ShowErrorDialog("Invalid Address, addresse format should be xxx.xxx.xxx.xxx:port");
+                        ShowErrorDialog("Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port");
                     }
                     break;
             }

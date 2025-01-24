@@ -57,6 +57,7 @@ namespace RainMeadow
 
             passwordLabelWrapper = new UIelementWrapper(this.tabWrapper, new OpLabel(center + new Vector2(-80f, -40f), new Vector2(100f, 20f), "Password:"));
             passwordBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -60f), 160f);
+            passwordBox.greyedOut = true;
             passwordBox.accept = OpTextBox.Accept.StringASCII;
             passwordBox.allowSpace = true;
 
@@ -79,29 +80,6 @@ namespace RainMeadow
         }
 
 
-        public static IPEndPoint? GetEndPointByName(string name)
-        {
-            string[] parts = name.Split(':');
-            if (parts.Length != 2) {
-                RainMeadow.Debug("Invalid IP format without colon: " + name);
-                return null;
-            }
 
-
-            IPAddress address;
-            try {
-                address = IPAddress.Parse(parts[0]);
-            } catch (FormatException) {
-                RainMeadow.Debug("Invalid IP format: " + parts[0]);
-                return null;
-            }
-
-            if (!short.TryParse(parts[1], out short port)) {
-                RainMeadow.Debug("Invalid port format: " + parts[1]);
-                return null;
-            }
-            
-            return new IPEndPoint(address, port);
-        }
     }
 }

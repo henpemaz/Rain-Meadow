@@ -17,15 +17,24 @@ namespace RainMeadow
 
             if (player.id is SteamMatchmakingManager.SteamPlayerId playerid) {
                 var steamNetId = playerid.oid;
-                unsafe {
-                    fixed (byte* dataPointer = OnlineManager.serializer.buffer) {
-                        SteamNetworkingMessages.SendMessageToUser(ref steamNetId, 
-                            (IntPtr)dataPointer, 
-                            (uint)OnlineManager.serializer.Position, 
-                            sendType switch {
-                                SendType.Unreliable =>  Constants.k_nSteamNetworkingSend_Unreliable,
-                                SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable
-                                    }, 0);
+                using (var stream = new MemoryStream())
+                using (var writer = new BinaryWriter(stream)) {
+                    packet.Serialize(writer);
+                    
+                    
+
+                    unsafe {
+                        fixed (byte* dataPointer = stream.GetBuffer()) {
+                            SteamNetworkingMessages.SendMessageToUser(ref steamNetId, 
+                                (IntPtr)dataPointer, 
+                                (uint)stream.Position, 
+                                sendType switch {
+                                    
+                                    SendType.Unreliable =>  Constants.k_nSteamNetworkingSend_Unreliable,
+                                    SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable,
+                                    _ => Constants.k_nSteamNetworkingSend_Unreliable,
+                                        }, 0);
+                        }
                     }
                 }
             } else {
@@ -63,12 +72,16 @@ namespace RainMeadow
 
                                 if (MatchmakingManager.currentInstance is SteamMatchmakingManager manager) {
                                     var fromPlayer = (MatchmakingManager.currentInstance as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
-                                    if (fromPlayer != null) {
+                                    if (fromPlayer == null) {
                                         // RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
                                         continue;
                                     }
 
                                     //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                                    var stream = new MemoryStream(OnlineManager.serializer.buffer, 0, message.m_cbSize);
+                                    var reader = new BinaryReader(stream);
+                                    Packet.Decode(reader, fromPlayer);
+
                                     Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
                                     OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
                                 } else {
