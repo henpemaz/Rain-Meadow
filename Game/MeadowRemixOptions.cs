@@ -127,7 +127,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 120, "Introroll"),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(10, 60, "Downpour DLC is not activated, vanilla intro will be used instead")
+                downpourWarning = new OpLabel(10, 60, "Downpour DLC is not activated, vanilla intro will be used instead"),
 
                 new OpLabel(10, 115f, "Chat Talk Button"),
                 new OpKeyBinder(ChatButtonKey, new Vector2(10f, 85), new Vector2(150f, 30f)),
