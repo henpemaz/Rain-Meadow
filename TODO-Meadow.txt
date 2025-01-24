@@ -1,7 +1,87 @@
+raw
+
+post music merge:
+
+    check if entitydata gets read even if in subresource and data in region
+
+    ok looks like resource-read at least skip if not main resource
+
+V remove slugpups from meadow, you dirty asshole doesnt get to be special
+
+many crashes still
+
+does self disconnecting detects?
+
+tint amount still unintuitive
+	V if just-switched-from-default, set tint amount to 1
+
+going to fresh lobby still the most efficient
+
+V still stutter around creature pipes
+
+rot still stucks you (small creatures in GW drain entrance)
+
+walljump helpiness tents to fling you on accidental wjs
+
+whacamoles next to shortcuts are all over the place
+
+blue manuverability and pathing around corners is peak
+
+so many unlocks are out-of-bounds
+
+emote unlock has a lot of visibility, skin or creature don't
+
+"wish I could TP to people, or TP them to me"
+
+wc tunnel times are too high, too little feedback that you're stuck there
+
+the jetfish still spawns
+
+the vibezones music doesnt account for music off
+
+scav swing arm needs sync
+
+scav stretched arm animates unintentionally?
+
+echo + lightning palette (underhang) = flashing lights
+
+creatures don't make shortcut-pip noises
+
+scav hands "weight down" in zero g
+
+vine-grab-sync is very problematic in the room before GSB (5p)
+
+pebbles dialogue is default, and gravity keeps you trapped there
+
+    what'd the meadow-lore be?
+
+One laggy person can make things so problematic
+    if there was a metric like "average ping to others" to chose leasers
+
+I'm unhappy with the readme
+
+emote wishlist:
+    collision
+    sleep
+
+emotes display above map
+
+people can still force/trigger rain in meadow?
+
+
+
+
 HIGH-PRIO
 
-project
-	credits
+crashes
+
+bad ux
+
+to sort:
+esc on passage lobby
+can save in invalid room or invalidate save on mod changes
+see foos thread
+
 
 MEDIUM-PRIO
 

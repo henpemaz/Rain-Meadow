@@ -196,7 +196,7 @@ namespace RainMeadow
             if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
-        [RPCMethod]
+        [RPCMethod(runDeferred = true)] // deferred because NPCTransportationDestination needed
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
         {
             RainMeadow.Debug(this);

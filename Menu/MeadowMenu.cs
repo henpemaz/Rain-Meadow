@@ -310,6 +310,17 @@ namespace RainMeadow
 
         private void Colorpicker_OnValueChangedEvent()
         {
+            if (personaSettings.tint == Color.black)
+            {
+                // chaging from default tint, help noobs understand tint amount slider
+                if (tintAmount == 0f)
+                {
+                    RainMeadow.Debug("first-timer tint change");
+                    tintAmount = 1f;
+                    personaSettings.tintAmount = 1f;
+                    MeadowProgression.progressionData.currentCharacterProgress.tintAmount = 1f;
+                }
+            }
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintColor = personaSettings.tint;

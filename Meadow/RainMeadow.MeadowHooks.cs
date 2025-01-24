@@ -414,11 +414,11 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
+                    }, self.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
-                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
+                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.game.world, self.game.rainWorld))); // game assumes this too :/
                     self.hud.AddPart(new MeadowProgressionHud(self.hud));
                     self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
                     self.hud.AddPart(new MeadowHud(self.hud, self, owner));

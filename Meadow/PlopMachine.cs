@@ -538,7 +538,7 @@ namespace RainMeadow
                     else
                     {
                         //RainMeadow.Debug("Playing a note from Chitchat.Anarchy");
-                        if (liaison.pattern[liaison.patternindex])
+                        if (liaison.patternindex < liaison.pattern.Length && liaison.pattern[liaison.patternindex])
                         {
                             bool nextnoteexists = liaison.patternindex + 1 < liaison.pattern.Length ? liaison.pattern[liaison.patternindex + 1] : liaison.pattern[0];
                             if (nextnoteexists) plopmachine.Plop($"S-{liaison.note.Substring(2, 3)}");

@@ -899,7 +899,7 @@ namespace RainMeadow
                 internal float tintAmount;
                 [JsonProperty]
                 [JsonConverter(typeof(UnityColorConverter))]
-                internal Color tintColor;
+                internal Color tintColor = Color.black; // 0,0,0,0 is bad!
                 [JsonProperty]
                 public List<Emote> emoteHotbar;
 
