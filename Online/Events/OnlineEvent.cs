@@ -20,6 +20,8 @@ namespace RainMeadow
             serializer.Serialize(ref eventId);
         }
 
+        public virtual bool runDeferred => false;
+
         public abstract void Process(); // I've been received and I do something
 
         public virtual void Abort() // I was not acknowledged and the other guy left, what do, can be run on local or on remote

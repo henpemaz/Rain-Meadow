@@ -17,7 +17,7 @@ tint amount still unintuitive
 
 going to fresh lobby still the most efficient
 
-still stutter around creature pipes
+V still stutter around creature pipes
 
 rot still stucks you (small creatures in GW drain entrance)
 

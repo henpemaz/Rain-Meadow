@@ -12,7 +12,7 @@ namespace RainMeadow
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
-
+        public bool runDeferred; // run after state is processed, at end of network-frame
     }
 
     public static class RPCManager
@@ -27,8 +27,9 @@ namespace RainMeadow
             public MethodInfo method;
             public Action<RPCEvent, Serializer> serialize;
             public int eventArgIndex;
-            internal bool isStatic;
+            public bool isStatic;
             public string summary;
+            public bool runDeferred;
         }
 
         public static void SetupRPCs()
@@ -186,6 +187,7 @@ namespace RainMeadow
                     serialize = serialize,
                     eventArgIndex = argsEventIndex,
                     isStatic = isStatic,
+                    runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
@@ -248,6 +250,8 @@ namespace RainMeadow
                 throw;
             }
         }
+
+        override public bool runDeferred => handler.runDeferred;
 
         public override void Process()
         {
