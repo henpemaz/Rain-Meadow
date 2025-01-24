@@ -1,8 +1,10 @@
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using Steamworks;
 using System.Globalization;
 using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -321,7 +323,7 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-#if !LOCAL_P2P
+
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
                 var args = System.Environment.GetCommandLineArgs();
@@ -329,25 +331,26 @@ namespace RainMeadow
                 {
                     if (args[i] == "+connect_lobby")
                     {
-                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
-                        {
-                            Debug($"joining lobby with id {id} from the command line");
-                            // MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
-                            // I'm unsure how to implement this right now.
-                            Debug("Unimplemented");
-                            throw new System.NotImplementedException();
-                        }
-                        else
-                        {
-                            Error($"found +connect_lobby but no valid lobby id in the command line");
+                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
+                            if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
+                            {
+                                Debug($"joining lobby with id {id} from the command line");
+                                MatchmakingManager.currentInstance.RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
+
+                            }
+                            else
+                            {
+                                Error($"found +connect_lobby but no valid lobby id in the command line");
+                            }
                         }
                         break;
                     }
                 }
             }
-#endif
             orig(self, ID);
         }
+
+        private bool showed_no_steam_warning = false;
 
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
@@ -365,13 +368,15 @@ namespace RainMeadow
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>
             {
-#if !LOCAL_P2P
-                if (OnlineManager.netIO == null)
+                if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
-                    self.manager.ShowDialog(new DialogNotify("You need Steam active to play Rain Meadow", self.manager, null));
+                    showed_no_steam_warning = true;
+                    self.manager.ShowDialog(new DialogNotify("Steam is not currently available. Some features of Rain Meadow have been disabled.", self.manager, 
+                        () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }
-#endif
+
+                OnlineManager.LeaveLobby();
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
             }, self.mainMenuButtons.Count - 2);
         }

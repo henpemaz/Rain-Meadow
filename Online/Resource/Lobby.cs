@@ -237,7 +237,7 @@ namespace RainMeadow
 
 
                 }
-                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p != null).ToList());
+                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p is not null).ToList());
                 if (lobby.bannedUsersChecked == false)
                 {
                     // Need to get the participants before we check

@@ -64,9 +64,9 @@ namespace RainMeadow
             instances.Add(MatchMakingDomain.LAN, new LANMatchmakingManager());
             currentDomain = supported_matchmakers[0];
                 
-            currentInstance.initializeMePlayer();
+            OnlineManager.LeaveLobby();
             changedMatchMaker += (last, current) => {
-                currentInstance.initializeMePlayer();
+                OnlineManager.LeaveLobby();
             };
         }
 
