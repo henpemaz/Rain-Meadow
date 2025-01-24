@@ -6,6 +6,7 @@ using Menu;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 
 namespace RainMeadow {
@@ -211,6 +212,10 @@ namespace RainMeadow {
 
         public void RemoveLANPlayer(OnlinePlayer leavingPlayer)
         {
+            StackTrace stackTrace = new();
+            RainMeadow.Debug(stackTrace.ToString());
+
+
             if (leavingPlayer.isMe) return; 
             if (!OnlineManager.players.Contains(leavingPlayer)) { return; }
             HandleDisconnect(leavingPlayer);

@@ -613,7 +613,7 @@ namespace RainMeadow
                     .Select(x => x.GetIPProperties().UnicastAddresses)
                     .SelectMany(u => u)
                     .Select(u => u.Address)
-                    .Where(u => u.AddressFamily == AddressFamily.InterNetwork);
+                    .Where(u => u.AddressFamily == AddressFamily.InterNetwork && u != IPAddress.Loopback);
                 if (!adapter_interface_addresses.Contains(IPAddress.Loopback))
                     adapter_interface_addresses = adapter_interface_addresses.Append(IPAddress.Loopback);
                 interface_addresses = adapter_interface_addresses.ToArray();
@@ -629,7 +629,6 @@ namespace RainMeadow
             return getInterfaceAddresses().Contains(address);
         }
         public static bool CompareIPEndpoints(IPEndPoint a, IPEndPoint b) {
-            
             if (!a.Port.Equals(b.Port)) {
                 return false;
             }
@@ -736,14 +735,20 @@ namespace RainMeadow
             }
         }
 
-        const ulong PEER_TIMEOUT = 40*5; 
-        const ulong HEARTBEAT_TIME= 40*2; 
+        const ulong PEER_TIMEOUT = 1000*6; 
+        const ulong HEARTBEAT_TIME= 500; 
+        
 
+        Stopwatch stopWatch = new Stopwatch();
         public void Update() {
+            stopWatch.Stop();
+            long elapsedTime = stopWatch.ElapsedMilliseconds;
+            stopWatch.Restart();
+
             List<RemotePeer> peersToRemove = new();
             for (int i = peers.Count - 1; i >= 0; i--) {
                 RemotePeer peer = peers[i];
-                ++peer.TicksSinceLastPacket;
+                peer.TicksSinceLastPacket += (ulong)elapsedTime;
                 if (peer.TicksSinceLastPacket >= PEER_TIMEOUT) {
                     peersToRemove.Add(peer);
                     continue;
