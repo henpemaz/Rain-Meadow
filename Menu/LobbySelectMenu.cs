@@ -21,6 +21,7 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
+        private OpComboBox2 filterModsDropDown;
         private OpComboBox2 filterModeDropDown;
         private OpCheckBox filterPublicLobbiesOnly;
         private OpTextBox filterLobbyLimit;
@@ -100,6 +101,7 @@ namespace RainMeadow
             // filters
 
             Vector2 where = new Vector2(300f, 400f);
+
             var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModeLabel);
             where.y -= 27;
@@ -122,6 +124,18 @@ namespace RainMeadow
             filterLobbyLimit.maxLength = 2;
             filterLobbyLimit.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
+
+            where.y -= 30;
+            var filterModsLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mods"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(filterModsLabel);
+            where.y -= 27;
+            string[] requiredModIDs = (new string[2] { "All", "Any" }).Concat(RainMeadowModManager.GetRequiredMods()).ToArray();
+            string[] requiredModNames = (new string[2] { "All", "Any" }).Concat(RainMeadowModManager.GetRequiredModNames()).ToArray();
+            List<ListItem> requiredModsList = new();
+            for (int i = 0; i < requiredModIDs.Length; i++) requiredModsList.Add(new ListItem(requiredModIDs[i], requiredModNames[i]));
+            filterModsDropDown = new OpComboBox2(new Configurable<string>("Any"), where, 160f, requiredModsList) { colorEdge = MenuColorEffect.rgbWhite };
+            filterModsDropDown.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, filterModsDropDown);
 
             // if (OnlineManager.currentlyJoiningLobby != default)
             // {
@@ -193,6 +207,7 @@ namespace RainMeadow
         private void UpdateLobbyFilter()
         {
             lobbyList.filter.gameMode = filterModeDropDown.value;
+            lobbyList.filter.requiredMods = filterModsDropDown.value;
             lobbyList.filter.publicLobby = filterPublicLobbiesOnly.GetValueBool();
 
             lobbyList.FilterLobbies();
