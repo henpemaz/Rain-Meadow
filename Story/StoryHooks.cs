@@ -50,6 +50,8 @@ namespace RainMeadow
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
+            IL.Player.ctor += Player_ctor_NonHunterCampaignClientDisableRedsIllness;
+
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificerRobo.ctor += ClientDisableUAD;
@@ -65,6 +67,7 @@ namespace RainMeadow
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone;
             On.RegionGate.PlayersStandingStill += RegionGate_PlayersStandingStill;
             On.RegionGate.AllPlayersThroughToOtherSide += RegionGate_AllPlayersThroughToOtherSide;
+            new Hook(typeof(RegionGate).GetProperty("MeetRequirement").GetGetMethod(), this.RegionGate_MeetRequirement_StorySync);
 
             On.GhostHunch.Update += GhostHunch_Update;
 
@@ -102,10 +105,12 @@ namespace RainMeadow
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
             On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
-            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+
+            IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
+            IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
+            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
@@ -133,25 +138,56 @@ namespace RainMeadow
             }
         }
 
+        private void SlugcatSelectMenu_ctor(ILContext il)
+        {
+            try
+            {
+                // add colors checkbox regardless if remix disabled
+                var c = new ILCursor(il);
+                c.GotoNext(
+                    i => i.MatchStfld<Menu.SlugcatSelectMenu>("colorsCheckbox")
+                );
+                c.GotoPrev(MoveType.AfterLabel,
+                    i => i.MatchLdsfld<ModManager>("MMF"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.Index++;
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((bool showColorsCheckbox, Menu.SlugcatSelectMenu self) => showColorsCheckbox || (isStoryMode(out _) && self is StoryOnlineMenu));
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdsfld<ModManager>("MMF"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.Index++;
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu));
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
             {
-                if (box.IDString == "COLORS")
-                {
-                    return self.colorChecked;
-                }
-
-                if (box.IDString == "RESTART")
-                {
-                    return self.restartChecked;
-                }
-
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     return storyGameMode.saveToDisk;
                 }
-
 
                 if (box.IDString == "ONLINEFRIENDLYFIRE")
                 {
@@ -161,93 +197,46 @@ namespace RainMeadow
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     return storyGameMode.requireCampaignSlugcat;
-
                 }
-                return false;
             }
-            else
-            {
-                return orig(self, box);
-            }
+
+            return orig(self, box);
         }
 
         private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu storyMenu)
+            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
             {
-
-                if (box.IDString == "COLORS")
-                {
-                    self.colorChecked = c;
-                    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
-                    {
-                        self.AddColorButtons();
-                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
-                    }
-                    else
-                    {
-                        self.RemoveColorButtons();
-                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
-                    }
-                }
-
-                if (box.IDString == "RESTART")
-                {
-                    self.restartChecked = c;
-                    self.UpdateStartButtonText();
-
-                }
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     storyGameMode.saveToDisk = c;
+                    return;
                 }
 
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
-
+                    return;
                 }
 
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     storyGameMode.requireCampaignSlugcat = c;
-
+                    return;
                 }
             }
-            else
-            {
-                orig(self, box, c);
-            }
+
+            orig(self, box, c);
         }
 
         private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
         {
             orig(self, slider, f);
-            if (isStoryMode(out var story))
+            if (isStoryMode(out _) && self.colorInterface is not null)
             {
-
-                self.colorInterface.bodyColors[self.activeColorChooser].color = RWCustom.Custom.HSL2RGB(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
-                RainMeadow.Debug(self.colorInterface.bodyColors[self.activeColorChooser].color);
-                story.avatarSettings.bodyColor = self.colorInterface.bodyColors[0].color;
                 RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
-
-                story.avatarSettings.eyeColor = self.colorInterface.bodyColors[1].color;
                 RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
-
-
             }
-        }
-
-        private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
-        {
-            orig(self, menu, owner, pos, slugcatID, names, defaultColors);
-            if (isStoryMode(out var _))
-            {
-                self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
-                self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
-            }
-
-
         }
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
@@ -726,6 +715,25 @@ namespace RainMeadow
             }
         }
 
+        private void Player_ctor_NonHunterCampaignClientDisableRedsIllness(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchLdfld<SaveState>("redExtraCycles"),
+                        i => i.MatchCall<RedsIllness>("RedsCycles"),
+                        i => i.MatchBlt(out _),
+                        i => i.MatchLdsfld<ModManager>("CoopAvailable")
+                        );
+                c.EmitDelegate((bool coopAvailable) => coopAvailable || OnlineManager.lobby != null);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         private void ClientDisableUAD(ILContext il)
         {
             try
@@ -1078,6 +1086,13 @@ namespace RainMeadow
             return s;
         }
 
+        private static List<Func<string, string>> saveStateStringFilter = new();
+        public static event Func<string, string> SaveStateStringFilter
+        {
+            add => saveStateStringFilter.Add(value);
+            remove => saveStateStringFilter.Remove(value);
+        }
+
         private static string? SaveStateToString(SaveState? saveState)
         {
             if (saveState is null) return null;
@@ -1091,6 +1106,11 @@ namespace RainMeadow
                 saveState.objectTrackers = objectTrackers;
 
                 RainMeadow.Debug($"origSaveState[{s.Length}]:{s}");
+                if (saveStateStringFilter.Count > 0)
+                {
+                    foreach (var del in saveStateStringFilter) s = del(s);
+                    RainMeadow.Debug($"filtSaveState[{s.Length}]:{s}");
+                }
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
                 s = DeflateJoarXML(s);
@@ -1250,7 +1270,7 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForGate == 1)
+            // if (story.readyForGate >= Opening)
             //     open gate
             // else
             //     story.storyClientData.readyForGate = true
@@ -1269,7 +1289,7 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForGate == 1) return true;
+                        if (story.readyForGate >= StoryGameMode.ReadyForGate.Opening) return true;
                         story.storyClientData.readyForGate = false;
                     }
                     return false;
@@ -1334,7 +1354,18 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 storyGameMode.storyClientData.readyForGate = !ret;
-                ret = storyGameMode.readyForGate == 0;
+                ret = storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed;
+            }
+            return ret;
+        }
+
+        public bool RegionGate_MeetRequirement_StorySync(orig_RegionGateBool orig, RegionGate self)
+        {
+            var ret = orig(self);
+            if (isStoryMode(out var storyGameMode))
+            {
+                if (ret) StoryRPCs.RegionGateMeetRequirement();
+                ret = storyGameMode.readyForGate >= StoryGameMode.ReadyForGate.MeetRequirement;
             }
             return ret;
         }

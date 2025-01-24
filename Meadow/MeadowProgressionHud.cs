@@ -20,7 +20,7 @@ namespace RainMeadow
         private int progressionNeeded;
         private float progressionVisible;
         private Vector2 rootPos;
-        private MeadowProgression.Emote newEmote;
+        public static MeadowProgression.Emote? newEmote;
 
         Vector2 DrawPos(float timeStacker, int index)
         {

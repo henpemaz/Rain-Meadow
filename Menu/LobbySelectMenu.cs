@@ -136,18 +136,7 @@ namespace RainMeadow
 #endif
             MatchmakingManager.instance.RequestLobbyList();
 
-            if (manager.musicPlayer != null)
-            {
-                manager.musicPlayer.MenuRequestsSong("Establish", 1, 0);
-                if (manager.musicPlayer.nextSong == null)
-                {
-                    manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
-                }
-                else
-                {
-                    manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
-                }
-            }
+            manager.musicPlayer?.MenuRequestsSong("Establish", 1, 0);
         }
 
         public override void Update()

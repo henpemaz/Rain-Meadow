@@ -14,6 +14,10 @@ namespace RainMeadow
         }
         private static void IntroRoll_RawUpdate(On.Menu.IntroRoll.orig_RawUpdate orig, IntroRoll self, float dt)
         {
+            if (RainMeadow.rainMeadowOptions.PickedIntroRoll.Value != RainMeadowOptions.IntroRoll.Meadow) {
+                orig.Invoke(self, dt);
+                return;
+            }
             self.myTimeStacker += dt * (float)self.framesPerSecond;
             int num = 0;
             while (self.myTimeStacker > 1f)
@@ -97,18 +101,38 @@ namespace RainMeadow
         }
         private static void IntroRoll_ctor(On.Menu.IntroRoll.orig_ctor orig, IntroRoll self, ProcessManager manager)
         {
-
             orig.Invoke(self, manager);
-            self.pages[0].subObjects.DoIf(c => c is MenuIllustration, c => { c.RemoveSprites(); });
-            self.pages[0].subObjects.RemoveAll(c => c is MenuIllustration);
-            string[] illustrationsnames = new string[7] { "adultswim", "akupara", "videocult", "titleandground", "nootmama", "nootbaby", "squidcada" };
-            self.illustrations = new MenuIllustration[7];
-            for (int i = 0; i < illustrationsnames.Length; i++) { self.illustrations[i] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", illustrationsnames[i], new Vector2(0f, 0f), true, false); }
-            for (int i = 0; i < self.illustrations.Length; i++)
+            if (RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Meadow)
             {
-                self.pages[0].subObjects.Add(self.illustrations[i]);
-                self.illustrations[i].sprite.isVisible = false;
+                self.pages[0].subObjects.DoIf(c => c is MenuIllustration, c => { c.RemoveSprites(); });
+                self.pages[0].subObjects.RemoveAll(c => c is MenuIllustration);
+                string[] illustrationsnames = new string[7] { "adultswim", "akupara", "videocult", "titleandground", "nootmama", "nootbaby", "squidcada" };
+                self.illustrations = new MenuIllustration[7];
+                for (int i = 0; i < illustrationsnames.Length; i++) { self.illustrations[i] = new MenuIllustration(self, self.pages[0], "illustrations/rainmeadow introroll", illustrationsnames[i], new Vector2(0f, 0f), true, false); }
+                for (int i = 0; i < self.illustrations.Length; i++)
+                {
+                    self.pages[0].subObjects.Add(self.illustrations[i]);
+                    self.illustrations[i].sprite.isVisible = false;
+                }
             }
+            else if (manager.rainWorld.dlcVersion != 0 && RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Downpour)
+            {
+                self.illustrations[2].RemoveSprites();
+                self.pages[0].subObjects.Remove(self.illustrations[2]);
+                string[] array = new string[] { "gourmand", "rivulet", "spear", "artificer", "saint" };
+                self.illustrations[2] = new MenuIllustration(self, self.pages[0], "", "Intro_Roll_C_" + array[Random.Range(0, array.Length)], new Vector2(0f, 0f), true, false);
+                self.pages[0].subObjects.Add(self.illustrations[2]);
+                self.illustrations[2].sprite.isVisible = false;
+            }
+            else //(RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Vanilla)
+            {
+                self.illustrations[2].RemoveSprites();
+                self.pages[0].subObjects.Remove(self.illustrations[2]);
+                self.illustrations[2] = new MenuIllustration(self, self.pages[0], "", "Intro_Roll_C", new Vector2(0f, 0f), true, false);
+                self.pages[0].subObjects.Add(self.illustrations[2]);
+                self.illustrations[2].sprite.isVisible = false;
+            }
+
             if (ModManager.MSC && manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
                 manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = SlugcatStats.Name.White;

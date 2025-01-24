@@ -326,7 +326,7 @@ namespace RainMeadow
                                         RainMeadow.Debug($"spawning in shortcuts");
                                         ac2.Realize();
                                         ac2.realizedCreature.inShortcut = true;
-                                        
+
                                         if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
                                         {
                                             ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
@@ -381,7 +381,18 @@ namespace RainMeadow
                 if (primaryResource == null) // gone
                 {
                     RainMeadow.Debug("Removing entity from game: " + this);
+                    if (apo.stuckObjects != null)
+                    {
+                        foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                        {
+                            if (stick.A.realizedObject is Weapon weapon)
+                            {
+                                weapon.ChangeMode(Weapon.Mode.Free);
+                            }
+                        }
+                    }
                     apo.LoseAllStuckObjects();
+
                     apo.Room?.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {

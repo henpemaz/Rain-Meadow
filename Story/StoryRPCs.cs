@@ -115,5 +115,21 @@ namespace RainMeadow
 
             script.TriggerFadeToEnding();
         }
+
+        [RPCMethod]
+        public static void RegionGateMeetRequirement()
+        {
+            if (RainMeadow.isStoryMode(out var storyGameMode) && storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed)
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.MeetRequirement;
+                }
+                else
+                {
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RegionGateMeetRequirement);
+                }
+            }
+        }
     }
 }

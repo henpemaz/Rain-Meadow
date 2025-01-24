@@ -9,7 +9,7 @@ namespace RainMeadow
         public new string _lastInput = "";
         public new HashSet<ICanBeTyped> _assigned = new HashSet<ICanBeTyped>();
         public new ICanBeTyped? _focused;
-        public void Update()
+        public new void Update()
         {
             if (_assigned.Count < 1)
             {
@@ -53,17 +53,17 @@ namespace RainMeadow
             }
             _lastInput = inputString;
         }
-        public void OnDestroy()
+        public new void OnDestroy()
         {
             _assigned.Clear();
             _focused = null;
             CanBeTypedExt._HandlerOnDestroy();
         }
-        public void Assign(ICanBeTyped typable)
+        public new void Assign(ICanBeTyped typable)
         {
             _assigned.Add(typable);
         }
-        public void Unassign(ICanBeTyped typable)
+        public new void Unassign(ICanBeTyped typable)
         {
             _assigned.Clear();
             _assigned.Remove(typable);
