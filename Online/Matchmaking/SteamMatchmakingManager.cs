@@ -388,6 +388,11 @@ namespace RainMeadow
 
         private void GameLobbyJoinRequested(GameLobbyJoinRequested_t param)
         {
+            if (MatchmakingManager.currentDomain != MatchMakingDomain.Steam) {
+                OnlineManager.LeaveLobby();
+                MatchmakingManager.currentDomain = MatchMakingDomain.Steam;
+            }
+
             try
             {
                 if (param.m_steamIDLobby.m_SteamID == lobbyID.m_SteamID)

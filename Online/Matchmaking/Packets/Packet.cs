@@ -48,7 +48,7 @@ namespace RainMeadow
             processingPlayer = fromPlayer;
 
             Type type = (Type)reader.ReadByte();
-            RainMeadow.Debug($"Recieved {type}");
+            // RainMeadow.Debug($"Recieved {type}");
             //RainMeadow.Debug("Got packet type: " + type);
 
             Packet? packet = type switch
@@ -65,7 +65,11 @@ namespace RainMeadow
                 _ => null
             };
 
-            if (packet == null) throw new Exception($"Undetermined packet type ({type}) received");
+            if (packet == null) {
+                // throw new Exception($"Undetermined packet type ({type}) received");
+                RainMeadow.Error("Bad Packet Type Recieved");
+                return;
+            } 
 
             packet.size = reader.ReadUInt16();
 

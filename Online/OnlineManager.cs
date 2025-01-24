@@ -1,4 +1,5 @@
-﻿using Steamworks;
+﻿using Menu;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -112,9 +113,6 @@ namespace RainMeadow
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-// #if !LOCAL_P2P
-//             SteamAPI.RunCallbacks();
-// #endif
             netIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 

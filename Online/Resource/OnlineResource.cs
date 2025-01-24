@@ -15,7 +15,7 @@ namespace RainMeadow
 
         public List<OnlineResource> subresources;
 
-        public bool isOwner => owner != null && owner.isMe;
+        public bool isOwner => (owner is not null) && owner.isMe;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
 

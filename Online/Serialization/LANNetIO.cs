@@ -20,6 +20,7 @@ namespace RainMeadow
                 if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                     return;
                 }
+                List<OnlinePlayer> playerstoRemove = new();
                 foreach (OnlinePlayer player in OnlineManager.players) {
                     if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
                         if (lanid.endPoint is null) continue;
@@ -27,16 +28,42 @@ namespace RainMeadow
                             if ((OnlineManager.lobby?.owner is OnlinePlayer owner && owner == player) ||
                                 (OnlineManager.lobby?.isOwner ?? true)
                             ) {
-                                ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
+                                playerstoRemove.Add(player);
+                                
                             }
                         }
                     }
                 }
 
+                foreach (var player in playerstoRemove) ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
             };
         }
 
+        public void SendBroadcast(Packet packet) {
+            RainMeadow.DebugMe();
+            for (int broadcast_port = UDPPeerManager.DEFAULT_PORT; 
+                broadcast_port < (UDPPeerManager.FIND_PORT_ATTEMPTS + UDPPeerManager.DEFAULT_PORT); 
+                broadcast_port++) {
+                IPEndPoint point = new(IPAddress.Broadcast, broadcast_port);
 
+                var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(point);
+                if (player == null)
+                {
+                    RainMeadow.Debug("Player not found! Instantiating new at: " + point);
+                    var playerid = new LANMatchmakingManager.LANPlayerId(point);
+                    player = new OnlinePlayer(playerid);
+                }
+
+                MemoryStream memory = new MemoryStream(128);
+                BinaryWriter writer = new BinaryWriter(memory);
+
+                Packet.Encode(packet, writer, player);
+
+                for (int i = 0; i < 4; i++)
+                manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                    UDPPeerManager.PacketType.UnreliableBroadcast, true);
+                }
+        }
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
@@ -49,13 +76,13 @@ namespace RainMeadow
             manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, sendType switch
                 {
                      NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
-                     NetIO.SendType.Unreliable => UDPPeerManager.PacketType.Unreliable,
+                     NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
                      _ => UDPPeerManager.PacketType.Unreliable,
-                 }, start_conversation);
+                }, start_conversation);
         }
 
 
-        public void SendAcknoledgement(OnlinePlayer player, bool start_conversation = false) {
+        public void SendAcknoledgement(OnlinePlayer player) {
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }

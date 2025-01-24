@@ -561,8 +561,8 @@ namespace RainMeadow
             public ulong remote_acknowledgement = 0;
             
         }
-        const int DEFAULT_PORT = 8720;
-        const int FIND_PORT_ATTEMPTS = 8; // 8 players somehow hosting from the same machine is ridiculous.
+        public const int DEFAULT_PORT = 8720;
+        public const int FIND_PORT_ATTEMPTS = 8; // 8 players somehow hosting from the same machine is ridiculous.
         public UDPPeerManager() {
             try {
                 this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -602,8 +602,41 @@ namespace RainMeadow
             return peer;
         }
 
+
+        static IPAddress[] interface_addresses = null;
+        static public IPAddress[] getInterfaceAddresses() {
+            if (interface_addresses == null) {
+                var adapters = NetworkInterface.GetAllNetworkInterfaces();
+                var adapter_interface_addresses = adapters.Where(x =>
+                    x.Supports(NetworkInterfaceComponent.IPv4) &&
+                    x.NetworkInterfaceType is NetworkInterfaceType.Ethernet or NetworkInterfaceType.Wireless80211)
+                    .Select(x => x.GetIPProperties().UnicastAddresses)
+                    .SelectMany(u => u)
+                    .Select(u => u.Address)
+                    .Where(u => u.AddressFamily == AddressFamily.InterNetwork);
+                if (!adapter_interface_addresses.Contains(IPAddress.Loopback))
+                    adapter_interface_addresses = adapter_interface_addresses.Append(IPAddress.Loopback);
+                interface_addresses = adapter_interface_addresses.ToArray();
+                foreach(var addr in interface_addresses) {
+                    RainMeadow.Debug(addr);
+                }
+            }
+
+            return interface_addresses;
+        }
+
+        static public bool isLoopback(IPAddress address) {
+            return getInterfaceAddresses().Contains(address);
+        }
         public static bool CompareIPEndpoints(IPEndPoint a, IPEndPoint b) {
-            return a.Address.MapToIPv4().Equals(b.Address.MapToIPv4()) && a.Port.Equals(b.Port);
+            
+            if (!a.Port.Equals(b.Port)) {
+                return false;
+            }
+
+            if (isLoopback(a.Address) && isLoopback(b.Address)) return true;
+
+            return a.Address.MapToIPv4().Equals(b.Address.MapToIPv4());
         }
         public static bool isEndpointLocal(IPEndPoint endpoint) {
             var addressbytes = endpoint.Address.GetAddressBytes();
@@ -643,6 +676,34 @@ namespace RainMeadow
                 ForgetPeer(peer);
             }
         }
+        public static IPEndPoint? GetEndPointByName(string name)
+        {
+            string[] parts = name.Split(':');
+            if (parts.Length != 2) {
+                RainMeadow.Debug("Invalid IP format without colon: " + name);
+                return null;
+            }
+
+
+            IPAddress address;
+            try {
+                address = IPAddress.Parse(parts[0]);
+            } catch (FormatException) {
+                address = Dns.GetHostEntry(parts[0])
+                    .AddressList
+                    .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                    .FirstOrDefault();
+                if (address == null) return null;
+            }
+
+            if (!short.TryParse(parts[1], out short port)) {
+                RainMeadow.Debug("Invalid port format: " + parts[1]);
+                return null;
+            }
+            
+            return new IPEndPoint(address, port);
+        }
+
 
         public void Send(byte[] packet, IPEndPoint endPoint, PacketType packet_type = PacketType.Reliable, bool begin_conversation = false) {
             if (GetRemotePeer(endPoint, true) is RemotePeer peer) {
@@ -655,25 +716,7 @@ namespace RainMeadow
                 } else {
                     SendRaw(packet, peer, packet_type);
                 }
-
-            }
-
-        }
-
-        const int BROADCAST_ATTEMPTS = 4;
-
-        public void SendBroadcast(byte[] packet) {
-            IPAddress broadcast = IPAddress.Parse("192.168.1.255");
-            for (int broadcast_port  = DEFAULT_PORT; broadcast_port < (DEFAULT_PORT + FIND_PORT_ATTEMPTS); broadcast_port++) 
-            for (int i = 0; i < BROADCAST_ATTEMPTS; i++) {
-                using (MemoryStream stream = new(packet.Length + 1)) 
-                using (BinaryWriter writer = new(stream)) {
-                    writer.Write((byte)PacketType.UnreliableBroadcast);
-                    writer.Write(packet);
-                    socket.SendTo(stream.GetBuffer(), (int)stream.Position, SocketFlags.None, 
-                        new IPEndPoint(broadcast, broadcast_port));
-                }
-            }
+            } else RainMeadow.Error("Failed to get remote peer");
         }
 
         public void SendRaw(byte[] packet, RemotePeer peer, PacketType packet_type, bool begin_conversation = false) {
@@ -791,6 +834,7 @@ namespace RainMeadow
                         if (type != PacketType.UnreliableBroadcast) // If it's a broadcast, we don't need to start a converstation.
                         if (peer == null) {
                             RainMeadow.Debug("Recieved packet from peer we haven't started a conversation with.");
+                            RainMeadow.Debug(Enum.GetName(typeof(PacketType), type));
                             return null;
                         }
 
