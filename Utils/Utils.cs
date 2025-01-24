@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -79,6 +80,22 @@ namespace RainMeadow
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Take elements from an enumerable from startIndex to (endIndex - 1) inclusive.
+        /// </summary>
+        /// <param name="enumerable">The enumerable to take from.</param>
+        /// <param name="startIndex">The start index (inclusive).</param>
+        /// <param name="endIndex">The end index (exclusive).</param>
+        /// <returns>The taken elements.</returns>
+        public static List<T> TakeFromTo<T>(this IEnumerable<T> enumerable, int startIndex, int endIndex)
+        {
+            var fromStart = enumerable.Skip(startIndex).ToList();
+
+            var toTake = endIndex - startIndex;
+
+            return fromStart.Take(toTake).ToList();
         }
     }
 }

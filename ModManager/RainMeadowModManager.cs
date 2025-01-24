@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using RWCustom;
@@ -12,9 +13,9 @@ namespace RainMeadow
         public static string BannedOnlineModsFileName => "meadow-bannedonlinemods.txt";
 
         /// <summary>
-        /// Prefix that indicates a line should be ignored in one of the user defined files.
+        /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
-        public static string IgnoredLinePrefix => "//";
+        public static string CommentPrefix => "//";
 
         public static string[] GetRequiredMods()
         {
@@ -126,19 +127,65 @@ namespace RainMeadow
                 return newLines;
             }
 
-            var lines = File.ReadAllLines(path).ToList();
+            var existingLines = File.ReadAllLines(path).Distinct().ToList();
+            var linesToWrite = new List<string>();
 
-            var ignoredLines = lines
-                .Where(x => x.StartsWith(IgnoredLinePrefix))
-                .Select(x => x.TrimStart(IgnoredLinePrefix));
+            // Lines without their comments and whitespaces: disabled have a leading comment, meaning the whole line is commented out
+            var trimmedActiveLines = new List<string>();
+            var trimmedDisabledLines = new List<string>();
 
-            var linesToAdd = newLines.Except(ignoredLines);
+            // Trim non-leading comments (leading comments will be used to exclude mods)
+            foreach (var line in existingLines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    linesToWrite.Add(line);
+                    continue;
+                }
 
-            lines.AddDistinctRange(linesToAdd);
+                var trimmedLine = line.Trim();
+                var isDisabledLine = false;
 
-            File.WriteAllLines(path, lines);
+                // Leading comment disables the whole line
+                if (trimmedLine.StartsWith(CommentPrefix))
+                {
+                    trimmedLine = trimmedLine.TrimStart(CommentPrefix);
+                    isDisabledLine = true;
+                }
 
-            return lines;
+                var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
+
+                // Trim any additional (non-leading) comments
+                if (commentStartIndex != -1)
+                {
+                    trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
+                }
+
+                // Discard duplicate active lines
+                if (!isDisabledLine && trimmedActiveLines.Contains(trimmedLine))
+                {
+                    continue;
+                }
+
+                if (isDisabledLine)
+                {
+                    trimmedDisabledLines.Add(trimmedLine);
+                }
+                else
+                {
+                    trimmedActiveLines.Add(trimmedLine);
+                }
+
+                linesToWrite.Add(line);
+            }
+
+            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines);
+
+            linesToWrite.AddDistinctRange(linesToAdd);
+
+            File.WriteAllLines(path, linesToWrite);
+
+            return linesToWrite.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         }
     }
 }
