@@ -185,7 +185,7 @@ namespace RainMeadow
 
             File.WriteAllLines(path, linesToWrite);
 
-            return linesToWrite.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+            return trimmedActiveLines;
         }
     }
 }
