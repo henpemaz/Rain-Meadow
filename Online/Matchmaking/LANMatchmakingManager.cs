@@ -13,6 +13,10 @@ namespace RainMeadow {
     
 
     public class LANMatchmakingManager : MatchmakingManager {
+        public string GenerateRandomUsername()
+        {
+            return "";
+        }
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
             public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
@@ -29,7 +33,7 @@ namespace RainMeadow {
             public IPEndPoint endPoint;
 
             public LANPlayerId() { }
-            public LANPlayerId(IPEndPoint? endPoint) : base(endPoint?.ToString() ?? "Unknown Endpoint")
+            public LANPlayerId(IPEndPoint? endPoint) : base(RainMeadow.rainMeadowOptions.LanUserName.Value != "" ? RainMeadow.rainMeadowOptions.LanUserName.Value : UsernameGenerator.GenerateRandomUsername())
             {
                 this.endPoint = endPoint ?? BlackHole;
             }
