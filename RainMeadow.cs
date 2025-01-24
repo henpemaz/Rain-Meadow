@@ -213,16 +213,6 @@ namespace RainMeadow
                 MeadowProgression.LoadProgression();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-
-#if LOCAL_P2P
-                if (!self.setup.startScreen)
-                {
-                    if (!self.setup.loadGame) self.processManager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Dev; // this got messed up last patch
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
-                    MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
-                }
-#endif
-
                 fullyInit = true;
             }
             catch (Exception e)

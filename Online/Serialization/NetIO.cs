@@ -18,18 +18,7 @@ namespace RainMeadow
             try
             {
                 OnlineManager.serializer.WriteData(toPlayer);
-// #if LOCAL_P2P
                 SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
-// #else
-//                 var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
-//                 unsafe
-//                 {
-//                     fixed (byte* dataPointer = OnlineManager.serializer.buffer)
-//                     {
-//                         SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
-//                     }
-//                 }
-// #endif
             }
             catch (Exception e)
             {
@@ -68,11 +57,6 @@ namespace RainMeadow
 
         public virtual void Update()
         {
-// #if LOCAL_P2P
-//             ReceiveDataLocal();
-// #else
-//             ReceiveDataSteam();
-// #endif
                RecieveData();
         }
 
