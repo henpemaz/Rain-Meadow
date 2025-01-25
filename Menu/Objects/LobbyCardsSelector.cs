@@ -274,6 +274,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                     if (filter.requiredMods == "All")
                     {
                         string[] lobbyMods = RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods);
+                        if (lobbyMods.Length != requiredMods.Length) continue; //we must have different required mods, so don't even bother checking
                         bool missingMod = false;
                         foreach (string m in lobbyMods)
                         {
