@@ -6,6 +6,7 @@ namespace RainMeadow
 
         public override void Process()
         {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) return;
             if (OnlineManager.lobby != null)
             {
                 (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).RemoveLANPlayer(processingPlayer);

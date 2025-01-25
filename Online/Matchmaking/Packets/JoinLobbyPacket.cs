@@ -8,6 +8,7 @@ namespace RainMeadow
 
         public override void Process()
         {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) return;
             var newLobbyInfo = MakeLobbyInfo();
 
             // If we don't have a lobby and we a currently joining a lobby
