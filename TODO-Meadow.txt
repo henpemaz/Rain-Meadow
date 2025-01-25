@@ -1,31 +1,16 @@
 raw
 
-post music merge:
-
-    check if entitydata gets read even if in subresource and data in region
-
-    ok looks like resource-read at least skip if not main resource
-
-V remove slugpups from meadow, you dirty asshole doesnt get to be special
-
 many crashes still
 
 does self disconnecting detects?
 
-tint amount still unintuitive
-	V if just-switched-from-default, set tint amount to 1
-
 going to fresh lobby still the most efficient
-
-V still stutter around creature pipes
 
 rot still stucks you (small creatures in GW drain entrance)
 
 walljump helpiness tents to fling you on accidental wjs
 
 whacamoles next to shortcuts are all over the place
-
-blue manuverability and pathing around corners is peak
 
 so many unlocks are out-of-bounds
 
@@ -37,7 +22,7 @@ wc tunnel times are too high, too little feedback that you're stuck there
 
 the jetfish still spawns
 
-the vibezones music doesnt account for music off
+the vibezones music doesnt account for music off - recheck
 
 scav swing arm needs sync
 
@@ -79,7 +64,6 @@ bad ux
 
 to sort:
 esc on passage lobby
-can save in invalid room or invalidate save on mod changes
 see foos thread
 
 
@@ -92,7 +76,7 @@ music
 	joining group in vibezone overrides vibe
 
 bugs
-	saving in missing region stays in missing region
+	saving in missing region stays in missing region - attempted fix
 
 LOW-PRIO
 

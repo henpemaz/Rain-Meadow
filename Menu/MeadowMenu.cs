@@ -263,6 +263,20 @@ namespace RainMeadow
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+
+            var saveLocation = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
+            if (saveLocation.Valid && RainWorld.roomIndexToName.ContainsKey(saveLocation.room) // saved as valid and found
+                || !saveLocation.Valid && RainWorld.roomNameToIndex.ContainsKey(saveLocation.unknownName) // saved as invalid but found
+                )
+            {
+                manager.menuSetup.regionSelectRoom = saveLocation.ResolveRoomName();
+            }
+            else
+            {
+                manager.menuSetup.regionSelectRoom = MeadowProgression.defaultStartingRoom;
+            }
+
+
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }

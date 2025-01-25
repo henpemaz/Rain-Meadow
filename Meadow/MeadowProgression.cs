@@ -35,6 +35,8 @@ namespace RainMeadow
             }
         }
 
+        public static string defaultStartingRoom = "SU_C04";
+
         public static List<Character> allCharacters = new();
 
         public static Dictionary<Character, CharacterData> characterData = new();
