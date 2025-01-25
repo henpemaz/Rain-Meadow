@@ -19,6 +19,7 @@ namespace RainMeadow
             {
                 OnlineManager.serializer.WriteData(toPlayer);
                 SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
+                OnlineManager.serializer.EndWrite();
             }
             catch (Exception e)
             {

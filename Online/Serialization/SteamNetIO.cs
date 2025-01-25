@@ -19,10 +19,8 @@ namespace RainMeadow
                 var steamNetId = playerid.oid;
                 using (var stream = new MemoryStream())
                 using (var writer = new BinaryWriter(stream)) {
-                    packet.Serialize(writer);
-                    
-                    
-
+                    //packet.Serialize(writer); Forgot about Packet.Encode ;.;
+                    Packet.Encode(packet, writer, player);
                     unsafe {
                         fixed (byte* dataPointer = stream.GetBuffer()) {
                             SteamNetworkingMessages.SendMessageToUser(ref steamNetId, 
