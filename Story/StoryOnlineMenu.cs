@@ -75,7 +75,7 @@ namespace RainMeadow
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
 
             // hehe yoink
-            if (this.colorChecked) //
+            if (this.colorChecked)
             {
                 List<Color> val = new();
                 for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
