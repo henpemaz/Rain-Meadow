@@ -64,6 +64,14 @@ namespace RainMeadow
             On.World.SpawnGhost += World_SpawnGhost;
 
             On.CreatureTemplate.CreatureRelationship_CreatureTemplate += CreatureTemplate_CreatureRelationship_CreatureTemplate;
+
+            On.ShortcutHandler.ShortCutVessel.ctor += ShortCutVessel_ctor; // faster vessels
+        }
+
+        private void ShortCutVessel_ctor(On.ShortcutHandler.ShortCutVessel.orig_ctor orig, ShortcutHandler.ShortCutVessel self, RWCustom.IntVector2 pos, Creature creature, AbstractRoom room, int wait)
+        {
+            orig(self, pos, creature, room, wait);
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode) self.wait = Mathf.Min(100, Mathf.FloorToInt(self.wait * 0.4f + 5f));
         }
 
         private CreatureTemplate.Relationship CreatureTemplate_CreatureRelationship_CreatureTemplate(On.CreatureTemplate.orig_CreatureRelationship_CreatureTemplate orig, CreatureTemplate self, CreatureTemplate crit)

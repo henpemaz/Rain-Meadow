@@ -18,7 +18,8 @@ emote unlock has a lot of visibility, skin or creature don't
 
 "wish I could TP to people, or TP them to me"
 
-wc tunnel times are too high, too little feedback that you're stuck there
+V wc tunnel times are too high
+	too little feedback that you're stuck there
 
 the jetfish still spawns
 
