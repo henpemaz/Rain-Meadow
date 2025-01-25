@@ -225,9 +225,18 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
+
                 try
                 {
-                    onlineEvent.Process();
+                    if (onlineEvent.runDeferred)
+                    {
+                        RunDeferred(() => onlineEvent.Process());
+                        RainMeadow.Debug("deferred: " + onlineEvent);
+                    }
+                    else
+                    {
+                        onlineEvent.Process();
+                    }
                 }
                 catch (Exception e)
                 {

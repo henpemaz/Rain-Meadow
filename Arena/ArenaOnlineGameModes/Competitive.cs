@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RainMeadow;
+using System.Collections.Generic;
 using System.Linq;
 namespace RainMeadow
 {
@@ -71,6 +72,5 @@ namespace RainMeadow
             aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
 
         }
-
     }
 }

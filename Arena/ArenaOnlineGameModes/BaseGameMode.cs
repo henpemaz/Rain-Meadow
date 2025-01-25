@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Menu;
+using RainMeadow;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -55,6 +56,7 @@ namespace RainMeadow
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
+            DeathMessage.PlayerKillCreature(player, killedCrit);
 
         }
         public virtual void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)

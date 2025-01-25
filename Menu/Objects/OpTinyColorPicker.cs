@@ -59,7 +59,8 @@ namespace RainMeadow
         {
             get
             {
-                return colorPicker.valueColor;
+                // return colorPicker.valueColor; you'd think so but this thing is dogshit
+                return RWCustom.Custom.hexToColor(colorPicker.value);
             }
             set
             {
@@ -75,7 +76,7 @@ namespace RainMeadow
             base.Update();
             if (currentlyPicking)
             {
-                OnValueChangedEvent?.Invoke();
+                if (colorPicker.value != colorPicker.lastValue) OnValueChangedEvent?.Invoke();
 
                 if (!mouseMode && !colorPicker.held)
                 {

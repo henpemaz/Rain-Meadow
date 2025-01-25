@@ -2,14 +2,15 @@
 *			@henpemaz
 
 # general (no owner)
-/Game		
-/GameModes	
-/Menu		
-/Utils		
+/Game/		
+/GameModes/	
+/Menu/		
+/OnlineUIComponents/
+/Utils/		
 /Online/RPCs.cs	
 /Online/ConsumableRPCs.cs	
 
 # team specific
-/Arena		@6fears7
-/Story		@6fears7
-/Meadow		@henpemaz
+/Arena/		@6fears7
+/Story/		@6fears7
+/Meadow/	@henpemaz
