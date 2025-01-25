@@ -54,6 +54,7 @@ namespace RainMeadow
 
         public override void Process()
         {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) return;
             switch (modifyOperation)
             {
                 case Operation.Add:
