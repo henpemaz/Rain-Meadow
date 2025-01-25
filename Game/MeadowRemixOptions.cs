@@ -21,6 +21,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<bool> ArenaSAINOT;
+    public readonly Configurable<string> LanUserName;
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
     public enum IntroRoll
@@ -35,6 +36,8 @@ public class RainMeadowOptions : OptionInterface
     private UIelement[] GeneralUIArrPlayerOptions;
     private UIelement[] OnlineArenaSettings;
     private UIelement[] OnlineStorySettings;
+    private UIelement[] OnlineLANSettings;
+
 
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
@@ -54,6 +57,8 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        LanUserName = config.Bind("LanUserName", "");
+
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
 
     }
@@ -66,10 +71,11 @@ public class RainMeadowOptions : OptionInterface
             OpTab opTab = new OpTab(this, "General");
             OpTab arenaTab = new OpTab(this, "Arena");
             OpTab storyTab = new OpTab(this, "Story");
-            
+            OpTab lanTab = new OpTab(this, "LAN");
 
 
-            Tabs = new OpTab[4] { meadowTab, opTab, arenaTab, storyTab };
+
+            Tabs = new OpTab[5] { meadowTab, opTab, arenaTab, storyTab, lanTab };
 
             List<UIelement> meadowCheats;
             OpTextBox meadowCheatBox;
@@ -97,7 +103,7 @@ public class RainMeadowOptions : OptionInterface
             meadowCheatBox.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "cheats") meadowCheats.ForEach(cheat => cheat.Show()); else meadowCheats.ForEach(cheat => cheat.Hide()); };
             cheatEmote.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableEmote() != null) while (MeadowProgression.EmoteProgress() == null) ; (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableEmote() == null; };
             cheatSkin.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableSkin() != null) while (MeadowProgression.SkinProgress() == null) ; (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableSkin() == null; };
-            cheatCharacter.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableCharacter() != null) while (MeadowProgression.CharacterProgress() == null) ;  (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableCharacter() == null; };
+            cheatCharacter.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Game_Over_Prompt); if (MeadowProgression.NextUnlockableCharacter() != null) while (MeadowProgression.CharacterProgress() == null) ; (trigger as OpSimpleButton).greyedOut = MeadowProgression.NextUnlockableCharacter() == null; };
             cheatReset.OnClick += (UIfocusable trigger) => { trigger.Menu.PlaySound(SoundID.HUD_Karma_Reinforce_Flicker); MeadowProgression.progressionData = null; MeadowProgression.LoadDefaultProgression(); cheatEmote.greyedOut = cheatSkin.greyedOut = cheatCharacter.greyedOut = false; };
 
             meadowTab.AddItems(OnlineMeadowSettings);
@@ -190,7 +196,21 @@ public class RainMeadowOptions : OptionInterface
         };
             arenaTab.AddItems(OnlineArenaSettings);
 
+            OnlineLANSettings = new UIelement[3]
+            {
+                new OpLabel(10f, 550f, "LAN", bigText: true),
+                new OpLabel(10f, 505, "Username", bigText: false),
+
+                new OpTextBox(LanUserName, new Vector2(10f, 480), 160f)
+                {
+                    accept = OpTextBox.Accept.StringASCII
+                }
+
+        };
+            lanTab.AddItems(OnlineLANSettings);
+
         }
+
         catch (Exception ex)
         {
             RainMeadow.RainMeadow.Error("Error opening RainMeadow Options Menu" + ex);
