@@ -12,7 +12,7 @@ namespace RainMeadow
         public int playerCount;
         public bool hasPassword;
         public int maxPlayerCount;
-        public string highImpactMods;
+        public string requiredMods;
 
         public IPEndPoint? ipEndpoint;
 
@@ -24,7 +24,7 @@ namespace RainMeadow
             this.playerCount = playerCount;
             this.hasPassword = hasPassword;
             this.maxPlayerCount = (int)maxPlayerCount;
-            this.highImpactMods = highImpactMods;
+            this.requiredMods = highImpactMods;
         }
 
         public LobbyInfo(IPEndPoint ipEndpoint, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "")
@@ -37,7 +37,7 @@ namespace RainMeadow
             this.playerCount = playerCount;
             this.hasPassword = hasPassword;
             this.maxPlayerCount = (int)maxPlayerCount;
-            this.highImpactMods = highImpactMods;
+            this.requiredMods = highImpactMods;
         }
     }
 }

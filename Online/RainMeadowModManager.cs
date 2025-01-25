@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -45,6 +46,15 @@ namespace RainMeadow
                     || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
                 .Select(mod => mod.name)
                 .ToArray();
+        }
+
+        public static string RequiredModsArrayToString(string[] requiredMods)
+        {
+            return string.Join(" ; ", requiredMods);
+        }
+        public static string[] RequiredModsStringToArray(string requiredMods)
+        {
+            return Regex.Split(requiredMods, " ; ");
         }
 
         public static string[] bannedMods = {

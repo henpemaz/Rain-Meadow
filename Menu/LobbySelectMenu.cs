@@ -129,8 +129,8 @@ namespace RainMeadow
             var filterModsLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mods"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModsLabel);
             where.y -= 27;
-            string[] requiredModIDs = (new string[2] { "All", "Any" }).Concat(RainMeadowModManager.GetRequiredMods()).ToArray();
-            string[] requiredModNames = (new string[2] { "All", "Any" }).Concat(RainMeadowModManager.GetRequiredModNames()).ToArray();
+            string[] requiredModIDs = (new string[3] { "Any", "All", "Exact" }).Concat(RainMeadowModManager.GetRequiredMods()).ToArray();
+            string[] requiredModNames = (new string[3] { "Any", "All", "Exact Order" }).Concat(RainMeadowModManager.GetRequiredModNames()).ToArray();
             List<ListItem> requiredModsList = new();
             for (int i = 0; i < requiredModIDs.Length; i++) requiredModsList.Add(new ListItem(requiredModIDs[i], requiredModNames[i]));
             filterModsDropDown = new OpComboBox2(new Configurable<string>("Any"), where, 160f, requiredModsList) { colorEdge = MenuColorEffect.rgbWhite };
