@@ -2,25 +2,28 @@
 
 namespace RainMeadow
 {
-    internal class RealizedScavengerState : RealizedPhysicalObjectState
+    internal class RealizedScavengerState : RealizedCreatureState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField(nullable = true, group = "swing")]
         private Vector2? swingPos;
-        [OnlineFieldHalf]
+        [OnlineFieldHalf(group = "swing")]
         private float swingRadius;
         [OnlineFieldHalf]
         private float flip;
-        [OnlineField]
+        [OnlineField(group = "swing")]
         private byte swingClimbCounter;
+        [OnlineField(group = "swing")]
+        private byte swingArm;
 
         public RealizedScavengerState() { }
-        public RealizedScavengerState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedScavengerState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            var scav = onlineEntity.apo.realizedObject as Scavenger;
+            var scav = onlineCreature.apo.realizedObject as Scavenger;
             this.swingPos = scav.swingPos;
             this.swingRadius = scav.swingRadius;
             this.flip = scav.flip;
             this.swingClimbCounter = (byte)scav.swingClimbCounter;
+            this.swingArm = (byte)scav.swingArm;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -33,6 +36,7 @@ namespace RainMeadow
                 scav.swingRadius = this.swingRadius;
                 scav.flip = this.flip;
                 scav.swingClimbCounter = this.swingClimbCounter;
+                scav.swingArm = this.swingArm;
             }
         }
     }
