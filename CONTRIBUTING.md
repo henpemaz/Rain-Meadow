@@ -52,13 +52,13 @@ BepInEx/core/0Harmony.dll
 BepInEx/core/BepInEx.Harmony.dll
 BepInEx/core/BepInEx.dll
 BepInEx/core/HarmonyXInterop.dll
+BepInEx/core/Mono.Cecil.dll
+BepInEx/core/MonoMod.RuntimeDetour.dll
+BepInEx/core/MonoMod.Utils.dll
 BepInEx/core/MonoMod.dll
 BepInEx/plugins/HOOKS-Assembly-CSharp.dll
 BepInEx/utils/PUBLIC-Assembly-CSharp.dll
 RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
-RainWorld_Data/Managed/Mono.Cecil.dll
-RainWorld_Data/Managed/MonoMod.RuntimeDetour.dll
-RainWorld_Data/Managed/MonoMod.Utils.dll
 RainWorld_Data/Managed/Newtonsoft.Json.dll
 RainWorld_Data/Managed/Rewired.Runtime.dll
 RainWorld_Data/Managed/Rewired_Core.dll
