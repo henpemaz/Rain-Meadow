@@ -35,6 +35,8 @@ namespace RainMeadow
             }
         }
 
+        public static string defaultStartingRoom = "SU_C04";
+
         public static List<Character> allCharacters = new();
 
         public static Dictionary<Character, CharacterData> characterData = new();
@@ -111,7 +113,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_noot",
                 emoteColor = Extensions.ColorFromHex(0x7e6f6a),
                 voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
-                selectSpriteIndexes = new int[0],
+                selectSpriteIndexes = new [] { 2 },
                 startingCoords = new WorldCoordinate("LF_F02", 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
@@ -131,7 +133,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_maus",
                 emoteColor = Extensions.ColorFromHex(0x79635f),
                 voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
-                selectSpriteIndexes = new int[0],
+                selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
         }
@@ -899,7 +901,7 @@ namespace RainMeadow
                 internal float tintAmount;
                 [JsonProperty]
                 [JsonConverter(typeof(UnityColorConverter))]
-                internal Color tintColor;
+                internal Color tintColor = Color.black; // 0,0,0,0 is bad!
                 [JsonProperty]
                 public List<Emote> emoteHotbar;
 

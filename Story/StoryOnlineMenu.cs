@@ -3,6 +3,7 @@ using Menu;
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -43,6 +44,9 @@ namespace RainMeadow
                 SetupClientOptions();
             }
 
+            // HACK: force-register MMFEnums.SliderID because god is dead and we have killed them
+            MoreSlugcats.MMFEnums.SliderID.RegisterValues();
+
             SetupOnlineCustomization();
 
             SetupOnlineMenuItems();
@@ -69,8 +73,26 @@ namespace RainMeadow
             // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
+
+            // hehe yoink
+            if (this.colorChecked)
+            {
+                List<Color> val = new();
+                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
+                {
+                    Vector3 vector = new Vector3(1f, 1f, 1f);
+                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
+                    {
+                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
+                        vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
+                    }
+                    val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
+                }
+
+                personaSettings.customColors = val;
+            }
             manager.arenaSitting = null;
-            if (restartChecked)
+            if (restartCheckbox != null && restartCheckbox.Checked)
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -86,7 +108,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (!OnlineManager.lobby.isOwner) 
+            if (!OnlineManager.lobby.isOwner)
             {
 
                 if (onlineDifficultyLabel == null)
@@ -97,16 +119,17 @@ namespace RainMeadow
                     pages[0].subObjects.Add(onlineDifficultyLabel);
                 }
                 // Remove all buttons scug buttons if requireCampaignSlugcat is on.
-                if (scugButtons != null && storyGameMode.requireCampaignSlugcat) 
+                if (scugButtons != null && storyGameMode.requireCampaignSlugcat)
                 {
-                    foreach (var button in scugButtons) {
+                    foreach (var button in scugButtons)
+                    {
                         pages[0].subObjects.Remove(button);
                     };
 
                     scugButtons = null;
                 }
                 // Recall buttons scug buttons if requireCampaignSlugcat is off.
-                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat) 
+                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat)
                 {
                     SetupSlugcatList();
                 }
@@ -291,7 +314,8 @@ namespace RainMeadow
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
-            if (!OnlineManager.lobby.isOwner) {
+            if (!OnlineManager.lobby.isOwner)
+            {
                 friendlyFire.buttonBehav.greyedOut = true;
                 reqCampaignSlug.buttonBehav.greyedOut = true;
             }

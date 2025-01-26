@@ -16,6 +16,12 @@ namespace RainMeadow
         {
             IL.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette;
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+
+            // SlugcatCustomization stuff
+            On.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SlugcatCustomization;
+            On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites_SlugcatCustomization;
+            On.PlayerGraphics.CustomColorSafety += PlayerGraphics_CustomColorSafety_SlugcatCustomization;
+            On.PlayerGraphics.CustomColorsEnabled += PlayerGraphics_CustomColorsEnabled_SlugcatCustomization;
         }
 
         // eyecolor is overwritten every frame for some stupid reason
@@ -73,6 +79,7 @@ namespace RainMeadow
                     if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
                         customization.ModifyBodyColor(ref originalBodyColor);
+                        RainMeadow.Trace("color became " + originalBodyColor);
                     }
                 });
             }
@@ -80,6 +87,55 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        // SlugcatCustomization stuff
+        private static SlugcatCustomization? hackySlugcatCustomization;  // HACK: CustomColorSafety has no ref to player so we use this
+
+        private void PlayerGraphics_ApplyPalette_SlugcatCustomization(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
+        {
+            try
+            {
+                creatureCustomizations.TryGetValue(self.player, out var customization);
+                hackySlugcatCustomization = customization as SlugcatCustomization;
+                orig(self, sLeaser, rCam, palette);
+            }
+            finally
+            {
+                hackySlugcatCustomization = null;
+            }
+        }
+
+        private void PlayerGraphics_DrawSprites_SlugcatCustomization(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            try
+            {
+                creatureCustomizations.TryGetValue(self.player, out var customization);
+                hackySlugcatCustomization = customization as SlugcatCustomization;
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            finally
+            {
+                hackySlugcatCustomization = null;
+            }
+        }
+
+        private bool PlayerGraphics_CustomColorsEnabled_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorsEnabled orig)
+        {
+            if (hackySlugcatCustomization is not null)
+            {
+                return true;
+            }
+            return orig();
+        }
+
+        private Color PlayerGraphics_CustomColorSafety_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorSafety orig, int staticColorIndex)
+        {
+            if (hackySlugcatCustomization is not null)
+            {
+                return hackySlugcatCustomization.GetColor(staticColorIndex);
+            }
+            return orig(staticColorIndex);
         }
     }
 }

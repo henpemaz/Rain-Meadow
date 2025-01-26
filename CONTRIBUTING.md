@@ -59,10 +59,8 @@ BepInEx/core/MonoMod.dll
 BepInEx/plugins/HOOKS-Assembly-CSharp.dll
 BepInEx/utils/PUBLIC-Assembly-CSharp.dll
 RainWorld_Data/Managed/Assembly-CSharp-firstpass.dll
-RainWorld_Data/Managed/Mono.Cecil.dll
-RainWorld_Data/Managed/MonoMod.RuntimeDetour.dll
-RainWorld_Data/Managed/MonoMod.Utils.dll
 RainWorld_Data/Managed/Newtonsoft.Json.dll
+RainWorld_Data/Managed/Rewired.Runtime.dll
 RainWorld_Data/Managed/Rewired_Core.dll
 RainWorld_Data/Managed/Unity.Mathematics.dll
 RainWorld_Data/Managed/UnityEngine.AssetBundleModule.dll
