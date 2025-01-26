@@ -139,6 +139,7 @@ public static class RainMeadowModInfoManager
         return null;
     }
 
+    // Returns the most appropriate file from a mod, given a default path (considering the newest and targeted file paths if they exist)
     private static string? GetFileFromModOrNull(ModManager.Mod mod, string filePath)
     {
         if (mod.hasTargetedVersionFolder)
