@@ -14,12 +14,11 @@ namespace RainMeadow
         "slugcat", "vulture", "lizard", "scavenger", "guardian", "noodlefly", "pearl", "rainworld", "shelter", "iterator"
     };
 
-        private static readonly Random Random = new Random();
-
-        public static string GenerateRandomUsername()
+        public static string GenerateRandomUsername(int seed)
         {
-            string adjective = Adjectives[Random.Next(Adjectives.Length)];
-            string noun = Nouns[Random.Next(Nouns.Length)];
+            Random random = new Random(seed);
+            string adjective = Adjectives[random.Next(Adjectives.Length)];
+            string noun = Nouns[random.Next(Nouns.Length)];
 
             return $"{adjective}_{noun}";
         }

@@ -1,8 +1,17 @@
+using System.IO;
+using MonoMod.Utils;
+
 namespace RainMeadow
 {
     public class RequestJoinPacket : Packet
     {
+        public string LanUserName = "";
         public override Type type => Type.RequestJoin;
+
+        public RequestJoinPacket() {}
+        public RequestJoinPacket(string name) {
+            LanUserName = name;
+        }
 
         public override void Process()
         {
@@ -10,6 +19,11 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
             {
                 var matchmaker = (LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN];
+
+                if (LanUserName.Length > 0) {
+                    processingPlayer.id.name = LanUserName;
+                }
+
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);
@@ -23,11 +37,19 @@ namespace RainMeadow
                     OnlineManager.players.Count
                 ), NetIO.SendType.Reliable);
 
-                
-
-
-
             }
+        }
+
+        public override void Serialize(BinaryWriter writer)
+        {
+            base.Serialize(writer);
+            writer.WriteNullTerminatedString(LanUserName);
+        }
+
+        public override void Deserialize(BinaryReader reader)
+        {
+            base.Deserialize(reader);
+            LanUserName = reader.ReadNullTerminatedString();
         }
     }
 }

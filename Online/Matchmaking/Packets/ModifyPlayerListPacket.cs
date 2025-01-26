@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
+using MonoMod.Utils;
 
 namespace RainMeadow
 {
@@ -30,14 +32,22 @@ namespace RainMeadow
             var lanids = players.Select(x => (LANMatchmakingManager.LANPlayerId)x.id);
             lanids = lanids.Where(x => x.endPoint != null);
 
-            bool includeme = true;
-            if (lanids.FirstOrDefault(x => x.isLoopback()) is null) {
-                includeme = false;
-            }
+            bool includeme = lanids.FirstOrDefault(x => x.isLoopback()) is not null;
 
             lanids = lanids.Where(x => !x.isLoopback());
             var processinglanid = (LANMatchmakingManager.LANPlayerId)processingPlayer.id;
             UDPPeerManager.SerializeEndPoints(writer, lanids.Select(x => x.endPoint).ToArray(), processinglanid.endPoint, includeme);
+
+            if (modifyOperation == Operation.Add) {
+                if (includeme) {
+                    writer.WriteNullTerminatedString(OnlineManager.mePlayer.id.name);
+                }
+
+                foreach (LANMatchmakingManager.LANPlayerId lanid in lanids){
+                    writer.WriteNullTerminatedString(lanid.name);
+                }
+            }
+
         }
 
         public override void Deserialize(BinaryReader reader)
@@ -46,10 +56,16 @@ namespace RainMeadow
             var endpoints = UDPPeerManager.DeserializeEndPoints(reader, (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint);
             var lanmatchmaker = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager);
 
-            if (modifyOperation == Operation.Add)
+            if (modifyOperation == Operation.Add) {
                 players = endpoints.Select(x => new OnlinePlayer(new LANMatchmakingManager.LANPlayerId(x))).ToArray();
+                for (int i = 0; i < players.Length; i++){
+                    players[i].id.name = reader.ReadNullTerminatedString();
+                }
+            }
+                
             else if (modifyOperation == Operation.Remove)
                 players = endpoints.Select(x => lanmatchmaker.GetPlayerLAN(x)).ToArray();
+
         }
 
         public override void Process()
@@ -62,7 +78,11 @@ namespace RainMeadow
                     for (int i = 0; i < players.Length; i++)
                     {
                         if (((LANMatchmakingManager.LANPlayerId)players[i].id).isLoopback()) {
-                            continue; // that's me
+                            // That's me
+                            // Put me where I belong.
+                            OnlineManager.players.Remove(OnlineManager.mePlayer);
+                            OnlineManager.players.Add(OnlineManager.mePlayer);
+                            continue;
                         }
 
                         (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).AcknoledgeLANPlayer(players[i]);
