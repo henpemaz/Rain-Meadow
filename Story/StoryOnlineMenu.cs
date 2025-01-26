@@ -92,7 +92,7 @@ namespace RainMeadow
                 personaSettings.customColors = val;
             }
             manager.arenaSitting = null;
-            if (restartCheckbox != null && restartCheckbox.Checked)
+            if (restartCheckbox?.Checked)
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
