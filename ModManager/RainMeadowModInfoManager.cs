@@ -21,7 +21,7 @@ public static class RainMeadowModInfoManager
     public static Dictionary<string, RainMeadowModInfo> ModInfos { get; } = new();
 
     /// <summary>
-    /// Additional rainmeadow.json modinfo file defined in StreamingAssets, allows info to be loaded without needing to add it to any particular mod.
+    /// Additional rainmeadow.json modinfo file that can be defined in StreamingAssets, allows info to be loaded without needing to add it to any particular mod.
     /// </summary>
     public static RainMeadowModInfo? DebugModInfo { get; private set; }
 
