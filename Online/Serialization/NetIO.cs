@@ -13,7 +13,7 @@ namespace RainMeadow
             Unreliable,
         }
 
-        public void SendSessionData(OnlinePlayer toPlayer)
+        public virtual void SendSessionData(OnlinePlayer toPlayer)
         {
             try
             {
