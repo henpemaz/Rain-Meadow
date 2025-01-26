@@ -23,7 +23,7 @@ public static class RainMeadowModInfoManager
     /// <summary>
     /// Additional rainmeadow.json modinfo file defined in StreamingAssets, allows info to be loaded without needing to add it to any particular mod.
     /// </summary>
-    public static RainMeadowModInfo? DebugModInfo { get; set; }
+    public static RainMeadowModInfo? DebugModInfo { get; private set; }
 
 
     internal static void RefreshRainMeadowModInfos()
@@ -133,7 +133,7 @@ public static class RainMeadowModInfoManager
         }
         catch (Exception e)
         {
-            RainMeadow.Error($"Error loading Meadow mod info:\n{e}\n{e.StackTrace}"); // TODO: use a proper debug error log
+            RainMeadow.Error($"Error loading Meadow mod info:\n{e}\n{e.StackTrace}");
         }
 
         return null;
