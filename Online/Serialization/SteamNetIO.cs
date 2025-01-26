@@ -9,35 +9,31 @@ namespace RainMeadow
 {
     class SteamNetIO : LANNetIO {
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
-            base.SendP2P(player, packet, sendType, start_conversation);
-
-            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.Steam) {
-                return;
-            }
-
-            if (player.id is SteamMatchmakingManager.SteamPlayerId playerid) {
-                var steamNetId = playerid.oid;
-                using (var stream = new MemoryStream())
-                using (var writer = new BinaryWriter(stream)) {
-                    //packet.Serialize(writer); Forgot about Packet.Encode ;.;
-                    Packet.Encode(packet, writer, player);
-                    unsafe {
-                        fixed (byte* dataPointer = stream.GetBuffer()) {
-                            SteamNetworkingMessages.SendMessageToUser(ref steamNetId, 
-                                (IntPtr)dataPointer, 
-                                (uint)stream.Position, 
-                                sendType switch {
-                                    
-                                    SendType.Unreliable =>  Constants.k_nSteamNetworkingSend_Unreliable,
-                                    SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable,
-                                    _ => Constants.k_nSteamNetworkingSend_Unreliable,
-                                        }, 0);
+            RainMeadow.Error("UNIMPLEMENTED");
+        }
+        public override void SendSessionData(OnlinePlayer toPlayer)
+        {
+            if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
+                try
+                {
+                    OnlineManager.serializer.WriteData(toPlayer);
+                    var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
+                    unsafe
+                    {
+                        fixed (byte* dataPointer = OnlineManager.serializer.buffer)
+                        {
+                            SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
                         }
                     }
                 }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    OnlineManager.serializer.EndWrite();
+                    throw;
+                }
             } else {
-                RainMeadow.Error($"SendP2P failed because player.id from ({player.id.name}) is not a SteamPlayerId");
-                return;
+                base.SendSessionData(toPlayer);
             }
         }
 
@@ -68,26 +64,15 @@ namespace RainMeadow
                             if (OnlineManager.lobby != null)
                             {
 
-                                if (MatchmakingManager.currentInstance is SteamMatchmakingManager manager) {
-                                    var fromPlayer = (MatchmakingManager.currentInstance as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
-                                    if (fromPlayer == null) {
-                                        // RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
-                                        continue;
-                                    }
-
-                                    //RainMeadow.Debug($"Receiving message from {fromPlayer}");
-                                    var stream = new MemoryStream(OnlineManager.serializer.buffer, 0, message.m_cbSize);
-                                    var reader = new BinaryReader(stream);
-                                    Packet.Decode(reader, fromPlayer);
-
-                                    Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
-                                    OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
-                                } else {
-                                    RainMeadow.Error("MatchmakingManager is not SteamMatchmakingManager");
+                                var fromPlayer = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
+                                if (fromPlayer == null)
+                                {
+                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                    continue;
                                 }
-                                
-                                
-
+                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                                Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
+                                OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
                             }
                         }
                         catch (Exception e)
