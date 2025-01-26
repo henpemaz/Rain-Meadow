@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Diagnostics;
+using UnityEngine;
 
 
 namespace RainMeadow {
@@ -33,7 +34,8 @@ namespace RainMeadow {
             public IPEndPoint endPoint;
 
             public LANPlayerId() { }
-            public LANPlayerId(IPEndPoint? endPoint) : base(RainMeadow.rainMeadowOptions.LanUserName.Value != "" ? RainMeadow.rainMeadowOptions.LanUserName.Value : UsernameGenerator.GenerateRandomUsername())
+            public LANPlayerId(IPEndPoint? endPoint) : base(
+                    UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
             {
                 this.endPoint = endPoint ?? BlackHole;
             }
@@ -92,6 +94,9 @@ namespace RainMeadow {
             if (OnlineManager.netIO is LANNetIO netio) {
                 OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(
                     UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
+                if (RainMeadow.rainMeadowOptions.LanUserName.Value.Length > 0) {
+                    OnlineManager.mePlayer.id.name = RainMeadow.rainMeadowOptions.LanUserName.Value;
+                }
             } 
         }
 
@@ -191,6 +196,7 @@ namespace RainMeadow {
             RainMeadow.DebugMe();
             if (OnlineManager.players.Contains(joiningPlayer)) { return; }
             OnlineManager.players.Add(joiningPlayer);
+            (OnlineManager.netIO as LANNetIO)?.SendAcknoledgement(joiningPlayer);
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
@@ -239,7 +245,6 @@ namespace RainMeadow {
             OnlineManager.netIO.ForgetPlayer(leavingPlayer);
             OnPlayerListReceivedEvent(playerList.ToArray());
         }
-
         string lobbyPassword = "";
         public override void RequestJoinLobby(LobbyInfo lobby, string? password) {
             RainMeadow.DebugMe();
@@ -255,7 +260,7 @@ namespace RainMeadow {
                 
                 RainMeadow.Debug("Sending Request to join lobby...");
                 OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
-                    new RequestJoinPacket(), NetIO.SendType.Reliable, true);
+                    new RequestJoinPacket(OnlineManager.mePlayer.id.name), NetIO.SendType.Reliable, true);
             } else {
                 RainMeadow.Error("Invalid lobby type");
             }
