@@ -37,6 +37,8 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
+
+            On.AbstractCreature.extractKarma += AbstractCreature_extractKarma;
         }
 
         private void Player_TerrainImpact(ILContext il)
@@ -583,6 +585,11 @@ namespace RainMeadow
             }
 
             orig(self);
+        }
+
+        private void AbstractCreature_extractKarma(On.AbstractCreature.orig_extractKarma orig, AbstractCreature self)
+        {
+            if (self.IsLocal()) orig(self);
         }
     }
 }
