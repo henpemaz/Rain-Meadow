@@ -12,6 +12,23 @@ namespace RainMeadow
         public static string SyncRequiredModsFileName => "meadow-syncrequiredmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedonlinemods.txt";
 
+        public static string SyncRequiredModsExplanationComment => """
+                                                                   // The following is a list of mods that must be synced between client and host:
+                                                                   // (if the host has these mods enabled/disabled, the client must match)
+                                                                   // To remove mod IDs and allow them to be de-synced, prefix the lines with '//', like this:
+                                                                   //mod-id-to-exclude
+                                                                   
+                                                                   """;
+
+        public static string BannedOnlineModsExplanationComment =>"""
+                                                                   // The following is a list of mods that are banned from online play:
+                                                                   // (if any of these mods are enabled, they must be disabled before meadow can be entered)
+                                                                   // To remove mod IDs and allow them online, prefix the lines with '//', like this:
+                                                                   //mod-id-to-exclude
+
+                                                                   """;
+
+
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
@@ -23,7 +40,7 @@ namespace RainMeadow
 
             var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
 
-            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods);
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
 
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id)
@@ -39,8 +56,8 @@ namespace RainMeadow
             var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
             var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
 
-            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods);
-            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods);
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods, BannedOnlineModsExplanationComment);
 
             // (required + banned) - enabled
             return requiredMods.Concat(bannedMods)
@@ -117,18 +134,31 @@ namespace RainMeadow
             }
         }
 
-        private static List<string> UpdateFromOrWriteToFile(string path, List<string> newLines)
+        private static List<string> UpdateFromOrWriteToFile(string path, List<string> newLines, string startingComment = "")
         {
             path = Path.Combine(Custom.RootFolderDirectory(), path);
 
             if (!File.Exists(path))
             {
+                if (startingComment != "")
+                {
+                    newLines.Insert(0, startingComment);
+                }
+
                 File.WriteAllLines(path, newLines);
                 return newLines;
             }
 
             var existingLines = File.ReadAllLines(path).Distinct().ToList();
             var linesToWrite = new List<string>();
+
+            if (startingComment != "")
+            {
+                if (existingLines.Count == 0 || existingLines[0] != startingComment.Split('\n')[0])
+                {
+                    existingLines.Insert(0, startingComment);
+                }
+            }
 
             // Lines without their comments and whitespaces: disabled have a leading comment, meaning the whole line is commented out
             var trimmedActiveLines = new List<string>();
