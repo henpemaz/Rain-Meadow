@@ -25,7 +25,7 @@ the jetfish still spawns
 
 the vibezones music doesnt account for music off - recheck
 
-scav swing arm needs sync
+V scav swing arm needs sync
 
 scav stretched arm animates unintentionally?
 
@@ -54,7 +54,7 @@ emotes display above map
 
 people can still force/trigger rain in meadow?
 
-
+hard to find people I played with
 
 
 HIGH-PRIO
