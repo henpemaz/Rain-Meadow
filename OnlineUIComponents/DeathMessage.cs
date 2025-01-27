@@ -131,6 +131,7 @@ public static class DeathMessage
 
     public static void PlayerDeathEvent(Player player, Type sourceType, object source)
     {
+        if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is MeadowGameMode) return;
         if (player.dead) return;
         switch(source)
         {
