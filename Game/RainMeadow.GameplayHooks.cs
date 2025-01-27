@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -37,6 +38,32 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
+        }
+
+        private void Centipede_Shock(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(1),
+                    i => i.MatchIsinst<Creature>(),
+                    i => i.MatchCallvirt<Creature>(nameof(Creature.Die))
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((Centipede self, PhysicalObject shockObj) =>
+                {
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player)
+                        DeathMessage.CreatureKillPlayer(self, shockObj as Player);
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void Player_TerrainImpact(ILContext il)
