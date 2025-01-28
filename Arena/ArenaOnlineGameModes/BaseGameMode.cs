@@ -223,8 +223,8 @@ namespace RainMeadow
                         self.room.world.GetResource().ApoEnteringWorld(bringThePain);
                         self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringThePain, bringThePain.pos);
                     }
-                    int lizardEvent = UnityEngine.Random.Range(0, 100);
-                    if (lizardEvent == 99 && arena.painCatLizard)
+
+                    if (arena.lizardEvent == 99 && arena.painCatLizard)
                     {
                         self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
                         AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big :( 
