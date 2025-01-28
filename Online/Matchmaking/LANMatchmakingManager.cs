@@ -40,6 +40,14 @@ namespace RainMeadow {
                 this.endPoint = endPoint ?? BlackHole;
             }
 
+            public override void OpenProfileLink() {
+                string dialogue = name + " comes from " + endPoint.ToString();
+                if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
+                    dialogue += Environment.NewLine + "This player is the owner of the lobby.";
+                    dialogue += Environment.NewLine + "Players can Direct Connect to this lobby through their IP Address.";
+                }
+                OnlineManager.instance.manager.ShowDialog(new DialogNotify(dialogue, OnlineManager.instance.manager, null));
+            }
 
             public void reset()
             {
@@ -274,30 +282,20 @@ namespace RainMeadow {
             }
             else
             {
-                LeaveLobby();
+                OnlineManager.LeaveLobby();
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
                 OnLobbyJoinedEvent(false, "Wrong password!");
             }
         }
 
         public override void LeaveLobby() {
-            if (OnlineManager.lobby != null)
-            {
-                if (!OnlineManager.lobby.isOwner && GetLobbyOwner() is OnlinePlayer owner)
-                {
-                    OnlineManager.netIO.ForgetEverything();
-                    OnlineManager.netIO.SendP2P(owner, 
-                        new RequestLeavePacket(), NetIO.SendType.Reliable, true);
-                } else if (OnlineManager.lobby.isOwner) {
-                    OnlineManager.mePlayer.hasLeft = true; 
-                    foreach (OnlinePlayer p in  OnlineManager.players) {
-                        OnlineManager.netIO.SendP2P(p, 
-                            new SessionEndPacket(), 
-                                NetIO.SendType.Reliable);
-                    }
-                    OnlineManager.lobby = null;
-                }
+            if (OnlineManager.players is not null)
+            foreach (OnlinePlayer p in  OnlineManager.players) {
+                OnlineManager.netIO.SendP2P(p, 
+                    new SessionEndPacket(), 
+                        NetIO.SendType.Reliable);
             }
+            OnlineManager.netIO.ForgetEverything();
         }
 
         public override OnlinePlayer GetLobbyOwner() {
