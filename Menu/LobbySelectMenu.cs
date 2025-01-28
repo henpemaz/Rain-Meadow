@@ -418,11 +418,6 @@ namespace RainMeadow
                     RequestLobbyJoin(lastClickedLobby, password);
                     break;
                 case "DIRECT_JOIN": 
-                    if (ModManager.JollyCoop) {
-                        ShowErrorDialog("Please disable JollyCoop before playing Online");
-                        break;
-                    }
-
                     var dialogue = popupDialog as DirectConnectionDialogue;
                     var endpoint = UDPPeerManager.GetEndPointByName(dialogue?.IPBox?.value ?? "");
                     if (endpoint != null) {
@@ -436,9 +431,8 @@ namespace RainMeadow
                         if (VerifyPlay(fakelobbyinfo))
                         if (!UDPPeerManager.isEndpointLocal(endpoint)) {
                             ShowNotLocalDialogue(
-                                                "This address is possibly not local to your current network.\n" +
-                                                "If so, all clients may be required to port forward [8720].\n" +
-                                                "Port forwarding can compromise your network and expose your network.\n" +
+                                                "This address is possibly not local to your current network." + Environment.NewLine +
+                                                "If so, This is very unstable and will most likely NOT work" + Environment.NewLine +
                                                 "Are you SURE you know what you're doing?",
                                 join);
                             mainPage.subObjects.Add(popupDialog);

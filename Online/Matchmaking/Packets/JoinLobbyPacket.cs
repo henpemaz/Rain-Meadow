@@ -18,6 +18,7 @@ namespace RainMeadow
                     // If the lobby we want to join is the lobby that allowed us to join.
                     if (UDPPeerManager.CompareIPEndpoints(oldLobbyInfo.endPoint, newLobbyInfo.endPoint)) {
                         OnlineManager.currentlyJoiningLobby = newLobbyInfo;
+                        (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).maxplayercount = newLobbyInfo.maxPlayerCount;
                         (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).LobbyAcknoledgedUs(processingPlayer);
                     }
                 }
