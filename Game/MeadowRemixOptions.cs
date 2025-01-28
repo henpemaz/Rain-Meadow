@@ -58,7 +58,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
-        PainCatThrows = config.Bind("PainCatBomb", false);
+        PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
 
