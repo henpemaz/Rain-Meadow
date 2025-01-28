@@ -26,6 +26,9 @@ namespace RainMeadow
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
 
+        public string paincatName = "";
+        public int lizardEvent = 0;
+
 
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
@@ -60,6 +63,34 @@ namespace RainMeadow
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
+
+        }
+
+        public void ResetInvDetails()
+        {
+            lizardEvent = UnityEngine.Random.Range(0, 100);
+            int whichPaincatName = UnityEngine.Random.Range(0, 7);
+            switch (whichPaincatName)
+            {
+                case 1:
+                    paincatName = "Paincat";
+                    break;
+                case 2:
+                    paincatName = "Inv";
+                    break;
+                case 3:
+                    paincatName = "Enot";
+                    break;
+                case 4:
+                    paincatName = "Sofanthiel";
+                    break;
+                case 5:
+                    paincatName = "Gorbo";
+                    break;
+                case 6:
+                    paincatName = "???";
+                    break;
+            }
 
         }
 
