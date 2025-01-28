@@ -195,15 +195,15 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.Int
                 },
-                new OpLabel(10f, 385, "Inv: Enable throws at 0 throw skill", bigText: false),
-                new OpCheckBox(PainCatThrows, new Vector2(10f, 360)),
+                new OpLabel(10f, 350, "Inv: Enable throws at 0 throw skill", bigText: false),
+                new OpCheckBox(PainCatThrows, new Vector2(10f, 315)),
 
-                new OpLabel(10f, 330, "Inv: Disable egg at 0 throw skill", bigText: false),
-                new OpCheckBox(PainCatEgg, new Vector2(10f, 305)),
+                new OpLabel(10f, 285, "Inv: Enable egg at 0 throw skill", bigText: false),
+                new OpCheckBox(PainCatEgg, new Vector2(10f, 250)),
 
 
-                new OpLabel(10f, 285, "Inv: Disable ???", bigText: false),
-                new OpCheckBox(PainCatLizard, new Vector2(10f, 250)),
+                new OpLabel(10f, 215, "Inv: Enable ???", bigText: false),
+                new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
