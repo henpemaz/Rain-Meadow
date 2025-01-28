@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using IL.MoreSlugcats;
 using RainMeadow.Arena.Nightcat;
 using UnityEngine;
 
@@ -9,7 +10,7 @@ namespace RainMeadow
 
 
 
-        public static readonly List<string> nonArenaSlugs = new List<string> { "Inv", "Slugpup", "MeadowOnline", "MeadowOnlineRemote" };
+        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
 
         public static void SetProfileColor(ArenaOnlineGameMode arena)
         {
@@ -19,8 +20,15 @@ namespace RainMeadow
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
                 if (ArenaHelpers.BaseGameSlugcats().Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
-                    profileColor = UnityEngine.Random.Range(0, 4);
-                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    if (arena.avatarSettings.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+                        arena.playerResultColors[currentPlayer.id.name] = 4;
+                    }
+                    else
+                    {
+                        profileColor = Random.Range(0, 4);
+                        arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    }
                 }
                 else
                 {
@@ -178,6 +186,10 @@ namespace RainMeadow
                 baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
                 baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
                 baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+
+
             }
             return baseGameSlugs;
 

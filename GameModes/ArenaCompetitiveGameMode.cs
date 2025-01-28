@@ -22,6 +22,10 @@ namespace RainMeadow
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
+        public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
+        public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
+        public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
+
 
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();

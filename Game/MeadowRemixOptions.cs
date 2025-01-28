@@ -21,6 +21,10 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<bool> ArenaSAINOT;
+    public readonly Configurable<bool> PainCatThrows;
+    public readonly Configurable<bool> PainCatEgg;
+    public readonly Configurable<bool> PainCatLizard;
+
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
     public enum IntroRoll
@@ -54,7 +58,12 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        PainCatThrows = config.Bind("PainCatBomb", false);
+        PainCatEgg = config.Bind("PainCatEgg", true);
+        PainCatLizard = config.Bind("PainCatLizard", true);
+
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
+
 
     }
 
@@ -169,7 +178,7 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[7]
+            OnlineArenaSettings = new UIelement[13]
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
                 new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
@@ -185,7 +194,16 @@ public class RainMeadowOptions : OptionInterface
                 new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
                 {
                     accept = OpTextBox.Accept.Int
-                }
+                },
+                new OpLabel(10f, 385, "Inv: Enable throws at 0 throw skill", bigText: false),
+                new OpCheckBox(PainCatThrows, new Vector2(10f, 360)),
+
+                new OpLabel(10f, 330, "Inv: Disable egg at 0 throw skill", bigText: false),
+                new OpCheckBox(PainCatEgg, new Vector2(10f, 305)),
+
+
+                new OpLabel(10f, 285, "Inv: Disable ???", bigText: false),
+                new OpCheckBox(PainCatLizard, new Vector2(10f, 250)),
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
