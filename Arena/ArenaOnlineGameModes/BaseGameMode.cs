@@ -213,20 +213,26 @@ namespace RainMeadow
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
                 {
 
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = UnityEngine.Random.Range(0, 5);
+                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 0;
                     if ((abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0 && arena.painCatEgg)
                     {
                         AbstractPhysicalObject bringThePain = new AbstractPhysicalObject(room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID());
                         room.abstractRoom.AddEntity(bringThePain);
                         bringThePain.RealizeInRoom();
+
+                        self.room.world.GetResource().ApoEnteringWorld(bringThePain);
+                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringThePain, bringThePain.pos);
                     }
-                    int lizardEvent = UnityEngine.Random.Range(0, 99);
+                    int lizardEvent = UnityEngine.Random.Range(0, 100);
                     if (lizardEvent == 99 && arena.painCatLizard)
                     {
                         self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
                         AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big :( 
                         room.abstractRoom.AddEntity(bringTheTrain);
                         bringTheTrain.RealizeInRoom();
+
+                        self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
+                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos);
                     }
                 }
 
