@@ -38,8 +38,6 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
         }
 
-
-
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
         {
             Logger.LogWarning(string.Join(" ", values));
