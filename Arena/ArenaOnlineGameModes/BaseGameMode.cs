@@ -260,13 +260,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-            if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-                AbstractPhysicalObject abstractPhysicalObject = new AbstractPhysicalObject(abstractCreature.Room.world, MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, room.GetWorldCoordinate(abstractCreature.realizedCreature.mainBodyChunk.pos), abstractCreature.Room.world.game.GetNewID());
-                abstractCreature.Room.AddEntity(abstractPhysicalObject);
-                abstractPhysicalObject.RealizeInRoom();
-            }
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
