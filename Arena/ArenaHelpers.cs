@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using IL.MoreSlugcats;
-using RainMeadow.Arena.Nightcat;
 using UnityEngine;
 
 namespace RainMeadow

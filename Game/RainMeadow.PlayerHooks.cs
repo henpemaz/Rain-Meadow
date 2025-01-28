@@ -673,11 +673,19 @@ public partial class RainMeadow
     private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
     {
         if (!self.abstractPhysicalObject.IsLocal()) return;
-        if (ModManager.MSC && self.grasps[grasp].grabbed is Spear && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && isArenaMode(out var arena) && self.slugcatStats.throwingSkill == 0 && !arena.painCatThrows)
+        if (isArenaMode(out var arena))
         {
-            self.TossObject(grasp, eu);
-            self.ReleaseGrasp(grasp);
-            return;
+            if (self.grasps[grasp] == null)
+            {
+                return;
+            }
+
+            if (ModManager.MSC && self.grasps[grasp].grabbed is Spear && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && self.slugcatStats.throwingSkill == 0 && !arena.painCatThrows)
+            {
+                self.TossObject(grasp, eu);
+                self.ReleaseGrasp(grasp);
+                return;
+            }
         }
         orig(self, grasp, eu);
     }
