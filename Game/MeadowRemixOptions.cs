@@ -195,7 +195,7 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.Int
                 },
-                new OpLabel(10f, 350, "Inv: Enable throws at 0 throw skill", bigText: false),
+                new OpLabel(10f, 350, "Inv: Enable spear throws at 0 throw skill", bigText: false),
                 new OpCheckBox(PainCatThrows, new Vector2(10f, 315)),
 
                 new OpLabel(10f, 285, "Inv: Enable egg at 0 throw skill", bigText: false),
