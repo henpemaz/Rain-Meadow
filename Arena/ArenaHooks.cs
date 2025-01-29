@@ -1,4 +1,3 @@
-using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
