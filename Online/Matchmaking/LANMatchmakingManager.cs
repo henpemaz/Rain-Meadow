@@ -14,10 +14,6 @@ namespace RainMeadow {
     
 
     public class LANMatchmakingManager : MatchmakingManager {
-        public string GenerateRandomUsername()
-        {
-            return "";
-        }
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
             public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
@@ -32,8 +28,6 @@ namespace RainMeadow {
             // https://superuser.com/questions/698244/ip-address-that-is-the-equivalent-of-dev-null
             static readonly IPEndPoint BlackHole = new IPEndPoint(IPAddress.Parse("253.253.253.253"), 999); 
             public IPEndPoint endPoint;
-
-            public LANPlayerId() { }
             public LANPlayerId(IPEndPoint? endPoint) : base(
                     UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
             {
