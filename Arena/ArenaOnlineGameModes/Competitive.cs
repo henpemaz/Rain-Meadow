@@ -82,5 +82,78 @@ namespace RainMeadow
             base.ArenaSessionCtor(arena, orig, self, game);
             arena.ResetInvDetails();
         }
+
+        public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        {
+            Player player = null;
+            player = onlineHud.abstractPlayer.realizedCreature as Player;
+
+
+            if (player != null)
+            {
+                if ((player.SlugCatClass == SlugcatStats.Name.Yellow))
+                {
+
+                    return "FriendA";
+                }
+                if (player.SlugCatClass == SlugcatStats.Name.Red)
+                {
+
+                    return "Symbol_Neuron";
+                }
+
+                if (player.SlugCatClass == SlugcatStats.Name.Night)
+                {
+
+                    return "GuidanceMoon";
+                }
+                if (ModManager.MSC)
+                {
+
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                    {
+
+                        return "stickLeftB";
+                    }
+
+
+
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet)
+                    {
+
+                        return "Menu_Symbol_Dont_Shuffle";
+                    }
+
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
+                    {
+
+                        return "Symbol_FireSpear";
+                    }
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                    {
+
+                        return "FlowerMarker";
+                    }
+
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+                    {
+
+                        return "MonkA";
+                    }
+
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
+                    {
+
+                        return "spearSymbol";
+                    }
+                    if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+
+                        return "Kill_Bat";
+                    }
+                }
+            }
+            return "Multiplayer_Bones";
+        }
     }
 }

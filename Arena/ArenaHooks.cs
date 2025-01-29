@@ -1046,6 +1046,11 @@ namespace RainMeadow
                     {
                         self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     }
+
+                    else if (player.playerClass == MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "4" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
                     else
                     {
                         if (arena.playerResultColors.ContainsKey(userNameBackup))
