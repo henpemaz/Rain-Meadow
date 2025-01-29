@@ -1,4 +1,4 @@
-﻿using HUD;
+using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
@@ -1045,6 +1045,11 @@ namespace RainMeadow
                     if (player.playerClass == SlugcatStats.Name.Night)
                     {
                         self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
+
+                    else if (player.playerClass == MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "4" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     }
                     else
                     {
