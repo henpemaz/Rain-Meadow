@@ -152,8 +152,7 @@ public static class DeathMessage
                     return;
                 }
                
-                // If nothing works we'll just say they died.
-                EnvironmentalDeathMessage(player, DeathType.Invalid);
+                
             }
         }
     }
