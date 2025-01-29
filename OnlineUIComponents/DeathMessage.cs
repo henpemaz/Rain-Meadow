@@ -218,8 +218,6 @@ public static class DeathMessage
                         EnvironmentalDeathMessage(player, DeathType.Coalescipede);
                     }
                 }
-               
-                // If nothing works we'll let it get handled elsewhere
             }
         }
     }

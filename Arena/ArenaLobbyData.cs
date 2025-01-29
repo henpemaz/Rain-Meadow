@@ -50,6 +50,12 @@ namespace RainMeadow
             [OnlineField]
             public bool sainot;
             [OnlineField]
+            public bool painCatEgg;
+            [OnlineField]
+            public bool painCatThrows;
+            [OnlineField]
+            public bool painCatLizard;
+            [OnlineField]
             public string currentGameMode;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -73,6 +79,9 @@ namespace RainMeadow
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
+                painCatEgg = arena.painCatEgg;
+                painCatThrows = arena.painCatThrows;
+                painCatLizard = arena.painCatLizard;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -97,6 +106,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
 
             }
 
