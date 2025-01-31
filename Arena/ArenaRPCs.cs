@@ -176,9 +176,9 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
-                if (!arena.playersReadiedUp.Contains(userIsReady.id))
+                if (!arena.playersReadiedUp.Contains(userIsReady.inLobbyId))
                 {
-                    arena.playersReadiedUp.Add(userIsReady.id);
+                    arena.playersReadiedUp.Add(userIsReady.inLobbyId);
                 }
 
                 try
