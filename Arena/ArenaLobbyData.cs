@@ -10,6 +10,7 @@ namespace RainMeadow
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
+            
         }
 
         internal class State : ResourceDataState
@@ -32,9 +33,10 @@ namespace RainMeadow
             public Dictionary<string, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField]
-            public Dictionary<string, bool> playersReadiedUp;
-
+            [OnlineField(nullable = true)]
+            public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
+            //[OnlineField]
+            //public List<MeadowPlayerId> playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -68,7 +70,11 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
-                playersReadiedUp = arena.playersReadiedUp;
+                //playersReadiedUp = arena.playersReadiedUp;
+
+                playersReadiedUp = new();
+                playersReadiedUp.list = arena.playersReadiedUp;
+
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
@@ -95,8 +101,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
-                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
-
+                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp.list;
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;

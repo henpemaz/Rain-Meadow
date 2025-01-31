@@ -123,11 +123,11 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_NotifyClassChange(string userChangingClass, int currentColorIndex)
+        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
+                arena.playersInLobbyChoosingSlugs[userChangingClass.id.name] = currentColorIndex;
 
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 if (game.manager.upcomingProcess != null)
@@ -139,12 +139,20 @@ namespace RainMeadow
                 {
                     for (int i = 1; i < game.usernameButtons.Length; i++)
                     {
-
-                        if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
+                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
                         {
                             game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
-                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName); // trust the ordering
+                        }
+                        else
+                        {
+                            if (game.usernameButtons[i].menuLabel.text == userChangingClass.id.name) // TODO: Null referencing here
+                            {
+                                game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
+                                game.classButtons[i].portrait.LoadFile();
+                                game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                            }
                         }
 
                     }
@@ -158,7 +166,7 @@ namespace RainMeadow
 
         }
         [RPCMethod]
-        public static void Arena_NotifyLobbyReadyUp(string userIsReady, int currentColorIndex)
+        public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady, int currentColorIndex)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -168,18 +176,28 @@ namespace RainMeadow
                     return;
                 }
                 arena.clientsAreReadiedUp++;
-                arena.playersReadiedUp[userIsReady] = true;
+                if (!arena.playersReadiedUp.Contains(userIsReady.id))
+                {
+                    arena.playersReadiedUp.Add(userIsReady.id);
+                }
 
                 try
                 {
                     for (int i = 1; i < game.usernameButtons.Length; i++)
                     {
 
-                        if (game.usernameButtons[i].menuLabel.text == userIsReady)
+                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
                         {
+                            game.classButtons[i].readyForCombat = true; // trust the ordering
+                        }
+                        else
+                        {
+                            if (game.usernameButtons[i].menuLabel.text == userIsReady.id.name)
+                            {
 
-                            game.classButtons[i].readyForCombat = true;
+                                game.classButtons[i].readyForCombat = true;
 
+                            }
                         }
 
                     }
@@ -205,7 +223,7 @@ namespace RainMeadow
             {
                 return;
             }
-            
+
             if (game.manager.upcomingProcess != null)
             {
                 return;

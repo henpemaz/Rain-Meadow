@@ -346,9 +346,9 @@ namespace RainMeadow
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (!arena.playersReadiedUp.TryGetValue(OnlineManager.mePlayer.id.name, out _))
+                    if (!arena.playersReadiedUp.Contains(OnlineManager.mePlayer.id))
                     {
-                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.id.name, true);
+                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.id);
                     }
                 }
 
@@ -358,7 +358,7 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer.id.name, arena.clientsAreReadiedUp);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer, arena.clientsAreReadiedUp);
 
                         }
                     }
@@ -631,16 +631,16 @@ namespace RainMeadow
                 if (arena.playersReadiedUp.Count > OnlineManager.players.Count) // someone readied up then left
                 {
                     RainMeadow.Debug("readyUpDictionary is greater than the number of players. Somebody left who was ready!");
-                    List<string> keysToRemove = new List<string>();
+                    List<MeadowPlayerId> keysToRemove = new List<MeadowPlayerId>();
 
                     for (int i = 0; i < arena.playersReadiedUp.Count; i++)
                     {
-                        foreach (var kvp in arena.playersReadiedUp)
+                        foreach (var player in arena.playersReadiedUp)
                         {
-                            if (!OnlineManager.players.Any(player => player.id.name.Equals(kvp.Key)))
+                            if (!OnlineManager.players.Any(player => player.id.name.Equals(player)))
                             {
                                 RainMeadow.Debug("Removing player who left from readyUpDictionary");
-                                keysToRemove.Add(kvp.Key);
+                                keysToRemove.Add(player);
 
                             }
                         }
@@ -670,14 +670,14 @@ namespace RainMeadow
                                 arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
                             }
 
-                            if (arena.playersReadiedUp.TryGetValue(player.id.name, out var alreadyReady))
+                            if (arena.playersReadiedUp.Contains(player.id))
                             {
                                 RainMeadow.Debug($"Player {player.id.name} already exists in readiedUp dictionary");
                             }
                             else
                             {
                                 // Key does not exist, you can add it if needed
-                                arena.playersReadiedUp.Add(player.id.name, false);
+                                arena.playersReadiedUp.Add(player.id);
                             }
                         }
                     }
@@ -738,7 +738,7 @@ namespace RainMeadow
                     {
                         if (!player.isMe)
                         {
-                            player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer.id.name, currentColorIndex);
+                            player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
 
                         }
                     }
@@ -780,8 +780,13 @@ namespace RainMeadow
 
             if (OnlineManager.players.Count > 1)
             {
-                for (int l = 1; l < OnlineManager.players.Count; l++)
+                for (int l = 0; l < OnlineManager.players.Count; l++)
                 {
+                    if (OnlineManager.players[l] == OnlineManager.mePlayer)
+                    {
+                        continue; // mePlayer should always be in the first spot visually, especially in lobbies > 4
+                    }
+
                     if (l > 3)
                     {
                         break;
@@ -790,7 +795,7 @@ namespace RainMeadow
                     int localIndex = l;
                     classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
                     classButtons[l].buttonBehav.greyedOut = true;
-                    classButtons[l].readyForCombat = arena.playersReadiedUp.TryGetValue(OnlineManager.players[l].id.name, out _) && arena.playersReadiedUp[OnlineManager.players[l].id.name];
+                    classButtons[l].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
 
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[l].id.name, out var currentColorIndex))
@@ -828,8 +833,13 @@ namespace RainMeadow
 
             if (OnlineManager.players.Count > 1)
             {
-                for (int k = 1; k < usernameButtons.Length; k++)
+                for (int k = 0; k < usernameButtons.Length; k++)
                 {
+                    if (OnlineManager.players[k] == OnlineManager.mePlayer)
+                    {
+                        continue;
+                    }
+
                     if (k > 3)
                     {
                         break;
@@ -927,7 +937,7 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition].id.name];
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
                 }
                 catch
                 {
@@ -982,7 +992,7 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp[OnlineManager.players[currentPlayerPosition].id.name];
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
                 }
                 catch
                 {

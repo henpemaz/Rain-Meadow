@@ -35,7 +35,7 @@ namespace RainMeadow
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
-        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
+        public List<MeadowPlayerId> playersReadiedUp = new List<MeadowPlayerId>();
 
 
         public int playerEnteredGame = 0;
