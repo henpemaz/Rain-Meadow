@@ -12,6 +12,7 @@ namespace RainMeadow
         public FLabel username;
         public List<FLabel> messageLabels = new();
         public FSprite slugIcon;
+        public FSprite slugBackground;
         public OnlinePlayer player;
         public class Message
         {
@@ -96,11 +97,21 @@ namespace RainMeadow
 
             }
 
+
             this.slugIcon = new FSprite(iconString, true);
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
-            this.slugIcon.color = lighter_color;
+            //this.slugIcon.color = lighter_color;
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                this.slugBackground = new FSprite(iconString, true);
+                owner.hud.fContainers[0].AddChild(this.slugBackground);
+                this.slugBackground.alpha = 0f;
+                this.slugBackground.x = -1000f;
+                this.slugBackground.color = lighter_color;
+            }
             this.blink = 1f;
 
             this.username = new FLabel(Custom.GetFont(), customization.nickname);
@@ -150,6 +161,7 @@ namespace RainMeadow
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
                     {
+                        slugBackground.SetElementByName("slug_outline");
                         slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
                     }
                     else slugIcon.SetElementByName(iconString);
@@ -236,9 +248,16 @@ namespace RainMeadow
 
             this.slugIcon.x = pos.x;
             this.slugIcon.y = pos.y;
+            this.slugIcon.alpha = num;
+
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                this.slugBackground.x = pos.x;
+                this.slugBackground.y = pos.y;
+                this.slugBackground.alpha = num;
+            }
 
             this.arrowSprite.alpha = num;
-            this.slugIcon.alpha = num;
             if (this.messageQueue.Count > 0 && (flashIcons || RainMeadow.rainMeadowOptions.ShowFriends.Value))
             {
                 this.username.alpha = lighter_color.a;
@@ -270,6 +289,10 @@ namespace RainMeadow
             this.username.RemoveFromContainer();
             foreach (var label in this.messageLabels) label.RemoveFromContainer();
             this.slugIcon.RemoveFromContainer();
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                this.slugBackground.RemoveFromContainer();
+            }
         }
     }
 }

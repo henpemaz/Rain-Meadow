@@ -85,7 +85,15 @@ namespace RainMeadow
 
         public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
         {
-            Player player = null;
+
+            
+                if (!Futile.atlasManager.DoesContainAtlas("spritesheet4"))
+                {
+                    HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/spritesheet4").name);
+
+                }
+
+                Player player = null;
             player = onlineHud.abstractPlayer.realizedCreature as Player;
 
 
@@ -94,18 +102,18 @@ namespace RainMeadow
                 if ((player.SlugCatClass == SlugcatStats.Name.Yellow))
                 {
 
-                    return "FriendA";
+                    return "monk_ana";
                 }
                 if (player.SlugCatClass == SlugcatStats.Name.Red)
                 {
 
-                    return "Symbol_Neuron";
+                    return "hunter_ana";
                 }
 
                 if (player.SlugCatClass == SlugcatStats.Name.Night)
                 {
 
-                    return "GuidanceMoon";
+                    return "hunter_ana2";
                 }
                 if (ModManager.MSC)
                 {
