@@ -346,9 +346,9 @@ namespace RainMeadow
                 }
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (!arena.playersReadiedUp.Contains(OnlineManager.mePlayer.id))
+                    if (!arena.playersReadiedUp.Contains(OnlineManager.mePlayer.inLobbyId))
                     {
-                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.id);
+                        arena.playersReadiedUp.Add(OnlineManager.mePlayer.inLobbyId);
                     }
                 }
 
@@ -631,13 +631,13 @@ namespace RainMeadow
                 if (arena.playersReadiedUp.Count > OnlineManager.players.Count) // someone readied up then left
                 {
                     RainMeadow.Debug("readyUpDictionary is greater than the number of players. Somebody left who was ready!");
-                    List<MeadowPlayerId> keysToRemove = new List<MeadowPlayerId>();
+                    List<ushort> keysToRemove = new List<ushort>();
 
                     for (int i = 0; i < arena.playersReadiedUp.Count; i++)
                     {
                         foreach (var player in arena.playersReadiedUp)
                         {
-                            if (!OnlineManager.players.Any(player => player.id.name.Equals(player)))
+                            if (!OnlineManager.players.Any(player => player.inLobbyId.Equals(player)))
                             {
                                 RainMeadow.Debug("Removing player who left from readyUpDictionary");
                                 keysToRemove.Add(player);
@@ -670,14 +670,14 @@ namespace RainMeadow
                                 arena.playersInLobbyChoosingSlugs.Add(player.id.name, 0);
                             }
 
-                            if (arena.playersReadiedUp.Contains(player.id))
+                            if (arena.playersReadiedUp.Contains(player.inLobbyId))
                             {
                                 RainMeadow.Debug($"Player {player.id.name} already exists in readiedUp dictionary");
                             }
                             else
                             {
                                 // Key does not exist, you can add it if needed
-                                arena.playersReadiedUp.Add(player.id);
+                                //arena.playersReadiedUp.Add(player.inLobbyId);
                             }
                         }
                     }
@@ -777,15 +777,12 @@ namespace RainMeadow
         private void AddOtherPlayerClassButtons()
         {
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
-
             if (OnlineManager.players.Count > 1)
             {
-                for (int l = 0; l < OnlineManager.players.Count; l++)
+                RainMeadow.Debug("1==");
+                for (int l = 1; l < OnlineManager.players.Count; l++)
                 {
-                    if (OnlineManager.players[l] == OnlineManager.mePlayer)
-                    {
-                        continue; // mePlayer should always be in the first spot visually, especially in lobbies > 4
-                    }
+
 
                     if (l > 3)
                     {
@@ -793,9 +790,20 @@ namespace RainMeadow
                     }
 
                     int localIndex = l;
-                    classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+
+
+                    if (OnlineManager.players[l] == OnlineManager.mePlayer)
+                    {
+
+                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), 0);
+                    } else
+                    {
+                        classButtons[l] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + l * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), l);
+                    }
+
                     classButtons[l].buttonBehav.greyedOut = true;
-                    classButtons[l].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
+
+                    classButtons[l].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[l].inLobbyId);
 
                     classButtons[l].portraitBlack = Custom.LerpAndTick(classButtons[l].portraitBlack, 1f, 0.06f, 0.05f);
                     if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[l].id.name, out var currentColorIndex))
@@ -809,6 +817,7 @@ namespace RainMeadow
                     classButtons[l].portrait.sprite.SetElementByName(classButtons[l].portrait.fileName);
 
                     pages[0].subObjects.Add(classButtons[l]);
+
                     if (OnlineManager.lobby.isOwner)
                     {
 
@@ -835,18 +844,19 @@ namespace RainMeadow
             {
                 for (int k = 0; k < usernameButtons.Length; k++)
                 {
-                    if (OnlineManager.players[k] == OnlineManager.mePlayer)
-                    {
-                        continue;
-                    }
-
                     if (k > 3)
                     {
                         break;
                     }
-
+                    
                     string name = OnlineManager.players[k].id.name;
-                    usernameButtons[k] = new SimplerButton(this, pages[0], name, new Vector2(600f + k * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                    if (OnlineManager.players[k] == OnlineManager.mePlayer)
+                    {
+                        usernameButtons[k] = new SimplerButton(this, pages[0], name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                    } else
+                    {
+                        usernameButtons[k] = new SimplerButton(this, pages[0], name, new Vector2(600f + k + 1 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                    }
                     (usernameButtons[k] as SimplerButton).OnClick += (_) =>
                     {
                         OnlineManager.players[k].id.OpenProfileLink();
@@ -919,7 +929,7 @@ namespace RainMeadow
                 }
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes next
-                
+
 
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
@@ -937,7 +947,7 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].inLobbyId);
                 }
                 catch
                 {
@@ -975,7 +985,7 @@ namespace RainMeadow
 
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name; // current becomes previous
 
-                
+
                 int localIndex = currentPlayerPosition;
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -992,7 +1002,7 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].inLobbyId);
                 }
                 catch
                 {
