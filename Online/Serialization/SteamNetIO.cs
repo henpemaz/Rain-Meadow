@@ -9,7 +9,9 @@ namespace RainMeadow
 {
     class SteamNetIO : LANNetIO {
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
-            RainMeadow.Error("UNIMPLEMENTED");
+            base.SendP2P(player, packet, sendType, start_conversation);
+            
+            // RainMeadow.Error("UNIMPLEMENTED");
         }
         public override void SendSessionData(OnlinePlayer toPlayer)
         {
