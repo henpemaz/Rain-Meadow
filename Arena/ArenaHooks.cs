@@ -156,7 +156,7 @@ namespace RainMeadow
                                         (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
                                     }
                                 }
-                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive && ac.realizedCreature.grasps == null)
                                 {
                                     ac.realizedCreature.Die();
                                 }
