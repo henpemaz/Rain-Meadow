@@ -84,6 +84,22 @@ namespace RainMeadow
 
         public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
         {
+
+            if (!Futile.atlasManager.DoesContainAtlas("Kill_Slugcats"))
+            {
+                HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/Kill_Slugcats").name);
+
+            }
+
+            Player player = null;
+            player = onlineHud.abstractPlayer.realizedCreature as Player;
+
+
+            if (player != null)
+            {
+                return $"Kill_Slugcat_{player.SlugCatClass}";
+
+            }
             return "";
         }
 
