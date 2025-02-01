@@ -25,6 +25,7 @@ namespace RainMeadow
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
+        public int painCatThrowingSkill = 0;
 
         public string paincatName = "";
         public int lizardEvent = 0;
@@ -71,6 +72,7 @@ namespace RainMeadow
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);
+            painCatThrowingSkill = UnityEngine.Random.Range(-1, 3);
             int whichPaincatName = UnityEngine.Random.Range(0, 7);
             switch (whichPaincatName)
             {
