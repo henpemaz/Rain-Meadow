@@ -742,7 +742,7 @@ namespace RainMeadow
             }
         }
 
-        const ulong PEER_TIMEOUT = 1000*6; 
+        const ulong PEER_TIMEOUT = 1000*3; 
         const ulong HEARTBEAT_TIME= 500; 
         
 
