@@ -655,19 +655,12 @@ namespace RainMeadow
         }
 
         public delegate void OnPeerForgotten_t(IPEndPoint endPoint);
-
-        public delegate bool ShouldForgetPeer_t(IPEndPoint endPoint);
-
-
-        public ShouldForgetPeer_t shouldForgetPeer = delegate { return true; };
         public event OnPeerForgotten_t OnPeerForgotten = delegate { };
         
         
         public void ForgetPeer(RemotePeer peer) {
-            if (shouldForgetPeer(peer.PeerEndPoint)) {
-                OnPeerForgotten.Invoke(peer.PeerEndPoint);
-                peers.Remove(peer);
-            }
+            OnPeerForgotten.Invoke(peer.PeerEndPoint);
+            peers.Remove(peer);
         }
         public void ForgetPeer(IPEndPoint endPoint) {
             var remove_peers = peers.FindAll(x => CompareIPEndpoints(endPoint, x.PeerEndPoint));
