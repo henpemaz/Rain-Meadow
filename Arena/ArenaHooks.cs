@@ -1,5 +1,4 @@
-﻿using HUD;
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
 using System;
@@ -91,7 +90,7 @@ namespace RainMeadow
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
-            
+
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
@@ -104,12 +103,13 @@ namespace RainMeadow
             {
                 self.zeroMode = true;
                 orig(self, abstractPhysicalObject, world);
-            } else
+            }
+            else
             {
                 orig(self, abstractPhysicalObject, world);
             }
         }
-        
+
 
         private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
         {
@@ -117,12 +117,12 @@ namespace RainMeadow
             {
 
                 return;
-                
+
             }
             else
             {
                 orig(self, room, placedObj);
-                
+
             }
         }
 
@@ -157,7 +157,7 @@ namespace RainMeadow
                                         (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
                                     }
                                 }
-                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive && ac.realizedCreature.grasps == null)
                                 {
                                     ac.realizedCreature.Die();
                                 }
@@ -1045,6 +1045,11 @@ namespace RainMeadow
                     if (player.playerClass == SlugcatStats.Name.Night)
                     {
                         self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
+
+                    else if (player.playerClass == MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "4" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     }
                     else
                     {

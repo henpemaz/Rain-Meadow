@@ -49,6 +49,16 @@ namespace RainMeadow
             return null;
         }
 
+        public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            arena.arenaSittingOnlineOrder = new List<ushort>();
+            arena.ResetGameTimer();
+            arena.clientsAreReadiedUp = 0;
+            arena.currentLevel = 0;
+            arena.playersReadiedUp.Clear();
+
+        }
+
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
