@@ -46,7 +46,7 @@ namespace Menu
 
         public SimplerSymbolButton kickButton;
 
-        public OnlinePlayer inLobbyIdentifier;
+        public OnlinePlayer profileIdentifier;
 
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;

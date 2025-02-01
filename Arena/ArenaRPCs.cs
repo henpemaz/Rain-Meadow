@@ -139,7 +139,7 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < game.classButtons.Length; i++)
                     {
-                        if (game.classButtons[i].inLobbyIdentifier == userChangingClass)
+                        if (game.classButtons[i].profileIdentifier == userChangingClass)
                         {
                             game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
@@ -176,7 +176,7 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < game.classButtons.Length; i++)
                     {
-                        if (game.classButtons[i].inLobbyIdentifier == userIsReady)
+                        if (game.classButtons[i].profileIdentifier == userIsReady)
                         {
                             game.classButtons[i].readyForCombat = true;
 

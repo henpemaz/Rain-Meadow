@@ -713,7 +713,7 @@ namespace RainMeadow
                 classButtons[0] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f), 40f), 0);
                 classButtons[0].buttonBehav.greyedOut = false;
                 classButtons[0].readyForCombat = true;
-                classButtons[0].inLobbyIdentifier = OnlineManager.mePlayer;
+                classButtons[0].profileIdentifier = OnlineManager.mePlayer;
                 int currentColorIndex;
                 if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.inLobbyId, out var existingValue))
                 {
@@ -776,7 +776,7 @@ namespace RainMeadow
                 classButtons[localIndex].buttonBehav.greyedOut = true;
                 classButtons[localIndex].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[i].inLobbyId);
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[localIndex].inLobbyIdentifier = OnlineManager.players[i];
+                classButtons[localIndex].profileIdentifier = OnlineManager.players[i];
 
                 if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[i].inLobbyId, out var currentColorIndexOther))
                 {
@@ -930,7 +930,7 @@ namespace RainMeadow
                 {
                     currentColorIndexOther = 0;
                 }
-                classButtons[holdPlayerPosition].inLobbyIdentifier = OnlineManager.players[currentPlayerPosition];
+                classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
@@ -985,12 +985,12 @@ namespace RainMeadow
                         BanHammer.BanUser(OnlineManager.players[localIndex]);
                     };
                 }
-                classButtons[holdPlayerPosition].inLobbyIdentifier = OnlineManager.players[currentPlayerPosition];
+                classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
                 if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[currentPlayerPosition].inLobbyId, out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
                 }
-                classButtons[holdPlayerPosition].inLobbyIdentifier = OnlineManager.players[currentPlayerPosition];
+                classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
