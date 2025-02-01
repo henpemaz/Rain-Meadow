@@ -48,10 +48,28 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
+        On.Player.SlugOnBack.Update += SlugOnBack_Update;
 
     }
 
-
+    private void SlugOnBack_Update(On.Player.SlugOnBack.orig_Update orig, Player.SlugOnBack self, bool eu)
+    {
+        orig(self, eu);
+        if (isArenaMode(out var _) && self.slugcat != null)
+        {
+            if (self.slugcat.input[0].jmp)
+            {
+                for (int j = 0; j < self.owner.grasps.Length; j++)
+                {
+                    if (self.owner.grasps[j]?.grabbed is Player)
+                    {
+                        self.owner.ReleaseGrasp(j);
+                    }
+                }
+                self.owner.slugOnBack.DropSlug();                   
+            }
+        }
+    }
 
     // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
     private void Player_ThrowObject1(ILContext il)
@@ -185,6 +203,7 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
+
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())

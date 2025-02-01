@@ -210,6 +210,11 @@ namespace RainMeadow
                     self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
                 }
 
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                {
+                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                }
+
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
                 {
 
