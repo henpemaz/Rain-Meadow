@@ -68,10 +68,7 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
-                //playersReadiedUp = arena.playersReadiedUp;
-
                 playersReadiedUp = arena.playersReadiedUp;
-
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
