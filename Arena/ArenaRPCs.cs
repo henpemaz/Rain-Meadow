@@ -137,29 +137,20 @@ namespace RainMeadow
                 var Sluglist = ArenaHelpers.AllSlugcats();
                 try
                 {
-                    for (int i = 1; i < game.usernameButtons.Length; i++)
+                    for (int i = 0; i < game.classButtons.Length; i++)
                     {
-                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
+                        if (game.classButtons[i].inLobbyIdentifier == userChangingClass)
                         {
                             game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
-                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName); // trust the ordering
-                        }
-                        else
-                        {
-                            if (game.usernameButtons[i].menuLabel.text == userChangingClass.id.name) // TODO: Null referencing here
-                            {
-                                game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
-                                game.classButtons[i].portrait.LoadFile();
-                                game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
-                            }
+                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
                         }
 
                     }
                 }
                 catch
                 {
-                    RainMeadow.Debug("Could not find username button");
+                    RainMeadow.Debug("Could not find user");
                 }
 
             }
