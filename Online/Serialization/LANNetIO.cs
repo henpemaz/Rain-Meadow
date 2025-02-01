@@ -35,27 +35,7 @@ namespace RainMeadow
                     }
                 }
 
-                manager.shouldForgetPeer = (IPEndPoint endPoint) => {
-                    if (OnlineManager.lobby?.isOwner ?? true) return true;
-                    else {
-                        if (OnlineManager.lobby?.owner is OnlinePlayer owner && owner == 
-                            ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).GetPlayerLAN(endPoint)) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                };
-
-                foreach (var player in playerstoRemove) {
-                    if (OnlineManager.lobby?.isOwner ?? true) {
-                        ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
-                    } else {
-                        // If we're not the owner, we shouldn't remove them the lobby.
-                        (OnlineManager.netIO as LANNetIO)?.SendAcknoledgement(player); 
-                    }
-                    
-                }
+                foreach (var player in playerstoRemove) ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
             };
         }
 
@@ -89,20 +69,16 @@ namespace RainMeadow
                 return;
             }
 
-            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
-                MemoryStream memory = new MemoryStream(128);
-                BinaryWriter writer = new BinaryWriter(memory);
+            MemoryStream memory = new MemoryStream(128);
+            BinaryWriter writer = new BinaryWriter(memory);
 
-                Packet.Encode(packet, writer, player);
-                manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
-                    {
-                        NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
-                        NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
-                        _ => UDPPeerManager.PacketType.Unreliable,
-                    }, start_conversation);
-            } else {
-                RainMeadow.Error("Player ID is not LANPlayerId");
-            }
+            Packet.Encode(packet, writer, player);
+            manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, sendType switch
+                {
+                     NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
+                     NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
+                     _ => UDPPeerManager.PacketType.Unreliable,
+                }, start_conversation);
         }
 
 
@@ -111,17 +87,12 @@ namespace RainMeadow
                 return;
             }
 
-            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
-                manager.Send(Array.Empty<byte>(), lanid.endPoint, 
-                    UDPPeerManager.PacketType.Reliable, true);
-            } else {
-                RainMeadow.Error("Player ID is not LANPlayerId");
-            }
+            manager.Send(Array.Empty<byte>(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                UDPPeerManager.PacketType.Reliable, true);
         }
 
         public override void ForgetPlayer(OnlinePlayer player) {
-            if (player.id is LANMatchmakingManager.LANPlayerId lanid)
-                manager.ForgetPeer(lanid.endPoint);
+            manager.ForgetPeer(((LANMatchmakingManager.LANPlayerId)player.id).endPoint);
         }
 
         public override void ForgetEverything() {
