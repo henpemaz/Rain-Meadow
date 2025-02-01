@@ -808,29 +808,28 @@ namespace RainMeadow
         private void AddUsernames()
         {
             usernameButtons = new SimplerButton[OnlineManager.players.Count];
-            int meIndex = -1;
+            bool foundMe = false;
             for (int i = 0; i < OnlineManager.players.Count; i++)
             {
                 if (OnlineManager.players[i].isMe)
                 {
-                    meIndex = i;
+                    foundMe = true;
                     break;
                 }
             }
-            if (!meUsernameButtonCreated)
+            if (!meUsernameButtonCreated && foundMe)
             {
-                if (meIndex != -1)
+
+                // Assign 'isMe' player to index 0
+                usernameButtons[0] = new SimplerButton(this, pages[0], OnlineManager.mePlayer.id.name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                (usernameButtons[0] as SimplerButton).OnClick += (_) =>
                 {
-                    // Assign 'isMe' player to index 0
-                    usernameButtons[0] = new SimplerButton(this, pages[0], OnlineManager.mePlayer.id.name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
-                    (usernameButtons[0] as SimplerButton).OnClick += (_) =>
-                    {
-                        OnlineManager.mePlayer.id.OpenProfileLink(); // Open profile for 'isMe' player
-                    };
-                    usernameButtons[0].buttonBehav.greyedOut = false;
-                    pages[0].subObjects.Add(usernameButtons[0]);
-                    meUsernameButtonCreated = true;
-                }
+                    OnlineManager.mePlayer.id.OpenProfileLink(); // Open profile for 'isMe' player
+                };
+                usernameButtons[0].buttonBehav.greyedOut = false;
+                pages[0].subObjects.Add(usernameButtons[0]);
+                meUsernameButtonCreated = true;
+
             }
 
             int buttonIndex = 1;
@@ -893,7 +892,7 @@ namespace RainMeadow
                 pages[0].RemoveSubObject(viewPrevPlayer);
             }
 
-            if (OnlineManager.players.Count < 4) 
+            if (OnlineManager.players.Count < 4)
             {
                 return;
             }
