@@ -30,13 +30,11 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
-            public Dictionary<string, int> playersChoosingSlugs;
+            public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
             [OnlineField]
             public List<ushort> playersReadiedUp;
-            //[OnlineField]
-            //public List<MeadowPlayerId> playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
