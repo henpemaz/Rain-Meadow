@@ -993,6 +993,7 @@ namespace RainMeadow
                 {
                     currentColorIndexOther = 0;
                 }
+                classButtons[holdPlayerPosition].inLobbyIdentifier = OnlineManager.players[currentPlayerPosition];
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
