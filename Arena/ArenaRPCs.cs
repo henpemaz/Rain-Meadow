@@ -174,28 +174,19 @@ namespace RainMeadow
 
                 try
                 {
-                    for (int i = 1; i < game.usernameButtons.Length; i++)
+                    for (int i = 0; i < game.classButtons.Length; i++)
                     {
-
-                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
+                        if (game.classButtons[i].inLobbyIdentifier == userIsReady)
                         {
-                            game.classButtons[i].readyForCombat = true; // trust the ordering
-                        }
-                        else
-                        {
-                            if (game.usernameButtons[i].menuLabel.text == userIsReady.id.name)
-                            {
+                            game.classButtons[i].readyForCombat = true;
 
-                                game.classButtons[i].readyForCombat = true;
-
-                            }
                         }
 
                     }
                 }
                 catch
                 {
-                    RainMeadow.Debug("Could not find username button");
+                    RainMeadow.Debug("Could not find user");
                 }
 
 
