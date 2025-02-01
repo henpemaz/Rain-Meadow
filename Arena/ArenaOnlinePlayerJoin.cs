@@ -46,6 +46,8 @@ namespace Menu
 
         public SimplerSymbolButton kickButton;
 
+        public OnlinePlayer inLobbyIdentifier;
+
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
@@ -70,15 +72,10 @@ namespace Menu
             subObjects.Add(roundedRect);
             selectRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: false);
             subObjects.Add(selectRect);
-
-
-
             portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
-          
             subObjects.Add(portrait);
             string text = menu.Translate("");
             readyForCombat = false;
-
             float num = 0f;
             menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
             subObjects.Add(menuLabel);
