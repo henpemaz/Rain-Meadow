@@ -843,11 +843,10 @@ namespace RainMeadow
                 // Start placing players from index 1
                 // Use buttonIndex to assign non-'isMe' players to the next available indices
                 // Create button for other players
-                usernameButtons[buttonIndex] = new SimplerButton(this, pages[0], OnlineManager.players[i].id.name, new Vector2(600f + buttonIndex * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
-                (usernameButtons[buttonIndex] as SimplerButton).OnClick += (_) =>
-                {
-                    OnlineManager.players[buttonIndex].id.OpenProfileLink(); // Open profile for other players
-                };
+                var player = OnlineManager.players[i];
+
+                usernameButtons[buttonIndex] = new SimplerButton(this, pages[0], player.id.name, new Vector2(600f + buttonIndex * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
+                (usernameButtons[buttonIndex] as SimplerButton).OnClick += (_) => player.id.OpenProfileLink(); // Open profile for other players
 
                 usernameButtons[buttonIndex].buttonBehav.greyedOut = false;
                 pages[0].subObjects.Add(usernameButtons[buttonIndex]);

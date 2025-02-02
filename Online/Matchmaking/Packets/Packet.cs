@@ -59,6 +59,7 @@ namespace RainMeadow
                 Type.SessionEnd => new SessionEndPacket(),
                 Type.RequestLobby => new RequestLobbyPacket(),
                 Type.InformLobby => new InformLobbyPacket(),
+                Type.ChatMessage => new ChatMessagePacket(),
                 
                 _ => null
             };
