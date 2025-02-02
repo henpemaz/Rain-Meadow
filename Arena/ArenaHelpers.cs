@@ -18,15 +18,8 @@ namespace RainMeadow
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
                 if (ArenaHelpers.BaseGameSlugcats().Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
-                    if (arena.avatarSettings.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
-                    {
-                        arena.playerResultColors[currentPlayer.id.name] = 4;
-                    }
-                    else
-                    {
-                        profileColor = Random.Range(0, 4);
-                        arena.playerResultColors[currentPlayer.id.name] = profileColor;
-                    }
+                    profileColor = Random.Range(0, 4);
+                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
                 }
                 else
                 {
