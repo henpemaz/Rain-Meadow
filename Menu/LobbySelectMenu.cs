@@ -424,6 +424,7 @@ namespace RainMeadow
                         var fakelobbyinfo = new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
                         Action join = () => {
                             ShowLoadingDialog("Joining lobby...");
+                            GreyOutLobbyCards(true);
                             RequestLobbyJoin(fakelobbyinfo,
                                     dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null);
                         };
