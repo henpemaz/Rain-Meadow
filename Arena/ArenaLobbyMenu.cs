@@ -759,12 +759,18 @@ namespace RainMeadow
                 arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
                 meClassButtonCreated = true;
             }
-            int localIndex = 1; // Start placing other players from index 1
-            for (int i = 0; i < OnlineManager.players.Count; i++)
+            for (int i = 0; i < OnlineManager.players.Count; i++) // skip lobby owner
             {
-                if (OnlineManager.players[i].isMe)
+                int localIndex = i;
+                // cannot be zero.
+                // must account for player 0
+                // must not exceed the count of players
+
+                if (OnlineManager.players[i] == OnlineManager.lobby.owner)
                 {
-                    continue;
+                    localIndex = OnlineManager.players.IndexOf(OnlineManager.mePlayer);
+                    continue; // classButtons[0] is already made, they can have my old spot
+
                 }
 
                 if (i > holdPlayerPosition)
@@ -772,13 +778,14 @@ namespace RainMeadow
                     break;
                 }
 
+                RainMeadow.Debug("=======index" + localIndex);
                 classButtons[localIndex] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + localIndex * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), localIndex);
                 classButtons[localIndex].buttonBehav.greyedOut = true;
-                classButtons[localIndex].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[i].inLobbyId);
+                classButtons[localIndex].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[localIndex].inLobbyId);
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[localIndex].profileIdentifier = OnlineManager.players[i];
+                classButtons[localIndex].profileIdentifier = ArenaHelpers.FindOnlinePlayerByLobbyId(OnlineManager.players[localIndex].inLobbyId);
 
-                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[i].inLobbyId, out var currentColorIndexOther))
+                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[localIndex].inLobbyId, out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
                 }
@@ -790,15 +797,16 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     classButtons[localIndex].kickButton = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(classButtons[localIndex].pos.x + 40f, classButtons[localIndex].pos.y + 110f));
-
                     classButtons[localIndex].kickButton.OnClick += (_) =>
                     {
-                        RainMeadow.Debug("Kicked User: " + OnlineManager.players[localIndex]);
-                        BanHammer.BanUser(OnlineManager.players[localIndex]);
+                        RainMeadow.Debug($"Kicked User: {classButtons[localIndex].profileIdentifier}");
+                        BanHammer.BanUser(classButtons[localIndex].profileIdentifier);
                     };
                     this.pages[0].subObjects.Add(classButtons[localIndex].kickButton);
                 }
-                localIndex++; // Increment to the next available index
+
+
+
             }
         }
 
