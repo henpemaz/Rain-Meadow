@@ -789,7 +789,7 @@ namespace RainMeadow
                 classButtons[localIndex].buttonBehav.greyedOut = true;
                 classButtons[localIndex].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[localIndex].inLobbyId);
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[localIndex].profileIdentifier = ArenaHelpers.FindOnlinePlayerByLobbyId(OnlineManager.players[localIndex].inLobbyId);
+                classButtons[localIndex].profileIdentifier = OnlineManager.players[localIndex];
 
                 if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[localIndex].inLobbyId, out var currentColorIndexOther))
                 {
