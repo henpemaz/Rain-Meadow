@@ -773,6 +773,12 @@ namespace RainMeadow
 
                 }
 
+                if (OnlineManager.players[i].isMe)
+                {
+                    continue; // we've we've already addressed me at [0]
+
+                }
+
                 if (i > holdPlayerPosition)
                 {
                     break;
