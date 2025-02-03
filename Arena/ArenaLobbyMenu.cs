@@ -804,8 +804,7 @@ namespace RainMeadow
                     classButtons[localIndex].kickButton.OnClick += (_) =>
                     {
                         RainMeadow.Debug($"Kicked User: {classButtons[localIndex].profileIdentifier}");
-                        return;
-                        //BanHammer.BanUser(classButtons[localIndex].profileIdentifier);
+                        BanHammer.BanUser(classButtons[localIndex].profileIdentifier);
                     };
                     this.pages[0].subObjects.Add(classButtons[localIndex].kickButton);
                 }
