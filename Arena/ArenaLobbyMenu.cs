@@ -769,13 +769,12 @@ namespace RainMeadow
                 if (OnlineManager.players[i] == OnlineManager.lobby.owner)
                 {
                     localIndex = OnlineManager.players.IndexOf(OnlineManager.mePlayer);
-                    continue; // classButtons[0] is already made, they can have my old spot
 
                 }
 
                 if (OnlineManager.players[i].isMe)
                 {
-                    continue; // we've we've already addressed me at [0]
+                    continue; // we've already addressed me at [0]
 
                 }
 
@@ -784,12 +783,11 @@ namespace RainMeadow
                     break;
                 }
 
-                RainMeadow.Debug("=======index" + localIndex);
                 classButtons[localIndex] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + localIndex * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), localIndex);
                 classButtons[localIndex].buttonBehav.greyedOut = true;
                 classButtons[localIndex].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[localIndex].inLobbyId);
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
-                classButtons[localIndex].profileIdentifier = OnlineManager.players[localIndex];
+                classButtons[localIndex].profileIdentifier = (localIndex == OnlineManager.players.IndexOf(OnlineManager.mePlayer) ? OnlineManager.lobby.owner : OnlineManager.players[localIndex]);
 
                 if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[localIndex].inLobbyId, out var currentColorIndexOther))
                 {
@@ -806,7 +804,8 @@ namespace RainMeadow
                     classButtons[localIndex].kickButton.OnClick += (_) =>
                     {
                         RainMeadow.Debug($"Kicked User: {classButtons[localIndex].profileIdentifier}");
-                        BanHammer.BanUser(classButtons[localIndex].profileIdentifier);
+                        return;
+                        //BanHammer.BanUser(classButtons[localIndex].profileIdentifier);
                     };
                     this.pages[0].subObjects.Add(classButtons[localIndex].kickButton);
                 }
