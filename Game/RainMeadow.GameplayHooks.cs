@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
+using System.Drawing;
 using System.Linq;
 using UnityEngine;
 
@@ -37,6 +38,20 @@ namespace RainMeadow
             On.RoomRealizer.Update += RoomRealizer_Update;
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
+            On.DeafLoopHolder.Update += DeafLoopHolder_Update;
+        }
+
+        private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
+        {
+            orig(self, eu);
+            if (OnlineManager.lobby != null)
+            {
+                if (self.player != null && self.player.dead && self.deafLoop != null)
+                {
+                    self.deafLoop = null;
+                }
+            }
+
         }
 
         private void Player_TerrainImpact(ILContext il)
@@ -432,7 +447,6 @@ namespace RainMeadow
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
                         self.State.alive = false;
-
                     }
                 }
             }
