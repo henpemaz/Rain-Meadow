@@ -671,12 +671,12 @@ namespace RainMeadow
 
                         if (arena.playersReadiedUp.Contains(player.inLobbyId))
                         {
-                            RainMeadow.Debug($"Player {player.id.name} already exists in readiedUp dictionary");
+                            RainMeadow.Debug($"Player {player.id.name} is readied up");
                         }
                         else
                         {
                             // Key does not exist, you can add it if needed
-                            // arena.playersReadiedUp.Add(player.inLobbyId);
+                            //arena.playersReadiedUp.Add(player.inLobbyId);
                         }
                     }
                 }
@@ -766,16 +766,27 @@ namespace RainMeadow
                 // must account for player 0
                 // must not exceed the count of players
 
-                if (OnlineManager.players[i] == OnlineManager.lobby.owner)
-                {
-                    localIndex = OnlineManager.players.IndexOf(OnlineManager.mePlayer);
 
+                if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam && i == 0)
+                {
+                    continue; // we've already done [0]
                 }
 
-                if (OnlineManager.players[i].isMe)
+                if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN) // handle mePlayer pos
                 {
-                    continue; // we've already addressed me at [0]
 
+
+                    if (OnlineManager.players[i] == OnlineManager.lobby.owner)
+                    {
+                        localIndex = OnlineManager.players.IndexOf(OnlineManager.mePlayer);
+
+                    }
+
+                    if (OnlineManager.players[i].isMe)
+                    {
+                        continue; // we've already addressed me at [0]
+
+                    }
                 }
 
                 if (i > holdPlayerPosition)
@@ -900,7 +911,7 @@ namespace RainMeadow
                 pages[0].RemoveSubObject(viewPrevPlayer);
             }
 
-            if (OnlineManager.players.Count < 4)
+            if (OnlineManager.players.Count <= 4)
             {
                 return;
             }
