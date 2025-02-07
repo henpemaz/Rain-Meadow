@@ -76,7 +76,7 @@ namespace RainMeadow
             Public = 1,
             [Description("Friends Only")]
             FriendsOnly,
-            [Description("Private")]
+            [Description("Invite Only")]
             Private
         }
 
