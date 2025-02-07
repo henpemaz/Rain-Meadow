@@ -553,7 +553,8 @@ namespace RainMeadow
 
         public class RemotePeer {
             public IPEndPoint PeerEndPoint { get; set; } = new IPEndPoint(IPAddress.Any, 0);
-            public ulong TicksSinceLastPacket = 0;
+            public ulong TicksSinceLastIncomingPacket = 0;
+            public ulong OutgoingPacketAcummulator = 0;
 
 
             public Queue<byte[]> outgoingpacket = new Queue<byte[]>();
@@ -741,25 +742,35 @@ namespace RainMeadow
 
         Stopwatch stopWatch = new Stopwatch();
         public void Update() {
-            stopWatch.Stop();
             long elapsedTime = stopWatch.ElapsedMilliseconds;
             stopWatch.Restart();
 
             List<RemotePeer> peersToRemove = new();
             for (int i = peers.Count - 1; i >= 0; i--) {
                 RemotePeer peer = peers[i];
-                peer.TicksSinceLastPacket += (ulong)elapsedTime;
-                if (peer.TicksSinceLastPacket >= PEER_TIMEOUT) {
+                peer.TicksSinceLastIncomingPacket += (ulong)elapsedTime;
+                if (peer.TicksSinceLastIncomingPacket >= PEER_TIMEOUT) {
                     peersToRemove.Add(peer);
                     continue;
                 }
-                if (peer.TicksSinceLastPacket % 40 == 0) { // send a heartbeat every 4 ticks (1/10th of a second)
-                    if (peer.outgoingpacket.Count > 0) {
-                        SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
-                    } else if (peer.TicksSinceLastPacket > HEARTBEAT_TIME) {
-                        SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+
+                peer.OutgoingPacketAcummulator += (ulong)elapsedTime;
+                ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / HEARTBEAT_TIME;
+                if (sendAmount > 1)  {
+                    peer.OutgoingPacketAcummulator -= sendAmount*HEARTBEAT_TIME;
+                    peer.OutgoingPacketAcummulator = Math.Max(peer.OutgoingPacketAcummulator, 0); // just to be sure
+
+                    for (ulong j = 0; j < sendAmount; j++) {
+                        if (peer.outgoingpacket.Count > 0) {
+                            SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
+                        } else if (peer.TicksSinceLastIncomingPacket > HEARTBEAT_TIME) {
+                            SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                        }
                     }
+
+
                 }
+
             }
 
             foreach (var peer in peersToRemove) ForgetPeer(peer);
@@ -843,7 +854,7 @@ namespace RainMeadow
                             return null;
                         }
 
-                        if (peer != null) peer.TicksSinceLastPacket = 0;
+                        if (peer != null) peer.TicksSinceLastIncomingPacket = 0;
 
 
 
@@ -876,6 +887,8 @@ namespace RainMeadow
                                 return null;
 
                             case PacketType.HeartBeat:
+                                if (peer == null) return null;
+                                SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
                                 return null;
 
                             default:
