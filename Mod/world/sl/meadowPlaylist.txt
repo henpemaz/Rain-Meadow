@@ -1,5 +1,5 @@
+SL_E01,1200,4000,Litri
 Eyes Vain
-me
 Ones
 Gray Orange
 Void Genesis
@@ -7,3 +7,4 @@ Porls
 tredjeplanen
 Smoothed Ash
 MTC
+New and new

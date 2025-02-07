@@ -223,7 +223,7 @@ namespace RainMeadow
             {
                 // haha fixed   shoddily bumbo --> is only called when you're a slugcat apperantly, fuck.
                 //RainMeadow.Debug("Game requesting a song");
-                if (self == null || loadingsong ||
+                if (self == null || queueingSong ||
                    (self.song != null && self.song.name == musicEvent.songName) ||
                    (self.song == null && self.nextSong != null && self.nextSong.name == musicEvent.songName) || 
                    songHistory.Contains(musicEvent.songName) ||
@@ -380,12 +380,12 @@ namespace RainMeadow
         static readonly Dictionary<string, string[]> ambientDict = new();
         internal static readonly Dictionary<string, VibeZone[]> vibeZonesDict = new();
 
-        internal static Dictionary<int, VibeZone> activeZonesDict = null;
+        internal static Dictionary<int, VibeZone> regionVibeZonesDict = null;
         static string[] ambienceSongArray = null;
 
         static float? time = 0f;
         static float? timeleftofsong;
-        static bool loadingsong = false;
+        static bool queueingSong = false;
 
         static int[] shufflequeue = new int[0];
         static int shuffleindex = 0;
@@ -410,51 +410,56 @@ namespace RainMeadow
         
         internal struct VibeZone
         {
-            public VibeZone(string room, float radius, float minradius, string sampleUsed)
+            public VibeZone(string room, float minradius, float radius, string sampleUsed)
             {
                 this.room = room;
-                this.radius = radius;
                 this.minradius = minradius;
+                this.radius = radius;
                 this.sampleUsed = sampleUsed;
             }
 
             public string room;
-            public float radius;
             public float minradius;
+            public float radius;
             public string sampleUsed;
         }
         private static void CheckFiles()
         {
             if (!filesChecked)
             {
+                List<string> regions = Region.GetFullRegionOrder();
                 string[] dirs = AssetManager.ListDirectory("world", true, true);
                 foreach (string dir in dirs)
                 {
                     string regName = new DirectoryInfo(dir).Name.ToUpper();
-                    string path = dir + Path.DirectorySeparatorChar + "playlist.txt";
-                    if (regName.Length == 2 && File.Exists(path) && !ambientDict.ContainsKey(regName))
+                    string path = dir + Path.DirectorySeparatorChar + "meadowPlaylist.txt";
+                    if (File.Exists(path) && !ambientDict.ContainsKey(regName) && regions.Contains(regName))
                     {
                         string[] lines = File.ReadAllLines(path).Where(l => l != string.Empty).ToArray();
-                        foreach (string line in lines)
-                        {
-                            RainMeadow.Debug("Meadow Music: Registered song " + line + " in " + regName);
-                        }
-                        ambientDict.Add(regName, lines);
-                    }
-                    path = dir + Path.DirectorySeparatorChar + "vibe_zones.txt";
-                    if (File.Exists(path) && !vibeZonesDict.ContainsKey(regName))
-                    {
-                        string[] lines = File.ReadAllLines(path);
-                        VibeZone[] zones = new VibeZone[lines.Length];
+
+                        VibeZone[] zones = new VibeZone[lines.Count(c=>c.Contains(','))];
+                        string[] songs = new string[lines.Length-zones.Length];
+                        int zoneindex = 0;
                         for (int i = 0; i < lines.Length; i++)
                         {
-                            string[] arr = lines[i].Split(',');
-                            zones[i] = new VibeZone(arr[0], float.Parse(arr[1]), float.Parse(arr[2]), arr[3]);
+                            if (lines[i].Contains(','))
+                            {
+                                RainMeadow.Debug("Meadow Music: Registered vibezone " + lines[i] + " in " + regName);
+                                string[] arr = lines[i].Split(',');
+                                zones[zoneindex] = new VibeZone(arr[0], float.Parse(arr[1]), float.Parse(arr[2]), arr[3]);
+                                zoneindex++;
+                            }
+                            else
+                            {
+                                RainMeadow.Debug("Meadow Music: Registered song " + lines[i] + " in " + regName);
+                                songs[i - zoneindex] = lines[i];
+                            }
                         }
+
                         vibeZonesDict.Add(regName, zones);
+                        ambientDict.Add(regName, songs);
                     }
                 }
-
                 filesChecked = true;
             }
         }
@@ -464,9 +469,6 @@ namespace RainMeadow
         static char thisis = 'a';
         static int sosad = 0;
 
-        //static string[] meadowsongnames = new string[] { "403rings", "71104", "Cascen", "DustAshWrong", "Establish", "Eyes Vain", "Eyto", "Folkada", "Grasp", "Gray Orange", "Icy Parchment", "Indufor", "Live more.", "Me", "MTC", "Nevertop Side", "Ones", "Pedal Petal", "Porls", "Purple Puff", "Significance", "Slightly Ill", "Smoothed Ash", "Soup", "StepsSteps", "Swan ode", "The Crewmate", "tredjeplanen", "Triptrap X", "Trists", "Void Genesis", "Walked", "Well Phoe", "Woodback", "NA_40 - Unseen Lands" };
-        //static string[] meadowsongnames = new string[] { "Swan ode", "403rings", "71104", "Folkada", "Pedal Petal", "Porls", "Significance", "The Crewmate", "Void Genesis", "Well Phoe"};
-        //static int queuething = 1;
         internal static void RawUpdate(RainWorldGame self, float dt)
         {
             if (time.HasValue) time += dt;
@@ -478,10 +480,6 @@ namespace RainMeadow
                 return;
             }
 
-            MusicPlayer musicPlayer = self.manager.musicPlayer;
-            var RoomImIn = self.cameras[0].room;
-            var MyGuyMic = self.cameras[0].virtualMicrophone;
-
             var creature = mgm.avatars[0];
             var musicdata = creature.GetData<MeadowMusicData>();
 
@@ -492,11 +490,13 @@ namespace RainMeadow
                 {
                     //LeaveGroup
                     RainMeadow.Debug("I will be asking to leave");
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 1, 0.5f, 1);
                     OnlineManager.lobby.owner.InvokeRPC(AskNowLeave);
                     demiseTimer = null;
+                    self.cameras[0].hud.textPrompt.AddMusicMessage("Left your DJ group", 80);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 0, 0.5f, 1);
                 }
             }
+
             if (groupdemiseTimer != null)
             {
                 groupdemiseTimer -= dt;
@@ -510,10 +510,12 @@ namespace RainMeadow
                     }
                     ushort[] ballers = InThisRoom.Select(v => v.owner.inLobbyId).ToArray();
                     OnlineManager.lobby.owner.InvokeRPC(AskNowSquashPlayers, ballers);
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 1, 0.5f, 1);
+                    self.cameras[0].hud.textPrompt.AddMusicMessage("Squashing room into DJ group", 80);
+                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 0, 0.5f, 1);
                     groupdemiseTimer = null;
                 }
             }
+
             if (joinTimer != null)
             {
                 joinTimer -= dt;
@@ -548,7 +550,7 @@ namespace RainMeadow
                         OnlinePlayer who = playersWithMe.First(p => mgms.playerGroups[p.inLobbyId] == the);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who);
                         self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another DJ group", 80);
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 1, 0.5f, 1);
+                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
                     }
                     else 
                     {
@@ -557,11 +559,16 @@ namespace RainMeadow
                         RainMeadow.Debug("I will ask to join this player named " + who);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who); // the ordering
                         self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another DJ group", 80);
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 1, 0.5f, 1);
+                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
                     }
                 }
             }
-            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null && activeZonesDict != null && closestVibe != -1)
+
+            MusicPlayer musicPlayer = self.manager.musicPlayer;
+            var RoomImIn = self.cameras[0].room;
+            var MyGuyMic = self.cameras[0].virtualMicrophone;
+
+            if (RoomImIn != null && MyGuyMic != null && UpdateIntensity && regionVibeZonesDict != null && closestVibe != -1)
             {
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
                 //RainMeadow.Debug("Has Calculated Pan");
@@ -625,12 +632,13 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug($"host avatar for {hostId} for group {groupImIn} not found");
+                    RainMeadow.Debug($"host avatar for {hostId} for group {groupImIn} not found. or that their song is just not wanted");
                 }
             }
             inGroupbuffer = groupImIn;
+            
             if ((timeleftofsong ?? -1f) < 10) musicdata.providedSong = "";
-            if ((timeleftofsong ?? -1f) < 0 && !loadingsong) //if (musicPlayer != null && musicPlayer.song == null && musicPlayer.nextSong == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
+            if ((timeleftofsong ?? -1f) < 0 && !queueingSong) //if (musicPlayer != null && musicPlayer.song == null && musicPlayer.nextSong == null && self.world.rainCycle.RainApproaching > 0.5f && !loadingsong)
             {
                 timeleftofsong = null;
                 time ??= 0f;
@@ -643,7 +651,6 @@ namespace RainMeadow
                             if (shuffleindex + 1 >= shufflequeue.Length) ShuffleSongs(); 
                             else shuffleindex++; 
                             string songtobesang = ambienceSongArray[shufflequeue[shuffleindex]];
-
                             RainMeadow.Debug("Meadow Music: Queuing ambient song: " + songtobesang); // musicdata.providedSong
                             QueueSong(musicPlayer, songtobesang);
                         }
@@ -656,7 +663,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug("Meadow Music: DJ isn't providing a song, fucking USELESS i'll keep on asking");
+                    //RainMeadow.Debug("Meadow Music: DJ isn't providing a song, fucking USELESS i'll keep on asking");
                 }
             }
             else
@@ -766,11 +773,13 @@ namespace RainMeadow
             {
                 songtoavoid = "";
                 nameOfSong = myDJsdata;
+                RainMeadow.Debug("Yarrrr: " + nameOfSong.providedSong);
                 return true;
             }
             else
             {
-                RainMeadow.Debug("Nah");
+                //RainMeadow.Debug("Nah");
+                //if (myDJsdata.providedSong != null) RainMeadow.Debug("Stinks of " + myDJsdata.providedSong);
                 return false;
             }
         }
@@ -796,15 +805,16 @@ namespace RainMeadow
                 return;
             }
             latestrequest = songtobesang;
-            loadingsong = true;
+            queueingSong = true;
             RainMeadow.Debug("Queued song " + songtobesang);
             float timmmetaken = Time.time;
             if (UnityEngine.Debug.isDebugBuild) // debug build can't do certain things outside of main thread, go figure
             {
-                RainMeadow.Debug("Loading song");
+                RainMeadow.Debug("Loading song " + songtobesang);
                 Song? song = LoadSong(musicPlayer, songtobesang, timetobestarted);
-                RainMeadow.Debug("Playing song");
+                RainMeadow.Debug(((musicPlayer != null) ? "Playing song: " : "Not playing song: ") + songtobesang);
                 if (musicPlayer != null) PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
+                queueingSong = false;
             }
             else
             {
@@ -812,10 +822,11 @@ namespace RainMeadow
                 {
                     try
                     {
-                        RainMeadow.Debug("Loading song");
+                        RainMeadow.Debug("Loading song " + songtobesang);
                         Song? song = LoadSong(musicPlayer, songtobesang, timetobestarted);
-                        RainMeadow.Debug("Playing song");
+                        RainMeadow.Debug(((musicPlayer != null) ? "Playing song: " : "Not playing song: ") + songtobesang);
                         if (musicPlayer != null) PlaySong(musicPlayer, song, timmmetaken, timetobestarted);
+                        queueingSong = false;
                     }
                     catch (Exception e)
                     {
@@ -827,7 +838,7 @@ namespace RainMeadow
         }
         private static Song? LoadSong(MusicPlayer? musicPlayer, string providedsong, float? DJstartedat)
         {
-            RainMeadow.Debug("Loading song");
+            RainMeadow.Debug("Loading song " + providedsong);
             AudioClip? clipclip = null;
             string text1 = string.Concat(new string[] { "Music", Path.DirectorySeparatorChar.ToString(), "Songs", Path.DirectorySeparatorChar.ToString(), providedsong, ".ogg" });
             string text2 = AssetManager.ResolveFilePath(text1);
@@ -919,7 +930,7 @@ namespace RainMeadow
         }
         private static void PlaySong(MusicPlayer musicPlayer, Song? song, float timmmetaken, float? timetobestarted = null)
         {
-            RainMeadow.Debug("Playing song");
+            RainMeadow.Debug("Playing song: " + (song?.name ?? ""));//(song != null ? (song.name ?? "") : ""));
             if (song == null)
             {
                 RainMeadow.Debug("Song was null");
@@ -952,17 +963,15 @@ namespace RainMeadow
                     if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
                     {
                         RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
-                        loadingsong = false;
                         return;
                     }
                     ((RainWorldGame)musicPlayer.manager.currentMainLoop).cameras[0].hud.textPrompt.AddMusicMessage(song.name, 180); //this is shoddy and bad, i just want to push my branch
                     musicPlayer.nextSong = song; //an interuption will thencefourthe (theory and henceforce) always still be honored 
                     musicPlayer.nextSong.playWhenReady = false;
                 }
-                RainMeadow.Debug("my song is now " + musicdata.providedSong);
-                RainMeadow.Debug("my song is to be " + song.name);
+                RainMeadow.Debug("My song is currently " + musicdata.providedSong);
+                RainMeadow.Debug("My song is to be " + song.name);
             }
-            loadingsong = false;
         }
         public static void TheThingTHatsCalledWhenPlayersUpdated()
         {
@@ -1189,14 +1198,14 @@ namespace RainMeadow
         {
             RainMeadow.Debug("New room is being checked"); 
             // If i don't know the activezones, do it immediately when you do know
-            if (activeZonesDict == null)
+            if (regionVibeZonesDict == null)
             {
                 RainMeadow.Error("missing activeZonesDict");
             }
             else
             {
                 //activezonedict has the room ids of each vibe zone's room as keys
-                int[] rooms = activeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
+                int[] rooms = regionVibeZonesDict.Keys.ToArray(); //why does it have to be the keys? can't this just be a list and have the id defined in class vibezone?
                 float minDist = float.MaxValue;
                 closestVibe = -1;
                 //find the closest one
@@ -1216,7 +1225,7 @@ namespace RainMeadow
                     }
                 }
                 //and just grab its corresponding vibezone from the dict
-                activeZone = activeZonesDict[closestVibe];
+                activeZone = regionVibeZonesDict[closestVibe];
                 if (minDist > activeZone.radius)
                 {
                     RainMeadow.Debug("Meadow Music: Out of Vibezone Radius, set updatingtarget to false, and musicvolume set to max... ");
@@ -1257,11 +1266,11 @@ namespace RainMeadow
         {
             RainMeadow.Debug("Meadow Music: Analyzing " + world.name);
             VibeZone[] vzArray;
-            activeZonesDict = null;
+            regionVibeZonesDict = null;
             if (vibeZonesDict.TryGetValue(world.region.name, out vzArray))
             {
                 RainMeadow.Debug("Meadow Music: found zones " + vzArray.Length);
-                activeZonesDict = new Dictionary<int, VibeZone>();
+                regionVibeZonesDict = new Dictionary<int, VibeZone>();
                 foreach (VibeZone vz in vzArray)
                 {
                     RainMeadow.Debug("Meadow Music: looking for room " + vz.room);
@@ -1270,20 +1279,24 @@ namespace RainMeadow
                         if (room.name == vz.room)
                         {
                             RainMeadow.Debug("Meadow Music: found hub " + room.name);
-                            activeZonesDict.Add(room.index, vz);
+                            regionVibeZonesDict.Add(room.index, vz);
                             break;
                         }
                     }
                 }
-                if (activeZonesDict.Count == 0)
+                if (regionVibeZonesDict.Count == 0)
                 {
                     RainMeadow.Debug("Meadow Music: no hubs found");
-                    activeZonesDict = null;
+                    regionVibeZonesDict = null;
                 }
             }
             if (ambientDict.TryGetValue(world.region.name, out string[] songArr))
             {
                 RainMeadow.Debug("Meadow Music: ambiences loaded");
+                foreach (string song in songArr)
+                {
+                    RainMeadow.Debug(song);
+                }
                 ambienceSongArray = songArr;
                 ShuffleSongs();
             }

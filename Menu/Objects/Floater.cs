@@ -3,6 +3,13 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    public class FloatController : MenuObject
+    {
+        public FloatController(Menu.Menu menu, PositionedMenuObject powner) : base(menu, powner)
+        {
+        }
+    }
+
     public class Floater : MenuObject
     {
         //"This place is not a place of honor... no highly esteemed deed is commemorated here... nothing valued is here."

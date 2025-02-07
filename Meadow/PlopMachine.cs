@@ -138,7 +138,7 @@ namespace RainMeadow
                     {
                         string[] arr = dir.Split(Path.DirectorySeparatorChar);
                         string filename = arr[arr.Length - 1];
-                        if (filename == "!Entries.txt")
+                        if (filename.ToLower() == "!entries.txt")
                         {
                             RainMeadow.Debug("The file exists actually");
                             string[] lines = File.ReadAllLines(dir);
@@ -1330,13 +1330,6 @@ namespace RainMeadow
                     DrumMachine.Update(mic, this);
                 }
 
-                if (Input.GetKey("f") && !ol2)
-                {
-                    //RainMeadow.Debug("Manually fading out song");
-                    //self.manager.musicPlayer.song.FadeOut(30f);
-                }
-                ol2 = Input.GetKey("f");
-                
                 
                 if (Input.GetKey("e") && !ol1)
                 {

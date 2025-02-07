@@ -13,13 +13,13 @@ namespace RainMeadow
 
         public override EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource)
         {
-            if (inResource is RoomSession)
-            {
+            //if (inResource is RoomSession)
+            //{
                 RainMeadow.Trace($"{this} for {entity} making state in {inResource}");
                 return new State(this);
-            }
-            RainMeadow.Trace($"{this} for {entity} skipping state in {inResource}");    
-            return null;
+            //}
+            //RainMeadow.Trace($"{this} for {entity} skipping state in {inResource}");    
+            //return null;
         }
 
         public class State : EntityDataState
