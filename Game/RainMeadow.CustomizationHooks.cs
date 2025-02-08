@@ -124,6 +124,8 @@ namespace RainMeadow
         {
             if (hackySlugcatCustomization is not null)
             {
+                // SlugBase will attempt to access customColors, assuming it is not null as CustomColorsEnabled is true
+                PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
                 return true;
             }
             return orig();
