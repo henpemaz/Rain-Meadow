@@ -90,11 +90,49 @@ namespace RainMeadow
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
-            
+
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
+            IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
+        }
+
+        private void Player_ClassMechanicsSaint1(ILContext il)
+        {
+
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = il.DefineLabel();
+                c.GotoNext(
+                     i => i.MatchLdloc(18),
+                     i => i.MatchIsinst<Creature>(),
+                     i => i.MatchCallvirt<Creature>("Die")
+                     );
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, 18);
+                c.EmitDelegate((Player self, PhysicalObject po) =>
+                {
+                    if (self.IsLocal() && isArenaMode(out var _))
+                    {
+                        if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
+                        {
+                            if (!opo.isMine)
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo);
+
+                            }
+                        }
+                    }
+                });
+
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+
         }
 
         private void SingularityBomb_ctor(On.MoreSlugcats.SingularityBomb.orig_ctor orig, SingularityBomb self, AbstractPhysicalObject abstractPhysicalObject, World world)
@@ -103,12 +141,13 @@ namespace RainMeadow
             {
                 self.zeroMode = true;
                 orig(self, abstractPhysicalObject, world);
-            } else
+            }
+            else
             {
                 orig(self, abstractPhysicalObject, world);
             }
         }
-        
+
 
         private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
         {
@@ -116,12 +155,12 @@ namespace RainMeadow
             {
 
                 return;
-                
+
             }
             else
             {
                 orig(self, room, placedObj);
-                
+
             }
         }
 
@@ -396,6 +435,7 @@ namespace RainMeadow
 
         private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
         {
+
             orig(self);
             if (isArenaMode(out var _))
             {
@@ -403,6 +443,7 @@ namespace RainMeadow
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
 
             }
+
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)

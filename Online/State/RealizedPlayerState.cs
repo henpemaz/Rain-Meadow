@@ -121,6 +121,10 @@ namespace RainMeadow
         private float analogInputX;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
+        [OnlineFieldHalf(group = "saint")]
+        private float burstX;
+        [OnlineFieldHalf(group = "saint")]
+        private float burstY;
 
         [OnlineField(group = "tongue")]
         public byte tongueMode;
@@ -132,12 +136,15 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef tongueAttachedChunk;
+        [OnlineField]
+        public bool monkAscension;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
@@ -145,6 +152,8 @@ namespace RainMeadow
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             isPup = p.playerState.isPup;
+            burstX = p.burstX;
+            burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
             //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
@@ -210,12 +219,16 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
+            
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
             if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            p.monkAscension = monkAscension;
+            p.burstY = burstY;
+            p.burstX = burstX;
             var wasAnimation = p.animation;
             p.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
             if (wasAnimation != p.animation) p.animationFrame = animationFrame;
