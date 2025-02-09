@@ -89,7 +89,7 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
-            (opo.apo as AbstractCreature).realizedCreature.Die();
+            (opo.apo as AbstractCreature)?.realizedCreature?.Die();
         }
     }
 }
