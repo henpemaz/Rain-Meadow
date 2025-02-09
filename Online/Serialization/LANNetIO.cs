@@ -68,17 +68,18 @@ namespace RainMeadow
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
+            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
+                MemoryStream memory = new MemoryStream(128);
+                BinaryWriter writer = new BinaryWriter(memory);
 
-            MemoryStream memory = new MemoryStream(128);
-            BinaryWriter writer = new BinaryWriter(memory);
-
-            Packet.Encode(packet, writer, player);
-            manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, sendType switch
-                {
-                     NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
-                     NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
-                     _ => UDPPeerManager.PacketType.Unreliable,
-                }, start_conversation);
+                Packet.Encode(packet, writer, player);
+                manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
+                    {
+                        NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
+                        NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
+                        _ => UDPPeerManager.PacketType.Unreliable,
+                    }, start_conversation);
+            }
         }
 
 
@@ -87,8 +88,10 @@ namespace RainMeadow
                 return;
             }
 
-            manager.Send(Array.Empty<byte>(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
-                UDPPeerManager.PacketType.Reliable, true);
+            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
+                manager.Send(Array.Empty<byte>(), lanid.endPoint, 
+                    UDPPeerManager.PacketType.Reliable, true);
+            }
         }
 
         public override void ForgetPlayer(OnlinePlayer player) {
