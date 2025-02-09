@@ -1,3 +1,4 @@
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
@@ -44,7 +45,7 @@ namespace RainMeadow
             orig(self, eu);
             if (OnlineManager.lobby != null)
             {
-                if (self.player != null && self.player.isLocal() && self.player.dead && self.deafLoop != null)
+                if (self.player != null && self.player.IsLocal() && self.player.dead && self.deafLoop != null)
                 {
                     self.deafLoop = null;
                 }
