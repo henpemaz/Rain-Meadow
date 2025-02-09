@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Diagnostics;
 using UnityEngine;
+using System.Diagnostics.PerformanceData;
 
 
 namespace RainMeadow {
@@ -35,12 +36,21 @@ namespace RainMeadow {
             }
 
             public override void OpenProfileLink() {
-                string dialogue = name + " comes from " + endPoint.ToString();
+                string dialogue = "";
+                bool isMe = isLoopback();
+                if (isMe) {
+                    dialogue += "Your network interface(s) are";
+                    foreach (var ip in UDPPeerManager.getInterfaceAddresses()) {
+                        dialogue += Environment.NewLine + ip.ToString() + ":" + this.endPoint.Port.ToString();
+                    }
+                } else dialogue += name + " network interface is " + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
-                    dialogue += Environment.NewLine + "This player is the owner of the lobby.";
-                    dialogue += Environment.NewLine + "Players can Direct Connect to this lobby through their IP Address.";
+                    dialogue += Environment.NewLine + (isMe? "You are " : "This player is ") + "the owner of the lobby.";
+                    dialogue += Environment.NewLine + $"Players can \"Direct Connect\" to this lobby through { (isMe? "your" : "their") } interface(s).";
                 }
-                OnlineManager.instance.manager.ShowDialog(new DialogNotify(dialogue, OnlineManager.instance.manager, null));
+                OnlineManager.instance.manager.ShowDialog(
+                    new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)), 
+                        OnlineManager.instance.manager, null));
             }
 
             public void reset()
@@ -94,6 +104,7 @@ namespace RainMeadow {
         }
         public override void initializeMePlayer() {
             if (OnlineManager.netIO is LANNetIO netio) {
+                
                 OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(
                     UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
                 if (RainMeadow.rainMeadowOptions.LanUserName.Value.Length > 0) {
@@ -283,11 +294,15 @@ namespace RainMeadow {
         }
 
         public override void LeaveLobby() {
-            if (OnlineManager.players is not null)
-            foreach (OnlinePlayer p in  OnlineManager.players) {
-                OnlineManager.netIO.SendP2P(p, 
-                    new SessionEndPacket(), 
-                        NetIO.SendType.Reliable);
+
+            if (OnlineManager.players is not null) {
+                if (OnlineManager.players.Count > 1) {
+                    foreach (OnlinePlayer p in  OnlineManager.players) {
+                        OnlineManager.netIO.SendP2P(p, 
+                            new SessionEndPacket(), 
+                                NetIO.SendType.Reliable);
+                    }
+                }
             }
             OnlineManager.netIO.ForgetEverything();
         }

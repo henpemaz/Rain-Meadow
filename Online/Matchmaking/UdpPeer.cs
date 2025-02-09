@@ -610,7 +610,10 @@ namespace RainMeadow
                 var adapters = NetworkInterface.GetAllNetworkInterfaces();
                 var adapter_interface_addresses = adapters.Where(x =>
                     x.Supports(NetworkInterfaceComponent.IPv4) &&
-                    x.NetworkInterfaceType is NetworkInterfaceType.Ethernet or NetworkInterfaceType.Wireless80211)
+                        (x.NetworkInterfaceType is NetworkInterfaceType.Ethernet ||
+                         x.NetworkInterfaceType is NetworkInterfaceType.Wireless80211) &&
+                        x.OperationalStatus == OperationalStatus.Up
+                    )
                     .Select(x => x.GetIPProperties().UnicastAddresses)
                     .SelectMany(u => u)
                     .Select(u => u.Address)
@@ -685,15 +688,18 @@ namespace RainMeadow
             }
 
 
-            IPAddress address;
+            IPAddress? address = null;
             try {
                 address = IPAddress.Parse(parts[0]);
             } catch (FormatException) {
-                address = Dns.GetHostEntry(parts[0])
-                    .AddressList
-                    .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
-                    .FirstOrDefault();
-                if (address == null) return null;
+                try {
+                    address = Dns.GetHostEntry(parts[0])
+                        .AddressList
+                        .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                        .FirstOrDefault();
+                } catch (SocketException) {
+                    if (address == null) return null;
+                }
             }
 
             if (!short.TryParse(parts[1], out short port)) {
