@@ -118,7 +118,11 @@ namespace RainMeadow
                     {
                         if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
                         {
-                            opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo);
+                            if (!opo.isMine)
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo);
+
+                            }
                         }
                     }
                 });
