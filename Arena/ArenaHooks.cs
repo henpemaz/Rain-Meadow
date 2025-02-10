@@ -195,42 +195,56 @@ namespace RainMeadow
                                         (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
                                     }
                                 }
-                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive && ac.realizedCreature.grasps == null)
-                                {
-                                    ac.realizedCreature.Die();
-                                }
 
-                                oe.apo.LoseAllStuckObjects();
-                                if (!oe.isMine)
+                                bool playerGrabbed = false;
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive && ac.realizedCreature.grasps != null)
                                 {
-                                    // not-online-aware removal
-                                    Debug("removing remote entity from game " + oe);
-                                    oe.beingMoved = true;
-
-                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    for (int g = 0; g < ac.realizedCreature.grasps.Length; g++)
                                     {
-                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        if (ac.realizedCreature.grasps[g] != null && ac.realizedCreature.grasps[g].grabbed != null && ac.realizedCreature.grasps[g].grabbed is Player pl)
+                                        {
+                                            playerGrabbed = true;
+                                            break;
+                                        }
                                     }
-
-                                    entities.Remove(oe.apo);
-
-                                    self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                    self.room.RemoveObject(oe.apo.realizedObject);
-                                    self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                    oe.beingMoved = false;
                                 }
-                                else // mine leave the old online world elegantly
+                                if (!playerGrabbed)
                                 {
-                                    Debug("removing my entity from online " + oe);
-                                    oe.ExitResource(roomSession);
-                                    oe.ExitResource(roomSession.worldSession);
+                                    ac.realizedCreature?.Die();
+                                    oe.apo.LoseAllStuckObjects();
+                                    if (!oe.isMine)
+                                    {
+                                        // not-online-aware removal
+                                        Debug("removing remote entity from game " + oe);
+                                        oe.beingMoved = true;
+
+                                        if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                        {
+                                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        }
+
+                                        entities.Remove(oe.apo);
+
+                                        self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+
+                                        self.room.RemoveObject(oe.apo.realizedObject);
+                                        self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        oe.beingMoved = false;
+                                    }
+                                    else // mine leave the old online world elegantly
+                                    {
+                                        Debug("removing my entity from online " + oe);
+                                        oe.ExitResource(roomSession);
+                                        oe.ExitResource(roomSession.worldSession);
+                                    }
                                 }
+
+
                             }
                         }
                     }
-                    killedCreatures = true;
                 }
+                killedCreatures = true;
             }
         }
 
