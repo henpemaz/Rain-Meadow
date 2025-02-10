@@ -67,7 +67,10 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            
+            if (MatchmakingManager.currentInstance.canSendChatMessages) 
+                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+                
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
@@ -217,11 +220,11 @@ namespace RainMeadow
 
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
                 {
-
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = UnityEngine.Random.Range(-1, 3); // 0-2
+                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = arena.painCatThrowingSkill;
+                    RainMeadow.Debug("ENOT THROWING SKILL " + (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill);
                     if ((abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0 && arena.painCatEgg)
                     {
-                        AbstractPhysicalObject bringThePain = new AbstractPhysicalObject(room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID());
+                        AbstractPhysicalObject bringThePain = new AbstractPhysicalObject(room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, abstractCreature.pos, shortCutVessel.room.world.game.GetNewID());
                         room.abstractRoom.AddEntity(bringThePain);
                         bringThePain.RealizeInRoom();
 

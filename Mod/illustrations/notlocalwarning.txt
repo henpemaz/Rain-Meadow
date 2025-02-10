@@ -1,0 +1,63 @@
+{
+  "frames": {
+    "warning_survivor.png": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 41
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 50,
+        "h": 41
+      },
+      "sourceSize": {
+        "w": 50,
+        "h": 41
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "warning_inv.png": {
+      "frame": {
+        "x": 50,
+        "y": 0,
+        "w": 46,
+        "h": 40
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 46,
+        "h": 40
+      },
+      "sourceSize": {
+        "w": 46,
+        "h": 40
+      },
+      "pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+  "meta": {
+    "app": "http://free-tex-packer.com",
+    "version": "0.6.7",
+    "image": "texture.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 96,
+      "h": 41
+    },
+    "scale": 1
+  }
+}
