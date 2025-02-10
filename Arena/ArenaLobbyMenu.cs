@@ -888,7 +888,6 @@ namespace RainMeadow
 
                 usernameButtons[buttonIndex].buttonBehav.greyedOut = false;
                 pages[0].subObjects.Add(usernameButtons[buttonIndex]);
-                buttonIndex++;
 
             }
         }
