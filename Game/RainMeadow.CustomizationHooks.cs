@@ -79,6 +79,7 @@ namespace RainMeadow
                     if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
                     {
                         customization.ModifyBodyColor(ref originalBodyColor);
+                        RainMeadow.Trace("color became " + originalBodyColor);
                     }
                 });
             }

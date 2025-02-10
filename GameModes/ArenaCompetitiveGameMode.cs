@@ -22,13 +22,21 @@ namespace RainMeadow
         public bool allPlayersReadyLockLobby = false;
         public bool returnToLobby = false;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
+        public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
+        public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
+        public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
+        public int painCatThrowingSkill = 0;
+
+        public string paincatName = "";
+        public int lizardEvent = 0;
+
 
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
-        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
-        public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
+        public List<ushort> playersReadiedUp = new List<ushort>();
+        public Dictionary<ushort, int> playersInLobbyChoosingSlugs = new Dictionary<ushort, int>();
 
 
         public int playerEnteredGame = 0;
@@ -56,6 +64,35 @@ namespace RainMeadow
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
+
+        }
+
+        public void ResetInvDetails()
+        {
+            lizardEvent = UnityEngine.Random.Range(0, 100);
+            painCatThrowingSkill = UnityEngine.Random.Range(-1, 3);
+            int whichPaincatName = UnityEngine.Random.Range(0, 7);
+            switch (whichPaincatName)
+            {
+                case 1:
+                    paincatName = "Paincat";
+                    break;
+                case 2:
+                    paincatName = "Inv";
+                    break;
+                case 3:
+                    paincatName = "Enot";
+                    break;
+                case 4:
+                    paincatName = "Sofanthiel";
+                    break;
+                case 5:
+                    paincatName = "Gorbo";
+                    break;
+                case 6:
+                    paincatName = "???";
+                    break;
+            }
 
         }
 

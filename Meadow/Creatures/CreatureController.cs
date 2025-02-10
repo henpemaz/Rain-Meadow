@@ -1024,8 +1024,8 @@ namespace RainMeadow
                                     if (index > -1 && whackamoles.Count > 0)
                                     {
                                         var newindex = (index + 1) % whackamoles.Count;
-                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
                                         creature.NPCTransportationDestination = whackamoles[newindex].startCoord;
+                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
                                         // needs to be set as destination as well otherwise might be overriden
                                         toPos = creature.NPCTransportationDestination;
                                         return true;

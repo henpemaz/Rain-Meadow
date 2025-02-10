@@ -48,9 +48,40 @@ public partial class RainMeadow
         On.Player.checkInput += Player_checkInput;
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
+        On.Player.SlugOnBack.Update += SlugOnBack_Update;
 
+        On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
 
+    // Hide the Meadow mode slugcat so it doesn't appear in menus (e.g. arena)
+    private bool SlugcatStatsOnHiddenOrUnplayableSlugcat(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
+    {
+        if (i == Ext_SlugcatStatsName.OnlineSessionPlayer)
+        {
+            return true;
+        }
+
+        return orig(i);
+    }
+
+    private void SlugOnBack_Update(On.Player.SlugOnBack.orig_Update orig, Player.SlugOnBack self, bool eu)
+    {
+        orig(self, eu);
+        if (isArenaMode(out var _) && self.slugcat != null)
+        {
+            if (self.slugcat.input[0].jmp)
+            {
+                for (int j = 0; j < self.owner.grasps.Length; j++)
+                {
+                    if (self.owner.grasps[j]?.grabbed is Player)
+                    {
+                        self.owner.ReleaseGrasp(j);
+                    }
+                }
+                self.owner.slugOnBack.DropSlug();                   
+            }
+        }
+    }
 
     // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
     private void Player_ThrowObject1(ILContext il)
@@ -184,6 +215,7 @@ public partial class RainMeadow
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
         orig(self, eu);
+
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
         {
             if (self.room.abstractRoom.shelter || self.room.IsGateRoom())
@@ -533,9 +565,16 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if (self.abstractPhysicalObject.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
+            if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
-                self.SlugCatClass = customization.playingAs;
+                if (oe.TryGetData<SlugcatCustomization>(out var customization))
+                {
+                    self.SlugCatClass = customization.playingAs;
+                }
+                else
+                {
+                    RainMeadow.Debug("no SlugcatCustomization for " + oe);
+                }
             }
             else
             {
@@ -672,6 +711,20 @@ public partial class RainMeadow
     private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
     {
         if (!self.abstractPhysicalObject.IsLocal()) return;
+        if (isArenaMode(out var arena))
+        {
+            if (self.grasps[grasp] == null)
+            {
+                return;
+            }
+
+            if (ModManager.MSC && self.grasps[grasp].grabbed is Spear && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && self.slugcatStats.throwingSkill == 0 && !arena.painCatThrows)
+            {
+                self.TossObject(grasp, eu);
+                self.ReleaseGrasp(grasp);
+                return;
+            }
+        }
         orig(self, grasp, eu);
     }
 

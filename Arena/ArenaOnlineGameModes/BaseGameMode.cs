@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Menu;
+using MoreSlugcats;
+using RainMeadow;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -55,6 +57,7 @@ namespace RainMeadow
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
+            DeathMessage.PlayerKillCreature(player, killedCrit);
 
         }
         public virtual void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
@@ -64,7 +67,10 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            self.AddPart(new ChatHud(self, session.game.cameras[0]));
+            
+            if (MatchmakingManager.currentInstance.canSendChatMessages) 
+                self.AddPart(new ChatHud(self, session.game.cameras[0]));
+                
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
@@ -183,8 +189,7 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
-            if ((abstractCreature.realizedCreature as Player).SlugCatClass != SlugcatStats.Name.Yellow &&
-                (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0)
+            if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Night)
             {
                 (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
             }
@@ -208,11 +213,47 @@ namespace RainMeadow
                     self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
                 }
 
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                {
+                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+                }
+
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                {
+                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = arena.painCatThrowingSkill;
+                    RainMeadow.Debug("ENOT THROWING SKILL " + (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill);
+                    if ((abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0 && arena.painCatEgg)
+                    {
+                        AbstractPhysicalObject bringThePain = new AbstractPhysicalObject(room.world, MoreSlugcatsEnums.AbstractObjectType.SingularityBomb, null, abstractCreature.pos, shortCutVessel.room.world.game.GetNewID());
+                        room.abstractRoom.AddEntity(bringThePain);
+                        bringThePain.RealizeInRoom();
+
+                        self.room.world.GetResource().ApoEnteringWorld(bringThePain);
+                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringThePain, bringThePain.pos);
+                    }
+
+                    if (arena.lizardEvent == 99 && arena.painCatLizard)
+                    {
+                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
+                        AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big :( 
+                        room.abstractRoom.AddEntity(bringTheTrain);
+                        bringTheTrain.RealizeInRoom();
+
+                        self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
+                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos);
+                    }
+                }
+
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                 {
                     if (!arena.sainot) // ascendance saint
                     {
                         (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 0;
+                    }
+                    else
+                    {
+                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
+
                     }
                 }
             }

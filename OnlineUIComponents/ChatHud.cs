@@ -14,11 +14,16 @@ namespace RainMeadow
         private ChatInputOverlay? chatInputOverlay;
         public bool chatInputActive => chatInputOverlay is not null;
         private bool showChatLog = false;
-        
+
         public List<(string, string)> chatLog = new();
 
         public bool Active => game.processActive;
 
+        public static bool isLogToggled
+        {
+            get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
+            set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
+        }
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;
@@ -30,6 +35,13 @@ namespace RainMeadow
             {
                 hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press '{RainMeadow.rainMeadowOptions.ChatButtonKey.Value}' to chat, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to toggle the chat log"), 60, 320, true, true);
                 ChatLogManager.shownChatTutorial = true;
+            }
+
+            if (isLogToggled)
+            {
+                RainMeadow.Debug("creating log");
+                chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                showChatLog = true;
             }
 
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
@@ -56,12 +68,14 @@ namespace RainMeadow
                 {
                     ShutDownChatLog();
                     showChatLog = false;
+                    isLogToggled = false;
                 }
                 else if (!textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating log");
                     chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
                     showChatLog = true;
+                    isLogToggled = true;
                 }
             }
 
@@ -77,7 +91,7 @@ namespace RainMeadow
                     RainMeadow.Debug("creating input");
                     chatInputOverlay = new ChatInputOverlay(game.manager);
                     if (chatLogOverlay is null)
-                    { 
+                    {
                         RainMeadow.Debug("creating log");
                         chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
                     }

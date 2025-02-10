@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -35,8 +36,91 @@ namespace RainMeadow
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
 
             On.RoomRealizer.Update += RoomRealizer_Update;
+            On.Creature.Die += Creature_Die; // do not die!
+            IL.Player.TerrainImpact += Player_TerrainImpact;
+            On.DeafLoopHolder.Update += DeafLoopHolder_Update;
         }
 
+        private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
+        {
+            orig(self, eu);
+            if (OnlineManager.lobby != null)
+            {
+                if (self.player != null && self.player.IsLocal() && self.player.dead && self.deafLoop != null)
+                {
+                    self.deafLoop = null;
+                }
+            }
+
+        }
+
+        private void Centipede_Shock(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(1),
+                    i => i.MatchIsinst<Creature>(),
+                    i => i.MatchCallvirt<Creature>(nameof(Creature.Die))
+                    );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_1);
+                c.EmitDelegate((Centipede self, PhysicalObject shockObj) =>
+                {
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player)
+                        DeathMessage.CreatureKillPlayer(self, shockObj as Player);
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void Player_TerrainImpact(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdstr("Fall damage death")
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Player self) =>
+                {
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
+                    {
+                        DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                    }
+
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    return;
+                }
+
+                if (!self.dead) // Prevent death messages from firing 987343 times.
+                {
+                    DeathMessage.CreatureDeath(self);
+                }
+            }
+            orig(self);
+        }
         private void Spear_makeNeedle(On.Spear.orig_Spear_makeNeedle orig, Spear self, int type, bool active)
         {
             // apo.realize defaults to inactive even if remote is active
@@ -384,6 +468,8 @@ namespace RainMeadow
                     }
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
+
+                        DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
                         self.State.alive = false;

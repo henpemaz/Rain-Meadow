@@ -52,7 +52,7 @@ namespace RainMeadow
             SetupOnlineMenuItems();
             UpdatePlayerList();
 
-            MatchmakingManager.instance.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
@@ -75,21 +75,24 @@ namespace RainMeadow
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
 
             // hehe yoink
-            List<Color> val = new();
-            for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
+            if (this.colorChecked)
             {
-                Vector3 vector = new Vector3(1f, 1f, 1f);
-                if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
+                List<Color> val = new();
+                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
                 {
-                    string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
-                    vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
+                    Vector3 vector = new Vector3(1f, 1f, 1f);
+                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
+                    {
+                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
+                        vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
+                    }
+                    val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
                 }
-                val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
-            }
-            personaSettings.customColors = val;
 
+                personaSettings.customColors = val;
+            }
             manager.arenaSitting = null;
-            if (restartChecked)
+            if (restartCheckbox != null && restartCheckbox.Checked)
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -105,7 +108,7 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (!OnlineManager.lobby.isOwner) 
+            if (!OnlineManager.lobby.isOwner)
             {
 
                 if (onlineDifficultyLabel == null)
@@ -116,16 +119,17 @@ namespace RainMeadow
                     pages[0].subObjects.Add(onlineDifficultyLabel);
                 }
                 // Remove all buttons scug buttons if requireCampaignSlugcat is on.
-                if (scugButtons != null && storyGameMode.requireCampaignSlugcat) 
+                if (scugButtons != null && storyGameMode.requireCampaignSlugcat)
                 {
-                    foreach (var button in scugButtons) {
+                    foreach (var button in scugButtons)
+                    {
                         pages[0].subObjects.Remove(button);
                     };
 
                     scugButtons = null;
                 }
                 // Recall buttons scug buttons if requireCampaignSlugcat is off.
-                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat) 
+                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat)
                 {
                     SetupSlugcatList();
                 }
@@ -172,17 +176,12 @@ namespace RainMeadow
 
             var pos = new Vector2(194, 553);
 
-            foreach (var playerInfo in MatchmakingManager.instance.playerList)
+            foreach (var playerInfo in MatchmakingManager.currentInstance.playerList)
             {
                 pos -= new Vector2(0, 38);
                 var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
-                btn.OnClick += (_) =>
-                {
-                    if (playerInfo.id != default)
-                    {
-                        SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{playerInfo.id}");
-                    }
-                };
+                btn.OnClick += (_) => playerInfo.openProfile();
+                
                 playerButtons.Add(btn);
             }
             foreach (var btn in playerButtons)
@@ -301,16 +300,14 @@ namespace RainMeadow
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
-            invite.OnClick += (_) =>
-            {
-                SteamFriends.ActivateGameOverlay("friends");
-            };
+            invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
             pages[0].subObjects.Add(invite);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
-            if (!OnlineManager.lobby.isOwner) {
+            if (!OnlineManager.lobby.isOwner)
+            {
                 friendlyFire.buttonBehav.greyedOut = true;
                 reqCampaignSlug.buttonBehav.greyedOut = true;
             }

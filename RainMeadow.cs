@@ -1,5 +1,5 @@
 ﻿using BepInEx;
-using HarmonyLib;
+using RainMeadow.Game;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -27,6 +27,7 @@ namespace RainMeadow
             rainMeadowOptions = new RainMeadowOptions(this);
 
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
+            On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
             On.RainWorld.Update += RainWorld_Update;
             On.WorldLoader.UpdateThread += WorldLoader_UpdateThread;
             On.RoomPreparer.UpdateThread += RoomPreparer_UpdateThread;
@@ -36,6 +37,8 @@ namespace RainMeadow
             On.RWCustom.Custom.Log += Custom_Log;
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+
+            DeathContextualizer.CreateBindings();
         }
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
@@ -122,6 +125,20 @@ namespace RainMeadow
             }
         }
 
+        private void ModManagerOnRefreshModsLists(On.ModManager.orig_RefreshModsLists orig, RainWorld rainworld)
+        {
+            orig(rainworld);
+
+            try
+            {
+                RainMeadowModInfoManager.RefreshRainMeadowModInfos();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Error loading Meadow mod info files:\n{e}\n{e.StackTrace}");
+            }
+        }
+
         private void RainWorld_OnModsInit(On.RainWorld.orig_OnModsInit orig, RainWorld self)
         {
             orig(self);
@@ -198,16 +215,6 @@ namespace RainMeadow
                 MeadowProgression.LoadProgression();
 
                 self.processManager.sideProcesses.Add(new OnlineManager(self.processManager));
-
-#if LOCAL_P2P
-                if (!self.setup.startScreen)
-                {
-                    if (!self.setup.loadGame) self.processManager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Dev; // this got messed up last patch
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(LocalMatchmakingManager.localGameMode), OnlineManager.mePlayer, null);
-                    MeadowProgression.progressionData.currentlySelectedCharacter = MeadowProgression.skinData[MeadowProgression.currentTestSkin].character;
-                }
-#endif
-
                 fullyInit = true;
             }
             catch (Exception e)

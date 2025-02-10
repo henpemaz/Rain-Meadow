@@ -252,14 +252,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to restart";
-                }
-                else
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
-                }
+                self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
             }
             else
             {
@@ -819,7 +812,9 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam));
+
+                if (MatchmakingManager.currentInstance.canSendChatMessages)
+                    self.AddPart(new ChatHud(self, cam));
             }
         }
 

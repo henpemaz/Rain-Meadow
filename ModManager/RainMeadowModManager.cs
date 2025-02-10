@@ -29,8 +29,10 @@ namespace RainMeadow
         {
             UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
 
+            var requiredMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
+
             return ModManager.ActiveMods
-                .Where(mod => highImpactMods.Contains(mod.id)
+                .Where(mod => requiredMods.Contains(mod.id)
                     || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
                 .Select(mod => mod.id)
                 .ToArray();
@@ -82,8 +84,11 @@ namespace RainMeadow
             UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
             UpdateFromOrWriteToFile("meadow-bannedmods.txt", ref bannedMods);
 
+            var effectiveHighImpactMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
+            var effectiveBannedMods = bannedMods.Union(RainMeadowModInfoManager.MergedModInfo.BannedOnlineMods.Except(RainMeadowModInfoManager.MergedModInfo.BannedOnlineModsOverride)).ToList();
+
             // (high impact + banned) - enabled
-            return highImpactMods.Concat(bannedMods)
+            return effectiveHighImpactMods.Concat(effectiveBannedMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .ToArray();
         }
@@ -103,7 +108,7 @@ namespace RainMeadow
 
             if (!reorder && !disable.Any() && !enable.Any()) return;
 
-            var lobbyID = MatchmakingManager.instance.GetLobbyID();
+            var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
             RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             OnlineManager.LeaveLobby();
 

@@ -209,6 +209,8 @@ namespace RainMeadow
                 return;
             }
 
+            var room = self.room.abstractRoom.GetResource();
+
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractCreature, out var onlineEntity))
             {
                 Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
@@ -224,15 +226,27 @@ namespace RainMeadow
 
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
+                RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
                 orig(self, entrancePos, carriedByOther);
                 onlineCreature.enteringShortCut = false;
+                if (room.isOwner) // proccessed, now broadcast
+                {
+                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
             else if (onlineCreature.isMine)
             {
-                // tell everyone else that I am about to enter a shortcut!
-                RainMeadow.Debug($"{onlineCreature} sucked into shortcut");
-                onlineCreature.BroadcastRPCInRoom(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
                 orig(self, entrancePos, carriedByOther);
+                RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
+                
+                if (room.isOwner) // now broadcast
+                {
+                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
+                else // tell room-owner about it so it gets broadcasted
+                {
+                    room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                }
             }
             else
             {

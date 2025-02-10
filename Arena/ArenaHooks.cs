@@ -1,6 +1,6 @@
-﻿using HUD;
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,21 +92,75 @@ namespace RainMeadow
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
 
 
-
-
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+            On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
+            IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
         }
+
+        private void Player_ClassMechanicsSaint1(ILContext il)
+        {
+
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = il.DefineLabel();
+                c.GotoNext(
+                     i => i.MatchLdloc(18),
+                     i => i.MatchIsinst<Creature>(),
+                     i => i.MatchCallvirt<Creature>("Die")
+                     );
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, 18);
+                c.EmitDelegate((Player self, PhysicalObject po) =>
+                {
+                    if (self.IsLocal() && isArenaMode(out var _))
+                    {
+                        if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
+                        {
+                            if (!opo.isMine)
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo);
+
+                            }
+                        }
+                    }
+                });
+
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+
+        }
+
+        private void SingularityBomb_ctor(On.MoreSlugcats.SingularityBomb.orig_ctor orig, SingularityBomb self, AbstractPhysicalObject abstractPhysicalObject, World world)
+        {
+            if (isArenaMode(out var _))
+            {
+                self.zeroMode = true;
+                orig(self, abstractPhysicalObject, world);
+            }
+            else
+            {
+                orig(self, abstractPhysicalObject, world);
+            }
+        }
+
 
         private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
         {
-            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)) {
+            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant))
+            {
 
                 return;
+
             }
             else
             {
                 orig(self, room, placedObj);
+
             }
         }
 
@@ -141,42 +195,56 @@ namespace RainMeadow
                                         (ac.stuckObjects[num].A.realizedObject as Spear).ChangeMode(Weapon.Mode.Free);
                                     }
                                 }
-                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive)
-                                {
-                                    ac.realizedCreature.Die();
-                                }
 
-                                oe.apo.LoseAllStuckObjects();
-                                if (!oe.isMine)
+                                bool playerGrabbed = false;
+                                if (ac.realizedCreature != null && ac.realizedCreature.State.alive && ac.realizedCreature.grasps != null)
                                 {
-                                    // not-online-aware removal
-                                    Debug("removing remote entity from game " + oe);
-                                    oe.beingMoved = true;
-
-                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    for (int g = 0; g < ac.realizedCreature.grasps.Length; g++)
                                     {
-                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        if (ac.realizedCreature.grasps[g] != null && ac.realizedCreature.grasps[g].grabbed != null && ac.realizedCreature.grasps[g].grabbed is Player pl)
+                                        {
+                                            playerGrabbed = true;
+                                            break;
+                                        }
                                     }
-
-                                    entities.Remove(oe.apo);
-
-                                    self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                    self.room.RemoveObject(oe.apo.realizedObject);
-                                    self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                    oe.beingMoved = false;
                                 }
-                                else // mine leave the old online world elegantly
+                                if (!playerGrabbed)
                                 {
-                                    Debug("removing my entity from online " + oe);
-                                    oe.ExitResource(roomSession);
-                                    oe.ExitResource(roomSession.worldSession);
+                                    ac.realizedCreature?.Die();
+                                    oe.apo.LoseAllStuckObjects();
+                                    if (!oe.isMine)
+                                    {
+                                        // not-online-aware removal
+                                        Debug("removing remote entity from game " + oe);
+                                        oe.beingMoved = true;
+
+                                        if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                        {
+                                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        }
+
+                                        entities.Remove(oe.apo);
+
+                                        self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+
+                                        self.room.RemoveObject(oe.apo.realizedObject);
+                                        self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        oe.beingMoved = false;
+                                    }
+                                    else // mine leave the old online world elegantly
+                                    {
+                                        Debug("removing my entity from online " + oe);
+                                        oe.ExitResource(roomSession);
+                                        oe.ExitResource(roomSession.worldSession);
+                                    }
                                 }
+
+
                             }
                         }
                     }
-                    killedCreatures = true;
                 }
+                killedCreatures = true;
             }
         }
 
@@ -259,7 +327,11 @@ namespace RainMeadow
 
                 if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
                 {
-
+                    if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                    {
+                        int randomChoice = UnityEngine.Random.Range(0, 5);
+                        return "MultiplayerPortrait" + $"{randomChoice}1-" + slugList[color];
+                    }
                     return "MultiplayerPortrait" + "41-" + slugList[color];
 
                 }
@@ -377,6 +449,7 @@ namespace RainMeadow
 
         private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
         {
+
             orig(self);
             if (isArenaMode(out var _))
             {
@@ -384,6 +457,7 @@ namespace RainMeadow
                 self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
 
             }
+
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
@@ -1026,11 +1100,17 @@ namespace RainMeadow
                     {
                         self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     }
+
+                    else if (player.playerClass == MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    {
+                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "4" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    }
                     else
                     {
                         if (arena.playerResultColors.ContainsKey(userNameBackup))
                         {
                             self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+
                         }
                         else
                         {

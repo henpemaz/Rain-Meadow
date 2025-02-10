@@ -10,6 +10,7 @@ namespace RainMeadow
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
+            
         }
 
         internal class State : ResourceDataState
@@ -29,12 +30,11 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
-            public Dictionary<string, int> playersChoosingSlugs;
+            public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
             [OnlineField]
-            public Dictionary<string, bool> playersReadiedUp;
-
+            public List<ushort> playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -49,6 +49,12 @@ namespace RainMeadow
             public int arenaSetupTime;
             [OnlineField]
             public bool sainot;
+            [OnlineField]
+            public bool painCatEgg;
+            [OnlineField]
+            public bool painCatThrows;
+            [OnlineField]
+            public bool painCatLizard;
             [OnlineField]
             public string currentGameMode;
             public State() { }
@@ -73,6 +79,9 @@ namespace RainMeadow
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
+                painCatEgg = arena.painCatEgg;
+                painCatThrows = arena.painCatThrows;
+                painCatLizard = arena.painCatLizard;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -87,7 +96,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
-
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
@@ -97,6 +105,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
+                (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
 
             }
 

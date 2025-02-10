@@ -28,8 +28,10 @@ namespace RainMeadow
 
         public override void Process()
         {
-            Buffer.BlockCopy(data, 0, OnlineManager.serializer.buffer, 0, size);
-            OnlineManager.serializer.ReadData(processingPlayer, size);
+            if (OnlineManager.lobby is not null) {
+                Buffer.BlockCopy(data, 0, OnlineManager.serializer.buffer, 0, size);
+                OnlineManager.serializer.ReadData(processingPlayer, size);
+            }
         }
     }
 }

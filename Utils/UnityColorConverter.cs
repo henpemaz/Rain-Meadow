@@ -12,12 +12,12 @@ namespace RainMeadow
 
         public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
-            return Menu.MenuColorEffect.HexToColor((string)reader.Value);
+            return RWCustom.Custom.hexToColor((string)reader.Value);
         }
 
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, Menu.MenuColorEffect.ColorToHex((UnityEngine.Color)value));
+            serializer.Serialize(writer, RWCustom.Custom.colorToHex((UnityEngine.Color)value));
         }
     }
 }
