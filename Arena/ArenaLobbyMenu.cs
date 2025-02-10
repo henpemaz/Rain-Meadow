@@ -852,12 +852,27 @@ namespace RainMeadow
 
             }
 
-            int buttonIndex = 1;
             for (int i = 0; i < OnlineManager.players.Count; i++)
             {
-                if (OnlineManager.players[i].isMe)
+             int buttonIndex = i;
+             if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam && i == 0)
                 {
-                    continue;
+                    continue; // we've already done [0]
+                }
+            
+                if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN) // handle mePlayer pos
+                {
+                    if (OnlineManager.players[i] == OnlineManager.lobby.owner)
+                    {
+                        buttonIndex = OnlineManager.players.IndexOf(OnlineManager.mePlayer);
+
+                    }
+
+                    if (OnlineManager.players[i].isMe)
+                    {
+                        continue; // we've already addressed me at [0]
+
+                    }
                 }
                 if (i > holdPlayerPosition)
                 {
