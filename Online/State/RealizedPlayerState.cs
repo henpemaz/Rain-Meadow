@@ -125,7 +125,8 @@ namespace RainMeadow
         private float burstX;
         [OnlineFieldHalf(group = "saint")]
         private float burstY;
-
+        [OnlineField(group = "saint")]
+        public bool monkAscension;
         [OnlineField(group = "tongue")]
         public byte tongueMode;
         [OnlineField(group = "tongue")]
@@ -136,8 +137,6 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef tongueAttachedChunk;
-        [OnlineField]
-        public bool monkAscension;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
