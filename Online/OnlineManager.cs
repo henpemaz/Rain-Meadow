@@ -289,6 +289,21 @@ namespace RainMeadow
             }
         }
 
+        internal static void ProcessDataChunk(OnlinePlayer fromPlayer, DataChunk incomingChunk)
+        {
+            try
+            {
+                if (incomingChunk.chunkType == DataChunk.ChunkType.LobbyData)
+                {
+                    if (lobby != null) lobby.OnNewLobbyData(incomingChunk.GetData());
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error($"Error reading data chunk {incomingChunk} from {fromPlayer}");
+            }
+        }
+
         public static void AddSubscription(OnlineResource onlineResource, OnlinePlayer player)
         {
             subscriptions.Add(new ResourceSubscription(onlineResource, player));

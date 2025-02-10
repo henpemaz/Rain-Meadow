@@ -60,9 +60,6 @@ namespace RainMeadow
             {
                 RequestLobby(password);
             }
-
-
-
         }
 
         public void RequestLobby(string? key)
@@ -301,9 +298,22 @@ namespace RainMeadow
                 RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
+
+                //if (!player.isMe)
+                //{
+                //    var thedata = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+                //    thedata = string.Concat(Enumerable.Repeat(thedata, 2000));
+                //    player.QueueChunk(DataChunk.ChunkType.LobbyData, System.Text.Encoding.UTF8.GetBytes(thedata)).Then(() => RainMeadow.Debug("loren ipsum transfer complete"));
+                //}
             }
+
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
+        }
+
+        public void OnNewLobbyData(byte[] thedata)
+        {
+            RainMeadow.Debug(System.Text.Encoding.UTF8.GetString(thedata));
         }
 
         protected override void ParticipantLeftImpl(OnlinePlayer player)
