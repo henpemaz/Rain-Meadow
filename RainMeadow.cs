@@ -1,5 +1,5 @@
 ﻿using BepInEx;
-using HarmonyLib;
+using RainMeadow.Game;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -37,6 +37,8 @@ namespace RainMeadow
             On.RWCustom.Custom.Log += Custom_Log;
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+
+            DeathContextualizer.CreateBindings();
         }
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
