@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using HarmonyLib;
 using RainMeadow.Game;
 using System;
 using System.Diagnostics;
@@ -17,7 +16,6 @@ namespace RainMeadow
     {
         public const string MeadowVersionStr = "0.1.1.0";
         public static RainMeadow instance;
-        public static Harmony harmony;
         private bool init;
         public bool fullyInit;
         public static RainMeadowOptions rainMeadowOptions;
@@ -26,7 +24,6 @@ namespace RainMeadow
         public void OnEnable()
         {
             instance = this;
-            harmony = new Harmony("RainMeadow");
             rainMeadowOptions = new RainMeadowOptions(this);
 
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
@@ -36,12 +33,11 @@ namespace RainMeadow
             On.WorldLoader.FindingCreaturesThread += WorldLoader_FindingCreaturesThread;
             On.WorldLoader.CreatingAbstractRoomsThread += WorldLoader_CreatingAbstractRoomsThread;
 
-            // Harmony Bindings for death handling
-            DeathContextualizer.CreateBindings();
-
             On.RWCustom.Custom.Log += Custom_Log;
             On.RWCustom.Custom.LogImportant += Custom_LogImportant;
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
+
+            DeathContextualizer.CreateBindings();
         }
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
