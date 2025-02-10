@@ -1,6 +1,7 @@
 ﻿using HUD;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MoreSlugcats;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,23 +91,38 @@ namespace RainMeadow
 
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
-
-
-
+            
 
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
+            On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
         }
+
+        private void SingularityBomb_ctor(On.MoreSlugcats.SingularityBomb.orig_ctor orig, SingularityBomb self, AbstractPhysicalObject abstractPhysicalObject, World world)
+        {
+            if (isArenaMode(out var _))
+            {
+                self.zeroMode = true;
+                orig(self, abstractPhysicalObject, world);
+            } else
+            {
+                orig(self, abstractPhysicalObject, world);
+            }
+        }
+        
 
         private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
         {
-            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)) {
+            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant))
+            {
 
                 return;
+                
             }
             else
             {
                 orig(self, room, placedObj);
+                
             }
         }
 
@@ -259,7 +275,11 @@ namespace RainMeadow
 
                 if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
                 {
-
+                    if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                    {
+                        int randomChoice = UnityEngine.Random.Range(0, 5);
+                        return "MultiplayerPortrait" + $"{randomChoice}1-" + slugList[color];
+                    }
                     return "MultiplayerPortrait" + "41-" + slugList[color];
 
                 }
@@ -1031,6 +1051,7 @@ namespace RainMeadow
                         if (arena.playerResultColors.ContainsKey(userNameBackup))
                         {
                             self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+
                         }
                         else
                         {

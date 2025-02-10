@@ -14,8 +14,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] requiredmods = RainMeadowModManager.GetRequiredMods();
-        public string[] bannedmods = RainMeadowModManager.GetBannedMods();
+        public string[] requiredmods;
+        public string[] bannedmods;
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
@@ -32,6 +32,11 @@ namespace RainMeadow
         {
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
+
+            RainMeadowModInfoManager.RefreshDebugModInfo();
+
+            requiredmods = RainMeadowModManager.GetRequiredMods();
+            bannedmods = RainMeadowModManager.GetBannedMods();
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;

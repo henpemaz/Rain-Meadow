@@ -52,6 +52,7 @@ public partial class RainMeadow
     }
 
 
+
     // Sain't:  Let 1) Saint throw spears 2) at normal velocity if toggled
     private void Player_ThrowObject1(ILContext il)
     {
@@ -672,6 +673,20 @@ public partial class RainMeadow
     private void Player_ThrowObject(On.Player.orig_ThrowObject orig, Player self, int grasp, bool eu)
     {
         if (!self.abstractPhysicalObject.IsLocal()) return;
+        if (isArenaMode(out var arena))
+        {
+            if (self.grasps[grasp] == null)
+            {
+                return;
+            }
+
+            if (ModManager.MSC && self.grasps[grasp].grabbed is Spear && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel && self.slugcatStats.throwingSkill == 0 && !arena.painCatThrows)
+            {
+                self.TossObject(grasp, eu);
+                self.ReleaseGrasp(grasp);
+                return;
+            }
+        }
         orig(self, grasp, eu);
     }
 
