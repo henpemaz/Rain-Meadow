@@ -8,8 +8,8 @@ namespace RainMeadow
 {
     public class SteamLobbyInfo : LobbyInfo {
         public CSteamID iD;
-        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount) : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "") : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods) {
             iD = id;
         }
     }
