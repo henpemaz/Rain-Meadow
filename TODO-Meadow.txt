@@ -18,13 +18,14 @@ emote unlock has a lot of visibility, skin or creature don't
 
 "wish I could TP to people, or TP them to me"
 
-wc tunnel times are too high, too little feedback that you're stuck there
+V wc tunnel times are too high
+	too little feedback that you're stuck there
 
 the jetfish still spawns
 
 the vibezones music doesnt account for music off - recheck
 
-scav swing arm needs sync
+V scav swing arm needs sync
 
 scav stretched arm animates unintentionally?
 
@@ -53,7 +54,9 @@ emotes display above map
 
 people can still force/trigger rain in meadow?
 
+hard to find people I played with
 
+hard to see nametags on most gray-ish blue-ish colors
 
 
 HIGH-PRIO
