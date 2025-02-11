@@ -18,6 +18,7 @@ namespace RainMeadow
             IL.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
 
             // SlugcatCustomization stuff
+            On.PlayerGraphics.InitiateSprites += PlayerGraphicsOnInitiateSprites;
             On.PlayerGraphics.ApplyPalette += PlayerGraphics_ApplyPalette_SlugcatCustomization;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites_SlugcatCustomization;
             On.PlayerGraphics.CustomColorSafety += PlayerGraphics_CustomColorSafety_SlugcatCustomization;
@@ -92,6 +93,23 @@ namespace RainMeadow
         // SlugcatCustomization stuff
         private static SlugcatCustomization? hackySlugcatCustomization;  // HACK: CustomColorSafety has no ref to player so we use this
 
+        // To explain further, basically try store a value into this field before orig in the relevant methods, then restore to null after orig
+        // Allows it to be read when the PlayerGraphics static methods are called
+
+        private void PlayerGraphicsOnInitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sleaser, RoomCamera rcam)
+        {
+            try
+            {
+                creatureCustomizations.TryGetValue(self.player, out var customization);
+                hackySlugcatCustomization = customization as SlugcatCustomization;
+                orig(self, sleaser, rcam);
+            }
+            finally
+            {
+                hackySlugcatCustomization = null;
+            }
+        }
+
         private void PlayerGraphics_ApplyPalette_SlugcatCustomization(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
             try
@@ -120,10 +138,14 @@ namespace RainMeadow
             }
         }
 
+
+        // Statics, read hackySlugcatCustomization here
         private bool PlayerGraphics_CustomColorsEnabled_SlugcatCustomization(On.PlayerGraphics.orig_CustomColorsEnabled orig)
         {
             if (hackySlugcatCustomization is not null)
             {
+                // e.g. SlugBase will attempt to access customColors, assuming it is not null as CustomColorsEnabled is true, so set it here
+                PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
                 return true;
             }
             return orig();
