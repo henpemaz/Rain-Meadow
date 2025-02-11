@@ -7,7 +7,7 @@ namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public List<Color> customColors = new() { Color.white, Color.black };
+        public List<Color> customColors { get; set; } = [Color.white, Color.black];
         public Color bodyColor { get => customColors[0]; set => customColors[0] = value; }
         public Color eyeColor { get => customColors[1]; set => customColors[1] = value; }
         public List<Color>? defaultColors = null;
