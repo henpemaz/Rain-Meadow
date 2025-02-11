@@ -7,8 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rain Meadow", "Rain Meadow.
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		ArenaP2P|Any CPU = ArenaP2P|Any CPU
 		Debug|Any CPU = Debug|Any CPU
+		FreeRoamP2P|Any CPU = FreeRoamP2P|Any CPU
+		LocalP2P|Any CPU = LocalP2P|Any CPU
 		Release|Any CPU = Release|Any CPU
+		StoryP2P|Any CPU = StoryP2P|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{32046812-711A-42BB-8ED1-633A0F67014F}.ArenaP2P|Any CPU.ActiveCfg = ArenaP2P|Any CPU
