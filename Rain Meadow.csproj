@@ -6,11 +6,23 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Configurations>Debug;Release</Configurations>
+    <Configurations>Debug;Release;LocalP2P;ArenaP2P;StoryP2P;FreeRoamP2P</Configurations>
     <RootNamespace>RainMeadow</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StoryP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FreeRoamP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ArenaP2P|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
