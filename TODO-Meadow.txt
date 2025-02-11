@@ -58,6 +58,13 @@ hard to find people I played with
 
 hard to see nametags on most gray-ish blue-ish colors
 
+going down long poles as scav sucks
+
+using 2+ emotes at once (same frame) breaks something about their duration
+
+reds can't jump on false floors
+
+waterfall pushdown on scavs is a bit much
 
 HIGH-PRIO
 
