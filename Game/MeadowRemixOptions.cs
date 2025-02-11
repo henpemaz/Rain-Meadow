@@ -25,6 +25,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<string> LanUserName;
+    public readonly Configurable<bool> DisableMeadowPauseAnimation;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -68,7 +69,7 @@ public class RainMeadowOptions : OptionInterface
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
 
-
+        DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
 
     }
 
@@ -96,6 +97,10 @@ public class RainMeadowOptions : OptionInterface
             OnlineMeadowSettings = new UIelement[]
             {
                 new OpLabel(10f, 550f, "Meadow", bigText: true),
+
+                new OpLabel(10f, 505f, Translate("Disable Pause Menu Animation"), bigText: false),
+                new OpCheckBox(DisableMeadowPauseAnimation, new Vector2(10f, 480f)),
+                new OpLabel(40f, 480f, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, disables the sway animation in the pause menu"))),
 
                 meadowCheatBox = new OpTextBox(config.Bind("",""), new Vector2(10f, cheaty), 80f),
                 new OpLabel(110f, cheaty, "Input \"cheats\" to access cheats"),
