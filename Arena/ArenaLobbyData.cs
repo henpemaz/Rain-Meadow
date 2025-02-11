@@ -10,6 +10,7 @@ namespace RainMeadow
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
+            
         }
 
         internal class State : ResourceDataState
@@ -29,12 +30,11 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
-            public Dictionary<string, int> playersChoosingSlugs;
+            public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
             [OnlineField]
-            public Dictionary<string, bool> playersReadiedUp;
-
+            public List<ushort> playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -96,7 +96,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
-
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;

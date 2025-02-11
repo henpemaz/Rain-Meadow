@@ -48,6 +48,21 @@ public static class DeathMessage
                 case DeathType.Freeze:
                     ChatLogManager.LogMessage("", $"{t} froze to death.");
                     break;
+                case DeathType.WormGrass:
+                    ChatLogManager.LogMessage("", $"{t} was swallowed by the grass.");
+                    break;
+                case DeathType.WallRot:
+                    ChatLogManager.LogMessage("", $"{t} was swallowed by the walls.");
+                    break;
+                case DeathType.Electric:
+                    ChatLogManager.LogMessage("", $"{t} was electrocuted.");
+                    break;
+                case DeathType.DeadlyLick:
+                    ChatLogManager.LogMessage("", $"{t} licked the power.");
+                    break;
+                case DeathType.Coalescipede:
+                    ChatLogManager.LogMessage("", $"{t} was consummed by the swarm.");
+                    break;
             }
         }
         catch (Exception e)
@@ -80,7 +95,14 @@ public static class DeathMessage
         {
             var k = killer.Template.name;
             var t = target.abstractPhysicalObject.GetOnlineObject().owner.id.name;
-            ChatLogManager.LogMessage("", $"{t} was slain by a {k}.");
+            if (killer.Template.TopAncestor().type == CreatureTemplate.Type.Centipede)
+            {
+                ChatLogManager.LogMessage("", $"{t} was zapped by a {k}.");
+            } 
+            else
+            {
+                ChatLogManager.LogMessage("", $"{t} was slain by a {k}.");
+            }
         }
         catch (Exception e)
         {
@@ -104,6 +126,30 @@ public static class DeathMessage
         catch (Exception e)
         {
             RainMeadow.Error("Error displaying death message. " + e);
+        }
+    }
+
+    public static void PlayerDeathEvent(Player player, Type sourceType, object source)
+    {
+        if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is MeadowGameMode) return;
+        if (player.dead) return;
+        switch(source)
+        {
+            case ZapCoil:
+                EnvironmentalDeathMessage(player, DeathType.Electric);
+                break;
+            case WormGrass.WormGrassPatch:
+                EnvironmentalDeathMessage(player, DeathType.WormGrass);
+                break;
+            case SSOracleBehavior:
+                EnvironmentalDeathMessage(player, DeathType.Oracle);
+                break;
+            case DaddyCorruption.EatenCreature:
+                EnvironmentalDeathMessage(player, DeathType.WallRot);
+                break;
+            case Player.Tongue:
+                EnvironmentalDeathMessage(player, DeathType.DeadlyLick);
+                break;
         }
     }
 
@@ -136,6 +182,11 @@ public static class DeathMessage
                     EnvironmentalDeathMessage(player, DeathType.Freeze);
                     return;
                 }
+                if (player.rainDeath > 1f)
+                {
+                    EnvironmentalDeathMessage(player, DeathType.Rain);
+                    return;
+                }
 
                 if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer)
                 {
@@ -151,8 +202,22 @@ public static class DeathMessage
                     EnvironmentalDeathMessage(player, DeathType.Burn);
                     return;
                 }
-               
-                
+
+                if (player.grabbedBy.Count > 0)
+                {
+                    float spiders = 0f;
+                    for (int i = 0; i < player.grabbedBy.Count; i++)
+                    {
+                        if (player.grabbedBy[i].grabber is Spider)
+                        {
+                            spiders+= player.grabbedBy[i].grabber.TotalMass;
+                        }
+                    }
+                    if (spiders >= player.TotalMass)
+                    {
+                        EnvironmentalDeathMessage(player, DeathType.Coalescipede);
+                    }
+                }
             }
         }
     }
@@ -167,5 +232,10 @@ public static class DeathMessage
         Burn,
         PyroDeath,
         Freeze,
+        WormGrass,
+        WallRot,
+        Electric,
+        DeadlyLick,
+        Coalescipede
     }
 }

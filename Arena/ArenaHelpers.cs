@@ -42,6 +42,16 @@ namespace RainMeadow
             return null;
         }
 
+        public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            arena.arenaSittingOnlineOrder = new List<ushort>();
+            arena.ResetGameTimer();
+            arena.clientsAreReadiedUp = 0;
+            arena.currentLevel = 0;
+            arena.playersReadiedUp.Clear();
+
+        }
+
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
@@ -58,13 +68,9 @@ namespace RainMeadow
             {
                 arena.clientsAreReadiedUp = 0;
                 lobby.clientReadiedUp = false;
-                foreach (var player in OnlineManager.players)
-                {
-                    if (arena.playersReadiedUp.TryGetValue(player.id.name, out _))
-                    {
-                        arena.playersReadiedUp[player.id.name] = false;
-                    }
-                }
+
+                arena.playersReadiedUp.Clear();
+
                 arena.returnToLobby = false;
             }
 

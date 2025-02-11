@@ -401,6 +401,8 @@ namespace RainMeadow
                 displayName = "Lily",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10989,
                 previewColor = Extensions.ColorFromHex(0xd15460),
             });
@@ -418,6 +420,8 @@ namespace RainMeadow
                 displayName = "Poppy",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 11114,
                 previewColor = Extensions.ColorFromHex(0x740719),
             });
@@ -435,6 +439,8 @@ namespace RainMeadow
                 displayName = "Lilac",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10992,
                 previewColor = Extensions.ColorFromHex(0xb72264),
             });
@@ -452,6 +458,8 @@ namespace RainMeadow
                 displayName = "Jasmine",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10986,
                 previewColor = Extensions.ColorFromHex(0xa7a8aa),
             });

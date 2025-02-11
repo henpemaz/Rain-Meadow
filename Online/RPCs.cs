@@ -83,5 +83,13 @@ namespace RainMeadow
 
             game.manager.RequestMainProcessSwitch(OnlineManager.lobby.gameMode.MenuProcessId());
         }
+
+        [RPCMethod]
+        public static void Creature_Die(OnlinePhysicalObject opo)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            (opo.apo as AbstractCreature)?.realizedCreature?.Die();
+        }
     }
 }
