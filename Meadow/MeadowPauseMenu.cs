@@ -116,15 +116,12 @@ namespace RainMeadow
         }
         public override void Update()
         {
-            if (!RainMeadow.rainMeadowOptions.DisableMeadowPauseAnimation.Value)
+            foreach (var c in pages[0].subObjects)
             {
-                foreach (var c in pages[0].subObjects)
-                {
-                    if (c == null) return;
-                    if (c is FloatyButton button) button.progress = blackFade;
-                    if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
-                    if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
-                }
+                if (c == null) return;
+                if (c is FloatyButton button) button.progress = blackFade;
+                if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
+                if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
             }
             base.Update();
         }
