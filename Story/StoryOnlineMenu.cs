@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -74,22 +75,11 @@ namespace RainMeadow
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
 
-            // hehe yoink
             if (this.colorChecked)
             {
-                List<Color> val = new();
-                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
-                {
-                    Vector3 vector = new Vector3(1f, 1f, 1f);
-                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
-                    {
-                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
-                        vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
-                    }
-                    val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
-                }
+                var slugcatId = slugcatColorOrder[slugcatPageIndex];
 
-                personaSettings.customColors = val;
+                personaSettings.customColors = GetSlugcatColorsFromMiscProg(slugcatId);
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
@@ -102,6 +92,46 @@ namespace RainMeadow
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+        }
+
+        private static List<Color> GetSlugcatColorsFromMiscProg(SlugcatStats.Name id)
+        {
+            var miscProg = Custom.rainWorld.progression.miscProgressionData;
+
+            if (!miscProg.colorsEnabled.TryGetValue(id.value, out var colorsEnabled))
+            {
+                return [];
+            }
+
+            if (!colorsEnabled)
+            {
+                return [];
+            }
+
+            if (!miscProg.colorChoices.TryGetValue(id.value, out var partColorStrings))
+            {
+                return [];
+            }
+
+            var partColors = new List<Color>();
+
+            foreach (var partColorString in partColorStrings)
+            {
+                // Shouldn't happen, means that the color save data is malformed
+                if (!partColorString.Contains(","))
+                {
+                    partColors.Add(Color.magenta);
+                    continue;
+                }
+
+                var hslString = partColorString.Split([',']);
+                var hsl = new Vector3(float.Parse(hslString[0], NumberStyles.Any, CultureInfo.InvariantCulture), float.Parse(hslString[1], NumberStyles.Any, CultureInfo.InvariantCulture), float.Parse(hslString[2], NumberStyles.Any, CultureInfo.InvariantCulture));
+
+                var partColor = Custom.HSL2RGB(hsl[0], hsl[1], hsl[2]);
+                partColors.Add(partColor);
+            }
+
+            return partColors;
         }
 
         public override void Update()
