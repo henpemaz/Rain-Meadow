@@ -161,6 +161,7 @@ public static class DeathMessage
             var k = killer.Template.name;
             var opo = target.abstractPhysicalObject.GetOnlineObject();
             var t = opo.owner.id.name;
+            if (!ShouldShowDeath(opo)) return;
             if (killer.Template.TopAncestor().type == CreatureTemplate.Type.Centipede)
             {
                 ChatLogManager.LogMessage("", $"{t} was zapped by a {k}.");
@@ -194,7 +195,19 @@ public static class DeathMessage
         {
             var k = killer.abstractPhysicalObject.GetOnlineObject().owner.id.name;
             var t = target.Template.name;
+            var opo = target.abstractPhysicalObject.GetOnlineObject();
+            if (!ShouldShowDeath(opo)) return;
             if (target.TotalMass > 0.2f) ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
+
+            if (opo != null)
+            {
+                var onlineHuds = target.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+                foreach (var onlineHud in onlineHuds)
+                {
+                    onlineHud.killFeed.Add(opo.id);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -232,7 +245,7 @@ public static class DeathMessage
         {
             if (crit.killTag.realizedCreature is Player && !RainMeadow.isArenaMode(out var _))
             {
-                PlayerKillCreature(crit.killTag.realizedCreature as Player, crit);
+                PvPRPC(crit.killTag.realizedCreature as Player, crit);
             }
             else if (crit is Player)
             {
