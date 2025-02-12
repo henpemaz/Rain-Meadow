@@ -91,6 +91,11 @@ namespace RainMeadow
 
                 personaSettings.customColors = val;
             }
+            else
+            {
+                // Clear custom colors when the checkbox is unchecked
+                personaSettings.customColors = [];
+            }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
             {
