@@ -104,6 +104,7 @@ namespace RainMeadow
                 hackySlugcatCustomization = customization as SlugcatCustomization;
                 orig(self, sleaser, rcam);
             }
+
             finally
             {
                 hackySlugcatCustomization = null;
@@ -145,7 +146,7 @@ namespace RainMeadow
             if (hackySlugcatCustomization is not null)
             {
                 // e.g. SlugBase will attempt to access customColors, assuming it is not null as CustomColorsEnabled is true, so set it here
-                PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+                // PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
                 return true;
             }
             return orig();
