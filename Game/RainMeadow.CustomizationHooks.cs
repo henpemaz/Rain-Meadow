@@ -108,7 +108,7 @@ namespace RainMeadow
 
                 if (hackySlugcatCustomization is not null)
                 {
-                    PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
                 }
 
                 orig(self, sleaser, rcam);
@@ -131,7 +131,7 @@ namespace RainMeadow
 
                 if (hackySlugcatCustomization is not null)
                 {
-                    PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
                 }
 
                 orig(self, sLeaser, rCam, palette);
@@ -154,7 +154,7 @@ namespace RainMeadow
 
                 if (hackySlugcatCustomization is not null)
                 {
-                    PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
                 }
 
                 orig(self, sLeaser, rCam, timeStacker, camPos);

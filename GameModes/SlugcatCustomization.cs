@@ -7,14 +7,32 @@ namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public List<Color> customColors { get; set; } = [Color.white, Color.black];
-        public Color bodyColor { get => customColors[0]; set => customColors[0] = value; }
-        public Color eyeColor { get => customColors[1]; set => customColors[1] = value; }
-        public List<Color>? defaultColors = null;
+        public List<Color> currentColors { get; set; }
+
+        public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
+        public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
+
+        private List<Color>? _defaultColors;
+        public List<Color> defaultColors
+        {
+            get
+            {
+                // Cache default colors the first time
+                _defaultColors ??= PlayerGraphics.DefaultBodyPartColorHex(playingAs).Select(x => RWCustom.Custom.hexToColor(x)).ToList();
+
+                return _defaultColors;
+            }
+        }
+
         public SlugcatStats.Name playingAs;
         public string nickname;
 
-        public SlugcatCustomization() { }
+        public SlugcatCustomization()
+        {
+            currentColors = defaultColors;
+
+
+        }
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
@@ -33,22 +51,13 @@ namespace RainMeadow
 
         public Color GetColor(int staticColorIndex)
         {
-            if (staticColorIndex < customColors.Count)
+            if (staticColorIndex >= 0 && staticColorIndex < currentColors.Count)
             {
-                return customColors[staticColorIndex];
+                return currentColors[staticColorIndex];
             }
 
-            if (defaultColors is null)
-            {
-                // caching this should be fine
-                defaultColors = PlayerGraphics.DefaultBodyPartColorHex(playingAs).Select(x => RWCustom.Custom.hexToColor(x)).ToList();
-            }
-            if (staticColorIndex < defaultColors.Count)
-            {
-                return defaultColors[staticColorIndex];
-            }
-
-            return Color.black;
+            // Indicates something's gone wrong (staticColorIndex is outside the range of available colors)
+            return Color.magenta;
         }
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
@@ -68,7 +77,7 @@ namespace RainMeadow
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
-                customColors = slugcatCustomization.customColors.ToArray();
+                customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
             }
@@ -76,7 +85,7 @@ namespace RainMeadow
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
                 var slugcatCustomization = (SlugcatCustomization)entityData;
-                slugcatCustomization.customColors = customColors.ToList();
+                slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
             }

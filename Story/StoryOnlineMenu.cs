@@ -89,12 +89,12 @@ namespace RainMeadow
                     val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
                 }
 
-                personaSettings.customColors = val;
+                personaSettings.currentColors = val;
             }
             else
             {
                 // Clear custom colors when the checkbox is unchecked
-                personaSettings.customColors = [];
+                personaSettings.currentColors = personaSettings.defaultColors;
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
