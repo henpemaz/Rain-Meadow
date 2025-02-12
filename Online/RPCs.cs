@@ -91,5 +91,37 @@ namespace RainMeadow
 
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
         }
+
+        [RPCMethod]
+        public static void KillFeedEnvironment(OnlinePhysicalObject opo, int index)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            if ((opo.apo as AbstractCreature)?.realizedCreature == null) return;
+            DeathMessage.DeathType type = (DeathMessage.DeathType)index;
+            DeathMessage.EnvironmentalDeathMessage((opo.apo as AbstractCreature)?.realizedCreature as Player, type);
+        }
+
+        [RPCMethod]
+        public static void KillFeedPvP(OnlinePhysicalObject killer, OnlinePhysicalObject target)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            if ((killer.apo as AbstractCreature)?.realizedCreature == null || (target.apo as AbstractCreature)?.realizedCreature == null) return;
+            if ((target.apo as AbstractCreature)?.realizedCreature is Player)
+            {
+                DeathMessage.PlayerKillPlayer((killer.apo as AbstractCreature)?.realizedCreature as Player, (target.apo as AbstractCreature)?.realizedCreature as Player);
+            } 
+            else
+            {
+                DeathMessage.PlayerKillCreature((killer.apo as AbstractCreature)?.realizedCreature as Player, (target.apo as AbstractCreature)?.realizedCreature);
+            }
+            
+        }
+        [RPCMethod]
+        public static void KillFeedCvP(OnlinePhysicalObject killer, OnlinePhysicalObject target)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            if ((killer.apo as AbstractCreature)?.realizedCreature == null || (target.apo as AbstractCreature)?.realizedCreature == null) return;
+            DeathMessage.CreatureKillPlayer((killer.apo as AbstractCreature)?.realizedCreature, (target.apo as AbstractCreature)?.realizedCreature as Player);
+        }
     }
 }

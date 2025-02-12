@@ -80,6 +80,7 @@ namespace RainMeadow
             }
         }
 
+        // Keep this for now despite having DeathContextualizer
         private void Player_TerrainImpact(ILContext il)
         {
             try
@@ -94,7 +95,8 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
                     {
-                        DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                        //DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                        DeathMessage.EnvironmentalRPC(self, DeathMessage.DeathType.FallDamage);
                     }
 
                 });
@@ -469,7 +471,8 @@ namespace RainMeadow
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
 
-                        DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
+                        //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
+                        DeathMessage.EnvironmentalRPC(self as Player, DeathMessage.DeathType.Abyss);
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
                         self.State.alive = false;

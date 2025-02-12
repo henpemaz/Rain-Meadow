@@ -1,19 +1,67 @@
 using MoreSlugcats;
 using System;
+using System.Linq;
 
 namespace RainMeadow;
 
 public static class DeathMessage
 {
+    public static void EnvironmentalRPC(Player player, DeathType cause)
+    {
+        var opo = player.abstractPhysicalObject.GetOnlineObject();
+        if (opo == null) return;
+        foreach(var op in OnlineManager.players)
+        {
+            op.InvokeRPC(RPCs.KillFeedEnvironment, opo, (int)cause);
+        }
+    }
+    public static void PvPRPC(Player killer, Creature target)
+    {
+        var kopo = killer.abstractPhysicalObject.GetOnlineObject();
+        var topo = target.abstractPhysicalObject.GetOnlineObject();
+        if (kopo == null || topo == null) return;
+        foreach (var op in OnlineManager.players)
+        {
+            op.InvokeRPC(RPCs.KillFeedPvP, kopo, topo);
+        }
+    }
+    public static void CvPRPC(Creature killer, Player target)
+    {
+        var kopo = killer.abstractPhysicalObject.GetOnlineObject();
+        var topo = target.abstractPhysicalObject.GetOnlineObject();
+        if (kopo == null || topo == null) return;
+        foreach (var op in OnlineManager.players)
+        {
+            op.InvokeRPC(RPCs.KillFeedCvP, kopo, topo);
+        }
+    }
+    public static bool ShouldShowDeath(OnlinePhysicalObject opo)
+    {
+        if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+        {
+            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+            foreach (var onlineHud in onlineHuds)
+            {
+                if (onlineHud.killFeed.Contains(opo.id))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     public static void EnvironmentalDeathMessage(Player player, DeathType cause)
     {
         try
         {
-            if (player == null || player.dead)
+            var opo = player.abstractPhysicalObject.GetOnlineObject();
+            if (player == null || !ShouldShowDeath(opo))
             {
                 return;
             }
-            var t = player.abstractPhysicalObject.GetOnlineObject().owner.id.name;
+            var t = opo.owner.id.name;
             switch (cause)
             {
                 default:
@@ -64,6 +112,12 @@ public static class DeathMessage
                     ChatLogManager.LogMessage("", $"{t} was consummed by the swarm.");
                     break;
             }
+            var onlineHuds = player.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+            foreach (var onlineHud in onlineHuds)
+            {
+                onlineHud.killFeed.Add(opo.id);
+            }
         }
         catch (Exception e)
         {
@@ -74,9 +128,20 @@ public static class DeathMessage
     {
         try
         {
+            var opo = target.abstractPhysicalObject.GetOnlineObject();
+            if (target == null || killer == null || !ShouldShowDeath(opo))
+            {
+                return;
+            }
             var k = killer.abstractPhysicalObject.GetOnlineObject().owner.id.name;
             var t = target.abstractPhysicalObject.GetOnlineObject().owner.id.name;
             ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
+            var onlineHuds = target.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+            foreach (var onlineHud in onlineHuds)
+            {
+                onlineHud.killFeed.Add(opo.id);
+            }
         }
         catch (Exception e)
         {
@@ -94,7 +159,8 @@ public static class DeathMessage
         try
         {
             var k = killer.Template.name;
-            var t = target.abstractPhysicalObject.GetOnlineObject().owner.id.name;
+            var opo = target.abstractPhysicalObject.GetOnlineObject();
+            var t = opo.owner.id.name;
             if (killer.Template.TopAncestor().type == CreatureTemplate.Type.Centipede)
             {
                 ChatLogManager.LogMessage("", $"{t} was zapped by a {k}.");
@@ -102,6 +168,13 @@ public static class DeathMessage
             else
             {
                 ChatLogManager.LogMessage("", $"{t} was slain by a {k}.");
+            }
+
+            var onlineHuds = target.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+            foreach (var onlineHud in onlineHuds)
+            {
+                onlineHud.killFeed.Add(opo.id);
             }
         }
         catch (Exception e)
@@ -136,19 +209,19 @@ public static class DeathMessage
         switch(source)
         {
             case ZapCoil:
-                EnvironmentalDeathMessage(player, DeathType.Electric);
+                EnvironmentalRPC(player, DeathType.Electric);
                 break;
             case WormGrass.WormGrassPatch:
-                EnvironmentalDeathMessage(player, DeathType.WormGrass);
+                EnvironmentalRPC(player, DeathType.WormGrass);
                 break;
             case SSOracleBehavior:
-                EnvironmentalDeathMessage(player, DeathType.Oracle);
+                EnvironmentalRPC(player, DeathType.Oracle);
                 break;
             case DaddyCorruption.EatenCreature:
-                EnvironmentalDeathMessage(player, DeathType.WallRot);
+                EnvironmentalRPC(player, DeathType.WallRot);
                 break;
             case Player.Tongue:
-                EnvironmentalDeathMessage(player, DeathType.DeadlyLick);
+                EnvironmentalRPC(player, DeathType.DeadlyLick);
                 break;
         }
     }
@@ -163,7 +236,8 @@ public static class DeathMessage
             }
             else if (crit is Player)
             {
-                CreatureKillPlayer(crit.killTag.realizedCreature, crit as Player);
+                //CreatureKillPlayer(crit.killTag.realizedCreature, crit as Player);
+                CvPRPC(crit.killTag.realizedCreature, crit as Player);
             }
         }
         else
@@ -174,17 +248,17 @@ public static class DeathMessage
             {
                 if (player.drown >= 1f)
                 {
-                    EnvironmentalDeathMessage(player, DeathType.Drown);
+                    EnvironmentalRPC(player, DeathType.Drown);
                     return;
                 }
                 if (player.Hypothermia >= 1f)
                 {
-                    EnvironmentalDeathMessage(player, DeathType.Freeze);
+                    EnvironmentalRPC(player, DeathType.Freeze);
                     return;
                 }
                 if (player.rainDeath > 1f)
                 {
-                    EnvironmentalDeathMessage(player, DeathType.Rain);
+                    EnvironmentalRPC(player, DeathType.Rain);
                     return;
                 }
 
@@ -192,14 +266,14 @@ public static class DeathMessage
                 {
                     if (player.airInLungs <= Player.PyroDeathThreshold(player.room.game))
                     {
-                        EnvironmentalDeathMessage(player, DeathType.PyroDeath);
+                        EnvironmentalRPC(player, DeathType.PyroDeath);
                         return;
                     }
                 }
 
                 if (player.Submersion > 0.2f && player.room.waterObject != null && player.room.waterObject.WaterIsLethal && !player.abstractCreature.lavaImmune)
                 {
-                    EnvironmentalDeathMessage(player, DeathType.Burn);
+                    EnvironmentalRPC(player, DeathType.Burn);
                     return;
                 }
 
@@ -215,13 +289,14 @@ public static class DeathMessage
                     }
                     if (spiders >= player.TotalMass)
                     {
-                        EnvironmentalDeathMessage(player, DeathType.Coalescipede);
+                        EnvironmentalRPC(player, DeathType.Coalescipede);
                     }
                 }
             }
         }
     }
-        public enum DeathType
+
+    public enum DeathType
     {
         Invalid,
         Rain,
