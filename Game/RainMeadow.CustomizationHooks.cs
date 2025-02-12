@@ -146,7 +146,8 @@ namespace RainMeadow
             if (hackySlugcatCustomization is not null)
             {
                 // e.g. SlugBase will attempt to access customColors, assuming it is not null as CustomColorsEnabled is true, so set it here
-                // PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+                PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
+
                 return true;
             }
             return orig();
@@ -157,6 +158,17 @@ namespace RainMeadow
             if (hackySlugcatCustomization is not null)
             {
                 return hackySlugcatCustomization.GetColor(staticColorIndex);
+            }
+            if (OnlineManager.lobby != null)
+            {
+                for (int i = 0; i < PlayerGraphics.customColors.Count; i++)
+                {
+                    if (staticColorIndex > i)
+                    {
+                        return orig(i);
+                    }
+
+                }
             }
             return orig(staticColorIndex);
         }
