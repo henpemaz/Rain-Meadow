@@ -77,9 +77,19 @@ namespace RainMeadow
 
             if (this.colorChecked)
             {
-                var slugcatId = slugcatColorOrder[slugcatPageIndex];
+                List<Color> val = new();
+                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
+                {
+                    Vector3 vector = new Vector3(1f, 1f, 1f);
+                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
+                    {
+                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
+                        vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
+                    }
+                    val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
+                }
 
-                personaSettings.customColors = GetSlugcatColorsFromMiscProg(slugcatId);
+                personaSettings.customColors = val;
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
