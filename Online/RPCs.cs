@@ -85,11 +85,15 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Creature_Die(OnlinePhysicalObject opo)
+        public static void Creature_Die(OnlinePhysicalObject opo, OnlinePhysicalObject saint)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
+            if (saint != null)
+            {
+                DeathMessage.PvPRPC(saint.apo.realizedObject as Player, opo.apo.realizedObject as Creature, 1);
+            }
         }
 
         [RPCMethod]
@@ -98,21 +102,21 @@ namespace RainMeadow
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             if ((opo.apo as AbstractCreature)?.realizedCreature == null) return;
             DeathMessage.DeathType type = (DeathMessage.DeathType)index;
-            DeathMessage.EnvironmentalDeathMessage((opo.apo as AbstractCreature)?.realizedCreature as Player, type);
+            DeathMessage.EnvironmentalDeathMessage((opo.apo as AbstractCreature), type);
         }
 
         [RPCMethod]
-        public static void KillFeedPvP(OnlinePhysicalObject killer, OnlinePhysicalObject target)
+        public static void KillFeedPvP(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-            if ((killer.apo as AbstractCreature)?.realizedCreature == null || (target.apo as AbstractCreature)?.realizedCreature == null) return;
-            if ((target.apo as AbstractCreature)?.realizedCreature is Player)
+            if ((killer.apo as AbstractCreature) == null || (target.apo as AbstractCreature) == null) return;
+            if ((target.apo as AbstractCreature).creatureTemplate.type == CreatureTemplate.Type.Slugcat)
             {
-                DeathMessage.PlayerKillPlayer((killer.apo as AbstractCreature)?.realizedCreature as Player, (target.apo as AbstractCreature)?.realizedCreature as Player);
+                DeathMessage.PlayerKillPlayer((killer.apo as AbstractCreature), (target.apo as AbstractCreature), context);
             } 
             else
             {
-                DeathMessage.PlayerKillCreature((killer.apo as AbstractCreature)?.realizedCreature as Player, (target.apo as AbstractCreature)?.realizedCreature);
+                DeathMessage.PlayerKillCreature((killer.apo as AbstractCreature), (target.apo as AbstractCreature), context);
             }
             
         }

@@ -15,14 +15,14 @@ public static class DeathMessage
             op.InvokeRPC(RPCs.KillFeedEnvironment, opo, (int)cause);
         }
     }
-    public static void PvPRPC(Player killer, Creature target)
+    public static void PvPRPC(Player killer, Creature target, int context)
     {
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
         var topo = target.abstractPhysicalObject.GetOnlineObject();
         if (kopo == null || topo == null) return;
         foreach (var op in OnlineManager.players)
         {
-            op.InvokeRPC(RPCs.KillFeedPvP, kopo, topo);
+            op.InvokeRPC(RPCs.KillFeedPvP, kopo, topo, context);
         }
     }
     public static void CvPRPC(Creature killer, Player target)
@@ -52,12 +52,13 @@ public static class DeathMessage
         }
         return false;
     }
-    public static void EnvironmentalDeathMessage(Player player, DeathType cause)
+    public static void EnvironmentalDeathMessage(AbstractCreature abstractCreature, DeathType cause)
     {
         try
         {
-            var opo = player.abstractPhysicalObject.GetOnlineObject();
-            if (player == null || !ShouldShowDeath(opo))
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+            var opo = abstractCreature.GetOnlineObject();
+            if (opo == null || abstractCreature.creatureTemplate.type != CreatureTemplate.Type.Slugcat || !ShouldShowDeath(opo))
             {
                 return;
             }
@@ -74,9 +75,9 @@ public static class DeathMessage
                     ChatLogManager.LogMessage("", $"{t} fell into the abyss.");
                     break;
                 case DeathType.Drown:
-                    if (player.grabbedBy.Count > 0)
+                    if (abstractCreature.realizedCreature != null && abstractCreature.realizedCreature.grabbedBy.Count > 0)
                     {
-                        ChatLogManager.LogMessage("", $"{t} was drowned by {player.grabbedBy[0].grabber.Template.name}.");
+                        ChatLogManager.LogMessage("", $"{t} was drowned by {abstractCreature.realizedCreature.grabbedBy[0].grabber.Template.name}.");
                         break;
                     }
                     ChatLogManager.LogMessage("", $"{t} drowned.");
@@ -112,7 +113,7 @@ public static class DeathMessage
                     ChatLogManager.LogMessage("", $"{t} was consummed by the swarm.");
                     break;
             }
-            var onlineHuds = player.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
 
             foreach (var onlineHud in onlineHuds)
             {
@@ -124,19 +125,29 @@ public static class DeathMessage
             RainMeadow.Error("Error displaying death message. " + e);
         }
     }
-    public static void PlayerKillPlayer(Player killer, Player target)
+    public static void PlayerKillPlayer(AbstractCreature killer, AbstractCreature target, int context)
     {
         try
         {
-            var opo = target.abstractPhysicalObject.GetOnlineObject();
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+            var opo = target.GetOnlineObject();
             if (target == null || killer == null || !ShouldShowDeath(opo))
             {
                 return;
             }
-            var k = killer.abstractPhysicalObject.GetOnlineObject().owner.id.name;
-            var t = target.abstractPhysicalObject.GetOnlineObject().owner.id.name;
-            ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
-            var onlineHuds = target.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+            var k = killer.GetOnlineObject().owner.id.name;
+            var t = target.GetOnlineObject().owner.id.name;
+            switch(context)
+            {
+                default:
+                    ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
+                    break;
+                case 1:
+                    ChatLogManager.LogMessage("", $"{t} was ascended by {k}.");
+                    break;
+            }
+            
+            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
 
             foreach (var onlineHud in onlineHuds)
             {
@@ -184,24 +195,25 @@ public static class DeathMessage
         }
     }
 
-    public static void PlayerKillCreature(Player killer, Creature target)
+    public static void PlayerKillCreature(AbstractCreature killer, AbstractCreature target, int context)
     {
-        if (target is Player)
+        if (target.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
         {
-            PlayerKillPlayer(killer, (Player)target);
+            PlayerKillPlayer(killer, target, context);
             return;
         }
         try
         {
-            var k = killer.abstractPhysicalObject.GetOnlineObject().owner.id.name;
-            var t = target.Template.name;
-            var opo = target.abstractPhysicalObject.GetOnlineObject();
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+            var k = killer.GetOnlineObject().owner.id.name;
+            var t = target.creatureTemplate.name;
+            var opo = target.GetOnlineObject();
             if (!ShouldShowDeath(opo)) return;
-            if (target.TotalMass > 0.2f) ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
+            if (target.realizedCreature != null && target.realizedCreature.TotalMass > 0.2f) ChatLogManager.LogMessage("", $"{t} was slain by {k}.");
 
             if (opo != null)
             {
-                var onlineHuds = target.room.game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+                var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
 
                 foreach (var onlineHud in onlineHuds)
                 {
@@ -245,7 +257,7 @@ public static class DeathMessage
         {
             if (crit.killTag.realizedCreature is Player && !RainMeadow.isArenaMode(out var _))
             {
-                PvPRPC(crit.killTag.realizedCreature as Player, crit);
+                PvPRPC(crit.killTag.realizedCreature as Player, crit, 0);
             }
             else if (crit is Player)
             {

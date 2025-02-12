@@ -120,7 +120,15 @@ namespace RainMeadow
                         {
                             if (!opo.isMine)
                             {
-                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo);
+                                var saint = self.abstractCreature.GetOnlineCreature();
+                                if (saint != null)
+                                {
+                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
+                                } 
+                                else
+                                {
+                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
+                                }
 
                             }
                         }
