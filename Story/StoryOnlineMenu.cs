@@ -89,7 +89,12 @@ namespace RainMeadow
                     val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
                 }
 
-                personaSettings.customColors = val;
+                personaSettings.currentColors = val;
+            }
+            else
+            {
+                // Use the default colors for this slugcat when the checkbox is unchecked
+                personaSettings.currentColors = PlayerGraphics.DefaultBodyPartColorHex(slugcatColorOrder[slugcatPageIndex]).Select(Custom.hexToColor).ToList();
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
