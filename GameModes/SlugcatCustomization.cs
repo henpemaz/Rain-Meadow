@@ -7,32 +7,16 @@ namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public List<Color> currentColors { get; set; }
+        // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
+        public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
 
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
 
-        private List<Color>? _defaultColors;
-        public List<Color> defaultColors
-        {
-            get
-            {
-                // Cache default colors the first time
-                _defaultColors ??= PlayerGraphics.DefaultBodyPartColorHex(playingAs).Select(x => RWCustom.Custom.hexToColor(x)).ToList();
-
-                return _defaultColors;
-            }
-        }
-
         public SlugcatStats.Name playingAs;
         public string nickname;
 
-        public SlugcatCustomization()
-        {
-            currentColors = defaultColors;
-
-
-        }
+        public SlugcatCustomization() { }
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {

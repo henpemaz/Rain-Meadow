@@ -93,8 +93,8 @@ namespace RainMeadow
             }
             else
             {
-                // Clear custom colors when the checkbox is unchecked
-                personaSettings.currentColors = personaSettings.defaultColors;
+                // Use the default colors for this slugcat when the checkbox is unchecked
+                personaSettings.currentColors = PlayerGraphics.DefaultBodyPartColorHex(slugcatColorOrder[slugcatPageIndex]).Select(Custom.hexToColor).ToList();
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
