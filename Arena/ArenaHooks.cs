@@ -1269,6 +1269,11 @@ namespace RainMeadow
                     return false;
                 }
 
+                if (ModManager.MSC && shortcutVessel.creature is Player pl && pl.slugOnBack != null && pl.slugOnBack.HasASlug)
+                {
+                    return false;
+                }
+
                 if (ModManager.MSC && shortcutVessel.creature.abstractCreature.creatureTemplate.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
                 {
                     return false;
