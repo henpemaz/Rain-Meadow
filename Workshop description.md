@@ -72,6 +72,6 @@ FranklyGD - Programming, engine		MC41Games - Programming, menus		Silvyger - Prog
 Vigaro - Programming, menus		BitiLope - Programming, story		Pudgy Turtle - Programming, story
 ddemile - Programming, modsync		UO - Programming, story, arena		Saddest - Programming, UI, chat
 notchoc - Programming, story		phanie_ - Illustration			Timbits - Programming, UI, menus
-Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	 invalidunits - Programming, engine
+Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	 invalidunits - Programming, UI, LAN
 forthfora - Programming, modsync
 ```
