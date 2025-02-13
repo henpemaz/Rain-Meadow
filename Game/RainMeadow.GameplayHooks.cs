@@ -70,8 +70,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_1);
                 c.EmitDelegate((Centipede self, PhysicalObject shockObj) =>
                 {
-                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player)
-                        DeathMessage.CreatureKillPlayer(self, shockObj as Player);
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player player)
+                        DeathMessage.CvPRPC(self, player);
                 });
             }
             catch (Exception e)
