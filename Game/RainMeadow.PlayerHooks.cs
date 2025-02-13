@@ -66,7 +66,7 @@ public partial class RainMeadow
                 {
                     if (self.grasps[i] != null)
                     {
-                        if (self.grasps[i].grabbed is Player pl && (pl.input[0].thrw || pl.input[0].jmp))
+                        if (self.grasps[i].grabbed is Player pl && pl.input[0].jmp)
                         {
                             self.grasps[i].Release();
                         }
