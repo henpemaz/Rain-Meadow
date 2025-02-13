@@ -90,8 +90,7 @@ public partial class RainMeadow
         orig(self, eu);
         if (isArenaMode(out var _) && self.slugcat != null)
         {
-
-            if (self.owner.input[0].thrw && self.owner.grasps == null || self.slugcat.input[0].jmp)
+            if (self.slugcat.input[0].jmp)
             {
                 self.owner.slugOnBack.DropSlug();
 
