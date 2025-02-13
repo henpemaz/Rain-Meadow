@@ -20,6 +20,7 @@ public static class DeathMessage
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
         var topo = target.abstractPhysicalObject.GetOnlineObject();
         if (kopo == null || topo == null) return;
+        if (target is not Player && target.TotalMass < 0.2f) return;
         foreach (var op in OnlineManager.players)
         {
             op.InvokeRPC(RPCs.KillFeedPvP, kopo, topo, context);
@@ -204,7 +205,6 @@ public static class DeathMessage
             var t = (target.apo as AbstractCreature).creatureTemplate.name;
             var realized = (target.apo as AbstractCreature).realizedCreature;
             if (!ShouldShowDeath(target)) return;
-            if (realized != null && realized.TotalMass < 0.2f) return;
             switch (context)
             {
                 default:
