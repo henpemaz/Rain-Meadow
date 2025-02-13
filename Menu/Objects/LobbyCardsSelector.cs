@@ -354,7 +354,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         filter = new LobbyCardsFilter();
 
         searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(pos.x + 15, pos.y + size.y), 300);
-        searchBar.label.text = "Search Lobbies";
+        searchBar.label.text = Utils.Translate("Search Lobbies");
         searchBar.accept = OpTextBox.Accept.StringASCII;
         searchBar.allowSpace = true;
         searchBar.OnChange += UpdateSearchFilter;

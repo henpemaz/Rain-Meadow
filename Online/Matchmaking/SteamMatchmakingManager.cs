@@ -211,7 +211,7 @@ namespace RainMeadow
                     if (owner == OnlineManager.mePlayer)
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
-                        SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
+                        SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + Utils.Translate("'s Lobby"));
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 

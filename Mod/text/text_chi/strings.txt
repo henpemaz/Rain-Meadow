@@ -3,7 +3,6 @@ henpemaz_rainmeadow-name|雨草地
 henpemaz_rainmeadow-description|CHINESE DESCRIPTION
 
 MEADOW|草地
-BACK|返回
 
 Public Lobbies Only|仅限公共大厅
 Max Lobby Size|最大大厅尺寸
@@ -21,6 +20,7 @@ max|最大
 Private|私人的
 
 Lobby Domain|大厅域
+Direct Connect|直接连接
 
 Online:|线上：
 Lobbies:|大厅：
