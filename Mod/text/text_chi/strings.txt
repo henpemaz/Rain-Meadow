@@ -1,5 +1,4 @@
 henpemaz_rainmeadow-name|雨草地
-
 henpemaz_rainmeadow-description|CHINESE DESCRIPTION
 
 MEADOW|草地
@@ -10,12 +9,14 @@ Lobby Mode|大厅模式
 
 Search Lobbies|搜索大厅
 
-‘s Lobby|的大厅
+'s Lobby|的大厅
 All|所有
 Meadow|草地
 Story|故事
 ArenaCompetitive|竞技竞技场
 
+player|玩家
+players|玩家
 max|最大
 Private|私人的
 

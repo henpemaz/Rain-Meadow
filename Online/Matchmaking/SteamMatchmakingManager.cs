@@ -174,6 +174,7 @@ namespace RainMeadow
                     RainMeadow.Debug("success");
                     lobbyID = new CSteamID(param.m_ulSteamIDLobby);
                     SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
+                    RainMeadow.Error(Utils.Translate("'s Lobby"));
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + Utils.Translate("'s Lobby"));
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
