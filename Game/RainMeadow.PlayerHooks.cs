@@ -23,6 +23,7 @@ public partial class RainMeadow
         On.Player.Die += PlayerOnDie;
         On.Player.Destroy += Player_Destroy;
         On.Player.Grabability += PlayerOnGrabability;
+        On.Player.GrabUpdate += Player_GrabUpdate1;
         IL.Player.GrabUpdate += Player_GrabUpdate;
         IL.Player.GrabUpdate += Player_GrabUpdate_FixSpearmasterNeedles;
         IL.Player.SwallowObject += Player_SwallowObject;
@@ -53,6 +54,28 @@ public partial class RainMeadow
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
 
+
+    private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+    {
+        orig(self, eu);
+        if (isArenaMode(out var _) && self.IsLocal())
+        {
+            if (self.grasps != null)
+            {
+                for (int i = 0; i < self.grasps.Length; i++)
+                {
+                    if (self.grasps[i] != null)
+                    {
+                        if (self.grasps[i].grabbed is Player pl && pl.input[0].jmp)
+                        {
+                            self.grasps[i].Release();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Hide the Meadow mode slugcat so it doesn't appear in menus (e.g. arena)
     private bool SlugcatStatsOnHiddenOrUnplayableSlugcat(On.SlugcatStats.orig_HiddenOrUnplayableSlugcat orig, SlugcatStats.Name i)
     {
@@ -78,7 +101,7 @@ public partial class RainMeadow
                         self.owner.ReleaseGrasp(j);
                     }
                 }
-                self.owner.slugOnBack.DropSlug();                   
+                self.owner.slugOnBack.DropSlug();
             }
         }
     }
