@@ -2,12 +2,33 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class Utils
     {
+        public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
+
+        public static string Translate(string text)
+        {
+            return Translator.Translate(text);
+        }
+
+        public static string GetMeadowTitleFileName(bool isShadow)
+        {
+            var fileName = isShadow ? "meadowshadow" : "meadowtitle";
+
+            if (Translator.currentLanguage == InGameTranslator.LanguageID.Chinese)
+            {
+                fileName += "_cn";
+            }
+
+            return fileName;
+        }
+
+
         public static void Restart(string args = "")
         {
             Process currentProcess = Process.GetCurrentProcess();

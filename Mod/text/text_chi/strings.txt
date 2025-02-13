@@ -1,1 +1,30 @@
-﻿Public Lobbies Only|中文
+henpemaz_rainmeadow-name|雨草地
+
+henpemaz_rainmeadow-description|CHINESE DESCRIPTION
+
+MEADOW|草地
+BACK|返回
+
+Public Lobbies Only|仅限公共大厅
+Max Lobby Size|最大大厅尺寸
+Lobby Mode|大厅模式
+
+Search Lobbies|搜索大厅
+
+‘s Lobby|的大厅
+All|所有
+Meadow|草地
+Story|故事
+ArenaCompetitive|竞技竞技场
+
+max|最大
+Private|私人的
+
+Lobby Domain|大厅域
+
+Online:|线上：
+Lobbies:|大厅：
+Rain Meadow Version:|雨草地版本：
+
+Credits|鸣谢
+CREATE!|创造！

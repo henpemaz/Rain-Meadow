@@ -25,8 +25,8 @@ public class LobbyCreateMenu : SmartMenu
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
         this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
         // creation button in bottom right
