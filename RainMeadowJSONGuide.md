@@ -20,14 +20,14 @@ A list of mod IDs that are banned from online play if the host doesn't have them
 A list of mod IDs that will be removed from the above list after merging if they are present, allowing them to bypass the requirement.
 
 ## Example JSON
-```
+```json
 {
     "sync_required_mods": [
         "pearlcat"
     ],
     "sync_required_mods_override": [
         "SBCameraScroll"
-    ],
+    ]
 }
 ```
 
