@@ -259,7 +259,7 @@ public static class DeathMessage
     {
         if (crit.killTag != null && crit.killTag.realizedCreature != null)
         {
-            if (crit.killTag.realizedCreature is Player && !RainMeadow.isArenaMode(out var _))
+            if (crit.killTag.realizedCreature is Player)
             {
                 PvPRPC(crit.killTag.realizedCreature as Player, crit, 0);
             }
