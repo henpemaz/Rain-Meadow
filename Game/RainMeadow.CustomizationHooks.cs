@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -98,43 +99,70 @@ namespace RainMeadow
 
         private void PlayerGraphicsOnInitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sleaser, RoomCamera rcam)
         {
+            var cachedCustomColors = PlayerGraphics.customColors;
+
             try
             {
                 creatureCustomizations.TryGetValue(self.player, out var customization);
                 hackySlugcatCustomization = customization as SlugcatCustomization;
+
+                if (hackySlugcatCustomization is not null)
+                {
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
+                }
+
                 orig(self, sleaser, rcam);
             }
             finally
             {
                 hackySlugcatCustomization = null;
+                PlayerGraphics.customColors = cachedCustomColors;
             }
         }
 
         private void PlayerGraphics_ApplyPalette_SlugcatCustomization(On.PlayerGraphics.orig_ApplyPalette orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
         {
+            var cachedCustomColors = PlayerGraphics.customColors;
+
             try
             {
                 creatureCustomizations.TryGetValue(self.player, out var customization);
                 hackySlugcatCustomization = customization as SlugcatCustomization;
+
+                if (hackySlugcatCustomization is not null)
+                {
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
+                }
+
                 orig(self, sLeaser, rCam, palette);
             }
             finally
             {
                 hackySlugcatCustomization = null;
+                PlayerGraphics.customColors = cachedCustomColors;
             }
         }
 
         private void PlayerGraphics_DrawSprites_SlugcatCustomization(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
+            var cachedCustomColors = PlayerGraphics.customColors;
+
             try
             {
                 creatureCustomizations.TryGetValue(self.player, out var customization);
                 hackySlugcatCustomization = customization as SlugcatCustomization;
+
+                if (hackySlugcatCustomization is not null)
+                {
+                    PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
+                }
+
                 orig(self, sLeaser, rCam, timeStacker, camPos);
             }
             finally
             {
                 hackySlugcatCustomization = null;
+                PlayerGraphics.customColors = cachedCustomColors;
             }
         }
 
@@ -144,8 +172,6 @@ namespace RainMeadow
         {
             if (hackySlugcatCustomization is not null)
             {
-                // e.g. SlugBase will attempt to access customColors, assuming it is not null as CustomColorsEnabled is true, so set it here
-                PlayerGraphics.customColors = hackySlugcatCustomization.customColors;
                 return true;
             }
             return orig();
