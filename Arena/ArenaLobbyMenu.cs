@@ -971,6 +971,8 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name;
+
                 try
                 {
                     classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].inLobbyId);
@@ -1031,6 +1033,8 @@ namespace RainMeadow
                 classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
+                usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name;
+
                 try
                 {
                     classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.Contains(OnlineManager.players[holdPlayerPosition].inLobbyId);
