@@ -16,7 +16,6 @@ namespace RainMeadow
 
         public bool isInGame = false;
         public int playerLeftGame = 0;
-        public int clientsAreReadiedUp = 0;
         public int currentLevel = 0;
         public int totalLevelCount = 0;
         public bool allPlayersReadyLockLobby = false;

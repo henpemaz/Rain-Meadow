@@ -157,7 +157,7 @@ namespace RainMeadow
 
         }
         [RPCMethod]
-        public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady, int currentColorIndex)
+        public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -166,7 +166,6 @@ namespace RainMeadow
                 {
                     return;
                 }
-                arena.clientsAreReadiedUp++;
                 if (!arena.playersReadiedUp.Contains(userIsReady.inLobbyId))
                 {
                     arena.playersReadiedUp.Add(userIsReady.inLobbyId);
