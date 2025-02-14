@@ -46,7 +46,6 @@ namespace RainMeadow
         {
             arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
-            arena.clientsAreReadiedUp = 0;
             arena.currentLevel = 0;
             arena.playersReadiedUp.Clear();
 
@@ -62,11 +61,10 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby.isOwner)
             {
-                arena.allPlayersReadyLockLobby = false;
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.Count == OnlineManager.players.Count;
             }
             if (arena.returnToLobby)
             {
-                arena.clientsAreReadiedUp = 0;
                 lobby.clientReadiedUp = false;
 
                 arena.playersReadiedUp.Clear();

@@ -10,7 +10,7 @@ namespace RainMeadow
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
-            
+
         }
 
         internal class State : ResourceDataState
@@ -39,8 +39,6 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField]
             public int playerEnteredGame;
-            [OnlineField]
-            public int clientsAreReadiedUp;
             [OnlineField]
             public int currentLevel;
             [OnlineField]
@@ -73,7 +71,6 @@ namespace RainMeadow
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
-                clientsAreReadiedUp = arena.clientsAreReadiedUp;
                 arenaSetupTime = arena.setupTime;
                 sainot = arena.sainot;
                 currentGameMode = arena.currentGameMode;
@@ -99,7 +96,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
-                (lobby.gameMode as ArenaOnlineGameMode).clientsAreReadiedUp = clientsAreReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
