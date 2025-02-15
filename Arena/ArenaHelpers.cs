@@ -141,7 +141,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
             {
                 var slugcatName = SlugcatStats.Name.values.entries[i];
 
@@ -159,9 +159,21 @@ namespace RainMeadow
 
                 if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
                 {
-                    var temp = (SlugcatStats.Name)enumBase;
+
                     RainMeadow.Debug("Filtered list:" + slugcatName);
-                    filteredList.Add(temp);
+                    SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
+                    filteredList.Add(slugcatStatSlug);
+                    if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
+                    {
+                        if (BaseGameSlugcats().Contains(slugcatStatSlug))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            filteredList.Remove(slugcatStatSlug);
+                        }
+                    }
                 }
             }
             return filteredList;
