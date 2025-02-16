@@ -20,6 +20,7 @@ namespace RainMeadow
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
         {
             if ((onlineCreature.apo as AbstractCreature).state is HealthState) return new CreatureHealthStateState(onlineCreature);
+            if ((onlineCreature.apo as AbstractCreature).state is MoreSlugcats.PlayerNPCState) return new PlayerNPCStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is PlayerState) return new PlayerStateState(onlineCreature);
             return new CreatureStateState(onlineCreature);
         }

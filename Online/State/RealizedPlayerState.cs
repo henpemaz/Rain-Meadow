@@ -113,8 +113,8 @@ namespace RainMeadow
         private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
-        //[OnlineField(nullable = true)]
-        //private OnlineEntity.EntityId? slugOnBack;
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? slugOnBack;
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
@@ -239,8 +239,8 @@ namespace RainMeadow
                 p.playerState.isPup = isPup;
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
-            //if (pl.slugOnBack != null)
-            //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+            if (p.slugOnBack != null)
+               p.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
 
             if (p.tongue is Player.Tongue tongue)
             {
