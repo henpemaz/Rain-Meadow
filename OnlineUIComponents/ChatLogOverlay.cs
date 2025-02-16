@@ -11,6 +11,8 @@ namespace RainMeadow
         private ChatHud chatHud;
         public RainWorldGame game;
         private Dictionary<string, Color> colorDictionary = new();
+        private int maxVisibleMessages = 13;
+        private int startIndex;
 
         public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
 
@@ -19,6 +21,8 @@ namespace RainMeadow
             this.chatHud = chatHud;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
+
+            
             UpdateLogDisplay();
         }
 
@@ -26,6 +30,8 @@ namespace RainMeadow
         {
             if (chatHud.chatLog.Count > 0)
             {
+                startIndex = Mathf.Clamp(chatHud.chatLog.Count - maxVisibleMessages - chatHud.currentLogIndex, 0, chatHud.chatLog.Count - maxVisibleMessages);
+
                 var logsToRemove = new List<MenuObject>();
 
                 // First, collect all the logs to remove
@@ -54,7 +60,8 @@ namespace RainMeadow
                 }
 
                 float yOffSet = 0;
-                foreach (var (username, message) in chatHud.chatLog)
+                var visibleMessages = chatHud.chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                foreach (var (username, message) in visibleMessages)
                 {
                     if (username is null or "")
                     {
