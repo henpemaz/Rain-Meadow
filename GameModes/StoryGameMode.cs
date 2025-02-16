@@ -35,6 +35,7 @@ namespace RainMeadow
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
 
+        public List<AbstractCreature> pups;
         public void Sanitize()
         {
             hasSheltered = false;
@@ -46,6 +47,7 @@ namespace RainMeadow
             myLastDenPos = null;
             region = null;
             saveStateString = null;
+            pups = new();
             storyClientData?.Sanitize();
         }
 

@@ -43,6 +43,7 @@ namespace RainMeadow
             On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal_ClientLoadGameNormally;
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
+            // IL.HUD.FoodMeter.ctor += FoodMeter_TrySpawnPupBars; 
 
             On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
@@ -804,6 +805,56 @@ namespace RainMeadow
 
                 if (MatchmakingManager.currentInstance.canSendChatMessages)
                     self.AddPart(new ChatHud(self, cam));
+            }
+        }
+
+        private void FoodMeter_TrySpawnPupBars(ILContext context) {
+            try {
+                ILCursor cursor = new(context);
+                cursor.Emit(OpCodes.Ret);
+                var label = cursor.DefineLabel();
+                cursor.MarkLabel(label);
+                
+                cursor.Index = 0;
+
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((FoodMeter self) => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (OnlineManager.lobby.isOwner) return false;
+
+                        int num = 1;
+
+                        if (story.pups is not null)
+                        foreach (AbstractCreature pup in story.pups) {
+                            FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, pup.realizedCreature as Player, num);
+                            foodMeter.abstractPup = pup;
+                            self.hud.AddPart(foodMeter);
+                            self.pupBars.Add(foodMeter);
+                            num++;
+                        }
+
+                        return true;
+                    }
+                    return false;
+                });
+                
+                cursor.Emit(OpCodes.Brfalse, label);
+
+                cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
+                cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
+
+                // Add pups to gamemode list
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_1);
+                cursor.EmitDelegate((FoodMeter self, int i) => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
+                        if (pup != null) story.pups.Add(pup);
+                    }
+                });
+
+            } catch (Exception except) {
+                Logger.LogError(except);
             }
         }
 

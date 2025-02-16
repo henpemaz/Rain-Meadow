@@ -457,6 +457,7 @@ public partial class RainMeadow
 
         orig(self);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
@@ -480,6 +481,7 @@ public partial class RainMeadow
 
         orig(self, add);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
@@ -503,6 +505,7 @@ public partial class RainMeadow
 
         orig(self, add);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
