@@ -93,7 +93,6 @@ namespace RainMeadow
 
     public class RealizedPlayerState : RealizedCreatureState
     {
-        private Player? slugcatOnBackTemp;
         [OnlineField(nullable = true)]
         private VinePositionState? vinePosState;
         [OnlineField(nullable = true)]
@@ -116,6 +115,7 @@ namespace RainMeadow
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? slugcatRidingOnBack;
+        private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
