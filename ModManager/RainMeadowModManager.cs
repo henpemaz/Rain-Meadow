@@ -77,6 +77,7 @@ namespace RainMeadow
             "blujai.rocketficer",
             "slugcatstatsconfig",
             "explorite.slugpups_cap_configuration",
+            "slime-cubed.slugbase",
         };
 
         public static string[] GetBannedMods()

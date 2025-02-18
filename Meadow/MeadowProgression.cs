@@ -119,9 +119,9 @@ namespace RainMeadow
             public static Character Eggbug = new("Eggbug", true, new()
             {
                 displayName = "EGGBUG",
-                emotePrefix = "sc_", // "bug_"
-                emoteAtlas = "emotes_slugcat",//"emotes_bug",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "eggbug_", // "bug_"
+                emoteAtlas = "emotes_eggbug",//"emotes_bug",
+                emoteColor = Extensions.ColorFromHex(0xb2dcd1),
                 voiceId = RainMeadow.Ext_SoundID.RM_Eggbug_Call,
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("HI_B04", 32, 18, -1),

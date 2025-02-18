@@ -34,6 +34,8 @@ phanie_ - Illustration
 Timbits - Programming, UI, menus
 Zedreus - Programming, UI, story
 Persondotexe - Programming, modsync
+invalidunits - Programming, UI, LAN
+forthfora - Programming, modsync
 
 Thank you playtesters from the Rain Meadow discord as well.
 ";
