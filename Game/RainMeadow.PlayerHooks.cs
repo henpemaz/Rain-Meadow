@@ -454,6 +454,7 @@ public partial class RainMeadow
 
         orig(self);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
@@ -477,6 +478,7 @@ public partial class RainMeadow
 
         orig(self, add);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
@@ -500,6 +502,7 @@ public partial class RainMeadow
 
         orig(self, add);
 
+        if (self.isNPC) return;
         if (!OnlineManager.lobby.isOwner && OnlineManager.lobby.gameMode is StoryGameMode)
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
@@ -588,6 +591,7 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
+            if (self.isNPC) return;
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
@@ -610,9 +614,12 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
+            if (!self.isNPC) 
             {
-                return slugcatStats;
+                if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
+                {
+                    return slugcatStats;
+                }
             }
         }
 
@@ -754,7 +761,10 @@ public partial class RainMeadow
     // TODO: toggleable friendly steal
     private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player)) return false;
+        if (!self.isNPC) {
+            if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return false;
+        }
+        
         return orig(self, obj);
     }
 
