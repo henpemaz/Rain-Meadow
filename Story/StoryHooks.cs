@@ -43,15 +43,17 @@ namespace RainMeadow
             On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal_ClientLoadGameNormally;
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
-            // IL.HUD.FoodMeter.ctor += FoodMeter_TrySpawnPupBars; 
 
-            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+            On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
+            IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner; 
+            // On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
             IL.Player.ctor += Player_ctor_NonHunterCampaignClientDisableRedsIllness;
+            On.Player.ctor += Player_ctor_SynchronizeFoodBarForActualPlayers;
 
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
@@ -114,6 +116,15 @@ namespace RainMeadow
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
+        }
+
+        private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world) {
+            orig(self, creature, world);
+            if (isStoryMode(out var storyGameMode) && !self.isNPC) {
+                IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
+                self.slugcatStats.maxFood = intVector.x;
+                self.slugcatStats.foodToHibernate = intVector.y; 
+            }
         }
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
@@ -619,14 +630,15 @@ namespace RainMeadow
             }
         }
 
-        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
-        {
-            if (isStoryMode(out var storyGameMode))
-            {
-                return orig(storyGameMode.currentCampaign);
-            }
-            return orig(slugcat);
-        }
+        // Doesn't consider slugNPC
+        // private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        // {
+        //     if (isStoryMode(out var storyGameMode))
+        //     {
+        //         return orig(storyGameMode.currentCampaign);
+        //     }
+        //     return orig(slugcat);
+        // }
 
         private void HardmodeStart_ctor(ILContext il)
         {
@@ -807,39 +819,43 @@ namespace RainMeadow
                     self.AddPart(new ChatHud(self, cam));
             }
         }
+        private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self) {
+            if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                if (!OnlineManager.lobby.isOwner) {
 
-        private void FoodMeter_TrySpawnPupBars(ILContext context) {
-            try {
-                ILCursor cursor = new(context);
-                cursor.Emit(OpCodes.Ret);
-                var label = cursor.DefineLabel();
-                cursor.MarkLabel(label);
-                
-                cursor.Index = 0;
-
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate((FoodMeter self) => {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
-                        if (OnlineManager.lobby.isOwner) return false;
-
+                    // base game checks copied over
+                    if (ModManager.MSC && 
+                        !self.IsPupFoodMeter && self.pupBars == null && 
+                        (self.hud.owner as Player).room != null && 
+                        (self.hud.owner as Player).room.game.spawnedPendingObjects)
+			        {
+                        self.pupBars = new();
                         int num = 1;
-
                         if (story.pups is not null)
                         foreach (AbstractCreature pup in story.pups) {
-                            FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, pup.realizedCreature as Player, num);
-                            foodMeter.abstractPup = pup;
-                            self.hud.AddPart(foodMeter);
-                            self.pupBars.Add(foodMeter);
-                            num++;
+                            if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null) {
+                                continue;
+                            }
+
+                            if (pup.realizedCreature is Player NPC) {
+                                FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, NPC, num);
+                                foodMeter.abstractPup = pup;
+                                self.hud.AddPart(foodMeter);
+                                self.pupBars.Add(foodMeter);
+                                num++;
+                            } else RainMeadow.Error("Pup wasn't a realized player???");
                         }
-
-                        return true;
                     }
-                    return false;
-                });
-                
-                cursor.Emit(OpCodes.Brfalse, label);
+                    return;
+                }
+            }
 
+            orig(self);
+        }
+
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context) {
+            try {
+                ILCursor cursor = new(context);
                 cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
                 cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
 
@@ -848,6 +864,8 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldloc_1);
                 cursor.EmitDelegate((FoodMeter self, int i) => {
                     if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+
                         var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
                         if (pup != null) story.pups.Add(pup);
                     }
