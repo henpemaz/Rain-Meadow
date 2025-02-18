@@ -57,7 +57,14 @@ namespace RainMeadow
                 case AbstractPhysicalObject.ImpaledOnSpearStick s:
                     return new ImpaledOnSpearStick(b, s);
                 case Player.AbstractOnBackStick s:
-                    return new OnBackStick(b, s);
+                    if (b.owner == a.owner)
+                    {
+                        return new OnBackStick(b, s);
+                    }
+                    else
+                    {
+                        return new SlugcatOnBackStick(b, s);
+                    }
                 case AbstractPhysicalObject.CreatureGripStick s:
                     return new CreatureGripStick(b, s);
                 default:
@@ -182,6 +189,25 @@ namespace RainMeadow
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
+                {
+                    var stick = new Player.AbstractOnBackStick(a.apo, b.apo);
+                    map.Remove(stick);
+                    map.Add(stick, this);
+                }
+            }
+        }
+
+        public class SlugcatOnBackStick : AbstractObjStickRepr
+        {
+            public SlugcatOnBackStick () { }
+            public SlugcatOnBackStick(OnlinePhysicalObject b, Player.AbstractOnBackStick s) : base(b)
+            {
+            }
+
+            internal override void MakeStick(AbstractPhysicalObject A)
+            {
+                RainMeadow.Debug(this);
+                if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner != b.owner && !a.isPending && !b.isPending)
                 {
                     var stick = new Player.AbstractOnBackStick(a.apo, b.apo);
                     map.Remove(stick);
