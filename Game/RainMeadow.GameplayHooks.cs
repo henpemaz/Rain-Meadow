@@ -50,7 +50,7 @@ namespace RainMeadow
                 return true;
             }
 
-            if (isArenaMode(out var _) && ModManager.MSC && self.IsLocal() && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
+            if (ModManager.MSC && isArenaMode(out var _) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
             {
                 return false;
             }
