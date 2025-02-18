@@ -46,7 +46,6 @@ namespace RainMeadow
         {
             arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
-            arena.clientsAreReadiedUp = 0;
             arena.currentLevel = 0;
             arena.playersReadiedUp.Clear();
 
@@ -62,11 +61,10 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby.isOwner)
             {
-                arena.allPlayersReadyLockLobby = false;
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.Count == OnlineManager.players.Count;
             }
             if (arena.returnToLobby)
             {
-                arena.clientsAreReadiedUp = 0;
                 lobby.clientReadiedUp = false;
 
                 arena.playersReadiedUp.Clear();
@@ -143,7 +141,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
             {
                 var slugcatName = SlugcatStats.Name.values.entries[i];
 
@@ -161,9 +159,21 @@ namespace RainMeadow
 
                 if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
                 {
-                    var temp = (SlugcatStats.Name)enumBase;
+
                     RainMeadow.Debug("Filtered list:" + slugcatName);
-                    filteredList.Add(temp);
+                    SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
+                    filteredList.Add(slugcatStatSlug);
+                    if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
+                    {
+                        if (BaseGameSlugcats().Contains(slugcatStatSlug))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            filteredList.Remove(slugcatStatSlug);
+                        }
+                    }
                 }
             }
             return filteredList;
