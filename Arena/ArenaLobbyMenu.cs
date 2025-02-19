@@ -34,7 +34,7 @@ namespace RainMeadow
 
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
-        public SimpleButton[] usernameButtons;
+        public SimplerButton[] usernameButtons;
         public bool meUsernameButtonCreated = false;
         public bool meClassButtonCreated = false;
 
@@ -843,7 +843,7 @@ namespace RainMeadow
 
                 // Assign 'isMe' player to index 0
                 usernameButtons[0] = new SimplerButton(this, pages[0], OnlineManager.mePlayer.id.name, new Vector2(600f + 0 * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
-                (usernameButtons[0] as SimplerButton).OnClick += (_) =>
+                usernameButtons[0].OnClick += (_) =>
                 {
                     OnlineManager.mePlayer.id.OpenProfileLink(); // Open profile for 'isMe' player
                 };
@@ -885,10 +885,11 @@ namespace RainMeadow
                 var player = OnlineManager.players[i];
 
                 usernameButtons[buttonIndex] = new SimplerButton(this, pages[0], player.id.name, new Vector2(600f + buttonIndex * num3, 500f) + new Vector2(106f, -60f) - new Vector2((num3 - 120f) * usernameButtons.Length, 40f), new Vector2(num - 20f, 30f));
-                (usernameButtons[buttonIndex] as SimplerButton).OnClick += (_) => player.id.OpenProfileLink(); // Open profile for other players
+                usernameButtons[buttonIndex].OnClick += (_) => ArenaHelpers.FindOnlinePlayerByStringUsername(usernameButtons[buttonIndex].menuLabel.text).id.OpenProfileLink(); // Open profile for other players
 
                 usernameButtons[buttonIndex].buttonBehav.greyedOut = false;
                 pages[0].subObjects.Add(usernameButtons[buttonIndex]);
+                
 
             }
         }

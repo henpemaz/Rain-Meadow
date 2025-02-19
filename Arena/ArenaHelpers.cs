@@ -87,6 +87,18 @@ namespace RainMeadow
 
 
         }
+        public static OnlinePlayer FindOnlinePlayerByStringUsername(string username)
+        {
+            foreach (var player in OnlineManager.players)
+            {
+                if (player.id.name == username)
+                {
+                    return player;
+                }
+            }
+
+            return OnlineManager.mePlayer;
+        }
 
 
         public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
@@ -177,6 +189,13 @@ namespace RainMeadow
                 }
             }
             return filteredList;
+        }
+
+        public static void SetHandler(SimplerButton[] classButtons, int localIndex)
+        {
+            var button = classButtons[localIndex]; // Get the button you want to pass
+
+
         }
 
         public static List<SlugcatStats.Name> BaseGameSlugcats()
