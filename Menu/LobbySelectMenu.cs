@@ -249,7 +249,6 @@ namespace RainMeadow
             lobbyList.filter.gameMode = filterModeDropDown.value;
             lobbyList.filter.requiredMods = filterModsDropDown.value;
             lobbyList.filter.publicLobby = filterPublicLobbiesOnly.GetValueBool();
-            lobbyList.filter.requiredMods = filterModsDropDown.value;
 
             lobbyList.FilterLobbies();
         }
