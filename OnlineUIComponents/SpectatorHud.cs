@@ -9,6 +9,7 @@ namespace RainMeadow
         private RainWorldGame game;
         public  SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
+        public bool isActive;
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
@@ -26,12 +27,14 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game);
+                    isActive = true;
                 }
                 else
                 {
                     RainMeadow.Debug("Spectate destroy!");
                     spectatorOverlay.ShutDownProcess();
                     spectatorOverlay = null;
+                    isActive = false;
                 }
             }
 
