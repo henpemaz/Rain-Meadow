@@ -94,7 +94,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         public string lobbyName;
         public string sortingOrder;
         public string gameMode;
-        public string requiredMods;
         public bool publicLobby;
 
         public enum SortingOrder
@@ -125,7 +124,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             lobbyName = "";
             sortingOrder = "Ping";
             gameMode = "All";
-            requiredMods = "Any";
             publicLobby = false;
         }
 
@@ -270,8 +268,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
     {
         filteredLobbies = new List<LobbyInfo>();
 
-        string requiredModsString = string.Join(";;;", RainMeadowModManager.GetRequiredMods());
-
         foreach (var lobby in allLobbies)
         {
             if (filter.lobbyName != "" && !lobby.name.ToLower().Contains(filter.lobbyName)) continue;
@@ -279,7 +275,6 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             {
                 if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
                 if (filter.publicLobby && lobby.hasPassword) continue;
-                if (filter.requiredMods != "Any" && ((filter.requiredMods == "All" && lobby.highImpactMods != requiredModsString) || (filter.requiredMods != "All" && !lobby.highImpactMods.Contains(filter.requiredMods)))) continue;
             }
 
             filteredLobbies.Add(lobby);

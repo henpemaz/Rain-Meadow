@@ -38,17 +38,6 @@ namespace RainMeadow
                 .ToArray();
         }
 
-        public static string[] GetRequiredModNames()
-        {
-            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
-
-            return ModManager.ActiveMods
-                .Where(mod => highImpactMods.Contains(mod.id)
-                    || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
-                .Select(mod => mod.name)
-                .ToArray();
-        }
-
         public static string[] bannedMods = {
             "maxi-mol.mousedrag",
             "fyre.BeastMaster",

@@ -98,7 +98,6 @@ namespace RainMeadow
             // filters
 
             Vector2 where = new Vector2(300f, 400f);
-
             var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModeLabel);
             where.y -= 27;
@@ -232,7 +231,6 @@ namespace RainMeadow
         private void UpdateLobbyFilter()
         {
             lobbyList.filter.gameMode = filterModeDropDown.value;
-            lobbyList.filter.requiredMods = filterModsDropDown.value;
             lobbyList.filter.publicLobby = filterPublicLobbiesOnly.GetValueBool();
 
             lobbyList.FilterLobbies();
