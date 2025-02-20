@@ -53,7 +53,7 @@ namespace RainMeadow
                     {
                         manager.dialog = null;
                         checkUserConfirmation = null;
-                        OnlineManager.LeaveLobby();
+                        //OnlineManager.LeaveLobby(); //redundant, since the lobby should almost certainly already be left
                         manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     };
                     new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
