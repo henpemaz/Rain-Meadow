@@ -270,8 +270,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
     {
         filteredLobbies = new List<LobbyInfo>();
 
-        string[] requiredMods = RainMeadowModManager.GetRequiredMods();
-        string requiredModsString = RainMeadowModManager.RequiredModsArrayToString(requiredMods);
+        string requiredModsString = string.Join(";;;", RainMeadowModManager.GetRequiredMods());
 
         foreach (var lobby in allLobbies)
         {
@@ -280,21 +279,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             {
                 if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
                 if (filter.publicLobby && lobby.hasPassword) continue;
-                //filter for required mods
-                if (filter.requiredMods != "Any") {
-                    if (filter.requiredMods == "Exact" && lobby.requiredMods != requiredModsString) continue;
-                    if (filter.requiredMods != "All" && filter.requiredMods != "Exact" && !lobby.requiredMods.Contains(filter.requiredMods)) continue;
-                    if (filter.requiredMods == "All")
-                    {
-                        string[] lobbyMods = RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods);
-                        bool missingMod = false;
-                        foreach (string m in lobbyMods)
-                        {
-                            if (!requiredMods.Contains(m)) { missingMod = true; break; }
-                        }
-                        if (missingMod) continue;
-                    }
-                }
+                if (filter.requiredMods != "Any" && ((filter.requiredMods == "All" && lobby.highImpactMods != requiredModsString) || (filter.requiredMods != "All" && !lobby.highImpactMods.Contains(filter.requiredMods)))) continue;
             }
 
             filteredLobbies.Add(lobby);
