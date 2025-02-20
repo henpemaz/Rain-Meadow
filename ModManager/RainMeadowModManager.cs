@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -38,23 +39,24 @@ namespace RainMeadow
                 .ToArray();
         }
 
-        public static string ModIdToName(string id)
+        public static string[] GetRequiredModNames()
         {
-            foreach (var mod in ModManager.ActiveMods)
-            {
-                if (mod.id == id)
-                    return mod.name;
-            }
-            return id; //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
+
+            return ModManager.ActiveMods
+                .Where(mod => highImpactMods.Contains(mod.id)
+                    || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+                .Select(mod => mod.name)
+                .ToArray();
         }
 
         public static string RequiredModsArrayToString(string[] requiredMods)
         {
-            return string.Join("\n", requiredMods);
+            return string.Join(" ; ", requiredMods);
         }
         public static string[] RequiredModsStringToArray(string requiredMods)
         {
-            return requiredMods.Split('\n');
+            return Regex.Split(requiredMods, " ; ");
         }
 
         public static string[] bannedMods = {
