@@ -127,7 +127,7 @@ namespace RainMeadow
             var filterModsLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mods"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModsLabel);
             where.y -= 27;
-            List<ListItem> requiredModsList = [new("Any", Translate("Unfiltered"), 0), new("Exact", Translate("Exact order"), 1), new("All", Translate("All of the above"), Int32.MaxValue)];
+            List<ListItem> requiredModsList = [new("Any", Translate("Unfiltered"), 0), new("Exact", Translate("Exact order"), 1), new("All", Translate("Any order"), Int32.MaxValue)];
             string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
             foreach (string id in requiredModIDs)
             { //adding Rain Meadow is quite redundant, so I'll leave it out.
