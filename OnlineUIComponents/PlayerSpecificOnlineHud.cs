@@ -24,6 +24,7 @@ namespace RainMeadow
         //public int antiNightcatFlicker;
 
         public List<OnlinePlayerHudPart> parts = new();
+        public List<OnlineEntity.EntityId> killFeed = new();
 
         public bool lastDead;
         public Player RealizedPlayer => this.abstractPlayer.realizedCreature as Player;
