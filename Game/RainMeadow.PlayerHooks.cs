@@ -53,12 +53,10 @@ public partial class RainMeadow
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
-
-
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
-        if (isArenaMode(out var _) && self.IsLocal())
+        if (isArenaMode(out var _))
         {
             if (self.grasps != null)
             {
@@ -94,14 +92,8 @@ public partial class RainMeadow
         {
             if (self.slugcat.input[0].jmp)
             {
-                for (int j = 0; j < self.owner.grasps.Length; j++)
-                {
-                    if (self.owner.grasps[j]?.grabbed is Player)
-                    {
-                        self.owner.ReleaseGrasp(j);
-                    }
-                }
                 self.owner.slugOnBack.DropSlug();
+
             }
         }
     }

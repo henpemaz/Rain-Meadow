@@ -39,6 +39,22 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.DeafLoopHolder.Update += DeafLoopHolder_Update;
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
+
+        }
+
+        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        {
+            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            {
+                return true;
+            }
+
+            if (ModManager.MSC && isArenaMode(out var _) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
+            {
+                return false;
+            }
+            return orig(self, obj);
         }
 
         private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
