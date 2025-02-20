@@ -162,7 +162,7 @@ namespace RainMeadow
 
             foreach (var button in playerButtons)
             {
-                var ac = button.opo?.apo as AbstractCreature;
+                var ac = button.opo.apo as AbstractCreature;
                 button.button.toggled = ac != null && ac == spectatee;
                 button.button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
