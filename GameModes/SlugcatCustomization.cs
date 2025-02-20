@@ -7,10 +7,12 @@ namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public List<Color> customColors = new() { Color.white, Color.black };
-        public Color bodyColor { get => customColors[0]; set => customColors[0] = value; }
-        public Color eyeColor { get => customColors[1]; set => customColors[1] = value; }
-        public List<Color>? defaultColors = null;
+        // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
+        public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
+
+        public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
+        public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
+
         public SlugcatStats.Name playingAs;
         public string nickname;
 
@@ -33,22 +35,13 @@ namespace RainMeadow
 
         public Color GetColor(int staticColorIndex)
         {
-            if (staticColorIndex < customColors.Count)
+            if (staticColorIndex >= 0 && staticColorIndex < currentColors.Count)
             {
-                return customColors[staticColorIndex];
+                return currentColors[staticColorIndex];
             }
 
-            if (defaultColors is null)
-            {
-                // caching this should be fine
-                defaultColors = PlayerGraphics.DefaultBodyPartColorHex(playingAs).Select(x => RWCustom.Custom.hexToColor(x)).ToList();
-            }
-            if (staticColorIndex < defaultColors.Count)
-            {
-                return defaultColors[staticColorIndex];
-            }
-
-            return Color.black;
+            // Indicates something's gone wrong (staticColorIndex is outside the range of available colors)
+            return Color.magenta;
         }
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
@@ -68,7 +61,7 @@ namespace RainMeadow
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
-                customColors = slugcatCustomization.customColors.ToArray();
+                customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
             }
@@ -76,7 +69,7 @@ namespace RainMeadow
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
                 var slugcatCustomization = (SlugcatCustomization)entityData;
-                slugcatCustomization.customColors = customColors.ToList();
+                slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
             }

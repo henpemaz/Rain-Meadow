@@ -38,7 +38,7 @@ namespace RainMeadow
 
             if (player.recentlyAckdTicks.Count > 0)
             {
-                while (OutgoingStates.Count > 0 && NetIO.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
+                while (OutgoingStates.Count > 0 && EventMath.IsNewer(player.oldestTickToConsider, OutgoingStates.Peek().tick))
                 {
                     RainMeadow.Trace("Discarding obsolete:" + OutgoingStates.Peek().tick);
                     OutgoingStates.Dequeue(); // discard obsolete

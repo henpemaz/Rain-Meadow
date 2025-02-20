@@ -35,6 +35,8 @@ namespace RainMeadow
             }
         }
 
+        public static string defaultStartingRoom = "SU_C04";
+
         public static List<Character> allCharacters = new();
 
         public static Dictionary<Character, CharacterData> characterData = new();
@@ -111,15 +113,15 @@ namespace RainMeadow
                 emoteAtlas = "emotes_noot",
                 emoteColor = Extensions.ColorFromHex(0x7e6f6a),
                 voiceId = RainMeadow.Ext_SoundID.RM_Noot_Call,
-                selectSpriteIndexes = new int[0],
+                selectSpriteIndexes = new [] { 2 },
                 startingCoords = new WorldCoordinate("LF_F02", 63, 43, -1),
             });
             public static Character Eggbug = new("Eggbug", true, new()
             {
                 displayName = "EGGBUG",
-                emotePrefix = "sc_", // "bug_"
-                emoteAtlas = "emotes_slugcat",//"emotes_bug",
-                emoteColor = new Color(232, 187, 200, 255f) / 255f, // todo
+                emotePrefix = "eggbug_", // "bug_"
+                emoteAtlas = "emotes_eggbug",//"emotes_bug",
+                emoteColor = Extensions.ColorFromHex(0xb2dcd1),
                 voiceId = RainMeadow.Ext_SoundID.RM_Eggbug_Call,
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("HI_B04", 32, 18, -1),
@@ -131,7 +133,7 @@ namespace RainMeadow
                 emoteAtlas = "emotes_maus",
                 emoteColor = Extensions.ColorFromHex(0x79635f),
                 voiceId = RainMeadow.Ext_SoundID.RM_Mouse_Call,
-                selectSpriteIndexes = new int[0],
+                selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
         }
@@ -399,6 +401,8 @@ namespace RainMeadow
                 displayName = "Lily",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10989,
                 previewColor = Extensions.ColorFromHex(0xd15460),
             });
@@ -416,6 +420,8 @@ namespace RainMeadow
                 displayName = "Poppy",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 11114,
                 previewColor = Extensions.ColorFromHex(0x740719),
             });
@@ -433,6 +439,8 @@ namespace RainMeadow
                 displayName = "Lilac",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10992,
                 previewColor = Extensions.ColorFromHex(0xb72264),
             });
@@ -450,6 +458,8 @@ namespace RainMeadow
                 displayName = "Jasmine",
                 creatureType = CreatureTemplate.Type.SmallNeedleWorm,
                 voiceIdOverride = RainMeadow.Ext_SoundID.RM_SmallNoot_Call,
+                emoteAtlasOverride = "emotes_nootb",
+                emotePrefixOverride = "noodlebaby_",
                 randomSeed = 10986,
                 previewColor = Extensions.ColorFromHex(0xa7a8aa),
             });
@@ -899,7 +909,7 @@ namespace RainMeadow
                 internal float tintAmount;
                 [JsonProperty]
                 [JsonConverter(typeof(UnityColorConverter))]
-                internal Color tintColor;
+                internal Color tintColor = Color.black; // 0,0,0,0 is bad!
                 [JsonProperty]
                 public List<Emote> emoteHotbar;
 

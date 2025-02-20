@@ -39,5 +39,23 @@ namespace RainMeadow
             Process.Start(processStartInfo);
             Application.Quit();
         }
+
+        /// <summary>
+        /// Adds a range of items to a list, excluding items which are already in the list.
+        /// </summary>
+        /// <param name="self">The list to add to.</param>
+        /// <param name="items">The range of items to add.</param>
+        public static void AddDistinctRange<T>(this IList<T> self, IEnumerable<T> items)
+        {
+            foreach(var item in items)
+            {
+                if (self.Contains(item))
+                {
+                    continue;
+                }
+
+                self.Add(item);
+            }
+        }
     }
 }

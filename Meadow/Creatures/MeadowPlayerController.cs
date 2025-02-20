@@ -46,6 +46,7 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     self.airInLungs = 1f;
+                    self.playerState.isPup = false; // there's no pups here you dirty little cheater
                 }
                 p.Update(eu);
             }
@@ -78,15 +79,17 @@ namespace RainMeadow
         {
             //int which = dir.x > 0 ? 1 : 0; // bugs above head
             int which = 0;
-            (player.graphicsModule as PlayerGraphics).hands[which].reachingForObject = true;
-            (player.graphicsModule as PlayerGraphics).hands[which].absoluteHuntPos = player.mainBodyChunk.pos + 100f * dir;
+            if(player.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                playerGraphics.hands[which].reachingForObject = true;
+                playerGraphics.hands[which].absoluteHuntPos = player.mainBodyChunk.pos + 100f * dir;
+            }
         }
 
         internal override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             player.pickUpCandidate = null; // prevent whiplash grab
-
         }
 
         protected override void OnCall()

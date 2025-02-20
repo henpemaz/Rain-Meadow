@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -113,15 +114,21 @@ namespace RainMeadow
         private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
-        //[OnlineField(nullable = true)]
-        //private OnlineEntity.EntityId? slugOnBack;
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? slugcatRidingOnBack;
+        private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputX;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
-
+        [OnlineFieldHalf(group = "saint")]
+        private float burstX;
+        [OnlineFieldHalf(group = "saint")]
+        private float burstY;
+        [OnlineField(group = "saint")]
+        public bool monkAscension;
         [OnlineField(group = "tongue")]
         public byte tongueMode;
         [OnlineField(group = "tongue")]
@@ -138,6 +145,7 @@ namespace RainMeadow
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
@@ -145,10 +153,12 @@ namespace RainMeadow
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             isPup = p.playerState.isPup;
+            burstX = p.burstX;
+            burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
-            //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
-            //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
+            slugcatRidingOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
+                && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
             if (p.tongue is Player.Tongue tongue)
             {
                 tongueMode = (byte)tongue.mode;
@@ -203,19 +213,23 @@ namespace RainMeadow
 
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
-
+            if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
             return false;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
+
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
             if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            p.monkAscension = monkAscension;
+            p.burstY = burstY;
+            p.burstX = burstX;
             var wasAnimation = p.animation;
             p.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
             if (wasAnimation != p.animation) p.animationFrame = animationFrame;
@@ -225,10 +239,24 @@ namespace RainMeadow
             p.glowing = glowing;
             if (p.playerState.isPup != isPup)
                 p.playerState.isPup = isPup;
+
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
-            //if (pl.slugOnBack != null)
-            //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+            if (p.slugOnBack != null)
+            {
+                p.slugOnBack.slugcat = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+                if (p.slugOnBack?.slugcat != null)
+                {
+                    slugcatOnBackTemp = p.slugOnBack?.slugcat;
+                }
+                if (p.slugOnBack?.slugcat == null && slugcatOnBackTemp != null)
+                {
+                    p.slugOnBack.slugcat = slugcatOnBackTemp;
+                    p.slugOnBack.DropSlug();
+                    slugcatOnBackTemp = null;
+                }
+            }
 
             if (p.tongue is Player.Tongue tongue)
             {

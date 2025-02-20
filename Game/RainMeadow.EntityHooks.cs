@@ -216,22 +216,21 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
-                AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
-                WorldSession oldWorldSession = WorldSession.map.GetValue(oldAbsroom.world, (w) => throw new KeyNotFoundException());
-                WorldSession newWorldSession = WorldSession.map.GetValue(newAbsroom.world, (w) => throw new KeyNotFoundException());
-                List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
-                List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
+                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
+                WorldSession newWorldSession = self.worldLoader.world.GetResource() ?? throw new KeyNotFoundException();
 
-                Room room = null;
-
-                // Regular gate switch
-                // pre: remove remote entities
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
+                    // Regular gate switch
+                    AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
+                    AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
+                    List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
+                    List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
+
+                    // pre: remove remote entities
                     // we go over all APOs in the room
                     Debug("Gate switchery 1");
-                    room = self.reportBackToGate.room;
+                    Room room = self.reportBackToGate.room;
                     var entities = room.abstractRoom.entities;
                     for (int i = entities.Count - 1; i >= 0; i--)
                     {
@@ -256,28 +255,34 @@ namespace RainMeadow
                             }
                         }
                     }
-                }
 
-                orig(self); // this replace the list of entities in new world with that from old world
+                    orig(self); // this replace the list of entities in new world with that from old world
 
-                // post: we add our entities to the new world
-                if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
-                {
-                    room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
-                    room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
-                    roomSession2.Activate();
-
-                    foreach (var absplayer in self.game.Players)
+                    // post: we add our entities to the new world
+                    if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {
-                        if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
-                        {
-                            newWorldSession.ApoEnteringWorld(apo);
-                        }
+                        room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
+                        room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
+                        roomSession2.Activate();
                     }
-
-                    oldWorldSession.Deactivate();
-                    oldWorldSession.NotNeeded(); // done? let go
                 }
+                else
+                {
+                    // special warp, don't bother with room items
+                    orig(self);
+                }
+
+                foreach (var absplayer in self.game.Players)
+                {
+                    if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                    {
+                        newWorldSession.ApoEnteringWorld(apo);
+                    }
+                }
+
+                oldWorldSession.Deactivate();
+                oldWorldSession.NotNeeded(); // done? let go
+
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && OnlineManager.lobby.isOwner)
                 {
                     storyGameMode.changedRegions = true;

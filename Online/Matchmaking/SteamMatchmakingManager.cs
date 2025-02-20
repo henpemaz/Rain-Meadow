@@ -6,6 +6,14 @@ using System.Linq;
 
 namespace RainMeadow
 {
+    public class SteamLobbyInfo : LobbyInfo {
+        public CSteamID iD;
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount) : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+            iD = id;
+        }
+    }
+
     public class SteamMatchmakingManager : MatchmakingManager
     {
         public class SteamPlayerId : MeadowPlayerId
@@ -35,6 +43,16 @@ namespace RainMeadow
             {
                 return steamID.GetHashCode();
             }
+
+            public override string GetPersonaName() {
+                return SteamFriends.GetFriendPersonaName(steamID);
+            }
+
+            public override bool canOpenProfileLink { get => true; }
+            public override void OpenProfileLink() {
+                string url = $"https://steamcommunity.com/profiles/{steamID}";
+                SteamFriends.ActivateGameOverlayToWebPage(url);
+            }
         }
 
         public override MeadowPlayerId GetEmptyId()
@@ -58,6 +76,7 @@ namespace RainMeadow
 
         public SteamMatchmakingManager()
         {
+            SteamNetworkingUtils.InitRelayNetworkAccess();
             RainMeadow.DebugMe();
             m_RequestLobbyListCall = CallResult<LobbyMatchList_t>.Create(LobbyListReceived);
             m_CreateLobbyCall = CallResult<LobbyCreated_t>.Create(LobbyCreated);
@@ -69,13 +88,13 @@ namespace RainMeadow
             m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageReceived);
 
             me = SteamUser.GetSteamID();
-            OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
         }
 
-        public override event LobbyListReceived_t OnLobbyListReceived;
-        public override event PlayerListReceived_t OnPlayerListReceived;
-        public override event LobbyJoined_t OnLobbyJoined;
-
+        public override void initializeMePlayer()
+        {
+            RainMeadow.DebugMe();
+            OnlineManager.mePlayer = new OnlinePlayer(new SteamPlayerId(me)) { isMe = true };
+        }
         public override void RequestLobbyList()
         {
             SteamMatchmaking.AddRequestLobbyListDistanceFilter(ELobbyDistanceFilter.k_ELobbyDistanceFilterWorldwide);
@@ -95,11 +114,11 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new LobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id), SteamMatchmaking.GetLobbyData(id, MODS_KEY));
+                        lobbies[i] = new SteamLobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
                     }
                 }
 
-                OnLobbyListReceived?.Invoke(!bIOFailure, lobbies);
+                OnLobbyListReceivedEvent(!bIOFailure, lobbies);
             }
             catch (Exception e)
             {
@@ -126,20 +145,20 @@ namespace RainMeadow
         public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
             lobbyPassword = password;
-            m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(lobby.id));
+            m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }
 
         public override void JoinLobby(bool success)
         {
             if (success)
             {
-                OnLobbyJoined?.Invoke(true);
+                OnLobbyJoinedEvent(true);
             }
             else
             {
                 LeaveLobby();
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoined?.Invoke(false, "Wrong password!");
+                OnLobbyJoinedEvent(false, "Wrong password!");
             }
         }
 
@@ -162,14 +181,14 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
-                    OnLobbyJoined?.Invoke(true);
+                    OnLobbyJoinedEvent(true);
                 }
                 else
                 {
                     RainMeadow.Debug("failure, error code is " + param.m_eResult);
                     OnlineManager.lobby = null;
                     lobbyID = default;
-                    OnLobbyJoined?.Invoke(false, param.m_eResult.ToString());
+                    OnLobbyJoinedEvent(false, param.m_eResult.ToString());
                 }
             }
             catch (Exception e)
@@ -203,7 +222,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("failure");
                     OnlineManager.lobby = null;
-                    OnLobbyJoined?.Invoke(false, ((EChatRoomEnterResponse)param.m_EChatRoomEnterResponse).ToString());
+                    OnLobbyJoinedEvent(false, ((EChatRoomEnterResponse)param.m_EChatRoomEnterResponse).ToString());
                 }
             }
             catch (Exception e)
@@ -213,7 +232,7 @@ namespace RainMeadow
             }
         }
 
-        public override List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(((SteamPlayerId)player.id).steamID, player.id.name)).ToList();
+        public override List<PlayerInfo> playerList => OnlineManager.players.Select(player => new PlayerInfo(() => player.id.OpenProfileLink(), player.id.name)).ToList();
 
         public void UpdatePlayersList()
         {
@@ -238,9 +257,9 @@ namespace RainMeadow
                 // OnlineManager.players will have been updated to match newplayers
                 foreach (CSteamID player in newplayers)
                 {
-                    playerList.Add(new PlayerInfo(player, SteamFriends.GetFriendPersonaName(player)));
+                    playerList.Add(new PlayerInfo(() => SteamFriends.ActivateGameOverlayToWebPage($"https://steamcommunity.com/profiles/{player}"), SteamFriends.GetFriendPersonaName(player)));
                 }
-                OnPlayerListReceived?.Invoke(playerList.ToArray());
+                OnPlayerListReceivedEvent(playerList.ToArray());
             }
             catch (Exception e)
             {
@@ -248,15 +267,14 @@ namespace RainMeadow
                 throw;
             }
         }
-
-        public void SendChatMessage(CSteamID lobbyID, string message)
-        {
+        public override bool canSendChatMessages => true;
+        public override void SendChatMessage(string message) {
             byte[] msgBytes = System.Text.Encoding.UTF8.GetBytes(message);
             bool outputted = SteamMatchmaking.SendLobbyChatMsg(lobbyID, msgBytes, msgBytes.Length);
 
             if (!outputted) RainMeadow.Debug($"Failed to send message: {msgBytes} {msgBytes.Length}");
         }
-
+        
         private void LobbyChatMessageReceived(LobbyChatMsg_t callback)
         {
             CSteamID senderID;
@@ -265,7 +283,7 @@ namespace RainMeadow
 
             string message = System.Text.Encoding.UTF8.GetString(msgData, 0, msgDataLength);
             RainMeadow.Debug($"Message from {SteamFriends.GetFriendPersonaName(senderID)}: {message}");
-            ChatLogManager.LogMessage($"{SteamFriends.GetFriendPersonaName(senderID)}", $"{message}");
+            RecieveChatMessage(GetPlayerSteam(senderID.m_SteamID), message);
         }
 
         private void PlayerJoined(CSteamID p)
@@ -273,9 +291,10 @@ namespace RainMeadow
             RainMeadow.Debug($"PlayerJoined:{p} - {SteamFriends.GetFriendPersonaName(p)}");
             if (p == me) return;
             SteamFriends.RequestUserInformation(p, true);
-            OnlineManager.players.Add(new OnlinePlayer(new SteamPlayerId(p)));
+            var player = new OnlinePlayer(new SteamPlayerId(p));
+            OnlineManager.players.Add(player);
 
-            ChatLogManager.LogMessage("", $"{SteamFriends.GetFriendPersonaName(p)} joined the game.");
+            HandleJoin(player);
         }
 
         private void PlayerLeft(CSteamID p)
@@ -370,6 +389,11 @@ namespace RainMeadow
 
         private void GameLobbyJoinRequested(GameLobbyJoinRequested_t param)
         {
+            if (MatchmakingManager.currentDomain != MatchMakingDomain.Steam) {
+                OnlineManager.LeaveLobby();
+                MatchmakingManager.currentDomain = MatchMakingDomain.Steam;
+            }
+
             try
             {
                 if (param.m_steamIDLobby.m_SteamID == lobbyID.m_SteamID)
@@ -385,7 +409,7 @@ namespace RainMeadow
                     LeaveLobby();
                 }
 
-                OnlineManager.currentlyJoiningLobby = new LobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
+                OnlineManager.currentlyJoiningLobby = new SteamLobbyInfo(param.m_steamIDLobby, "", "", 0, false, MAX_LOBBY);
                 Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
 
                 m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby(param.m_steamIDLobby));
@@ -426,6 +450,10 @@ namespace RainMeadow
         public override string GetLobbyID()
         {
             return lobbyID.ToString();
+        }
+
+        public override void OpenInvitationOverlay() {
+            SteamFriends.ActivateGameOverlayInviteDialog(lobbyID);
         }
     }
 }

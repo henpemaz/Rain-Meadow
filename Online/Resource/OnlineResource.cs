@@ -15,7 +15,7 @@ namespace RainMeadow
 
         public List<OnlineResource> subresources;
 
-        public bool isOwner => owner != null && owner.isMe;
+        public bool isOwner => (owner is not null) && owner.isMe;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
 
@@ -29,7 +29,7 @@ namespace RainMeadow
 
         public bool canRelease => !isPending // no ongoing transaction
             && (!isActive || !subresources.Any(s => s.isAvailable || s.isPending)) // no subresource available or pending
-            && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => NetIO.IsNewer(rt, lastModified)))); // state broadcasted
+            && (!isOwner || participants.All(p => p.isMe || p.recentlyAckdTicks.Any(rt => EventMath.IsNewer(rt, lastModified)))); // state broadcasted
 
         public uint lastModified; // local tick used locally by owner only to ensure state is broadcasted
 
@@ -445,7 +445,7 @@ namespace RainMeadow
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
-                NewOwner(MatchmakingManager.instance.GetLobbyOwner());
+                NewOwner(MatchmakingManager.currentInstance.GetLobbyOwner());
             }
 
             // first transfer recursivelly, then remove recursivelly
@@ -483,7 +483,7 @@ namespace RainMeadow
             if (!isSupervisor) throw new InvalidProgrammerException("not supervisor");
             OnlinePlayer newOwner;
 
-            newOwner = MatchmakingManager.instance.BestTransferCandidate(this, participants);
+            newOwner = MatchmakingManager.currentInstance.BestTransferCandidate(this, participants);
 
             if (newOwner != owner)
             {

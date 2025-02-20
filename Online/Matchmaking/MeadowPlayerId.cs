@@ -1,10 +1,17 @@
 ﻿using System;
+using Menu;
 
 namespace RainMeadow
 {
     public abstract class MeadowPlayerId : IEquatable<MeadowPlayerId>, Serializer.ICustomSerializable
     {
         public string name;
+
+        public virtual string GetPersonaName() { return name; }
+        public virtual void OpenProfileLink() {
+            OnlineManager.instance.manager.ShowDialog(new DialogNotify("This player does not have a profile.", OnlineManager.instance.manager, null));
+        }
+        public virtual bool canOpenProfileLink { get => false; }
 
         protected MeadowPlayerId() { }
         protected MeadowPlayerId(string name)

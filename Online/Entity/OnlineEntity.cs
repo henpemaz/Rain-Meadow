@@ -375,6 +375,24 @@ namespace RainMeadow
             }
         }
 
+        /// <summary>
+        /// Runs RPC for others in room
+        /// </summary>
+        public void BroadcastRPCInRoomExceptOwners(Delegate del, params object[] args)
+        {
+            RainMeadow.Debug($"{this} - {del}");
+            if (currentlyJoinedResource is RoomSession room)
+            {
+                foreach (var participant in room.participants)
+                {
+                    if (!participant.isMe && participant != owner && participant != room.owner)
+                    {
+                        participant.InvokeRPC(del, args);
+                    }
+                }
+            }
+        }
+
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             lastStates[inResource] = entityState;
@@ -401,7 +419,7 @@ namespace RainMeadow
             if (newState.isDelta)
             {
                 RainMeadow.Trace($"received delta state for tick {newState.tick} referencing baseline {newState.baseline}");
-                while (stateQueue.Count > 0 && NetIO.IsNewer(newState.baseline, stateQueue.Peek().tick))
+                while (stateQueue.Count > 0 && EventMath.IsNewer(newState.baseline, stateQueue.Peek().tick))
                 {
                     var discarded = stateQueue.Dequeue();
                     RainMeadow.Trace("discarding old event from tick " + discarded.tick);

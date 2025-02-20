@@ -104,8 +104,6 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            On.Weapon.HitThisObject += Weapon_HitThisObject;
-
             IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
@@ -239,27 +237,11 @@ namespace RainMeadow
             }
         }
 
-        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
-        {
-            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
-            {
-                return true;
-            }
-            return orig(self, obj);
-        }
-
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
         {
             if (isStoryMode(out _))
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to restart";
-                }
-                else
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
-                }
+                self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
             }
             else
             {
@@ -819,7 +801,9 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam));
+
+                if (MatchmakingManager.currentInstance.canSendChatMessages)
+                    self.AddPart(new ChatHud(self, cam));
             }
         }
 

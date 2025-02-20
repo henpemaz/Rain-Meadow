@@ -14,8 +14,8 @@ namespace RainMeadow
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
-        public string[] requiredmods = RainMeadowModManager.GetRequiredMods();
-        public string[] bannedmods = RainMeadowModManager.GetBannedMods();
+        public string[] requiredmods;
+        public string[] bannedmods;
         public DynamicOrderedPlayerIDs bannedUsers = new();
 
         public bool modsChecked;
@@ -32,6 +32,11 @@ namespace RainMeadow
         {
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
+
+            RainMeadowModInfoManager.RefreshDebugModInfo();
+
+            requiredmods = RainMeadowModManager.GetRequiredMods();
+            bannedmods = RainMeadowModManager.GetBannedMods();
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
@@ -53,6 +58,7 @@ namespace RainMeadow
             }
             else
             {
+                RainMeadow.Debug("Requesting lobby");
                 RequestLobby(password);
             }
 
@@ -90,7 +96,7 @@ namespace RainMeadow
             isRequesting = false;
             if (requestResult is GenericResult.Ok)
             {
-                MatchmakingManager.instance.JoinLobby(true);
+                MatchmakingManager.currentInstance.JoinLobby(true);
                 if (!isAvailable) // this was transfered to me because the previous owner left
                 {
                     WaitingForState();
@@ -103,7 +109,7 @@ namespace RainMeadow
             else if (requestResult is GenericResult.Fail) // I didn't have the right key for this resource
             {
                 RainMeadow.Error("locked request for " + this);
-                MatchmakingManager.instance.JoinLobby(false);
+                MatchmakingManager.currentInstance.JoinLobby(false);
             }
             else if (requestResult is GenericResult.Error) // I should retry
             {
@@ -224,7 +230,7 @@ namespace RainMeadow
                 for (int i = 0; i < players.list.Count; i++)
                 {
 
-                    if (MatchmakingManager.instance.GetPlayer(players.list[i]) is OnlinePlayer p)
+                    if (MatchmakingManager.currentInstance.GetPlayer(players.list[i]) is OnlinePlayer p)
                     {
                         if (p.inLobbyId != inLobbyIds.list[i]) RainMeadow.Debug($"Setting player {p} to lobbyId {inLobbyIds.list[i]}");
                         p.inLobbyId = inLobbyIds.list[i];
@@ -236,7 +242,7 @@ namespace RainMeadow
 
 
                 }
-                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.instance.GetPlayer).Where(p => p != null).ToList());
+                lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p is not null).ToList());
                 if (lobby.bannedUsersChecked == false)
                 {
                     // Need to get the participants before we check

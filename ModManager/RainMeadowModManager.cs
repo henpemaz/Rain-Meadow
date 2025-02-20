@@ -30,8 +30,10 @@ namespace RainMeadow
         {
             UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
 
+            var requiredMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
+
             return ModManager.ActiveMods
-                .Where(mod => highImpactMods.Contains(mod.id)
+                .Where(mod => requiredMods.Contains(mod.id)
                     || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
                 .Select(mod => mod.id)
                 .ToArray();
@@ -76,6 +78,7 @@ namespace RainMeadow
             "blujai.rocketficer",
             "slugcatstatsconfig",
             "explorite.slugpups_cap_configuration",
+            "slime-cubed.slugbase",
         };
 
         public static string[] GetBannedMods()
@@ -83,8 +86,11 @@ namespace RainMeadow
             UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
             UpdateFromOrWriteToFile("meadow-bannedmods.txt", ref bannedMods);
 
+            var effectiveHighImpactMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
+            var effectiveBannedMods = bannedMods.Union(RainMeadowModInfoManager.MergedModInfo.BannedOnlineMods.Except(RainMeadowModInfoManager.MergedModInfo.BannedOnlineModsOverride)).ToList();
+
             // (high impact + banned) - enabled
-            return highImpactMods.Concat(bannedMods)
+            return effectiveHighImpactMods.Concat(effectiveBannedMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .ToArray();
         }

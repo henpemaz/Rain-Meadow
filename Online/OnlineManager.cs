@@ -1,6 +1,8 @@
-﻿using Steamworks;
+﻿using Menu;
+using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -9,6 +11,7 @@ namespace RainMeadow
     // is a mainloopprocess so update bound to game update? worth it? idk
     public class OnlineManager : MainLoopProcess
     {
+        public static NetIO netIO;
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
@@ -25,12 +28,25 @@ namespace RainMeadow
 
         public OnlineManager(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.OnlineManager)
         {
+            // if steam installed 
+            if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
+                netIO = new SteamNetIO();
+            }
+            
+            if (netIO == null) {
+                netIO = new LANNetIO();
+            }
+
             instance = this;
             framesPerSecond = 20; // alternatively, run as fast as we can for the receiving stuff, but send on a lower tickrate?
             milisecondsPerFrame = 1000 / framesPerSecond;
             MatchmakingManager.InitLobbyManager();
             LeaveLobby();
-            MatchmakingManager.instance.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
+            MatchmakingManager.changedMatchMaker += (MatchmakingManager.MatchMakingDomain last, MatchmakingManager.MatchMakingDomain current) => {
+                MatchmakingManager.instances[last].LeaveLobby();
+                LeaveLobby();
+            };
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -53,7 +69,9 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-            MatchmakingManager.instance.LeaveLobby();
+
+            MatchmakingManager.currentInstance.LeaveLobby();
+            netIO?.ForgetEverything();
             lobby = null;
 
             subscriptions = new();
@@ -66,7 +84,8 @@ namespace RainMeadow
 
             RainMeadowModManager.Reset();
 
-            mePlayer = new OnlinePlayer(mePlayer.id) { isMe = true };
+            
+            MatchmakingManager.currentInstance.initializeMePlayer();
             players = new List<OnlinePlayer>() { mePlayer };
 
             instance.manager.rainWorld.progression.Destroy();
@@ -77,7 +96,7 @@ namespace RainMeadow
         public override void RawUpdate(float dt)
         {
             myTimeStacker += dt * (float)framesPerSecond;
-            NetIO.Update(); // incoming data
+            netIO?.Update(); // incoming data
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
@@ -94,10 +113,7 @@ namespace RainMeadow
         // from a force-load situation
         public static void ForceLoadUpdate()
         {
-#if !LOCAL_P2P
-            SteamAPI.RunCallbacks();
-#endif
-            NetIO.Update();
+            netIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
@@ -158,7 +174,7 @@ namespace RainMeadow
 
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
-                NetIO.SendSessionData(toPlayer);
+                netIO?.SendSessionData(toPlayer);
             }
         }
 
@@ -205,13 +221,22 @@ namespace RainMeadow
         {
             OnlinePlayer fromPlayer = onlineEvent.from;
             fromPlayer.needsAck = true;
-            if (NetIO.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
+            if (EventMath.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
             {
                 RainMeadow.Debug($"New event {onlineEvent} from {fromPlayer}, processing...");
                 fromPlayer.lastEventFromRemote = onlineEvent.eventId;
+
                 try
                 {
-                    onlineEvent.Process();
+                    if (onlineEvent.runDeferred)
+                    {
+                        RunDeferred(() => onlineEvent.Process());
+                        RainMeadow.Debug("deferred: " + onlineEvent);
+                    }
+                    else
+                    {
+                        onlineEvent.Process();
+                    }
                 }
                 catch (Exception e)
                 {

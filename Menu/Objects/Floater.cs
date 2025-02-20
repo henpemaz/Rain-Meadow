@@ -47,6 +47,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
             for (int i = 0; i < powner.subObjects.Count; i++)
             {
                 Vector2 dummala = new Vector2(0f, 0f);
@@ -55,9 +56,18 @@ namespace RainMeadow
                 {
                     Vector2 targetPos = Vector2.Lerp(targets[i] + initOffset, targets[i], 1f - Mathf.Pow(1f - progress, 2.4f));
                     rootPoses[i] = Vector2.Lerp(rootPoses[i], targetPos, Mathf.Lerp((velocityorsmthlol / (lastprogress < progress ? 10f : 2f)), 0.9f, (lastprogress < progress ? 0f : (Mathf.Pow(1f - progress, 2.5f)))));
-                    dummala = rootPoses[i] + new Vector2(
-                        Mathf.Sin((Time.time * sinFreq.x) + (rootroot.y * Mathf.PI / 200f)) * progress,
-                        Mathf.Sin((Time.time * sinFreq.y) + (rootroot.y * Mathf.PI / 200f)) * progress) * sinAmpl;
+
+                    if (RainMeadow.rainMeadowOptions.DisableMeadowPauseAnimation.Value)
+                    {
+                        dummala = rootPoses[i] + Vector2.one * progress;
+                    }
+                    else
+                    {
+                        dummala = rootPoses[i] + new Vector2(
+                            Mathf.Sin((Time.time * sinFreq.x) + (rootroot.y * Mathf.PI / 200f)) * progress,
+                            Mathf.Sin((Time.time * sinFreq.y) + (rootroot.y * Mathf.PI / 200f)) * progress) * sinAmpl;
+                    }
+
                     PMO.pos = dummala;
                     powner.subObjects[i] = PMO;
                     //FUCK THIS, DUCKTAPE TIMEEEEE
@@ -88,8 +98,17 @@ namespace RainMeadow
             base.Update();
             float targetxPos = Mathf.Lerp(initx + 600f, initx, 1f - Mathf.Pow(1f - progress, 3));
             xPos = Mathf.Lerp(xPos, targetxPos, inity / (xPos > targetxPos ? 1800f : 520f) - 0.05f);
-            pos.x = xPos + Mathf.Sin((Time.time * 3.5f) + (inity * Mathf.PI / 200f)) * progress * 3.5f;
-            pos.y = inity + Mathf.Sin((Time.time * 3f) + (inity * Mathf.PI / 200f)) * progress;
+
+            if (RainMeadow.rainMeadowOptions.DisableMeadowPauseAnimation.Value)
+            {
+                pos.x = xPos + progress * 3.5f;
+                pos.y = inity + progress;
+            }
+            else
+            {
+                pos.x = xPos + Mathf.Sin((Time.time * 3.5f) + (inity * Mathf.PI / 200f)) * progress * 3.5f;
+                pos.y = inity + Mathf.Sin((Time.time * 3f) + (inity * Mathf.PI / 200f)) * progress;
+            }
         }
     }
     public class FloatyCheckBox : CheckBox
