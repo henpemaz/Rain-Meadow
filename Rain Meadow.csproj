@@ -1,53 +1,53 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net48</TargetFramework>
-		<Version>2.0.8</Version>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Version>2.0.8</Version>
 		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-		<Configurations>Debug;Release</Configurations>
-		<RootNamespace>RainMeadow</RootNamespace>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-	</PropertyGroup>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Configurations>Debug;Release</Configurations>
+    <RootNamespace>RainMeadow</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<PathMap>$(MSBuildThisFileDirectory.Replace(',', ',,').Replace('=', '=='))=/</PathMap>
-	</PropertyGroup>
+  <PropertyGroup>
+    <PathMap>$(MSBuildThisFileDirectory.Replace(',', ',,').Replace('=', '=='))=/</PathMap>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<Reference Include="lib\*.dll" Private="False" />
-	</ItemGroup>
+  <ItemGroup>
+    <Reference Include="lib\*.dll" Private="False" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Remove=".gitattributes" />
-		<None Remove=".gitignore" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<Compile Update="Properties\Settings.Designer.cs">
-			<DesignTimeSharedInput>True</DesignTimeSharedInput>
-			<AutoGen>True</AutoGen>
-			<DependentUpon>Settings.settings</DependentUpon>
-		</Compile>
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Update="Properties\Settings.settings">
-			<Generator>SettingsSingleFileGenerator</Generator>
-			<LastGenOutput>Settings.Designer.cs</LastGenOutput>
-		</None>
-	</ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<ItemGroup>
-			<BuildFiles Include="$(Outdir)\*" />
-		</ItemGroup>
-		<Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
-	</Target>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <BuildFiles Include="$(Outdir)\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
+  </Target>
 </Project>
