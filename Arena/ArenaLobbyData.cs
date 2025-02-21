@@ -104,7 +104,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
