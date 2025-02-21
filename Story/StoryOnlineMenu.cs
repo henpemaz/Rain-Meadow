@@ -16,6 +16,8 @@ namespace RainMeadow
         CheckBox friendlyFire;
         CheckBox reqCampaignSlug;
         List<SimplerButton> playerButtons = new();
+        List<SimplerSymbolButton> kicButtons = new();
+
         SlugcatCustomization personaSettings;
         EventfulSelectOneButton[]? scugButtons;
         StoryGameMode storyGameMode;
@@ -219,19 +221,39 @@ namespace RainMeadow
             playerButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
             playerButtons.Clear();
 
-            var pos = new Vector2(194, 553);
+            kicButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
+            kicButtons.Clear();
 
-            foreach (var playerInfo in MatchmakingManager.currentInstance.playerList)
+            var pos = new Vector2(194, 553);
+            var widthHeight = new Vector2(110, 30);
+            foreach (var playerInfo in OnlineManager.players)
             {
-                pos -= new Vector2(0, 38);
-                var btn = new SimplerButton(this, this.pages[0], playerInfo.name, pos, new(110, 30));
-                btn.OnClick += (_) => playerInfo.openProfile();
                 
+                pos -= new Vector2(0, 38);
+                var btn = new SimplerButton(this, this.pages[0], playerInfo.id.name, pos, widthHeight);
+                btn.OnClick += (_) => playerInfo.id.OpenProfileLink();
+               
                 playerButtons.Add(btn);
+
+                if (OnlineManager.lobby.isOwner && playerInfo != OnlineManager.lobby.owner)
+                {
+                    var kickBtn = new SimplerSymbolButton(this, this.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", new Vector2(pos.x + widthHeight.x + 15f, pos.y));
+                    kickBtn.OnClick += (_) => BanHammer.BanUser(playerInfo);
+                    kicButtons.Add(kickBtn);
+
+                }
             }
             foreach (var btn in playerButtons)
             {
                 this.pages[0].subObjects.Add(btn);
+            }
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                foreach (var kickBtn in kicButtons)
+                {
+                    this.pages[0].subObjects.Add(kickBtn);
+                }
             }
 
         }
