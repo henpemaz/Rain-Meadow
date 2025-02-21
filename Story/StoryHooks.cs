@@ -104,8 +104,6 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            On.Weapon.HitThisObject += Weapon_HitThisObject;
-
             IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
@@ -237,15 +235,6 @@ namespace RainMeadow
                 RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
                 RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
             }
-        }
-
-        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
-        {
-            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
-            {
-                return true;
-            }
-            return orig(self, obj);
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)

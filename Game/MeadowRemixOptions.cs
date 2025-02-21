@@ -26,6 +26,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
+    public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
+
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -70,7 +72,8 @@ public class RainMeadowOptions : OptionInterface
         LanUserName = config.Bind("LanUserName", "");
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
-
+        StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
+        
     }
 
     public override void Initialize()
@@ -135,14 +138,14 @@ public class RainMeadowOptions : OptionInterface
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 400f, "Username Toggle", bigText: false),
-                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 375f)),
                 new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
 
                 new OpLabel(10, 320f, "Key used for toggling spectator mode"),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 245f, "Pointing"),
-                new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
+                new OpLabel(10, 245f, "Stop Inputs While Spectating"),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
 
                 new OpLabel(10, 180f, "Chat Log Toggle"),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
