@@ -260,7 +260,10 @@ namespace RainMeadow
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
-            UpdatePlayerList();
+            if (RainMeadow.isStoryMode(out var _))
+            {
+                UpdatePlayerList();
+            }
         }
 
         public int GetCurrentlySelectedOfSeries(string series) => series switch
