@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
+using Rewired;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,7 +69,9 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
+            On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
+            On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
             On.Menu.MultiplayerResults.Singal += MultiplayerResults_Singal;
             On.Menu.ArenaSettingsInterface.SetSelected += ArenaSettingsInterface_SetSelected;
             On.Menu.ArenaSettingsInterface.SetChecked += ArenaSettingsInterface_SetChecked;
@@ -98,6 +101,55 @@ namespace RainMeadow
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
         }
 
+        private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+                float verticalInput = 0;
+                if (controller is Joystick js)
+                {
+                    verticalInput = js.GetAxis(3);
+                }
+
+                if (Input.GetKey(KeyCode.DownArrow) || verticalInput < 0)
+                {
+                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                }
+
+                if (Input.GetKey(KeyCode.UpArrow) || verticalInput > 0)
+                {
+                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                }
+            }
+        }
+
+        private void PlayerResultMenu_Update(On.Menu.PlayerResultMenu.orig_Update orig, Menu.PlayerResultMenu self)
+        {
+            orig(self);
+            if (isArenaMode(out var _))
+            {
+                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+                float verticalInput = 0;
+                if (controller is Joystick js)
+                {
+                    verticalInput = js.GetAxis(3);
+                }
+
+                if (Input.GetKey(KeyCode.DownArrow) || verticalInput < 0)
+                {
+                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                }
+
+                if (Input.GetKey(KeyCode.UpArrow) || verticalInput > 0)
+                {
+                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                }
+            }
+
+        }
+
         private void Player_ClassMechanicsSaint1(ILContext il)
         {
 
@@ -124,7 +176,7 @@ namespace RainMeadow
                                 if (saint != null)
                                 {
                                     opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
-                                } 
+                                }
                                 else
                                 {
                                     opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
