@@ -406,6 +406,7 @@ namespace RainMeadow
                             if (classButtons[i].profileIdentifier != OnlineManager.mePlayer && classButtons[i].readyForCombat == false && arena.playersReadiedUp.Contains(classButtons[i].profileIdentifier.inLobbyId))
                             {
                                 classButtons[i].readyForCombat = true; // in case the packets got dropped
+                                arena.playersReadiedUp = arena.playersReadiedUp; // re-request, some users report the state gets desynced
                             }
                         }
                     }
