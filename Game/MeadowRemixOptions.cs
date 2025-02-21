@@ -24,6 +24,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatThrows;
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
+    public readonly Configurable<bool> BlockMaul;
+
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
@@ -67,6 +69,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
+        BlockMaul = config.Bind("BlockMaul", false);
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
@@ -192,7 +195,7 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[13]
+            OnlineArenaSettings = new UIelement[15]
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
                 new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
@@ -218,6 +221,9 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 215, "Inv: Enable ???", bigText: false),
                 new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
+
+                new OpLabel(10f, 160, "Mauling: Disable", bigText: false),
+                new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
