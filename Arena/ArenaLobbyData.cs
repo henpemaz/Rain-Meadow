@@ -54,6 +54,8 @@ namespace RainMeadow
             [OnlineField]
             public bool painCatLizard;
             [OnlineField]
+            public bool disableMaul;
+            [OnlineField]
             public string currentGameMode;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -79,6 +81,7 @@ namespace RainMeadow
                 painCatEgg = arena.painCatEgg;
                 painCatThrows = arena.painCatThrows;
                 painCatLizard = arena.painCatLizard;
+                disableMaul = arena.disableMaul;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -104,6 +107,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
+                (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
+
 
             }
 
