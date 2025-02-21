@@ -395,6 +395,23 @@ namespace RainMeadow
 
             }
 
+            if (!OnlineManager.lobby.isOwner)
+            {
+                if (classButtons != null && arena.playersReadiedUp.Count > 0)
+                {
+                    for (int i = 0; i < classButtons.Length; i++)
+                    {
+                        if (classButtons[i] != null)
+                        {
+                            if (classButtons[i].profileIdentifier != OnlineManager.mePlayer && classButtons[i].readyForCombat == false && arena.playersReadiedUp.Contains(classButtons[i].profileIdentifier.inLobbyId))
+                            {
+                                classButtons[i].readyForCombat = true; // in case the packets got dropped
+                            }
+                        }
+                    }
+                }
+            }
+
             if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
             {
                 this.StartGame();
