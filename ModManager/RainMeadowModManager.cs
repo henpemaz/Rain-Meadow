@@ -177,6 +177,8 @@ namespace RainMeadow
                 modsToDisable.Add(ModManager.InstalledMods[index]);
             }
 
+            missingMods.RemoveAll(id => id == "" || id == null);
+
             //reorder mods
             //try using negative indices, just to simplify things? Will that even work??
             if (missingMods.Count < 1)

@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -300,15 +301,7 @@ namespace RainMeadow
             }
             else
             {
-                //check mods first!!!
-                if (RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobbyInfo.requiredMods), []))
-                {
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobbyInfo);
-                }
-                else
-                    RainMeadow.Debug("Failed to join lobby because mods were not applied.");
-                
+                StartJoiningLobby(lobbyInfo);
             }
         }
 
@@ -317,6 +310,20 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
+        public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
+        {
+            //check mods first!!!
+            new Thread(() =>
+            {
+                if (!checkMods || RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods), []))
+                {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobby, password);
+                }
+                else
+                    RainMeadow.Debug("Failed to join lobby because mods were not applied.");
+            }).Start();
+        }
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
@@ -439,8 +446,7 @@ namespace RainMeadow
                     break;
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lastClickedLobby, password);
+                    StartJoiningLobby(lastClickedLobby, password);
                     break;
                 case "DIRECT_JOIN": 
                     var dialogue = popupDialog as DirectConnectionDialogue;
@@ -448,10 +454,10 @@ namespace RainMeadow
                     if (endpoint != null) {
                         var fakelobbyinfo = new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
                         Action join = () => {
-                            ShowLoadingDialog("Joining lobby...");
                             GreyOutLobbyCards(true);
-                            RequestLobbyJoin(fakelobbyinfo,
-                                    dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null);
+                            StartJoiningLobby(fakelobbyinfo,
+                                    dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null,
+                                    false);
                         };
                         
                         if (VerifyPlay(fakelobbyinfo))

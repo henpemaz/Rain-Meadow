@@ -67,13 +67,12 @@ namespace RainMeadow
 
                 manager.rainWorld.options.Save();
 
-                //go to main menu (to finish applying changes) and then rejoin the lobby
                 if (this.applyError != null)
                 {
+                    //error popup
                     Action cancelProceed = () =>
                     {
                         ClearPopups();
-                        //OnlineManager.LeaveLobby(); //redundant, since the lobby should almost certainly already be left
                         manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     };
                     checkUserConfirmation = new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
@@ -81,6 +80,7 @@ namespace RainMeadow
                 }
                 else if (!this.requiresRestart)
                 {
+                    //loading mods without a restart required (e.g: loading/unloading MSC or Remix)
                     RainMeadow.Debug("Finalizing mod reordering");
                     menu.PlaySound(SoundID.MENU_Switch_Page_Out);
                     manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu); //requires a process switch to finalize mods
