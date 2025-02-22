@@ -266,7 +266,7 @@ namespace RainMeadow
                 if (!lobby.modsChecked)
                 {
                     //Made asyncronous so that the game doesn't get totally frozen
-                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods));
+                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods, true));
 
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;

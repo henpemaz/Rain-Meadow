@@ -300,14 +300,8 @@ namespace RainMeadow
             }
             else
             {
-                //check mods first!!!
-                Task.Run(() =>
-                {
-                    RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobbyInfo.requiredMods), []);
-
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobbyInfo);
-                });
+                ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin(lobbyInfo);
             }
         }
 
@@ -319,7 +313,16 @@ namespace RainMeadow
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
-            MatchmakingManager.currentInstance.RequestJoinLobby(lobby, password);
+            //check mods first!!!
+            Task.Run(() =>
+            {
+                if (RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods), []))
+                {
+                    MatchmakingManager.currentInstance.RequestJoinLobby(lobby, password);
+                }
+                else
+                    RainMeadow.Debug("Failed to join lobby because mods were not applied.");
+            });
         }
 
         private void OnlineManager_OnLobbyListReceived(bool ok, LobbyInfo[] lobbies)

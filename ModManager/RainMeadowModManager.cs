@@ -106,7 +106,13 @@ namespace RainMeadow
                 .ToArray();
         }
 
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods)
+        /// <summary>
+        /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary
+        /// </summary>
+        /// <param name="requiredMods"></param>
+        /// <param name="bannedMods"></param>
+        /// <returns>True if the mods were successfully applied (or didn't need to be applied)</returns>
+        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false)
         {
             RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
             RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
@@ -116,7 +122,7 @@ namespace RainMeadow
             var enable = requiredMods.Except(active);
 
             //determine whether a reorder is necessary
-            if (!disable.Any() && !enable.Any())
+            if (!ignoreReorder && !disable.Any() && !enable.Any())
             {
                 reorder = false;
                 int prevIdx = Int32.MinValue;
@@ -138,8 +144,9 @@ namespace RainMeadow
             RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
             RainMeadow.Debug($"reorder: {reorder}");
 
-            if (!reorder) return;
+            if (!reorder) return true;
 
+            //only works right for Steam, sadly. I don't know enough about this to make it work for LAN
             var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
 
             List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
@@ -201,14 +208,19 @@ namespace RainMeadow
 
                     if (modApplier.requiresRestart)
                     {
-                        Utils.Restart($"+connect_lobby {lobbyID}");
+                        if (lobbyID != "Unknown Lan Lobby")
+                            Utils.Restart($"+connect_lobby {lobbyID}");
+                        else
+                            Utils.Restart();
                     }
                 };
             });
 
             //wait until mod applier finishes
-            while (!modApplier.cancelled)
+            while (!modApplier.ended)
                 Thread.Sleep(10);
+
+            return !modApplier.cancelled;
         }
 
         internal static void Reset()

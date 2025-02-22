@@ -11,6 +11,7 @@ namespace RainMeadow
         public DialogAsyncWait? dialogBox;
         public Dialog? checkUserConfirmation;
 
+        public bool ended = false;
         public bool cancelled = false;
 
         private readonly Menu.Menu menu;
@@ -25,9 +26,14 @@ namespace RainMeadow
 
         private void Cancel()
         {
+            cancelled = true;
+            EndModApplier();
+        }
+        private void EndModApplier()
+        {
             On.RainWorld.Update -= RainWorld_Update;
             this.finished = true;
-            this.cancelled = true;
+            this.ended = true;
 
             ClearPopups();
         }
@@ -36,9 +42,9 @@ namespace RainMeadow
             dialogBox?.RemoveSprites();
             dialogBox?.HackHide();
             dialogBox = null;
-            manager.dialog.HackHide();
+            manager.dialog?.HackHide();
             manager.dialog = null;
-            checkUserConfirmation.HackHide();
+            checkUserConfirmation?.HackHide();
             checkUserConfirmation = null;
         }
 
@@ -55,9 +61,9 @@ namespace RainMeadow
 
             dialogBox?.SetText(menu.Translate("mod_menu_apply_mods") + Environment.NewLine + statusText);
 
-            if (!cancelled && IsFinished())
+            if (!ended && IsFinished())
             {
-                Cancel();
+                EndModApplier();
 
                 manager.rainWorld.options.Save();
 
@@ -73,7 +79,7 @@ namespace RainMeadow
                     checkUserConfirmation = new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
                     manager.ShowDialog(checkUserConfirmation);
                 }
-                else if (this.requiresRestart)
+                else if (!this.requiresRestart)
                 {
                     RainMeadow.Debug("Finalizing mod reordering");
                     menu.PlaySound(SoundID.MENU_Switch_Page_Out);
@@ -156,7 +162,7 @@ namespace RainMeadow
 
             // disable auto-apply for now
             //nah that seems like a really useful feature I'mma re-add it - TheLazyCowboy1
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
+            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, EndModApplier);
 
             manager.ShowDialog(checkUserConfirmation);
         }
