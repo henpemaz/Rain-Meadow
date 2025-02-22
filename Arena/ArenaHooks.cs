@@ -113,12 +113,12 @@ namespace RainMeadow
                     verticalInput = js.GetAxis(3);
                 }
 
-                if (Input.GetKey(KeyCode.DownArrow) || verticalInput < 0)
+                if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || verticalInput > 0)
                 {
                     self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
                 }
 
-                if (Input.GetKey(KeyCode.UpArrow) || verticalInput > 0)
+                if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || verticalInput < 0)
                 {
                     self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
                 }
@@ -137,12 +137,12 @@ namespace RainMeadow
                     verticalInput = js.GetAxis(3);
                 }
 
-                if (Input.GetKey(KeyCode.DownArrow) || verticalInput < 0)
+                if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || verticalInput > 0)
                 {
                     self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
                 }
 
-                if (Input.GetKey(KeyCode.UpArrow) || verticalInput > 0)
+                if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || verticalInput < 0)
                 {
                     self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
                 }
@@ -1014,7 +1014,7 @@ namespace RainMeadow
 
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
                 {
-                    if (absPlayerCreature.owner.inLobbyId == arena.arenaSittingOnlineOrder[i])
+                    if (absPlayerCreature.owner == ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber))
                     {
                         arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
 
@@ -1022,6 +1022,14 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                            for (int p = 0; p < OnlineManager.players.Count; p++)
+                            {
+                                if (OnlineManager.players[p].isMe)
+                                {
+                                    continue;
+                                }
+                                OnlineManager.players[p].InvokeRPC(ArenaRPCs.Arena_AddTrophy, targetAbsCreature, self.arenaSitting.players[i].playerNumber);
+                            }
                         }
 
                         int index = MultiplayerUnlocks.SandboxUnlockForSymbolData(iconSymbolData).Index;
