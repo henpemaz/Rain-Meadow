@@ -34,7 +34,8 @@ namespace RainMeadow
                     "LAN Lobby",
                     OnlineManager.lobby.hasPassword,
                     OnlineManager.lobby.gameModeType.value,
-                    OnlineManager.players.Count
+                    OnlineManager.players.Count,
+                    RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods())
                 ), NetIO.SendType.Reliable);
 
             }

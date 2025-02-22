@@ -39,6 +39,25 @@ namespace RainMeadow
                 .ToArray();
         }
 
+        public static string ModIdToName(string id)
+        {
+            foreach (var mod in ModManager.ActiveMods)
+            {
+                if (mod.id == id)
+                    return mod.name;
+            }
+            return id; //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+        }
+
+        public static string RequiredModsArrayToString(string[] requiredMods)
+        {
+            return string.Join("\n", requiredMods);
+        }
+        public static string[] RequiredModsStringToArray(string requiredMods)
+        {
+            return requiredMods.Split('\n');
+        }
+
         public static string[] bannedMods = {
             "maxi-mol.mousedrag",
             "fyre.BeastMaster",
