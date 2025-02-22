@@ -122,20 +122,23 @@ namespace RainMeadow
             var enable = requiredMods.Except(active);
 
             //determine whether a reorder is necessary
-            if (!ignoreReorder && !disable.Any() && !enable.Any())
+            if (!disable.Any() && !enable.Any())
             {
                 reorder = false;
-                int prevIdx = Int32.MinValue;
-                for (int i = 0; i < requiredMods.Length; i++)
+                if (!ignoreReorder)
                 {
-                    int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
-                    if (newIdx < prevIdx)
+                    int prevIdx = Int32.MinValue;
+                    for (int i = 0; i < requiredMods.Length; i++)
                     {
-                        reorder = true;
-                        RainMeadow.Debug($"Reorder necessary. Idx: {i}");
-                        break;
+                        int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
+                        if (newIdx < prevIdx)
+                        {
+                            reorder = true;
+                            RainMeadow.Debug($"Reorder necessary. Idx: {i}");
+                            break;
+                        }
+                        prevIdx = newIdx;
                     }
-                    prevIdx = newIdx;
                 }
             }
 
