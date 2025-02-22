@@ -1017,7 +1017,7 @@ namespace RainMeadow
 
             viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
             viewPrevPlayer.symbolSprite.rotation = 270;
-            if (currentPlayerPosition <= 3)
+            if (currentPlayerPosition < holdPlayerPosition)
             {
                 viewPrevPlayer.buttonBehav.greyedOut = true;
             }
