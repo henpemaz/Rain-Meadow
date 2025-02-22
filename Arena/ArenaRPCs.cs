@@ -132,7 +132,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                var crit = (creatureKilled.apo.realizedObject as Creature);
+                var crit = (creatureKilled.apo.realizedObject as Creature) ?? null;
                 if (crit == null)
                 {
                     return;
