@@ -143,7 +143,8 @@ namespace RainMeadow
                 if (foundPlayer == null) // player joined but is unrealized, null them out
                 {
                     playerButtons.Add(new PlayerButton(this, player, null, pos, OnlineManager.lobby.isOwner && !player.isMe));
-                } else
+                }
+                else
                 {
                     playerButtons.Add(new PlayerButton(this, player, foundPlayer, pos, OnlineManager.lobby.isOwner && !foundPlayer.isMine));
 
@@ -162,7 +163,15 @@ namespace RainMeadow
 
             foreach (var button in playerButtons)
             {
-                var ac = button.opo.apo as AbstractCreature;
+                AbstractCreature? ac;
+                if (button.opo != null)
+                {
+                    ac = button.opo.apo as AbstractCreature;
+                }
+                else
+                {
+                    ac = null;
+                }
                 button.button.toggled = ac != null && ac == spectatee;
                 button.button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
