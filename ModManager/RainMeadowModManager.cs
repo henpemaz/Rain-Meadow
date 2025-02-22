@@ -110,11 +110,11 @@ namespace RainMeadow
             if (!reorder) return;
 
             var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
-            if (enable.Any() || disable.Any())
+            /*if (enable.Any() || disable.Any()) //moved to individual implementations in ModApplier.cs, since ConfirmReorder doesn't kick players
             {
                 RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 OnlineManager.LeaveLobby();
-            }
+            }*/
 
             List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
             List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
@@ -165,6 +165,69 @@ namespace RainMeadow
             {
                 for (int i = 0; i < requiredMods.Length; i++)
                     pendingLoadOrder[ModManager.InstalledMods.FindIndex(_mod => _mod.id == requiredMods[i])] = i - requiredMods.Length;
+
+                string loadOrderString = "Load Order: "; //log the load order
+                for (int i = 0; i < pendingLoadOrder.Count; i++)
+                    loadOrderString += pendingLoadOrder[i] + "-" + ModManager.InstalledMods[i].id + ", ";
+                RainMeadow.Debug(loadOrderString);
+
+                //attempt to ensure all dependencies are ordered properly
+                int lowIdx = -1 - requiredMods.Length;
+                bool allGoodPass = false;
+                for (int attempts = 1; !allGoodPass && attempts <= 50; attempts++)
+                {
+                    allGoodPass = true;
+                    //loop through each installed mod that will be enabled
+                    for (int i = 0; allGoodPass && i < pendingEnabled.Count; i++)
+                    {
+                        if (!pendingEnabled[i]) continue;
+                        foreach (var reqID in ModManager.InstalledMods[i].requirements)
+                        {
+                            int reqIndex = ModManager.InstalledMods.FindIndex(mod => mod.id == reqID);
+                            var req = ModManager.InstalledMods[reqIndex];
+                            if (req == default(ModManager.Mod) && !missingMods.Contains(reqID))
+                                missingMods.Add(reqID);
+                            else
+                            {
+                                pendingEnabled[reqIndex] = true;
+                                if (req.loadOrder >= ModManager.InstalledMods[i].loadOrder)
+                                {
+                                    req.loadOrder = lowIdx--;
+                                    allGoodPass = false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (missingMods.Count < 1)
+                {
+                    //fix load order!
+                    List<ModManager.Mod> modsToLoad = new();
+                    for (int i = 0; i < pendingEnabled.Count; i++)
+                    {
+                        if (pendingEnabled[i]) modsToLoad.Add(ModManager.InstalledMods[i]);
+                    }
+                    List<ModManager.Mod> reorderedMods = new();
+                    foreach(var mod in modsToLoad)
+                    {
+                        int index = reorderedMods.FindIndex(m => mod.loadOrder > m.loadOrder); //first mod with higher order
+                        if (index < 0) //no mods with higher load order, so add to the end
+                            reorderedMods.Add(mod);
+                        else //found a mod with higher load order, so insert just in front
+                            reorderedMods.Insert(index, mod);
+                    }
+                    
+                    //finally reorder and print debug list
+                    loadOrderString = "Final load order: "; //for debugging
+                    for (int i = 0; i < reorderedMods.Count; i++) {
+                        reorderedMods[i].loadOrder = i;
+                        loadOrderString += i + "-" + reorderedMods[i].id + ", ";
+                    }
+                    RainMeadow.Debug(loadOrderString);
+                    modsToLoad.Clear();
+                    reorderedMods.Clear();
+                }
             }
 
             ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
@@ -174,7 +237,7 @@ namespace RainMeadow
 
             if (missingDLC.Count > 0)
                 modApplier.ShowMissingDLCMessage(missingDLC);
-            else if (enable.Any() || disable.Any())
+            else if (enable.Any() || disable.Any() || missingMods.Count > 0)
                 modApplier.ShowConfirmation(modsToEnable, modsToDisable, missingMods);
             else
                 modApplier.ConfirmReorder();

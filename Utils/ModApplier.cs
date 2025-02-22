@@ -72,6 +72,10 @@ namespace RainMeadow
 
         public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
+            //leave lobby immediately; we'll have to change mods to join it
+            OnlineManager.LeaveLobby();
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+
             var modMismatchString = menu.Translate("Mod Mismatch!") + Environment.NewLine;
 
             if (modsToEnable.Count > 0)
@@ -98,8 +102,6 @@ namespace RainMeadow
             {
                 manager.dialog = null;
                 checkUserConfirmation = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 Cancel();
             };
 
@@ -120,6 +122,8 @@ namespace RainMeadow
 
         public void ConfirmReorder()
         {
+            //note: lobby isn't left immediately, because the user still has the option to join
+
             var modMismatchString = menu.Translate("Warning: Differing Mod Load Orders!")
                 + Environment.NewLine + menu.Translate("This may cause unstable play.")
                 + Environment.NewLine + Environment.NewLine + menu.Translate("Reorder your mods now?");
@@ -128,8 +132,8 @@ namespace RainMeadow
             {
                 manager.dialog = null;
                 checkUserConfirmation = null;
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
@@ -151,6 +155,10 @@ namespace RainMeadow
 
         public void ShowMissingDLCMessage(List<ModManager.Mod> missingDLC)
         {
+            //leave lobby immediately; we don't want non-DLC players in DLC-exclusive lobbies
+            OnlineManager.LeaveLobby();
+            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+
             var modMismatchString = menu.Translate("Cannot join due to missing DLC!") + Environment.NewLine;
 
             modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC.ConvertAll(mod => mod.LocalizedName));
@@ -159,8 +167,6 @@ namespace RainMeadow
             {
                 manager.dialog = null;
                 checkUserConfirmation = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                 Cancel();
             };
 
