@@ -87,14 +87,13 @@ namespace RainMeadow
                     Thread.Sleep(1000); //wait for mod finalization to begin
                     while (!manager.modFinalizationDone)
                         Thread.Sleep(5); //wait for finalization to finish
-                    Thread.Sleep(2000); //extra wait, just in case
                 }
 
                 OnFinish?.Invoke(this);
             }
         }
 
-        public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
+        public void ShowConfirmation(List<string> modsToEnable, List<string> modsToDisable, List<string> unknownMods)
         {
             //leave lobby immediately; we'll have to change mods to join it
             if (OnlineManager.lobby != null)
@@ -106,9 +105,9 @@ namespace RainMeadow
             var modMismatchString = menu.Translate("Mod Mismatch!") + Environment.NewLine;
 
             if (modsToEnable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be enabled: ") + string.Join(", ", modsToEnable);
             if (modsToDisable.Count > 0)
-                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable.ConvertAll(mod => mod.LocalizedName));
+                modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable);
             if (unknownMods.Count > 0)
                 modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be installed: ") + string.Join(", ", unknownMods);
             else
@@ -167,7 +166,7 @@ namespace RainMeadow
             manager.ShowDialog(checkUserConfirmation);
         }
 
-        public void ShowMissingDLCMessage(List<ModManager.Mod> missingDLC)
+        public void ShowMissingDLCMessage(List<string> missingDLC)
         {
             //leave lobby immediately; we don't want non-DLC players in DLC-exclusive lobbies
             if (OnlineManager.lobby != null)
@@ -178,7 +177,7 @@ namespace RainMeadow
 
             var modMismatchString = menu.Translate("Cannot join due to missing DLC!") + Environment.NewLine;
 
-            modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC.ConvertAll(mod => mod.LocalizedName));
+            modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC);
 
             checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
 

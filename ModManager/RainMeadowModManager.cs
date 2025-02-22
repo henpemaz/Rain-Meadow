@@ -114,118 +114,138 @@ namespace RainMeadow
         /// <returns>True if the mods were successfully applied (or didn't need to be applied)</returns>
         internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false)
         {
-            RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
-            RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
-            var active = ModManager.ActiveMods.Select(mod => mod.id);
-            bool reorder = true; //or change mods whatsoever
-            var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active);
-            var enable = requiredMods.Except(active);
-
-            //determine whether a reorder is necessary
-            if (!disable.Any() && !enable.Any())
+            try
             {
-                reorder = false;
-                if (!ignoreReorder)
+                RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
+                RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
+                var active = ModManager.ActiveMods.Select(mod => mod.id);
+                bool reorder = true; //or change mods whatsoever
+                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active);
+                var enable = requiredMods.Except(active);
+
+                //determine whether a reorder is necessary
+                if (!disable.Any() && !enable.Any())
                 {
-                    int prevIdx = Int32.MinValue;
-                    for (int i = 0; i < requiredMods.Length; i++)
+                    reorder = false;
+                    if (!ignoreReorder)
                     {
-                        int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
-                        if (newIdx < prevIdx)
+                        int prevIdx = Int32.MinValue;
+                        for (int i = 0; i < requiredMods.Length; i++)
                         {
-                            reorder = true;
-                            RainMeadow.Debug($"Reorder necessary. Idx: {i}");
-                            break;
+                            int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
+                            if (newIdx < prevIdx)
+                            {
+                                reorder = true;
+                                RainMeadow.Debug($"Reorder necessary. Idx: {i}");
+                                break;
+                            }
+                            prevIdx = newIdx;
                         }
-                        prevIdx = newIdx;
                     }
                 }
-            }
 
-            RainMeadow.Debug($"active:  [ {string.Join(", ", active)} ]");
-            RainMeadow.Debug($"enable:  [ {string.Join(", ", enable)} ]");
-            RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
-            RainMeadow.Debug($"reorder: {reorder}");
+                RainMeadow.Debug($"active:  [ {string.Join(", ", active)} ]");
+                RainMeadow.Debug($"enable:  [ {string.Join(", ", enable)} ]");
+                RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
+                RainMeadow.Debug($"reorder: {reorder}");
 
-            if (!reorder) return true;
+                if (!reorder) return true;
 
-            //only works right for Steam, sadly. I don't know enough about this to make it work for LAN
-            var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
+                //only works right for Steam, sadly. I don't know enough about this to make it work for LAN
+                var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
 
-            List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
-            List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
+                List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
+                List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
 
-            List<string> missingMods = new();
-            List<ModManager.Mod> modsToEnable = new(), modsToDisable = new();
+                List<string> missingMods = new(), modNamesToEnable = new(), modNamesToDisable = new();
 
-            foreach (var id in enable)
-            {
-                int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
-                if (index == -1) missingMods.Add(id);
-                else
+                foreach (var id in enable)
                 {
-                    pendingEnabled[index] = true;
+                    int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
+                    if (index < 0) missingMods.Add(id);
+                    else
+                    {
+                        pendingEnabled[index] = true;
 
-                    modsToEnable.Add(ModManager.InstalledMods[index]);
+                        modNamesToEnable.Add(ModManager.InstalledMods[index].LocalizedName);
+                    }
                 }
-            }
 
-            foreach (var id in disable)
-            {
-                int index = ModManager.InstalledMods.FindIndex(_mod => _mod.id == id);
-                pendingEnabled[index] = false;
-                modsToDisable.Add(ModManager.InstalledMods[index]);
-            }
+                foreach (var id in disable)
+                {
+                    int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
+                    if (index < 0)
+                    {
+                        RainMeadow.Debug($"Couldn't find instance of {id} in InstalledMods??");
+                        continue;
+                    }
+                    pendingEnabled[index] = false;
+                    modNamesToDisable.Add(ModManager.InstalledMods[index].LocalizedName);
+                }
 
-            missingMods.RemoveAll(id => id == "" || id == null);
+                //occasionally there will somehow be blank/nonexistent mods in MissingMods. This messes stuff up
+                missingMods.RemoveAll(id => id == "" || id == null);
 
-            //reorder mods
-            //try using negative indices, just to simplify things? Will that even work??
-            if (missingMods.Count < 1)
-            {
+                //reorder mods
+                //try using negative indices, just to simplify things? Will that even work??
+                int lowestLoadIdx = ModManager.InstalledMods.MinBy(mod => mod.loadOrder).loadOrder;
                 for (int i = 0; i < requiredMods.Length; i++)
-                    pendingLoadOrder[ModManager.InstalledMods.FindIndex(_mod => _mod.id == requiredMods[i])] = i - requiredMods.Length;
+                {
+                    int idx = ModManager.InstalledMods.FindIndex(_mod => _mod.id == requiredMods[i]);
+                    if (idx >= 0) pendingLoadOrder[idx] = i - requiredMods.Length + lowestLoadIdx;
+                }
 
                 string loadOrderString = "Load Order: "; //log the load order
                 for (int i = 0; i < pendingLoadOrder.Count; i++)
                     if (pendingEnabled[i]) loadOrderString += pendingLoadOrder[i] + "-" + ModManager.InstalledMods[i].id + ", ";
                 RainMeadow.Debug(loadOrderString);
-            }
 
-            //check for missing DLC
-            List<ModManager.Mod> missingDLC = modsToEnable.Where(mod => mod.DLCMissing).ToList();
+                //check for missing DLC
+                List<string> missingDLC = new();
+                for (int i = 0; i < pendingEnabled.Count; i++)
+                    if (pendingEnabled[i] && ModManager.InstalledMods[i].DLCMissing)
+                        missingDLC.Add(ModManager.InstalledMods[i].LocalizedName);
 
-            ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
+                ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
 
-            //mod applier code moved to a task so the game doesn't get frozen?
-            Task.Run(() =>
-            {
-                if (missingDLC.Count > 0)
-                    modApplier.ShowMissingDLCMessage(missingDLC);
-                else if (enable.Any() || disable.Any() || missingMods.Count > 0)
-                    modApplier.ShowConfirmation(modsToEnable, modsToDisable, missingMods);
-                else
-                    modApplier.ConfirmReorder();
-
-                modApplier.OnFinish += (ModApplier modApplyer) =>
+                //mod applier code moved to a task so the game doesn't get frozen?
+                Task.Run(() =>
                 {
-                    RainMeadow.Debug("Finished applying");
+                    RainMeadow.Debug("Showing mod check popups");
+                    if (missingDLC.Count > 0)
+                        modApplier.ShowMissingDLCMessage(missingDLC);
+                    else if (enable.Any() || disable.Any() || missingMods.Count > 0)
+                        modApplier.ShowConfirmation(modNamesToEnable, modNamesToDisable, missingMods);
+                    else
+                        modApplier.ConfirmReorder();
 
-                    if (modApplier.requiresRestart)
+                    modApplier.OnFinish += (ModApplier modApplyer) =>
                     {
-                        if (lobbyID != "Unknown Lan Lobby")
-                            Utils.Restart($"+connect_lobby {lobbyID}");
-                        else
-                            Utils.Restart();
-                    }
-                };
-            });
+                        RainMeadow.Debug("Finished applying");
 
-            //wait until mod applier finishes
-            while (!modApplier.ended)
-                Thread.Sleep(5);
+                        if (modApplier.requiresRestart)
+                        {
+                            if (lobbyID != "Unknown Lan Lobby")
+                                Utils.Restart($"+connect_lobby {lobbyID}");
+                            else
+                                Utils.Restart();
+                        }
+                    };
+                });
 
-            return !modApplier.cancelled;
+                //wait until mod applier finishes
+                while (!modApplier.ended)
+                    Thread.Sleep(5);
+
+                RainMeadow.Debug($"Returning successful = {!modApplier.cancelled}");
+
+                return !modApplier.cancelled;
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Debug(ex);
+                return false;
+            }
         }
 
         internal static void Reset()
