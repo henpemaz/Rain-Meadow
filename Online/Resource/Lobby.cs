@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RainMeadow
 {
@@ -264,7 +265,9 @@ namespace RainMeadow
 
                 if (!lobby.modsChecked)
                 {
-                    RainMeadowModManager.CheckMods(requiredmods, bannedmods);
+                    //Made asyncronous so that the game doesn't get totally frozen
+                    Task.Run(() => RainMeadowModManager.CheckMods(requiredmods, bannedmods));
+
                     lobby.requiredmods = requiredmods;
                     lobby.bannedmods = bannedmods;
                     if (ModManager.MMF && lobby.gameMode.nonGameplayRemixSettings != null)

@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -275,7 +276,7 @@ namespace RainMeadow
             return true;
         }
 
-        public void Play(LobbyInfo lobbyInfo)
+        public async Task Play(LobbyInfo lobbyInfo)
         {
             if (!VerifyPlay(lobbyInfo)) {
                 return;
@@ -299,8 +300,14 @@ namespace RainMeadow
             }
             else
             {
-                ShowLoadingDialog("Joining lobby...");
-                RequestLobbyJoin(lobbyInfo);
+                //check mods first!!!
+                Task.Run(() =>
+                {
+                    RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobbyInfo.requiredMods), []);
+
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobbyInfo);
+                });
             }
         }
 

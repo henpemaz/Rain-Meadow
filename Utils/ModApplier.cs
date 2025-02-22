@@ -11,6 +11,8 @@ namespace RainMeadow
         public DialogAsyncWait? dialogBox;
         public Dialog? checkUserConfirmation;
 
+        public bool cancelled = false;
+
         private readonly Menu.Menu menu;
 
         public event Action<ModApplier>? OnFinish;
@@ -25,6 +27,19 @@ namespace RainMeadow
         {
             On.RainWorld.Update -= RainWorld_Update;
             this.finished = true;
+            this.cancelled = true;
+
+            ClearPopups();
+        }
+        private void ClearPopups()
+        {
+            dialogBox?.RemoveSprites();
+            dialogBox?.HackHide();
+            dialogBox = null;
+            manager.dialog.HackHide();
+            manager.dialog = null;
+            checkUserConfirmation.HackHide();
+            checkUserConfirmation = null;
         }
 
         private void RainWorld_Update(On.RainWorld.orig_Update orig, RainWorld self)
@@ -40,30 +55,33 @@ namespace RainMeadow
 
             dialogBox?.SetText(menu.Translate("mod_menu_apply_mods") + Environment.NewLine + statusText);
 
-            if (IsFinished())
+            if (!cancelled && IsFinished())
             {
                 Cancel();
 
-                //go to main menu (to finish applying changes) and then rejoin the lobby
-                manager.dialog = null;
                 manager.rainWorld.options.Save();
+
+                //go to main menu (to finish applying changes) and then rejoin the lobby
                 if (this.applyError != null)
                 {
                     Action cancelProceed = () =>
                     {
-                        manager.dialog = null;
-                        checkUserConfirmation = null;
+                        ClearPopups();
                         //OnlineManager.LeaveLobby(); //redundant, since the lobby should almost certainly already be left
                         manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
                     };
-                    new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
+                    checkUserConfirmation = new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
+                    manager.ShowDialog(checkUserConfirmation);
                 }
-                else
+                else if (this.requiresRestart)
                 {
+                    RainMeadow.Debug("Finalizing mod reordering");
                     menu.PlaySound(SoundID.MENU_Switch_Page_Out);
-                    manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                    manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu); //requires a process switch to finalize mods
+                    Thread.Sleep(1000); //wait for mod finalization to begin
                     while (!manager.modFinalizationDone)
-                        Thread.Sleep(1);
+                        Thread.Sleep(10); //wait for finalization to finish
+                    Thread.Sleep(200); //extra wait just in case
                 }
 
                 OnFinish?.Invoke(this);
@@ -73,8 +91,11 @@ namespace RainMeadow
         public void ShowConfirmation(List<ModManager.Mod> modsToEnable, List<ModManager.Mod> modsToDisable, List<string> unknownMods)
         {
             //leave lobby immediately; we'll have to change mods to join it
-            OnlineManager.LeaveLobby();
-            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            }
 
             var modMismatchString = menu.Translate("Mod Mismatch!") + Environment.NewLine;
 
@@ -91,29 +112,21 @@ namespace RainMeadow
 
             Action confirmProceed = () =>
             {
-                manager.dialog = null;
-                checkUserConfirmation = null;
+                ClearPopups();
                 dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
-            };
-
-            Action cancelProceed = () =>
-            {
-                manager.dialog = null;
-                checkUserConfirmation = null;
-                Cancel();
             };
 
             // disable auto-apply for now
             //nah that seems like a really useful feature I'mma re-add it - TheLazyCowboy1
             if (unknownMods.Count > 0)
             {
-                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
+                checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
             }
             else
             {
-                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+                checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
             }
             //checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
 
@@ -130,25 +143,20 @@ namespace RainMeadow
 
             Action confirmProceed = () =>
             {
-                manager.dialog = null;
-                checkUserConfirmation = null;
-                OnlineManager.LeaveLobby();
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                ClearPopups();
+                if (OnlineManager.lobby != null)
+                {
+                    OnlineManager.LeaveLobby();
+                    manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                }
                 dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
             };
 
-            Action cancelProceed = () =>
-            {
-                manager.dialog = null;
-                checkUserConfirmation = null;
-                Cancel();
-            };
-
             // disable auto-apply for now
             //nah that seems like a really useful feature I'mma re-add it - TheLazyCowboy1
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, cancelProceed);
+            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
 
             manager.ShowDialog(checkUserConfirmation);
         }
@@ -156,21 +164,17 @@ namespace RainMeadow
         public void ShowMissingDLCMessage(List<ModManager.Mod> missingDLC)
         {
             //leave lobby immediately; we don't want non-DLC players in DLC-exclusive lobbies
-            OnlineManager.LeaveLobby();
-            manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            if (OnlineManager.lobby != null)
+            {
+                OnlineManager.LeaveLobby();
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            }
 
             var modMismatchString = menu.Translate("Cannot join due to missing DLC!") + Environment.NewLine;
 
             modMismatchString += Environment.NewLine + menu.Translate("Missing DLC Mods that have to be enabled: ") + string.Join(", ", missingDLC.ConvertAll(mod => mod.LocalizedName));
 
-            Action cancelProceed = () =>
-            {
-                manager.dialog = null;
-                checkUserConfirmation = null;
-                Cancel();
-            };
-
-            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, cancelProceed);
+            checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
 
             manager.ShowDialog(checkUserConfirmation);
         }
