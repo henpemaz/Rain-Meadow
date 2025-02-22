@@ -310,10 +310,14 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
+        private Thread? JoinLobbyThread = null;
         public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
         {
+            //don't start the thread if it's already going!
+            if (JoinLobbyThread != null) return;
+
             //check mods first!!!
-            new Thread(() =>
+            JoinLobbyThread = new(() =>
             {
                 if (!checkMods || RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods), []))
                 {
@@ -322,7 +326,9 @@ namespace RainMeadow
                 }
                 else
                     RainMeadow.Debug("Failed to join lobby because mods were not applied.");
-            }).Start();
+                JoinLobbyThread = null;
+            });
+            JoinLobbyThread.Start();
         }
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {

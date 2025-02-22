@@ -86,8 +86,8 @@ namespace RainMeadow
                     manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu); //requires a process switch to finalize mods
                     Thread.Sleep(1000); //wait for mod finalization to begin
                     while (!manager.modFinalizationDone)
-                        Thread.Sleep(10); //wait for finalization to finish
-                    Thread.Sleep(200); //extra wait just in case
+                        Thread.Sleep(5); //wait for finalization to finish
+                    Thread.Sleep(2000); //extra wait, just in case
                 }
 
                 OnFinish?.Invoke(this);

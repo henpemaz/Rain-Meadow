@@ -223,7 +223,7 @@ namespace RainMeadow
 
             //wait until mod applier finishes
             while (!modApplier.ended)
-                Thread.Sleep(10);
+                Thread.Sleep(5);
 
             return !modApplier.cancelled;
         }
