@@ -16,7 +16,7 @@ namespace RainMeadow
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => onlineEntity.lenientPos ? new ChunkState() : new ChunkState(c)).ToArray();
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
 
