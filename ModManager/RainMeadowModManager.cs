@@ -112,7 +112,7 @@ namespace RainMeadow
         /// <param name="requiredMods"></param>
         /// <param name="bannedMods"></param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied)</returns>
-        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false)
+        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null)
         {
             try
             {
@@ -238,7 +238,7 @@ namespace RainMeadow
                         if (modApplier.requiresRestart)
                         {
                             if (lobbyID != "Unknown Lan Lobby")
-                                Utils.Restart($"+connect_lobby {lobbyID}");
+                                Utils.Restart($"+connect_lobby {lobbyID}" + (password == null ? "" : $" +lobby_password {password}"));
                             else
                                 Utils.Restart();
                         }

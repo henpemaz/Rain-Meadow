@@ -2,8 +2,10 @@ using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Steamworks;
+using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -326,24 +328,25 @@ namespace RainMeadow
 
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
-                var args = System.Environment.GetCommandLineArgs();
-                for (var i = 0; i < args.Length; i++)
-                {
-                    if (args[i] == "+connect_lobby")
-                    {
-                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
-                            if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
-                            {
-                                Debug($"joining lobby with id {id} from the command line");
-                                MatchmakingManager.currentInstance.RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
+                if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
+                    var args = System.Environment.GetCommandLineArgs();
+                    int connect_lobby_idx = Array.IndexOf(args, "+connect_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
 
-                            }
-                            else
-                            {
-                                Error($"found +connect_lobby but no valid lobby id in the command line");
-                            }
+                    //find password, if it exists
+                    string? password = null;
+                    if (password_idx >= 0 && args.Length > password_idx + 1)
+                        password = args[password_idx + 1];
+                    //connect to lobby
+                    if (connect_lobby_idx >= 0) {
+                        if (args.Length > connect_lobby_idx + 1 && ulong.TryParse(args[connect_lobby_idx + 1], out var id))
+                        {
+                            Debug($"joining lobby with id {id} from the command line");
+                            MatchmakingManager.currentInstance.RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
                         }
-                        break;
+                        else
+                        {
+                            Error($"found +connect_lobby but no valid lobby id in the command line");
+                        }
                     }
                 }
             }
