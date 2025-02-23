@@ -53,12 +53,10 @@ public partial class RainMeadow
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
-
-
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
-        if (isArenaMode(out var _) && self.IsLocal())
+        if (isArenaMode(out var _))
         {
             if (self.grasps != null)
             {
@@ -94,14 +92,8 @@ public partial class RainMeadow
         {
             if (self.slugcat.input[0].jmp)
             {
-                for (int j = 0; j < self.owner.grasps.Length; j++)
-                {
-                    if (self.owner.grasps[j]?.grabbed is Player)
-                    {
-                        self.owner.ReleaseGrasp(j);
-                    }
-                }
                 self.owner.slugOnBack.DropSlug();
+
             }
         }
     }
@@ -163,7 +155,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive)))
+                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
@@ -846,9 +838,20 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        if (isArenaMode(out var arena))
         {
-            if (crit is Player) return false;
+            if (arena.countdownInitiatedHoldFire)
+            {
+                if (crit is Player)
+                {
+                    return false;
+                }
+            }
+
+            if (arena.disableMaul && crit is Player)
+            {
+                return false;
+            }
         }
         return orig(self, crit);
     }
