@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -112,7 +113,7 @@ namespace RainMeadow
         /// <param name="requiredMods"></param>
         /// <param name="bannedMods"></param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied)</returns>
-        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null)
+        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
         {
             try
             {
@@ -153,7 +154,6 @@ namespace RainMeadow
 
                 if (!reorder) return true;
 
-                //only works right for Steam, sadly. I don't know enough about this to make it work for LAN
                 var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
 
                 List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
@@ -237,8 +237,18 @@ namespace RainMeadow
 
                         if (modApplier.requiresRestart)
                         {
-                            if (lobbyID != "Unknown Lan Lobby")
-                                Utils.Restart($"+connect_lobby {lobbyID}" + (password == null ? "" : $" +lobby_password {password}"));
+                            if (lanEndpoint != null)
+                            {
+                                try
+                                {
+                                    Utils.Restart($"+connect_lobby {lanEndpoint.Address.Address} {lanEndpoint.Port}" + (password == null ? "" : $"+lobby_password {password}"));
+                                }
+                                catch (Exception ex) { RainMeadow.Debug(ex); }
+                            }
+                            else if (lobbyID != "Unknown Lan Lobby")
+                            {
+                                Utils.Restart($"+connect_lobby {lobbyID}" + (password == null ? "" : $"+lobby_password {password}"));
+                            }
                             else
                                 Utils.Restart();
                         }
