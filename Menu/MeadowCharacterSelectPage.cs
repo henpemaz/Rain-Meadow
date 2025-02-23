@@ -21,7 +21,7 @@ namespace RainMeadow
             this.character = character;
             this.locked = locked;
 
-            string main = locked ? "Locked" : GetSaveLocation();
+            string main = locked ? Utils.Translate("Locked") : GetSaveLocation();
             string info = "";
             isNew = string.IsNullOrEmpty(main);
             if (isNew)
