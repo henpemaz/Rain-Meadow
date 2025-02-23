@@ -118,10 +118,10 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
-                var active = ModManager.ActiveMods.Select(mod => mod.id);
+                var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active);
-                var enable = requiredMods.Except(active);
+                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+                var enable = requiredMods.Except(active).ToList();
 
                 //determine whether a reorder is necessary
                 if (!disable.Any() && !enable.Any())
@@ -132,6 +132,8 @@ namespace RainMeadow
                         int prevIdx = Int32.MinValue;
                         for (int i = 0; i < requiredMods.Length; i++)
                         {
+                            if (requiredMods[i] == "henpemaz_rainmeadow")
+                                continue; //ignore Rain Meadow when determining whether mods need to be reordered
                             int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
                             if (newIdx < prevIdx)
                             {
@@ -171,6 +173,12 @@ namespace RainMeadow
                     }
                 }
 
+                //add mods that have their dependencies disabled to the disable list (e.g: a mod that requires Slugbase)
+                foreach (var mod in ModManager.ActiveMods)
+                    if (!disable.Contains(mod.id)) //ignore mods that are already in disable; no change necessary
+                        if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
+                            disable.Add(mod.id); //disable the mod
+
                 foreach (var id in disable)
                 {
                     int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
@@ -186,19 +194,23 @@ namespace RainMeadow
                 //occasionally there will somehow be blank/nonexistent mods in MissingMods. This messes stuff up
                 missingMods.RemoveAll(id => id == "" || id == null);
 
-                //reorder mods
-                //try using negative indices, just to simplify things? Will that even work??
-                int lowestLoadIdx = ModManager.InstalledMods.MinBy(mod => mod.loadOrder).loadOrder;
-                for (int i = 0; i < requiredMods.Length; i++)
+                if (missingMods.Count < 1) //there's no need to care about load order if we can't apply the mods anyway
                 {
-                    int idx = ModManager.InstalledMods.FindIndex(_mod => _mod.id == requiredMods[i]);
-                    if (idx >= 0) pendingLoadOrder[idx] = i - requiredMods.Length + lowestLoadIdx;
-                }
+                    //reorder mods
+                    //try using negative indices, just to simplify things? Will that even work??
+                    int lowestLoadIdx = ModManager.InstalledMods.MinBy(mod => mod.loadOrder).loadOrder;
+                    for (int i = 0; i < requiredMods.Length; i++)
+                    {
+                        int idx = ModManager.InstalledMods.FindIndex(mod => mod.id == requiredMods[i]);
+                        if (idx >= 0) pendingLoadOrder[idx] = i - requiredMods.Length + lowestLoadIdx;
+                        else RainMeadow.Debug($"Couldn't find instance of {requiredMods[i]} in InstalledMods");
+                    }
 
-                string loadOrderString = "Load Order: "; //log the load order
-                for (int i = 0; i < pendingLoadOrder.Count; i++)
-                    if (pendingEnabled[i]) loadOrderString += pendingLoadOrder[i] + "-" + ModManager.InstalledMods[i].id + ", ";
-                RainMeadow.Debug(loadOrderString);
+                    string loadOrderString = "Load Order: "; //log the load order
+                    for (int i = 0; i < pendingLoadOrder.Count; i++)
+                        if (pendingEnabled[i]) loadOrderString += pendingLoadOrder[i] + "-" + ModManager.InstalledMods[i].id + ", ";
+                    RainMeadow.Debug(loadOrderString);
+                }
 
                 //check for missing DLC
                 List<string> missingDLC = new();
