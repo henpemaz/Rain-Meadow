@@ -9,7 +9,7 @@ Lobby Mode|大厅模式
 
 Search Lobbies|搜索大厅
 
-'s Lobby|的大厅
+<USERNAME>'s Lobby|<USERNAME>的大厅
 All|所有
 Meadow|草地
 Story|故事

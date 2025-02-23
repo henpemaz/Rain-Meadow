@@ -114,7 +114,7 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new SteamLobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
+                        lobbies[i] = new SteamLobbyInfo(id, Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, USERNAME_KEY)), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
                     }
                 }
 
@@ -174,8 +174,7 @@ namespace RainMeadow
                     RainMeadow.Debug("success");
                     lobbyID = new CSteamID(param.m_ulSteamIDLobby);
                     SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
-                    RainMeadow.Error(Utils.Translate("'s Lobby"));
-                    SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + Utils.Translate("'s Lobby"));
+                    SteamMatchmaking.SetLobbyData(lobbyID, USERNAME_KEY, SteamFriends.GetPersonaName());
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
@@ -212,7 +211,7 @@ namespace RainMeadow
                     if (owner == OnlineManager.mePlayer)
                     {
                         SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
-                        SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + Utils.Translate("'s Lobby"));
+                        SteamMatchmaking.SetLobbyData(lobbyID, USERNAME_KEY, SteamFriends.GetPersonaName());
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 

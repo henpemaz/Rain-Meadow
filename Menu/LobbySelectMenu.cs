@@ -42,8 +42,8 @@ namespace RainMeadow
             mainPage.subObjects.Add(lobbyList);
 
             // title at the top
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
             this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
             var creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));

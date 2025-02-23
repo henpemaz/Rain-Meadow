@@ -45,7 +45,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             }
         }
 
-        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), $"Click to join {lobbyInfo.name}")
+        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), Utils.Translate("Click to join") + lobbyInfo.name)
         {
             this.fade = 1f;
             this.lobbyInfo = lobbyInfo;

@@ -329,7 +329,7 @@ namespace RainMeadow {
 
         public override string GetLobbyID() {
             if (OnlineManager.lobby != null) {
-                return (OnlineManager.lobby.owner.id as LANPlayerId)?.GetPersonaName() ?? Utils.Translate("Nobody") + Utils.Translate("'s Lobby");
+                return (OnlineManager.lobby.owner.id as LANPlayerId)?.GetPersonaName() ?? Utils.Translate("Nobody");
             }
 
             return "Unknown Lan Lobby";
