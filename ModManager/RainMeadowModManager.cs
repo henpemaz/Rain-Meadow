@@ -61,11 +61,11 @@ namespace RainMeadow
             return id; //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
         }
 
-        public static string RequiredModsArrayToString(string[] requiredMods)
+        public static string ModArrayToString(string[] requiredMods)
         {
             return string.Join("\n", requiredMods);
         }
-        public static string[] RequiredModsStringToArray(string requiredMods)
+        public static string[] ModStringToArray(string requiredMods)
         {
             return requiredMods.Split('\n');
         }
@@ -108,11 +108,14 @@ namespace RainMeadow
         }
 
         /// <summary>
-        /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary
+        /// Checks the user's mod list with the lobby, and makes his alter his mod list if necessary.
         /// </summary>
-        /// <param name="requiredMods"></param>
-        /// <param name="bannedMods"></param>
-        /// <returns>True if the mods were successfully applied (or didn't need to be applied)</returns>
+        /// <param name="requiredMods">Mods that the user MUST have in order to join the lobby</param>
+        /// <param name="bannedMods">Mods that the user must NOT have, unless the mods are in <paramref name="requiredMods"/></param>
+        /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
+        /// <param name="password">The lobby's password. Used solely for rejoining lobbies after a restart.</param>
+        /// <param name="lanEndpoint">The IPEndPoint of the LAN lobby (if applicable). Used solely for rejoining lobbies after a restart.</param>
+        /// <returns>True if the mods were successfully applied (or didn't need to be applied).</returns>
         internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
         {
             try

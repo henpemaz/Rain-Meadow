@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static RainMeadow.RainMeadowModManager;
 using static RainMeadow.LANMatchmakingManager;
 
 namespace RainMeadow
@@ -321,7 +322,7 @@ namespace RainMeadow
             JoinLobbyThread = new(() =>
             {
                 if (!checkMods
-                || RainMeadowModManager.CheckMods(RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods), [], false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null))
+                || CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods), false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null))
                 {
                     ShowLoadingDialog("Joining lobby...");
                     RequestLobbyJoin(lobby, password);

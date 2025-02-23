@@ -17,8 +17,8 @@ namespace RainMeadow {
     public class LANMatchmakingManager : MatchmakingManager {
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
-            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "") : 
-                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods) {
+            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "") : 
+                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
                 this.endPoint = endPoint;
             }
         }   
@@ -155,7 +155,8 @@ namespace RainMeadow {
                 if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
                         maxplayercount, "LAN Lobby", OnlineManager.lobby.hasPassword,
-                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
+                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count,
+                        RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()), RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
             }
