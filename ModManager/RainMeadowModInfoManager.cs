@@ -103,11 +103,11 @@ public static class RainMeadowModInfoManager
     {
         var modInfo = new RainMeadowModInfo();
 
-        // TODO: update conditions sometime
-        // if (mod.modifiesRegions)
-        // {
-        //     modInfo.SyncRequiredMods.Add(mod.id);
-        // }
+        // TODO: consider mod.modifiesRegions
+        if (Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+        {
+            modInfo.SyncRequiredMods.Add(mod.id);
+        }
 
         return modInfo;
     }

@@ -9,8 +9,8 @@ namespace RainMeadow
     public static class RainMeadowModManager
     {
         // TODO: possibly rename these
-        public static string SyncRequiredModsFileName => "meadow-syncrequiredmods.txt";
-        public static string BannedOnlineModsFileName => "meadow-bannedonlinemods.txt";
+        public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
+        public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
         public static string SyncRequiredModsExplanationComment => """
                                                                    // The following is a list of mods that must be synced between client and host:
@@ -28,7 +28,6 @@ namespace RainMeadow
 
                                                                    """;
 
-
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
@@ -43,8 +42,7 @@ namespace RainMeadow
             requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
 
             return ModManager.ActiveMods
-                .Where(mod => requiredMods.Contains(mod.id)
-                              || Directory.Exists(Path.Combine(mod.path, "modify", "world"))) // TODO: check if this is still necessary, see GetGeneratedModInfo()
+                .Where(mod => requiredMods.Contains(mod.id))
                 .Select(mod => mod.id)
                 .ToArray();
         }
@@ -154,7 +152,7 @@ namespace RainMeadow
 
             if (startingComment != "")
             {
-                if (existingLines.Count == 0 || existingLines[0] != startingComment.Split('\n')[0])
+                if (existingLines.Count == 0 || existingLines[0].Trim() != startingComment.Split('\n')[0].Trim())
                 {
                     existingLines.Insert(0, startingComment);
                 }
