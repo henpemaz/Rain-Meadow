@@ -224,7 +224,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 215, Translate("Inv: Enable ???"), bigText: false),
                 new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
 
-                new OpLabel(10f, 160, "Mauling: Disable", bigText: false),
+                new OpLabel(10f, 160, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
 
         };
