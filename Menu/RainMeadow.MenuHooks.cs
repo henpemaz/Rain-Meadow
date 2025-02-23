@@ -330,7 +330,7 @@ namespace RainMeadow
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
                 var args = System.Environment.GetCommandLineArgs();
-                int connect_lobby_idx = Array.IndexOf(args, "+connect_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
+                int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"), connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
 
                 //find password, if it exists
                 string? password = null;
@@ -338,27 +338,25 @@ namespace RainMeadow
                     password = args[password_idx + 1];
 
                 //connect to lobby
-                if (connect_lobby_idx >= 0) {
-                    if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam)
+                if (connect_steam_idx >= 0)
+                {
+                    if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
                     {
-                        if (args.Length > connect_lobby_idx + 1 && ulong.TryParse(args[connect_lobby_idx + 1], out var id))
-                        {
-                            Debug($"joining lobby with id {id} from the command line");
-                            MatchmakingManager.currentInstance.RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
-                        }
-                        else
-                            Error($"found +connect_lobby but no valid lobby id in the command line");
+                        Debug($"joining lobby with id {id} from the command line");
+                        MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
                     }
-                    else if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
+                    else
+                        Error($"found +connect_lan_lobby but no valid lobby id in the command line");
+                }
+                else if (connect_lan_idx >= 0)
+                {
+                    if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
                     {
-                        if (args.Length > connect_lobby_idx + 2 && long.TryParse(args[connect_lobby_idx + 1], out var address) && int.TryParse(args[connect_lobby_idx + 2], out var port))
-                        {
-                            Debug($"joining lobby with address {address} and port {port} from the command line");
-                            MatchmakingManager.currentInstance.RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), password);
-                        }
-                        else
-                            Error($"found +connect_lobby but no valid lobby address and/or port in the command line");
+                        Debug($"joining lobby with address {address} and port {port} from the command line");
+                        MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN].RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), password);
                     }
+                    else
+                        Error($"found +connect_lan_lobby but no valid lobby address and/or port in the command line");
                 }
             }
             orig(self, ID);
