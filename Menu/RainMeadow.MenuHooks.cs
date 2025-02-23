@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using static RainMeadow.LANMatchmakingManager;
 
@@ -329,35 +331,40 @@ namespace RainMeadow
 
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
-                var args = System.Environment.GetCommandLineArgs();
-                int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"), connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
-
-                //find password, if it exists
-                string? password = null;
-                if (password_idx >= 0 && args.Length > password_idx + 1)
-                    password = args[password_idx + 1];
-
-                //connect to lobby
-                if (connect_steam_idx >= 0)
+                new Thread(() =>
                 {
-                    if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
+                    var args = System.Environment.GetCommandLineArgs();
+                    int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"), connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
+
+                    //find password, if it exists
+                    string? password = null;
+                    if (password_idx >= 0 && args.Length > password_idx + 1)
+                        password = args[password_idx + 1];
+
+                    //connect to lobby
+                    if (connect_steam_idx >= 0)
                     {
-                        Debug($"joining lobby with id {id} from the command line");
-                        MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
+                        if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
+                        {
+                            Debug($"joining lobby with id {id} from the command line");
+                            Thread.Sleep(2000); //extra delay in order to wait for everything to be ready
+                            MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
+                        }
+                        else
+                            Error($"found +connect_lan_lobby but no valid lobby id in the command line");
                     }
-                    else
-                        Error($"found +connect_lan_lobby but no valid lobby id in the command line");
-                }
-                else if (connect_lan_idx >= 0)
-                {
-                    if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
+                    else if (connect_lan_idx >= 0)
                     {
-                        Debug($"joining lobby with address {address} and port {port} from the command line");
-                        MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN].RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), password);
+                        if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
+                        {
+                            Debug($"joining lobby with address {address} and port {port} from the command line");
+                            Thread.Sleep(2000); //extra delay in order to wait for everything to be ready
+                            MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN].RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), password);
+                        }
+                        else
+                            Error($"found +connect_lan_lobby but no valid lobby address and/or port in the command line");
                     }
-                    else
-                        Error($"found +connect_lan_lobby but no valid lobby address and/or port in the command line");
-                }
+                }).Start();
             }
             orig(self, ID);
         }
