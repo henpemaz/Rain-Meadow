@@ -1017,7 +1017,7 @@ namespace RainMeadow
 
             viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
             viewPrevPlayer.symbolSprite.rotation = 270;
-            if (currentPlayerPosition < holdPlayerPosition)
+            if (currentPlayerPosition <= holdPlayerPosition)
             {
                 viewPrevPlayer.buttonBehav.greyedOut = true;
             }
@@ -1063,7 +1063,7 @@ namespace RainMeadow
                     classButtons[holdPlayerPosition].readyForCombat = false;
                 }
 
-                if (currentPlayerPosition - 1 <= 3)
+                if (currentPlayerPosition <= holdPlayerPosition)
                 {
                     RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
                     viewPrevPlayer.buttonBehav.greyedOut = true;
