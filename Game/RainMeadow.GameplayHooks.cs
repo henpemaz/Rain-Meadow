@@ -39,6 +39,22 @@ namespace RainMeadow
             On.Creature.Die += Creature_Die; // do not die!
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.DeafLoopHolder.Update += DeafLoopHolder_Update;
+            On.Weapon.HitThisObject += Weapon_HitThisObject;
+
+        }
+
+        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
+        {
+            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            {
+                return true;
+            }
+
+            if (ModManager.MSC && isArenaMode(out var _) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
+            {
+                return false;
+            }
+            return orig(self, obj);
         }
 
         private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
@@ -70,8 +86,8 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_1);
                 c.EmitDelegate((Centipede self, PhysicalObject shockObj) =>
                 {
-                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player)
-                        DeathMessage.CreatureKillPlayer(self, shockObj as Player);
+                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && shockObj is Player player)
+                        DeathMessage.CvPRPC(self, player);
                 });
             }
             catch (Exception e)
@@ -80,6 +96,7 @@ namespace RainMeadow
             }
         }
 
+        // Keep this for now despite having DeathContextualizer
         private void Player_TerrainImpact(ILContext il)
         {
             try
@@ -94,7 +111,8 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
                     {
-                        DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                        //DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                        DeathMessage.EnvironmentalRPC(self, DeathMessage.DeathType.FallDamage);
                     }
 
                 });
@@ -469,7 +487,8 @@ namespace RainMeadow
                     if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                     {
 
-                        DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
+                        //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
+                        DeathMessage.EnvironmentalRPC(self as Player, DeathMessage.DeathType.Abyss);
                         RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
                         self.Die();
                         self.State.alive = false;

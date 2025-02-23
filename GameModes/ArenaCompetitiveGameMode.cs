@@ -16,7 +16,6 @@ namespace RainMeadow
 
         public bool isInGame = false;
         public int playerLeftGame = 0;
-        public int clientsAreReadiedUp = 0;
         public int currentLevel = 0;
         public int totalLevelCount = 0;
         public bool allPlayersReadyLockLobby = false;
@@ -25,6 +24,7 @@ namespace RainMeadow
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
+        public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public int painCatThrowingSkill = 0;
 
         public string paincatName = "";
