@@ -244,13 +244,13 @@ namespace RainMeadow
                             {
                                 try
                                 {
-                                    Utils.Restart($"+connect_lan_lobby {lanEndpoint.Address.Address} {lanEndpoint.Port}" + (password == null ? "" : $"+lobby_password {password}"));
+                                    Utils.Restart($"+connect_lan_lobby {lanEndpoint.Address.Address} {lanEndpoint.Port}" + (password == null ? "" : $" +lobby_password {password}"));
                                 }
                                 catch (Exception ex) { RainMeadow.Debug(ex); }
                             }
                             else if (lobbyID != "Unknown Lan Lobby")
                             {
-                                Utils.Restart($"+connect_steam_lobby {lobbyID}" + (password == null ? "" : $"+lobby_password {password}"));
+                                Utils.Restart($"+connect_steam_lobby {lobbyID}" + (password == null ? "" : $" +lobby_password {password}"));
                             }
                             else
                                 Utils.Restart();
