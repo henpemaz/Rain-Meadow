@@ -173,17 +173,17 @@ namespace RainMeadow
             }
 
 
-            this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode: {arena.currentGameMode}"), new Vector2(this.usernameButtons[0].pos.x, usernameButtons[0].pos.y + 200f), new Vector2(10f, 10f), true);
+            this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode:") + " " + Utils.Translate(arena.currentGameMode), new Vector2(this.usernameButtons[0].pos.x, usernameButtons[0].pos.y + 200f), new Vector2(10f, 10f), true);
             this.displayCurrentGameMode.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(displayCurrentGameMode);
             // Ready up label
-            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}"), new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 170f), new Vector2(10f, 10f), false);
+            this.totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], this.Translate($"Ready:") + " " + arena.clientsAreReadiedUp + "/" + OnlineManager.players.Count, new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 170f), new Vector2(10f, 10f), false);
             this.totalClientsReadiedUpOnPage.label.alignment = FLabelAlignment.Left;
 
             this.pages[0].subObjects.Add(totalClientsReadiedUpOnPage);
 
 
-            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Playlist Progress: {arena.currentLevel} / {arena.totalLevelCount}"), new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 150f), new Vector2(10f, 10f), false);
+            this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount, new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 150f), new Vector2(10f, 10f), false);
             this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(currentLevelProgression);
 
@@ -894,18 +894,18 @@ namespace RainMeadow
 
         private void UpdateReadyUpLabel()
         {
-            this.totalClientsReadiedUpOnPage.text = this.Translate($"Ready: {arena.clientsAreReadiedUp} / {OnlineManager.players.Count}");
+            this.totalClientsReadiedUpOnPage.text = this.Translate($"Ready:") + " " + arena.clientsAreReadiedUp + "/" + OnlineManager.players.Count;
 
         }
 
         private void UpdateLevelCounter()
         {
-            this.currentLevelProgression.text = this.Translate($"Playlist Progress: {arena.currentLevel} / {arena.totalLevelCount}");
+            this.currentLevelProgression.text = this.Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;
 
         }
         private void UpdateGameModeLabel()
         {
-            this.displayCurrentGameMode.text = $"Current Mode: {arena.currentGameMode}";
+            this.displayCurrentGameMode.text = Translate("Current Mode:") + " " + Utils.Translate(arena.currentGameMode);
 
         }
 

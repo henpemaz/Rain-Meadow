@@ -7,38 +7,40 @@ namespace RainMeadow
 {
     public class MeadowCredits : SmartMenu
     {
-        string credits = @"
-Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz
+        string credits = $"""
 
-Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?
+                         {Utils.Translate("Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz")}
 
-This mod and all its features were brought to you by really awesome people from the community.
+                         {Utils.Translate("Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?")}
 
-Henpemaz - Lead Developer
-Wolfycatt(Ana) - Lead Artist
-Intikus - Lead Audio Designer
-Noircatto - Programming, engine
-HelloThere - Programming, sound
-A1iex - UI Design
-FranklyGD - Programming, engine
-MC41Games - Programming, menus
-Silvyger - Programming, arena
-Vigaro - Programming, menus
-BitiLope - Programming, story
-Pudgy Turtle - Programming, story
-ddemile - Programming, modsync
-UO - Programming, story, arena
-Saddest - Programming, UI, chat
-notchoc - Programming, story
-phanie_ - Illustration
-Timbits - Programming, UI, menus
-Zedreus - Programming, UI, story
-Persondotexe - Programming, modsync
-invalidunits - Programming, UI, LAN
-forthfora - Programming, modsync
+                         {Utils.Translate("This mod and all its features were brought to you by really awesome people from the community.")}
 
-Thank you playtesters from the Rain Meadow discord as well.
-";
+                         Henpemaz - {Utils.Translate("Lead Developer")}
+                         Wolfycatt(Ana) - {Utils.Translate("Lead Artist")}
+                         Intikus - {Utils.Translate("Lead Audio Designer")}
+                         Noircatto - {Utils.Translate("Programming, engine")}
+                         HelloThere - {Utils.Translate("Programming, sound")}
+                         A1iex - {Utils.Translate("UI Design")}
+                         FranklyGD - {Utils.Translate("Programming, engine")}
+                         MC41Games - {Utils.Translate("Programming, menus")}
+                         Silvyger - {Utils.Translate("Programming, arena")}
+                         Vigaro - {Utils.Translate("Programming, menus")}
+                         BitiLope - {Utils.Translate("Programming, story")}
+                         Pudgy Turtle - {Utils.Translate("Programming, story")}
+                         ddemile - {Utils.Translate("Programming, modsync")}
+                         UO - {Utils.Translate("Programming, story, arena")}
+                         Saddest - {Utils.Translate("Programming, UI, chat")}
+                         notchoc - {Utils.Translate("Programming, story")}
+                         phanie_ - {Utils.Translate("Illustration")}
+                         Timbits - {Utils.Translate("Programming, UI, menus")}
+                         Zedreus - {Utils.Translate("Programming, UI, story")}
+                         Persondotexe - {Utils.Translate("Programming, modsync")}
+                         invalidunits - {Utils.Translate("Programming, UI, LAN")}
+                         forthfora - {Utils.Translate("Programming, modsync")}
+
+                         {Utils.Translate("Thank you playtesters from the Rain Meadow discord as well.")}
+
+                         """;
 
 
         public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;

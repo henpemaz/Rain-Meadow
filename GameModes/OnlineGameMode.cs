@@ -135,7 +135,7 @@ namespace RainMeadow
         {
             if (!typeof(OnlineGameMode).IsAssignableFrom(type) || type.GetConstructor(new[] { typeof(Lobby) }) == null) throw new ArgumentException("Needs to be OnlineGameMode with a (Lobby) ctor");
             gamemodes[onlineGameModeType] = type;
-            OnlineGameModeType.descriptions[onlineGameModeType] = description;
+            OnlineGameModeType.descriptions[onlineGameModeType] = Utils.Translate(description);
         }
 
         public static void InitializeBuiltinTypes()
