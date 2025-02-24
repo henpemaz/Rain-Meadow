@@ -115,7 +115,7 @@ namespace RainMeadow
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="password">The lobby's password. Used solely for rejoining lobbies after a restart.</param>
         /// <param name="lanEndpoint">The IPEndPoint of the LAN lobby (if applicable). Used solely for rejoining lobbies after a restart.</param>
-        /// <returns>True if the mods were successfully applied (or didn't need to be applied).</returns>
+        /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
         internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
         {
             try
@@ -126,6 +126,10 @@ namespace RainMeadow
                 bool reorder = true; //or change mods whatsoever
                 var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
                 var enable = requiredMods.Except(active).ToList();
+
+                //clear phony entries to the mod list
+                enable.RemoveAll(mod => mod == null || mod == "");
+                disable.RemoveAll(mod => mod == null || mod == "");
 
                 //determine whether a reorder is necessary
                 if (!disable.Any() && !enable.Any())
@@ -182,6 +186,10 @@ namespace RainMeadow
                         if (disable.Exists(id => mod.requirements.Contains(id))) //if one of its dependencies is being disabled
                             disable.Add(mod.id); //disable the mod
 
+                //clear phony entries to the mod list again, just in case
+                enable.RemoveAll(mod => mod == null || mod == "");
+                disable.RemoveAll(mod => mod == null || mod == "");
+
                 foreach (var id in disable)
                 {
                     int index = ModManager.InstalledMods.FindIndex(mod => mod.id == id);
@@ -194,7 +202,9 @@ namespace RainMeadow
                     modNamesToDisable.Add(ModManager.InstalledMods[index].LocalizedName);
                 }
 
-                //occasionally there will somehow be blank/nonexistent mods in MissingMods. This messes stuff up
+                //occasionally there will somehow be blank/nonexistent mods in the mod lists. This messes stuff up
+                modNamesToEnable.RemoveAll(id => id == "" || id == null);
+                modNamesToDisable.RemoveAll(id => id == "" || id == null);
                 missingMods.RemoveAll(id => id == "" || id == null);
 
                 if (missingMods.Count < 1) //there's no need to care about load order if we can't apply the mods anyway
@@ -262,9 +272,11 @@ namespace RainMeadow
                 while (!modApplier.ended)
                     Thread.Sleep(5);
 
-                RainMeadow.Debug($"Returning successful = {!modApplier.cancelled}");
+                bool successful = !modApplier.cancelled && !modApplier.requiresRestart;
 
-                return !modApplier.cancelled;
+                RainMeadow.Debug($"Returning successful = {successful}");
+
+                return successful;
             }
             catch (Exception ex)
             {

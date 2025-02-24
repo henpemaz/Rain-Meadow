@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 
 namespace RainMeadow
 {
@@ -91,6 +92,9 @@ namespace RainMeadow
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);
+
+        public virtual void JoinLobbyUsingID(ulong ID, string? password) { RainMeadow.Debug("JoinUsingID isn't supported for this matchmaker!"); }
+        public virtual void JoinLobbyUsingEndpoint(IPEndPoint endPoint, string? password) { RainMeadow.Debug("JoinUsingEndpoint isn't supported for this matchmaker!"); }
 
         public abstract void LeaveLobby();
 

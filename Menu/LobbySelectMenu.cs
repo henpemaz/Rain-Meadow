@@ -312,7 +312,18 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
-        private Thread? JoinLobbyThread = null;
+        private static Thread? JoinLobbyThread = null;
+        /// <summary>
+        /// To prevent issues with modsync, only one join lobby attempt is allowed at a time.
+        /// This function provides an easy way to cancel any previous attempts, so you can start a new one.
+        /// </summary>
+        public static void CancelJoinLobbyAttempt()
+        {
+            if (JoinLobbyThread != null) RainMeadow.Debug("Cancelling join lobby attempt");
+            JoinLobbyThread?.Abort();
+            JoinLobbyThread = null;
+        }
+
         public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
         {
             //don't start the thread if it's already going!

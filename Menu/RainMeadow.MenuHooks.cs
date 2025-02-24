@@ -331,7 +331,7 @@ namespace RainMeadow
 
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
-                new Thread(() =>
+                try
                 {
                     var args = System.Environment.GetCommandLineArgs();
                     int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"), connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
@@ -346,25 +346,41 @@ namespace RainMeadow
                     {
                         if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
                         {
-                            Debug($"joining lobby with id {id} from the command line");
-                            Thread.Sleep(2000); //extra delay in order to wait for everything to be ready
-                            MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), password);
+                            foreach (var domain in MatchmakingManager.supported_matchmakers)
+                            {
+                                if (domain == MatchmakingManager.MatchMakingDomain.Steam)
+                                {
+                                    Debug($"joining lobby with id {id} from the command line");
+                                    MatchmakingManager.instances[domain].JoinLobbyUsingID(id, password);
+                                    break;
+                                }
+                            }
                         }
                         else
-                            Error($"found +connect_lan_lobby but no valid lobby id in the command line");
+                            Error($"found +connect_steam_lobby but no valid lobby id in the command line");
                     }
                     else if (connect_lan_idx >= 0)
                     {
                         if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
                         {
-                            Debug($"joining lobby with address {address} and port {port} from the command line");
-                            Thread.Sleep(2000); //extra delay in order to wait for everything to be ready
-                            MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN].RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), password);
+                            foreach (var domain in MatchmakingManager.supported_matchmakers)
+                            {
+                                if (domain == MatchmakingManager.MatchMakingDomain.LAN)
+                                {
+                                    Debug($"joining lobby with address {address} and port {port} from the command line");
+                                    MatchmakingManager.instances[domain].JoinLobbyUsingEndpoint(new IPEndPoint(address, port), password);
+                                    break;
+                                }
+                            }
                         }
                         else
                             Error($"found +connect_lan_lobby but no valid lobby address and/or port in the command line");
                     }
-                }).Start();
+                }
+                catch (Exception ex)
+                {
+                    RainMeadow.Debug(ex);
+                }
             }
             orig(self, ID);
         }

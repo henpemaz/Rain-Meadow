@@ -162,6 +162,11 @@ namespace RainMeadow
             }
         }
 
+        public override void JoinLobbyUsingID(ulong ID, string? password)
+        {
+            RequestJoinLobby(new SteamLobbyInfo(new CSteamID(ID), "", "", 0, false, 4), password);
+        }
+
         private static string creatingWithMode;
         private static string? lobbyPassword;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)

@@ -294,6 +294,11 @@ namespace RainMeadow {
             }
         }
 
+        public override void JoinLobbyUsingEndpoint(IPEndPoint endPoint, string? password)
+        {
+            RequestJoinLobby(new LANLobbyInfo(endPoint, "", "", 0, false, 4), password);
+        }
+
         public override void LeaveLobby() {
 
             if (OnlineManager.players is not null) {
