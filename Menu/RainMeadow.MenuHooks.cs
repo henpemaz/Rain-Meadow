@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using static RainMeadow.LANMatchmakingManager;
 
 namespace RainMeadow
 {
@@ -328,54 +327,13 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
                 try
                 {
                     var args = System.Environment.GetCommandLineArgs();
-                    int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"), connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"), password_idx = Array.IndexOf(args, "+lobby_password");
-
-                    //find password, if it exists
-                    string? password = null;
-                    if (password_idx >= 0 && args.Length > password_idx + 1)
-                        password = args[password_idx + 1];
-
-                    //connect to lobby
-                    if (connect_steam_idx >= 0)
-                    {
-                        if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
-                        {
-                            foreach (var domain in MatchmakingManager.supported_matchmakers)
-                            {
-                                if (domain == MatchmakingManager.MatchMakingDomain.Steam)
-                                {
-                                    Debug($"joining lobby with id {id} from the command line");
-                                    MatchmakingManager.instances[domain].JoinLobbyUsingID(id, password);
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                            Error($"found +connect_steam_lobby but no valid lobby id in the command line");
-                    }
-                    else if (connect_lan_idx >= 0)
-                    {
-                        if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
-                        {
-                            foreach (var domain in MatchmakingManager.supported_matchmakers)
-                            {
-                                if (domain == MatchmakingManager.MatchMakingDomain.LAN)
-                                {
-                                    Debug($"joining lobby with address {address} and port {port} from the command line");
-                                    MatchmakingManager.instances[domain].JoinLobbyUsingEndpoint(new IPEndPoint(address, port), password);
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                            Error($"found +connect_lan_lobby but no valid lobby address and/or port in the command line");
-                    }
+                    
+                    MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
                 }
                 catch (Exception ex)
                 {
