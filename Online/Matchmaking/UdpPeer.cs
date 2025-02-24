@@ -820,12 +820,14 @@ namespace RainMeadow
             if (socket.Available != 0) {
                 sender = new IPEndPoint(IPAddress.Loopback, 8720);
                 
-                byte[] buffer = new byte[socket.Available];
+                byte[] buffer;
                 int len = 0;
+                
                 try {
-                    len = socket.ReceiveFrom(buffer, socket.Available, SocketFlags.None, ref sender);
-                } catch (SocketException except) {
-                    RainMeadow.Error(except.SocketErrorCode);
+                    buffer = new byte[socket.Available];
+                    len = socket.ReceiveFrom(buffer, ref sender);
+                } catch (Exception except) {
+                    RainMeadow.Error(except);
                     return null;
                 }
                 
@@ -835,12 +837,6 @@ namespace RainMeadow
 
                 RemotePeer? peer = GetRemotePeer(ipsender);
                 
-
-                
-
-
-                
-
                 using (MemoryStream stream = new(buffer, 0, len, false)) 
                 using (BinaryReader reader = new(stream)) {
                     try {
@@ -856,13 +852,12 @@ namespace RainMeadow
                         if (type != PacketType.UnreliableBroadcast) // If it's a broadcast, we don't need to start a converstation.
                         if (peer == null) {
                             RainMeadow.Debug("Recieved packet from peer we haven't started a conversation with.");
+                            RainMeadow.Debug(ipsender.ToString());
                             RainMeadow.Debug(Enum.GetName(typeof(PacketType), type));
                             return null;
                         }
 
                         if (peer != null) peer.TicksSinceLastIncomingPacket = 0;
-
-
 
                         switch (type) {
                             case PacketType.UnreliableBroadcast:
