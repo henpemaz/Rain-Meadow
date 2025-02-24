@@ -162,9 +162,15 @@ namespace RainMeadow
             }
         }
 
-        public override void JoinLobbyUsingID(ulong ID, string? password)
+        public override void JoinLobbyUsingArgs(params string?[] args)
         {
-            RequestJoinLobby(new SteamLobbyInfo(new CSteamID(ID), "", "", 0, false, 4), password);
+            if (args.Length >= 1 && ulong.TryParse(args[0], out var id))
+            {
+                Debug($"joining lobby with id {id} from the command line");
+                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length >= 2 ? args[1] : null);
+            }
+            else
+                Error($"failed to parse id");
         }
 
         private static string creatingWithMode;
