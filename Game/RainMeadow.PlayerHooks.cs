@@ -155,7 +155,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
-                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive)))
+                && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
                 PlayerMovementOverride.StopPlayerMovement(self);
             }
@@ -838,9 +838,20 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        if (isArenaMode(out var arena))
         {
-            if (crit is Player) return false;
+            if (arena.countdownInitiatedHoldFire)
+            {
+                if (crit is Player)
+                {
+                    return false;
+                }
+            }
+
+            if (arena.disableMaul && crit is Player)
+            {
+                return false;
+            }
         }
         return orig(self, crit);
     }

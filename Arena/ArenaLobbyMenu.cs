@@ -395,6 +395,24 @@ namespace RainMeadow
 
             }
 
+            if (!OnlineManager.lobby.isOwner)
+            {
+                if (classButtons != null && arena.playersReadiedUp.Count > 0)
+                {
+                    for (int i = 0; i < classButtons.Length; i++)
+                    {
+                        if (classButtons[i] != null)
+                        {
+                            if (classButtons[i].profileIdentifier != OnlineManager.mePlayer && classButtons[i].readyForCombat == false && arena.playersReadiedUp.Contains(classButtons[i].profileIdentifier.inLobbyId))
+                            {
+                                classButtons[i].readyForCombat = true; // in case the packets got dropped
+                                arena.playersReadiedUp = arena.playersReadiedUp; // re-request, some users report the state gets desynced
+                            }
+                        }
+                    }
+                }
+            }
+
             if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
             {
                 this.StartGame();
@@ -999,7 +1017,7 @@ namespace RainMeadow
 
             viewPrevPlayer = new SimplerSymbolButton(this, pages[0], "Menu_Symbol_Arrow", "VIEWPREV", new Vector2(classButtons[holdPlayerPosition].pos.x + 120f, classButtons[holdPlayerPosition].pos.y + 20));
             viewPrevPlayer.symbolSprite.rotation = 270;
-            if (currentPlayerPosition <= 3)
+            if (currentPlayerPosition <= holdPlayerPosition)
             {
                 viewPrevPlayer.buttonBehav.greyedOut = true;
             }
@@ -1045,7 +1063,7 @@ namespace RainMeadow
                     classButtons[holdPlayerPosition].readyForCombat = false;
                 }
 
-                if (currentPlayerPosition - 1 <= 3)
+                if (currentPlayerPosition <= holdPlayerPosition)
                 {
                     RainMeadow.Debug("Beginning of extended list: " + currentPlayerPosition);
                     viewPrevPlayer.buttonBehav.greyedOut = true;
