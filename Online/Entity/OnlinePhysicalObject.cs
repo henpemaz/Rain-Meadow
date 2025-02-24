@@ -172,6 +172,14 @@ namespace RainMeadow
             }
         }
 
+        public static void RegisterAndCleanOutRemoteEntity(AbstractPhysicalObject apo, OnlineResource rs)
+        {
+            RainMeadow.Debug("Unregistered entity being registered and exiting...");
+            var opo = RegisterPhysicalObject(apo);
+            opo.ExitResource(rs);
+
+        }
+
         protected virtual AbstractPhysicalObject ApoFromDef(OnlinePhysicalObjectDefinition newObjectEvent, OnlineResource inResource, AbstractPhysicalObjectState initialState)
         {
             World world = inResource is RoomSession rs ? rs.World : inResource is WorldSession ws ? ws.world : throw new InvalidProgrammerException("not room nor world");
