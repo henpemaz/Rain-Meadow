@@ -109,13 +109,12 @@ namespace RainMeadow
             //connect to lobby
             if (connect_steam_idx >= 0)
             {
-                if (args.Length > connect_steam_idx + 1 && ulong.TryParse(args[connect_steam_idx + 1], out var id))
+                if (args.Length > connect_steam_idx + 1)
                 {
                     foreach (var domain in supported_matchmakers)
                     {
                         if (domain == MatchMakingDomain.Steam)
                         {
-                            Debug($"joining lobby with id {id} from the command line");
                             instances[domain].JoinLobbyUsingArgs(args[connect_steam_idx + 1], password);
                             break;
                         }
@@ -126,13 +125,12 @@ namespace RainMeadow
             }
             else if (connect_lan_idx >= 0)
             {
-                if (args.Length > connect_lan_idx + 2 && long.TryParse(args[connect_lan_idx + 1], out var address) && int.TryParse(args[connect_lan_idx + 2], out var port))
+                if (args.Length > connect_lan_idx + 2)
                 {
                     foreach (var domain in supported_matchmakers)
                     {
                         if (domain == MatchMakingDomain.LAN)
                         {
-                            Debug($"joining lobby with address {address} and port {port} from the command line");
                             instances[domain].JoinLobbyUsingArgs(args[connect_lan_idx + 1], args[connect_lan_idx + 2], password);
                             break;
                         }
