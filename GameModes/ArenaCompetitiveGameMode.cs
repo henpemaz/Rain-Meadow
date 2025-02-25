@@ -14,21 +14,21 @@ namespace RainMeadow
 
         public bool registeredNewGameModes = false;
 
-        public bool isInGame = false;
-        public int playerLeftGame = 0;
-        public int currentLevel = 0;
-        public int totalLevelCount = 0;
-        public bool allPlayersReadyLockLobby = false;
-        public bool returnToLobby = false;
+        public bool isInGame;
+        public int playerLeftGame;
+        public int currentLevel;
+        public int totalLevelCount;
+        public bool allPlayersReadyLockLobby;
+        public bool returnToLobby;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
-        public int painCatThrowingSkill = 0;
+        public int painCatThrowingSkill;
 
-        public string paincatName = "";
-        public int lizardEvent = 0;
+        public string paincatName;
+        public int lizardEvent;
 
 
 
@@ -54,8 +54,9 @@ namespace RainMeadow
         public SlugcatCustomization avatarSettings;
 
         public List<string> playList = new List<string>();
-
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
+
+        public bool didParry;
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -64,7 +65,18 @@ namespace RainMeadow
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
-
+            didParry = false;
+            playerEnteredGame = 0;
+            painCatThrowingSkill = 0;
+            totalLevelCount = 0;
+            currentLevel = 0;
+            playerLeftGame = 0;
+            isInGame = false;
+            lizardEvent = 0;
+            paincatName = "";
+            allPlayersReadyLockLobby = false;
+            returnToLobby = false;
+            isInGame = false;
         }
 
         public void ResetInvDetails()
@@ -93,6 +105,13 @@ namespace RainMeadow
                     paincatName = "???";
                     break;
             }
+
+        }
+
+        public void ResetAtSession_ctor()
+        {
+            didParry = false;
+            ResetInvDetails();
 
         }
 

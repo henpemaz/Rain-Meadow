@@ -187,6 +187,12 @@ namespace RainMeadow
                 RainMeadow.Error("realized creature not found for: " + this);
                 return;
             }
+            if (RainMeadow.isArenaMode(out var arena) && arena.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                arena.didParry = false;
+                return;
+            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             RainMeadow.Debug($"{this} hit for {damage}");
