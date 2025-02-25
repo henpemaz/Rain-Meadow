@@ -166,11 +166,11 @@ namespace RainMeadow
         {
             if (args.Length >= 1 && ulong.TryParse(args[0], out var id))
             {
-                Debug($"joining lobby with id {id} from the command line");
-                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length >= 2 ? args[1] : null);
+                RainMeadow.Debug($"joining lobby with id {id} from the command line");
+                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length > 1 ? args[1] : null);
             }
             else
-                Error($"failed to parse id");
+                RainMeadow.Error($"failed to parse id: {string.Join(" ", args)}");
         }
 
         private static string creatingWithMode;

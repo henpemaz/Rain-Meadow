@@ -298,11 +298,11 @@ namespace RainMeadow {
         {
             if (args.Length >= 2 && long.TryParse(args[0], out var address) && int.TryParse(args[1], out var port))
             {
-                Debug($"joining lobby with address {address} and port {port} from the command line");
-                RequestJoinLobby(new LANLobbyInfo(new IPEndpoint(address, port), "", "", 0, false, 4), args.Length > 2 ? args[2] : null);
+                RainMeadow.Debug($"joining lobby with address {address} and port {port} from the command line");
+                RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), args.Length > 2 ? args[2] : null);
             }
             else
-                Error($"invalid address and port: {string.Join(" ", args)}");
+                RainMeadow.Error($"invalid address and port: {string.Join(" ", args)}");
         }
 
         public override void LeaveLobby() {

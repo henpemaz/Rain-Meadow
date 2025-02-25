@@ -121,7 +121,7 @@ namespace RainMeadow
                     }
                 }
                 else
-                    Error($"found +connect_steam_lobby but no valid lobby id in the command line");
+                    RainMeadow.Error("found +connect_steam_lobby but no valid lobby id in the command line");
             }
             else if (connect_lan_idx >= 0)
             {
@@ -137,7 +137,7 @@ namespace RainMeadow
                     }
                 }
                 else
-                    Error($"found +connect_lan_lobby but no valid lobby address and port in the command line");
+                    RainMeadow.Error("found +connect_lan_lobby but no valid lobby address and port in the command line");
             }
         }
 
