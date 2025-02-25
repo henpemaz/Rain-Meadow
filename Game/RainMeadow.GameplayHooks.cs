@@ -40,7 +40,17 @@ namespace RainMeadow
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
 
+        }
+
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        {
+            if (isArenaMode(out var arena) && self.IsLocal())
+            {
+                arena.didParry = true;
+            }
+            orig(self, obj);
         }
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)

@@ -181,6 +181,12 @@ namespace RainMeadow
         public void CreatureViolence(OnlinePhysicalObject? onlineVillain, byte victimChunkIndex, AppendageRef? victimAppendageRef, Vector2? directionAndMomentum, Creature.DamageType damageType, float damage, float stunBonus)
         {
             if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
+            if (RainMeadow.isArenaMode(out var arena) && arena.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                arena.didParry = false;
+                return;
+            }
             var creature = (this.apo.realizedObject as Creature);
             if (creature == null)
             {
