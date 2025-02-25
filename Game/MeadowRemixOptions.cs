@@ -24,8 +24,14 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatThrows;
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
+    public readonly Configurable<bool> BlockMaul;
+    public readonly Configurable<float> ArenaScrollSpeed;
+
+
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
+    public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
+
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -65,11 +71,15 @@ public class RainMeadowOptions : OptionInterface
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
+        BlockMaul = config.Bind("BlockMaul", false);
+        ArenaScrollSpeed =  config.Bind("ArenaScrollSpeed", 10f);
+
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
+        StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
     }
 
@@ -135,14 +145,14 @@ public class RainMeadowOptions : OptionInterface
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 400f, "Username Toggle", bigText: false),
-                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 380f)),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 375f)),
                 new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters("If selected, replaces holding to toggling to view usernames")),
 
                 new OpLabel(10, 320f, "Key used for toggling spectator mode"),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 245f, "Pointing"),
-                new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
+                new OpLabel(10, 245f, "Stop Inputs While Spectating"),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
 
                 new OpLabel(10, 180f, "Chat Log Toggle"),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
@@ -189,7 +199,8 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[13]
+            OnlineArenaSettings = new UIelement[17]
+
             {
                 new OpLabel(10f, 550f, "Arena", bigText: true),
                 new OpLabel(10f, 505, "Countdown timer. 60 == 1s", bigText: false),
@@ -215,6 +226,15 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 215, "Inv: Enable ???", bigText: false),
                 new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
+
+                new OpLabel(10f, 160, "Mauling: Disable", bigText: false),
+                new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
+
+                new OpLabel(10f, 100, "Player Result Scroll Speed", bigText: false),
+                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 75), 160f)
+                {
+                    accept = OpTextBox.Accept.Float
+                },
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
