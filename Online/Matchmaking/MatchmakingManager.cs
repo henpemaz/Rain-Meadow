@@ -95,6 +95,8 @@ namespace RainMeadow
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
         public static void JoinLobbyUsingCode(string code) {
+            RainMeadow.Debug($"Attempting to join lobby with code: {code}");
+
             string[] args = code.Split(' ');
             
             int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"),
