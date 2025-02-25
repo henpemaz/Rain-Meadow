@@ -137,20 +137,30 @@ namespace RainMeadow
                     reorder = false;
                     if (!ignoreReorder)
                     {
-                        int prevIdx = Int32.MinValue;
-                        for (int i = 0; i < requiredMods.Length; i++)
+                        try
                         {
-                            if (requiredMods[i] == "henpemaz_rainmeadow")
-                                continue; //ignore Rain Meadow when determining whether mods need to be reordered
-                            int newIdx = ModManager.ActiveMods.Find(mod => requiredMods[i] == mod.id).loadOrder;
-                            if (newIdx < prevIdx)
+                            int prevIdx = Int32.MinValue;
+                            for (int i = 0; i < requiredMods.Length; i++)
                             {
-                                reorder = true;
-                                RainMeadow.Debug($"Reorder necessary. Idx: {i}");
-                                break;
+                                if (requiredMods[i] == "henpemaz_rainmeadow")
+                                    continue; //ignore Rain Meadow when determining whether mods need to be reordered
+                                int modIdx = ModManager.ActiveMods.FindIndex(mod => requiredMods[i] == mod.id);
+                                if (modIdx < 0)
+                                {
+                                    RainMeadow.Debug($"Couldn't find {requiredMods[i]} in ActiveMods");
+                                    continue;
+                                }
+                                int loadOrder = ModManager.ActiveMods[modIdx].loadOrder;
+                                if (loadOrder < prevIdx)
+                                {
+                                    reorder = true;
+                                    RainMeadow.Debug($"Reorder necessary. Idx: {i}");
+                                    break;
+                                }
+                                prevIdx = loadOrder;
                             }
-                            prevIdx = newIdx;
                         }
+                        catch (Exception ex) { RainMeadow.Error(ex); }
                     }
                 }
 
@@ -280,7 +290,7 @@ namespace RainMeadow
             }
             catch (Exception ex)
             {
-                RainMeadow.Debug(ex);
+                RainMeadow.Error(ex);
                 return false;
             }
         }

@@ -123,8 +123,6 @@ namespace RainMeadow
                 Start(filesInBadState);
             };
 
-            // disable auto-apply for now
-            //nah that seems like a really useful feature I'mma re-add it - TheLazyCowboy1
             if (unknownMods.Count > 0)
             {
                 checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
@@ -159,8 +157,6 @@ namespace RainMeadow
                 Start(filesInBadState);
             };
 
-            // disable auto-apply for now
-            //nah that seems like a really useful feature I'mma re-add it - TheLazyCowboy1
             checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, EndModApplier);
 
             manager.ShowDialog(checkUserConfirmation);
