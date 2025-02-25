@@ -172,7 +172,7 @@ namespace RainMeadow
 
             if (usernameButtons != null)
             {
-                this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode:") + " " + Utils.Translate(arena.currentGameMode), new Vector2(this.usernameButtons[0].pos.x, usernameButtons[0].pos.y + 200f), new Vector2(10f, 10f), true);
+                this.displayCurrentGameMode = new MenuLabel(this, pages[0], this.Translate($"Current Mode:") + " " + Utils.Translate(arena.currentGameMode ?? ""), new Vector2(this.usernameButtons[0].pos.x, usernameButtons[0].pos.y + 200f), new Vector2(10f, 10f), true);
                 this.displayCurrentGameMode.label.alignment = FLabelAlignment.Left;
                 this.pages[0].subObjects.Add(displayCurrentGameMode);
                 // Ready up label

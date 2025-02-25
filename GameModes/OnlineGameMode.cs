@@ -22,8 +22,8 @@ namespace RainMeadow
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
-                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
-                { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
+                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own." },
+                { Story, "Adventure together with friends in the world of Rain World, fight together and die<LINE>together." },
                 { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }

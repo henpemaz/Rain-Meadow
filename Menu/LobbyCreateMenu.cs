@@ -5,6 +5,7 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -112,7 +113,7 @@ public class LobbyCreateMenu : SmartMenu
 
     private void UpdateModeDescription()
     {
-        modeDescriptionLabel.text = Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]);
+        modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
     }
 
     private void CreateLobby(SimplerButton obj)
