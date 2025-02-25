@@ -483,6 +483,11 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
+            if (RainMeadow.isArenaMode(out var arena) && arena.didParry)
+            {
+                arena.didParry = false;
+                return;
+            }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
 
