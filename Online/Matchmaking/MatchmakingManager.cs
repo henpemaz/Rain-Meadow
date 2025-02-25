@@ -118,7 +118,7 @@ namespace RainMeadow
                         if (domain == MatchMakingDomain.Steam)
                         {
                             instances[domain].JoinLobbyUsingArgs(args[connect_steam_idx + 1], password);
-                            break;
+                            return;
                         }
                     }
                 }
@@ -134,13 +134,14 @@ namespace RainMeadow
                         if (domain == MatchMakingDomain.LAN)
                         {
                             instances[domain].JoinLobbyUsingArgs(args[connect_lan_idx + 1], args[connect_lan_idx + 2], password);
-                            break;
+                            return;
                         }
                     }
                 }
                 else
                     RainMeadow.Error("found +connect_lan_lobby but no valid lobby address and port in the command line");
             }
+            RainMeadow.Debug("No lobby found in that code.");
         }
 
         public abstract void LeaveLobby();
