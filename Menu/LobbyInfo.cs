@@ -23,6 +23,8 @@ namespace RainMeadow
             this.requiredMods = highImpactMods;
             this.bannedMods = bannedMods;
         }
+
+        public abstract string GetLobbyJoinCode(string? password = null);
         
     }
 }

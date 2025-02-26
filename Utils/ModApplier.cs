@@ -88,7 +88,6 @@ namespace RainMeadow
                     Thread.Sleep(1000); //wait for mod finalization to begin
                     while (!manager.modFinalizationDone)
                         Thread.Sleep(5); //wait for finalization to finish
-                    OnFinish?.Invoke(this);
                 }
                 else
                 {
@@ -96,6 +95,7 @@ namespace RainMeadow
                     checkUserConfirmation = new DialogNotify(menu.Translate("A restart is required to finalize the mod changes."), new Vector2(480f, 320f), manager, cancelProceed);
                     manager.ShowDialog(checkUserConfirmation);
                 }
+                OnFinish?.Invoke(this);
             }
         }
 

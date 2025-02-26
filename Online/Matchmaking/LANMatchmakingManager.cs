@@ -21,6 +21,12 @@ namespace RainMeadow {
                 base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
                 this.endPoint = endPoint;
             }
+            public override string GetLobbyJoinCode(string? password = null)
+            {
+                if (password != null)
+                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {password}";
+                return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port}";
+            }
         }   
 
         public class LANPlayerId : MeadowPlayerId

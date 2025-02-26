@@ -12,6 +12,12 @@ namespace RainMeadow
             base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
             iD = id;
         }
+        public override string GetLobbyJoinCode(string? password = null)
+        {
+            if (password != null)
+                return $"+connect_steam_lobby {iD.m_SteamID} +lobby_password {password}";
+            return $"+connect_steam_lobby {iD.m_SteamID}";
+        }
     }
 
     public class SteamMatchmakingManager : MatchmakingManager

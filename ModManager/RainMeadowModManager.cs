@@ -114,10 +114,9 @@ namespace RainMeadow
         /// <param name="bannedMods">Mods that the user must NOT have, unless the mods are in <paramref name="requiredMods"/></param>
         /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
-        /// <param name="password">The lobby's password. Used solely for rejoining lobbies after a restart.</param>
-        /// <param name="lanEndpoint">The IPEndPoint of the LAN lobby (if applicable). Used solely for rejoining lobbies after a restart.</param>
+        /// <param name="restartCode">The code that the restarter will use to attempt to rejoin the lobby after a restart.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string restartCode = "")
         {
             try
             {
@@ -174,8 +173,6 @@ namespace RainMeadow
                     onFinish?.Invoke();
                     return;
                 }
-
-                var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
 
                 List<bool> pendingEnabled = ModManager.InstalledMods.ConvertAll(mod => mod.enabled);
                 List<int> pendingLoadOrder = ModManager.InstalledMods.ConvertAll(mod => mod.loadOrder);
@@ -264,23 +261,16 @@ namespace RainMeadow
 
                         if (modApplier.requiresRestart)
                         {
-                            if (lanEndpoint != null)
-                            {
-                                try
-                                {
-                                    Utils.Restart($"+connect_lan_lobby {lanEndpoint.Address.Address} {lanEndpoint.Port}" + (password == null ? "" : $" +lobby_password {password}"));
-                                }
-                                catch (Exception ex) { RainMeadow.Debug(ex); }
-                            }
-                            else if (lobbyID != "Unknown Lan Lobby")
-                            {
-                                Utils.Restart($"+connect_steam_lobby {lobbyID}" + (password == null ? "" : $" +lobby_password {password}"));
-                            }
-                            else
-                                Utils.Restart();
+                            RainMeadow.Debug($"Restarting game with code {restartCode}");
+                            Utils.Restart(restartCode);
+                        }
+                        else if (modApplier.WasSuccessful())
+                        {
+                            RainMeadow.Debug("Successfully applied mods");
+                            onFinish?.Invoke();
                         }
                         else
-                            onFinish?.Invoke();
+                            RainMeadow.Debug("Error in mod applier; unsuccessful");
                     };
                 });
             }

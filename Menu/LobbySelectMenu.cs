@@ -318,7 +318,7 @@ namespace RainMeadow
                 () => {
                     ShowLoadingDialog("Joining lobby...");
                     RequestLobbyJoin(lobby, password);
-                }, false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null);
+                }, false, lobby.GetLobbyJoinCode(password));
         }
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
