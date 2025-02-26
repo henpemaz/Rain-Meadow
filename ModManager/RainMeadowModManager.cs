@@ -112,11 +112,12 @@ namespace RainMeadow
         /// </summary>
         /// <param name="requiredMods">Mods that the user MUST have in order to join the lobby</param>
         /// <param name="bannedMods">Mods that the user must NOT have, unless the mods are in <paramref name="requiredMods"/></param>
+        /// <param name="onFinish">The action to be taken once the mods are successfully applied.</param>
         /// <param name="ignoreReorder">Whether the lobby should accept users with the same mods but in a different order</param>
         /// <param name="password">The lobby's password. Used solely for rejoining lobbies after a restart.</param>
         /// <param name="lanEndpoint">The IPEndPoint of the LAN lobby (if applicable). Used solely for rejoining lobbies after a restart.</param>
         /// <returns>True if the mods were successfully applied (or didn't need to be applied) AND the game does not require a restart.</returns>
-        internal static bool CheckMods(string[] requiredMods, string[] bannedMods, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
+        internal static void CheckMods(string[] requiredMods, string[] bannedMods, Action? onFinish, bool ignoreReorder = false, string? password = null, IPEndPoint? lanEndpoint = null)
         {
             try
             {
@@ -169,7 +170,10 @@ namespace RainMeadow
                 RainMeadow.Debug($"disable: [ {string.Join(", ", disable)} ]");
                 RainMeadow.Debug($"reorder: {reorder}");
 
-                if (!reorder) return true;
+                if (!reorder) {
+                    onFinish?.Invoke();
+                    return;
+                }
 
                 var lobbyID = MatchmakingManager.currentInstance.GetLobbyID();
 
@@ -275,23 +279,14 @@ namespace RainMeadow
                             else
                                 Utils.Restart();
                         }
+                        else
+                            onFinish?.Invoke();
                     };
                 });
-
-                //wait until mod applier finishes
-                while (!modApplier.ended)
-                    Thread.Sleep(5);
-
-                bool successful = !modApplier.cancelled && !modApplier.requiresRestart;
-
-                RainMeadow.Debug($"Returning successful = {successful}");
-
-                return successful;
             }
             catch (Exception ex)
             {
                 RainMeadow.Error(ex);
-                return false;
             }
         }
 

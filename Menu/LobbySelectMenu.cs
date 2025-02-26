@@ -312,44 +312,13 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
-        private static Thread? JoinLobbyThread = null;
-        /// <summary>
-        /// To prevent issues with modsync, only one join lobby attempt is allowed at a time.
-        /// This function provides an easy way to cancel any previous attempts, so you can start a new one.
-        /// </summary>
-        public static void CancelJoinLobbyAttempt()
-        {
-            if (JoinLobbyThread != null) RainMeadow.Debug("Cancelling join lobby attempt");
-            JoinLobbyThread?.Abort();
-            JoinLobbyThread = null;
-        }
-
         public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
         {
-            //don't start the thread if it's already going!
-            if (JoinLobbyThread != null) return;
-
-            //check mods first!!!
-            JoinLobbyThread = new(() =>
-            {
-                try
-                {
-                    if (!checkMods
-                    || CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods), false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null))
-                    {
-                        ShowLoadingDialog("Joining lobby...");
-                        RequestLobbyJoin(lobby, password);
-                    }
-                    else
-                        RainMeadow.Debug("Failed to join lobby because mods were not applied.");
-                }
-                catch (Exception ex)
-                {
-                    RainMeadow.Error(ex);
-                }
-                JoinLobbyThread = null;
-            });
-            JoinLobbyThread.Start();
+            CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods),
+                () => {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobby, password);
+                }, false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null);
         }
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {

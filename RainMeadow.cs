@@ -208,19 +208,6 @@ namespace RainMeadow
                 ArenaHooks();
                 ItemHooks();
                 ObjectHooks();
-                /*
-                if (self.processManager.currentMainLoop is InitializationScreen initScreen)
-                {
-                    RainMeadow.Debug("Requiring mod (re)application");
-                    if (initScreen.modApplyer != null)
-                        RainMeadow.Debug("Mod applier has already been used");
-                    else
-                    {
-                        RainMeadow.Debug("Reapplying...");
-                        initScreen.Singal(null, "REAPPLY");
-                    }
-                }
-                */
 
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
