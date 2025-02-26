@@ -8,8 +8,8 @@ namespace RainMeadow
 {
     public class SteamLobbyInfo : LobbyInfo {
         public CSteamID iD;
-        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount) : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "") : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
             iD = id;
         }
     }
@@ -114,7 +114,7 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new SteamLobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
+                        lobbies[i] = new SteamLobbyInfo(id, SteamMatchmaking.GetLobbyData(id, NAME_KEY), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id), SteamMatchmaking.GetLobbyData(id, MODS_KEY), SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY));
                     }
                 }
 
@@ -162,6 +162,17 @@ namespace RainMeadow
             }
         }
 
+        public override void JoinLobbyUsingArgs(params string?[] args)
+        {
+            if (args.Length >= 1 && ulong.TryParse(args[0], out var id))
+            {
+                RainMeadow.Debug($"joining lobby with id {id} from the command line");
+                RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), args.Length > 1 ? args[1] : null);
+            }
+            else
+                RainMeadow.Error($"failed to parse id: {string.Join(" ", args)}");
+        }
+
         private static string creatingWithMode;
         private static string? lobbyPassword;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
@@ -176,6 +187,8 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName() + "'s Lobby");
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
+                    SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()));
+                    SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);

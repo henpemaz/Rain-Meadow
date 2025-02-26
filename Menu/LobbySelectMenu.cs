@@ -11,13 +11,18 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+using static RainMeadow.RainMeadowModManager;
+using static RainMeadow.LANMatchmakingManager;
 
 namespace RainMeadow
 {
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
+        private OpComboBox2 filterModsDropDown;
         private OpComboBox2 domainDropDown;
         private OpComboBox2 filterModeDropDown;
         private OpCheckBox filterPublicLobbiesOnly;
@@ -98,6 +103,7 @@ namespace RainMeadow
             // filters
 
             Vector2 where = new Vector2(300f, 400f);
+
             var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModeLabel);
             where.y -= 27;
@@ -120,6 +126,20 @@ namespace RainMeadow
             filterLobbyLimit.maxLength = 2;
             filterLobbyLimit.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterLobbyLimit);
+
+            where.y -= 30;
+            var filterModsLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mods"), where, new Vector2(200f, 20f), false);
+            mainPage.subObjects.Add(filterModsLabel);
+            where.y -= 27;
+            List<ListItem> requiredModsList = [new("Any", Translate("Unfiltered"), 0), new("Exact", Translate("Exact order"), 1), new("All", Translate("Any order"), Int32.MaxValue)];
+            string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
+            foreach (string id in requiredModIDs)
+            { //adding Rain Meadow is quite redundant, so I'll leave it out.
+                if (id != "henpemaz_rainmeadow") requiredModsList.Add(new ListItem(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count));
+            }
+            filterModsDropDown = new OpComboBox2(new Configurable<string>("Any"), where, 160f, requiredModsList) { colorEdge = MenuColorEffect.rgbWhite };
+            filterModsDropDown.OnChange += UpdateLobbyFilter;
+            new UIelementWrapper(this.tabWrapper, filterModsDropDown);
 
             //
             where = new Vector2(manager.rainWorld.screenSize.x - 320f , 400f);
@@ -231,6 +251,7 @@ namespace RainMeadow
         private void UpdateLobbyFilter()
         {
             lobbyList.filter.gameMode = filterModeDropDown.value;
+            lobbyList.filter.requiredMods = filterModsDropDown.value;
             lobbyList.filter.publicLobby = filterPublicLobbiesOnly.GetValueBool();
 
             lobbyList.FilterLobbies();
@@ -282,8 +303,7 @@ namespace RainMeadow
             }
             else
             {
-                ShowLoadingDialog("Joining lobby...");
-                RequestLobbyJoin(lobbyInfo);
+                StartJoiningLobby(lobbyInfo);
             }
         }
 
@@ -292,6 +312,14 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
+        public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
+        {
+            CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods),
+                () => {
+                    ShowLoadingDialog("Joining lobby...");
+                    RequestLobbyJoin(lobby, password);
+                }, false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null);
+        }
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
@@ -414,8 +442,7 @@ namespace RainMeadow
                     break;
                 case "HIDE_PASSWORD":
                     var password = (popupDialog as CustomInputDialogueBox).textBox.value;
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lastClickedLobby, password);
+                    StartJoiningLobby(lastClickedLobby, password);
                     break;
                 case "DIRECT_JOIN": 
                     var dialogue = popupDialog as DirectConnectionDialogue;
@@ -423,10 +450,10 @@ namespace RainMeadow
                     if (endpoint != null) {
                         var fakelobbyinfo = new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
                         Action join = () => {
-                            ShowLoadingDialog("Joining lobby...");
                             GreyOutLobbyCards(true);
-                            RequestLobbyJoin(fakelobbyinfo,
-                                    dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null);
+                            StartJoiningLobby(fakelobbyinfo,
+                                    dialogue.passwordCheckBox.Checked? dialogue.passwordBox.value : null,
+                                    false);
                         };
                         
                         if (VerifyPlay(fakelobbyinfo))
