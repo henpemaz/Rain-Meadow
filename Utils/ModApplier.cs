@@ -67,15 +67,16 @@ namespace RainMeadow
 
                 manager.rainWorld.options.Save();
 
+                Action cancelProceed = () =>
+                {
+                    ClearPopups();
+                    manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                };
+
                 if (this.applyError != null)
                 {
                     //error popup
-                    Action cancelProceed = () =>
-                    {
-                        ClearPopups();
-                        manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                    };
-                    checkUserConfirmation = new DialogNotify("Error loading mods!", new Vector2(480f, 320f), manager, cancelProceed);
+                    checkUserConfirmation = new DialogNotify(menu.Translate("Error loading mods!"), new Vector2(480f, 320f), manager, cancelProceed);
                     manager.ShowDialog(checkUserConfirmation);
                 }
                 else if (!this.requiresRestart)
@@ -87,9 +88,14 @@ namespace RainMeadow
                     Thread.Sleep(1000); //wait for mod finalization to begin
                     while (!manager.modFinalizationDone)
                         Thread.Sleep(5); //wait for finalization to finish
+                    OnFinish?.Invoke(this);
                 }
-
-                OnFinish?.Invoke(this);
+                else
+                {
+                    //Indicate that a restart is required
+                    checkUserConfirmation = new DialogNotify(menu.Translate("A restart is required to finalize the mod changes."), new Vector2(480f, 320f), manager, cancelProceed);
+                    manager.ShowDialog(checkUserConfirmation);
+                }
             }
         }
 
