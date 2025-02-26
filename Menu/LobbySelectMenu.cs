@@ -279,7 +279,7 @@ namespace RainMeadow
             return true;
         }
 
-        public async Task Play(LobbyInfo lobbyInfo)
+        public void Play(LobbyInfo lobbyInfo)
         {
             if (!VerifyPlay(lobbyInfo)) {
                 return;
@@ -332,14 +332,21 @@ namespace RainMeadow
             //check mods first!!!
             JoinLobbyThread = new(() =>
             {
-                if (!checkMods
-                || CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods), false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null))
+                try
                 {
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobby, password);
+                    if (!checkMods
+                    || CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods), false, password, (lobby is LANLobbyInfo lanLobby) ? lanLobby.endPoint : null))
+                    {
+                        ShowLoadingDialog("Joining lobby...");
+                        RequestLobbyJoin(lobby, password);
+                    }
+                    else
+                        RainMeadow.Debug("Failed to join lobby because mods were not applied.");
                 }
-                else
-                    RainMeadow.Debug("Failed to join lobby because mods were not applied.");
+                catch (Exception ex)
+                {
+                    RainMeadow.Error(ex);
+                }
                 JoinLobbyThread = null;
             });
             JoinLobbyThread.Start();

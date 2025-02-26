@@ -208,7 +208,7 @@ namespace RainMeadow
                 ArenaHooks();
                 ItemHooks();
                 ObjectHooks();
-                
+                /*
                 if (self.processManager.currentMainLoop is InitializationScreen initScreen)
                 {
                     RainMeadow.Debug("Requiring mod (re)application");
@@ -220,7 +220,7 @@ namespace RainMeadow
                         initScreen.Singal(null, "REAPPLY");
                     }
                 }
-                
+                */
 
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
