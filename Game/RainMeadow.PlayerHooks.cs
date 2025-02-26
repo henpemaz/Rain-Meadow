@@ -51,6 +51,7 @@ public partial class RainMeadow
         IL.Player.ThrowObject += Player_ThrowObject1;
         On.Player.SlugOnBack.Update += SlugOnBack_Update;
         On.PlayerCarryableItem.PickedUp += PlayerCarryableItem_PickedUp;
+        IL.Player.checkInput += Player_checkInput_IgnoreIfCarryingSlugNPC;
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
@@ -99,13 +100,41 @@ public partial class RainMeadow
     private void SlugOnBack_Update(On.Player.SlugOnBack.orig_Update orig, Player.SlugOnBack self, bool eu)
     {
         orig(self, eu);
-        if (isArenaMode(out var _) && self.slugcat != null)
+        if (OnlineManager.lobby != null && self.slugcat != null)
         {
-            if (self.slugcat.input[0].jmp)
-            {
-                self.owner.slugOnBack.DropSlug();
+            if (self.slugcat.isNPC) return;
 
-            }
+            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug();
+        }
+    }
+
+    private void Player_checkInput_IgnoreIfCarryingSlugNPC(ILContext context) {
+        try
+        {
+            var cursor = new ILCursor(context);
+            // if (this.controller != null)
+            cursor.GotoNext( MoveType.After,
+                x => x.MatchLdarg(0), 
+                x => x.MatchLdfld<Player>(nameof(Player.controller))
+                // x => x.MatchBrfalse
+            );
+            
+            cursor.Emit(OpCodes.Ldarg_0);
+            cursor.EmitDelegate((Player.PlayerController controller, Player self) => {
+                if (OnlineManager.lobby != null && isStoryMode(out var _)) {
+                    if (controller is OnlineController && self.isNPC) {
+                        if (self.grabbedBy.FirstOrDefault(x => x.grabber is Player) is not null) return null;
+                        if (self.onBack is not null) return null;
+                    }
+                } 
+                
+                return controller;
+            });
+                
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
         }
     }
 

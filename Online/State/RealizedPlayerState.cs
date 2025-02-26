@@ -248,12 +248,16 @@ namespace RainMeadow
                 p.slugOnBack.slugcat = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
                 if (p.slugOnBack?.slugcat != null)
                 {
-                    slugcatOnBackTemp = p.slugOnBack?.slugcat;
+                    slugcatOnBackTemp = p.slugOnBack.slugcat;
+                    p.slugOnBack.slugcat.onBack = p;
                 }
                 if (p.slugOnBack?.slugcat == null && slugcatOnBackTemp != null)
                 {
                     p.slugOnBack.slugcat = slugcatOnBackTemp;
+                    slugcatOnBackTemp.onBack = p;
+
                     p.slugOnBack.DropSlug();
+                    slugcatOnBackTemp.onBack = null;
                     slugcatOnBackTemp = null;
                 }
             }
