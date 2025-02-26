@@ -230,7 +230,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 160, "Mauling: Disable", bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
 
-                new OpLabel(10f, 100, "Player Result Scroll Speed", bigText: false),
+                new OpLabel(10f, 100, Translate("Player Result Scroll Speed"), bigText: false),
                 new OpTextBox(ArenaScrollSpeed, new Vector2(10, 75), 160f)
                 {
                     accept = OpTextBox.Accept.Float

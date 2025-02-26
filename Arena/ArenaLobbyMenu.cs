@@ -428,7 +428,7 @@ namespace RainMeadow
 
                 if (arena.playersReadiedUp.Count == 0 && arena.returnToLobby)
                 {
-                    this.playButton.menuLabel.text = "READY?";
+                    this.playButton.menuLabel.text = this.Translate("READY?");
                     this.playButton.inactive = false;
                 }
 

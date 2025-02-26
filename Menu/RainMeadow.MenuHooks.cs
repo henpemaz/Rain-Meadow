@@ -358,7 +358,7 @@ namespace RainMeadow
 
             if (!fullyInit)
             {
-                self.manager.ShowDialog(new DialogNotify("Rain Meadow failed to start", self.manager, null));
+                self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
 
@@ -371,7 +371,7 @@ namespace RainMeadow
                 if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
-                    self.manager.ShowDialog(new DialogNotify("Steam is not currently available. Some features of Rain Meadow have been disabled.", self.manager, 
+                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager, 
                         () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }
