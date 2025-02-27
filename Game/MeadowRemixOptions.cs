@@ -150,9 +150,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 320f, Translate("Key used for toggling spectator mode")),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
-
-                new OpLabel(10, 245f, Translate("Pointing")),
-                new OpKeyBinder(PointingKey, new Vector2(10f, 215), new Vector2(150f, 30f)),
+                
                 new OpLabel(10, 245f, Translate("Stop Inputs While Spectating")),
                 new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
 
