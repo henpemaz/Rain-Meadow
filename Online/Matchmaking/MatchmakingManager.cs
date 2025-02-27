@@ -119,7 +119,7 @@ namespace RainMeadow
                         {
                             //switch domain if necessary
                             if (currentDomain != domain)
-                                changedMatchMaker(currentDomain, domain);
+                                currentDomain = domain;
                             instances[domain].JoinLobbyUsingArgs(args[connect_steam_idx + 1], password);
                             return;
                         }
@@ -138,7 +138,7 @@ namespace RainMeadow
                         {
                             //switch domain if necessary
                             if (currentDomain != domain)
-                                changedMatchMaker(currentDomain, domain);
+                                currentDomain = domain;
                             instances[domain].JoinLobbyUsingArgs(args[connect_lan_idx + 1], args[connect_lan_idx + 2], password);
                             return;
                         }

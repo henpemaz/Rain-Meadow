@@ -29,13 +29,15 @@ namespace RainMeadow
             cancelled = true;
             EndModApplier();
         }
-        private void EndModApplier()
+        private void EndModApplier() => EndModApplier(true);
+        private void EndModApplier(bool clearPopups)
         {
             On.RainWorld.Update -= RainWorld_Update;
             this.finished = true;
             this.ended = true;
 
-            ClearPopups();
+            if (clearPopups)
+                ClearPopups();
         }
         private void ClearPopups()
         {
@@ -63,19 +65,18 @@ namespace RainMeadow
 
             if (!ended && IsFinished())
             {
-                EndModApplier();
+                EndModApplier(!this.requiresRestart);
 
                 manager.rainWorld.options.Save();
-
-                Action cancelProceed = () =>
-                {
-                    ClearPopups();
-                    manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                };
 
                 if (this.applyError != null)
                 {
                     //error popup
+                    Action cancelProceed = () =>
+                    {
+                        ClearPopups();
+                        manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+                    };
                     checkUserConfirmation = new DialogNotify(menu.Translate("Error loading mods!"), new Vector2(480f, 320f), manager, cancelProceed);
                     manager.ShowDialog(checkUserConfirmation);
                 }
@@ -92,8 +93,7 @@ namespace RainMeadow
                 else
                 {
                     //Indicate that a restart is required
-                    checkUserConfirmation = new DialogNotify(menu.Translate("A restart is required to finalize the mod changes."), new Vector2(480f, 320f), manager, cancelProceed);
-                    manager.ShowDialog(checkUserConfirmation);
+                    dialogBox?.SetText(menu.Translate("A restart is required to finish applying the mod changes.") + Environment.NewLine + Environment.NewLine + menu.Translate("Restarting now..."));
                 }
                 OnFinish?.Invoke(this);
             }
