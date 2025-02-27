@@ -25,6 +25,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> BlockMaul;
+    public readonly Configurable<float> ArenaScrollSpeed;
+
 
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
@@ -70,13 +72,15 @@ public class RainMeadowOptions : OptionInterface
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
+        ArenaScrollSpeed =  config.Bind("ArenaScrollSpeed", 10f);
+
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
-        
+
     }
 
     public override void Initialize()
@@ -197,7 +201,8 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[15]
+            OnlineArenaSettings = new UIelement[17]
+
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
                 new OpLabel(10f, 505, Translate("Countdown timer. 60 == 1s"), bigText: false),
@@ -226,6 +231,12 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 160, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
+
+                new OpLabel(10f, 100, "Player Result Scroll Speed", bigText: false),
+                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 75), 160f)
+                {
+                    accept = OpTextBox.Accept.Float
+                },
 
         };
             arenaTab.AddItems(OnlineArenaSettings);

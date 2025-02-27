@@ -123,6 +123,39 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+                var crit = (creatureKilled.apo.realizedObject as Creature) ?? null;
+                if (crit == null)
+                {
+                    return;
+                }
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
+                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+                {
+                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
+                    {
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
+                        {
+                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
         {
             if (RainMeadow.isArenaMode(out var arena))
