@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -41,9 +42,26 @@ namespace RainMeadow
             if (realizedState) this.realizedObjectState = GetRealizedState(onlineEntity);
         }
 
+        /// <summary>
+        /// Add functions to this list in order to register modded objects and creatures.
+        /// Return null if the object is not the modded object you're looking for.
+        /// For example:
+        /// CustomObjectStateHooks.Add((OnlinePhysicalObject opo) => { if (opo.apo.realizedObject is Sword) return SwordState(opo); return null; });
+        /// </summary>
+        public List<Func<OnlinePhysicalObject, RealizedPhysicalObjectState?>> CustomObjectStateHooks = new();
+
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+
+            //look for modded object states
+            foreach (var func in CustomObjectStateHooks)
+            {
+                var result = func(onlineObject);
+                if (result != null)
+                    return result;
+            }
+
             if (onlineObject.apo.realizedObject is Oracle oracle)
             {
                 if (oracle.oracleBehavior is SLOracleBehavior)
