@@ -54,7 +54,7 @@ namespace RainMeadow
 
             //look through old required mod list
             var activeMods = ModManager.ActiveMods.Select(mod => mod.id);
-            requiredMods.Concat(CurrentRequiredMods);
+            requiredMods = requiredMods.Union(CurrentRequiredMods).ToList();
             requiredMods.RemoveAll(mod => !activeMods.Contains(mod)); //if no longer active, remove it
 
             //add dependencies
@@ -65,7 +65,9 @@ namespace RainMeadow
             }
 
             //check .dlls for extra required mods
-            CurrentRequiredMods = GetExtendedHighImpactMods(requiredMods.ToArray());
+            CurrentRequiredMods = GetExtendedHighImpactMods(requiredMods
+                .Union(modInfo.SyncRequiredModsOverride.Select(mod => CommentPrefix + mod)) //also; don't check mods that are overrided as not required
+                .ToArray());
 
             return ModManager.ActiveMods
                 .Where(mod => CurrentRequiredMods.Contains(mod.id))
@@ -119,12 +121,12 @@ namespace RainMeadow
             bannedMods.Union(oldBannedMods);
 
             // (required + banned) - enabled
-            var initialBanned = GetRequiredMods().Concat(bannedMods)
+            var initialBanned = GetRequiredMods().Union(bannedMods)
                 .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods
                 .ToArray();
 
             CurrentBannedMods = GetExtendedHighImpactMods(initialBanned)
-                .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods AGAIN
+                .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods AGAIN (banned list changed)
                 .ToArray();
 
             return CurrentBannedMods;
@@ -428,12 +430,15 @@ namespace RainMeadow
             var trimmedActiveLines = new List<string>();
             var trimmedDisabledLines = new List<string>();
 
+            bool nonCommentFound = false; //prevents the startingComment from being added to the banned mod list
+
             // Trim non-leading comments (leading comments will be used to exclude mods)
             foreach (var line in existingLines)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     linesToWrite.Add(line);
+                    nonCommentFound = true; //will be triggered by the empty space after startingComment
                     continue;
                 }
 
@@ -446,6 +451,8 @@ namespace RainMeadow
                     trimmedLine = trimmedLine.TrimStart(CommentPrefix);
                     isDisabledLine = true;
                 }
+                else
+                    nonCommentFound = true;
 
                 var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
 
@@ -463,7 +470,8 @@ namespace RainMeadow
 
                 if (isDisabledLine)
                 {
-                    trimmedDisabledLines.Add(trimmedLine);
+                    if (nonCommentFound)
+                        trimmedDisabledLines.Add(trimmedLine);
                 }
                 else
                 {
