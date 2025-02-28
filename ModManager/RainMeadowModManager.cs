@@ -67,6 +67,7 @@ namespace RainMeadow
             //check .dlls for extra required mods
             CurrentRequiredMods = GetExtendedHighImpactMods(requiredMods
                 .Union(modInfo.SyncRequiredModsOverride.Select(mod => CommentPrefix + mod)) //also; don't check mods that are overrided as not required
+                .Except(modInfo.SyncRequiredModsOverride) //double-check that overrided mods are, in fact, removed
                 .ToArray());
 
             return ModManager.ActiveMods
@@ -127,6 +128,7 @@ namespace RainMeadow
 
             CurrentBannedMods = GetExtendedHighImpactMods(initialBanned)
                 .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods AGAIN (banned list changed)
+                .Except(modInfo.BannedOnlineModsOverride) //re-implement overrides, just in case
                 .ToArray();
 
             return CurrentBannedMods;
