@@ -26,12 +26,13 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("PlaceInRoom picking place");
-                RoomSession.map.TryGetValue(placeRoom.abstractRoom, out var rs);
-                var mrd = rs.GetData<MeadowRoomData>();
-                var place = mrd.GetUnusedPlace(placeRoom); // todo extra reqs for places ie not-narrow etc
-                this.abstractPhysicalObject.pos.Tile = place;
-                abstractCollectible.placed = true;
-                RainMeadow.Debug("placed at " + abstractPhysicalObject.pos);
+                if (RoomSession.map.TryGetValue(placeRoom.abstractRoom, out var rs) && rs.TryGetData<MeadowRoomData>(out var mrd))
+                {
+                    var place = mrd.GetUnusedPlace(placeRoom); // todo extra reqs for places ie not-narrow etc
+                    this.abstractPhysicalObject.pos.Tile = place;
+                    abstractCollectible.placed = true;
+                    RainMeadow.Debug("placed at " + abstractPhysicalObject.pos);
+                }
             }
 
             this.placePos = placeRoom.MiddleOfTile(this.abstractPhysicalObject.pos);
