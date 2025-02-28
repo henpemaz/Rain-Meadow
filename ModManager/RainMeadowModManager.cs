@@ -103,7 +103,10 @@ namespace RainMeadow
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
             //var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-            var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
+            var bannedMods = modInfo.BannedOnlineMods
+                .Except(modInfo.BannedOnlineModsOverride) //remove overridden banned mods
+                .Union(modInfo.BannedOnlineModsOverride.Select(mod => CommentPrefix + mod)) //add those overrides as commented to the list
+                .ToList();
 
             //requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
             bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods, BannedOnlineModsExplanationComment);
