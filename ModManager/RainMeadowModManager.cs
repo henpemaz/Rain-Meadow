@@ -11,31 +11,39 @@ namespace RainMeadow
 {
     public static class RainMeadowModManager
     {
-        private static void UpdateFromOrWriteToFile(string path, ref string[] lines)
-        {
-            path = Path.Combine(Custom.RootFolderDirectory(), path);
-            if (File.Exists(path))
-            {
-                lines = File.ReadAllLines(path);
-            }
-            else
-            {
-                File.WriteAllLines(path, lines);
-            }
-        }
+        // TODO: possibly rename these
+        public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
+        public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
-        public static string[] highImpactMods = {
-            "rwremix",
-            "moreslugcats",
-        };
+        public static string SyncRequiredModsExplanationComment => """
+                                                                   // The following is a list of mods that must be synced between client and host:
+                                                                   // (if the host has these mods enabled/disabled, the client must match)
+                                                                   // To remove mod IDs and allow them to be de-synced, prefix the lines with '//', like this:
+                                                                   //mod-id-to-exclude
+                                                                   
+                                                                   """;
+
+        public static string BannedOnlineModsExplanationComment =>"""
+                                                                   // The following is a list of mods that are banned from online play:
+                                                                   // (if any of these mods are enabled, they must be disabled before meadow can be entered)
+                                                                   // To remove mod IDs and allow them online, prefix the lines with '//', like this:
+                                                                   //mod-id-to-exclude
+
+                                                                   """;
+
+        /// <summary>
+        /// Prefix that indicates the following characters should be ignored in one of the user defined files.
+        /// </summary>
+        public static string CommentPrefix => "//";
 
         public static string[] GetRequiredMods()
         {
-            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
+            var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var requiredMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
-            requiredMods.AddDistinctRange(ModManager.ActiveMods.Where(mod => Directory.Exists(Path.Combine(mod.path, "modify", "world"))).Select(mod => mod.id));
-            
+            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+
             //add dependencies
             foreach (var mod in ModManager.ActiveMods)
             {
@@ -43,7 +51,6 @@ namespace RainMeadow
                     requiredMods.AddDistinctRange(mod.requirements);
             }
 
-            //the mod lists are combined first, then ActiveMods is combed through for ids, because that ensures the load order is correct
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id))
                 .OrderBy(mod => mod.loadOrder)
@@ -95,14 +102,16 @@ namespace RainMeadow
 
         public static string[] GetBannedMods()
         {
-            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
-            UpdateFromOrWriteToFile("meadow-bannedmods.txt", ref bannedMods);
+            var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var effectiveHighImpactMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
-            var effectiveBannedMods = bannedMods.Union(RainMeadowModInfoManager.MergedModInfo.BannedOnlineMods.Except(RainMeadowModInfoManager.MergedModInfo.BannedOnlineModsOverride)).ToList();
+            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
 
-            // (high impact + banned) - enabled
-            return effectiveHighImpactMods.Concat(effectiveBannedMods)
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods, BannedOnlineModsExplanationComment);
+
+            // (required + banned) - enabled
+            return requiredMods.Concat(bannedMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .ToArray();
         }
@@ -289,6 +298,90 @@ namespace RainMeadow
                 var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
                 MachineConnector.ReloadConfig(mmfOptions);
             }
+        }
+
+        private static List<string> UpdateFromOrWriteToFile(string path, List<string> newLines, string startingComment = "")
+        {
+            path = Path.Combine(Custom.RootFolderDirectory(), path);
+
+            if (!File.Exists(path))
+            {
+                if (startingComment != "")
+                {
+                    newLines.Insert(0, startingComment);
+                }
+
+                File.WriteAllLines(path, newLines);
+                return newLines;
+            }
+
+            var existingLines = File.ReadAllLines(path).Distinct().ToList();
+            var linesToWrite = new List<string>();
+
+            if (startingComment != "")
+            {
+                if (existingLines.Count == 0 || existingLines[0].Trim() != startingComment.Split('\n')[0].Trim())
+                {
+                    existingLines.Insert(0, startingComment);
+                }
+            }
+
+            // Lines without their comments and whitespaces: disabled have a leading comment, meaning the whole line is commented out
+            var trimmedActiveLines = new List<string>();
+            var trimmedDisabledLines = new List<string>();
+
+            // Trim non-leading comments (leading comments will be used to exclude mods)
+            foreach (var line in existingLines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    linesToWrite.Add(line);
+                    continue;
+                }
+
+                var trimmedLine = line.Trim();
+                var isDisabledLine = false;
+
+                // Leading comment disables the whole line
+                if (trimmedLine.StartsWith(CommentPrefix))
+                {
+                    trimmedLine = trimmedLine.TrimStart(CommentPrefix);
+                    isDisabledLine = true;
+                }
+
+                var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
+
+                // Trim any additional (non-leading) comments
+                if (commentStartIndex != -1)
+                {
+                    trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
+                }
+
+                // Discard duplicate active lines
+                if (!isDisabledLine && trimmedActiveLines.Contains(trimmedLine))
+                {
+                    continue;
+                }
+
+                if (isDisabledLine)
+                {
+                    trimmedDisabledLines.Add(trimmedLine);
+                }
+                else
+                {
+                    trimmedActiveLines.Add(trimmedLine);
+                }
+
+                linesToWrite.Add(line);
+            }
+
+            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines);
+
+            linesToWrite.AddDistinctRange(linesToAdd);
+
+            File.WriteAllLines(path, linesToWrite);
+
+            return trimmedActiveLines;
         }
     }
 }
