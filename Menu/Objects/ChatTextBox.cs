@@ -16,7 +16,6 @@ namespace RainMeadow
         private bool isUnloading = false;
         private static List<IDetour> inputBlockers;
         private static bool blockInput = false;
-        private int cursorPosition = 0;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
         public static string lastSentMessage = "";
@@ -53,18 +52,14 @@ namespace RainMeadow
                 typingHandler.OnDestroy();
             }
         }
-        // was trying to make a cursor position functionality for typing
-        // but seeing as the original OpTextBox doesn't have it in, i might scrap cursorposition or change the overall functionality of this to support it
         private void CaptureInputs(char input)
-        { 
-
+        {
             if (input == '\b')
             {
-                if (cursorPosition > 0 && lastSentMessage.Length > 0)
+                if (lastSentMessage.Length > 0)
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    lastSentMessage = lastSentMessage.Remove(cursorPosition - 1, 1);
-                    cursorPosition--;
+                    lastSentMessage = lastSentMessage.Substring(0, lastSentMessage.Length - 1);
                 }
             }
             else if (input == '\n' || input == '\r')
@@ -90,27 +85,10 @@ namespace RainMeadow
                 if (lastSentMessage.Length < textLimit)
                 {
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    lastSentMessage = lastSentMessage.Insert(cursorPosition, input.ToString());
-                    cursorPosition++;
+                    lastSentMessage += input.ToString();
                 }
             }
-
             menuLabel.text = lastSentMessage;
-        }
-
-        public override void Update()
-        {
-            base.Update();
-            RainMeadow.Debug($"cursor position: {cursorPosition}, current message: {lastSentMessage}");
-
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                if (cursorPosition > 0) cursorPosition--;
-            }
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                if (cursorPosition < lastSentMessage.Length) cursorPosition++;
-            }
         }
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys

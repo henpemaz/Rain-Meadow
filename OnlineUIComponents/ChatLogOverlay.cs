@@ -60,8 +60,8 @@ namespace RainMeadow
                 }
 
                 float yOffSet = 0;
-                var visibleMessages = chatHud.chatLog.Skip(startIndex).Take(maxVisibleMessages);
-                foreach (var (username, message) in visibleMessages)
+                var visibleLog = chatHud.chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                foreach (var (username, message) in visibleLog)
                 {
                     if (username is null or "")
                     {

@@ -64,7 +64,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKeyDown(KeyCode.UpArrow))
+            if (Input.GetKey(KeyCode.UpArrow))
             {
                 if (currentLogIndex < chatLog.Count - 1)
                 {
@@ -73,7 +73,7 @@ namespace RainMeadow
                 }
             }
 
-            if (Input.GetKeyDown(KeyCode.DownArrow))
+            if (Input.GetKey(KeyCode.DownArrow))
             {
                 if (currentLogIndex > 0)
                 {
@@ -152,8 +152,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-            RainMeadow.Debug($"log index {currentLogIndex}");
-
             base.Update();
 
             if (slatedForDeletion) { Destroy(); return; }
