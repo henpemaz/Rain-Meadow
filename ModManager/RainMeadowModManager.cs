@@ -130,7 +130,7 @@ namespace RainMeadow
         /// Mod plugins will be scanned to see if they implement these types;
         /// and if so, they will be marked as high-impact
         /// </summary>
-        private static string[] HighImpactBaseTypes = ["Fisob", "Critob", nameof(PhysicalObject)];
+        private static string[] HighImpactBaseTypes = ["Fisob", "Critob", nameof(PhysicalObject), nameof(Creature)];
 
         /// <summary>
         /// Looks through all active mods (that aren't explicitly allowed)
