@@ -113,8 +113,10 @@ namespace RainMeadow
 
             //look through old banned mod list
             var activeMods = ModManager.ActiveMods.Select(mod => mod.id);
-            bannedMods.Concat(CurrentBannedMods);
-            //updatedBanned.RemoveAll(mod => !activeMods.Contains(mod)); //if no longer active, remove it
+            var oldBannedMods = CurrentBannedMods.Where(mod => mod.StartsWith(CommentPrefix)
+                ? !bannedMods.Contains(mod.TrimStart(CommentPrefix)) //don't include old exluded mods that are no longer excluded
+                : !bannedMods.Contains(CommentPrefix + mod)); //don't include old banned mods that are now excluded
+            bannedMods.Union(oldBannedMods);
 
             // (required + banned) - enabled
             var initialBanned = GetRequiredMods().Concat(bannedMods)
@@ -477,7 +479,7 @@ namespace RainMeadow
 
             File.WriteAllLines(path, linesToWrite);
 
-            return trimmedActiveLines;
+            return trimmedActiveLines.Union(trimmedDisabledLines.Select(line => CommentPrefix + line)).ToList();
         }
     }
 }
