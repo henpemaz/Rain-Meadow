@@ -48,7 +48,7 @@ namespace RainMeadow
         /// For example:
         /// CustomObjectStateHooks.Add((OnlinePhysicalObject opo) => { if (opo.apo.realizedObject is Sword) return SwordState(opo); return null; });
         /// </summary>
-        public List<Func<OnlinePhysicalObject, RealizedPhysicalObjectState?>> CustomObjectStateHooks = new();
+        public static List<Func<OnlinePhysicalObject, RealizedPhysicalObjectState?>> CustomObjectStateHooks = new();
 
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
