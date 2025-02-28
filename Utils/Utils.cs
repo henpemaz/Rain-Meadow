@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -96,6 +97,46 @@ namespace RainMeadow
             var toTake = endIndex - startIndex;
 
             return fromStart.Take(toTake).ToList();
+        }
+
+        /// <summary>
+        /// Detects whether the particular file exists in the mod
+        /// in such a way that AssetManager.ResolveFilePath() can find it.
+        /// </summary>
+        /// <param name="mod"></param>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static bool ModFileExists(ModManager.Mod mod, params string[] paths)
+        {
+            return File.Exists(Path.Combine([mod.path, .. paths]))
+                || (mod.hasNewestFolder && File.Exists(Path.Combine([mod.NewestPath, .. paths])))
+                || (mod.hasTargetedVersionFolder && File.Exists(Path.Combine([mod.TargetedPath, .. paths])));
+        }
+
+        /// <summary>
+        /// Detects whether the particular directory exists in the mod
+        /// in such a way that AssetManager.ResolveDirectory() can find it.
+        /// </summary>
+        /// <param name="mod"></param>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public static bool ModDirectoryExists(ModManager.Mod mod, params string[] paths)
+        {
+            return Directory.Exists(Path.Combine([mod.path, .. paths]))
+                || (mod.hasNewestFolder && Directory.Exists(Path.Combine([mod.NewestPath, .. paths])))
+                || (mod.hasTargetedVersionFolder && Directory.Exists(Path.Combine([mod.TargetedPath, .. paths])));
+        }
+
+        /// <summary>
+        /// Gets a list of files within the directory IF it exists.
+        /// If the directory does not exist, returns an empty list.
+        /// </summary>
+        /// <param name="path">The directory path</param>
+        /// <returns></returns>
+        public static IEnumerable<string> GetDirectoryFilesSafe(string path)
+        {
+            if (!Directory.Exists(path)) return [];
+            return Directory.EnumerateFiles(path);
         }
     }
 }
