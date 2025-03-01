@@ -77,6 +77,7 @@ namespace RainMeadow
                 .Where(mod => CurrentRequiredMods.Contains(mod.id))
                 .OrderBy(mod => mod.loadOrder)
                 .Select(mod => mod.id)
+                .Concat(fullOverrideList.Select(mod => CommentPrefix + mod)) //add in overrides as commented
                 .ToArray();
         }
 
@@ -240,7 +241,11 @@ namespace RainMeadow
 
                 bool reorder = true; //or change mods whatsoever
 
-                var disable = GetRequiredMods().Union(GetExtendedHighImpactMods(bannedMods)).Except(requiredMods).Intersect(active).ToList();
+                var disable = GetRequiredMods().Where(mod => !mod.StartsWith(CommentPrefix)) //don't let client's overrides apply
+                    .Union(GetExtendedHighImpactMods(bannedMods))
+                    .Where(mod => !requiredMods.Contains(mod) && !requiredMods.Contains(CommentPrefix + mod)) //don't disable commented out mods
+                    .Intersect(active)
+                    .ToList();
 
                 var enable = requiredMods.Except(active).ToList();
 
