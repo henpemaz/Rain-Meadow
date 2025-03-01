@@ -61,6 +61,8 @@ namespace RainMeadow
 
         public void ReadTo(BodyChunk c)
         {
+            c.lastLastPos = c.lastPos;
+            c.lastPos = c.pos;
             c.pos = pos;
             c.vel = vel;
         }
