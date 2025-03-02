@@ -46,13 +46,6 @@ namespace RainMeadow
             }
             return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
         }
-
-        //public override string FormatTimer(float time)
-        //{
-        //    int seconds = Mathf.FloorToInt(time);
-        //    return $"{seconds:D1}";
-        //}
-
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
