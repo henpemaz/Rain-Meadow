@@ -189,13 +189,10 @@ namespace RainMeadow
             {
                 if (arenaPrepTimer != null)
                 {
-                    if (RainMeadow.isArenaMode(out var arena))
+                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
                     {
-                        if (arena.setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
-                        {
-                            arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
+                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
 
-                        }
                     }
                 }
                 previousSecond = currentSecond;
