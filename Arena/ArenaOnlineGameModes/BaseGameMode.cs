@@ -52,7 +52,7 @@ namespace RainMeadow
         }
         public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return --arena.setupTime;
+            return --timer;
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
