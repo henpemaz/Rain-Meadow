@@ -11,29 +11,29 @@ namespace RainMeadow
             Waiting
         }
 
-        private float Readtimer;
-        private bool isRunning;
-        private TimerMode currentMode = TimerMode.Waiting;  // Track which timer is active
-        private TimerMode showMode = TimerMode.Waiting;  // Track which timer is being displayed
-        private TimerMode matchMode = TimerMode.Waiting; // mode at start of match
-        private FLabel timerLabel;
-        private FLabel modeLabel;
-        private Vector2 pos, lastPos;
-        private float fade, lastFade;
+        public float Readtimer;
+        public bool isRunning;
+        public TimerMode currentMode = TimerMode.Waiting;  // Track which timer is active
+        public TimerMode showMode = TimerMode.Waiting;  // Track which timer is being displayed
+        public TimerMode matchMode = TimerMode.Waiting; // mode at start of match
+        public FLabel timerLabel;
+        public FLabel modeLabel;
+        public Vector2 pos, lastPos;
+        public float fade, lastFade;
         public ArenaOnlineGameMode arena;
         public ArenaGameSession session;
         public bool cancelTimer;
-        private Player? player;
-        private bool countdownInitiated;
+        public Player? player;
+        public bool countdownInitiated;
         public int safetyCatchTimer;
         public ArenaPrepTimer(HUD.HUD hud, FContainer fContainer, ArenaOnlineGameMode arena, ArenaGameSession arenaGameSession) : base(hud)
         {
-
+            arena.arenaPrepTimer = this;
             session = arenaGameSession;
             arena.trackSetupTime = arena.onlineArenaGameMode.SetTimer(arena);
             matchMode = TimerMode.Waiting;
 
-            timerLabel = new FLabel("font", FormatTime(0))
+            timerLabel = new FLabel("font", FormatTime(arena, 0))
             {
                 scale = 2.4f,
                 alignment = FLabelAlignment.Left
@@ -48,13 +48,12 @@ namespace RainMeadow
             pos = new Vector2(80f, hud.rainWorld.options.ScreenSize.y - 60f);
             lastPos = pos;
             timerLabel.SetPosition(DrawPos(1f));
-            modeLabel.SetPosition(DrawPos(1f) + new Vector2(135f, 0f));
+            modeLabel.SetPosition(DrawPos(1f) + new Vector2(timerLabel._x + 30f, 0f));
 
             fContainer.AddChild(timerLabel);
             fContainer.AddChild(modeLabel);
             this.arena = arena;
             countdownInitiated = false;
-            arena.arenaPrepTimer = this;
             safetyCatchTimer = 0;
         }
 
@@ -88,40 +87,30 @@ namespace RainMeadow
                 {
                     showMode = TimerMode.Countdown;
                 };
-                
+
                 arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
-                
-                
+
+
                 if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
                 {
-                    arena.setupTime = arena.onlineArenaGameMode.TimerDirection(arena, arena.setupTime);
                     matchMode = TimerMode.Countdown;
                     modeLabel.text = arena.onlineArenaGameMode.TimerText();
                 }
 
-                else if (arena.setupTime <= 0 && !countdownInitiated)
+                if (arena.setupTime <= 0 && !countdownInitiated)
                 {
                     countdownInitiated = true;
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                 }
-
-
-
-
+                timerLabel.text = FormatTime(arena, arena.setupTime);
             }
-
-            timerLabel.text = FormatTime(arena.setupTime);
         }
 
         // Format time to MM:SS:MMM
-        public static string FormatTime(float time)
+        public static string FormatTime(ArenaOnlineGameMode arena, float time)
         {
-            int minutes = Mathf.FloorToInt(time / 60);
-            int seconds = Mathf.FloorToInt(time % 60);
-            int milliseconds = Mathf.FloorToInt((time % 1) * 1000);
-
-            return $"{minutes:D2}:{seconds:D2}:{milliseconds:D3}";
+            return arena.onlineArenaGameMode.FormatTimer(time);
         }
 
         public override void ClearSprites()

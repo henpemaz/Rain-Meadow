@@ -51,9 +51,18 @@ namespace RainMeadow
 
         }
 
+        public virtual string FormatTimer(float time)
+        {
+            int minutes = Mathf.FloorToInt(time / 60);
+            int seconds = Mathf.FloorToInt(time % 60);
+            int milliseconds = Mathf.FloorToInt((time % 1) * 1000);
+
+            return $"{minutes:D2}:{seconds:D2}:{milliseconds:D3}";
+        }
+
         public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return timer--;
+            return --arena.setupTime;
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
@@ -271,6 +280,10 @@ namespace RainMeadow
                         getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
                     }
                 }
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.isInGame = true;
             }
         }
 
