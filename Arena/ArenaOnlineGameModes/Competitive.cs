@@ -47,11 +47,11 @@ namespace RainMeadow
             return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
         }
 
-        public override string FormatTimer(float time)
-        {
-            int seconds = Mathf.FloorToInt(time / 60);
-            return $"{seconds:D1}";
-        }
+        //public override string FormatTimer(float time)
+        //{
+        //    int seconds = Mathf.FloorToInt(time);
+        //    return $"{seconds:D1}";
+        //}
 
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
@@ -64,7 +64,7 @@ namespace RainMeadow
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {            
-            return arena.setupTime - 60;
+            return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {

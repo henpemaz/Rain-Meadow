@@ -51,14 +51,14 @@ namespace RainMeadow
 
         }
 
-        public virtual string FormatTimer(float time)
-        {
-            int minutes = Mathf.FloorToInt(time / 60);
-            int seconds = Mathf.FloorToInt(time % 60);
-            int milliseconds = Mathf.FloorToInt((time % 1) * 1000);
+        //public virtual string FormatTimer(float time)
+        //{
+        //    int minutes = Mathf.FloorToInt(time / 60);
+        //    int seconds = Mathf.FloorToInt(time % 60);
+        //    int milliseconds = Mathf.FloorToInt((time % 1) * 1000);
 
-            return $"{minutes:D2}:{seconds:D2}:{milliseconds:D3}";
-        }
+        //    return $"{minutes:D2}:{seconds:D2}:{milliseconds:D3}";
+        //}
 
         public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {

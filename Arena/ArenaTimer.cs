@@ -33,7 +33,7 @@ namespace RainMeadow
             arena.trackSetupTime = arena.onlineArenaGameMode.SetTimer(arena);
             matchMode = TimerMode.Waiting;
 
-            timerLabel = new FLabel("font", FormatTime(arena, 0))
+            timerLabel = new FLabel("font", FormatTime(0))
             {
                 scale = 2.4f,
                 alignment = FLabelAlignment.Left
@@ -48,7 +48,7 @@ namespace RainMeadow
             pos = new Vector2(80f, hud.rainWorld.options.ScreenSize.y - 60f);
             lastPos = pos;
             timerLabel.SetPosition(DrawPos(1f));
-            modeLabel.SetPosition(DrawPos(1f) + new Vector2(timerLabel._x + 30f, 0f));
+            modeLabel.SetPosition(DrawPos(1f) + new Vector2(135f, 0f));
 
             fContainer.AddChild(timerLabel);
             fContainer.AddChild(modeLabel);
@@ -103,14 +103,18 @@ namespace RainMeadow
                     hud.PlaySound(SoundID.MENU_Start_New_Game);
                     ClearSprites();
                 }
-                timerLabel.text = FormatTime(arena, arena.setupTime);
+                timerLabel.text = FormatTime(arena.setupTime);
             }
         }
 
         // Format time to MM:SS:MMM
-        public static string FormatTime(ArenaOnlineGameMode arena, float time)
+        public static string FormatTime(float time)
         {
-            return arena.onlineArenaGameMode.FormatTimer(time);
+            int minutes = Mathf.FloorToInt(time / 60);
+            int seconds = Mathf.FloorToInt(time % 60);
+            int milliseconds = Mathf.FloorToInt((time % 1) * 1000);
+
+            return $"{minutes:D2}:{seconds:D2}:{milliseconds:D3}";
         }
 
         public override void ClearSprites()
