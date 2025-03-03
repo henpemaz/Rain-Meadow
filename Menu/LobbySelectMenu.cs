@@ -86,7 +86,7 @@ namespace RainMeadow
             // mainPage.subObjects.Add(unlocksButton);
 
             // Status
-            statisticsLabel = new MenuLabel(this, pages[0], $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
+            statisticsLabel = new MenuLabel(this, pages[0], $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
             statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             mainPage.subObjects.Add(statisticsLabel);
 
@@ -217,7 +217,7 @@ namespace RainMeadow
             // Statistics
             if (statisticsLabel != null)
             {
-                statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}";
+                statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
                 statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             }
         }

@@ -77,7 +77,7 @@ public static class DeathMessage
                 case DeathType.Drown:
                     if ((opo.apo as AbstractCreature).realizedCreature != null && (opo.apo as AbstractCreature).realizedCreature.grabbedBy.Count > 0)
                     {
-                        ChatLogManager.LogMessage("", t + " " + Utils.Translate("was drowned by") + (opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name);
+                        ChatLogManager.LogMessage("", t + " " + Utils.Translate("was drowned by") + (opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name + ".");
                         break;
                     }
                     ChatLogManager.LogMessage("", t + " " + Utils.Translate("drowned."));
