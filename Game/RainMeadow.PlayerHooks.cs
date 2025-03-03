@@ -59,10 +59,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (upPicker.IsLocal() && upPicker.abstractPhysicalObject.GetOnlineObject().didParry)
-            {
-                upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
-            }
+           upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
         }
         orig(self, upPicker);
     }
