@@ -65,7 +65,7 @@ public class RainMeadowOptions : OptionInterface
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
-        ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 300);
+        ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         PainCatThrows = config.Bind("PainCatThrows", false);

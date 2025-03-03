@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using static RainMeadow.ArenaPrepTimer;
 
 namespace RainMeadow
 {
@@ -176,6 +177,28 @@ namespace RainMeadow
             }
 
             return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
+        }
+        private int previousSecond = -1;
+        public override void LobbyTick(uint tick)
+        {
+            base.LobbyTick(tick);
+
+            DateTime currentTime = DateTime.UtcNow;
+            int currentSecond = currentTime.Second;
+            if (currentSecond != previousSecond)
+            {
+                if (arenaPrepTimer != null)
+                {
+                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                    {
+                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+
+                    }
+                }
+                previousSecond = currentSecond;
+            }
+
+
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)

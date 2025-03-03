@@ -1,6 +1,7 @@
 ﻿using RainMeadow;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 namespace RainMeadow
 {
     public class Competitive : ExternalArenaGameMode
@@ -45,7 +46,6 @@ namespace RainMeadow
             }
             return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
         }
-
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -56,7 +56,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {
+        {            
             return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
