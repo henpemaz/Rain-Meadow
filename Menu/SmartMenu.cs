@@ -30,7 +30,7 @@ namespace RainMeadow
             tabWrapper._tab._container.RemoveFromContainer();
             typeof(Menu.Remix.MixedUI.OpTab).GetField("_container", (System.Reflection.BindingFlags)0xFFFFFFF).SetValue(tabWrapper._tab, mainPage.Container);
 
-            mainPage.subObjects.Add(this.backObject = new SimplerButton(this, mainPage, "BACK", new Vector2(200f, 50f), new Vector2(110f, 30f)));
+            mainPage.subObjects.Add(this.backObject = new SimplerButton(this, mainPage, Translate("BACK"), new Vector2(200f, 50f), new Vector2(110f, 30f)));
             (backObject as SimplerButton).OnClick += Back;
 
             isExiting = RWInput.CheckPauseButton(0);
