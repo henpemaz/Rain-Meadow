@@ -739,6 +739,10 @@ public partial class RainMeadow
                 self.ReleaseGrasp(grasp);
                 return;
             }
+            if (self.abstractPhysicalObject.GetOnlineObject().didParry)
+            {
+                self.abstractPhysicalObject.GetOnlineObject().didParry = false;
+            }
         }
         orig(self, grasp, eu);
     }

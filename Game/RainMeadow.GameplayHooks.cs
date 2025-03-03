@@ -48,7 +48,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena) && self.IsLocal())
             {
-                arena.didParry = true;
+                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
             }
             orig(self, obj);
         }

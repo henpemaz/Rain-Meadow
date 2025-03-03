@@ -56,8 +56,6 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
-        public bool didParry;
-
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
@@ -65,7 +63,6 @@ namespace RainMeadow
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
-            didParry = false;
             playerEnteredGame = 0;
             painCatThrowingSkill = 0;
             totalLevelCount = 0;
@@ -110,7 +107,6 @@ namespace RainMeadow
 
         public void ResetAtSession_ctor()
         {
-            didParry = false;
             ResetInvDetails();
 
         }

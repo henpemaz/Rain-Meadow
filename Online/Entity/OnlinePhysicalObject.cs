@@ -93,7 +93,7 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public bool realized;
         public bool lenientPos;
-
+        public bool didParry;
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
@@ -483,10 +483,10 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
-            if (RainMeadow.isArenaMode(out var arena) && arena.didParry)
+            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
-                arena.didParry = false;
+                this.didParry = false;
                 return;
             }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
