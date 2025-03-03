@@ -486,7 +486,7 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
-                this.didParry = false;
+                OnlineManager.RunDeferred(() => this.didParry = false);
                 return;
             }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
