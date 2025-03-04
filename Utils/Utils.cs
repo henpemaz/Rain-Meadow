@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
 using RWCustom;
 using UnityEngine;
@@ -88,6 +89,45 @@ namespace RainMeadow
 
                 self.Add(item);
             }
+        }
+
+        /// <summary>
+        /// Trims an occurence of a string from the start of another.
+        /// </summary>
+        /// <param name="target">String to be trimmed.</param>
+        /// <param name="trimString">String to trim from the target.</param>
+        /// <returns>The trimmed string.</returns>
+        public static string TrimStart(this string target, string trimString)
+        {
+            if (string.IsNullOrEmpty(trimString))
+            {
+                return target;
+            }
+
+            var result = target;
+
+            while (result.StartsWith(trimString))
+            {
+                result = result.Substring(trimString.Length);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Take elements from an enumerable from startIndex to (endIndex - 1) inclusive.
+        /// </summary>
+        /// <param name="enumerable">The enumerable to take from.</param>
+        /// <param name="startIndex">The start index (inclusive).</param>
+        /// <param name="endIndex">The end index (exclusive).</param>
+        /// <returns>The taken elements.</returns>
+        public static List<T> TakeFromTo<T>(this IEnumerable<T> enumerable, int startIndex, int endIndex)
+        {
+            var fromStart = enumerable.Skip(startIndex).ToList();
+
+            var toTake = endIndex - startIndex;
+
+            return fromStart.Take(toTake).ToList();
         }
     }
 }
