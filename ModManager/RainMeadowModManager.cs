@@ -12,21 +12,23 @@ namespace RainMeadow
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
-        public static string SyncRequiredModsExplanationComment => """
-                                                                   // The following is a list of mods that must be synced between client and host:
-                                                                   // (if the host has these mods enabled/disabled, the client must match)
-                                                                   // To remove mod IDs and allow them to be de-synced, prefix the lines with '//', like this:
-                                                                   //mod-id-to-exclude
-                                                                   
-                                                                   """;
+        public static string SyncRequiredModsExplanationComment =>
+            """
+            // The following is a list of mods that must be synced between client and host:
+            // (if the host has these mods enabled/disabled, the client must match)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
 
-        public static string BannedOnlineModsExplanationComment =>"""
-                                                                   // The following is a list of mods that are banned from online play:
-                                                                   // (if any of these mods are enabled, they must be disabled before meadow can be entered)
-                                                                   // To remove mod IDs and allow them online, prefix the lines with '//', like this:
-                                                                   //mod-id-to-exclude
+            """;
 
-                                                                   """;
+        public static string BannedOnlineModsExplanationComment =>
+            """
+            // The following is a list of mods that are banned from online play if the host does not have them enabled:
+            // (if any of these mods are enabled on a client, they must be enabled on the host to join)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
+
+            """;
 
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
@@ -51,14 +53,14 @@ namespace RainMeadow
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-            var bannedMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
+            var syncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var bannedOnlineMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
 
-            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
-            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods, BannedOnlineModsExplanationComment);
+            syncRequiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, syncRequiredMods, SyncRequiredModsExplanationComment);
+            bannedOnlineMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedOnlineMods, BannedOnlineModsExplanationComment);
 
             // (required + banned) - enabled
-            return requiredMods.Concat(bannedMods)
+            return syncRequiredMods.Concat(bannedOnlineMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .ToArray();
         }
