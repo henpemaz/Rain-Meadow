@@ -55,7 +55,7 @@ namespace RainMeadow
         {
             if (lobby.playButton != null)
             {
-                lobby.playButton.menuLabel.text = "READY?";
+                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
                 lobby.playButton.inactive = false;
 
             }

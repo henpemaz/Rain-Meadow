@@ -18,7 +18,7 @@ namespace RainMeadow
                 }
             };
 
-            DialogNotify informBadUser = new DialogNotify("You were removed from the previous online game", manager, confirmProceed);
+            DialogNotify informBadUser = new DialogNotify(Utils.Translate("You were removed from the previous online game"), manager, confirmProceed);
 
             if (manager.dialog != null)
             {

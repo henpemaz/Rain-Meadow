@@ -39,14 +39,14 @@ namespace RainMeadow {
                 string dialogue = "";
                 bool isMe = isLoopback();
                 if (isMe) {
-                    dialogue += "Your network interface(s) are";
+                    dialogue += Utils.Translate("Your network interface(s) are");
                     foreach (var ip in UDPPeerManager.getInterfaceAddresses()) {
                         dialogue += Environment.NewLine + ip.ToString() + ":" + this.endPoint.Port.ToString();
                     }
-                } else dialogue += name + " network interface is " + endPoint.ToString();
+                } else dialogue += Utils.Translate("<NAME> network interface is ").Replace("<NAME>", name) + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
-                    dialogue += Environment.NewLine + (isMe? "You are " : "This player is ") + "the owner of the lobby.";
-                    dialogue += Environment.NewLine + $"Players can \"Direct Connect\" to this lobby through { (isMe? "your" : "their") } interface(s).";
+                    dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) +Utils.Translate( "the owner of the lobby.");
+                    dialogue += Environment.NewLine + Utils.Translate("Players can “Direct Connect” to this lobby through ") + (isMe? Utils.Translate("your") : Utils.Translate("their")) + Utils.Translate(" interface(s).");
                 }
                 OnlineManager.instance.manager.ShowDialog(
                     new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)), 
@@ -154,7 +154,7 @@ namespace RainMeadow {
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner) {
                 if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
-                        maxplayercount, "LAN Lobby", OnlineManager.lobby.hasPassword,
+                        maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
                         OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count);
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
@@ -335,7 +335,7 @@ namespace RainMeadow {
             return "Unknown Lan Lobby";
         }
         public override void OpenInvitationOverlay() {
-            OnlineManager.instance.manager.ShowDialog(new DialogNotify("You cannot use this feature here.", OnlineManager.instance.manager, null));
+            OnlineManager.instance.manager.ShowDialog(new DialogNotify(Utils.Translate("You cannot use this feature here."), OnlineManager.instance.manager, null));
         }
     }
 }

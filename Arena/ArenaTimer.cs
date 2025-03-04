@@ -76,7 +76,7 @@ namespace RainMeadow
                 {
                     showMode = TimerMode.Waiting;
                     matchMode = TimerMode.Waiting;
-                    modeLabel.text = showMode.ToString();
+                    modeLabel.text = Utils.Translate(showMode.ToString());
                 }
                 else
                 {

@@ -368,7 +368,7 @@ namespace RainMeadow
             {
                 instance.manager.upcomingProcess = null;
                 instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                instance.manager.ShowDialog(new Menu.DialogNotify(v, "Leaving Lobby", new Vector2(240, 320), instance.manager, () => { }));
+                instance.manager.ShowDialog(new Menu.DialogNotify(v, Utils.Translate("Leaving Lobby"), new Vector2(240, 320), instance.manager, () => { }));
                 LeaveLobby();
                 throw new Exception(v);
             }

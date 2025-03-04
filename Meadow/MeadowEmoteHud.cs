@@ -362,7 +362,7 @@ namespace RainMeadow
                     this.radialSelected = Mathf.FloorToInt((-Custom.Angle(Vector2.up, offset) + 382.5f) / 45f) % 8;
                     if (radialSelected != lastRadialSelected)
                     {
-                        centerLabel.text = "CLEAR"; // could display name here
+                        centerLabel.text = Utils.Translate("CLEAR"); // could display name here
                         radialDisplayer.SetSelected(radialSelected);
                     }
                 }
@@ -371,7 +371,7 @@ namespace RainMeadow
                     radialSelected = -1;
                     if (radialSelected != lastRadialSelected)
                     {
-                        centerLabel.text = "CLEAR";
+                        centerLabel.text = Utils.Translate("CLEAR");
                         radialDisplayer.SetSelected(radialSelected);
                     }
                 }
