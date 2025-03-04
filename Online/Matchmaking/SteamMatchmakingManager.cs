@@ -8,8 +8,8 @@ namespace RainMeadow
 {
     public class SteamLobbyInfo : LobbyInfo {
         public CSteamID iD;
-        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount) : 
-            base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+        public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "") : 
+            base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods) {
             iD = id;
         }
     }
@@ -114,7 +114,9 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new SteamLobbyInfo(id, Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id));
+
+                        lobbies[i] = new SteamLobbyInfo(id, Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id), SteamMatchmaking.GetLobbyData(id, MODS_KEY));
+
                     }
                 }
 
@@ -176,6 +178,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, CLIENT_KEY, CLIENT_VAL);
                     SteamMatchmaking.SetLobbyData(lobbyID, NAME_KEY, SteamFriends.GetPersonaName());
                     SteamMatchmaking.SetLobbyData(lobbyID, MODE_KEY, creatingWithMode);
+                    SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
