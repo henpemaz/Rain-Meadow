@@ -50,9 +50,20 @@ public partial class RainMeadow
         On.Weapon.HitSomethingWithoutStopping += Weapon_HitSomethingWithoutStopping;
         IL.Player.ThrowObject += Player_ThrowObject1;
         On.Player.SlugOnBack.Update += SlugOnBack_Update;
+        On.PlayerCarryableItem.PickedUp += PlayerCarryableItem_PickedUp;
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
     }
+
+    private void PlayerCarryableItem_PickedUp(On.PlayerCarryableItem.orig_PickedUp orig, PlayerCarryableItem self, Creature upPicker)
+    {
+        if (OnlineManager.lobby != null)
+        {
+           upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
+        }
+        orig(self, upPicker);
+    }
+
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
