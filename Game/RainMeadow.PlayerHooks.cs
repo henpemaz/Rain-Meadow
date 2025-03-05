@@ -838,9 +838,20 @@ public partial class RainMeadow
         {
             if (crit is Player) return false;
         }
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        if (isArenaMode(out var arena))
         {
-            if (crit is Player) return false;
+            if (arena.countdownInitiatedHoldFire)
+            {
+                if (crit is Player)
+                {
+                    return false;
+                }
+            }
+
+            if (arena.disableMaul && crit is Player)
+            {
+                return false;
+            }
         }
         return orig(self, crit);
     }

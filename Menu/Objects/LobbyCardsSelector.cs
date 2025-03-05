@@ -45,7 +45,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             }
         }
 
-        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), $"Click to join {lobbyInfo.name}")
+        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), Utils.Translate("Click to join") + lobbyInfo.name)
         {
             this.fade = 1f;
             this.lobbyInfo = lobbyInfo;
@@ -55,10 +55,12 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new Vector2(5f, 30f), new(10f, 50f), true);
             subObjects.Add(menuLabel);
 
-            if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(256, 20), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(256, 5), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
+            if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, Utils.Translate("Private"), new(256, 20), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} {Utils.Translate("max")}", new(256, 5), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, Utils.Translate(lobbyInfo.mode), new(5, 20), new(10, 50), false));
+
+            var playerWord = lobbyInfo.playerCount == 1 ? Utils.Translate("player") : Utils.Translate("players");
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " " + playerWord, new(5, 5), new(10, 50), false));
 
             OnClick += (obj) => (menu as LobbySelectMenu).Play(lobbyInfo);
         }
@@ -354,7 +356,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         filter = new LobbyCardsFilter();
 
         searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(pos.x + 15, pos.y + size.y), 300);
-        searchBar.label.text = "Search Lobbies";
+        searchBar.label.text = Utils.Translate("Search Lobbies");
         searchBar.accept = OpTextBox.Accept.StringASCII;
         searchBar.allowSpace = true;
         searchBar.OnChange += UpdateSearchFilter;
