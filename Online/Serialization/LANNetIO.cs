@@ -120,7 +120,7 @@ namespace RainMeadow
                 try
                 {
                     //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                    byte[]? data = manager.Recieve(out EndPoint remoteEndpoint);
+                    byte[]? data = manager.Recieve(out EndPoint? remoteEndpoint);
                     if (data == null) continue;
                     IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
                     if (iPEndPoint is null) continue;
