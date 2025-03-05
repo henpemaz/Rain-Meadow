@@ -116,7 +116,7 @@ namespace RainMeadow
         }
 
         public void HandleJoin(OnlinePlayer player) {
-            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} joined the game.");
+            ChatLogManager.LogMessage("", $"{player.id.GetPersonaName()} joined the game.");
         }
         public void HandleDisconnect(OnlinePlayer player)
         {
@@ -132,7 +132,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
 
-            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} left the game.");
+            ChatLogManager.LogMessage("", $"{player.id.GetPersonaName()} left the game.");
         }
 
         public abstract MeadowPlayerId GetEmptyId();
