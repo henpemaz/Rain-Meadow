@@ -7,16 +7,20 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Kittehface.Framework20;
 
 namespace RainMeadow
 {
-    
+    partial class NetIOPlatform {
+        static partial void PlatformLanAvailable(ref bool val) {
+            val = NetIOPlatform.PlatformUDPManager is not null;
+        }
+    }
 
     public class LANNetIO : NetIO {
-        public readonly UDPPeerManager manager;
         public LANNetIO() {
-            manager = new();
-            manager.OnPeerForgotten += (peer) => {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            NetIOPlatform.PlatformUDPManager.OnPeerForgotten += (peer) => {
                 if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                     return;
                 }
@@ -38,8 +42,29 @@ namespace RainMeadow
                 foreach (var player in playerstoRemove) ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).RemoveLANPlayer(player);
             };
         }
+        public override void SendSessionData(OnlinePlayer toPlayer)
+        {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            try
+            {
+                OnlineManager.serializer.WriteData(toPlayer);
+                SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
+                OnlineManager.serializer.EndWrite();
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                OnlineManager.serializer.EndWrite();
+                throw;
+            }
+
+        }
 
         public void SendBroadcast(Packet packet) {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+                return;
+            }
             RainMeadow.DebugMe();
             for (int broadcast_port = UDPPeerManager.DEFAULT_PORT; 
                 broadcast_port < (UDPPeerManager.FIND_PORT_ATTEMPTS + UDPPeerManager.DEFAULT_PORT); 
@@ -60,11 +85,15 @@ namespace RainMeadow
                 Packet.Encode(packet, writer, player);
 
                 for (int i = 0; i < 4; i++)
-                manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
-                    UDPPeerManager.PacketType.UnreliableBroadcast, true);
-                }
+                    NetIOPlatform.PlatformUDPManager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                        UDPPeerManager.PacketType.UnreliableBroadcast, true);
+            }
         }
-        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
+
+        // If using a domain requires you to start a conversation, then any packet sent before before starting a conversation is ignored.
+        // otherwise, the parameter "start_conversation" is ignored.
+        public void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
@@ -73,7 +102,7 @@ namespace RainMeadow
                 BinaryWriter writer = new BinaryWriter(memory);
 
                 Packet.Encode(packet, writer, player);
-                manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
+                NetIOPlatform.PlatformUDPManager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
                     {
                         NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
                         NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
@@ -84,43 +113,48 @@ namespace RainMeadow
 
 
         public void SendAcknoledgement(OnlinePlayer player) {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
 
             if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
-                manager.Send(Array.Empty<byte>(), lanid.endPoint, 
+                NetIOPlatform.PlatformUDPManager.Send(Array.Empty<byte>(), lanid.endPoint, 
                     UDPPeerManager.PacketType.Reliable, true);
             }
         }
 
         public override void ForgetPlayer(OnlinePlayer player) {
-            manager.ForgetPeer(((LANMatchmakingManager.LANPlayerId)player.id).endPoint);
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            NetIOPlatform.PlatformUDPManager.ForgetPeer(((LANMatchmakingManager.LANPlayerId)player.id).endPoint);
         }
 
         public override void ForgetEverything() {
-            manager.ForgetAllPeers();
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            NetIOPlatform.PlatformUDPManager.ForgetAllPeers();
         }
 
         public override void Update()
         {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
+            NetIOPlatform.PlatformUDPManager.Update();
             base.Update();
-            manager.Update();
         }
 
         public override void RecieveData()
         {
+            if (NetIOPlatform.PlatformUDPManager is null) return;
             if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
                 return;
             }
 
             
-            while (manager.IsPacketAvailable())
+            while (NetIOPlatform.PlatformUDPManager.IsPacketAvailable())
             {
                 try
                 {
                     //RainMeadow.Debug("To read: " + UdpPeer.debugClient.Available);
-                    byte[]? data = manager.Recieve(out EndPoint remoteEndpoint);
+                    byte[]? data = NetIOPlatform.PlatformUDPManager.Recieve(out EndPoint? remoteEndpoint);
                     if (data == null) continue;
                     IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
                     if (iPEndPoint is null) continue;
@@ -129,8 +163,8 @@ namespace RainMeadow
                     BinaryReader netReader = new BinaryReader(netStream);
                     
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
-                    if (player == null)
+                    var player = ((LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN]).GetPlayerLAN(iPEndPoint);
+                    if (player is null)
                     {
                         RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);
                         var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);

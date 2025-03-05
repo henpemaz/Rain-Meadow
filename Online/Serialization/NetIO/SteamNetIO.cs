@@ -7,40 +7,47 @@ using System.Runtime.InteropServices;
 
 namespace RainMeadow
 {
-    class SteamNetIO : LANNetIO {
-        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
-            base.SendP2P(player, packet, sendType, start_conversation);
-            
-            // RainMeadow.Error("UNIMPLEMENTED");
+
+    partial class NetIOPlatform {
+        static partial void PlatformSteamAvailable(ref bool val) {
+            val = SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn();
         }
+    }
+
+    class SteamNetIO : NetIO {
+        // public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
+        //     // base.SendP2P(player, packet, sendType, start_conversation);
+            
+        //     // RainMeadow.Error("UNIMPLEMENTED");
+        // }
+
+
+
         public override void SendSessionData(OnlinePlayer toPlayer)
         {
-            if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
-                try
+            try
+            {
+                OnlineManager.serializer.WriteData(toPlayer);
+                var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
+                unsafe
                 {
-                    OnlineManager.serializer.WriteData(toPlayer);
-                    var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
-                    unsafe
+                    fixed (byte* dataPointer = OnlineManager.serializer.buffer)
                     {
-                        fixed (byte* dataPointer = OnlineManager.serializer.buffer)
-                        {
-                            SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
-                        }
+                        SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
                     }
                 }
-                catch (Exception e)
-                {
-                    RainMeadow.Error(e);
-                    OnlineManager.serializer.EndWrite();
-                    throw;
-                }
-            } else {
-                base.SendSessionData(toPlayer);
             }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                OnlineManager.serializer.EndWrite();
+                throw;
+            }
+                
         }
 
         override public void RecieveData() {
-            base.RecieveData();
+            // base.RecieveData();
             SteamAPI.RunCallbacks();
             SteamRecieveData();
         }

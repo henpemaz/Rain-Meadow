@@ -1,41 +1,41 @@
-using System;
-using System.IO;
-using System.Net;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
+    partial class NetIOPlatform {
+        static partial void PlatformSteamAvailable(ref bool val);
+        static partial void PlatformLanAvailable(ref bool val);
+        static partial void PlatformRouterAvailable(ref bool val);
+
+
+        public static bool isSteamAvailable { get { bool val = false; PlatformSteamAvailable(ref val); return val; } }
+        public static bool isLANAvailable { get { bool val = false; PlatformLanAvailable(ref val); return val; } }
+        public static bool isRouterAvailable { get { bool val = false; PlatformRouterAvailable(ref val); return val; } }
+
+
+        public static UDPPeerManager? PlatformUDPManager { get; } = new();
+    }
     public abstract class NetIO
     {
+        public static NetIO? currentInstance { get => instances[MatchmakingManager.currentDomain]; }
+        public static Dictionary<MatchmakingManager.MatchMakingDomain, NetIO> instances = new();
+
         public enum SendType : byte
         {
             Reliable,
             Unreliable,
         }
 
-        public virtual void SendSessionData(OnlinePlayer toPlayer)
-        {
-            try
-            {
-                OnlineManager.serializer.WriteData(toPlayer);
-                SendP2P(toPlayer, new SessionPacket(OnlineManager.serializer.buffer, (ushort)OnlineManager.serializer.Position), SendType.Unreliable);
-                OnlineManager.serializer.EndWrite();
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-                OnlineManager.serializer.EndWrite();
-                throw;
-            }
-
+        public static void InitializesNetIO() {
+            if (NetIOPlatform.isLANAvailable) instances.Add(MatchmakingManager.MatchMakingDomain.LAN, new LANNetIO());
+            // if (NetIOPlatform.isRouterAvailable) instances.Add(MatchmakingManager.MatchMakingDomain.Router, new RouterNetIO());
+            if (NetIOPlatform.isSteamAvailable) instances.Add(MatchmakingManager.MatchMakingDomain.Steam, new SteamNetIO())    
         }
 
+        public virtual void SendSessionData(OnlinePlayer toPlayer) {}
         public virtual void ForgetPlayer(OnlinePlayer player) {}
         public virtual void ForgetEverything() {}
 
-        // If using a domain requires you to start a conversation, then any packet sent before before starting a conversation is ignored.
-        // otherwise, the parameter "start_conversation" is ignored.
-        public abstract void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false);
 
         // public void SendP2P(OnlinePlayer player, Packet packet, SendType sendType)
         // {

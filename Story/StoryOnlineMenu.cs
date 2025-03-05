@@ -370,7 +370,12 @@ namespace RainMeadow
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
-            invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            if (MatchmakingManager.currentInstance.canOpenInvitations) {
+                invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            } else {
+                invite.GetButtonBehavior.greyedOut = true;
+            }
+            
             pages[0].subObjects.Add(invite);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;

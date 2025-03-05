@@ -14,7 +14,7 @@ namespace RainMeadow
             // If we don't have a lobby and we a currently joining a lobby
             if (OnlineManager.lobby is null && OnlineManager.currentlyJoiningLobby is not null) {
                 // If the lobby we want to join is a lan lobby
-                if (OnlineManager.currentlyJoiningLobby is LANMatchmakingManager.LANLobbyInfo oldLobbyInfo) {
+                if (OnlineManager.currentlyJoiningLobby is LANMatchmakingManager.INetLobbyInfo oldLobbyInfo) {
                     // If the lobby we want to join is the lobby that allowed us to join.
                     if (UDPPeerManager.CompareIPEndpoints(oldLobbyInfo.endPoint, newLobbyInfo.endPoint)) {
                         OnlineManager.currentlyJoiningLobby = newLobbyInfo;

@@ -271,7 +271,7 @@ namespace RainMeadow
             }
             lastClickedLobby = lobbyInfo;
 
-            if (lobbyInfo is LANMatchmakingManager.LANLobbyInfo) {
+            if (lobbyInfo is LANMatchmakingManager.INetLobbyInfo) {
                 RainMeadow.DebugMe();
                 RainMeadow.Debug($"{lobbyInfo.name}, {lobbyInfo.maxPlayerCount}, {lobbyInfo.mode}, {lobbyInfo.playerCount}, {lobbyInfo.hasPassword}");
             }
@@ -421,7 +421,7 @@ namespace RainMeadow
                     var dialogue = popupDialog as DirectConnectionDialogue;
                     var endpoint = UDPPeerManager.GetEndPointByName(dialogue?.IPBox?.value ?? "");
                     if (endpoint != null) {
-                        var fakelobbyinfo = new LANMatchmakingManager.LANLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
+                        var fakelobbyinfo = new LANMatchmakingManager.INetLobbyInfo(endpoint, "Direct Connection", "Meadow", 0, true, 2);
                         Action join = () => {
                             ShowLoadingDialog("Joining lobby...");
                             GreyOutLobbyCards(true);
