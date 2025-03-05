@@ -62,6 +62,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.Count == OnlineManager.players.Count;
+                arena.isInGame = false;
             }
             if (arena.returnToLobby)
             {
@@ -81,7 +82,6 @@ namespace RainMeadow
                 }
             }
 
-            arena.isInGame = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
             //Nightcat.ResetNightcat();
 

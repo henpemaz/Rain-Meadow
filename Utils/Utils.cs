@@ -4,12 +4,43 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
     internal static class Utils
     {
+        public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
+
+        public static string Translate(string text)
+        {
+            return Translator.Translate(text);
+        }
+
+        public static string GetMeadowTitleFileName(bool isShadow)
+        {
+            var fileName = isShadow ? "shadow" : "title";
+
+            var translatedfileName = fileName + "_" + Translator.currentLanguage.value.ToLower();
+
+            // Fallback to English
+            if (!File.Exists(AssetManager.ResolveFilePath($"illustrations/rainmeadowtitle/{translatedfileName}.png")))
+            {
+                return fileName + "_english";
+            }
+
+            return translatedfileName;
+        }
+
+        public static string GetTranslatedLobbyName(string username)
+        {
+            var lobbyName = Translator.Translate("<USERNAME>'s Lobby");
+
+            return lobbyName.Replace("<USERNAME>", username);
+        }
+
+
         public static void Restart(string args = "")
         {
             Process currentProcess = Process.GetCurrentProcess();
