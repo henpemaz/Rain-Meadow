@@ -146,7 +146,7 @@ namespace RainMeadow
         /// Mod plugins will be scanned to see if they implement these types;
         /// and if so, they will be marked as high-impact
         /// </summary>
-        private static string[] HighImpactBaseTypes = ["Fisob", "Critob", nameof(PhysicalObject), nameof(Creature)];
+        private static string[] HighImpactBaseTypes = ["Fisob", "Critob", nameof(PhysicalObject), nameof(Creature), nameof(OnlineState)];
 
         /// <summary>
         /// Looks through all active mods (that aren't explicitly allowed)
@@ -164,7 +164,7 @@ namespace RainMeadow
                 if (highImpactMods.Contains(mod.id) || highImpactMods.Contains(CommentPrefix + mod.id))
                     continue; //if the mod is allowed or already banned, don't try to (re)ban it
 
-                bool modBanned = false;
+                bool modHighImpact = false;
 
                 //get mod dlls
                 List<string> dlls = new();
@@ -194,11 +194,13 @@ namespace RainMeadow
                             {
                                 for (var baseType = type.BaseType; baseType != null; baseType = baseType.BaseType)
                                 {
-                                    if (HighImpactBaseTypes.Contains(baseType.Name))
+                                    //if baseType is a HighImpactBaseType OR contains an RPCMethod, mark it as banned/impact
+                                    if (HighImpactBaseTypes.Contains(baseType.Name)
+                                        || baseType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Any(m => m.GetCustomAttribute<RPCMethodAttribute>() != null))
                                     {
                                         extendedBannedMods.Add(mod.id);
-                                        modBanned = true;
-                                        RainMeadow.Debug($"Marked {mod.id} as high-impact due to implementing a Fisob, Critob, or PhysicalObject.");
+                                        modHighImpact = true;
+                                        RainMeadow.Debug($"Marked {mod.id} as high-impact due to implementing a {baseType.Name}; or an RPCMethod.");
                                         break;
                                     }
                                 }
@@ -208,14 +210,14 @@ namespace RainMeadow
                                 RainMeadow.Error(assembly.FullName + ":" + type.FullName);
                                 RainMeadow.Error(e);
                             }
-                            if (modBanned) break;
+                            if (modHighImpact) break;
                         }
                     }
                     catch (Exception ex)
                     {
                         RainMeadow.Error(ex);
                     }
-                    if (modBanned) break;
+                    if (modHighImpact) break;
                 }
             }
 
