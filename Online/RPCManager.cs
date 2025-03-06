@@ -17,12 +17,14 @@ namespace RainMeadow
 
     public static class RPCManager
     {
-        public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
+        //public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
+        public static Dictionary<ushort, Dictionary<ushort, RPCDefinition>> defsByIndex = new();
         public static Dictionary<MethodInfo, RPCDefinition> defsByMethod = new Dictionary<MethodInfo, RPCDefinition>();
 
 
         public class RPCDefinition
         {
+            public ushort assemblyHash;
             public ushort index;
             public MethodInfo method;
             public Action<RPCEvent, Serializer> serialize;
@@ -45,7 +47,7 @@ namespace RainMeadow
                     {
                         try
                         {
-                            RegisterRPCs(type);
+                            RegisterRPCs(type, (ushort)assembly.Location.GetHashCode());
                         }
                         catch (Exception e)
                         {
@@ -74,7 +76,7 @@ namespace RainMeadow
         static MethodInfo serializeResourceByRef = typeof(Serializer).GetMethod(nameof(Serializer.SerializeResourceByReference));
         static MethodInfo serializeEntityById = typeof(Serializer).GetMethod(nameof(Serializer.SerializeEntityById));
 
-        public static void RegisterRPCs(Type targetType)
+        public static void RegisterRPCs(Type targetType, ushort assemblyHash)
         {
             if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
             var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
@@ -182,6 +184,7 @@ namespace RainMeadow
 
                 RPCDefinition entry = new()
                 {
+                    assemblyHash = assemblyHash,
                     index = index,
                     method = method,
                     serialize = serialize,
@@ -191,7 +194,8 @@ namespace RainMeadow
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
-                defsByIndex[index] = entry;
+                if (!defsByIndex.ContainsKey(assemblyHash)) defsByIndex.Add(assemblyHash, new());
+                defsByIndex[assemblyHash][index] = entry;
                 defsByMethod[method] = entry;
                 index++;
             }
@@ -234,11 +238,49 @@ namespace RainMeadow
 
             if (serializer.IsWriting)
             {
+                serializer.writer.Write(handler.assemblyHash);
                 serializer.writer.Write(handler.index);
+                try
+                {
+                    //skip one byte ahead; serialize RPC args
+                    long argsStartPos = serializer.writer.Seek((int)serializer.Position + 1, System.IO.SeekOrigin.Current);
+                    handler.serialize(this, serializer);
+
+                    long argsEndPos = serializer.Position;
+                    if (argsEndPos - argsStartPos > 255) throw new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!");
+
+                    //move back to the start; write the length byte
+                    serializer.writer.Seek((int)argsStartPos - 1, System.IO.SeekOrigin.Current);
+                    byte argsLength = (byte)(argsEndPos - argsStartPos);
+                    serializer.Serialize(ref argsLength);
+
+                    serializer.writer.Seek((int)argsEndPos, System.IO.SeekOrigin.Current);
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error($"Error serializing RPC {this}");
+                    throw;
+                }
+                return;
             }
             if (serializer.IsReading)
             {
-                handler = RPCManager.defsByIndex[serializer.reader.ReadUInt16()];
+                //read the header first no matter what
+                ushort modId = serializer.reader.ReadUInt16(),
+                    rpcIdx = serializer.reader.ReadUInt16();
+                byte argsLength = serializer.reader.ReadByte();
+
+                RainMeadow.Debug($"Receiving RPC for assembly {modId}, index {rpcIdx}, of length {argsLength}");
+
+                if (RPCManager.defsByIndex.TryGetValue(modId, out var modRpcs))
+                    handler = modRpcs[rpcIdx];
+                else
+                {
+                    RainMeadow.Debug($"Received RPC from unknown assembly hash: {modId}");
+                    serializer.reader.ReadBytes(argsLength); //just skip through the bytes; who cares what their values are
+                    aborted = true; //so OnlineManager doesn't try to process it
+                    return;
+                }
             }
             try
             {
