@@ -47,12 +47,12 @@ namespace RainMeadow
                     {
                         try
                         {
-                            RegisterRPCs(type, (ushort)assembly.Location.GetHashCode());
+                            RegisterRPCs(type, (ushort)assembly.FullName.GetHashCode()); //hashes the assembly NAME
                         }
                         catch (Exception e)
                         {
                             RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            if (isMain) throw e; 
+                            if (isMain) throw e;
                             RainMeadow.Error(e);
                         }
                     }
@@ -243,25 +243,35 @@ namespace RainMeadow
                 try
                 {
                     //skip one byte ahead; serialize RPC args
-                    long argsStartPos = serializer.writer.Seek((int)serializer.Position + 1, System.IO.SeekOrigin.Current);
-                    handler.serialize(this, serializer);
+                    long headerPos = serializer.Position;
+                    byte tempArgLength = 0;
+                    serializer.Serialize(ref tempArgLength);
+                    long argsStartPos = serializer.Position;
+
+                    handler.serialize(this, serializer); //actually serialize the RPC
 
                     long argsEndPos = serializer.Position;
-                    if (argsEndPos - argsStartPos > 255) throw new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!");
+                    if (argsEndPos - argsStartPos > 255)
+                    {
+                        RainMeadow.Error(new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!"));
+                        throw new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!");
+                    }
 
                     //move back to the start; write the length byte
-                    serializer.writer.Seek((int)argsStartPos - 1, System.IO.SeekOrigin.Current);
+                    serializer.stream.Position = headerPos;
                     byte argsLength = (byte)(argsEndPos - argsStartPos);
                     serializer.Serialize(ref argsLength);
 
-                    serializer.writer.Seek((int)argsEndPos, System.IO.SeekOrigin.Current);
+                    //finally, move back to the end
+                    serializer.stream.Position = argsEndPos;
+
+                    RainMeadow.Debug($"Sending RPC for assembly {handler.assemblyHash}, index {handler.index}, of length {argsLength}");
                 }
                 catch (Exception)
                 {
                     RainMeadow.Error($"Error serializing RPC {this}");
                     throw;
                 }
-                return;
             }
             if (serializer.IsReading)
             {
@@ -281,15 +291,16 @@ namespace RainMeadow
                     aborted = true; //so OnlineManager doesn't try to process it
                     return;
                 }
-            }
-            try
-            {
-                handler.serialize(this, serializer);
-            }
-            catch (Exception)
-            {
-                RainMeadow.Error($"Error serializing RPC {this}");
-                throw;
+
+                try
+                {
+                    handler.serialize(this, serializer);
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error($"Error serializing RPC {this}");
+                    throw;
+                }
             }
         }
 
