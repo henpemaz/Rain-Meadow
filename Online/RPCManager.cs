@@ -36,7 +36,7 @@ namespace RainMeadow
 
         public static void SetupRPCs()
         {
-            index = 1; // zero is an easy to catch mistake
+            //index = 1; // zero is an easy to catch mistake
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
@@ -47,7 +47,7 @@ namespace RainMeadow
                     {
                         try
                         {
-                            RegisterRPCs(type, (ushort)assembly.FullName.GetHashCode()); //hashes the assembly NAME
+                            RegisterRPCs(type, (ushort)assembly.FullName.ToCharArray().GetHashCode()); //hashes the assembly NAME
                         }
                         catch (Exception e)
                         {
@@ -65,7 +65,8 @@ namespace RainMeadow
             }
         }
 
-        static ushort index;
+        //static ushort index;
+        static Dictionary<ushort, ushort> indices;
         static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
         static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
 
@@ -78,6 +79,9 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType, ushort assemblyHash)
         {
+            if (!indices.ContainsKey(assemblyHash))
+                indices.Add(assemblyHash, 1); //start at index 1; 0s are easily-caught errors
+
             if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
             var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
             if (!methods.Any()) return;
@@ -185,7 +189,7 @@ namespace RainMeadow
                 RPCDefinition entry = new()
                 {
                     assemblyHash = assemblyHash,
-                    index = index,
+                    index = indices[assemblyHash],
                     method = method,
                     serialize = serialize,
                     eventArgIndex = argsEventIndex,
@@ -195,9 +199,9 @@ namespace RainMeadow
                 };
 
                 if (!defsByIndex.ContainsKey(assemblyHash)) defsByIndex.Add(assemblyHash, new());
-                defsByIndex[assemblyHash][index] = entry;
+                defsByIndex[assemblyHash][indices[assemblyHash]] = entry;
                 defsByMethod[method] = entry;
-                index++;
+                indices[assemblyHash]++;
             }
         }
 
