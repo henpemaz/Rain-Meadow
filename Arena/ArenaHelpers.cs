@@ -236,11 +236,11 @@ namespace RainMeadow
 
                             if (player.tongue.mode == Player.Tongue.Mode.Retracted && (player.input[0].x != 0 || player.input[0].y != 0 || player.input[0].jmp))
                             {
-                                player.godTimer += 0.5f;
+                                player.godTimer += 0.8f;
                             }
                             else
                             {
-                                player.godTimer -= 0.5f;
+                                player.godTimer -= 0.8f;
                             }
                         }
 
