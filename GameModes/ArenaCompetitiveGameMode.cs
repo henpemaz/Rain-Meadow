@@ -26,6 +26,8 @@ namespace RainMeadow
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
+        public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
+
         public int painCatThrowingSkill = 0;
 
         public string paincatName = "";
