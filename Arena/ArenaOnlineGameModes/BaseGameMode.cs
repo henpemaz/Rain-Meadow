@@ -50,10 +50,9 @@ namespace RainMeadow
             _timerDuration = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
 
         }
-
         public virtual int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
-            return timer--;
+            return --timer;
         }
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
@@ -271,6 +270,10 @@ namespace RainMeadow
                         getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
                     }
                 }
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.isInGame = true;
             }
         }
 

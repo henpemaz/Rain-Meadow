@@ -241,7 +241,7 @@ namespace RainMeadow
                 color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey)
             });
 
-            this.centerLabel = new FLabel(Custom.GetFont(), "CANCEL");
+            this.centerLabel = new FLabel(Custom.GetFont(), Utils.Translate("CANCEL"));
             centerLabel.SetPosition(mainWheelPos);
             hud.fContainers[1].AddChild(centerLabel);
 
@@ -449,7 +449,7 @@ namespace RainMeadow
             {
                 if (!lastRadialPickerActive)
                 {
-                    centerLabel.text = "CANCEL";
+                    centerLabel.text = Utils.Translate("CANCEL");
                     ZeroPage(); // back to zero
                     knobPos = Vector2.zero;
                     knobVel = Vector2.zero;
