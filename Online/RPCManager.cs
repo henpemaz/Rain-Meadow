@@ -17,14 +17,12 @@ namespace RainMeadow
 
     public static class RPCManager
     {
-        //public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
-        public static Dictionary<ushort, Dictionary<ushort, RPCDefinition>> defsByIndex = new();
+        public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
         public static Dictionary<MethodInfo, RPCDefinition> defsByMethod = new Dictionary<MethodInfo, RPCDefinition>();
 
 
         public class RPCDefinition
         {
-            public ushort assemblyHash;
             public ushort index;
             public MethodInfo method;
             public Action<RPCEvent, Serializer> serialize;
@@ -36,7 +34,7 @@ namespace RainMeadow
 
         public static void SetupRPCs()
         {
-            //index = 1; // zero is an easy to catch mistake
+            index = 1; // zero is an easy to catch mistake
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
@@ -47,7 +45,7 @@ namespace RainMeadow
                     {
                         try
                         {
-                            RegisterRPCs(type, (ushort)assembly.FullName.ToCharArray().GetHashCode()); //hashes the assembly NAME
+                            RegisterRPCs(type, CustomHashString(assembly.FullName)); //hashes the assembly NAME
                         }
                         catch (Exception e)
                         {
@@ -64,9 +62,14 @@ namespace RainMeadow
                 }
             }
         }
+        private static ushort CustomHashString(string str)
+        {
+            ushort result = 28419; //literally just a random ushort
+            for (ushort i = 0; i < str.Length; i++) result ^= (ushort) ((ushort)(str[0] << (i & 7)) | (ushort)(str[0] >>> (7 - (i & 7))));
+            return result;
+        }
 
-        //static ushort index;
-        static Dictionary<ushort, ushort> indices;
+        static ushort index;
         static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
         static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
 
@@ -79,18 +82,23 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType, ushort assemblyHash)
         {
-            if (!indices.ContainsKey(assemblyHash))
-                indices.Add(assemblyHash, 1); //start at index 1; 0s are easily-caught errors
-
             if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
             var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
             if (!methods.Any()) return;
 
             foreach (var method in methods)
             {
+                ushort newIndex = (ushort)(index ^ assemblyHash);
+                while (defsByIndex.ContainsKey(newIndex))
+                {
+                    RainMeadow.Error($"Already registered RPC index {newIndex}! Increasing index to compensate.");
+                    index++; //increase index
+                    newIndex = (ushort)(index ^ assemblyHash); //reset newIndex
+                }
+
                 var isStatic = method.IsStatic;
                 // get args
-                RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
+                RainMeadow.Debug($"New RPC: {targetType}-{method.Name}; assembly hash: {assemblyHash}; index: {newIndex}");
                 var args = method.GetParameters();
 
                 var argsEventIndex = -1;
@@ -186,10 +194,10 @@ namespace RainMeadow
 
                 var serialize = Expression.Lambda<Action<RPCEvent, Serializer>>(Expression.Block(vars, expressions), rpceventParam, serializerParam).Compile();
 
+
                 RPCDefinition entry = new()
                 {
-                    assemblyHash = assemblyHash,
-                    index = indices[assemblyHash],
+                    index = newIndex,
                     method = method,
                     serialize = serialize,
                     eventArgIndex = argsEventIndex,
@@ -198,10 +206,9 @@ namespace RainMeadow
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
-                if (!defsByIndex.ContainsKey(assemblyHash)) defsByIndex.Add(assemblyHash, new());
-                defsByIndex[assemblyHash][indices[assemblyHash]] = entry;
+                defsByIndex[newIndex] = entry;
                 defsByMethod[method] = entry;
-                indices[assemblyHash]++;
+                index++;
             }
         }
 
@@ -242,7 +249,6 @@ namespace RainMeadow
 
             if (serializer.IsWriting)
             {
-                serializer.writer.Write(handler.assemblyHash);
                 serializer.writer.Write(handler.index);
                 try
                 {
@@ -269,7 +275,7 @@ namespace RainMeadow
                     //finally, move back to the end
                     serializer.stream.Position = argsEndPos;
 
-                    RainMeadow.Debug($"Sending RPC for assembly {handler.assemblyHash}, index {handler.index}, of length {argsLength}");
+                    RainMeadow.Debug($"Sending RPC of index {handler.index} with length {argsLength}");
                 }
                 catch (Exception)
                 {
@@ -280,17 +286,16 @@ namespace RainMeadow
             if (serializer.IsReading)
             {
                 //read the header first no matter what
-                ushort modId = serializer.reader.ReadUInt16(),
-                    rpcIdx = serializer.reader.ReadUInt16();
+                ushort idx = serializer.reader.ReadUInt16();
                 byte argsLength = serializer.reader.ReadByte();
 
-                RainMeadow.Debug($"Receiving RPC for assembly {modId}, index {rpcIdx}, of length {argsLength}");
+                RainMeadow.Debug($"Receiving RPC of index {idx} with length {argsLength}");
 
-                if (RPCManager.defsByIndex.TryGetValue(modId, out var modRpcs))
-                    handler = modRpcs[rpcIdx];
+                if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler))
+                    handler = rpcHandler;
                 else
                 {
-                    RainMeadow.Debug($"Received RPC from unknown assembly hash: {modId}");
+                    RainMeadow.Debug($"Received RPC with an unregistered index: {idx}");
                     serializer.reader.ReadBytes(argsLength); //just skip through the bytes; who cares what their values are
                     aborted = true; //so OnlineManager doesn't try to process it
                     return;
