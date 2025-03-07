@@ -17,6 +17,7 @@ Direct Connect|Conexión directa
 Direct Connection is only available in the Local Matchmaker|La conexión directa solo está disponible en el buscador de partidas local.
 Lobby Domain|Dominio de la sala
 Local|Local
+Router|Rúter
 Steam|Steam
 Please disable JollyCoop before playing Online|Por favor, desactiva Jolly Co-op antes de jugar en línea.
 Failed to join lobby.<LINE> Lobby is full|Error al unirte a la sala.<LINE> La sala está llena.
@@ -226,6 +227,8 @@ If so, This is very unstable and will most likely NOT work|Es muy inestable y pu
 Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás haciendo?
 
 // LAN Matchmaking Manager
+LAN Lobby|Sala de LAN
+Nobody|Nadie
 Your network interface(s) are|Tus interfaces de red son
 <NAME> network interface is |La interfaz de red de <NAME> es 
 You are |Tú eres 
@@ -235,9 +238,6 @@ Players can “Direct Connect” to this lobby through |Los jugadores pueden con
 your|tus
 their|sus
  interface(s).| interfaces.
-LAN Lobby|Sala de LAN
-Nobody|Nadie
-You cannot use this feature here.|No puedes usar esta característica aquí.
 
 // Mod Applier
 Error loading mods!|¡Error al cargar mods!
@@ -285,18 +285,19 @@ If selected, usernames and icons will allways appear onscreen for slugcats in a 
 WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden ocasionar corrupciones de datos, realiza una copia de seguridad de tus partidas.
 Custom Story Slugcat:|Campañas personalizadas:
 If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gatobabosa que sean inestables.
-Countdown timer. 60 == 1s|Tiempo de la cuenta regresiva. 60 == 1s
+Countdown timer. Default: 5s|Tiempo de la cuenta atrás. Predeterminado: 5 s
 Sain't: Disable Saint ascendance|Santon't: Desactivar sintonía del Santo
-Saint ascendance duration timer. 60 == 1s|Duración de la sintonía del Santo. 60 == 1s
+Saint ascendance duration timer. Default: 120|Duración de la sintonía del Santo. Predeterminado: 120
 Inv: Enable spear throws at 0 throw skill|Inv: Activar lanzamientos de lanza al tener habilidad de lanzamiento 0
 Inv: Enable egg at 0 throw skill|Inv: Activar huevo al tener habilidad de lanzamiento 0
 Inv: Enable ???|Inv: Activar ???
+Artificer: Disable Stun|Artífice: Desactivar aturdimiento
 Mauling: Disable|Morder: Desactivar
-Player Result Scroll Speed|Velocidad de desplazamiento de los resultados de los jugadores
+Player Result Scroll Speed. Default: 5|Velocidad de desplazamiento de los resultados de los jugadores. Predeterminado: 5
 Username|Nombre de usuario
 
 // Credits
-Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada se lo compara. - Henpemaz
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
 Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow es un modo de juego inspirado en el videojuego del mismo nombre de Might & Delight. Es un juego apenas jugable y con errores, que a uno le puede encantar. ¿Suena familiar?
 This mod and all its features were brought to you by really awesome people from the community.|Este mod y todas sus características fueron traídas a ti por personas muy estupendas de la comunidad.
 Lead Developer|Desarrollador principal
@@ -325,3 +326,4 @@ Leaving Lobby|Saliendo de la sala
 This player does not have a profile.|Este jugador no tiene un perfil.
 Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente. Algunas características de Rain Meadow han sido desactivadas.
+You cannot use this feature here.|No puedes usar esta característica aquí.
