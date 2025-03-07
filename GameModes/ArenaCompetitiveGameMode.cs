@@ -184,22 +184,23 @@ namespace RainMeadow
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-
-            DateTime currentTime = DateTime.UtcNow;
-            int currentSecond = currentTime.Second;
-            if (currentSecond != previousSecond)
+            if (OnlineManager.lobby.isOwner)
             {
-                if (arenaPrepTimer != null)
+                DateTime currentTime = DateTime.UtcNow;
+                int currentSecond = currentTime.Second;
+                if (currentSecond != previousSecond)
                 {
-                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                    if (arenaPrepTimer != null)
                     {
-                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+                        if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                        {
+                            setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
 
+                        }
                     }
+                    previousSecond = currentSecond;
                 }
-                previousSecond = currentSecond;
             }
-
 
         }
 
