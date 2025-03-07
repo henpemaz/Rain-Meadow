@@ -34,7 +34,7 @@ namespace RainMeadow
 
         public static void SetupRPCs()
         {
-            index = 1; // zero is an easy to catch mistake
+            //index = 1; // zero is an easy to catch mistake
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
@@ -69,7 +69,8 @@ namespace RainMeadow
             return result;
         }
 
-        static ushort index;
+        //static ushort index;
+        static Dictionary<ushort, ushort> indices = new(); //each assembly has its own index counter, so load order doesn't matter
         static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
         static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
 
@@ -82,19 +83,22 @@ namespace RainMeadow
 
         public static void RegisterRPCs(Type targetType, ushort assemblyHash)
         {
+            if (!indices.ContainsKey(assemblyHash)) indices.Add(assemblyHash, 1);
+
             if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
             var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
             if (!methods.Any()) return;
 
             foreach (var method in methods)
             {
-                ushort newIndex = (ushort)(index ^ assemblyHash);
+                ushort newIndex = (ushort)(indices[assemblyHash] ^ assemblyHash);
                 while (defsByIndex.ContainsKey(newIndex))
                 {
                     RainMeadow.Error($"Already registered RPC index {newIndex}! Increasing index to compensate.");
-                    index++; //increase index
-                    newIndex = (ushort)(index ^ assemblyHash); //reset newIndex
+                    indices[assemblyHash]++; //increase the index
+                    newIndex = (ushort)(indices[assemblyHash] ^ assemblyHash); //reset newIndex
                 }
+                ushort index = indices[assemblyHash];
 
                 var isStatic = method.IsStatic;
                 // get args
@@ -208,7 +212,8 @@ namespace RainMeadow
 
                 defsByIndex[newIndex] = entry;
                 defsByMethod[method] = entry;
-                index++;
+                //index++;
+                indices[assemblyHash]++;
             }
         }
 
