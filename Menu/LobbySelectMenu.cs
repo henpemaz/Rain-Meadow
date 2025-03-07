@@ -43,8 +43,8 @@ namespace RainMeadow
             mainPage.subObjects.Add(lobbyList);
 
             // title at the top
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+            this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
             this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
             var creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
@@ -87,12 +87,12 @@ namespace RainMeadow
             // mainPage.subObjects.Add(unlocksButton);
 
             // Status
-            statisticsLabel = new MenuLabel(this, pages[0], $"Online: {playerCount} | Lobbies: {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
+            statisticsLabel = new MenuLabel(this, pages[0], $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
             statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             mainPage.subObjects.Add(statisticsLabel);
 
             // // display version
-            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+            MenuLabel versionLabel = new MenuLabel(this, pages[0], $"{Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
             versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
             mainPage.subObjects.Add(versionLabel);
 
@@ -162,7 +162,7 @@ namespace RainMeadow
             
             domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
                 MatchmakingManager.currentDomain), where, 160f - 35f, 
-                MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value)).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+                MatchmakingManager.supported_matchmakers.Select(x => new ListItem(Utils.Translate(x.value))).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
                 MatchmakingManager.currentDomain = new MatchmakingManager.MatchMakingDomain(domainDropDown.value, false);
                 lobbyList.ClearLobbies();
@@ -233,7 +233,7 @@ namespace RainMeadow
             // Statistics
             if (statisticsLabel != null)
             {
-                statisticsLabel.text = $"Online: {playerCount} | Lobbies: {lobbyCount}";
+                statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}";
                 statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             }
         }
@@ -385,6 +385,8 @@ namespace RainMeadow
         {
             if (popupDialog != null) HideDialog();
 
+            text = Translate(text);
+
             popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
         }
@@ -392,6 +394,8 @@ namespace RainMeadow
         public void ShowNotLocalDialogue(string text, Action ok)
         {
             if (popupDialog != null) HideDialog();
+
+            text = Translate(text);
             
             popupDialog = new NotLocalWarningDialog(this, mainPage,
                 new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), 
@@ -403,6 +407,8 @@ namespace RainMeadow
         public void ShowErrorDialog(string error)
         {
             if (popupDialog != null) HideDialog();
+
+            error = Translate(error);
 
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
