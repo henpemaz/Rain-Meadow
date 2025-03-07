@@ -195,6 +195,7 @@ namespace RainMeadow
 
         }
 
+
         private void SingularityBomb_ctor(On.MoreSlugcats.SingularityBomb.orig_ctor orig, SingularityBomb self, AbstractPhysicalObject abstractPhysicalObject, World world)
         {
             if (isArenaMode(out var _))
