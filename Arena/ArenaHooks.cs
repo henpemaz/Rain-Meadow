@@ -1131,7 +1131,7 @@ namespace RainMeadow
                 }
                 catch
                 {
-                    self.playerNameLabel.text = userNameBackup;
+                    self.playerNameLabel.text = Utils.Translate(userNameBackup);
                 }
 
 

@@ -117,7 +117,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 480f, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, disables the sway animation in the pause menu"))),
 
                 meadowCheatBox = new OpTextBox(config.Bind("",""), new Vector2(10f, cheaty), 80f),
-                new OpLabel(110f, cheaty, Translate("Input \"cheats\" to access cheats")),
+                new OpLabel(110f, cheaty, Translate("Input “cheats” to access cheats")),
                 new OpLabel(110f, cheaty - 24f, Translate("Just make sure not to ruin the fun for yourself...")),
                 new OpLabel(110f, cheaty - 48f, Translate("Emote and skin unlocks will affect the currently selected character")),
 
@@ -237,7 +237,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-                new OpLabel(10f, 40, "Player Result Scroll Speed. Default: 5", bigText: false),
+                new OpLabel(10f, 40, Translate("Player Result Scroll Speed. Default: 5"), bigText: false),
                 new OpTextBox(ArenaScrollSpeed, new Vector2(10, 15), 160f)
                 {
                     accept = OpTextBox.Accept.Float

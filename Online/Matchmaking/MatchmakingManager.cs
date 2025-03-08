@@ -43,6 +43,7 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static string MODE_KEY = "mode";
+        public static string MODS_KEY = "mods";
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
 
@@ -116,7 +117,7 @@ namespace RainMeadow
         }
 
         public void HandleJoin(OnlinePlayer player) {
-            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} joined the game.");
+            ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."));
         }
         public void HandleDisconnect(OnlinePlayer player)
         {
@@ -132,7 +133,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
 
-            ChatLogManager.LogMessage("Rain Meadow:", $"{player.id.GetPersonaName()} left the game.");
+            ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
         }
 
         public abstract MeadowPlayerId GetEmptyId();

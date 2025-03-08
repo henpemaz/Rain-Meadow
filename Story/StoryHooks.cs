@@ -241,7 +241,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
             }
             else
             {
