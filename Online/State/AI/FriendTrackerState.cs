@@ -17,6 +17,7 @@ namespace RainMeadow {
         [OnlineFieldHalf]
         public float tamingDifficlty;
 
+        public FriendTrackerState() {}
         public FriendTrackerState(AIModule module) {
             if (module is FriendTracker friendTracker) {
                 followClosestFriend = friendTracker.followClosestFriend;
@@ -24,9 +25,7 @@ namespace RainMeadow {
                     && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
                 tamingDifficlty = friendTracker.tamingDifficlty;
                 desiredCloseness = friendTracker.desiredCloseness;
-            }            
-            
-            throw new ArgumentException();
+            } else throw new ArgumentException();
         }
         public override void ReadTo(AIModule module) {
             if (module is FriendTracker friendTracker) {

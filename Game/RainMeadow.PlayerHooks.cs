@@ -1,7 +1,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-using System.Drawing;
 using System.Linq;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
@@ -54,6 +53,11 @@ public partial class RainMeadow
         IL.Player.checkInput += Player_checkInput_IgnoreIfCarryingSlugNPC;
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
+
+        IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
+        IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
+        IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+
     }
 
     private void PlayerCarryableItem_PickedUp(On.PlayerCarryableItem.orig_PickedUp orig, PlayerCarryableItem self, Creature upPicker)
@@ -65,10 +69,47 @@ public partial class RainMeadow
         orig(self, upPicker);
     }
 
+
+    // This is Abysmal and doesn't work, need to 
+    void Player_SynchronizeSocialEventDrop(ILContext context) { 
+        try {
+            ILCursor cursor = new(context);
+            int socialeventdrops_found = 0;
+            while (cursor.TryGotoNext(MoveType.Before, x => x.MatchCall(typeof(SocialEventRecognizer).GetMethod(nameof(SocialEventRecognizer.CreaturePutItemOnGround))))) {
+                ++socialeventdrops_found;
+                cursor.EmitDelegate(Player_CreaturePutItem);
+                cursor.Emit(OpCodes.Br_S, 2); // Skip CreaturePutItemOnGround
+            }
+
+            RainMeadow.Debug($"{context.Method.Name}: Found {socialeventdrops_found} calls to {nameof(SocialEventRecognizer.CreaturePutItemOnGround)}");
+        } catch (Exception except) {
+            RainMeadow.Error(except);
+        }
+    }
+
+    void Player_CreaturePutItem(PhysicalObject item, Creature creature) {
+        creature.room.socialEventRecognizer.CreaturePutItemOnGround(item, creature);
+        if (OnlineManager.lobby != null) return;
+        if (!creature.IsLocal()) return;
+
+        if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession)) {
+            if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature? oc) &&
+                item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo)) {
+                oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, 
+                    opo?.id, oc?.id);
+            } 
+            
+        }
+    }
+
+
+
+
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
-        if (isArenaMode(out var _))
+        // if (isArenaMode(out var _))
+        if (OnlineManager.lobby != null)
         {
             if (self.grasps != null)
             {
@@ -76,8 +117,9 @@ public partial class RainMeadow
                 {
                     if (self.grasps[i] != null)
                     {
-                        if (self.grasps[i].grabbed is Player pl && pl.input[0].jmp)
+                        if (self.grasps[i].grabbed is Player pl && pl.input[0].thrw)
                         {
+                            if (pl.isNPC) return;
                             self.grasps[i].Release();
                         }
                     }

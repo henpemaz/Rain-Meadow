@@ -9,20 +9,20 @@ namespace RainMeadow
         // this goes completely unused. won't synchronize for now
         // public bool DieOfStarvation;
 
-        [OnlineField]
-        public int KarmaLevel;
+        // [OnlineField]
+        // public int KarmaLevel;
 
-        [OnlineField]
-        public bool HasMark;
+        // [OnlineField]
+        // public bool HasMark;
 
-        [OnlineField]
-        public bool Glowing;
+        // [OnlineField]
+        // public bool Glowing;
 
-        [OnlineField]
-        public bool Drone;
+        // [OnlineField]
+        // public bool Drone;
 
-        [OnlineField]
-        public bool HasCloak;
+        // [OnlineField]
+        // public bool HasCloak;
 
         /*
         [OnlineField]
@@ -38,11 +38,11 @@ namespace RainMeadow
             var abstractCreature = (AbstractCreature)onlineEntity.apo;
             var playerState = (MoreSlugcats.PlayerNPCState)abstractCreature.state;
             Malnourished = playerState.Malnourished;
-            KarmaLevel = playerState.KarmaLevel;
-            HasMark = playerState.HasMark;
-            Glowing = playerState.Glowing;
-            Drone = playerState.Drone;
-            HasCloak = playerState.HasCloak;
+            // KarmaLevel = playerState.KarmaLevel;
+            // HasMark = playerState.HasMark;
+            // Glowing = playerState.Glowing;
+            // Drone = playerState.Drone;
+            // HasCloak = playerState.HasCloak;
 
             if (playerState.StomachObject is AbstractPhysicalObject apo) {
                 if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
@@ -63,11 +63,11 @@ namespace RainMeadow
             NPCState.player = abstractCreature;
             
             NPCState.Malnourished = Malnourished;
-            NPCState.KarmaLevel = KarmaLevel;
-            NPCState.HasMark = HasMark;
-            NPCState.Glowing = Glowing;
-            NPCState.Drone = Drone;
-            NPCState.HasCloak = HasCloak;
+            // NPCState.KarmaLevel = KarmaLevel;
+            // NPCState.HasMark = HasMark;
+            // NPCState.Glowing = Glowing;
+            // NPCState.Drone = Drone;
+            // NPCState.HasCloak = HasCloak;
             NPCState.StomachObject = (this.objectInStomach?.FindEntity() as OnlinePhysicalObject)?.apo;
         }
     }

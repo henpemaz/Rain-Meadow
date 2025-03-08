@@ -109,6 +109,10 @@ namespace RainMeadow
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
             bool transferable = !RainMeadow.sSpawningAvatar;
+            if (apo.realizedObject is Player player) {
+                transferable = transferable || player.isNPC;
+            }
+
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
             {

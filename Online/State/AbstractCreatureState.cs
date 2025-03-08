@@ -7,6 +7,9 @@ namespace RainMeadow
         [OnlineField(group = "realized")]
         public WorldCoordinate destination;
 
+        [OnlineField(nullable = true)]
+        public ArtificialIntelligenceState? artificialIntelligenceState;
+
         public AbstractCreatureState() : base() { }
         public AbstractCreatureState(OnlineCreature onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
         {
@@ -15,6 +18,25 @@ namespace RainMeadow
             {
                 destination = absAi.destination;
             }
+
+            artificialIntelligenceState = GetCreatureAIState(onlineEntity);
+        }
+
+
+        private bool ShouldSyncAI(CreatureTemplate.Type type) {
+            if (type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC) return true;
+            return false;
+        }
+
+        protected virtual ArtificialIntelligenceState? GetCreatureAIState(OnlineCreature onlineCreature)
+        {
+            if (onlineCreature.apo is AbstractCreature creature && creature.creatureTemplate.AI) {
+                if (ShouldSyncAI(creature.creatureTemplate.type)) {
+                    return new ArtificialIntelligenceState(onlineCreature);
+                }
+            }
+
+            return null;
         }
 
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)

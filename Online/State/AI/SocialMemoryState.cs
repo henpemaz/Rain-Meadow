@@ -1,6 +1,11 @@
 
+using System.Linq;
+using RainMeadow.Generics;
+
 namespace RainMeadow {
-    class SocialMemoryState : Serializer.ICustomSerializable {
+
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
+    class SocialMemoryState : OnlineState {
         public class OnlineGameEntityID : Serializer.ICustomSerializable {
             public int spawner;
             public int number;
@@ -39,7 +44,7 @@ namespace RainMeadow {
                 serializer.Serialize(ref tempFear);
             }
 
-            RelationshipState(SocialMemory.Relationship relationship) {
+            public RelationshipState(SocialMemory.Relationship relationship) {
                 subjectID = new(relationship.subjectID);
                 like = relationship.like;
                 fear = relationship.fear;
@@ -48,7 +53,7 @@ namespace RainMeadow {
                 tempFear = relationship.tempFear;
             }
             public RelationshipState() {}
-            SocialMemory.Relationship Create() {
+            public SocialMemory.Relationship Create() {
                 return new SocialMemory.Relationship(subjectID.Create()) { 
                     like = this.like,
                     fear = this.fear,
@@ -58,18 +63,18 @@ namespace RainMeadow {
                 };
             }
         };
+        
+        [OnlineField]
+        public DynamicOrderedCustomSerializables<RelationshipState> relationshipStates;
 
-        public RelationshipState[] relationshipStates;
-        public SocialMemoryState() {
+        public SocialMemoryState(SocialMemory socialMemory) {
+            relationshipStates = new(socialMemory.relationShips.Select(x => new RelationshipState(x)).ToList());
         }
 
-        void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer) {
-            if (serializer.IsWriting) serializer.writer.Write(relationshipStates.Length);
-            else if (serializer.IsReading) relationshipStates = new RelationshipState[serializer.reader.ReadInt32()];
+        public SocialMemoryState() {}
 
-            for (int i = 0; i < relationshipStates.Length; i++) {
-                serializer.Serialize(ref relationshipStates[i]);
-            }  
+        public void ReadTo(SocialMemory mem) {
+            mem.relationShips = relationshipStates.list.Select(x => x.Create()).ToList();
         }
     }
 }
