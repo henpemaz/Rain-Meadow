@@ -46,7 +46,6 @@ namespace RainMeadow
         {
             arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
-            arena.clientsAreReadiedUp = 0;
             arena.currentLevel = 0;
             arena.playersReadiedUp.Clear();
 
@@ -62,11 +61,11 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby.isOwner)
             {
-                arena.allPlayersReadyLockLobby = false;
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.Count == OnlineManager.players.Count;
+                arena.isInGame = false;
             }
             if (arena.returnToLobby)
             {
-                arena.clientsAreReadiedUp = 0;
                 lobby.clientReadiedUp = false;
 
                 arena.playersReadiedUp.Clear();
@@ -74,20 +73,23 @@ namespace RainMeadow
                 arena.returnToLobby = false;
             }
 
-            foreach (var player in OnlineManager.players)
-            {
-                if (player != OnlineManager.lobby.owner)
-                {
 
-                    player.InvokeOnceRPC(ArenaRPCs.Arena_InitialSetupTimers, arena.setupTime, arena.arenaSaintAscendanceTimer);
-                }
-            }
-
-            arena.isInGame = false;
             lobby.manager.rainWorld.options.DeleteArenaSitting();
             //Nightcat.ResetNightcat();
 
 
+        }
+        public static OnlinePlayer FindOnlinePlayerByStringUsername(string username)
+        {
+            foreach (var player in OnlineManager.players)
+            {
+                if (player.id.name == username)
+                {
+                    return player;
+                }
+            }
+
+            return OnlineManager.mePlayer;
         }
 
 
@@ -143,7 +145,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> AllSlugcats()
         {
             var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.entries.Count; i++)
+            for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
             {
                 var slugcatName = SlugcatStats.Name.values.entries[i];
 
@@ -161,12 +163,31 @@ namespace RainMeadow
 
                 if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
                 {
-                    var temp = (SlugcatStats.Name)enumBase;
+
                     RainMeadow.Debug("Filtered list:" + slugcatName);
-                    filteredList.Add(temp);
+                    SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
+                    filteredList.Add(slugcatStatSlug);
+                    if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
+                    {
+                        if (BaseGameSlugcats().Contains(slugcatStatSlug))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            filteredList.Remove(slugcatStatSlug);
+                        }
+                    }
                 }
             }
             return filteredList;
+        }
+
+        public static void SetHandler(SimplerButton[] classButtons, int localIndex)
+        {
+            var button = classButtons[localIndex]; // Get the button you want to pass
+
+
         }
 
         public static List<SlugcatStats.Name> BaseGameSlugcats()
@@ -209,8 +230,24 @@ namespace RainMeadow
                         {
                             player.DeactivateAscension();
                         }
+
+                        if (player.monkAscension == false && player.godTimer != player.maxGodTime)
+                        {
+
+                            if (player.tongue.mode == Player.Tongue.Mode.Retracted && (player.input[0].x != 0 || player.input[0].y != 0 || player.input[0].jmp))
+                            {
+                                player.godTimer += 0.8f;
+                            }
+                            else
+                            {
+                                player.godTimer -= 0.8f;
+                            }
+                        }
+
                     }
+
                 }
+
             }
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
@@ -219,6 +256,5 @@ namespace RainMeadow
 
         }
     }
-
 
 }

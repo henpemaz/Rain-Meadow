@@ -10,7 +10,7 @@ namespace RainMeadow
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this, resource);
-            
+
         }
 
         internal class State : ResourceDataState
@@ -40,13 +40,13 @@ namespace RainMeadow
             [OnlineField]
             public int playerEnteredGame;
             [OnlineField]
-            public int clientsAreReadiedUp;
-            [OnlineField]
             public int currentLevel;
             [OnlineField]
             public int totalLevels;
             [OnlineField]
             public int arenaSetupTime;
+            [OnlineField]
+            public int saintAscendanceTimer;
             [OnlineField]
             public bool sainot;
             [OnlineField]
@@ -55,6 +55,10 @@ namespace RainMeadow
             public bool painCatThrows;
             [OnlineField]
             public bool painCatLizard;
+            [OnlineField]
+            public bool disableMaul;
+            [OnlineField]
+            public bool disableArtiStun;
             [OnlineField]
             public string currentGameMode;
             public State() { }
@@ -73,15 +77,17 @@ namespace RainMeadow
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
-                clientsAreReadiedUp = arena.clientsAreReadiedUp;
                 arenaSetupTime = arena.setupTime;
                 sainot = arena.sainot;
+                saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
                 painCatEgg = arena.painCatEgg;
                 painCatThrows = arena.painCatThrows;
                 painCatLizard = arena.painCatLizard;
+                disableMaul = arena.disableMaul;
+                disableArtiStun = arena.disableArtiStun;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -99,15 +105,17 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
-                (lobby.gameMode as ArenaOnlineGameMode).clientsAreReadiedUp = clientsAreReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
+                (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
+                (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
+                (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
             }
 

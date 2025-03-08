@@ -13,15 +13,16 @@ namespace RainMeadow
 
         public class PlayerButton
         {
-            public OnlinePhysicalObject player;
+            public OnlinePlayer player;
+            public OnlinePhysicalObject opo;
             public SimplerButton button;
             public SimplerSymbolButton? kickbutton;
             public bool mutePlayer
             {
-                get => OnlineManager.lobby.gameMode.mutedPlayers.Contains(player.owner.id.name);
+                get => OnlineManager.lobby.gameMode.mutedPlayers.Contains(player.id.name);
                 set
                 {
-                    var name = player.owner.id.name;
+                    var name = player.id.name;
                     if (value)
                     {
                         RainMeadow.Debug($"Added {name} to mute list");
@@ -46,25 +47,26 @@ namespace RainMeadow
             }
             public SpectatorOverlay overlay;
 
-            public PlayerButton(SpectatorOverlay menu, OnlinePhysicalObject opo, Vector2 pos, bool canKick = false)
+            public PlayerButton(SpectatorOverlay menu, OnlinePlayer player, OnlinePhysicalObject? opo, Vector2 pos, bool canKick = false)
             {
                 this.overlay = menu;
-                this.player = opo;
-                this.button = new SimplerButton(menu, menu.pages[0], opo.owner.id.name, pos, new Vector2(110, 30));
+                this.player = player;
+                this.opo = opo ?? null;
+                this.button = new SimplerButton(menu, menu.pages[0], player.id.name, pos, new Vector2(110, 30));
 
                 this.button.OnClick += (_) =>
                 {
                     this.button.toggled ^= true;
-                    overlay.spectatee = this.button.toggled ? this.player.apo as AbstractCreature : null;
+                    overlay.spectatee = this.button.toggled ? opo?.apo as AbstractCreature : null;
                 };
                 this.button.owner.subObjects.Add(button);
                 if (canKick)
                 {
                     this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], "Menu_Symbol_Clear_All", "KICKPLAYER", pos + new Vector2(120, 0));
-                    this.kickbutton.OnClick += (_) => BanHammer.BanUser(opo.owner);
+                    this.kickbutton.OnClick += (_) => BanHammer.BanUser(player);
                     this.kickbutton.owner.subObjects.Add(kickbutton);
                 }
-                if (opo.owner != OnlineManager.mePlayer)
+                if (player != OnlineManager.mePlayer)
                 {
                     this.kickbutton = new SimplerSymbolButton(menu, menu.pages[0], clientMuteSymbol, "MUTEPLAYER", pos + new Vector2(120, 0));
                     this.kickbutton.OnClick += (_) =>
@@ -104,7 +106,11 @@ namespace RainMeadow
 
         private bool UpdateList()
         {
-            List<OnlinePhysicalObject> newPlayers = OnlineManager.lobby.playerAvatars
+            List<OnlinePlayer> newPlayers = OnlineManager.players
+                .OrderBy(onlineP => onlineP.isMe ? 0 : 1)
+                .ToList(); // will keep this logic for LAN
+
+            List<OnlinePhysicalObject> realizedPlayers = OnlineManager.lobby.playerAvatars
                 .Select(kv => kv.Value.FindEntity(true))
                 .OfType<OnlinePhysicalObject>()
                 .OrderBy(opo => opo.isMine ? 0 : 1)
@@ -133,8 +139,18 @@ namespace RainMeadow
 
             foreach (var player in newPlayers)
             {
-                playerButtons.Add(new PlayerButton(this, player, pos, OnlineManager.lobby.isOwner && !player.isMine));
+                var foundPlayer = realizedPlayers.FirstOrDefault(x => x.owner == player);
+                if (foundPlayer == null) // player joined but is unrealized, null them out
+                {
+                    playerButtons.Add(new PlayerButton(this, player, null, pos, OnlineManager.lobby.isOwner && !player.isMe));
+                }
+                else
+                {
+                    playerButtons.Add(new PlayerButton(this, player, foundPlayer, pos, OnlineManager.lobby.isOwner && !foundPlayer.isMine));
+
+                }
                 pos -= offset;
+
             }
 
             return true;
@@ -147,7 +163,15 @@ namespace RainMeadow
 
             foreach (var button in playerButtons)
             {
-                var ac = button.player.apo as AbstractCreature;
+                AbstractCreature? ac;
+                if (button.opo != null)
+                {
+                    ac = button.opo.apo as AbstractCreature;
+                }
+                else
+                {
+                    ac = null;
+                }
                 button.button.toggled = ac != null && ac == spectatee;
                 button.button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }

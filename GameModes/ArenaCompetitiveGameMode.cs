@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using static RainMeadow.ArenaPrepTimer;
 
 namespace RainMeadow
 {
@@ -16,7 +17,6 @@ namespace RainMeadow
 
         public bool isInGame = false;
         public int playerLeftGame = 0;
-        public int clientsAreReadiedUp = 0;
         public int currentLevel = 0;
         public int totalLevelCount = 0;
         public bool allPlayersReadyLockLobby = false;
@@ -25,6 +25,9 @@ namespace RainMeadow
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
+        public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
+        public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
+
         public int painCatThrowingSkill = 0;
 
         public string paincatName = "";
@@ -176,6 +179,28 @@ namespace RainMeadow
             }
 
             return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
+        }
+        private int previousSecond = -1;
+        public override void LobbyTick(uint tick)
+        {
+            base.LobbyTick(tick);
+
+            DateTime currentTime = DateTime.UtcNow;
+            int currentSecond = currentTime.Second;
+            if (currentSecond != previousSecond)
+            {
+                if (arenaPrepTimer != null)
+                {
+                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                    {
+                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+
+                    }
+                }
+                previousSecond = currentSecond;
+            }
+
+
         }
 
         public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
