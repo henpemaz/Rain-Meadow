@@ -65,7 +65,7 @@ namespace RainMeadow
         private static ushort CustomHashString(string str)
         {
             ushort result = 28419; //literally just a random ushort
-            for (ushort i = 0; i < str.Length; i++) result ^= (ushort) ((ushort)(str[0] << (i & 7)) | (ushort)(str[0] >>> (7 - (i & 7))));
+            for (ushort i = 0; i < str.Length; i++) result ^= (ushort) ((ushort)(str[0] << (8 - (i & 7))) | (ushort)(str[0] >>> (8 + (i & 7))));
             return result;
         }
 
