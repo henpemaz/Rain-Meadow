@@ -3,7 +3,7 @@ namespace RainMeadow
     public class JoinLobbyPacket : InformLobbyPacket
     {
         public JoinLobbyPacket() : base() { }
-        public JoinLobbyPacket(int maxplayers, string name, bool passwordprotected, string mode, int currentplayercount) : base(maxplayers, name, passwordprotected, mode, currentplayercount) { }
+        public JoinLobbyPacket(int maxplayers, string name, bool passwordprotected, string mode, int currentplayercount, string highImpactMods = "") : base(maxplayers, name, passwordprotected, mode, currentplayercount, highImpactMods) { }
         public override Type type => Type.JoinLobby;
 
         public override void Process()
