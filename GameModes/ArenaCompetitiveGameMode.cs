@@ -21,15 +21,14 @@ namespace RainMeadow
         public int totalLevelCount;
         public bool allPlayersReadyLockLobby;
         public bool returnToLobby;
+        public int painCatThrowingSkill;
+
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
-        public int painCatThrowingSkill;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
-
-        public int painCatThrowingSkill = 0;
 
         public string paincatName;
         public int lizardEvent;
