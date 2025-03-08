@@ -96,6 +96,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         public string lobbyName;
         public string sortingOrder;
         public string gameMode;
+        public string requiredMods;
         public bool publicLobby;
 
         public enum SortingOrder
@@ -126,6 +127,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             lobbyName = "";
             sortingOrder = "Ping";
             gameMode = "All";
+            requiredMods = "Any";
             publicLobby = false;
         }
 
@@ -270,6 +272,9 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
     {
         filteredLobbies = new List<LobbyInfo>();
 
+        string[] requiredMods = RainMeadowModManager.GetRequiredMods();
+        string requiredModsString = RainMeadowModManager.RequiredModsArrayToString(requiredMods); //used for unused "Exact" filter
+
         foreach (var lobby in allLobbies)
         {
             if (filter.lobbyName != "" && !lobby.name.ToLower().Contains(filter.lobbyName)) continue;
@@ -277,6 +282,27 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             {
                 if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
                 if (filter.publicLobby && lobby.hasPassword) continue;
+                //filter for required mods
+                bool missingMod = false;
+                switch (filter.requiredMods)
+                {
+                    case "Any": break;
+                    case "Exact": //currently unused filter
+                        missingMod = lobby.requiredMods != requiredModsString;
+                        break;
+                    case "All":
+                        string[] lobbyMods = RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods);
+                        if (lobbyMods.Length != requiredMods.Length) { missingMod = true; break; }
+                        foreach (string m in lobbyMods)
+                        {
+                            if (!requiredMods.Contains(m)) { missingMod = true; break; }
+                        }
+                        break;
+                    default: //filter.requiredMods = single mod ID to check for
+                        missingMod = !lobby.requiredMods.Contains(filter.requiredMods);
+                        break;
+                }
+                if (missingMod) continue;
             }
 
             filteredLobbies.Add(lobby);
