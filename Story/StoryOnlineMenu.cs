@@ -200,7 +200,7 @@ namespace RainMeadow
                 }
                 if (onlineDifficultyLabel != null)
                 {
-                    onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : $" - {storyGameMode.region}");
+                    onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
             }
         }
@@ -282,7 +282,7 @@ namespace RainMeadow
             }
         }
 
-        public string GetCurrentCampaignName() => "Current Campaign: " + SlugcatStats.getSlugcatName(storyGameMode.currentCampaign);
+        public string GetCurrentCampaignName() => Translate("Current Campaign: ") + Translate(SlugcatStats.getSlugcatName(storyGameMode.currentCampaign));
 
         private string CurrentRegion()
         {
@@ -312,7 +312,7 @@ namespace RainMeadow
             {
                 var scug = slugcatColorOrder[i];
                 pos -= new Vector2(0, 38);
-                var btn = new EventfulSelectOneButton(this, pages[0], SlugcatStats.getSlugcatName(scug), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
+                var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
                 pages[0].subObjects.Add(btn);
 
                 btn.OnClick += (_) =>
