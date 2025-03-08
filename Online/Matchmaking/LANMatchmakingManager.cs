@@ -17,8 +17,8 @@ namespace RainMeadow {
     public class LANMatchmakingManager : MatchmakingManager {
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
-            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount) : 
-                base(name, mode, playerCount, hasPassword, maxPlayerCount) {
+            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "") : 
+                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods) {
                 this.endPoint = endPoint;
             }
         }   
@@ -45,7 +45,7 @@ namespace RainMeadow {
                     }
                 } else dialogue += Utils.Translate("<NAME> network interface is ").Replace("<NAME>", name) + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
-                    dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) +Utils.Translate( "the owner of the lobby.");
+                    dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) + Utils.Translate( "the owner of the lobby.");
                     dialogue += Environment.NewLine + Utils.Translate("Players can “Direct Connect” to this lobby through ") + (isMe? Utils.Translate("your") : Utils.Translate("their")) + Utils.Translate(" interface(s).");
                 }
                 OnlineManager.instance.manager.ShowDialog(
@@ -155,7 +155,7 @@ namespace RainMeadow {
                 if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
                         maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
-                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count);
+                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
             }
