@@ -55,7 +55,7 @@ namespace RainMeadow
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
                 return true;
             }

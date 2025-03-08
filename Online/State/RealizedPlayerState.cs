@@ -186,11 +186,6 @@ namespace RainMeadow
 
             analogInputX = i.analogueDir.x;
             analogInputY = i.analogueDir.y;
-
-            if (onlineEntity.isMine) {
-                if (p.controller is OnlineController)
-                    p.controller = null;
-            }
         }
 
         public Player.InputPackage GetInput()
@@ -232,19 +227,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
-            if (!onlineEntity.isMine) { // this is always true...
-                if (p.controller is null) {
-                    p.controller = new OnlineController(onlineEntity, p);
-                }
 
-                if (p.isNPC) {
-                    if (p.onBack is not null) {
-                        if (p.onBack.IsLocal() && onlineEntity.isTransferable && !onlineEntity.isPending) {
-                            onlineEntity.Request();
-                        }
-                    }
-                }
-            }
 
             p.monkAscension = monkAscension;
             p.burstY = burstY;

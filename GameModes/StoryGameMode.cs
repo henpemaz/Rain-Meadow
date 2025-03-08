@@ -262,7 +262,22 @@ namespace RainMeadow
         {
             base.GameShutDown(game);
         }
+    }
 
+    public static class StoryModeExtensions {
+        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature) {
+            if (creature is Player p) {
+                if (p.isNPC) return false;
+            } else return false;
 
+            if (RainMeadow.isStoryMode(out var story)) {
+                return !story.friendlyFire;
+            }
+            if (RainMeadow.isArenaMode(out var arena)) {
+                return arena.countdownInitiatedHoldFire;
+            }
+            
+            return false;
+        }
     }
 }

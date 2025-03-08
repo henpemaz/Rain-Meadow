@@ -233,6 +233,35 @@ public partial class RainMeadow
 
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
     {
+        if (OnlineManager.lobby != null) {
+            var onlineEntity = self.abstractCreature?.GetOnlineObject();
+            if (onlineEntity is not null) {
+                if (onlineEntity.isMine) { // If we own the player we don't need a controller
+                    if (self.controller is OnlineController) {
+                        self.controller = null;
+                    }
+
+                } else { 
+                    if (self.controller is null) { // If we don't own the player we need a controller
+                        self.controller = new OnlineController(onlineEntity, self);
+                    }
+
+                    // If we're being held by a local player. they should request ownership of us
+                    if (self.isNPC) {
+                        if (self.onBack is not null) {
+                            if (self.onBack.IsLocal() &&  onlineEntity.isTransferable && !onlineEntity.isPending) {
+                                try {
+                                    onlineEntity.Request();
+                                } catch (Exception except) {
+                                    RainMeadow.Debug(except);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         orig(self);
         if (OnlineManager.lobby != null)
         {
@@ -874,7 +903,7 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => isStoryMode(out var story) && !story.friendlyFire && otherObject is Player);
+            c.EmitDelegate((PhysicalObject otherObject) => !otherObject.FriendlyFireSafetyCandidate());
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
@@ -885,7 +914,7 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (isStoryMode(out var story) && !story.friendlyFire)
+        if (!otherObject.FriendlyFireSafetyCandidate())
         {
             if (otherObject is Player) return false;
         }
@@ -926,20 +955,9 @@ public partial class RainMeadow
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
-        if (isStoryMode(out var story) && !story.friendlyFire)
-        {
-            if (crit is Player) return false;
-        }
+        if (crit.FriendlyFireSafetyCandidate()) return false;
         if (isArenaMode(out var arena))
         {
-            if (arena.countdownInitiatedHoldFire)
-            {
-                if (crit is Player)
-                {
-                    return false;
-                }
-            }
-
             if (arena.disableMaul && crit is Player)
             {
                 return false;
