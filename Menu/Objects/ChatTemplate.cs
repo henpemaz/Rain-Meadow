@@ -17,8 +17,9 @@ namespace RainMeadow
         public ChatTemplate(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
-            roundedRect = new RoundedRect(menu, owner, new Vector2(0f, 0f), size, true);
+            roundedRect = new RoundedRect(menu, owner, new Vector2(menu.manager.rainWorld.screenSize.x, 0f), size, true);
             this.subObjects.Add(roundedRect);
+            
 
             menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f, 0f), size, false);
             menuLabel.label.alignment = FLabelAlignment.Left;
