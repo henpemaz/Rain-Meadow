@@ -73,14 +73,6 @@ namespace RainMeadow
                 arena.returnToLobby = false;
             }
 
-            foreach (var player in OnlineManager.players)
-            {
-                if (player != OnlineManager.lobby.owner)
-                {
-
-                    player.InvokeOnceRPC(ArenaRPCs.Arena_InitialSetupTimers, arena.setupTime, arena.arenaSaintAscendanceTimer);
-                }
-            }
 
             lobby.manager.rainWorld.options.DeleteArenaSitting();
             //Nightcat.ResetNightcat();
@@ -238,8 +230,24 @@ namespace RainMeadow
                         {
                             player.DeactivateAscension();
                         }
+
+                        if (player.monkAscension == false && player.godTimer != player.maxGodTime)
+                        {
+
+                            if (player.tongue.mode == Player.Tongue.Mode.Retracted && (player.input[0].x != 0 || player.input[0].y != 0 || player.input[0].jmp))
+                            {
+                                player.godTimer += 0.8f;
+                            }
+                            else
+                            {
+                                player.godTimer -= 0.8f;
+                            }
+                        }
+
                     }
+
                 }
+
             }
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
@@ -248,6 +256,5 @@ namespace RainMeadow
 
         }
     }
-
 
 }
