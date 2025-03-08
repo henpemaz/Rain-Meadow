@@ -22,7 +22,7 @@ namespace RainMeadow
                     var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
                     unsafe
                     {
-                        fixed (byte* dataPointer = OnlineManager.serializer.buffer)
+                        fixed (byte* dataPointer = Compression.CompressBytes(OnlineManager.serializer.buffer)) //compress the entire packet
                         {
                             SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)OnlineManager.serializer.Position, Constants.k_nSteamNetworkingSend_Unreliable, 0);
                         }
@@ -73,7 +73,12 @@ namespace RainMeadow
                                     continue;
                                 }
                                 //RainMeadow.Debug($"Receiving message from {fromPlayer}");
-                                Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
+                                byte[] buffer = new byte[message.m_cbSize];
+                                //Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
+                                Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
+
+                                buffer = Compression.DecompressBytes(buffer); //decompress as soon as the packet is read
+                                OnlineManager.serializer.buffer.CopyTo(buffer, 0);
                                 OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
                             }
                         }

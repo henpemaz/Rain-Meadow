@@ -712,6 +712,7 @@ namespace RainMeadow
 
 
         public void Send(byte[] packet, IPEndPoint endPoint, PacketType packet_type = PacketType.Reliable, bool begin_conversation = false) {
+            //packet = Compression.CompressBytes(packet); //done in SendRaw instead
             if (GetRemotePeer(endPoint, true) is RemotePeer peer) {
                 if (packet_type == PacketType.Reliable) {
                     peer.wanted_acknowledgement += 1;
@@ -738,7 +739,8 @@ namespace RainMeadow
                 if (packet_type == PacketType.Acknowledgement)
                     writer.Write(peer.remote_acknowledgement);
                 writer.Write(packet);
-                socket.SendTo(stream.GetBuffer().Take((int)stream.Position).ToArray(), peer.PeerEndPoint);
+                //compressed as late as possible
+                socket.SendTo(Compression.CompressBytes(stream.GetBuffer()), peer.PeerEndPoint);
             }
         }
 
@@ -828,6 +830,9 @@ namespace RainMeadow
                     RainMeadow.Error(except.SocketErrorCode);
                     return null;
                 }
+
+                //decompressed as early as possible
+                buffer = Compression.DecompressBytes(buffer);
                 
 
                 IPEndPoint? ipsender = sender as IPEndPoint;
