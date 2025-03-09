@@ -21,14 +21,14 @@ namespace RainMeadow
         public int totalLevelCount;
         public bool allPlayersReadyLockLobby;
         public bool returnToLobby;
+        public int painCatThrowingSkill;
+
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
-
-        public int painCatThrowingSkill = 0;
 
         public string paincatName;
         public int lizardEvent;
@@ -199,22 +199,23 @@ namespace RainMeadow
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-
-            DateTime currentTime = DateTime.UtcNow;
-            int currentSecond = currentTime.Second;
-            if (currentSecond != previousSecond)
+            if (OnlineManager.lobby.isOwner)
             {
-                if (arenaPrepTimer != null)
+                DateTime currentTime = DateTime.UtcNow;
+                int currentSecond = currentTime.Second;
+                if (currentSecond != previousSecond)
                 {
-                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                    if (arenaPrepTimer != null)
                     {
-                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+                        if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                        {
+                            setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
 
+                        }
                     }
+                    previousSecond = currentSecond;
                 }
-                previousSecond = currentSecond;
             }
-
 
         }
 
