@@ -167,7 +167,7 @@ namespace RainMeadow
                 return newLines;
             }
 
-            var existingLines = File.ReadAllLines(path).Distinct().ToList();
+            var existingLines = File.ReadAllLines(path).ToList();
             var linesToWrite = new List<string>();
 
             if (startingComment != "")
@@ -230,7 +230,7 @@ namespace RainMeadow
             var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines).ToList();
 
             linesToWrite.AddDistinctRange(linesToAdd);
-            linesToWrite = linesToWrite.Select(x => x.Trim()).ToList();
+            linesToWrite = linesToWrite.Select(x => x.Trim(' ')).ToList();
             linesToWrite = ModIdsToIdAndName(linesToWrite);
 
             File.WriteAllLines(path, linesToWrite);
