@@ -27,7 +27,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
 
-    public readonly Configurable<float> ArenaScrollSpeed;
+    public readonly Configurable<float> ScrollSpeed;
 
 
     public readonly Configurable<string> LanUserName;
@@ -76,7 +76,7 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
 
-        ArenaScrollSpeed =  config.Bind("ArenaScrollSpeed", 10f);
+        ScrollSpeed = config.Bind("ScrollSpeed", 10f);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
@@ -154,7 +154,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 320f, Translate("Key used for toggling spectator mode")),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
-                
+
                 new OpLabel(10, 245f, Translate("Stop Inputs While Spectating")),
                 new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
 
@@ -169,10 +169,16 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 120, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(10, 60, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
-            };
+                downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+                new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
+                new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
+                {
+                    accept = OpTextBox.Accept.Float
+                },
+        };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
             downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
+
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
@@ -203,7 +209,7 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[19]
+            OnlineArenaSettings = new UIelement[17]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -237,11 +243,6 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-                new OpLabel(10f, 40, Translate("Player Result Scroll Speed. Default: 5"), bigText: false),
-                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 15), 160f)
-                {
-                    accept = OpTextBox.Accept.Float
-                },
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
