@@ -44,8 +44,8 @@ namespace RainMeadow
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-            On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
             IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner; 
+            On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
             // On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
@@ -843,7 +843,7 @@ namespace RainMeadow
                                 self.hud.AddPart(foodMeter);
                                 self.pupBars.Add(foodMeter);
                                 num++;
-                            } else RainMeadow.Error("Pup wasn't a realized player???");
+                            } else RainMeadow.Error("Pup wasn't a realized player");
                         }
                     }
                     return;
@@ -856,6 +856,12 @@ namespace RainMeadow
         private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context) {
             try {
                 ILCursor cursor = new(context);
+                cursor.EmitDelegate(() => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+                        story.pups.Clear();
+                    }
+                });
                 cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
                 cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
 

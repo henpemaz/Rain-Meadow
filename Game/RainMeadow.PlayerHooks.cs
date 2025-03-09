@@ -54,9 +54,9 @@ public partial class RainMeadow
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
 
-        IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
-        IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
-        IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+        // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
+        // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
+        // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
     }
 
@@ -69,40 +69,23 @@ public partial class RainMeadow
         orig(self, upPicker);
     }
 
+    // This is Abysmal and doesn't work 
+    // void Player_SynchronizeSocialEventDrop(ILContext context) { 
+    //     try {
+    //         ILCursor cursor = new(context);
+    //         int socialeventdrops_found = 0;
+    //         while (cursor.TryGotoNext(MoveType.Before, 
+    //             x => x.MatchCall(nameof(SocialEventRecognizer), nameof(SocialEventRecognizer.CreaturePutItemOnGround)))) {
+    //             ++socialeventdrops_found;
+    //             cursor.EmitDelegate(Player_CreaturePutItem);
+    //             cursor.Emit(OpCodes.Br_S, 2); // Skip CreaturePutItemOnGround
+    //         }
 
-    // This is Abysmal and doesn't work, need to 
-    void Player_SynchronizeSocialEventDrop(ILContext context) { 
-        try {
-            ILCursor cursor = new(context);
-            int socialeventdrops_found = 0;
-            while (cursor.TryGotoNext(MoveType.Before, x => x.MatchCall(typeof(SocialEventRecognizer).GetMethod(nameof(SocialEventRecognizer.CreaturePutItemOnGround))))) {
-                ++socialeventdrops_found;
-                cursor.EmitDelegate(Player_CreaturePutItem);
-                cursor.Emit(OpCodes.Br_S, 2); // Skip CreaturePutItemOnGround
-            }
-
-            RainMeadow.Debug($"{context.Method.Name}: Found {socialeventdrops_found} calls to {nameof(SocialEventRecognizer.CreaturePutItemOnGround)}");
-        } catch (Exception except) {
-            RainMeadow.Error(except);
-        }
-    }
-
-    void Player_CreaturePutItem(PhysicalObject item, Creature creature) {
-        creature.room.socialEventRecognizer.CreaturePutItemOnGround(item, creature);
-        if (OnlineManager.lobby != null) return;
-        if (!creature.IsLocal()) return;
-
-        if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession)) {
-            if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature? oc) &&
-                item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo)) {
-                oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, 
-                    opo?.id, oc?.id);
-            } 
-            
-        }
-    }
-
-
+    //         RainMeadow.Debug($"{context.Method.Name}: Found {socialeventdrops_found} calls to {nameof(SocialEventRecognizer.CreaturePutItemOnGround)}");
+    //     } catch (Exception except) {
+    //         RainMeadow.Error(except);
+    //     }
+    // }
 
 
     private void Player_GrabUpdate1(On.Player.orig_GrabUpdate orig, Player self, bool eu)
@@ -761,6 +744,10 @@ public partial class RainMeadow
         {
             orig(self);
             return;
+        }
+
+        if (self.slugOnBack is not null) {
+            self.slugOnBack.DropSlug();
         }
 
         OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var oe);

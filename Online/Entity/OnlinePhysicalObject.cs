@@ -400,6 +400,12 @@ namespace RainMeadow
                     apo.Room?.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {
+                        if (po is Player player) {
+                            if (player.slugOnBack != null) {
+                                player.slugOnBack.DropSlug();
+                            }
+                        }
+
                         if (apo.Room?.realizedRoom is Room room)
                         {
                             room.RemoveObject(po);

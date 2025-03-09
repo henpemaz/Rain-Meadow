@@ -83,12 +83,9 @@ namespace RainMeadow
 
                 pups = new();
                 foreach (AbstractCreature apo in storyGameMode.pups) {
-                    if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                    {
-                        apo.world?.GetResource()?.ApoEnteringWorld(apo);
-                        if (!OnlinePhysicalObject.map.TryGetValue(apo, out oe)) throw new System.InvalidOperationException("Stomach item doesn't exist in online space!");
+                    if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) {
+                        pups.Add(oe.id);
                     }
-                    pups.Add(oe.id);
                 }
                 friendlyFire = storyGameMode.friendlyFire;
                 region = storyGameMode.region;
