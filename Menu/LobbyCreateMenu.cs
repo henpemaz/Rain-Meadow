@@ -120,7 +120,7 @@ public class LobbyCreateMenu : SmartMenu
         editSyncRequiredModsButton.OnClick += _ =>
         {
             RainMeadowModManager.GetRequiredMods();
-            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFile));
+            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
         };
         mainPage.subObjects.Add(editSyncRequiredModsButton);
 
@@ -128,7 +128,7 @@ public class LobbyCreateMenu : SmartMenu
         editBannedModsButton.OnClick += _ =>
         {
             RainMeadowModManager.GetBannedMods();
-            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFile));
+            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
         };
         mainPage.subObjects.Add(editBannedModsButton);
 
