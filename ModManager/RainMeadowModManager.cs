@@ -55,6 +55,11 @@ namespace RainMeadow
             return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.name ?? id;
         }
 
+        public static bool IsModInstalled(string id)
+        {
+            return ModManager.InstalledMods.Any(mod => mod.id == id);
+        }
+
         public static string RequiredModsArrayToString(string[] requiredMods)
         {
             return string.Join("\n", requiredMods);
@@ -240,7 +245,7 @@ namespace RainMeadow
 
         private static List<string> ModIdsToIdAndName(List<string> modIds)
         {
-            return modIds.Select(x => x == ModIdToName(x) ? x : x + " // " + ModIdToName(x)).ToList();
+            return modIds.Select(x => IsModInstalled(x) ? x + " // " + ModIdToName(x) : x).ToList();
         }
     }
 }
