@@ -52,7 +52,7 @@ namespace RainMeadow
         public static string ModIdToName(string id)
         {
             //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
-            return ModManager.ActiveMods.FirstOrDefault(mod => mod.id == id)?.name ?? id;
+            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.name ?? id;
         }
 
         public static string RequiredModsArrayToString(string[] requiredMods)
@@ -156,6 +156,8 @@ namespace RainMeadow
 
             if (!File.Exists(path))
             {
+                newLines = ModIdsToIdAndName(newLines);
+
                 if (startingComment != "")
                 {
                     newLines.Insert(0, startingComment);
@@ -225,13 +227,20 @@ namespace RainMeadow
                 linesToWrite.Add(line);
             }
 
-            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines);
+            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines).ToList();
 
             linesToWrite.AddDistinctRange(linesToAdd);
+            linesToWrite = linesToWrite.Select(x => x.Trim()).ToList();
+            linesToWrite = ModIdsToIdAndName(linesToWrite);
 
             File.WriteAllLines(path, linesToWrite);
 
             return trimmedActiveLines;
+        }
+
+        private static List<string> ModIdsToIdAndName(List<string> modIds)
+        {
+            return modIds.Select(x => x == ModIdToName(x) ? x : x + " // " + ModIdToName(x)).ToList();
         }
     }
 }
