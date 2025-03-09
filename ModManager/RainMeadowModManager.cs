@@ -7,6 +7,10 @@ namespace RainMeadow
 {
     public static class RainMeadowModManager
     {
+        // TODO: use these in place of strings when ModManager PR is merged
+        public static string SyncRequiredModsFile => "meadow-highimpactmods.txt";
+        public static string BannedOnlineModsFile => "meadow-bannedmods.txt";
+
         private static void UpdateFromOrWriteToFile(string path, ref string[] lines)
         {
             path = Path.Combine(Custom.RootFolderDirectory(), path);
