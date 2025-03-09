@@ -155,6 +155,8 @@ namespace RainMeadow
         {
             base.Update();
 
+            if (OnlineManager.lobby == null) return;
+
             if (!OnlineManager.lobby.isOwner)
             {
 

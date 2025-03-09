@@ -117,6 +117,12 @@ namespace RainMeadow
         }
 
         public void HandleJoin(OnlinePlayer player) {
+            if (OnlineManager.mePlayer == OnlineManager.lobby.owner && OnlineManager.lobby.bannedUsers.list.Contains(player.id))
+            {
+                BanHammer.BanUser(player);
+                ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."));
+                return;
+            }
             ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."));
         }
         public void HandleDisconnect(OnlinePlayer player)

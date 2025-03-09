@@ -74,9 +74,9 @@ namespace RainMeadow
 
                 game.ExitGame(asDeath: true, asQuit: true);
             }
-            OnlineManager.LeaveLobby();
             RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
+            OnlineManager.LeaveLobby();
         }
 
         [RPCMethod]
