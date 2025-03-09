@@ -13,6 +13,11 @@
 
         public override Player.InputPackage GetInput()
         {
+            if (ent.isMine) {
+                if (self.controller == this) self.controller = null;
+                return self.input[0];
+            }
+
             if (ent.currentlyJoinedResource != null)
             {
                 var latestState = ent.lastStates[ent.currentlyJoinedResource];
