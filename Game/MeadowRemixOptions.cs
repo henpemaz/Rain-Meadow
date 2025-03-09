@@ -25,6 +25,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> BlockMaul;
+    public readonly Configurable<bool> BlockArtiStun;
+
     public readonly Configurable<float> ArenaScrollSpeed;
 
 
@@ -66,12 +68,14 @@ public class RainMeadowOptions : OptionInterface
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
-        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 260);
+        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 120);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
+        BlockArtiStun = config.Bind("BlockArtiStun", false);
+
         ArenaScrollSpeed =  config.Bind("ArenaScrollSpeed", 10f);
 
 
@@ -113,7 +117,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 480f, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, disables the sway animation in the pause menu"))),
 
                 meadowCheatBox = new OpTextBox(config.Bind("",""), new Vector2(10f, cheaty), 80f),
-                new OpLabel(110f, cheaty, Translate("Input \"cheats\" to access cheats")),
+                new OpLabel(110f, cheaty, Translate("Input “cheats” to access cheats")),
                 new OpLabel(110f, cheaty - 24f, Translate("Just make sure not to ruin the fun for yourself...")),
                 new OpLabel(110f, cheaty - 48f, Translate("Emote and skin unlocks will affect the currently selected character")),
 
@@ -199,11 +203,11 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[17]
+            OnlineArenaSettings = new UIelement[19]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
-                new OpLabel(10f, 505, Translate("Countdown timer. 60 == 1s"), bigText: false),
+                new OpLabel(10f, 505, Translate("Countdown timer. Default: 5s"), bigText: false),
                 new OpTextBox(ArenaCountDownTimer, new Vector2(10, 480), 160f)
                 {
                     accept = OpTextBox.Accept.Int
@@ -212,7 +216,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 455, Translate("Sain't: Disable Saint ascendance"), bigText: false),
                 new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
 
-                new OpLabel(10f, 410, Translate("Saint ascendance duration timer. 60 == 1s"), bigText: false),
+                new OpLabel(10f, 410, Translate("Saint ascendance duration timer. Default: 120"), bigText: false),
                 new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
                 {
                     accept = OpTextBox.Accept.Int
@@ -227,11 +231,14 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 215, Translate("Inv: Enable ???"), bigText: false),
                 new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
 
-                new OpLabel(10f, 160, Translate("Mauling: Disable"), bigText: false),
-                new OpCheckBox(BlockMaul, new Vector2(10f, 125)),
+                new OpLabel(10f, 160, Translate("Artificer: Disable Stun"), bigText: false),
+                new OpCheckBox(BlockArtiStun, new Vector2(10f, 125)),
 
-                new OpLabel(10f, 100, "Player Result Scroll Speed", bigText: false),
-                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 75), 160f)
+                new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
+                new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
+
+                new OpLabel(10f, 40, Translate("Player Result Scroll Speed. Default: 5"), bigText: false),
+                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 15), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },

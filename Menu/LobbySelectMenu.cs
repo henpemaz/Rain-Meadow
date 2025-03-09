@@ -85,7 +85,7 @@ namespace RainMeadow
             // mainPage.subObjects.Add(unlocksButton);
 
             // Status
-            statisticsLabel = new MenuLabel(this, pages[0], $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
+            statisticsLabel = new MenuLabel(this, pages[0], $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f + 20), new Vector2(200f, 20f), false, null);
             statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             mainPage.subObjects.Add(statisticsLabel);
 
@@ -231,7 +231,7 @@ namespace RainMeadow
             // Statistics
             if (statisticsLabel != null)
             {
-                statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")}  {lobbyCount}";
+                statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
                 statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             }
         }
@@ -346,7 +346,7 @@ namespace RainMeadow
             RainMeadow.Debug(ok);
             if (!ok)
             {
-                ShowErrorDialog($"Failed to join lobby.<LINE>{error}");
+                ShowErrorDialog(Translate("Failed to join lobby.<LINE>") + error);
             }
         }
 
@@ -367,7 +367,7 @@ namespace RainMeadow
         {
             if (popupDialog != null) HideDialog();
 
-            popupDialog = new CustomInputDialogueBox(this, mainPage, "Password Required", "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            popupDialog = new CustomInputDialogueBox(this, mainPage, Translate("Password Required"), "HIDE_PASSWORD", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
 
             GreyOutLobbyCards(true);
@@ -459,9 +459,9 @@ namespace RainMeadow
                         if (VerifyPlay(fakelobbyinfo))
                         if (!UDPPeerManager.isEndpointLocal(endpoint)) {
                             ShowNotLocalDialogue(
-                                                "This address is possibly not local to your current network." + Environment.NewLine +
-                                                "If so, This is very unstable and will most likely NOT work" + Environment.NewLine +
-                                                "Are you SURE you know what you're doing?",
+                                                Translate("This address is possibly not local to your current network.") + Environment.NewLine +
+                                                Translate("If so, This is very unstable and will most likely NOT work") + Environment.NewLine +
+                                                Translate("Are you SURE you know what you're doing?"),
                                 join);
                             mainPage.subObjects.Add(popupDialog);
                         } else join.Invoke();
