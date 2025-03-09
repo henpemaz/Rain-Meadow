@@ -1,0 +1,329 @@
+0henpemaz_rainmeadow-name|Rain Meadow
+henpemaz_rainmeadow-description|Un motor multijugador, modo de juego personalizado inspirado en «Meadow» de Might & Delight, y experiencia en línea para el modo arena e historia.<LINE><LINE>Para ver los créditos completos dirígete al workshop o a la página de créditos en el menú de Meadow.
+
+Rain Meadow|Rain Meadow
+MEADOW|MEADOW
+
+// Lobby Select Menu
+Lobby Mode|Modo de la sala
+All|Todos
+Public Lobbies Only|Solo salas públicas
+Max Lobby Size|Tamaño máximo de la sala
+Lobby Mods|Mods de la sala
+Unfiltered|Sin filtro
+Exact order|Orden exacto
+Any order|Cualquier orden
+Direct Connect|Conexión directa
+Direct Connection is only available in the Local Matchmaker|La conexión directa solo está disponible en el buscador de partidas local.
+Lobby Domain|Dominio de la sala
+Local|Local
+Router|Rúter
+Steam|Steam
+Please disable JollyCoop before playing Online|Por favor, desactiva Jolly Co-op antes de jugar en línea.
+Failed to join lobby.<LINE> Lobby is full|Error al unirte a la sala.<LINE> La sala está llena.
+Failed to join lobby.<LINE>|Error al unirte a la sala.<LINE>
+Password Required|Contraseña requerida
+Wrong password!|¡Contraseña incorrecta!
+Joining lobby...|Uniéndote a la sala...
+Online:|En línea:
+Lobbies:|Salas:
+Rain Meadow Version:|Versión de Rain Meadow:
+Credits|Créditos
+
+// Lobby Cards Selector
+Search Lobbies|Buscar salas
+Click to join|Haz clic para unirte a la
+<USERNAME>'s Lobby|Sala de <USERNAME>
+Private|Privada
+max|máx.
+player|jugador
+players|jugadores
+Sort by Ping|Ordenar por el ping
+Sort A-Z|Ordenar de la A a la Z
+Sort Z-A|Ordenar de la Z a la A
+Sort by Fullest Lobby|Ordenar por la sala más llena
+Sort by Emptiest Lobby|Ordenar por la sala más vacía
+Unknown Sorting Method|Método de ordenamiento desconocido
+Refresh list|Actualizar lista
+
+// Lobby Create Menu
+CREATE!|¡CREAR!
+Mode:|Modo:
+Meadow|Meadow
+A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|Un modo pacífico sobre explorar tus alrededores y descubrir pequeños secretos,<LINE>en grupo o por tu cuenta.
+Story|Historia
+Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|Aventúrate junto con amigos en el mundo de Rain World, lucha en grupo y muere<LINE>en grupo.
+ArenaCompetitive|Arena competitiva
+Fight against unforgiving creatues and foes where only the strong survive.|Lucha contra enemigos y criaturas despiadados donde solamente el más fuerte<LINE>sobrevive.
+Visibility:|Visibilidad:
+Public|Pública
+Friends Only|Solo amigos
+Invite Only|Solo invitación
+Password|Contraseña
+Lobby Password|Contraseña de la sala
+Player max:|Jugadores:
+Maximum number of players that can be in the lobby (up to 32)|Número máximo de jugadores que pueden estar en la sala (hasta 32)
+Creating lobby...|Creando la sala...
+
+// Meadow Character Select
+Locked|Bloqueado
+ENTER|ENTRAR
+Tint color|Color de tinte
+Tint amount|Cantidad de tinte
+SKINS|ASPECTOS
+SLUGCAT|GATOBABOSA
+Survivor|Superviviente
+Monk|Monje
+Hunter|Cazador
+Fluffy|Esponjoso
+Night|Nocturno
+LIZARD|LAGARTO
+Pink|Rosa
+Blue|Azul
+Yellow|Amarillo
+Red|Rojo
+Black|Negro
+Axo|Ajolote
+Sala|Salamandra
+Cyan|Cian
+Fluffers|Peludo
+CICADA|CALAMIGARRA
+White|Blanco
+Dark|Oscuro
+SCAVENGER|CARROÑERO
+Twigs|Ramitas
+Acorn|Bellota
+Oak|Roble
+Shrub|Arbusto
+Branches|Ramas
+Sage|Salvia
+Cherry|Cerezo
+Lavender|Lavanda
+Peppermint|Menta
+Juniper|Enebro
+NOODLEFLY|MOSCAFIDEO
+Lily|Azucena
+Rose|Rosa
+Poppy|Amapola
+Lotus|Loto
+Lilac|Lila
+Petunia|Petunia
+Jasmine|Jazmín
+Gardenia|Gardenia
+EGGBUG|BICHOHUEVO
+Citrus|Cítrico
+Blueberry|Arándano
+Kiwi|Kiwi
+Mango|Mango
+Dragonfruit|Pitahaya
+LANTERN MOUSE|RATÓN FAROL
+Saphire|Zafiro
+Ruby|Rubí
+Acquamarine|Aguamarina
+Citrine|Citrina
+Emerald|Esmeralda
+Quartz|Cuarzo
+Amethyst|Amatista
+Opal|Ópalo
+Garnet|Granate
+New character!|¡Nuevo personaje!
+
+// Meadow Mode
+CLEAR|LIMPIAR
+CONTINUE|CONTINUAR
+Close this menu|Cerrar este menú
+TO HUB|AL CENTRO
+Teleport to the closest hub|Teletransportarte al centro más cercano
+TO OUTSKIRTS|A LAS AFUERAS
+Teleport to outskirts|Teletransportarte a las afueras
+PASSAGE|PASAJE
+Passage to another shelter|Usar un pasaje e ir a otro refugio
+UNSTUCK|DESATASCARTE
+Teleport to a nearby pipe|Teletransportarte a la tubería más cercana
+LOBBY|SALA
+Go back to the charater selection screen|Volver a la pantalla de selección de personaje
+QUIT|ABANDONAR
+Exit back to the main menu|Volver al menú principal
+Hub zone volume|Volumen del centro
+Display names|Mostrar nombres
+Collision|Colisión
+New character unlocked|Nuevo personaje desbloqueado
+New emote unlocked|Nuevo emote desbloqueado
+New skin unlocked|Nuevo aspecto desbloqueado
+
+// Story Mode
+ - New Game| - Juego nuevo
+Current Campaign: |Campaña actual: 
+Slugcats|Gatobabosas
+Invite Friends|Invitar amigos
+Friendly Fire|Fuego amigo
+Require Campaign Slugcat|Requerir gato de campaña
+Match save|Igualar guar.
+PLAYERS|JUGADORES
+Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
+ to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
+READY|LISTO
+
+// ArenaCompetitive Mode
+Current Mode:|Modo actual:
+Free For All|Todos contra todos
+Ready:|Listos:
+Playlist Progress:|Progreso de la lista:
+WAIT FOR OTHERS|ESTOY LISTO
+LOBBY WILL LOCK|BLOQUEAR SALA
+GAME IN SESSION|EN CURSO
+READY?|¿LISTO?
+Waiting for others...|Esperando...
+Waiting for host...|Esperando...
+Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
+Waiting|Esperando
+Prepare for combat,|Prepárate para el combate,
+Slugpup|Cría
+Paincat|Paincat
+Inv|Inv
+Enot|Enot
+Sofanthiel|Sofanthiel
+Gorbo|Gorbo
+???|???
+Winner!|¡Ganador!
+Unknown user|Usuario desconocido
+
+// Chat Tutorial
+Press '|Pulsa «
+' to chat, press '|» para chatear y «
+' to toggle the chat log|» para ver o quitar el chat
+
+// Player Joining / Leaving
+joined the game.|se ha unido a la partida.
+left the game.|se ha ido de la partida.
+
+// Death Messages
+died.|ha muerto.
+was crushed by the rain.|ha perecido por la lluvia.
+fell into the abyss.|ha caído hacia el abismo.
+was drowned by|se ha ahogado por
+drowned.|se ha ahogado.
+hit the ground too hard.|se ha golpeado muy fuerte contra el suelo.
+was killed through unknown means.|ha muerto por medios desconocidos.
+tried to swim in burning liquid.|ha intentado nadar en líquido ardiente.
+spontaneously combusted.|se ha quemado de manera espontánea.
+froze to death.|se ha congelado hasta la muerte.
+was swallowed by the grass.|ha sucumbido por el césped.
+was swallowed by the walls.|ha sucumbido por las paredes.
+was electrocuted.|se ha electrocutado.
+licked the power.|ha lamido la energía eléctrica.
+was consummed by the swarm.|se ha rendido ante el hervidero.
+was slain by|ha muerto a manos de
+was ascended by|ha ascendido por parte de
+was zapped by a|ha muerto por una descarga eléctrica de
+was slain by a|ha muerto por
+
+// Direct Connection Dialogue
+Direct Connection... |Conexión directa... 
+Password:|Contraseña:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|Dirección inválida, el formato de la dirección IP debería ser «xxx.xxx.xxx.xxx:puerto».
+This address is possibly not local to your current network.|Esta dirección posiblemente no sea local con tu red actual.
+If so, This is very unstable and will most likely NOT work|Es muy inestable y puede que NO funcione.
+Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás haciendo?
+
+// LAN Matchmaking Manager
+LAN Lobby|Sala de LAN
+Nobody|Nadie
+Your network interface(s) are|Tus interfaces de red son
+<NAME> network interface is |La interfaz de red de <NAME> es 
+You are |Tú eres 
+This player is |Este jugador es 
+the owner of the lobby.|el dueño de la sala.
+Players can “Direct Connect” to this lobby through |Los jugadores pueden conectarse directamente a esta sala a través de 
+your|tus
+their|sus
+ interface(s).| interfaces.
+
+// Mod Applier
+Error loading mods!|¡Error al cargar mods!
+A restart is required to finish applying the mod changes.|Es necesario un reinicio para terminar de aplicar los cambios de mods.
+Restarting now...|Reiniciando...
+Mod Mismatch!|¡Mods desvinculados!
+Mods that have to be enabled: |Mods que tienen que estar activados: 
+Mods that have to be disabled: |Mods que tienen que estar desactivados: 
+Mods that have to be installed: |Mods que tienen que estar instalados: 
+Apply these changes now?|¿Aplicar ahora estos cambios?
+Warning: Differing Mod Load Orders!|Advertencia: ¡Órdenes discrepantes en la carga de mods!
+This may cause unstable play.|Esto puede ocasionar una jugabilidad inestable.
+Reorder your mods now?|¿Reordenar ahora tus mods?
+Cannot join due to missing DLC!|¡No puedes unirte debido a la falta de DLC!
+Missing DLC Mods that have to be enabled: |Mods DLC perdidos que tienen que estar activados: 
+
+// Remix Options
+Arena|Arena
+LAN|LAN
+Disable Pause Menu Animation|Desactivar animación del menú de pausa
+If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
+Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
+Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
+Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
+Unlock Emote|Desbl. emote
+Unlock Skin|Desbl. aspecto
+Unlock Character|Desbl. personaje
+Reset all progression|Reiniciar todo el progreso
+Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo Meadow.
+Key used for viewing friends' usernames|Botón para ver los nombres de usuario
+Username Toggle|Ver los nombres sin mantener pulsado
+If selected, replaces holding with toggling to view usernames|Pulsar el botón en vez de mantenerlo para ver o quitar los nombres de usuario.
+Key used for toggling spectator mode|Botón para activar o desactivar el modo espectador
+Stop Inputs While Spectating|Detener entradas al espectear
+Chat Log Toggle|Botón para ver o quitar el chat
+Chat Talk Button|Botón para hablar por el chat
+Chat Log On/Off|Mostrar el chat
+Introroll|Intro de apertura
+Vanilla|Vanilla
+Downpour|Downpour
+Downpour DLC is not activated, vanilla intro will be used instead|Si el DLC Downpour no está activado, la intro vanilla será usada en su lugar.
+Ready to shelter/gate|Preparado para hibernar o pasar de región
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
+[Experimental Features]|[Características experimentales]
+WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden ocasionar corrupciones de datos, realiza una copia de seguridad de tus partidas.
+Custom Story Slugcat:|Campañas personalizadas:
+If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gatobabosa que sean inestables.
+Countdown timer. Default: 5s|Tiempo de la cuenta atrás. Predeterminado: 5 s
+Sain't: Disable Saint ascendance|Santon't: Desactivar sintonía del Santo
+Saint ascendance duration timer. Default: 120|Duración de la sintonía del Santo. Predeterminado: 120
+Inv: Enable spear throws at 0 throw skill|Inv: Activar lanzamientos de lanza al tener habilidad de lanzamiento 0
+Inv: Enable egg at 0 throw skill|Inv: Activar huevo al tener habilidad de lanzamiento 0
+Inv: Enable ???|Inv: Activar ???
+Artificer: Disable Stun|Artífice: Desactivar aturdimiento
+Mauling: Disable|Morder: Desactivar
+Player Result Scroll Speed. Default: 5|Velocidad de desplazamiento de los resultados de los jugadores. Predeterminado: 5
+Username|Nombre de usuario
+
+// Credits
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow es un modo de juego inspirado en el videojuego del mismo nombre de Might & Delight. Es un juego apenas jugable y con errores, que a uno le puede encantar. ¿Suena familiar?
+This mod and all its features were brought to you by really awesome people from the community.|Este mod y todas sus características fueron traídas a ti por personas muy estupendas de la comunidad.
+Lead Developer|Desarrollador principal
+Lead Artist|Artista principal
+Lead Audio Designer|Diseñador de audio principal
+Programming, engine|Programación, motor
+Programming, sound|Programación, sonido
+UI Design|Diseño de IU
+Programming, menus|Programación, menús
+Programming, arena|Programación, arena
+Programming, story|Programación, historia
+Programming, modsync|Programación, sincronización de mods
+Programming, story, arena|Programación, historia, arena
+Programming, UI, chat|Programación, IU, chat
+Illustration|Ilustración
+Programming, UI, menus|Programación, IU, menús
+Programming, UI, story|Programación, IU, historia
+Programming, UI, LAN|Programación, IU, LAN
+Thank you playtesters from the Rain Meadow discord as well.|Gracias también a los playtesters del discord de Rain Meadow.
+
+// misc
+Players|Jugadores
+CONFIRM|CONFIRMAR
+You were removed from the previous online game|Has sido echado de la partida en línea anterior.
+Leaving Lobby|Saliendo de la sala
+This player does not have a profile.|Este jugador no tiene un perfil.
+Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente. Algunas características de Rain Meadow han sido desactivadas.
+You cannot use this feature here.|No puedes usar esta característica aquí.
