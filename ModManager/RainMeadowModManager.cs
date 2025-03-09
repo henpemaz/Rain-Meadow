@@ -1,95 +1,87 @@
-﻿using RWCustom;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using RWCustom;
 
 namespace RainMeadow
 {
     public static class RainMeadowModManager
     {
-        private static void UpdateFromOrWriteToFile(string path, ref string[] lines)
-        {
-            path = Path.Combine(Custom.RootFolderDirectory(), path);
-            if (File.Exists(path))
-            {
-                lines = File.ReadAllLines(path);
-            }
-            else
-            {
-                File.WriteAllLines(path, lines);
-            }
-        }
+        // TODO: possibly rename these
+        public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
+        public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
-        public static string[] highImpactMods = {
-            "rwremix",
-            "moreslugcats",
-        };
+        public static string SyncRequiredModsExplanationComment =>
+            """
+            // The following is a list of mods that must be synced between client and host:
+            // (if the host has these mods enabled/disabled, the client must match)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
+
+            """;
+
+        public static string BannedOnlineModsExplanationComment =>
+            """
+            // The following is a list of mods that are banned from online play if the host does not have them enabled:
+            // (if any of these mods are enabled on a client, they must be enabled on the host to join)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
+
+            """;
+
+        /// <summary>
+        /// Prefix that indicates the following characters should be ignored in one of the user defined files.
+        /// </summary>
+        public static string CommentPrefix => "//";
 
         public static string[] GetRequiredMods()
         {
-            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
+            var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var requiredMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
+            var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+
+            requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
 
             return ModManager.ActiveMods
-                .Where(mod => requiredMods.Contains(mod.id)
-                    || Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+                .Where(mod => requiredMods.Contains(mod.id))
                 .Select(mod => mod.id)
                 .ToArray();
         }
 
         public static string ModIdToName(string id)
         {
-            foreach (var mod in ModManager.ActiveMods)
-            {
-                if (mod.id == id)
-                    return mod.name;
-            }
-            return id; //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+            //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.name ?? id;
+        }
+
+        public static bool IsModInstalled(string id)
+        {
+            return ModManager.InstalledMods.Any(mod => mod.id == id);
         }
 
         public static string RequiredModsArrayToString(string[] requiredMods)
         {
             return string.Join("\n", requiredMods);
         }
+      
         public static string[] RequiredModsStringToArray(string requiredMods)
         {
             return requiredMods.Split('\n');
         }
-
-        public static string[] bannedMods = {
-            "maxi-mol.mousedrag",
-            "fyre.BeastMaster",
-            "slime-cubed.devconsole",
-            "zrydnoob.UnityExplorer",
-            "warp",
-            "presstopup",
-            "CandleSign.debugvisualizer",
-            "maxi-mol.freecam",
-            "henpemaz_spawnmenu",  //gotta be safe
-            "autodestruct",
-            "DieButton",
-            "emeralds_features",
-            "flirpy.rivuletunscammedlungcapacity",
-            "Aureuix.Kaboom",
-            "TM.PupMagnet",
-            "iwantbread.slugpupstuff",
-            "blujai.rocketficer",
-            "slugcatstatsconfig",
-            "explorite.slugpups_cap_configuration",
-            "slime-cubed.slugbase",
-        };
-
+      
         public static string[] GetBannedMods()
         {
-            UpdateFromOrWriteToFile("meadow-highimpactmods.txt", ref highImpactMods);
-            UpdateFromOrWriteToFile("meadow-bannedmods.txt", ref bannedMods);
+            var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var effectiveHighImpactMods = highImpactMods.Union(RainMeadowModInfoManager.MergedModInfo.SyncRequiredMods.Except(RainMeadowModInfoManager.MergedModInfo.SyncRequiredModsOverride)).ToList();
-            var effectiveBannedMods = bannedMods.Union(RainMeadowModInfoManager.MergedModInfo.BannedOnlineMods.Except(RainMeadowModInfoManager.MergedModInfo.BannedOnlineModsOverride)).ToList();
+            var syncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var bannedOnlineMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
 
-            // (high impact + banned) - enabled
-            return effectiveHighImpactMods.Concat(effectiveBannedMods)
+            syncRequiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, syncRequiredMods, SyncRequiredModsExplanationComment);
+            bannedOnlineMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedOnlineMods, BannedOnlineModsExplanationComment);
+
+            // (required + banned) - enabled
+            return syncRequiredMods.Concat(bannedOnlineMods)
                 .Except(ModManager.ActiveMods.Select(mod => mod.id))
                 .ToArray();
         }
@@ -161,6 +153,99 @@ namespace RainMeadow
                 var mmfOptions = MachineConnector.GetRegisteredOI(MoreSlugcats.MMF.MOD_ID);
                 MachineConnector.ReloadConfig(mmfOptions);
             }
+        }
+
+        private static List<string> UpdateFromOrWriteToFile(string path, List<string> newLines, string startingComment = "")
+        {
+            path = Path.Combine(Custom.RootFolderDirectory(), path);
+
+            if (!File.Exists(path))
+            {
+                newLines = ModIdsToIdAndName(newLines);
+
+                if (startingComment != "")
+                {
+                    newLines.Insert(0, startingComment);
+                }
+
+                File.WriteAllLines(path, newLines);
+                return newLines;
+            }
+
+            var existingLines = File.ReadAllLines(path).ToList();
+            var linesToWrite = new List<string>();
+
+            if (startingComment != "")
+            {
+                if (existingLines.Count == 0 || existingLines[0].Trim() != startingComment.Split('\n')[0].Trim())
+                {
+                    existingLines.Insert(0, startingComment);
+                }
+            }
+
+            // Lines without their comments and whitespaces: disabled have a leading comment, meaning the whole line is commented out
+            var trimmedActiveLines = new List<string>();
+            var trimmedDisabledLines = new List<string>();
+
+            // Trim non-leading comments (leading comments will be used to exclude mods)
+            foreach (var line in existingLines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    linesToWrite.Add(line);
+                    continue;
+                }
+
+                var trimmedLine = line.Trim();
+                var isDisabledLine = false;
+
+                // Leading comment disables the whole line
+                if (trimmedLine.StartsWith(CommentPrefix))
+                {
+                    trimmedLine = trimmedLine.TrimStart(CommentPrefix);
+                    isDisabledLine = true;
+                }
+
+                var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
+
+                // Trim any additional (non-leading) comments
+                if (commentStartIndex != -1)
+                {
+                    trimmedLine = string.Concat(trimmedLine.TakeFromTo(0, commentStartIndex)).Trim();
+                }
+
+                // Discard duplicate active lines
+                if (!isDisabledLine && trimmedActiveLines.Contains(trimmedLine))
+                {
+                    continue;
+                }
+
+                if (isDisabledLine)
+                {
+                    trimmedDisabledLines.Add(trimmedLine);
+                }
+                else
+                {
+                    trimmedActiveLines.Add(trimmedLine);
+                }
+
+                linesToWrite.Add(line);
+            }
+
+            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines).ToList();
+
+            linesToWrite.AddDistinctRange(linesToAdd);
+            linesToWrite = linesToWrite.Select(x => x.Trim(' ')).ToList();
+            linesToWrite = ModIdsToIdAndName(linesToWrite);
+
+            File.WriteAllLines(path, linesToWrite);
+
+            return trimmedActiveLines;
+        }
+
+        private static List<string> ModIdsToIdAndName(List<string> modIds)
+        {
+            return modIds.Select(x => IsModInstalled(x) ? x + " // " + ModIdToName(x) : x).ToList();
         }
     }
 }
