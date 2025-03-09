@@ -120,7 +120,9 @@ namespace RainMeadow
                     {
                         CSteamID id = SteamMatchmaking.GetLobbyByIndex(i);
                         string? passwordKeyStr = SteamMatchmaking.GetLobbyData(id, PASSWORD_KEY);
-                        lobbies[i] = new SteamLobbyInfo(id, Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id), SteamMatchmaking.GetLobbyData(id, MODS_KEY), SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY));
+
+                        lobbies[i] = new SteamLobbyInfo(id, Utils.GetTranslatedLobbyName(SteamMatchmaking.GetLobbyData(id, NAME_KEY)), SteamMatchmaking.GetLobbyData(id, MODE_KEY), SteamMatchmaking.GetNumLobbyMembers(id), passwordKeyStr != null ? bool.Parse(passwordKeyStr) : false, SteamMatchmaking.GetLobbyMemberLimit(id), SteamMatchmaking.GetLobbyData(id, MODS_KEY), SteamMatchmaking.GetLobbyData(id, BANNED_MODS_KEY));
+
                     }
                 }
 
