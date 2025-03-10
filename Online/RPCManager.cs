@@ -9,10 +9,17 @@ namespace RainMeadow
     // what sort of options are needed here?
     // "if target owner only"
     // "if resource active"
+    /// <summary>
+    /// runDeferred: If true, the RPC is processed after states are processed (at the end of the network-frame)
+    /// customIndex: The unique index of the RPC. If 0, will determine an unused index automatically. (MODS: Use a customIndex above 1000 please!!)
+    /// useErrorCorrection: If true, unrecognized RPCs and RPCs with erroneous data will be safely ignored. However, RPC size is limited to 255 bytes.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
         public bool runDeferred; // run after state is processed, at end of network-frame
+        public ushort customIndex = 0; //used to specify the index, to prevent clients from having different indices, or 0 if determined by RegisterRPCs()
+        public bool useErrorCorrection = false;
     }
 
     public static class RPCManager
@@ -30,11 +37,12 @@ namespace RainMeadow
             public bool isStatic;
             public string summary;
             public bool runDeferred;
+            public bool useErrorCorrection;
         }
 
         public static void SetupRPCs()
         {
-            index = 1; // zero is an easy to catch mistake
+            nextIndex = 1; // zero is an easy to catch mistake
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
@@ -63,7 +71,7 @@ namespace RainMeadow
             }
         }
 
-        static ushort index;
+        static ushort nextIndex;
         static ParameterExpression rpceventParam = Expression.Parameter(typeof(RPCEvent), "rpcEvent");
         static ParameterExpression serializerParam = Expression.Parameter(typeof(Serializer), "serializer");
 
@@ -82,6 +90,9 @@ namespace RainMeadow
 
             foreach (var method in methods)
             {
+                ushort customIndex = method.GetCustomAttribute<RPCMethodAttribute>().customIndex;
+                ushort index = customIndex > 0 ? customIndex : nextIndex;
+
                 var isStatic = method.IsStatic;
                 // get args
                 RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
@@ -188,12 +199,15 @@ namespace RainMeadow
                     eventArgIndex = argsEventIndex,
                     isStatic = isStatic,
                     runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
+                    useErrorCorrection = method.GetCustomAttribute<RPCMethodAttribute>().useErrorCorrection,
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
                 defsByIndex[index] = entry;
                 defsByMethod[method] = entry;
-                index++;
+
+                if (customIndex == 0)
+                    nextIndex++;
             }
         }
 
@@ -235,10 +249,14 @@ namespace RainMeadow
             if (serializer.IsWriting)
             {
                 serializer.writer.Write(handler.index);
+                if (handler.useErrorCorrection) { WriteWithErrorCorrection(serializer); return; }
             }
             if (serializer.IsReading)
             {
-                handler = RPCManager.defsByIndex[serializer.reader.ReadUInt16()];
+                ushort idx = serializer.reader.ReadUInt16();
+                if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler) && !rpcHandler.useErrorCorrection)
+                    handler = rpcHandler;
+                else { ReadWithErrorCorrection(serializer, idx); return; }
             }
             try
             {
@@ -247,6 +265,79 @@ namespace RainMeadow
             catch (Exception)
             {
                 RainMeadow.Error($"Error serializing RPC {this}");
+                throw;
+            }
+        }
+
+        public void WriteWithErrorCorrection(Serializer serializer)
+        {
+            try
+            {
+                //skip one byte ahead; serialize RPC args
+                long headerPos = serializer.Position;
+                byte tempArgLength = 0;
+                serializer.Serialize(ref tempArgLength);
+                long argsStartPos = serializer.Position;
+
+                handler.serialize(this, serializer); //actually serialize the RPC
+
+                long argsEndPos = serializer.Position;
+                if (argsEndPos - argsStartPos > 255)
+                {
+                    RainMeadow.Error(new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!"));
+
+                    //return to the start of the args. Hopefully the erroneous data will be over-written, and a client will ignore it for having a 0 bytes!
+                    serializer.stream.Position = argsStartPos;
+
+                    throw new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!");
+                }
+
+                //move back to the start; write the length byte
+                serializer.stream.Position = headerPos;
+                byte argsLength = (byte)(argsEndPos - argsStartPos);
+                serializer.Serialize(ref argsLength);
+
+                //finally, move back to the end
+                serializer.stream.Position = argsEndPos;
+
+                //TODO: change to RainMeadow.Trace
+                RainMeadow.Debug($"Sending RPC of index {handler.index} with length {argsLength}");
+            }
+            catch (Exception)
+            {
+                RainMeadow.Error($"Error writing RPC {this}");
+                throw;
+            }
+        }
+        public void ReadWithErrorCorrection(Serializer serializer, ushort idx)
+        {
+            try
+            {
+                byte argsLength = serializer.reader.ReadByte();
+                if (argsLength == 0)
+                {
+                    RainMeadow.Error("Received RPC of length 0!" + (RPCManager.defsByIndex.TryGetValue(idx, out var rpc) ? rpc.method : ""));
+                    return; //don't serialize empty RPCs! That's pointless!
+                }
+
+                //TODO: change to RainMeadow.Trace
+                RainMeadow.Debug($"Receiving RPC of index {idx} with length {argsLength}");
+
+                if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler))
+                    handler = rpcHandler;
+                else
+                {
+                    RainMeadow.Debug($"Received RPC with an unregistered index: {idx}");
+                    serializer.reader.ReadBytes(argsLength); //just skip through the bytes; who cares what their values are
+                    aborted = true; //so OnlineManager doesn't try to process it
+                    return;
+                }
+
+                handler.serialize(this, serializer);
+            }
+            catch (Exception)
+            {
+                RainMeadow.Error($"Error reading RPC {this}");
                 throw;
             }
         }
