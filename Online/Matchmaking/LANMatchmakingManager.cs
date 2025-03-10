@@ -154,8 +154,8 @@ namespace RainMeadow {
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner) {
                 if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
-                    maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
-                  OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
+                        maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
+                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
             }
