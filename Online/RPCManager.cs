@@ -11,15 +11,18 @@ namespace RainMeadow
     // "if resource active"
     /// <summary>
     /// runDeferred: If true, the RPC is processed after states are processed (at the end of the network-frame)
-    /// customIndex: The unique index of the RPC. If 0, will determine an unused index automatically. (MODS: Use a customIndex above 1000 please!!)
+    /// customIndex: The unique index of the RPC. If 0, will determine an unused index automatically.
     /// useErrorCorrection: If true, unrecognized RPCs and RPCs with erroneous data will be safely ignored. However, RPC size is limited to 255 bytes.
+    /// 
+    /// MOD AUTHORS: Please (PLEASE!) specify a unique customIndex that is > 1000 and use error correction!!
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
         public bool runDeferred; // run after state is processed, at end of network-frame
         public ushort customIndex = 0; //used to specify the index, to prevent clients from having different indices, or 0 if determined by RegisterRPCs()
-        public bool useErrorCorrection = false;
+        public bool optimizedRPC = false; //if false, comes with limited RPC size, an extra byte of data, and slightly slower processing
+                                          //by default it is false, because skipping error correction should only be used if someone knows what he's doing
     }
 
     public static class RPCManager
@@ -37,7 +40,7 @@ namespace RainMeadow
             public bool isStatic;
             public string summary;
             public bool runDeferred;
-            public bool useErrorCorrection;
+            public bool optimizedRPC;
         }
 
         public static void SetupRPCs()
@@ -199,7 +202,7 @@ namespace RainMeadow
                     eventArgIndex = argsEventIndex,
                     isStatic = isStatic,
                     runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
-                    useErrorCorrection = method.GetCustomAttribute<RPCMethodAttribute>().useErrorCorrection,
+                    optimizedRPC = method.GetCustomAttribute<RPCMethodAttribute>().optimizedRPC,
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
@@ -249,12 +252,12 @@ namespace RainMeadow
             if (serializer.IsWriting)
             {
                 serializer.writer.Write(handler.index);
-                if (handler.useErrorCorrection) { WriteWithErrorCorrection(serializer); return; }
+                if (!handler.optimizedRPC) { WriteWithErrorCorrection(serializer); return; }
             }
             if (serializer.IsReading)
             {
                 ushort idx = serializer.reader.ReadUInt16();
-                if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler) && !rpcHandler.useErrorCorrection)
+                if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler) && rpcHandler.optimizedRPC)
                     handler = rpcHandler;
                 else { ReadWithErrorCorrection(serializer, idx); return; }
             }
@@ -269,7 +272,11 @@ namespace RainMeadow
             }
         }
 
-        public void WriteWithErrorCorrection(Serializer serializer)
+        /// <summary>
+        /// Adds a byte specifying the length of the RPC data sent,
+        /// so that the data can be ignored it is erroneous or if the RPC is unrecognized.
+        /// </summary>
+        private void WriteWithErrorCorrection(Serializer serializer)
         {
             try
             {
@@ -309,7 +316,8 @@ namespace RainMeadow
                 throw;
             }
         }
-        public void ReadWithErrorCorrection(Serializer serializer, ushort idx)
+        //idx is passed in because it has already been read
+        private void ReadWithErrorCorrection(Serializer serializer, ushort idx)
         {
             try
             {
@@ -333,7 +341,19 @@ namespace RainMeadow
                     return;
                 }
 
-                handler.serialize(this, serializer);
+                //now actually serialize the RPC
+                long startPos = serializer.Position;
+                try
+                {
+                    handler.serialize(this, serializer);
+                }
+                catch (Exception)
+                {
+                    RainMeadow.Error($"Error serializing RPC {this}");
+                    //since the serialization failed, try to skip over the RPC's data, so the rest of the packet can still be serialized.
+                    serializer.stream.Position = startPos + argsLength;
+                    throw;
+                }
             }
             catch (Exception)
             {
