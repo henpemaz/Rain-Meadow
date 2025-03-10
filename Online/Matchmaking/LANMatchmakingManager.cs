@@ -209,6 +209,7 @@ namespace RainMeadow {
             RainMeadow.DebugMe();
             if (OnlineManager.players.Contains(joiningPlayer)) { return; }
             OnlineManager.players.Add(joiningPlayer);
+            HandleJoin(joiningPlayer);
             (OnlineManager.netIO as LANNetIO)?.SendAcknoledgement(joiningPlayer);
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
 

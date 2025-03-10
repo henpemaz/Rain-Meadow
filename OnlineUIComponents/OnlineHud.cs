@@ -61,6 +61,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            if (OnlineManager.lobby == null) return;
             UpdatePlayers();
             hudCounter++;
         }

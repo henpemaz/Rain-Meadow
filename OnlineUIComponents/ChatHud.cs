@@ -135,7 +135,7 @@ namespace RainMeadow
 
             if (slatedForDeletion) { Destroy(); return; }
 
-            if (OnlineManager.lobby.gameMode is MeadowGameMode) return;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode) return;
 
             if (game.pauseMenu != null || camera.hud?.map?.visible is true || game.manager.upcomingProcess != null)
             {
