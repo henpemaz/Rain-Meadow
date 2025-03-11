@@ -138,6 +138,7 @@ namespace RainMeadow
             }
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
+            OnlineManager.netIO.ForgetPlayer(player);
 
             ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
         }
