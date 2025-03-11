@@ -10,19 +10,19 @@ namespace RainMeadow
     // "if target owner only"
     // "if resource active"
     /// <summary>
-    /// runDeferred: If true, the RPC is processed after states are processed (at the end of the network-frame)
+    /// runDeferred: If true, the RPC is processed after states are processed (at end of network-frame)
     /// customIndex: The unique index of the RPC. If 0, will determine an unused index automatically.
-    /// useErrorCorrection: If true, unrecognized RPCs and RPCs with erroneous data will be safely ignored. However, RPC size is limited to 255 bytes.
+    /// optimized: If false, unrecognized RPCs and RPCs with erroneous data will be safely ignored. However, RPC size is limited to 255 bytes.
     /// 
-    /// MOD AUTHORS: Please (PLEASE!) specify a unique customIndex that is > 1000 and use error correction!!
+    /// MOD AUTHORS: Please specify a unique customIndex that is > 1000 and keep optimizedRPC = false!
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
         public bool runDeferred; // run after state is processed, at end of network-frame
         public ushort customIndex = 0; //used to specify the index, to prevent clients from having different indices, or 0 if determined by RegisterRPCs()
-        public bool optimizedRPC = false; //if false, comes with limited RPC size, an extra byte of data, and slightly slower processing
-                                          //by default it is false, because skipping error correction should only be used if someone knows what he's doing
+        public bool optimized = false; //if false, comes with limited RPC size, an extra byte of data, and slightly slower processing
+                                       //by default it is false, because skipping error correction should only be used if someone knows what he's doing
     }
 
     public static class RPCManager
@@ -47,27 +47,30 @@ namespace RainMeadow
         {
             nextIndex = 1; // zero is an easy to catch mistake
 
+            //process Rain Meadow first, so that other mods don't try to insert their RPCs before Rain Meadow
+            var mainAssembly = Assembly.GetExecutingAssembly();
+            RainMeadow.Debug("Registering RPCs for Rain Meadow");
+            RegisterRPCsInAssembly(mainAssembly, true);
+
+            RainMeadow.Debug("Registering RPCs for other assemblies");
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
-                bool isMain = assembly == Assembly.GetExecutingAssembly();
+                if (assembly != mainAssembly)
+                    RegisterRPCsInAssembly(assembly, false);
+            }
+        }
+        private static void RegisterRPCsInAssembly(Assembly assembly, bool isMain = false)
+        {
+            RainMeadow.Trace($"Registering RPCs for assembly {assembly.FullName}");
+            foreach (var type in assembly.GetTypesSafely().ToList())
+            {
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely().ToList())
-                    {
-                        try
-                        {
-                            RegisterRPCs(type);
-                        }
-                        catch (Exception e)
-                        {
-                            RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            if (isMain) throw e; 
-                            RainMeadow.Error(e);
-                        }
-                    }
+                    RegisterRPCs(type);
                 }
                 catch (Exception e)
                 {
+                    RainMeadow.Error(assembly.FullName + ":" + type.FullName);
                     if (isMain) throw e;
                     RainMeadow.Error(e);
                 }
@@ -202,7 +205,7 @@ namespace RainMeadow
                     eventArgIndex = argsEventIndex,
                     isStatic = isStatic,
                     runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
-                    optimizedRPC = method.GetCustomAttribute<RPCMethodAttribute>().optimizedRPC,
+                    optimizedRPC = method.GetCustomAttribute<RPCMethodAttribute>().optimized,
                     summary = $"{targetType.Name}{method.Name}"
                 };
 
@@ -274,7 +277,7 @@ namespace RainMeadow
 
         /// <summary>
         /// Adds a byte specifying the length of the RPC data sent,
-        /// so that the data can be ignored it is erroneous or if the RPC is unrecognized.
+        /// so that the data can be ignored if it is erroneous or if the RPC is unrecognized.
         /// </summary>
         private void WriteWithErrorCorrection(Serializer serializer)
         {
@@ -293,7 +296,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Error(new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!"));
 
-                    //return to the start of the args. Hopefully the erroneous data will be over-written, and a client will ignore it for having a 0 bytes!
+                    //return to the start of the args. Hopefully the erroneous data will be over-written, and a client will ignore it for having 0 bytes!
                     serializer.stream.Position = argsStartPos;
 
                     throw new OverflowException($"RPC args of {argsEndPos - argsStartPos} exceeds 255 byte limit!");
@@ -307,8 +310,7 @@ namespace RainMeadow
                 //finally, move back to the end
                 serializer.stream.Position = argsEndPos;
 
-                //TODO: change to RainMeadow.Trace
-                RainMeadow.Debug($"Sending RPC of index {handler.index} with length {argsLength}");
+                RainMeadow.Trace($"Sending RPC of index {handler.index} with length {argsLength}");
             }
             catch (Exception)
             {
@@ -322,14 +324,11 @@ namespace RainMeadow
             try
             {
                 byte argsLength = serializer.reader.ReadByte();
-                if (argsLength == 0)
-                {
-                    RainMeadow.Error("Received RPC of length 0!" + (RPCManager.defsByIndex.TryGetValue(idx, out var rpc) ? rpc.method : ""));
-                    return; //don't serialize empty RPCs! That's pointless!
-                }
 
-                //TODO: change to RainMeadow.Trace
-                RainMeadow.Debug($"Receiving RPC of index {idx} with length {argsLength}");
+                if (argsLength == 0) //warn of 0-length RPCs; they might be erroneous ones!
+                    RainMeadow.Debug("Received RPC of length 0!" + (RPCManager.defsByIndex.TryGetValue(idx, out var rpc) ? rpc.method : ""));
+
+                RainMeadow.Trace($"Receiving RPC of index {idx} with length {argsLength}");
 
                 if (RPCManager.defsByIndex.TryGetValue(idx, out var rpcHandler))
                     handler = rpcHandler;
