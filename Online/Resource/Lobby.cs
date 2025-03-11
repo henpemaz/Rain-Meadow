@@ -57,6 +57,8 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
+
+                //determine ExtEnum values to be used within the lobby
                 this.strEnumMap = ExtEnumBase.valueDictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.entries.ToArray());
                 RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
                 foreach (var kvp in this.strEnumMap)
@@ -70,7 +72,7 @@ namespace RainMeadow
                             map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
                     }
                     this.enumMapToLocal.Add(type, map);
-                    this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key));
+                    this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key)); //make the two dictionaries distinct
                 }
             }
             else
@@ -289,6 +291,7 @@ namespace RainMeadow
                     lobby.modsChecked = true;
                 }
 
+                //set the ExtEnum map received from the lobby owner
                 if (lobby.strEnumMap.Count == 0)
                 {
                     try
@@ -311,11 +314,12 @@ namespace RainMeadow
                     {
                         RainMeadow.Error($"failed to sync enums: {e}");
 
+                        //inform user of the error
                         var manager = RWCustom.Custom.rainWorld.processManager;
 
                         manager.ShowDialog(new Menu.DialogNotify(manager.rainWorld.inGameTranslator.Translate("Mod Mismatch!") + Environment.NewLine + e, manager));
 
-                        OnlineManager.LeaveLobby();
+                        OnlineManager.LeaveLobby(); //and leave the lobby
                     }
                 }
 
