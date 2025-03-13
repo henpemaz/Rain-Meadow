@@ -61,8 +61,10 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void KickToLobby()
+        public static void KickToLobby(RPCEvent rpc)
         {
+            RainMeadow.Debug($"{rpc.from} is trying to kick {rpc.to}");
+            if (OnlineManager.lobby.owner != rpc.from) return; // Only respond if its the host kicking the player
             if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
             {
                 if (RWCustom.Custom.rainWorld.processManager.musicPlayer != null)
@@ -74,6 +76,7 @@ namespace RainMeadow
             }
             RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
             BanHammer.ShowBan(RWCustom.Custom.rainWorld.processManager);
+            OnlineManager.LeaveLobby();
         }
 
         [RPCMethod]
