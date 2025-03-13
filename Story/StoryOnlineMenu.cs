@@ -17,9 +17,12 @@ namespace RainMeadow
         CheckBox reqCampaignSlug;
         List<SimplerButton> playerButtons = new();
         List<SimplerSymbolButton> kicButtons = new();
+        MenuLabel lobbyLabel;
+        MenuLabel slugcatLabel;
 
         SlugcatCustomization personaSettings;
-        EventfulSelectOneButton[]? scugButtons;
+        List<EventfulSelectOneButton> scugButtons;
+
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
@@ -155,6 +158,8 @@ namespace RainMeadow
         {
             base.Update();
 
+            if (OnlineManager.lobby == null) return;
+
             if (!OnlineManager.lobby.isOwner)
             {
 
@@ -175,11 +180,41 @@ namespace RainMeadow
 
                     scugButtons = null;
                 }
-                // Recall buttons scug buttons if requireCampaignSlugcat is off.
-                else if (scugButtons == null && !storyGameMode.requireCampaignSlugcat)
+                if (scugButtons != null)
+                {
+                    foreach (var button in scugButtons)
+                    {
+                        if (button != null)
+                        {
+                            button.pos.y = InputOverride.MoveMenuItemFromYInput(button.pos.y);
+                        }
+                    };
+                }
+
+                // Recall buttons scug buttons if requireCampaignSlugcat is off.    
+                if (scugButtons == null && !storyGameMode.requireCampaignSlugcat)
                 {
                     SetupSlugcatList();
                 }
+
+            }
+
+
+            if (playerButtons != null)
+            {
+                playerButtons.ForEach(x => x.pos.y = InputOverride.MoveMenuItemFromYInput(x.pos.y));
+                if (OnlineManager.lobby.isOwner && kicButtons != null)
+                {
+                    kicButtons.ForEach(k => k.pos.y = InputOverride.MoveMenuItemFromYInput(k.pos.y));
+                }
+            }
+            if (lobbyLabel != null)
+            {
+                lobbyLabel.pos.y = InputOverride.MoveMenuItemFromYInput(lobbyLabel.pos.y);
+            }
+            if (slugcatLabel != null)
+            {
+                slugcatLabel.pos.y = InputOverride.MoveMenuItemFromYInput(slugcatLabel.pos.y);
             }
 
 
@@ -203,6 +238,7 @@ namespace RainMeadow
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
             }
+
         }
 
         public override void ShutDownProcess()
@@ -228,11 +264,11 @@ namespace RainMeadow
             var widthHeight = new Vector2(110, 30);
             foreach (var playerInfo in OnlineManager.players)
             {
-                
+
                 pos -= new Vector2(0, 38);
                 var btn = new SimplerButton(this, this.pages[0], playerInfo.id.name, pos, widthHeight);
                 btn.OnClick += (_) => playerInfo.id.OpenProfileLink();
-               
+
                 playerButtons.Add(btn);
 
                 if (OnlineManager.lobby.isOwner && playerInfo != OnlineManager.lobby.owner)
@@ -305,16 +341,18 @@ namespace RainMeadow
         {
 
             var pos = new Vector2(394, 553);
-            pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true));
+            slugcatLabel = new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true);
+            pages[0].subObjects.Add(slugcatLabel);
 
-            scugButtons = new EventfulSelectOneButton[slugcatColorOrder.Count];
+            scugButtons = new List<EventfulSelectOneButton>();
+            // hack to make EventfulSelectOneButton happy. Can't update pos otherwise.
+            var fScugButtons = new EventfulSelectOneButton[slugcatColorOrder.Count];
             for (var i = 0; i < slugcatColorOrder.Count; i++)
             {
                 var scug = slugcatColorOrder[i];
                 pos -= new Vector2(0, 38);
-                var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
+                var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), fScugButtons, i);
                 pages[0].subObjects.Add(btn);
-
                 btn.OnClick += (_) =>
                 {
                     storyGameMode.avatarSettings.playingAs = scug;
@@ -325,6 +363,8 @@ namespace RainMeadow
                         AddColorButtons();
                     }
                 };
+                scugButtons.Add(btn);
+
             }
         }
 
@@ -366,7 +406,7 @@ namespace RainMeadow
         private void SetupOnlineMenuItems()
         {
             // Player lobby label
-            var lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
+            lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
             pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
