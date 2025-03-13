@@ -1,7 +1,8 @@
 {
     "sync_required_mods": [
         "rwremix",
-        "moreslugcats"
+        "moreslugcats",
+        "henpemaz_rainmeadow"
     ],
     "banned_online_mods": [
         "maxi-mol.mousedrag",
