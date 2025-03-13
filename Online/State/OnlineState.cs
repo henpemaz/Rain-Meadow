@@ -155,7 +155,7 @@ namespace RainMeadow
             public bool longList; // field needs ushort for indexes rather than bytes
             public bool always; // field is always sent, to be used as key
 
-            public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
+            public OnlineFieldAttribute(string group = "", bool nullable = false, bool polymorphic = false, bool always = false)
             {
                 this.group = group;
                 this.nullable = nullable;
@@ -181,7 +181,7 @@ namespace RainMeadow
 
         public class OnlineFieldHalf : OnlineFieldAttribute
         {
-            public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public OnlineFieldHalf(string group = "", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => 
@@ -191,7 +191,7 @@ namespace RainMeadow
         }
         public class OnlineFieldColorRgbAttribute : OnlineFieldAttribute
         {
-            public OnlineFieldColorRgbAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public OnlineFieldColorRgbAttribute(string group = "", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeRGB) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
@@ -255,6 +255,14 @@ namespace RainMeadow
                     RainMeadow.Debug($"found {fields.Length} fields");
                     if (fields.Length > 0) RainMeadow.Debug(fields.Select(f => $"{f.FieldType.Name} {f.Name}").Aggregate((a, b) => a + "\n" + b));
                     else throw new InvalidProgrammerException($"Type {type} has no online fields");
+
+                    //if group is unspecified, make it its field name
+                    foreach (var f in fields)
+                    {
+                        var attr = f.GetCustomAttribute<OnlineFieldAttribute>();
+                        if (attr.group == "") attr.group = f.Name;
+                    }
+
                     var keys = fields.Where(o => o.GetCustomAttribute<OnlineFieldAttribute>().always).ToList();
                     Dictionary<string, List<FieldInfo>> deltaGroups = fields.Where(o => !o.GetCustomAttribute<OnlineFieldAttribute>().always).GroupBy(o => o.GetCustomAttribute<OnlineFieldAttribute>().group).ToDictionary(g => g.Key, g => g.ToList());
                     ngroups = deltaGroups.Count;
