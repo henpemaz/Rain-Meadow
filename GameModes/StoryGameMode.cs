@@ -67,6 +67,7 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
+            MoreSlugcats.MoreSlugcatsEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
         };
 
         public override bool AllowedInMode(PlacedObject item)
