@@ -1537,7 +1537,10 @@ namespace RainMeadow
                     {
                         value[j] = reader.ReadString();
                     }
-                    data.Add(key, value);
+                    try
+                    {
+                        data.Add(key, value);
+                    } catch (System.Exception ex) { RainMeadow.Error(ex); }
                 }
             }
 #if TRACING

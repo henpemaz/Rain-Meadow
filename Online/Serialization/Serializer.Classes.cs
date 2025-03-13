@@ -16,8 +16,12 @@ namespace RainMeadow
             }
             if (IsReading)
             {
+                int idx = reader.ReadByte();
                 extEnum = (T)Activator.CreateInstance(typeof(T),
-                    new object[] { ExtEnum<T>.values.GetEntry(OnlineManager.lobby.enumMapToLocal[typeof(T)][reader.ReadByte()]), false });
+                    new object[] { ExtEnum<T>.values.GetEntry(
+                        OnlineManager.lobby.enumMapToLocal.TryGetValue(typeof(T), out var map) ? map[idx]
+                        : idx //default to the idx given... this isn't a nice solution, but it's a fallback
+                        ), false });
             }
         }
 

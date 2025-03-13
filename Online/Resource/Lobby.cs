@@ -59,20 +59,33 @@ namespace RainMeadow
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
 
                 //determine ExtEnum values to be used within the lobby
-                this.strEnumMap = ExtEnumBase.valueDictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.entries.ToArray());
-                RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
+                //only sync ExtEnums with less than 256 entries; and give an error message for enums that cannot be synced
+                this.strEnumMap = new(ExtEnumBase.valueDictionary.Count);
+                foreach (var kvp in ExtEnumBase.valueDictionary)
+                {
+                    if (kvp.Value.Count > 255) RainMeadow.Error($"More than 255 entries for ExtEnum {kvp.Key}");
+                    else strEnumMap.Add(EnumTypeToID(kvp.Key), kvp.Value.entries.ToArray());
+                }
+
+                //RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
                 foreach (var kvp in this.strEnumMap)
                 {
-                    var type = Type.GetType(kvp.Key);
-                    Dictionary<int, int> map = new();
-                    for (var i = 0; i < kvp.Value.Length; i++)
+                    try
                     {
-                        RainMeadow.Debug($"type {kvp.Key}: {type}");
-                        if (type != null)
-                            map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                        var type = GetExtEnumType(kvp.Key);//Type.GetType(kvp.Key);
+                        if (type == null) throw new NullReferenceException($"Type {kvp.Key} could not be found!");
+                        RainMeadow.Debug($"ExtEnum type {kvp.Key}: {type}; length = {kvp.Value.Length}");
+
+                        Dictionary<int, int> map = new();
+                        for (var i = 0; i < kvp.Value.Length; i++)
+                        {
+                            if (type != null)
+                                map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                        }
+                        this.enumMapToLocal.Add(type, map);
+                        this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key)); //swap the values and the keys
                     }
-                    this.enumMapToLocal.Add(type, map);
-                    this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key)); //make the two dictionaries distinct
+                    catch (Exception ex) { RainMeadow.Error(ex); }
                 }
             }
             else
@@ -80,6 +93,22 @@ namespace RainMeadow
                 RainMeadow.Debug("Requesting lobby");
                 RequestLobby(password);
             }
+        }
+        //the full type is quite excessive, so instead we will use the short type name and loop through all the options
+        private static Type GetExtEnumType(string shortName)
+        {
+            return ExtEnumBase.valueDictionary.First(kvp => EnumTypeToID(kvp.Key) == shortName).Key;
+        }
+        //adds a lazy hash of the assembly name, just in case
+        private static string EnumTypeToID(Type T)
+        {
+            return T.ToString() + "" + HashString(T.Assembly.FullName);
+        }
+        private static string HashString(string s)
+        {
+            int value = 0;
+            for (int i = 0; i < s.Length; i++) value ^= (s[i] << (i & 15)) | (s[i] >>> (16 - (i & 15)));
+            return value.ToString().Substring(0, 4); //keep the string short; it shouldn't ever be necessary, hopefully
         }
 
         public void RequestLobby(string? key)
@@ -296,14 +325,17 @@ namespace RainMeadow
                 {
                     try
                     {
-                        RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
+                        //RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
                         foreach (var kvp in this.strEnumMap)
                         {
-                            var type = Type.GetType(kvp.Key);
+                            var type = GetExtEnumType(kvp.Key);//Type.GetType(kvp.Key);
+                            RainMeadow.Debug($"ExtEnum type {kvp.Key}: {type}; length = {kvp.Value.Length}");
                             Dictionary<int, int> map = new();
                             for (var i = 0; i < kvp.Value.Length; i++)
                             {
-                                map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                                int idx = ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]);
+                                map.Add(i, idx);
+                                if (i != idx) RainMeadow.Debug($"Differing ExtEnum indices for type {kvp.Key}: {i} -> {idx}");
                             }
                             lobby.enumMapToLocal.Add(type, map);
                             lobby.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key));
