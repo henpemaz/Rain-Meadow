@@ -16,21 +16,23 @@ namespace RainMeadow
         public static string SyncRequiredModsFileName => "meadow-highimpactmods.txt";
         public static string BannedOnlineModsFileName => "meadow-bannedmods.txt";
 
-        public static string SyncRequiredModsExplanationComment => """
-                                                                   // The following is a list of mods that must be synced between client and host:
-                                                                   // (if the host has these mods enabled/disabled, the client must match)
-                                                                   // To remove mod IDs and allow them to be de-synced, prefix the lines with '//', like this:
-                                                                   //mod-id-to-exclude
-                                                                   
-                                                                   """;
+        public static string SyncRequiredModsExplanationComment =>
+            """
+            // The following is a list of mods that must be synced between client and host:
+            // (if the host has these mods enabled/disabled, the client must match)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
 
-        public static string BannedOnlineModsExplanationComment =>"""
-                                                                   // The following is a list of mods that are banned from online play:
-                                                                   // (if any of these mods are enabled, they must be disabled before meadow can be entered)
-                                                                   // To remove mod IDs and allow them online, prefix the lines with '//', like this:
-                                                                   //mod-id-to-exclude
+            """;
 
-                                                                   """;
+        public static string BannedOnlineModsExplanationComment =>
+            """
+            // The following is a list of mods that are banned from online play if the host does not have them enabled:
+            // (if any of these mods are enabled on a client, they must be enabled on the host to join)
+            // To exclude mods on the list from these requirements, prefix the lines with '//', like this:
+            //mod-id-to-exclude
+
+            """;
 
         /// <summary>
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
@@ -83,12 +85,13 @@ namespace RainMeadow
 
         public static string ModIdToName(string id)
         {
-            foreach (var mod in ModManager.ActiveMods)
-            {
-                if (mod.id == id)
-                    return mod.LocalizedName;
-            }
-            return id; //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+            //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
+            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.LocalizedName ?? id;
+        }
+
+        public static bool IsModInstalled(string id)
+        {
+            return ModManager.InstalledMods.Any(mod => mod.id == id);
         }
 
         public static string ModArrayToString(string[] requiredMods)
@@ -421,6 +424,8 @@ namespace RainMeadow
 
             if (!File.Exists(path))
             {
+                newLines = ModIdsToIdAndName(newLines);
+
                 if (startingComment != "")
                 {
                     newLines.Insert(0, startingComment);
@@ -430,7 +435,7 @@ namespace RainMeadow
                 return newLines;
             }
 
-            var existingLines = File.ReadAllLines(path).Distinct().ToList();
+            var existingLines = File.ReadAllLines(path).ToList();
             var linesToWrite = new List<string>();
 
             if (startingComment != "")
@@ -496,13 +501,20 @@ namespace RainMeadow
                 linesToWrite.Add(line);
             }
 
-            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines);
+            var linesToAdd = newLines.Except(trimmedActiveLines).Except(trimmedDisabledLines).ToList();
 
             linesToWrite.AddDistinctRange(linesToAdd);
+            linesToWrite = linesToWrite.Select(x => x.Trim(' ')).ToList();
+            linesToWrite = ModIdsToIdAndName(linesToWrite);
 
             File.WriteAllLines(path, linesToWrite);
 
             return trimmedActiveLines.Union(trimmedDisabledLines.Select(line => CommentPrefix + line)).ToList();
+        }
+
+        private static List<string> ModIdsToIdAndName(List<string> modIds)
+        {
+            return modIds.Select(x => IsModInstalled(x) ? x + " // " + ModIdToName(x) : x).ToList();
         }
     }
 }

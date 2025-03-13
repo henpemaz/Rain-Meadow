@@ -168,14 +168,14 @@ public partial class RainMeadow
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
                 && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
-                PlayerMovementOverride.StopPlayerMovement(self);
+                InputOverride.StopPlayerMovement(self);
             }
 
             if (isArenaMode(out var arena))
             {
                 if (arena.countdownInitiatedHoldFire)
                 {
-                    PlayerMovementOverride.HoldFire(self);
+                    InputOverride.HoldFire(self);
                 }
 
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
