@@ -99,7 +99,7 @@ namespace RainMeadow
 
             string[] args = code.Split(' ');
             
-            int connect_steam_idx = Array.IndexOf(args, "+connect_steam_lobby"),
+            int connect_steam_idx = Array.IndexOf(args, "+connect_lobby"),
                 connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"),
                 password_idx = Array.IndexOf(args, "+lobby_password");
 
@@ -126,7 +126,7 @@ namespace RainMeadow
                     }
                 }
                 else
-                    RainMeadow.Error("found +connect_steam_lobby but no valid lobby id in the command line");
+                    RainMeadow.Error("found +connect_lobby but no valid lobby id in the command line");
             }
             else if (connect_lan_idx >= 0)
             {
