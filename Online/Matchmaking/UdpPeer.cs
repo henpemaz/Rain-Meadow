@@ -832,7 +832,8 @@ namespace RainMeadow
                 }
 
                 //decompressed as early as possible
-                buffer = Compression.DecompressBytes(buffer);
+                buffer = Compression.DecompressBytes(buffer, len);
+                len = buffer.Length;
                 
 
                 IPEndPoint? ipsender = sender as IPEndPoint;

@@ -77,9 +77,9 @@ namespace RainMeadow
                                 //Marshal.Copy(message.m_pData, OnlineManager.serializer.buffer, 0, message.m_cbSize);
                                 Marshal.Copy(message.m_pData, buffer, 0, message.m_cbSize);
 
-                                buffer = Compression.DecompressBytes(buffer); //decompress as soon as the packet is read
+                                buffer = Compression.DecompressBytes(buffer, message.m_cbSize); //decompress as soon as the packet is read
                                 OnlineManager.serializer.buffer.CopyTo(buffer, 0);
-                                OnlineManager.serializer.ReadData(fromPlayer, message.m_cbSize);
+                                OnlineManager.serializer.ReadData(fromPlayer, buffer.Length);
                             }
                         }
                         catch (Exception e)

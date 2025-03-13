@@ -13,7 +13,7 @@ public static class Compression
     /// <returns>An array of compressed bytes.</returns>
     public static byte[] CompressBytes(byte[] bytes)
     {
-        if (bytes.Length == 0) return bytes;
+        if (bytes.Length <= 1) return bytes; //don't compress heartbeat packets
         try
         {
             using (MemoryStream inputStream = new(bytes))
@@ -24,8 +24,8 @@ public static class Compression
                 compressor.Close();
 
                 var output = compressStream.ToArray();
-                //if (bytes.Length > 128) //don't spam me with useless debug messages please
-                RainMeadow.Debug($"Compressed {bytes.Length} bytes into {output.Length} bytes.");
+                if (bytes.Length >= 1000) //don't spam me with useless debug messages please
+                    RainMeadow.Debug($"Compressed {bytes.Length} bytes into {output.Length} bytes.");
                 return output;
             }
         }
@@ -41,21 +41,21 @@ public static class Compression
     /// </summary>
     /// <param name="bytes">The input, compressed bytes.</param>
     /// <returns>An array of uncompressed bytes.</returns>
-    public static byte[] DecompressBytes(byte[] bytes)
+    public static byte[] DecompressBytes(byte[] bytes, int length)
     {
-        if (bytes.Length == 0) return bytes;
+        if (bytes.Length <= 1) return bytes; //don't uncompress heartbeat packets; 3 seems like the minimum length of a compressed packet
         try
         {
             using (MemoryStream outputStream = new())
-            using (MemoryStream compressedStream = new(bytes))
+            using (MemoryStream compressedStream = new(bytes, 0, length))
             using (DeflateStream decompressor = new(compressedStream, CompressionMode.Decompress))
             {
                 decompressor.CopyTo(outputStream);
                 decompressor.Close();
 
                 var output = outputStream.ToArray();
-                //if (output.Length > 128) //don't spam me with useless debug messages please
-                RainMeadow.Debug($"Decompressed {bytes.Length} bytes into {output.Length} bytes.");
+                if (output.Length > 1000) //don't spam me with useless debug messages please
+                    RainMeadow.Debug($"Decompressed {length} bytes into {output.Length} bytes.");
                 return output;
             }
         }
