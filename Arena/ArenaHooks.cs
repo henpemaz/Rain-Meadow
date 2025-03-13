@@ -106,22 +106,7 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var _))
             {
-                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-                float verticalInput = 0;
-                if (controller is Joystick js)
-                {
-                    verticalInput = js.GetAxis(3);
-                }
-
-                if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || verticalInput > 0)
-                {
-                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
-                }
-
-                if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || verticalInput < 0)
-                {
-                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
-                }
+                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
             }
         }
 
@@ -139,12 +124,12 @@ namespace RainMeadow
 
                 if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || verticalInput > 0)
                 {
-                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
                 }
 
                 if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || verticalInput < 0)
                 {
-                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ArenaScrollSpeed.Value;
+                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
                 }
             }
 
@@ -194,6 +179,7 @@ namespace RainMeadow
             }
 
         }
+
 
         private void SingularityBomb_ctor(On.MoreSlugcats.SingularityBomb.orig_ctor orig, SingularityBomb self, AbstractPhysicalObject abstractPhysicalObject, World world)
         {
@@ -1130,7 +1116,7 @@ namespace RainMeadow
                 }
                 catch
                 {
-                    self.playerNameLabel.text = userNameBackup;
+                    self.playerNameLabel.text = Utils.Translate(userNameBackup);
                 }
 
 

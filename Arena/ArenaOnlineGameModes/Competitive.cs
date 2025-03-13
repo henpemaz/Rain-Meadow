@@ -1,6 +1,7 @@
 ﻿using RainMeadow;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 namespace RainMeadow
 {
     public class Competitive : ExternalArenaGameMode
@@ -41,11 +42,10 @@ namespace RainMeadow
         {
             if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
-                return $"Prepare for combat, {(OnlineManager.lobby.gameMode as ArenaOnlineGameMode).paincatName}";
+                return Utils.Translate($"Prepare for combat,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
             }
-            return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
         }
-
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -56,7 +56,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {
+        {            
             return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
@@ -80,7 +80,6 @@ namespace RainMeadow
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            arena.ResetInvDetails();
         }
     }
 }

@@ -4,7 +4,9 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -20,13 +22,15 @@ public class LobbyCreateMenu : SmartMenu
     private OpTextBox passwordInputBox;
     private OpCheckBox enablePasswordCheckbox;
     private MenuDialogBox? popupDialog;
+    private SimplerButton editSyncRequiredModsButton;
+    private SimplerButton editBannedModsButton;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
         this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
         // creation button in bottom right
@@ -65,10 +69,10 @@ public class LobbyCreateMenu : SmartMenu
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
-            description = "Lobby Password"
+            description = Utils.Translate("Lobby Password"),
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
-        passwordInputBox.label.text = "Password";
+        passwordInputBox.label.text = Utils.Translate("Password");
         new UIelementWrapper(this.tabWrapper, passwordInputBox);
 
         // lobby limit setting in bottom center
@@ -82,17 +86,17 @@ public class LobbyCreateMenu : SmartMenu
         {
             accept = OpTextBox.Accept.Int,
             maxLength = 2,
-            description = "The Max of the Players for the Lobby (up to 32)"
+            description = Utils.Translate("Maximum number of players that can be in the lobby (up to 32)"),
         };
         new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
         where.y += 5;
 
         // display version
-        MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+        MenuLabel versionLabel = new MenuLabel(this, pages[0], $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
         versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
         mainPage.subObjects.Add(versionLabel);
 
-        if (backObject is SimplerButton backButton) backButton.menuLabel.text = "CANCEL";
+        if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
 
         UpdateModeDescription();
 
@@ -108,11 +112,31 @@ public class LobbyCreateMenu : SmartMenu
                 manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
             }
         }
+
+        var editSyncBannedLabel = new ProperlyAlignedMenuLabel(this, mainPage, Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.")), new Vector2(500f, 325f), new Vector2(200, 20f), false);
+        mainPage.subObjects.Add(editSyncBannedLabel);
+
+        editSyncRequiredModsButton = new SimplerButton(this, mainPage, Translate("Edit High-Impact Mods"), new Vector2(500f, 275f), new Vector2(150f, 30f));
+        editSyncRequiredModsButton.OnClick += _ =>
+        {
+            RainMeadowModManager.GetRequiredMods();
+            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
+        };
+        mainPage.subObjects.Add(editSyncRequiredModsButton);
+
+        editBannedModsButton = new SimplerButton(this, mainPage, Translate("Edit Banned Mods"), new Vector2(675f, 275f), new Vector2(150f, 30f));
+        editBannedModsButton.OnClick += _ =>
+        {
+            RainMeadowModManager.GetBannedMods();
+            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+        };
+        mainPage.subObjects.Add(editBannedModsButton);
+
     }
 
     private void UpdateModeDescription()
     {
-        modeDescriptionLabel.text = Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]);
+        modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
     }
 
     private void CreateLobby(SimplerButton obj)
@@ -146,6 +170,8 @@ public class LobbyCreateMenu : SmartMenu
     private void ShowLoadingDialog(string text)
     {
         if (popupDialog != null) HideDialog();
+
+        text = Utils.Translate(text);
 
         popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         mainPage.subObjects.Add(popupDialog);
