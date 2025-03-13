@@ -145,6 +145,8 @@ namespace RainMeadow
             }
         }
 
+        public virtual float SendFrequency(Player? player) => 1f;
+
         public class OnlineFieldAttribute : Attribute
         {
             public string group; // things on the same group are gruped in deltas, saving bytes
