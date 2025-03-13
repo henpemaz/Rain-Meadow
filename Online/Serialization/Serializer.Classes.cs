@@ -39,7 +39,7 @@ namespace RainMeadow
 #endif
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    writer.Write(OnlineManager.lobby.enumMapToRemote[typeof(T)][extEnum[i].Index]);
                 }
             }
             if (IsReading)
@@ -47,7 +47,16 @@ namespace RainMeadow
                 extEnum = new T[reader.ReadByte()];
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                    int idx = reader.ReadByte();
+                    if (OnlineManager.lobby.enumMapToLocal.TryGetValue(typeof(T), out var map))
+                        extEnum[i] = (T)Activator.CreateInstance(typeof(T),
+                            new object[] { ExtEnum<T>.values.GetEntry(map[idx]), false });
+                    else
+                    {
+                        RainMeadow.Error($"Failed to find ExtEnum map for {typeof(T)}; using backup value of {idx}");
+                        extEnum[i] = (T)Activator.CreateInstance(typeof(T),
+                            new object[] { ExtEnum<T>.values.GetEntry(idx), false });
+                    }
                 }
             }
         }
@@ -62,7 +71,7 @@ namespace RainMeadow
 #endif
                 for (int i = 0; i < extEnum.Count; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    writer.Write(OnlineManager.lobby.enumMapToRemote[typeof(T)][extEnum[i].Index]);
                 }
             }
             if (IsReading)
@@ -71,7 +80,16 @@ namespace RainMeadow
                 extEnum = new(count);
                 for (int i = 0; i < count; i++)
                 {
-                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false }));
+                    int idx = reader.ReadByte();
+                    if (OnlineManager.lobby.enumMapToLocal.TryGetValue(typeof(T), out var map))
+                        extEnum.Add((T)Activator.CreateInstance(typeof(T),
+                            new object[] { ExtEnum<T>.values.GetEntry(map[idx]), false }));
+                    else
+                    {
+                        RainMeadow.Error($"Failed to find ExtEnum map for {typeof(T)}; using backup value of {idx}");
+                        extEnum.Add((T)Activator.CreateInstance(typeof(T),
+                            new object[] { ExtEnum<T>.values.GetEntry(idx), false }));
+                    }
                 }
             }
         }
