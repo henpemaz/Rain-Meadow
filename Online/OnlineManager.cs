@@ -219,6 +219,8 @@ namespace RainMeadow
 
         public static void ProcessIncomingEvent(OnlineEvent onlineEvent)
         {
+            if (onlineEvent.aborted) return; //don't process aborted events!
+
             OnlinePlayer fromPlayer = onlineEvent.from;
             fromPlayer.needsAck = true;
             if (EventMath.IsNewer(onlineEvent.eventId, fromPlayer.lastEventFromRemote))
