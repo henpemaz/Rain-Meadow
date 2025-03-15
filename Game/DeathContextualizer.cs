@@ -23,7 +23,7 @@ namespace RainMeadow.Game
             // NOT PRETTY BUT IT WORKS
             // Doing things like getting DeclaringType and IsStatic through ILContext is really funky so we'll instead get it straight from the source.
             IL.ZapCoil.Update += (il) => Bind(il, typeof(ZapCoil).GetMethod(nameof(ZapCoil.Update)));
-            IL.WormGrass.WormGrassPatch.InteractWithCreature += (il) => Bind(il, typeof(WormGrass.WormGrassPatch).GetMethod(nameof(WormGrass.WormGrassPatch.Update)));
+            //IL.WormGrass.WormGrassPatch.InteractWithCreature += (il) => Bind(il, typeof(WormGrass.WormGrassPatch).GetMethod(nameof(WormGrass.WormGrassPatch.Update)));
             IL.SSOracleBehavior.Update += (il) => Bind(il, typeof(SSOracleBehavior).GetMethod(nameof(SSOracleBehavior.Update)));
             IL.SSOracleBehavior.ThrowOutBehavior.Update += (il) => Bind(il, typeof(SSOracleBehavior.ThrowOutBehavior).GetMethod(nameof(SSOracleBehavior.ThrowOutBehavior.Update)));
             IL.DaddyCorruption.EatenCreature.Update += (il) => Bind(il, typeof(DaddyCorruption.EatenCreature).GetMethod(nameof(DaddyCorruption.EatenCreature.Update)));
