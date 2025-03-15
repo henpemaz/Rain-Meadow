@@ -17,11 +17,11 @@ namespace RainMeadow
         public ChatTemplate(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
-            roundedRect = new RoundedRect(menu, owner, new Vector2(menu.manager.rainWorld.screenSize.x, 0f), size, true);
+            roundedRect = new RoundedRect(menu, owner, pos, size, true);
             this.subObjects.Add(roundedRect);
             
 
-            menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f, 0f), size, false);
+            menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f + pos.x, 0f), size, false);
             menuLabel.label.alignment = FLabelAlignment.Left;
             this.subObjects.Add(menuLabel);
 
@@ -35,7 +35,7 @@ namespace RainMeadow
         public override void Update()
         {
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text, false);
-            cursorWrap.sprite.x = _cursorWidth + 17f;
+            cursorWrap.sprite.x = _cursorWidth + 20f;
             cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             base.Update();
             this.buttonBehav.Update();
