@@ -26,6 +26,14 @@ namespace RainMeadow
 
         protected override RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
+            //look for modded creature states
+            foreach (var func in CustomObjectStateHooks)
+            {
+                var result = func(onlineObject);
+                if (result != null)
+                    return result;
+            }
+
             if (onlineObject.apo.realizedObject is Player) return new RealizedPlayerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Overseer) return new RealizedOverseerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Fly) return new RealizedFlyState((OnlineCreature)onlineObject);
