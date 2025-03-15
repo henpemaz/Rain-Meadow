@@ -1,14 +1,14 @@
 
+using System.Collections.Generic;
 using RainMeadow.Generics;
 
 namespace RainMeadow {
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class ArtificialIntelligenceState : OnlineState {
 
-        [OnlineField(group: "AImodules")]
-        public DynamicOrderedStates<AIModuleState> moduleStates;
+        [OnlineField(group: "AImodules", nullable: true)]
+        public DynamicOrderedStates<AIModuleState>? moduleStates;
         public ArtificialIntelligenceState(OnlineCreature onlineCreature) {
-            moduleStates = new();
             if (onlineCreature.apo is AbstractCreature creature) {
                 if (creature.creatureTemplate.AI && creature.abstractAI.RealAI is not null) {
                     InitializefromAI(creature.abstractAI.RealAI);
@@ -16,13 +16,15 @@ namespace RainMeadow {
             }
         }
         public void InitializefromAI(ArtificialIntelligence artificialIntelligence) {
-            moduleStates.list = new();
+            List<AIModuleState> moduleStatesList = new();
             foreach (AIModule module in artificialIntelligence.modules) {
                 var state = GetModuleState(module);
-                if (state is not null && moduleStates is not null) {
-                    moduleStates.list.Add(state);
+                if (state is not null) {
+                    moduleStatesList.Add(state);
                 }
             }
+
+            moduleStates = new DynamicOrderedStates<AIModuleState>(moduleStatesList);
         }
 
         public AIModuleState? GetModuleState(AIModule module) {

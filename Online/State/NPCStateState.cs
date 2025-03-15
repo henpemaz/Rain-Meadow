@@ -29,8 +29,8 @@ namespace RainMeadow
         public OnlineEntity.EntityId player;
         */
 
-        [OnlineField(nullable: true)]
-        public OnlineEntity.EntityId? StomachObject;
+        // [OnlineField(nullable: true)]
+        // public OnlineEntity.EntityId? StomachObject;
 
         public PlayerNPCStateState() {}
         public PlayerNPCStateState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -44,15 +44,15 @@ namespace RainMeadow
             // Drone = playerState.Drone;
             // HasCloak = playerState.HasCloak;
 
-            if (playerState.StomachObject is AbstractPhysicalObject apo) {
-                if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                {
-                    apo.world?.GetResource()?.ApoEnteringWorld(apo);
-                    if (!OnlinePhysicalObject.map.TryGetValue(apo, out oe)) throw new System.InvalidOperationException("Stomach item doesn't exist in online space!");
-                }
+            // if (playerState.StomachObject is AbstractPhysicalObject apo) {
+            //     if (!OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+            //     {
+            //         apo.world?.GetResource()?.ApoEnteringWorld(apo);
+            //         if (!OnlinePhysicalObject.map.TryGetValue(apo, out oe)) throw new System.InvalidOperationException("Stomach item doesn't exist in online space!");
+            //     }
 
-                StomachObject = oe.id;
-            }
+            //     StomachObject = oe.id;
+            // }
             // We shouldn't need to synchronize player because we know who the player is.
         }
 
