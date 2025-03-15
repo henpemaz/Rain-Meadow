@@ -273,7 +273,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         filteredLobbies = new List<LobbyInfo>();
 
         string[] requiredMods = RainMeadowModManager.GetRequiredMods();
-        string requiredModsString = RainMeadowModManager.RequiredModsArrayToString(requiredMods); //used for unused "Exact" filter
+        string requiredModsString = RainMeadowModManager.ModArrayToString(requiredMods); //used for unused "Exact" filter
 
         foreach (var lobby in allLobbies)
         {
@@ -291,7 +291,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                         missingMod = lobby.requiredMods != requiredModsString;
                         break;
                     case "All":
-                        string[] lobbyMods = RainMeadowModManager.RequiredModsStringToArray(lobby.requiredMods);
+                        string[] lobbyMods = RainMeadowModManager.ModStringToArray(lobby.requiredMods);
                         if (lobbyMods.Length != requiredMods.Length) { missingMod = true; break; }
                         foreach (string m in lobbyMods)
                         {
