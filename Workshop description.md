@@ -1,7 +1,11 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
 ## How it works
-- It uses Steam (**you must own the game on Steam**) to connect you with others players to play Rain World online! It uses peer-to-peer (P2P) networking topology.
+
+- **You must own the game on Steam to use discoverable lobbies. Without it you can only use "LAN" lobbies.**
+- It uses Steam to create and list easy-to-join lobbies to connect you to other Rain World players online!
+- With or without Steam, you can also create "local"("LAN") lobbies, and join them if you know their IP address.
+- Once playing, it uses peer-to-peer (P2P) networking topology.
 - For the best possible experience, **disable all non-essential content mods**
 
 ## Mod support
