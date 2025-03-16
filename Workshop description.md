@@ -1,10 +1,8 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
 ## How it works
-
-- **You must own the game on Steam to use discoverable lobbies. Without it you can only use "LAN" lobbies.**
-- It uses Steam to create and list easy-to-join lobbies to connect you to other Rain World players online!
-- With or without Steam, you can also create "local"("LAN") lobbies, and join them if you know their IP address.
+- Rain Meadow uses Steam to create and list lobbies discoverable world-wide.
+- With or without Steam, you can also create LAN lobbies discoverable in your local network. Others can join them through Matchmaking or Direct connection via IP addresses.
 - Once playing, it uses peer-to-peer (P2P) networking topology.
 - For the best possible experience, **disable all non-essential content mods**
 
