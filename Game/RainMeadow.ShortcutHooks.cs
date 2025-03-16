@@ -226,6 +226,27 @@ namespace RainMeadow
 
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
+                // This is so that our unowned connected objects load the room we are about to enter.
+                // Specifically helpful for backpacked player Slugcats.
+                foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
+                    var onlineobj = obj.GetOnlineObject();
+                    if (onlineobj == null) {
+                        Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
+                        continue;
+                    }
+
+                    if (onlineobj.isTransferable || !onlineobj.isMine) continue;
+                    ShortcutData shortcutData = self.room.shortcutData(entrancePos);
+                    if (shortcutData.shortCutType == ShortcutData.Type.RoomExit) {
+                        int destroom = self.room.abstractRoom.connections[shortcutData.destNode];
+                        if (destroom > -1) {
+                            var abstractRoom = self.room.world.GetAbstractRoom(destroom);
+                            abstractRoom.GetResource().Needed();
+                            abstractRoom.world.ActivateRoom(abstractRoom);
+                        }
+                    }
+                }
+
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
                 orig(self, entrancePos, carriedByOther);
                 onlineCreature.enteringShortCut = false;
