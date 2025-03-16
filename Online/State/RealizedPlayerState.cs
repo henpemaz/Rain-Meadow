@@ -207,7 +207,7 @@ namespace RainMeadow
             return i;
         }
 
-        private bool ShouldPosBeLenient(PhysicalObject po)
+        override public bool ShouldPosBeLenient(PhysicalObject po)
         {
             if (po is not Player p) { RainMeadow.Error("target is wrong type: " + po); return false; }
 
@@ -224,7 +224,6 @@ namespace RainMeadow
 
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
-            if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
