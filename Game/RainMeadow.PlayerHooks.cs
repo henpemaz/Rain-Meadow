@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
+using RWCustom;
 
 namespace RainMeadow;
 
@@ -54,10 +55,57 @@ public partial class RainMeadow
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
 
+        On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
+    }
+
+    // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
+    private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu) {
+        orig(self, eu);
+        if (OnlineManager.lobby == null) return;
+
+        float range = 26 + self.bodyChunks[1].rad;
+        if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 
+            !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0) {
+                foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer]) {
+                    if (obj is Player other) {
+                        if (other == self) continue;
+                        if (other.slugOnBack == null) return;
+                        if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
+                        if (!other.Consious) continue;
+                        if (other.onBack != null) continue;
+
+
+                        var viable = false;
+                        viable = viable || other.standing;
+                        viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
+                        viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
+                        if (!viable) continue;
+                        
+
+                        if (other.IsLocal()) {
+                            other.slugOnBack?.SlugToBack(self);
+                        } else {
+                            var meOnline = self.abstractPhysicalObject.GetOnlineObject();
+                            if (meOnline == null) {
+                                Error($"Entity {self.abstractPhysicalObject} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
+                                continue;
+                            }
+                            var otherOnline = other.abstractPhysicalObject.GetOnlineObject();
+                            if (otherOnline == null) {
+                                Error($"Entity {other.abstractPhysicalObject} - {other.abstractPhysicalObject.ID} doesn't exist in online space!");
+                                continue;
+                            }
+
+                            StoryRPCs.PutMeOnYourBack(otherOnline, meOnline);
+                        }
+
+                    }
+                }
+        }
     }
 
     private void PlayerCarryableItem_PickedUp(On.PlayerCarryableItem.orig_PickedUp orig, PlayerCarryableItem self, Creature upPicker)
