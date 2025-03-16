@@ -32,7 +32,7 @@ namespace RainMeadow
                         }
 
                         if (obj == vessel.creature.abstractCreature) continue;
-                        if (onlineobj.isTransferable || onlineobj.isMine) continue;
+                        if (onlineobj.isTransferable) continue;
                         if (!onlineobj.readyForVessel) vessel.wait = 5;
                     }    
                 }
@@ -239,6 +239,53 @@ namespace RainMeadow
         }
 
 
+        private void MakeConnectionsLoadRoom(Creature self, IntVector2 entrancePos) {
+            // This is so that our unowned connected objects load the room we are about to enter.
+            // Specifically helpful for backpacked player Slugcats.
+            
+            ShortcutData shortcutData = self.room.shortcutData(entrancePos);
+            if (shortcutData.shortCutType == ShortcutData.Type.RoomExit) {
+                int destroom = self.room.abstractRoom.connections[shortcutData.destNode];
+                if (destroom > -1) {
+                    // If the shortcut we are entering is leaving the room.
+                    foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
+                        // what objects are coming with us?
+                        var onlineobj = obj.GetOnlineObject();
+                        if (onlineobj == null) {
+                            Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
+                            continue;
+                        }
+
+                        // They're not ready for the vessel because we haven't told them about it yet.
+                        onlineobj.readyForVessel = false;
+                        if (onlineobj.isTransferable || !onlineobj.isMine) continue;
+
+                        // If the objects mine. I should get ready...
+                        var abstractRoom = self.room.world.GetAbstractRoom(destroom);
+                        abstractRoom.world.ActivateRoom(abstractRoom);
+                        
+                        // Broadcast to everyone when I'm ready
+                        if (abstractRoom.realizedRoom.readyForAI) {
+                            onlineobj.BroadcastRPCInRoom(onlineobj.ReadyForVessel);
+                        } else {
+                            abstractRoom.realizedRoom.AddObject(new ReadyForVesselNotifier(onlineobj));
+                        }   
+                    }
+                }
+            }  else {
+                foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
+                    var onlineobj = obj.GetOnlineObject();
+                    if (onlineobj == null) {
+                        Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
+                        continue;
+                    }
+
+                    // If it's not a room exit. they are ready.
+                    onlineobj.readyForVessel = true;
+                }
+            }
+        }
+
         // event driven shortcutting for remotes
         private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
         {
@@ -265,52 +312,7 @@ namespace RainMeadow
 
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
-                // This is so that our unowned connected objects load the room we are about to enter.
-                // Specifically helpful for backpacked player Slugcats.
-                
-                ShortcutData shortcutData = self.room.shortcutData(entrancePos);
-                if (shortcutData.shortCutType == ShortcutData.Type.RoomExit) {
-                    int destroom = self.room.abstractRoom.connections[shortcutData.destNode];
-                    if (destroom > -1) {
-                        // If the shortcut we are entering is leaving the room.
-                        foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
-                            // what objects are coming with us?
-                            var onlineobj = obj.GetOnlineObject();
-                            if (onlineobj == null) {
-                                Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
-                                continue;
-                            }
-
-                            // They're not ready for the vessel because we haven't told them about it yet.
-                            onlineobj.readyForVessel = false;
-                            if (onlineobj.isTransferable || !onlineobj.isMine) continue;
-
-                            // If the objects mine. I should get ready...
-                            var abstractRoom = self.room.world.GetAbstractRoom(destroom);
-                            abstractRoom.world.ActivateRoom(abstractRoom);
-                            
-                            // Broadcast to everyone when I'm ready
-                            if (abstractRoom.realizedRoom.readyForAI) {
-                                onlineobj.BroadcastRPCInRoom(onlineobj.ReadyForVessel);
-                            } else {
-                                abstractRoom.realizedRoom.AddObject(new ReadyForVesselNotifier(onlineobj));
-                            }   
-                        }
-                    }
-                }  else {
-                    foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
-                        var onlineobj = obj.GetOnlineObject();
-                        if (onlineobj == null) {
-                            Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
-                            continue;
-                        }
-
-                        // If it's not a room exit. they are ready.
-                        onlineobj.readyForVessel = true;
-                    }
-                }
-                
-
+                MakeConnectionsLoadRoom(self, entrancePos);
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
                 orig(self, entrancePos, carriedByOther);
                 onlineCreature.enteringShortCut = false;
@@ -321,6 +323,7 @@ namespace RainMeadow
             }
             else if (onlineCreature.isMine)
             {
+                MakeConnectionsLoadRoom(self, entrancePos);
                 orig(self, entrancePos, carriedByOther);
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
                 
