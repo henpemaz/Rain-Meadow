@@ -38,8 +38,7 @@ namespace RainMeadow
             cursorWrap.sprite.x = _cursorWidth + 20f;
             cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             base.Update();
-            this.buttonBehav.Update();
-            this.roundedRect.fillAlpha = buttonBehav.col;
+            this.roundedRect.fillAlpha = 1.0f;
         }
     }
 }
