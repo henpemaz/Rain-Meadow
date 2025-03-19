@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -38,7 +39,7 @@ namespace RainMeadow
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
-        public List<ushort> playersReadiedUp = new List<ushort>();
+        public DynamicOrderedPlayerIDs playersReadiedUp = new();
         public Dictionary<ushort, int> playersInLobbyChoosingSlugs = new Dictionary<ushort, int>();
 
 
@@ -77,6 +78,7 @@ namespace RainMeadow
             allPlayersReadyLockLobby = false;
             returnToLobby = false;
             isInGame = false;
+            playersReadiedUp.list = new List<MeadowPlayerId>();
         }
 
         public void ResetInvDetails()

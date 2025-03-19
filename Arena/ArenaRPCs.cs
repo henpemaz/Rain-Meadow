@@ -199,9 +199,10 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (!arena.playersReadiedUp.Contains(userIsReady.inLobbyId))
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    arena.playersReadiedUp.Add(userIsReady.inLobbyId);
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
+                    RainMeadow.Debug("ADDED TO THE LIST");
                 }
 
                 try
@@ -218,7 +219,7 @@ namespace RainMeadow
                 }
                 catch
                 {
-                    RainMeadow.Debug("Could not find user");
+                    RainMeadow.Debug($"Could not find user: {userIsReady.id.name}");
                 }
 
 

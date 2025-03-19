@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RainMeadow.Generics;
+using System;
 using System.Collections.Generic;
 
 namespace RainMeadow
@@ -33,8 +34,8 @@ namespace RainMeadow
             public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField]
-            public List<ushort> playersReadiedUp;
+            [OnlineField(nullable = true)]
+            public DynamicOrderedPlayerIDs playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -117,6 +118,10 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
+                if (playersReadiedUp.list != null)
+                {
+                    RainMeadow.Debug(playersReadiedUp.list.Count);
+                }
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
