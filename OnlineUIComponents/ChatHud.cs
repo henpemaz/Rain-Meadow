@@ -97,6 +97,11 @@ namespace RainMeadow
                     }
                 }
             }
+            else if (Input.GetKeyDown(KeyCode.Escape) && chatInputOverlay is not null)
+            {
+                ShutDownChatInput();
+                if (!showChatLog && chatLogOverlay is not null) ShutDownChatLog();
+            }
 
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
