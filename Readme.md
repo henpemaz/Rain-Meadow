@@ -13,7 +13,7 @@ Do you know [Meadow from Might&Delight](https://store.steampowered.com/app/48631
 
 Rain Meadow is a mod that can be loaded as just any mod. Each player launches their game and joins a lobby. Lobbies can be created with different game-modes selected, and the lobby owner can tweak settings for a lobby. Hot-join is supported.
 
-Rain Meadow uses the Steam API for its online features and thus requires the game to be owned/launched on Steam.
+Rain Meadow uses the Steam API to manage lobbies discoverable world-wide. Alternatively, Rain Meadow allows you to create lobbies local to your network.
 
 ## What is the current state of this project
 
