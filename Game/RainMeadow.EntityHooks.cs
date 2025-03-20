@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
@@ -13,6 +13,7 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
+            On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -208,6 +209,35 @@ namespace RainMeadow
             {
                 self.world.GetResource().ApoEnteringWorld(apo);
                 self.GetResource()?.ApoLeavingRoom(apo); // rs might not be registered yet
+            }
+        }
+
+        public void OverWorld_InitiateSpecialWarp_SingleRoom(On.OverWorld.orig_InitiateSpecialWarp_SingleRoom orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, string roomName)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (roomName == "MS_COMMS")
+                {
+                    self.game.manager.pebblesHasHalcyon = true;
+                    self.game.manager.desiredCreditsSong = "NA_19 - Halcyon Memories";
+                    foreach (MoreSlugcats.PersistentObjectTracker persistentObjectTracker in self.game.GetStorySession.saveState.objectTrackers)
+                    {
+                        if (persistentObjectTracker.repType == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.HalcyonPearl && persistentObjectTracker.lastSeenRoom != "RM_AI")
+                        {
+                            self.game.manager.pebblesHasHalcyon = false;
+                            self.game.manager.desiredCreditsSong = "NA_43 - Isolation";
+                            break;
+                        }
+                    }
+                    self.game.manager.nextSlideshow = MoreSlugcats.MoreSlugcatsEnums.SlideShowID.RivuletAltEnd;
+                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
+                }
+                // do nothinf
+                RainMeadow.Debug("initiate special warp: RIVULET DOES NOTHINF");
+            }
+            else
+            {
+                orig(self, callback, roomName);
             }
         }
 
