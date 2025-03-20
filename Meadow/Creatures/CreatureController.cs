@@ -41,6 +41,10 @@ namespace RainMeadow
             {
                 new LanternMouseController(mouse, oc, 0, customization);
             }
+			else if (creature is DaddyLongLegs longlegs)
+            {
+                new LongLegsController(longlegs, oc, 0, customization);
+            }
             else
             {
                 throw new InvalidProgrammerException("You need to implement " + creature.ToString());

@@ -196,6 +196,26 @@ namespace RainMeadow
                     (self as InteractiveMenuScene).idleDepths.Add(1.5f);
                 }
             }
+            else if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowLongLegs)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - longlegs";
+                if (self.flatMode)
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "MeadowLongLegs - Flat", new Vector2(683f, 384f), false, true));
+                }
+                else
+                {
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmlonglegs bg", new Vector2(0f, 0f), 3.5f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmlonglegs mg", new Vector2(0f, 0f), 2.8f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmlonglegs noot", new Vector2(0f, 0f), 2.2f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "rmlonglegs fg", new Vector2(0f, 0f), 1.8f, MenuDepthIllustration.MenuShader.LightEdges));
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.6f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.5f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.4f);
+                    //(self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                }
+            }
             if (string.IsNullOrEmpty(self.sceneFolder))
             {
                 return;
@@ -273,6 +293,12 @@ namespace RainMeadow
                     else if (mcsp.character == MeadowProgression.Character.LanternMouse)
                     {
                         sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowMouse;
+                        self.sceneOffset = new Vector2(-10f, 100f);
+                        self.slugcatDepth = 3.1000001f;
+                    }
+                    else if (mcsp.character == MeadowProgression.Character.DaddyLongLegs)
+                    {
+                        sceneID = RainMeadow.Ext_SceneID.Slugcat_MeadowLongLegs;
                         self.sceneOffset = new Vector2(-10f, 100f);
                         self.slugcatDepth = 3.1000001f;
                     }

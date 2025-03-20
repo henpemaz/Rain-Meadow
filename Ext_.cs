@@ -32,6 +32,7 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowEggbug = new("Slugcat_MeadowEggbug", true);
             internal static MenuScene.SceneID Slugcat_MeadowNoot = new("Slugcat_MeadowNoot", true);
             internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
+			internal static MenuScene.SceneID Slugcat_MeadowLongLegs = new("Slugcat_MeadowLongLegs", true);
         }
 
         public class Ext_PhysicalObjectType
@@ -53,6 +54,7 @@ namespace RainMeadow
             internal static SoundID RM_SmallNoot_Call = new("RM_SmallNoot_Call", true);
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
+			internal static SoundID RM_LongLegs_Call = new("RM_LongLegs_Call", true);
         }
     }
 }

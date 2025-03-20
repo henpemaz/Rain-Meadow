@@ -7,6 +7,7 @@
 [ADD]RM_SmallNoot_Call/minVol=0.2/maxVol=0.4/pitch=1.4 : honk1, honk2, honk3, honk4, honk5, honk6, honk7
 [ADD]RM_Eggbug_Call : rmeggbugcall/minVol=0.2/maxVol=0.3/minPitch=0.6/maxPitch=1.0
 [ADD]RM_Mouse_Call : ShriekA/minVol=0.22/maxVol=0.3/minPitch=0.8/maxPitch=1.2
+[ADD]RM_LongLegs_Call : ShriekA/minVol=0.22/maxVol=0.3/minPitch=0.8/maxPitch=1.2
 [ADD]twentysecsilence : twentysecsilence
 [ADD]Kick : Kick
 [ADD]Snare : Snare

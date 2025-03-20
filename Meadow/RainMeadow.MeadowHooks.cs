@@ -23,6 +23,7 @@ namespace RainMeadow
             EggbugController.EnableEggbug();
             MeadowPlayerController.Enable();
             LanternMouseController.EnableMouse();
+			LongLegsController.EnableLongLegs();
 
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 

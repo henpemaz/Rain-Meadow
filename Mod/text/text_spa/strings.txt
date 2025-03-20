@@ -117,6 +117,7 @@ Kiwi|Kiwi
 Mango|Mango
 Dragonfruit|Pitahaya
 LANTERN MOUSE|RATÓN FAROL
+DADDY LONG LEGS|EL PATAS LARGAS
 Saphire|Zafiro
 Ruby|Rubí
 Acquamarine|Aguamarina

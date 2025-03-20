@@ -136,6 +136,17 @@ namespace RainMeadow
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
+			public static Character DaddyLongLegs = new("DaddyLongLegs", true, new()
+            {
+                displayName = "DADDY LONG LEGS",
+                emotePrefix = "longlegs_",
+                emoteAtlas = "emotes_longlegs",
+                emoteColor = Extensions.ColorFromHex(0x2f2ac9),
+				//todo: custom long legs call (how do they even???)
+                voiceId = RainMeadow.Ext_SoundID.RM_LongLegs_Call,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate("SS_B01", 32, 32, -1),
+            });
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
@@ -584,6 +595,31 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.LanternMouse,
                 randomSeed = 9834,
                 baseColor = Extensions.ColorFromHex(0x272020),
+            });
+
+            public static Skin DaddyLongLegs_Purple = new("DaddyLongLegs_Purple", true, new()
+            {
+                character = Character.DaddyLongLegs,
+                displayName = "Purple",
+                creatureType = CreatureTemplate.Type.DaddyLongLegs,
+                randomSeed = 9814,
+                previewColor = Extensions.ColorFromHex(0x460fdb),
+            });
+            public static Skin DaddyLongLegs_Brown = new("DaddyLongLegs_Brown", true, new()
+            {
+                character = Character.DaddyLongLegs,
+                displayName = "Brown",
+                creatureType = CreatureTemplate.Type.DaddyLongLegs,
+                randomSeed = 9562,
+                previewColor = Extensions.ColorFromHex(0x7d5f37),
+            });
+            public static Skin DaddyLongLegs_Cyan = new("DaddyLongLegs_Cyan", true, new()
+            {
+                character = Character.DaddyLongLegs,
+                displayName = "Cyan",
+                creatureType = CreatureTemplate.Type.DaddyLongLegs,
+                randomSeed = 9236,
+                previewColor = Extensions.ColorFromHex(0x2796c2),
             });
         }
 
