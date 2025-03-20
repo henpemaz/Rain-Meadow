@@ -702,7 +702,7 @@ namespace RainMeadow
                 }
             }
 
-            if (!short.TryParse(parts[1], out short port)) {
+            if (!ushort.TryParse(parts[1], out ushort port)) {
                 RainMeadow.Debug("Invalid port format: " + parts[1]);
                 return null;
             }
