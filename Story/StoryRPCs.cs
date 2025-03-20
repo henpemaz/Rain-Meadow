@@ -96,7 +96,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void GoToRivuletEnding()
+        public static void GoToRivuletEnding(RPCEvent rpc)
         {
             if (OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
@@ -116,7 +116,7 @@ namespace RainMeadow
         }
         
         [RPCMethod]
-        public static void GoToSpearmasterEnding()
+        public static void GoToSpearmasterEnding(RPCEvent rpc)
         {
             if (OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
