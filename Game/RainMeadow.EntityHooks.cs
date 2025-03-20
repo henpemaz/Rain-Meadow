@@ -216,27 +216,46 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                if (roomName == "MS_COMMS")
+                if (isStoryMode(out var storyGameMode))
                 {
-                    self.game.manager.pebblesHasHalcyon = true;
-                    self.game.manager.desiredCreditsSong = "NA_19 - Halcyon Memories";
-                    foreach (MoreSlugcats.PersistentObjectTracker persistentObjectTracker in self.game.GetStorySession.saveState.objectTrackers)
+                    if (roomName == "MS_COMMS")
                     {
-                        if (persistentObjectTracker.repType == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.HalcyonPearl && persistentObjectTracker.lastSeenRoom != "RM_AI")
+                        if (OnlineManager.lobby.isOwner)
                         {
-                            self.game.manager.pebblesHasHalcyon = false;
-                            self.game.manager.desiredCreditsSong = "NA_43 - Isolation";
-                            break;
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.GoToRivuletEnding);
+                                }
+                            }
                         }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRivuletEnding);
+                        }
+                        StoryRPCs.GoToRivuletEnding();
                     }
-                    self.game.manager.nextSlideshow = MoreSlugcats.MoreSlugcatsEnums.SlideShowID.RivuletAltEnd;
-                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
-                }
-                else if (roomName == "SI_A07")
-                {
-                    self.game.manager.statsAfterCredits = true;
-                    self.game.manager.desiredCreditsSong = "NA_11 - Digital Sundown";
-                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
+                    else if (roomName == "SI_A07")
+                    {
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
+                                }
+                            }
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
+                        }
+                        StoryRPCs.GoToSpearmasterEnding();
+                    }
                 }
                 // do nothinf
                 RainMeadow.Debug("initiate special warp: RIVULET DOES NOTHINF");
