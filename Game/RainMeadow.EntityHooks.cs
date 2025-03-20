@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
@@ -13,6 +13,7 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
+            On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -208,6 +209,60 @@ namespace RainMeadow
             {
                 self.world.GetResource().ApoEnteringWorld(apo);
                 self.GetResource()?.ApoLeavingRoom(apo); // rs might not be registered yet
+            }
+        }
+
+        public void OverWorld_InitiateSpecialWarp_SingleRoom(On.OverWorld.orig_InitiateSpecialWarp_SingleRoom orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, string roomName)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (isStoryMode(out var storyGameMode))
+                {
+                    if (roomName == "MS_COMMS")
+                    {
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.GoToRivuletEnding);
+                                }
+                            }
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRivuletEnding);
+                        }
+                        StoryRPCs.GoToRivuletEnding();
+                    }
+                    else if (roomName == "SI_A07")
+                    {
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
+                                }
+                            }
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
+                        }
+                        StoryRPCs.GoToSpearmasterEnding();
+                    }
+                }
+                // do nothinf
+                RainMeadow.Debug("initiate special warp: RIVULET DOES NOTHINF");
+            }
+            else
+            {
+                orig(self, callback, roomName);
             }
         }
 
