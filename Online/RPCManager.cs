@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -36,12 +36,16 @@ namespace RainMeadow
         {
             index = 1; // zero is an easy to catch mistake
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
+            var assemblyList = AppDomain.CurrentDomain.GetAssemblies().ToList();
+            assemblyList.Sort((a, b) => String.Compare(a.GetName().FullName, b.GetName().FullName));
+            foreach (var assembly in assemblyList)
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();
                 try
                 {
-                    foreach (var type in assembly.GetTypesSafely().ToList())
+                    var typeList = assembly.GetTypesSafely().ToList();
+                    typeList.Sort((a, b) => String.Compare(a.FullName, b.FullName));
+                    foreach (var type in typeList)
                     {
                         try
                         {
@@ -77,8 +81,30 @@ namespace RainMeadow
         public static void RegisterRPCs(Type targetType)
         {
             if (targetType.IsGenericTypeDefinition || targetType.IsInterface) return;
-            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null);
+            var methods = targetType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Where(m => m.GetCustomAttribute<RPCMethodAttribute>() != null).ToList();
             if (!methods.Any()) return;
+
+            // Enforce total lexicographical ordering
+            methods.Sort((a, b) => {
+                if (a.Name != b.Name)
+                {
+                    return String.Compare(a.Name, b.Name);
+                }
+                ParameterInfo[] aPars = a.GetParameters();
+                ParameterInfo[] bPars = b.GetParameters();
+                for (int i = 0; i < aPars.Length && i < bPars.Length; ++i)
+                {
+                    if (aPars[i].ParameterType.FullName != bPars[i].ParameterType.FullName)
+                    {
+                        return String.Compare(aPars[i].ParameterType.FullName, bPars[i].ParameterType.FullName);
+                    }
+                }
+                if (aPars.Length != bPars.Length)
+                {
+                    return aPars.Length.CompareTo(bPars.Length);
+                }
+                throw new InvalidOperationException("Unable to enforce total [method] lexicographic ordering");
+            });
 
             foreach (var method in methods)
             {
