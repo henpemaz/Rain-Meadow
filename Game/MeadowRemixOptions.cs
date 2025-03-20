@@ -31,7 +31,7 @@ public class RainMeadowOptions : OptionInterface
 
 
     public readonly Configurable<string> LanUserName;
-	public readonly Configurable<int> UdpTimeout;
+    public readonly Configurable<int> UdpTimeout;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
@@ -82,7 +82,7 @@ public class RainMeadowOptions : OptionInterface
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
-		UdpTimeout = config.Bind("UdpTimeout", 3000);
+        UdpTimeout = config.Bind("UdpTimeout", 3000);
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
@@ -257,7 +257,7 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.StringASCII
                 },
-				new OpLabel(10f, 455, Translate("UDP timeout (ms)"), bigText: false),
+                new OpLabel(10f, 455, Translate("UDP timeout (ms)"), bigText: false),
                 new OpTextBox(UdpTimeout, new Vector2(10f, 420), 160f)
                 {
                     accept = OpTextBox.Accept.Int
