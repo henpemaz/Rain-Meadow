@@ -1198,7 +1198,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out _) && !game.manager.menuSetup.FastTravelInitCondition)
             {
-                game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                try
+                {
+                    game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                }
+                catch (System.NullReferenceException e) // happens in riv ending
+                {
+                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
+                }
             }
             orig(self, game);
         }
