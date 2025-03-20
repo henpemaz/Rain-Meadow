@@ -232,6 +232,12 @@ namespace RainMeadow
                     self.game.manager.nextSlideshow = MoreSlugcats.MoreSlugcatsEnums.SlideShowID.RivuletAltEnd;
                     self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
                 }
+                else if (roomName == "SI_A07")
+                {
+                    self.game.manager.statsAfterCredits = true;
+                    self.game.manager.desiredCreditsSong = "NA_11 - Digital Sundown";
+                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
+                }
                 // do nothinf
                 RainMeadow.Debug("initiate special warp: RIVULET DOES NOTHINF");
             }
