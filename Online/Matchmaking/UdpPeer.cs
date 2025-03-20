@@ -684,9 +684,10 @@ namespace RainMeadow
             string[] parts = name.Split(':');
             if (parts.Length != 2) {
                 RainMeadow.Debug("Invalid IP format without colon: " + name);
-                return null;
+                parts = new string[2];
+                parts[0] = name;
+                parts[1] = "8720"; //default port
             }
-
 
             IPAddress? address = null;
             try {
