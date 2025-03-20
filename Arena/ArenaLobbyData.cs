@@ -6,6 +6,10 @@ namespace RainMeadow
 {
     internal class ArenaLobbyData : OnlineResource.ResourceData
     {
+
+        public DynamicOrderedPlayerIDs playersReadiedUpz = new();
+        public List<string> pain = new();
+
         public ArenaLobbyData() { }
 
         public override ResourceDataState MakeState(OnlineResource resource)
@@ -36,6 +40,8 @@ namespace RainMeadow
             public Dictionary<string, int> playerResultColors;
             [OnlineField(nullable = true)]
             public DynamicOrderedPlayerIDs playersReadiedUp;
+            [OnlineField(nullable = true)]
+            public List<string> playersReadiedUpString;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -73,7 +79,21 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
-                playersReadiedUp = arena.playersReadiedUp;
+
+
+                //playersReadiedUp = arenaLobbyData.playersReadiedUpz;
+                playersReadiedUpString = arenaLobbyData.pain;
+                //if (arenaLobbyData.playersReadiedUpz.list == null)
+                //{
+                //    arenaLobbyData.playersReadiedUpz.list = new List<MeadowPlayerId>();
+                //}
+
+                // playersReadiedUp.list = arenaLobbyData.playersReadiedUpz.list;
+
+                RainMeadow.Debug($"========================= {playersReadiedUpString.Count}");
+
+
+
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
@@ -94,6 +114,7 @@ namespace RainMeadow
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
                 var lobby = (resource as Lobby);
+
                 (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
@@ -102,7 +123,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceMultiChoice = onlineArenaSettingsInterfaceMultiChoice;
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
-                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
+                (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUpString = playersReadiedUpString;
+
+                //(lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp.list;
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
@@ -118,10 +141,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
-                if (playersReadiedUp.list != null)
-                {
-                    RainMeadow.Debug(playersReadiedUp.list.Count);
-                }
+                RainMeadow.Debug((lobby.gameMode as ArenaOnlineGameMode).playersReadiedUpString.Count);
+
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

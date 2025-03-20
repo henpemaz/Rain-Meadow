@@ -199,11 +199,28 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
+                if (arena.lobby.TryGetData<ArenaLobbyData>(out var arenaLobbyData))
                 {
-                    arena.playersReadiedUp.list.Add(userIsReady.id);
-                    RainMeadow.Debug("ADDED TO THE LIST");
+                    if (!arenaLobbyData.pain.Contains(userIsReady.id.ToString()))
+                    {
+                        RainMeadow.Debug($"Current:{arenaLobbyData.pain.Count}");
+                        arenaLobbyData.pain.Add(userIsReady.id.ToString());
+                        
+                        RainMeadow.Debug($"NOW:{arenaLobbyData.pain.Count}");
+
+                    }
+                    else
+                    {
+                        RainMeadow.Debug(arenaLobbyData.pain.Count);
+                    }
+
+
                 }
+                else
+                {
+                    RainMeadow.Error("Error getting arena lobby data");
+                }
+
 
                 try
                 {
