@@ -23,7 +23,7 @@ namespace RainMeadow
         private long eventHeader;
         private uint stateCount;
         private long stateHeader;
-        public int zipTreshold = Int32.MaxValue; //4000; // essentially disabled the zipThreshold, since the entire packet is zipped, which is more efficient
+        public int zipTreshold = 860; // reasonable threshold
 
         static Serializer scratchpad;
         public Serializer(long bufferCapacity, bool scratch = false)
