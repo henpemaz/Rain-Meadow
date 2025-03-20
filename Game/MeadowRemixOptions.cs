@@ -251,7 +251,7 @@ public class RainMeadowOptions : OptionInterface
         };
             arenaTab.AddItems(OnlineArenaSettings);
 
-            OnlineLANSettings = new UIelement[5]
+            OnlineLANSettings = new UIelement[7]
             {
                 new OpLabel(10f, 550f, Translate("LAN"), bigText: true),
                 new OpLabel(10f, 505, Translate("Username"), bigText: false),
