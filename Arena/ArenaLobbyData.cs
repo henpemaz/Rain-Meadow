@@ -7,8 +7,8 @@ namespace RainMeadow
     internal class ArenaLobbyData : OnlineResource.ResourceData
     {
 
-        public DynamicOrderedPlayerIDs playersReadiedUpz = new();
-        public List<string> pain = new();
+        //public DynamicOrderedPlayerIDs playersReadiedUpz = new();
+        public List<string> pain = new List<string>();
 
         public ArenaLobbyData() { }
 
@@ -80,9 +80,14 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
 
+                if (playersReadiedUpString == null)
+                {
+                    playersReadiedUpString = new List<string>();
+                }
+                playersReadiedUpString = arenaLobbyData.pain;
 
                 //playersReadiedUp = arenaLobbyData.playersReadiedUpz;
-                playersReadiedUpString = arenaLobbyData.pain;
+                //playersReadiedUpString = arenaLobbyData.pain;
                 //if (arenaLobbyData.playersReadiedUpz.list == null)
                 //{
                 //    arenaLobbyData.playersReadiedUpz.list = new List<MeadowPlayerId>();
@@ -91,6 +96,7 @@ namespace RainMeadow
                 // playersReadiedUp.list = arenaLobbyData.playersReadiedUpz.list;
 
                 RainMeadow.Debug($"========================= {playersReadiedUpString.Count}");
+                RainMeadow.Debug($"=========++++++ {arenaLobbyData.pain.Count}");
 
 
 
@@ -124,6 +130,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUpString = playersReadiedUpString;
+                resource.GetData<ArenaLobbyData>().pain = playersReadiedUpString; // This is a workaround to get the data from the lobby to the arena game mode
 
                 //(lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp.list;
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
@@ -142,6 +149,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
                 RainMeadow.Debug((lobby.gameMode as ArenaOnlineGameMode).playersReadiedUpString.Count);
+                RainMeadow.Debug(resource.GetData<ArenaLobbyData>().pain.Count);
 
             }
 

@@ -201,6 +201,7 @@ namespace RainMeadow
                 }
                 if (arena.lobby.TryGetData<ArenaLobbyData>(out var arenaLobbyData))
                 {
+                    
                     if (!arenaLobbyData.pain.Contains(userIsReady.id.ToString()))
                     {
                         RainMeadow.Debug($"Current:{arenaLobbyData.pain.Count}");
