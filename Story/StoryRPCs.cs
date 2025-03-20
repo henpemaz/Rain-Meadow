@@ -98,6 +98,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToRivuletEnding()
         {
+            if (OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             game.manager.pebblesHasHalcyon = true;
             game.manager.desiredCreditsSong = "NA_19 - Halcyon Memories";
@@ -117,6 +118,7 @@ namespace RainMeadow
         [RPCMethod]
         public static void GoToSpearmasterEnding()
         {
+            if (OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             game.manager.statsAfterCredits = true;
             game.manager.desiredCreditsSong = "NA_11 - Digital Sundown";
