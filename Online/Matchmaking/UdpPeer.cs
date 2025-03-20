@@ -743,9 +743,7 @@ namespace RainMeadow
             }
         }
 
-        const ulong PEER_TIMEOUT = 1000*3; 
-        const ulong HEARTBEAT_TIME= 500; 
-        
+        const ulong HEARTBEAT_TIME = 500;
 
         Stopwatch stopWatch = new Stopwatch();
         public void Update() {
@@ -756,7 +754,7 @@ namespace RainMeadow
             for (int i = peers.Count - 1; i >= 0; i--) {
                 RemotePeer peer = peers[i];
                 peer.TicksSinceLastIncomingPacket += (ulong)elapsedTime;
-                if (peer.TicksSinceLastIncomingPacket >= PEER_TIMEOUT) {
+                if (peer.TicksSinceLastIncomingPacket >= (ulong)RainMeadow.rainMeadowOptions.UdpTimeout.Value) {
                     peersToRemove.Add(peer);
                     continue;
                 }
