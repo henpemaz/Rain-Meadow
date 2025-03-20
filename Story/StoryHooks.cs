@@ -1054,7 +1054,7 @@ namespace RainMeadow
             "<wsA>",
         };
 
-        public static string DeflateJoarXML(string s)
+        public static string BrotliJoarXML(string s)
         {
             if (s is null or "") return "";
             for (var i = 0; i < joarxml.Length; i++)
@@ -1097,7 +1097,7 @@ namespace RainMeadow
                 }
                 s = Regex.Replace(s, @"(?<=>)(TUTMESSAGES|SONGSPLAYRECORDS|LINEAGES|OBJECTS|OBJECTTRACKERS|POPULATION|STICKS|RESPAWNS|WAITRESPAWNS|COMMUNITIES|SWALLOWEDITEMS|UNRECOGNIZEDSWALLOWED|FLOWERPOS)<(.*?)B>.*?<\2A>", "");
                 RainMeadow.Debug($"trimSaveState[{s.Length}]:{s}");
-                s = DeflateJoarXML(s);
+                s = BrotliJoarXML(s);
                 RainMeadow.Debug($"abbrSaveState[{s.Length}]");
                 return s;
             }

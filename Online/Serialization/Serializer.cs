@@ -125,7 +125,7 @@ namespace RainMeadow
         {
             var pos = (int)scratchpad.Position;
             scratchpad.stream.Seek(0, SeekOrigin.Begin);
-            var zippedState = new DeflateState(scratchpad.stream, pos);
+            var zippedState = new BrotliState(scratchpad.stream, pos);
             RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedState.bytes.Length}");
             return WriteState(zippedState);
         }
@@ -136,7 +136,7 @@ namespace RainMeadow
             state.WritePolymorph(scratchpad);
             scratchpad.WrappedSerialize(state);
             bool fits = scratchpad.Position < (capacity - Position - margin);
-            if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
+            if ((scratchpad.Position > zipTreshold || !fits) && state is not BrotliState)
             {
                 return WriteZippedState(state);
             }
@@ -208,7 +208,7 @@ namespace RainMeadow
 
             WrappedSerialize(s);
 
-            if (s is DeflateState ds)
+            if (s is BrotliState ds)
             {
                 scratchpad.stream.Seek(0, SeekOrigin.Begin);
                 ds.Decompress(scratchpad.stream);
