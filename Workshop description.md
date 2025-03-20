@@ -1,7 +1,9 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
 ## How it works
-- It uses Steam (**you must own the game on Steam**) to connect you with others players to play Rain World online! It uses peer-to-peer (P2P) networking topology.
+- Rain Meadow uses Steam to create and list lobbies discoverable world-wide.
+- With or without Steam, you can also create LAN lobbies discoverable in your local network. Others can join them through Matchmaking or Direct connection via IP addresses.
+- Once playing, it uses peer-to-peer (P2P) networking topology.
 - For the best possible experience, **disable all non-essential content mods**
 
 ## Mod support

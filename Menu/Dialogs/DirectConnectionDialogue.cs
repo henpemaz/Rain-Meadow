@@ -47,6 +47,7 @@ namespace RainMeadow
             IPBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
             IPBox.accept = OpTextBox.Accept.StringASCII;
             IPBox.allowSpace = true;
+            IPBox.maxLength = 100;
 
             textBoxWrapper = new UIelementWrapper(this.tabWrapper, IPBox);
 

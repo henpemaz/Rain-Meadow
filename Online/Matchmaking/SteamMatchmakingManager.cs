@@ -15,8 +15,8 @@ namespace RainMeadow
         public override string GetLobbyJoinCode(string? password = null)
         {
             if (password != null)
-                return $"+connect_steam_lobby {iD.m_SteamID} +lobby_password {password}";
-            return $"+connect_steam_lobby {iD.m_SteamID}";
+                return $"+connect_lobby {iD.m_SteamID} +lobby_password {password}";
+            return $"+connect_lobby {iD.m_SteamID}";
         }
     }
 
