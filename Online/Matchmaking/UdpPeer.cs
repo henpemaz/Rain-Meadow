@@ -743,8 +743,6 @@ namespace RainMeadow
             }
         }
 
-        const ulong HEARTBEAT_TIME = 500;
-
         Stopwatch stopWatch = new Stopwatch();
         public void Update() {
             long elapsedTime = stopWatch.ElapsedMilliseconds;
@@ -759,16 +757,18 @@ namespace RainMeadow
                     continue;
                 }
 
+				ulong heartbeatTime = (ulong)RainMeadow.rainMeadowOptions.UdpHeartbeat.Value;
+
                 peer.OutgoingPacketAcummulator += (ulong)elapsedTime;
-                ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / HEARTBEAT_TIME;
+                ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / heartbeatTime;
                 if (sendAmount > 1)  {
-                    peer.OutgoingPacketAcummulator -= sendAmount*HEARTBEAT_TIME;
+                    peer.OutgoingPacketAcummulator -= sendAmount * heartbeatTime;
                     peer.OutgoingPacketAcummulator = Math.Max(peer.OutgoingPacketAcummulator, 0); // just to be sure
 
                     for (ulong j = 0; j < sendAmount; j++) {
                         if (peer.outgoingpacket.Count > 0) {
                             SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
-                        } else if (peer.TicksSinceLastIncomingPacket > HEARTBEAT_TIME) {
+                        } else if (peer.TicksSinceLastIncomingPacket > heartbeatTime) {
                             SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
                         }
                     }

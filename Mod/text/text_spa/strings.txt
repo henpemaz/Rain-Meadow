@@ -296,6 +296,7 @@ Mauling: Disable|Morder: Desactivar
 Player Result Scroll Speed. Default: 5|Velocidad de desplazamiento de los resultados de los jugadores. Predeterminado: 5
 Username|Nombre de usuario
 UDP timeout (ms)|Tiempo de espera de UDP (ms)
+UDP heartbeat (ms)|Check de vida UDP (ms)
 
 // Credits
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
