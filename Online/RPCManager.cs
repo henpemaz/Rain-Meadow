@@ -37,14 +37,14 @@ namespace RainMeadow
             index = 1; // zero is an easy to catch mistake
 
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies().ToList();
-            assemblyList.Sort((a, b) => String.Compare(a.GetName().FullName, b.GetName().FullName));
+            assemblyList.Sort((a, b) => String.Compare(a.GetName().FullName, b.GetName().FullName, StringComparison.Ordinal));
             foreach (var assembly in assemblyList)
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();
                 try
                 {
                     var typeList = assembly.GetTypesSafely().ToList();
-                    typeList.Sort((a, b) => String.Compare(a.FullName, b.FullName));
+                    typeList.Sort((a, b) => String.Compare(a.FullName, b.FullName, StringComparison.Ordinal));
                     foreach (var type in typeList)
                     {
                         try
@@ -88,7 +88,7 @@ namespace RainMeadow
             methods.Sort((a, b) => {
                 if (a.Name != b.Name)
                 {
-                    return String.Compare(a.Name, b.Name);
+                    return String.Compare(a.Name, b.Name, StringComparison.Ordinal);
                 }
                 ParameterInfo[] aPars = a.GetParameters();
                 ParameterInfo[] bPars = b.GetParameters();
@@ -96,7 +96,7 @@ namespace RainMeadow
                 {
                     if (aPars[i].ParameterType.FullName != bPars[i].ParameterType.FullName)
                     {
-                        return String.Compare(aPars[i].ParameterType.FullName, bPars[i].ParameterType.FullName);
+                        return String.Compare(aPars[i].ParameterType.FullName, bPars[i].ParameterType.FullName, StringComparison.Ordinal);
                     }
                 }
                 if (aPars.Length != bPars.Length)
