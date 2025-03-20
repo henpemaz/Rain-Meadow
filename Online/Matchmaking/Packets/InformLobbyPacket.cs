@@ -10,9 +10,10 @@ namespace RainMeadow
         public string name = "";
         public string mode = "";
         public string mods = "";
+        public string bannedMods = "";
 
         public InformLobbyPacket(): base() {}
-        public InformLobbyPacket(int maxplayers, string name, bool passwordprotected, string mode, int currentplayercount, string highImpactMods = "")
+        public InformLobbyPacket(int maxplayers, string name, bool passwordprotected, string mode, int currentplayercount, string highImpactMods = "", string bannedMods = "")
         {
             this.currentplayercount = currentplayercount;
             this.mode = mode;
@@ -20,6 +21,7 @@ namespace RainMeadow
             this.name = name;
             this.passwordprotected = passwordprotected;
             this.mods = highImpactMods;
+            this.bannedMods = bannedMods;
         }
 
         public override void Serialize(BinaryWriter writer)
@@ -31,6 +33,7 @@ namespace RainMeadow
             writer.Write(name);
             writer.Write(mode);
             writer.Write(mods);
+            writer.Write(bannedMods);
         }
 
         public override void Deserialize(BinaryReader reader)
@@ -42,6 +45,7 @@ namespace RainMeadow
             name = reader.ReadString();
             mode = reader.ReadString();
             mods = reader.ReadString();
+            bannedMods = reader.ReadString();
         }
 
 
@@ -57,7 +61,7 @@ namespace RainMeadow
 
         public LANMatchmakingManager.LANLobbyInfo MakeLobbyInfo() {
             return new LANMatchmakingManager.LANLobbyInfo(
-                (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint, name, mode, currentplayercount, passwordprotected, maxplayers, mods); 
+                (processingPlayer.id as LANMatchmakingManager.LANPlayerId).endPoint, name, mode, currentplayercount, passwordprotected, maxplayers, mods, bannedMods); 
         }
 
     }
