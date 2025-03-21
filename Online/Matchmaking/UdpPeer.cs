@@ -757,7 +757,7 @@ namespace RainMeadow
                     continue;
                 }
 
-				ulong heartbeatTime = (ulong)RainMeadow.rainMeadowOptions.UdpHeartbeat.Value;
+                ulong heartbeatTime = (ulong)RainMeadow.rainMeadowOptions.UdpHeartbeat.Value;
 
                 peer.OutgoingPacketAcummulator += (ulong)elapsedTime;
                 ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / heartbeatTime;
