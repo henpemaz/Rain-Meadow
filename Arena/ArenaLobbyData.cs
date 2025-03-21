@@ -33,8 +33,11 @@ namespace RainMeadow
             public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
+            // 
             [OnlineField]
-            public List<ushort> playersReadiedUp;
+            public List<ushort> playersReadiedUp; // NEEDS TO BE PLAYER ID NOT USHORT!
+            // 
+            
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
