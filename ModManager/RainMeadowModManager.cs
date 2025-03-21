@@ -45,7 +45,7 @@ namespace RainMeadow
         /// This is NOT a replacement for calling GetRequiredMods().
         /// </summary>
         private static string[] CurrentRequiredMods = { };
-        public static string[] GetRequiredMods()
+        public static string[] GetRequiredMods(bool includeDependencies = true)
         {
 
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
@@ -63,10 +63,13 @@ namespace RainMeadow
             requiredMods.RemoveAll(mod => !activeMods.Contains(mod)); //if no longer active, remove it
 
             //add dependencies
-            foreach (var mod in ModManager.ActiveMods)
+            if (includeDependencies)
             {
-                if (requiredMods.Contains(mod.id))
-                    requiredMods.AddDistinctRange(mod.requirements);
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    if (requiredMods.Contains(mod.id))
+                        requiredMods.AddDistinctRange(mod.requirements);
+                }
             }
 
             //check .dlls for extra required mods
@@ -246,10 +249,11 @@ namespace RainMeadow
 
                 bool reorder = true; //or change mods whatsoever
 
-                var disable = GetRequiredMods().Where(mod => !mod.StartsWith(CommentPrefix)) //don't let client's overrides apply
-                    .Union(GetExtendedHighImpactMods(bannedMods))
+                var disable = GetRequiredMods(false) //don't include dependencies
+                    .Where(mod => !mod.StartsWith(CommentPrefix)) //don't let client's overrides apply
+                    .Union(GetExtendedHighImpactMods(bannedMods)) //extra mod assembly checks
                     .Where(mod => !requiredMods.Contains(mod) && !requiredMods.Contains(CommentPrefix + mod)) //don't disable commented out mods
-                    .Intersect(active)
+                    .Intersect(active) //only mods currently enabled should be disabled
                     .ToList();
 
                 var enable = requiredMods.Except(active).ToList();
