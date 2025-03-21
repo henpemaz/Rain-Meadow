@@ -12,34 +12,10 @@ namespace RainMeadow
             On.Room.AddObject += RoomOnAddObject; // Prevent adding item to update list twice
 
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of entities in shortcut system
-            On.ShortcutHandler.Update += ShortcutHandler_UpdateWaitForConnections;
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
         }
-
-        private void ShortcutHandler_UpdateWaitForConnections(On.ShortcutHandler.orig_Update orig, ShortcutHandler self) {
-            if (OnlineManager.lobby != null) {
-                foreach (ShortcutHandler.ShortCutVessel vessel in self.transportVessels) {
-                    if (vessel.creature == null) continue;
-
-                    foreach (AbstractPhysicalObject obj in vessel.creature.abstractCreature.GetAllConnectedObjects()) {
-                        
-                        var onlineobj = obj.GetOnlineObject();
-                        if (onlineobj == null) {
-                            Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
-                            continue;
-                        }
-
-                        if (obj == vessel.creature.abstractCreature) continue;
-                        if (onlineobj.isTransferable) continue;
-                        if (!onlineobj.readyForVessel) vessel.wait = 5;
-                    }    
-                }
-            }
-            orig(self);
-        }
-        
 
         // adds to entities already so no need to hook it!
         // private void AbstractRoom_MoveEntityOutOfDen(On.AbstractRoom.orig_MoveEntityOutOfDen orig, AbstractRoom self, AbstractWorldEntity ent) { }
@@ -160,6 +136,28 @@ namespace RainMeadow
                 RainMeadow.Error($"Untracked entity: " + absCrit);
                 return result;
             }
+
+            RoomSession? session = vessel.room.GetResource();
+            if (session != null) {
+                foreach (AbstractPhysicalObject obj in vessel.creature.abstractCreature.GetAllConnectedObjects()) {    
+                    var onlineobj = obj.GetOnlineObject();
+                    if (onlineobj == null) {
+                        Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
+                        continue;
+                    }
+
+                    if (obj == vessel.creature.abstractCreature) continue;
+                    if (onlineobj.isTransferable) continue;
+                    if (onlineobj.isMine) continue;
+                    if (!session.participants.Contains(onlineobj.owner)) {
+                        Trace($"Denied because online object owner is not participating in the room session.");
+                        result = false;
+                        break;
+                    }
+                }   
+            }
+
+
             if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
             if (onlineEntity.roomSession?.absroom != vessel.room)
             {
