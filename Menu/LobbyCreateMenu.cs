@@ -4,7 +4,6 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
@@ -22,8 +21,6 @@ public class LobbyCreateMenu : SmartMenu
     private OpTextBox passwordInputBox;
     private OpCheckBox enablePasswordCheckbox;
     private MenuDialogBox? popupDialog;
-    private SimplerButton editSyncRequiredModsButton;
-    private SimplerButton editBannedModsButton;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
@@ -112,26 +109,6 @@ public class LobbyCreateMenu : SmartMenu
                 manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
             }
         }
-
-        var editSyncBannedLabel = new ProperlyAlignedMenuLabel(this, mainPage, Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.")), new Vector2(500f, 325f), new Vector2(200, 20f), false);
-        mainPage.subObjects.Add(editSyncBannedLabel);
-
-        editSyncRequiredModsButton = new SimplerButton(this, mainPage, Translate("Edit High-Impact Mods"), new Vector2(500f, 275f), new Vector2(150f, 30f));
-        editSyncRequiredModsButton.OnClick += _ =>
-        {
-            RainMeadowModManager.GetRequiredMods();
-            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
-        };
-        mainPage.subObjects.Add(editSyncRequiredModsButton);
-
-        editBannedModsButton = new SimplerButton(this, mainPage, Translate("Edit Banned Mods"), new Vector2(675f, 275f), new Vector2(150f, 30f));
-        editBannedModsButton.OnClick += _ =>
-        {
-            RainMeadowModManager.GetBannedMods();
-            Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
-        };
-        mainPage.subObjects.Add(editBannedModsButton);
-
     }
 
     private void UpdateModeDescription()
