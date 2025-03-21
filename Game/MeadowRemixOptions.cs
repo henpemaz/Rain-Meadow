@@ -91,15 +91,15 @@ public class RainMeadowOptions : OptionInterface
     {
         try
         {
-            OpTab meadowTab = new OpTab(this, Translate("Meadow"));
             OpTab opTab = new OpTab(this, Translate("General"));
+            OpTab meadowTab = new OpTab(this, Translate("Meadow"));
             OpTab arenaTab = new OpTab(this, Translate("Arena"));
             OpTab storyTab = new OpTab(this, Translate("Story"));
             OpTab lanTab = new OpTab(this, Translate("LAN"));
 
 
 
-            Tabs = new OpTab[5] { meadowTab, opTab, arenaTab, storyTab, lanTab };
+            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab };
 
             List<UIelement> meadowCheats;
             OpTextBox meadowCheatBox;
@@ -138,25 +138,30 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpLabel downpourWarning;
+            OpSimpleButton editSyncRequiredModsButton;
+            OpSimpleButton editBannedModsButton;
 
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
                 new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
 
-
-                new OpLabel(10, 490f, Translate("Key used for viewing friends' usernames")),
+                new OpLabel(10, 490f, Translate("Show usernames")),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
-                new OpLabel(10f, 400f, Translate("Username Toggle"), bigText: false),
-                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 375f)),
-                new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, replaces holding with toggling to view usernames"))),
+                new OpLabel(310f, 490f, Translate("Username Toggle"), bigText: false),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
+                new OpLabel(340f, 475f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Replace holding with toggling"))),
 
-                new OpLabel(10, 320f, Translate("Key used for toggling spectator mode")),
-                new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
+                new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
 
-                new OpLabel(10, 245f, Translate("Stop Inputs While Spectating")),
-                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
+                new OpLabel(310, 400f, Translate("Stop Inputs While Spectating")),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 375f)),
+
+                new OpLabel(10f, 300f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
+                editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 260f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),
+                editBannedModsButton = new OpSimpleButton(new Vector2(185f, 260f), new Vector2(150f, 30f), Translate("Edit Banned Mods")),
 
                 new OpLabel(10, 180f, Translate("Chat Log Toggle")),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
@@ -179,6 +184,17 @@ public class RainMeadowOptions : OptionInterface
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
             downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
 
+            editSyncRequiredModsButton.OnClick += _ =>
+            {
+                RainMeadowModManager.GetRequiredMods();
+                System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
+            };
+
+            editBannedModsButton.OnClick += _ =>
+            {
+                RainMeadowModManager.GetBannedMods();
+                System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+            };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
