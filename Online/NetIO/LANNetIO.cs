@@ -95,16 +95,31 @@ namespace RainMeadow
         }
 
         public override void ForgetPlayer(OnlinePlayer player) {
-            manager.ForgetPeer(((LANMatchmakingManager.LANPlayerId)player.id).endPoint);
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+                return;
+            }
+
+            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
+                manager.ForgetPeer(lanid.endPoint);
+            }
         }
 
         public override void ForgetEverything() {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+                return;
+            }
+
+
             manager.ForgetAllPeers();
         }
 
         public override void Update()
         {
             base.Update();
+
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+                return;
+            }
             manager.Update();
         }
 
