@@ -5,6 +5,7 @@ using System.Linq;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 using RWCustom;
+using UnityEngine;
 
 namespace RainMeadow;
 
@@ -56,10 +57,25 @@ public partial class RainMeadow
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
+        On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
+        
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
 
+    }
+
+    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self) {
+        var slugcat = self.slugcat;
+        orig(self);
+
+        if (OnlineManager.lobby == null) return;
+        if (slugcat == null) return;
+
+        if (!slugcat.isNPC && slugcat.input[0].jmp) {
+            slugcat.jumpChunk = self.owner.mainBodyChunk;
+            slugcat.JumpOnChunk();
+        }
     }
 
     // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
@@ -71,9 +87,10 @@ public partial class RainMeadow
         if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 
             !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0) {
                 foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer]) {
-                    if (obj is Player other) {
+                    if (obj is Player other && other.IsLocal()) {
                         if (other == self) continue;
-                        if (other.slugOnBack == null) return;
+                        if (other.slugOnBack == null) continue;
+                        if (other.isNPC) continue;
                         if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
                         if (!other.Consious) continue;
                         if (other.onBack != null) continue;
@@ -85,24 +102,7 @@ public partial class RainMeadow
                         viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
                         if (!viable) continue;
                         
-
-                        if (other.IsLocal()) {
-                            other.slugOnBack?.SlugToBack(self);
-                        } else {
-                            var meOnline = self.abstractPhysicalObject.GetOnlineObject();
-                            if (meOnline == null) {
-                                Error($"Entity {self.abstractPhysicalObject} - {self.abstractPhysicalObject.ID} doesn't exist in online space!");
-                                continue;
-                            }
-                            var otherOnline = other.abstractPhysicalObject.GetOnlineObject();
-                            if (otherOnline == null) {
-                                Error($"Entity {other.abstractPhysicalObject} - {other.abstractPhysicalObject.ID} doesn't exist in online space!");
-                                continue;
-                            }
-
-                            StoryRPCs.PutMeOnYourBack(otherOnline, meOnline);
-                        }
-
+                        other.slugOnBack?.SlugToBack(self);
                     }
                 }
         }

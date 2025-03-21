@@ -5,41 +5,6 @@ namespace RainMeadow
 {
     public static class StoryRPCs
     {
-        [RPCMethod] 
-        public static void PutMeOnYourBack(OnlinePhysicalObject myplayer, OnlinePhysicalObject other) {
-            var curevent = RPCEvent.currentRPCEvent;
-            if (curevent == null) return;
-
-            if (curevent.from != other.owner) {
-                RainMeadow.Debug($"Denied {other.owner} because sender is not the owner of the other player {other}");
-                return;
-            }
-
-            if (!myplayer.isMine) {
-                RainMeadow.Debug($"Denied {other.owner} because because {myplayer} is not mine");
-                return;
-            }
-
-            if (myplayer.apo.realizedObject is not Player player) {
-                RainMeadow.Debug($"Denied {other.owner} because {myplayer} is not a player");
-                return;
-            }
-
-
-            if (other.apo.realizedObject is not Player otherPlayer) {
-                RainMeadow.Debug($"Denied {other.owner} because {other} is not a player");
-                return;
-            }
-
-            if (player.slugOnBack != null) {
-                if (player.slugOnBack.slugcat != null) {
-                    RainMeadow.Debug($"Denied {other.owner} because {player} already has a slugcat on their back");
-                    return;
-                }
-
-                player.slugOnBack.SlugToBack(otherPlayer);
-            }
-        }
 
         [RPCMethod]
         public static void ChangeFood(short amt)
