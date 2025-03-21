@@ -308,12 +308,22 @@ namespace RainMeadow
 
         public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
         {
-            CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods),
-                () => {
-                    ShowLoadingDialog("Joining lobby...");
-                    RequestLobbyJoin(lobby, password);
-                }, false, lobby.GetLobbyJoinCode(password));
+            if (checkMods)
+            {
+                CheckMods(ModStringToArray(lobby.requiredMods), ModStringToArray(lobby.bannedMods),
+                    () =>
+                    {
+                        ShowLoadingDialog("Joining lobby...");
+                        RequestLobbyJoin(lobby, password);
+                    }, false, lobby.GetLobbyJoinCode(password));
+            }
+            else
+            {
+                ShowLoadingDialog("Joining lobby...");
+                RequestLobbyJoin(lobby, password);
+            }
         }
+        
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
             RainMeadow.DebugMe();
