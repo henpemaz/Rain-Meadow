@@ -99,16 +99,10 @@ namespace RainMeadow
         {
             return ExtEnumBase.valueDictionary.First(kvp => EnumTypeToID(kvp.Key) == shortName).Key;
         }
-        //adds a lazy hash of the assembly name, just in case
+        //appends the assembly name, just in case (shouldn't ever be necessary; just a precaution)
         private static string EnumTypeToID(Type T)
         {
-            return T.ToString() + "" + HashString(T.Assembly.FullName);
-        }
-        private static string HashString(string s)
-        {
-            int value = 0;
-            for (int i = 0; i < s.Length; i++) value ^= (s[i] << (i & 15)) | (s[i] >>> (16 - (i & 15)));
-            return value.ToString().Substring(0, 4); //keep the string short; it shouldn't ever be necessary, hopefully
+            return T.ToString() + ":" + T.Assembly.FullName;
         }
 
         public void RequestLobby(string? key)
