@@ -1,9 +1,10 @@
 ﻿using Menu.Remix.MixedUI;
-using RainMeadow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+namespace RainMeadow;
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -186,14 +187,28 @@ public class RainMeadowOptions : OptionInterface
 
             editSyncRequiredModsButton.OnClick += _ =>
             {
-                RainMeadowModManager.GetRequiredMods();
-                System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
+                try
+                {
+                    RainMeadowModManager.GetRequiredMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
             };
 
             editBannedModsButton.OnClick += _ =>
             {
-                RainMeadowModManager.GetBannedMods();
-                System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+                try
+                {
+                    RainMeadowModManager.GetBannedMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
             };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
@@ -280,7 +295,7 @@ public class RainMeadowOptions : OptionInterface
 
         catch (Exception ex)
         {
-            RainMeadow.RainMeadow.Error("Error opening RainMeadow Options Menu" + ex);
+            RainMeadow.Error("Error opening RainMeadow Options Menu" + ex);
         }
     }
 
