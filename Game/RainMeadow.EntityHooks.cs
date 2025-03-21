@@ -235,7 +235,7 @@ namespace RainMeadow
                             // tell host to move everyone else
                             OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToRivuletEnding);
                         }
-                        StoryRPCs.GoToRivuletEnding();
+                        StoryRPCs.GoToRivuletEnding(null);
                     }
                     else if (roomName == "SI_A07")
                     {
@@ -254,7 +254,7 @@ namespace RainMeadow
                             // tell host to move everyone else
                             OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
                         }
-                        StoryRPCs.GoToSpearmasterEnding();
+                        StoryRPCs.GoToSpearmasterEnding(null);
                     }
                 }
                 // do nothinf
