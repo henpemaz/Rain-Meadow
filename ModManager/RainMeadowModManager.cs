@@ -114,7 +114,7 @@ namespace RainMeadow
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
                 bool reorder = true; //or change mods whatsoever
-                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+                var disable = GetRequiredMods().Intersect(bannedMods).ToList();
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list
