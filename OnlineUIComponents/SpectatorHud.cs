@@ -1,4 +1,5 @@
 ﻿using HUD;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -41,6 +42,7 @@ namespace RainMeadow
             if (spectatorOverlay != null)
             {
                 spectatorOverlay.GrafUpdate(timeStacker);
+                spectatorOverlay.pages[0].pos.y = InputOverride.MoveMenuItemFromYInput(spectatorOverlay.pages[0].pos.y);
             }
         }
 
@@ -58,6 +60,7 @@ namespace RainMeadow
                         spectatorOverlay = null;
                         return;
                     }
+
                 }
 
                 spectatorOverlay.Update();
