@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using Menu;
 using RainMeadow.Game;
 using System;
 using System.Diagnostics;
@@ -14,7 +15,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.2.1";
+        public const string MeadowVersionStr = "0.1.3.01";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;

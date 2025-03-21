@@ -17,9 +17,15 @@ namespace RainMeadow {
     public class LANMatchmakingManager : MatchmakingManager {
         public class LANLobbyInfo : LobbyInfo {
             public IPEndPoint endPoint;
-            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "") : 
-                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods) {
+            public LANLobbyInfo(IPEndPoint endPoint, string name, string mode, int playerCount, bool hasPassword, int maxPlayerCount, string highImpactMods = "", string bannedMods = "") : 
+                base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
                 this.endPoint = endPoint;
+            }
+            public override string GetLobbyJoinCode(string? password = null)
+            {
+                if (password != null)
+                    return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port} +lobby_password {password}";
+                return $"+connect_lan_lobby {endPoint.Address.Address} {endPoint.Port}";
             }
         }   
 
@@ -155,7 +161,8 @@ namespace RainMeadow {
                 if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
                         maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
-                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count, RainMeadowModManager.RequiredModsArrayToString(RainMeadowModManager.GetRequiredMods()));
+                        OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count,
+                        RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()), RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
             }
@@ -292,6 +299,17 @@ namespace RainMeadow {
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
                 OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
             }
+        }
+
+        public override void JoinLobbyUsingArgs(params string?[] args)
+        {
+            if (args.Length >= 2 && long.TryParse(args[0], out var address) && int.TryParse(args[1], out var port))
+            {
+                RainMeadow.Debug($"joining lobby with address {address} and port {port} from the command line");
+                RequestJoinLobby(new LANLobbyInfo(new IPEndPoint(address, port), "", "", 0, false, 4), args.Length > 2 ? args[2] : null);
+            }
+            else
+                RainMeadow.Error($"invalid address and port: {string.Join(" ", args)}");
         }
 
         public override void LeaveLobby() {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -33,8 +34,8 @@ namespace RainMeadow
             public Dictionary<ushort, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField]
-            public List<ushort> playersReadiedUp;
+            [OnlineField(nullable =true)]
+            public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -72,7 +73,7 @@ namespace RainMeadow
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
-                playersReadiedUp = arena.playersReadiedUp;
+                playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
@@ -117,6 +118,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
+                RainMeadow.Debug(playersReadiedUp.list.Count);
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

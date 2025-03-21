@@ -238,19 +238,26 @@ namespace RainMeadow
             orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
             {
-                WorldSession ws = null;
-                if (isArenaMode(out var _))
+                try
                 {
-                    RainMeadow.Debug("Arena: Setting up world session");
+                    WorldSession ws = null;
+                    if (isArenaMode(out var _))
+                    {
+                        RainMeadow.Debug("Arena: Setting up world session");
 
-                    ws = OnlineManager.lobby.worldSessions["arena"];
+                        ws = OnlineManager.lobby.worldSessions["arena"];
+                    }
+                    else
+                    {
+                        ws = OnlineManager.lobby.worldSessions[region.name];
+                    }
+                    ws.BindWorld(self.world);
+                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
                 }
-                else
+                catch (System.NullReferenceException e) // happens in riv ending
                 {
-                    ws = OnlineManager.lobby.worldSessions[region.name];
+                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
                 }
-                ws.BindWorld(self.world);
-                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
             }
         }
     }
