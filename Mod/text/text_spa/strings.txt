@@ -267,9 +267,9 @@ Unlock Skin|Desbl. aspecto
 Unlock Character|Desbl. personaje
 Reset all progression|Reiniciar todo el progreso
 Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo Meadow.
-Key used for viewing friends' usernames|Botón para ver los nombres de usuario
+Show usernames|Mostrar nombres de usuario
 Username Toggle|Ver los nombres sin mantener pulsado
-If selected, replaces holding with toggling to view usernames|Pulsar el botón en vez de mantenerlo para ver o quitar los nombres de usuario.
+Replace holding with toggling|Pulsar el botón en vez de mantenerlo.
 Key used for toggling spectator mode|Botón para activar o desactivar el modo espectador
 Stop Inputs While Spectating|Detener entradas al espectear
 Chat Log Toggle|Botón para ver o quitar el chat

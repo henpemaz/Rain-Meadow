@@ -41,7 +41,24 @@ namespace RainMeadow
             On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
+            On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+        }
 
+        private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig, 
+            SocialEventRecognizer self, PhysicalObject item, Creature creature) {
+
+            orig(self, item, creature);
+            if (OnlineManager.lobby != null) return;
+            if (!creature.IsLocal()) return;
+
+            if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession)) {
+                if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature? oc) &&
+                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo)) {
+                    oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, 
+                        opo.id, oc.id);
+                } 
+                
+            }
         }
 
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
@@ -55,7 +72,7 @@ namespace RainMeadow
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
                 return true;
             }

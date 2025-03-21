@@ -43,8 +43,8 @@ namespace RainMeadow
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             float scrollInput = Input.GetAxis("Mouse ScrollWheel");
             if (controller is Rewired.Joystick js) scrollInput -= js.GetAxis(3);
-            scrollInput += (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) ? -1f : 0f;
-            scrollInput += (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) ? 1f : 0f;
+            scrollInput += (ChatHud.isLogToggled == false && Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) ? -1f : 0f;
+            scrollInput += (ChatHud.isLogToggled == false && Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) ? 1f : 0f;
             scrollInput = Mathf.Clamp(scrollInput, -1.0f, 1.0f);
 
             return y + scrollInput * RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
