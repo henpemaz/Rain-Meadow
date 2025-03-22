@@ -890,7 +890,7 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => !otherObject.FriendlyFireSafetyCandidate());
+            c.EmitDelegate((PhysicalObject otherObject) => otherObject.FriendlyFireSafetyCandidate());
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
