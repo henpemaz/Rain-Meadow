@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using HUD;
+using Rewired;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -55,8 +57,7 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             chatLog.Add((user, message));
-            // while (chatLog.Count > 13) chatLog.RemoveAt(0);
-            currentLogIndex = 0;
+            if (chatInputActive) currentLogIndex = 0;
             chatLogOverlay?.UpdateLogDisplay();
         }
 
@@ -64,21 +65,24 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
 
-            if (Input.GetKey(KeyCode.UpArrow))
+            if (chatInputActive)
             {
-                if (currentLogIndex < chatLog.Count - 1)
+                if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    currentLogIndex++;
-                    chatLogOverlay?.UpdateLogDisplay();
+                    if (currentLogIndex < chatLog.Count - 1)
+                    {
+                        currentLogIndex++;
+                        chatLogOverlay?.UpdateLogDisplay();
+                    }
                 }
-            }
 
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                if (currentLogIndex > 0)
+                if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    currentLogIndex--;
-                    chatLogOverlay?.UpdateLogDisplay();
+                    if (currentLogIndex > 0)
+                    {
+                        currentLogIndex--;
+                        chatLogOverlay?.UpdateLogDisplay();
+                    }
                 }
             }
 
