@@ -87,7 +87,7 @@ Axo|Ajolote
 Sala|Salamandra
 Cyan|Cian
 Fluffers|Peludo
-CICADA|CALAMIGARRA
+CICADA|CHICHARRA
 White|Blanco
 Dark|Oscuro
 SCAVENGER|CARROÑERO
@@ -173,8 +173,8 @@ WAIT FOR OTHERS|ESTOY LISTO
 LOBBY WILL LOCK|BLOQUEAR SALA
 GAME IN SESSION|EN CURSO
 READY?|¿LISTO?
-Waiting for others...|Esperando...
-Waiting for host...|Esperando...
+Waiting for others...|Espera a los demás
+Waiting for host...|Espera al anfitrión
 Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
 Waiting|Esperando
 Prepare for combat,|Prepárate para el combate,
@@ -195,6 +195,7 @@ Press '|Pulsa «
 
 // Player Joining / Leaving
 joined the game.|se ha unido a la partida.
+tried to join the game but was kicked.|ha intentado unirse a la partida, pero fue echado.
 left the game.|se ha ido de la partida.
 
 // Death Messages
@@ -238,6 +239,7 @@ Players can “Direct Connect” to this lobby through |Los jugadores pueden con
 your|tus
 their|sus
  interface(s).| interfaces.
+You cannot use this feature here.|No puedes usar esta característica aquí.
 
 // Mod Applier
 Error loading mods!|¡Error al cargar mods!
@@ -272,6 +274,9 @@ Username Toggle|Ver los nombres sin mantener pulsado
 Replace holding with toggling|Pulsar el botón en vez de mantenerlo.
 Key used for toggling spectator mode|Botón para activar o desactivar el modo espectador
 Stop Inputs While Spectating|Detener entradas al espectear
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Controla qué mods están permitidos en los clientes, editando los archivos de abajo.<LINE>Incluyen instrucciones (en inglés) dentro.
+Edit High-Impact Mods|Editar mods de alto imp.
+Edit Banned Mods|Editar mods prohibidos
 Chat Log Toggle|Botón para ver o quitar el chat
 Chat Talk Button|Botón para hablar por el chat
 Chat Log On/Off|Mostrar el chat
@@ -279,6 +284,7 @@ Introroll|Intro de apertura
 Vanilla|Vanilla
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|Si el DLC Downpour no está activado, la intro vanilla será usada en su lugar.
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
 Ready to shelter/gate|Preparado para hibernar o pasar de región
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
@@ -293,10 +299,9 @@ Inv: Enable egg at 0 throw skill|Inv: Activar huevo al tener habilidad de lanzam
 Inv: Enable ???|Inv: Activar ???
 Artificer: Disable Stun|Artífice: Desactivar aturdimiento
 Mauling: Disable|Morder: Desactivar
-Player Result Scroll Speed. Default: 5|Velocidad de desplazamiento de los resultados de los jugadores. Predeterminado: 5
 Username|Nombre de usuario
 UDP timeout (ms)|Tiempo de espera de UDP (ms)
-UDP heartbeat (ms)|Check de vida UDP (ms)
+UDP heartbeat (ms)|Chequeo de vida UDP (ms)
 
 // Credits
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow es un motor multijugador único para un juego único. Nada más le cabría. - Henpemaz
@@ -323,9 +328,8 @@ Thank you playtesters from the Rain Meadow discord as well.|Gracias también a l
 // misc
 Players|Jugadores
 CONFIRM|CONFIRMAR
-You were removed from the previous online game|Has sido echado de la partida en línea anterior.
 Leaving Lobby|Saliendo de la sala
+You were removed from the previous online game|Has sido echado de la partida en línea anterior.
 This player does not have a profile.|Este jugador no tiene un perfil.
-Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente. Algunas características de Rain Meadow han sido desactivadas.
-You cannot use this feature here.|No puedes usar esta característica aquí.
+Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
