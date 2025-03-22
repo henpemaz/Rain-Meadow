@@ -478,6 +478,11 @@ namespace RainMeadow
                 return;
             }
 
+            if(self.world == null) //happens if worldloader thread doesnt load fast enough
+            {
+                return;
+            }
+
             MusicPlayer musicPlayer = self.manager.musicPlayer;
             var RoomImIn = self.cameras[0].room;
             var MyGuyMic = self.cameras[0].virtualMicrophone;
@@ -561,7 +566,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null && activeZonesDict != null && closestVibe != -1)
+            if (UpdateIntensity && RoomImIn != null && MyGuyMic != null && activeZonesDict != null && closestVibe != -1 && self.world.GetAbstractRoom(closestVibe) != null)
             {
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
                 //RainMeadow.Debug("Has Calculated Pan");
