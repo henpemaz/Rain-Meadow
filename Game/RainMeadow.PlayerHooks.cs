@@ -864,14 +864,13 @@ public partial class RainMeadow
         orig(self);
     }
 
-    // TODO: toggleable friendly fire
     private void Player_Collide(ILContext il)
     {
         try
         {
             // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             //becomes
-            // if (!(isStoryMode(out _) && otherObject is Player) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            // if (!(otherObject.FriendlyFireSafetyCandidate()) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(
@@ -890,7 +889,7 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => !otherObject.FriendlyFireSafetyCandidate());
+            c.EmitDelegate((PhysicalObject otherObject) => otherObject.FriendlyFireSafetyCandidate());
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
