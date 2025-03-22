@@ -35,6 +35,7 @@ namespace RainMeadow
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
 
+        public List<AbstractCreature> pups;
         public void Sanitize()
         {
             hasSheltered = false;
@@ -46,6 +47,7 @@ namespace RainMeadow
             myLastDenPos = null;
             region = null;
             saveStateString = null;
+            pups = new();
             storyClientData?.Sanitize();
         }
 
@@ -67,6 +69,7 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
+            MoreSlugcats.MoreSlugcatsEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
         };
 
         public override bool AllowedInMode(PlacedObject item)
@@ -260,7 +263,22 @@ namespace RainMeadow
         {
             base.GameShutDown(game);
         }
+    }
 
+    public static class StoryModeExtensions {
+        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature) {
+            if (creature is Player p) {
+                if (p.isNPC) return false;
+            } else return false;
 
+            if (RainMeadow.isStoryMode(out var story)) {
+                return !story.friendlyFire;
+            }
+            if (RainMeadow.isArenaMode(out var arena)) {
+                return arena.countdownInitiatedHoldFire;
+            }
+            
+            return false;
+        }
     }
 }

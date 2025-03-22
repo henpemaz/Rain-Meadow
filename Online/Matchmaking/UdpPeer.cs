@@ -684,9 +684,10 @@ namespace RainMeadow
             string[] parts = name.Split(':');
             if (parts.Length != 2) {
                 RainMeadow.Debug("Invalid IP format without colon: " + name);
-                return null;
+                parts = new string[2];
+                parts[0] = name;
+                parts[1] = "8720"; //default port
             }
-
 
             IPAddress? address = null;
             try {
@@ -702,7 +703,7 @@ namespace RainMeadow
                 }
             }
 
-            if (!short.TryParse(parts[1], out short port)) {
+            if (!ushort.TryParse(parts[1], out ushort port)) {
                 RainMeadow.Debug("Invalid port format: " + parts[1]);
                 return null;
             }
@@ -742,10 +743,6 @@ namespace RainMeadow
             }
         }
 
-        const ulong PEER_TIMEOUT = 1000*3; 
-        const ulong HEARTBEAT_TIME= 500; 
-        
-
         Stopwatch stopWatch = new Stopwatch();
         public void Update() {
             long elapsedTime = stopWatch.ElapsedMilliseconds;
@@ -755,21 +752,23 @@ namespace RainMeadow
             for (int i = peers.Count - 1; i >= 0; i--) {
                 RemotePeer peer = peers[i];
                 peer.TicksSinceLastIncomingPacket += (ulong)elapsedTime;
-                if (peer.TicksSinceLastIncomingPacket >= PEER_TIMEOUT) {
+                if (peer.TicksSinceLastIncomingPacket >= (ulong)RainMeadow.rainMeadowOptions.UdpTimeout.Value) {
                     peersToRemove.Add(peer);
                     continue;
                 }
 
+                ulong heartbeatTime = (ulong)RainMeadow.rainMeadowOptions.UdpHeartbeat.Value;
+
                 peer.OutgoingPacketAcummulator += (ulong)elapsedTime;
-                ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / HEARTBEAT_TIME;
+                ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / heartbeatTime;
                 if (sendAmount > 1)  {
-                    peer.OutgoingPacketAcummulator -= sendAmount*HEARTBEAT_TIME;
+                    peer.OutgoingPacketAcummulator -= sendAmount * heartbeatTime;
                     peer.OutgoingPacketAcummulator = Math.Max(peer.OutgoingPacketAcummulator, 0); // just to be sure
 
                     for (ulong j = 0; j < sendAmount; j++) {
                         if (peer.outgoingpacket.Count > 0) {
                             SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
-                        } else if (peer.TicksSinceLastIncomingPacket > HEARTBEAT_TIME) {
+                        } else if (peer.TicksSinceLastIncomingPacket > heartbeatTime) {
                             SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
                         }
                     }

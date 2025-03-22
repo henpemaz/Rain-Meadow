@@ -38,7 +38,7 @@ namespace RainMeadow
         }
 
         public DirectConnectionDialogue(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool forceWrapping = false)
-            : base(menu, owner, "Direct Connection... ", pos, size, forceWrapping)
+            : base(menu, owner, menu.Translate("Direct Connection... "), pos, size, forceWrapping)
         {
             this.tabWrapper = new MenuTabWrapper(menu, this);
             subObjects.Add(tabWrapper);
@@ -47,6 +47,7 @@ namespace RainMeadow
             IPBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
             IPBox.accept = OpTextBox.Accept.StringASCII;
             IPBox.allowSpace = true;
+            IPBox.maxLength = 100;
 
             textBoxWrapper = new UIelementWrapper(this.tabWrapper, IPBox);
 
@@ -55,7 +56,7 @@ namespace RainMeadow
             Vector2 passwordpos = center + new Vector2(-80f, 30f);
 
 
-            passwordLabelWrapper = new UIelementWrapper(this.tabWrapper, new OpLabel(center + new Vector2(-80f, -40f), new Vector2(100f, 20f), "Password:"));
+            passwordLabelWrapper = new UIelementWrapper(this.tabWrapper, new OpLabel(center + new Vector2(-80f, -40f), new Vector2(100f, 20f), menu.Translate("Password:")));
             passwordBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -60f), 160f);
             passwordBox.greyedOut = true;
             passwordBox.accept = OpTextBox.Accept.StringASCII;

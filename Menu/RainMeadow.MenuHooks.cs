@@ -2,10 +2,14 @@ using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Steamworks;
+using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -323,28 +327,17 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
-                var args = System.Environment.GetCommandLineArgs();
-                for (var i = 0; i < args.Length; i++)
+                try
                 {
-                    if (args[i] == "+connect_lobby")
-                    {
-                        if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam) {
-                            if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
-                            {
-                                Debug($"joining lobby with id {id} from the command line");
-                                MatchmakingManager.currentInstance.RequestJoinLobby(new SteamLobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
-
-                            }
-                            else
-                            {
-                                Error($"found +connect_lobby but no valid lobby id in the command line");
-                            }
-                        }
-                        break;
-                    }
+                    var args = System.Environment.GetCommandLineArgs();
+                    
+                    MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
+                }
+                catch (Exception ex)
+                {
+                    RainMeadow.Debug(ex);
                 }
             }
             orig(self, ID);
@@ -358,7 +351,7 @@ namespace RainMeadow
 
             if (!fullyInit)
             {
-                self.manager.ShowDialog(new DialogNotify("Rain Meadow failed to start", self.manager, null));
+                self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
 
@@ -371,7 +364,7 @@ namespace RainMeadow
                 if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
-                    self.manager.ShowDialog(new DialogNotify("Steam is not currently available. Some features of Rain Meadow have been disabled.", self.manager, 
+                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager, 
                         () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }

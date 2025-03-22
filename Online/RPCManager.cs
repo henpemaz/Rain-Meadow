@@ -9,16 +9,32 @@ namespace RainMeadow
     // what sort of options are needed here?
     // "if target owner only"
     // "if resource active"
+    // "only from lobby owner"
+    // "only from target owner"
+
+    /// <summary>
+    /// RPCs, efficient but require modsync
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
         public bool runDeferred; // run after state is processed, at end of network-frame
     }
 
+    /// <summary>
+    /// RPCs for non-modsync-required mods, less efficient
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SoftRPCMethodAttribute : RPCMethodAttribute
+    {
+        
+    }
+
     public static class RPCManager
     {
         public static Dictionary<ushort, RPCDefinition> defsByIndex = new Dictionary<ushort, RPCDefinition>();
         public static Dictionary<MethodInfo, RPCDefinition> defsByMethod = new Dictionary<MethodInfo, RPCDefinition>();
+        public static Dictionary<Guid, Dictionary<ushort, SoftRPCDefinition>> softHandlerClients = new();
 
 
         public class RPCDefinition
@@ -32,13 +48,34 @@ namespace RainMeadow
             public bool runDeferred;
         }
 
+        public class SoftRPCDefinition : RPCDefinition
+        {
+            public Guid key;
+        }
+
         public static void SetupRPCs()
         {
             index = 1; // zero is an easy to catch mistake
 
+            // our own RPCs first
+            foreach (var type in Assembly.GetExecutingAssembly().GetTypesSafely().ToList())
+            {
+                try
+                {
+                    RegisterRPCs(type);
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error("Error registering RPCs for builtin type: " + type.FullName);
+                    throw e;
+                }
+            }
+            // intentionally thrown on failure
+
+            // other RPCs
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
-                bool isMain = assembly == Assembly.GetExecutingAssembly();
+                if (assembly == Assembly.GetExecutingAssembly()) continue;
                 try
                 {
                     foreach (var type in assembly.GetTypesSafely().ToList())
@@ -50,17 +87,17 @@ namespace RainMeadow
                         catch (Exception e)
                         {
                             RainMeadow.Error(assembly.FullName + ":" + type.FullName);
-                            if (isMain) throw e; 
                             RainMeadow.Error(e);
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    if (isMain) throw e;
                     RainMeadow.Error(e);
                 }
             }
+            // there's an argument that throwing would be necessary to avoid offset indexes between clients
+            // but errors seemed fairly deterministic,mostly interop-related types failing to load, solved by adding interops to high-impact
         }
 
         static ushort index;
@@ -83,6 +120,7 @@ namespace RainMeadow
             foreach (var method in methods)
             {
                 var isStatic = method.IsStatic;
+                var isSoft = method.GetCustomAttribute<RPCMethodAttribute>() is SoftRPCMethodAttribute;
                 // get args
                 RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
                 var args = method.GetParameters();
@@ -180,27 +218,51 @@ namespace RainMeadow
 
                 var serialize = Expression.Lambda<Action<RPCEvent, Serializer>>(Expression.Block(vars, expressions), rpceventParam, serializerParam).Compile();
 
-                RPCDefinition entry = new()
+                if (isSoft)
                 {
-                    index = index,
-                    method = method,
-                    serialize = serialize,
-                    eventArgIndex = argsEventIndex,
-                    isStatic = isStatic,
-                    runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
-                    summary = $"{targetType.Name}{method.Name}"
-                };
+                    var key = targetType.Module.ModuleVersionId;
+                    if (!softHandlerClients.ContainsKey(key)) softHandlerClients.Add(key, new Dictionary<ushort, SoftRPCDefinition>());
+                    ushort useIndex = (ushort)softHandlerClients[key].Keys.Count;
+                    SoftRPCDefinition entry = new()
+                    {
+                        key = key,
+                        index = useIndex,
+                        method = method,
+                        serialize = serialize,
+                        eventArgIndex = argsEventIndex,
+                        isStatic = isStatic,
+                        runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
+                        summary = $"{targetType.Name}.{method.Name}"
+                    };
+                    defsByMethod[method] = entry;
+                    softHandlerClients[key][useIndex] = entry;
+                }
+                else
+                {
+                    RPCDefinition entry = new()
+                    {
+                        index = index,
+                        method = method,
+                        serialize = serialize,
+                        eventArgIndex = argsEventIndex,
+                        isStatic = isStatic,
+                        runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
+                        summary = $"{targetType.Name}.{method.Name}"
+                    };
 
-                defsByIndex[index] = entry;
-                defsByMethod[method] = entry;
-                index++;
+                    defsByIndex[index] = entry;
+                    defsByMethod[method] = entry;
+                    index++;
+                }
             }
         }
 
         internal static RPCEvent BuildRPC(Delegate del, object[] args)
         {
             RainMeadow.Debug($"Sending RPC: {del.Method}");
-            return new RPCEvent(del, args);
+            var handler = defsByMethod[del.Method];
+            if (handler is SoftRPCDefinition) return new SoftRPCEvent(handler, del, args);
+            return new RPCEvent(handler, del, args);
         }
     }
 
@@ -214,14 +276,14 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return $"{base.ToString()}:{handler.method.Name}";
+            return $"{base.ToString()}:{handler.summary}";
         }
 
         public RPCEvent() { }
 
-        public RPCEvent(Delegate del, object[] args)
+        public RPCEvent(RPCManager.RPCDefinition handler, Delegate del, object[] args)
         {
-            this.handler = RPCManager.defsByMethod[del.Method];
+            this.handler = handler;
             this.target = del.Target;
             this.args = args;
         }
@@ -238,7 +300,7 @@ namespace RainMeadow
             }
             if (serializer.IsReading)
             {
-                handler = RPCManager.defsByIndex[serializer.reader.ReadUInt16()];
+                handler = GetHandler(serializer.reader.ReadUInt16());
             }
             try
             {
@@ -249,6 +311,10 @@ namespace RainMeadow
                 RainMeadow.Error($"Error serializing RPC {this}");
                 throw;
             }
+        }
+        protected virtual RPCManager.RPCDefinition GetHandler(ushort index)
+        {
+            return RPCManager.defsByIndex[index];
         }
 
         override public bool runDeferred => handler.runDeferred;
@@ -285,7 +351,7 @@ namespace RainMeadow
             catch (Exception e)
             {
                 currentRPCEvent = null;
-                RainMeadow.Error($"Error handing RPC {handler.method.Name} {e}");
+                RainMeadow.Error($"Error handing RPC {handler.summary} {e}");
                 from.QueueEvent(new GenericResult.Error(this));
             }
         }
@@ -319,6 +385,66 @@ namespace RainMeadow
         public bool IsIdentical(Delegate del, params object[] args)
         {
             return handler.method == del.Method && this.target == del.Target && this.args.SequenceEqual(args);
+        }
+    }
+
+    public class SoftRPCEvent : RPCEvent
+    {
+        static RPCManager.SoftRPCDefinition softFallbackHandler = new RPCManager.SoftRPCDefinition() { summary = "NOT FOUND" };
+
+        RPCManager.SoftRPCDefinition softHandler => handler as RPCManager.SoftRPCDefinition;
+
+        public SoftRPCEvent() : base() { }
+
+        public SoftRPCEvent(RPCManager.RPCDefinition handler, Delegate del, object[] args) : base(handler, del, args) { }
+
+        public override EventTypeId eventType => EventTypeId.SoftRPCEvent;
+
+        public override void CustomSerialize(Serializer serializer)
+        {
+            if (serializer.IsWriting)
+            {
+                serializer.writer.Write(softHandler.key.ToByteArray());
+
+                long startPos = serializer.Position;
+                serializer.writer.Write((ushort)0);
+
+                base.CustomSerialize(serializer);
+
+                var endPos = serializer.Position;
+                serializer.stream.Position = startPos;
+                serializer.writer.Write((ushort)(endPos - startPos - 4)); // skip lenght and eventId
+                serializer.stream.Position = endPos;
+            }
+            else
+            {
+                readKey = new Guid(serializer.reader.ReadBytes(16));
+                var lenght = serializer.reader.ReadUInt16();
+                if (!RPCManager.softHandlerClients.ContainsKey(readKey))
+                {
+                    handler = softFallbackHandler;
+                    eventId = serializer.reader.ReadUInt16(); // still required for skip/ack systems
+                    serializer.stream.Seek(lenght, System.IO.SeekOrigin.Current);
+                    return;
+                }
+                base.CustomSerialize(serializer);
+            }
+        }
+
+        public override void Process()
+        {
+            if (handler == softFallbackHandler)
+            {
+                RainMeadow.Debug("Skipping unknown SoftRPC");
+                return;
+            }
+            base.Process();
+        }
+
+        private Guid readKey;
+        protected override RPCManager.RPCDefinition GetHandler(ushort index)
+        {
+            return RPCManager.softHandlerClients[readKey][index];
         }
     }
 }

@@ -93,7 +93,7 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public bool realized;
         public bool lenientPos;
-
+        public bool didParry;
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
@@ -109,6 +109,10 @@ namespace RainMeadow
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
             bool transferable = !RainMeadow.sSpawningAvatar;
+            if (apo.realizedObject is Player player) {
+                transferable = transferable || player.isNPC;
+            }
+
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
             {
@@ -396,6 +400,12 @@ namespace RainMeadow
                     apo.Room?.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {
+                        if (po is Player player) {
+                            if (player.slugOnBack != null) {
+                                player.slugOnBack.DropSlug();
+                            }
+                        }
+
                         if (apo.Room?.realizedRoom is Room room)
                         {
                             room.RemoveObject(po);
@@ -483,6 +493,12 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
+            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                OnlineManager.RunDeferred(() => this.didParry = false);
+                return;
+            }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
 

@@ -44,13 +44,16 @@ namespace RainMeadow
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+            IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner; 
+            On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
+            // On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
 
             IL.Player.ctor += Player_ctor_NonHunterCampaignClientDisableRedsIllness;
+            On.Player.ctor += Player_ctor_SynchronizeFoodBarForActualPlayers;
 
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
@@ -113,6 +116,15 @@ namespace RainMeadow
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
+        }
+
+        private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world) {
+            orig(self, creature, world);
+            if (isStoryMode(out var storyGameMode) && !self.isNPC) {
+                IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
+                self.slugcatStats.maxFood = intVector.x;
+                self.slugcatStats.foodToHibernate = intVector.y; 
+            }
         }
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
@@ -241,7 +253,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
             }
             else
             {
@@ -618,14 +630,15 @@ namespace RainMeadow
             }
         }
 
-        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
-        {
-            if (isStoryMode(out var storyGameMode))
-            {
-                return orig(storyGameMode.currentCampaign);
-            }
-            return orig(slugcat);
-        }
+        // Doesn't consider slugNPC
+        // private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        // {
+        //     if (isStoryMode(out var storyGameMode))
+        //     {
+        //         return orig(storyGameMode.currentCampaign);
+        //     }
+        //     return orig(slugcat);
+        // }
 
         private void HardmodeStart_ctor(ILContext il)
         {
@@ -804,6 +817,68 @@ namespace RainMeadow
 
                 if (MatchmakingManager.currentInstance.canSendChatMessages)
                     self.AddPart(new ChatHud(self, cam));
+            }
+        }
+        private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self) {
+            if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                if (!OnlineManager.lobby.isOwner) {
+
+                    // base game checks copied over
+                    if (ModManager.MSC && 
+                        !self.IsPupFoodMeter && self.pupBars == null && 
+                        (self.hud.owner as Player).room != null && 
+                        (self.hud.owner as Player).room.game.spawnedPendingObjects)
+			        {
+                        self.pupBars = new();
+                        int num = 1;
+                        if (story.pups is not null)
+                        foreach (AbstractCreature pup in story.pups) {
+                            if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null) {
+                                continue;
+                            }
+
+                            if (pup.realizedCreature is Player NPC) {
+                                FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, NPC, num);
+                                foodMeter.abstractPup = pup;
+                                self.hud.AddPart(foodMeter);
+                                self.pupBars.Add(foodMeter);
+                                num++;
+                            } else RainMeadow.Error("Pup wasn't a realized player");
+                        }
+                    }
+                    return;
+                }
+            }
+
+            orig(self);
+        }
+
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context) {
+            try {
+                ILCursor cursor = new(context);
+                cursor.EmitDelegate(() => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+                        story.pups.Clear();
+                    }
+                });
+                cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
+                cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
+
+                // Add pups to gamemode list
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_1);
+                cursor.EmitDelegate((FoodMeter self, int i) => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+
+                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
+                        if (pup != null) story.pups.Add(pup);
+                    }
+                });
+
+            } catch (Exception except) {
+                Logger.LogError(except);
             }
         }
 
@@ -1198,7 +1273,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out _) && !game.manager.menuSetup.FastTravelInitCondition)
             {
-                game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                try
+                {
+                    game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                }
+                catch (System.NullReferenceException e) // happens in riv ending
+                {
+                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
+                }
             }
             orig(self, game);
         }

@@ -47,7 +47,7 @@ namespace RainMeadow
             arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
             arena.currentLevel = 0;
-            arena.playersReadiedUp.Clear();
+            arena.playersReadiedUp.list.Clear();
 
         }
 
@@ -55,20 +55,20 @@ namespace RainMeadow
         {
             if (lobby.playButton != null)
             {
-                lobby.playButton.menuLabel.text = "READY?";
+                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
                 lobby.playButton.inactive = false;
 
             }
             if (OnlineManager.lobby.isOwner)
             {
-                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.Count == OnlineManager.players.Count;
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
             }
             if (arena.returnToLobby)
             {
                 lobby.clientReadiedUp = false;
 
-                arena.playersReadiedUp.Clear();
+                arena.playersReadiedUp.list.Clear();
 
                 arena.returnToLobby = false;
             }

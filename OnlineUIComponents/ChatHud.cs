@@ -36,7 +36,7 @@ namespace RainMeadow
             ChatLogManager.Subscribe(this);
             if (!ChatLogManager.shownChatTutorial)
             {
-                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate($"Press '{RainMeadow.rainMeadowOptions.ChatButtonKey.Value}' to chat, press '{RainMeadow.rainMeadowOptions.ChatLogKey.Value}' to toggle the chat log"), 60, 320, true, true);
+                hud.textPrompt.AddMessage(hud.rainWorld.inGameTranslator.Translate("Press '") + (RainMeadow.rainMeadowOptions.ChatButtonKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to chat, press '") + (RainMeadow.rainMeadowOptions.ChatLogKey.Value) + hud.rainWorld.inGameTranslator.Translate("' to toggle the chat log"), 60, 320, true, true);
                 ChatLogManager.shownChatTutorial = true;
             }
 
@@ -160,7 +160,7 @@ namespace RainMeadow
 
             if (slatedForDeletion) { Destroy(); return; }
 
-            if (OnlineManager.lobby.gameMode is MeadowGameMode) return;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode) return;
 
             if (game.pauseMenu != null || camera.hud?.map?.visible is true || game.manager.upcomingProcess != null)
             {

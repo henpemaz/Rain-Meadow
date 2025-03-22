@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 
 namespace RainMeadow
 {
@@ -43,6 +44,8 @@ namespace RainMeadow
         public static string CLIENT_VAL = "Meadow_" + RainMeadow.MeadowVersionStr;
         public static string NAME_KEY = "name";
         public static string MODE_KEY = "mode";
+        public static string MODS_KEY = "mods";
+        public static string BANNED_MODS_KEY = "banned_mods";
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
 
@@ -90,6 +93,63 @@ namespace RainMeadow
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);
 
+        public abstract void JoinLobbyUsingArgs(params string?[] args);
+        public static void JoinLobbyUsingCode(string code) {
+            RainMeadow.Debug($"Attempting to join lobby with code: {code}");
+
+            string[] args = code.Split(' ');
+            
+            int connect_steam_idx = Array.IndexOf(args, "+connect_lobby"),
+                connect_lan_idx = Array.IndexOf(args, "+connect_lan_lobby"),
+                password_idx = Array.IndexOf(args, "+lobby_password");
+
+            //find password, if it exists
+            string? password = null;
+            if (password_idx >= 0 && args.Length > password_idx + 1)
+                password = args[password_idx + 1];
+
+            //connect to lobby
+            if (connect_steam_idx >= 0)
+            {
+                if (args.Length > connect_steam_idx + 1)
+                {
+                    foreach (var domain in supported_matchmakers)
+                    {
+                        if (domain == MatchMakingDomain.Steam)
+                        {
+                            //switch domain if necessary
+                            if (currentDomain != domain)
+                                currentDomain = domain;
+                            instances[domain].JoinLobbyUsingArgs(args[connect_steam_idx + 1], password);
+                            return;
+                        }
+                    }
+                }
+                else
+                    RainMeadow.Error("found +connect_lobby but no valid lobby id in the command line");
+            }
+            else if (connect_lan_idx >= 0)
+            {
+                if (args.Length > connect_lan_idx + 2)
+                {
+                    foreach (var domain in supported_matchmakers)
+                    {
+                        if (domain == MatchMakingDomain.LAN)
+                        {
+                            //switch domain if necessary
+                            if (currentDomain != domain)
+                                currentDomain = domain;
+                            instances[domain].JoinLobbyUsingArgs(args[connect_lan_idx + 1], args[connect_lan_idx + 2], password);
+                            return;
+                        }
+                    }
+                }
+                else
+                    RainMeadow.Error("found +connect_lan_lobby but no valid lobby address and port in the command line");
+            }
+            RainMeadow.Debug("No lobby found in that code.");
+        }
+
         public abstract void LeaveLobby();
 
         public abstract OnlinePlayer GetLobbyOwner();
@@ -116,7 +176,14 @@ namespace RainMeadow
         }
 
         public void HandleJoin(OnlinePlayer player) {
-            ChatLogManager.LogMessage("", $"{player.id.GetPersonaName()} joined the game.");
+            // please do not add "Rain Meadow" as a user, system yellow message operates without a username.
+            if (OnlineManager.lobby != null && OnlineManager.mePlayer == OnlineManager.lobby.owner && OnlineManager.lobby.bannedUsers.list.Contains(player.id))
+            {
+                BanHammer.BanUser(player);
+                ChatLogManager.LogMessage(null, (player.id.GetPersonaName()) + " " + Utils.Translate("tried to join the game but was kicked."));
+                return;
+            }
+            ChatLogManager.LogMessage(null, (player.id.GetPersonaName()) + " " + Utils.Translate("joined the game."));
         }
         public void HandleDisconnect(OnlinePlayer player)
         {
@@ -131,8 +198,9 @@ namespace RainMeadow
             }
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
+            OnlineManager.netIO.ForgetPlayer(player);
 
-            ChatLogManager.LogMessage("", $"{player.id.GetPersonaName()} left the game.");
+            ChatLogManager.LogMessage(null, (player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
         }
 
         public abstract MeadowPlayerId GetEmptyId();

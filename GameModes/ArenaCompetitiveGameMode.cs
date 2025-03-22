@@ -15,12 +15,14 @@ namespace RainMeadow
 
         public bool registeredNewGameModes = false;
 
-        public bool isInGame = false;
-        public int playerLeftGame = 0;
-        public int currentLevel = 0;
-        public int totalLevelCount = 0;
-        public bool allPlayersReadyLockLobby = false;
-        public bool returnToLobby = false;
+        public bool isInGame;
+        public int playerLeftGame;
+        public int currentLevel;
+        public int totalLevelCount;
+        public bool allPlayersReadyLockLobby;
+        public bool returnToLobby;
+        public int painCatThrowingSkill;
+
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
@@ -28,17 +30,16 @@ namespace RainMeadow
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
 
-        public int painCatThrowingSkill = 0;
-
-        public string paincatName = "";
-        public int lizardEvent = 0;
+        public string paincatName;
+        public int lizardEvent;
 
 
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
-        public List<ushort> playersReadiedUp = new List<ushort>();
+        public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new Generics.DynamicOrderedPlayerIDs();
+
         public Dictionary<ushort, int> playersInLobbyChoosingSlugs = new Dictionary<ushort, int>();
 
 
@@ -57,7 +58,6 @@ namespace RainMeadow
         public SlugcatCustomization avatarSettings;
 
         public List<string> playList = new List<string>();
-
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
@@ -67,7 +67,18 @@ namespace RainMeadow
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
-
+            playerEnteredGame = 0;
+            painCatThrowingSkill = 0;
+            totalLevelCount = 0;
+            currentLevel = 0;
+            playerLeftGame = 0;
+            isInGame = false;
+            lizardEvent = 0;
+            paincatName = "";
+            allPlayersReadyLockLobby = false;
+            returnToLobby = false;
+            isInGame = false;
+            playersReadiedUp.list = new List<MeadowPlayerId>();
         }
 
         public void ResetInvDetails()
@@ -96,6 +107,12 @@ namespace RainMeadow
                     paincatName = "???";
                     break;
             }
+
+        }
+
+        public void ResetAtSession_ctor()
+        {
+            ResetInvDetails();
 
         }
 
@@ -184,22 +201,23 @@ namespace RainMeadow
         public override void LobbyTick(uint tick)
         {
             base.LobbyTick(tick);
-
-            DateTime currentTime = DateTime.UtcNow;
-            int currentSecond = currentTime.Second;
-            if (currentSecond != previousSecond)
+            if (OnlineManager.lobby.isOwner)
             {
-                if (arenaPrepTimer != null)
+                DateTime currentTime = DateTime.UtcNow;
+                int currentSecond = currentTime.Second;
+                if (currentSecond != previousSecond)
                 {
-                    if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                    if (arenaPrepTimer != null)
                     {
-                        setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+                        if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
+                        {
+                            setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
 
+                        }
                     }
+                    previousSecond = currentSecond;
                 }
-                previousSecond = currentSecond;
             }
-
 
         }
 

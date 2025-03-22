@@ -1,0 +1,29 @@
+{
+    "sync_required_mods": [
+        "rwremix",
+        "moreslugcats",
+        "henpemaz_rainmeadow"
+    ],
+    "banned_online_mods": [
+        "maxi-mol.mousedrag",
+        "fyre.BeastMaster",
+        "slime-cubed.devconsole",
+        "zrydnoob.UnityExplorer",
+        "warp",
+        "presstopup",
+        "CandleSign.debugvisualizer",
+        "maxi-mol.freecam",
+        "henpemaz_spawnmenu",
+        "autodestruct",
+        "DieButton",
+        "emeralds_features",
+        "flirpy.rivuletunscammedlungcapacity",
+        "Aureuix.Kaboom",
+        "TM.PupMagnet",
+        "iwantbread.slugpupstuff",
+        "blujai.rocketficer",
+        "slugcatstatsconfig",
+        "explorite.slugpups_cap_configuration",
+        "slime-cubed.slugbase"
+    ]
+}

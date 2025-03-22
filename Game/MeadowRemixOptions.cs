@@ -1,9 +1,10 @@
 ﻿using Menu.Remix.MixedUI;
-using RainMeadow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
+namespace RainMeadow;
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -27,10 +28,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
 
-    public readonly Configurable<float> ArenaScrollSpeed;
+    public readonly Configurable<float> ScrollSpeed;
 
 
     public readonly Configurable<string> LanUserName;
+    public readonly Configurable<int> UdpTimeout;
+    public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
@@ -76,11 +79,13 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
 
-        ArenaScrollSpeed =  config.Bind("ArenaScrollSpeed", 10f);
+        ScrollSpeed = config.Bind("ScrollSpeed", 10f);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
+        UdpTimeout = config.Bind("UdpTimeout", 3000);
+        UdpHeartbeat = config.Bind("UdpHeartbeat", 500);
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
@@ -91,15 +96,15 @@ public class RainMeadowOptions : OptionInterface
     {
         try
         {
-            OpTab meadowTab = new OpTab(this, Translate("Meadow"));
             OpTab opTab = new OpTab(this, Translate("General"));
+            OpTab meadowTab = new OpTab(this, Translate("Meadow"));
             OpTab arenaTab = new OpTab(this, Translate("Arena"));
             OpTab storyTab = new OpTab(this, Translate("Story"));
             OpTab lanTab = new OpTab(this, Translate("LAN"));
 
 
 
-            Tabs = new OpTab[5] { meadowTab, opTab, arenaTab, storyTab, lanTab };
+            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab };
 
             List<UIelement> meadowCheats;
             OpTextBox meadowCheatBox;
@@ -117,7 +122,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 480f, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, disables the sway animation in the pause menu"))),
 
                 meadowCheatBox = new OpTextBox(config.Bind("",""), new Vector2(10f, cheaty), 80f),
-                new OpLabel(110f, cheaty, Translate("Input \"cheats\" to access cheats")),
+                new OpLabel(110f, cheaty, Translate("Input “cheats” to access cheats")),
                 new OpLabel(110f, cheaty - 24f, Translate("Just make sure not to ruin the fun for yourself...")),
                 new OpLabel(110f, cheaty - 48f, Translate("Emote and skin unlocks will affect the currently selected character")),
 
@@ -138,25 +143,30 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpLabel downpourWarning;
+            OpSimpleButton editSyncRequiredModsButton;
+            OpSimpleButton editBannedModsButton;
 
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
                 new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
 
-
-                new OpLabel(10, 490f, Translate("Key used for viewing friends' usernames")),
+                new OpLabel(10, 490f, Translate("Show usernames")),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
 
-                new OpLabel(10f, 400f, Translate("Username Toggle"), bigText: false),
-                new OpCheckBox(FriendViewClickToActivate, new Vector2(10f, 375f)),
-                new OpLabel(40f, 385, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, replaces holding with toggling to view usernames"))),
+                new OpLabel(310f, 490f, Translate("Username Toggle"), bigText: false),
+                new OpCheckBox(FriendViewClickToActivate, new Vector2(310f, 465f)),
+                new OpLabel(340f, 475f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Replace holding with toggling"))),
 
-                new OpLabel(10, 320f, Translate("Key used for toggling spectator mode")),
-                new OpKeyBinder(SpectatorKey, new Vector2(10f, 280f), new Vector2(150f, 30f)),
-                
-                new OpLabel(10, 245f, Translate("Stop Inputs While Spectating")),
-                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(10f, 220f)),
+                new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
+                new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
+
+                new OpLabel(310, 400f, Translate("Stop Inputs While Spectating")),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 375f)),
+
+                new OpLabel(10f, 300f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
+                editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 260f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),
+                editBannedModsButton = new OpSimpleButton(new Vector2(185f, 260f), new Vector2(150f, 30f), Translate("Edit Banned Mods")),
 
                 new OpLabel(10, 180f, Translate("Chat Log Toggle")),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
@@ -169,10 +179,41 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10, 120, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(10, 60, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
-            };
+                downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+                new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
+                new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
+                {
+                    accept = OpTextBox.Accept.Float
+                },
+        };
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
             downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
+
+            editSyncRequiredModsButton.OnClick += _ =>
+            {
+                try
+                {
+                    RainMeadowModManager.GetRequiredMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.SyncRequiredModsFileName));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            };
+
+            editBannedModsButton.OnClick += _ =>
+            {
+                try
+                {
+                    RainMeadowModManager.GetBannedMods();
+                    System.Diagnostics.Process.Start(AssetManager.ResolveFilePath(RainMeadowModManager.BannedOnlineModsFileName));
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                }
+            };
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
@@ -203,7 +244,7 @@ public class RainMeadowOptions : OptionInterface
 
 
 
-            OnlineArenaSettings = new UIelement[19]
+            OnlineArenaSettings = new UIelement[17]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -237,23 +278,27 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-                new OpLabel(10f, 40, "Player Result Scroll Speed. Default: 5", bigText: false),
-                new OpTextBox(ArenaScrollSpeed, new Vector2(10, 15), 160f)
-                {
-                    accept = OpTextBox.Accept.Float
-                },
 
         };
             arenaTab.AddItems(OnlineArenaSettings);
 
-            OnlineLANSettings = new UIelement[3]
+            OnlineLANSettings = new UIelement[7]
             {
                 new OpLabel(10f, 550f, Translate("LAN"), bigText: true),
                 new OpLabel(10f, 505, Translate("Username"), bigText: false),
-
                 new OpTextBox(LanUserName, new Vector2(10f, 480), 160f)
                 {
                     accept = OpTextBox.Accept.StringASCII
+                },
+                new OpLabel(10f, 455, Translate("UDP timeout (ms)"), bigText: false),
+                new OpTextBox(UdpTimeout, new Vector2(10f, 420), 160f)
+                {
+                    accept = OpTextBox.Accept.Int
+                },
+                new OpLabel(10f, 395, Translate("UDP heartbeat (ms)"), bigText: false),
+                new OpTextBox(UdpHeartbeat, new Vector2(10f, 370), 160f)
+                {
+                    accept = OpTextBox.Accept.Int
                 }
 
         };
@@ -263,7 +308,7 @@ public class RainMeadowOptions : OptionInterface
 
         catch (Exception ex)
         {
-            RainMeadow.RainMeadow.Error("Error opening RainMeadow Options Menu" + ex);
+            RainMeadow.Error("Error opening RainMeadow Options Menu" + ex);
         }
     }
 
