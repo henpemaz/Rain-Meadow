@@ -37,6 +37,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
+	public readonly Configurable<bool> EnableLanInterface;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 

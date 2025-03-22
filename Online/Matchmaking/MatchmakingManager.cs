@@ -60,7 +60,6 @@ namespace RainMeadow
                 instances.Add(MatchMakingDomain.Steam, new SteamMatchmakingManager());
                 supported_matchmakers.Add(MatchMakingDomain.Steam);
             }
-
             supported_matchmakers.Add(MatchMakingDomain.LAN); 
             instances.Add(MatchMakingDomain.LAN, new LANMatchmakingManager());
             currentDomain = supported_matchmakers[0];
@@ -198,6 +197,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
             OnlineManager.netIO.ForgetPlayer(player);
+			OnlineManager.altNetIO?.ForgetPlayer(player);
 
             ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
         }

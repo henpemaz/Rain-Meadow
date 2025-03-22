@@ -12,6 +12,8 @@ namespace RainMeadow
     public class OnlineManager : MainLoopProcess
     {
         public static NetIO netIO;
+        public static LANNetIO altNetIO;
+
         public static OnlineManager instance;
         public static Serializer serializer = new Serializer(65536);
         public static List<ResourceSubscription> subscriptions;
@@ -32,9 +34,12 @@ namespace RainMeadow
             if (SteamManager.Instance.m_bInitialized && SteamUser.BLoggedOn()) {
                 netIO = new SteamNetIO();
             }
-            
+            // if steam is not installed, default to LAN
+            // otherwise if we enable LAN interfaces, activate the alternative net interface
             if (netIO == null) {
                 netIO = new LANNetIO();
+            } else if (RainMeadow.rainMeadowOptions.EnableLanInterface.Value) {
+                altNetIO = new LANNetIO();
             }
 
             instance = this;
@@ -72,6 +77,7 @@ namespace RainMeadow
 
             MatchmakingManager.currentInstance.LeaveLobby();
             netIO?.ForgetEverything();
+            altNetIO?.ForgetEverything();
             lobby = null;
 
             subscriptions = new();
@@ -97,6 +103,7 @@ namespace RainMeadow
         {
             myTimeStacker += dt * (float)framesPerSecond;
             netIO?.Update(); // incoming data
+            altNetIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (myTimeStacker >= 1f)
@@ -114,6 +121,7 @@ namespace RainMeadow
         public static void ForceLoadUpdate()
         {
             netIO?.Update();
+            altNetIO?.Update();
             lastReceive = UnityEngine.Time.realtimeSinceStartup;
 
             if (UnityEngine.Time.realtimeSinceStartup > lastSend + 1f / instance.framesPerSecond)
@@ -175,6 +183,7 @@ namespace RainMeadow
             if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
             {
                 netIO?.SendSessionData(toPlayer);
+                altNetIO?.SendSessionData(toPlayer);
             }
         }
 
@@ -372,6 +381,14 @@ namespace RainMeadow
                 LeaveLobby();
                 throw new Exception(v);
             }
+        }
+
+        public static LANNetIO GetLANNetIO()
+        {
+            if (netIO != null && netIO is LANNetIO lanetio) {
+                return lanetio;
+            }
+            return altNetIO;
         }
     }
 }

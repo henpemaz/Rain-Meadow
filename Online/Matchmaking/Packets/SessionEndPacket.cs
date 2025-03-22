@@ -6,8 +6,10 @@ namespace RainMeadow
 
         public override void Process()
         {
-            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) return;
-            OnlineManager.netIO.ForgetPlayer(processingPlayer);
+            if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
+			{
+            	OnlineManager.GetLANNetIO().ForgetPlayer(processingPlayer);
+			}
         }
     }
 }
