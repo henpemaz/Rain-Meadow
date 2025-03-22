@@ -11,6 +11,8 @@ namespace RainMeadow
         public OnlinePlayer player;
         public Queue<OnlineStateMessage> OutgoingStates = new(32);
         public OnlineEntity.EntityState lastAcknoledgedState;
+        private float cooldown = 1f;
+        private const float FULL_STATE_OPTIMIZATION = 0.5f;
 
         public EntityFeed(OnlineResource resource, OnlineEntity oe)
         {
@@ -51,6 +53,18 @@ namespace RainMeadow
             }
 
             var newState = entity.GetState(tick, resource);
+
+            //determine whether or not to send
+            OnlinePhysicalObject? playerEntity = null;
+            try { playerEntity = OnlineManager.lobby.playerAvatars.Find(p => player == p.Key).Value.FindEntity(true) as OnlinePhysicalObject; } catch { }
+            cooldown -= newState.SendFrequency(playerEntity?.apo?.realizedObject as Player) * (lastAcknoledgedState == null ? FULL_STATE_OPTIMIZATION : 1f);
+            if (cooldown > 0) return;
+            else
+            {
+                cooldown += 1f;
+                if (cooldown < 0) cooldown = 0; //prevent it from becoming indefinitely negative
+            }
+
             if (lastAcknoledgedState != null)
             {
                 RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick}");
