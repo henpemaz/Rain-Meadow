@@ -864,14 +864,13 @@ public partial class RainMeadow
         orig(self);
     }
 
-    // TODO: toggleable friendly fire
     private void Player_Collide(ILContext il)
     {
         try
         {
             // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             //becomes
-            // if (!(isStoryMode(out _) && otherObject is Player) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            // if (!(otherObject.FriendlyFireSafetyCandidate()) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(
