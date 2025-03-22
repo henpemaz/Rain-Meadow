@@ -20,5 +20,10 @@ namespace RainMeadow
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(chatHud => chatHud.AddMessage(user, message));
         }
+        public static void LogSystemMessage(string message)
+        {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
+            subscribers.ForEach(chatHud => chatHud.AddMessage("", message));
+        }
     }
 }

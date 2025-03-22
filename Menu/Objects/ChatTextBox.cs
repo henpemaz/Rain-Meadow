@@ -6,6 +6,7 @@ using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
+using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
@@ -130,17 +131,18 @@ namespace RainMeadow
                 blockInput = false;
             }
         }
-
         private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
+        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
+        {
+            if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
+
+            return blockInput? false : orig(code);
+        }
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
-            if (code == KeyCode.Return)
-            {
-                return orig(code);
-            }
-
+            if (code == KeyCode.Return) return orig(code);
+            
             return blockInput ? false : orig(code);
         }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);

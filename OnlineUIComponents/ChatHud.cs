@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using HUD;
+using Rewired;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -9,6 +11,7 @@ namespace RainMeadow
         private TextPrompt textPrompt;
         private RoomCamera camera;
         private RainWorldGame game;
+        public int currentLogIndex = 0;
 
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
@@ -54,13 +57,34 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             chatLog.Add((user, message));
-            while (chatLog.Count > 13) chatLog.RemoveAt(0);
+            if (chatInputActive) currentLogIndex = 0;
             chatLogOverlay?.UpdateLogDisplay();
         }
 
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
+
+            if (chatInputActive)
+            {
+                if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    if (currentLogIndex < chatLog.Count - 1)
+                    {
+                        currentLogIndex++;
+                        chatLogOverlay?.UpdateLogDisplay();
+                    }
+                }
+
+                if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    if (currentLogIndex > 0)
+                    {
+                        currentLogIndex--;
+                        chatLogOverlay?.UpdateLogDisplay();
+                    }
+                }
+            }
 
             if (chatInputOverlay is null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value))
             {
@@ -98,6 +122,7 @@ namespace RainMeadow
                 }
             }
 
+            
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
         }

@@ -11,6 +11,8 @@ namespace RainMeadow
         private ChatHud chatHud;
         public RainWorldGame game;
         private Dictionary<string, Color> colorDictionary = new();
+        private const int maxVisibleMessages = 13;
+        private int startIndex;
 
         public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
 
@@ -19,6 +21,7 @@ namespace RainMeadow
             this.chatHud = chatHud;
             this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
+
             UpdateLogDisplay();
         }
 
@@ -26,6 +29,8 @@ namespace RainMeadow
         {
             if (chatHud.chatLog.Count > 0)
             {
+                startIndex = Mathf.Clamp(chatHud.chatLog.Count - maxVisibleMessages - chatHud.currentLogIndex, 0, chatHud.chatLog.Count - maxVisibleMessages);
+
                 var logsToRemove = new List<MenuObject>();
 
                 // First, collect all the logs to remove
@@ -54,14 +59,15 @@ namespace RainMeadow
                 }
 
                 float yOffSet = 0;
-                foreach (var (username, message) in chatHud.chatLog)
+                var visibleLog = chatHud.chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                foreach (var (username, message) in visibleLog)
                 {
                     if (username is null or "")
                     {
                         // system message
                         var messageLabel = new MenuLabel(this, pages[0], message,
-                            new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet),
-                            new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
                         messageLabel.label.alignment = FLabelAlignment.Left;
                         messageLabel.label.color = SYSTEM_COLOR;
                         pages[0].subObjects.Add(messageLabel);
@@ -79,16 +85,16 @@ namespace RainMeadow
                         if (V < 0.8f) { colorNew = Color.HSVToRGB(H, S, 0.8f); }
 
                         var usernameLabel = new MenuLabel(this, pages[0], username,
-                            new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f, 330f - yOffSet),
-                            new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
                         usernameLabel.label.alignment = FLabelAlignment.Left;
                         usernameLabel.label.color = colorNew;
                         pages[0].subObjects.Add(usernameLabel);
 
                         var usernameWidth = LabelTest.GetWidth(usernameLabel.label.text);
                         var messageLabel = new MenuLabel(this, pages[0], $": {message}",
-                            new Vector2((1366f - manager.rainWorld.options.ScreenSize.x) / 2f - 660f + usernameWidth + 2f, 330f - yOffSet),
-                            new Vector2(manager.rainWorld.options.ScreenSize.x, 30f), false);
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f + usernameWidth + 2f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
                         messageLabel.label.alignment = FLabelAlignment.Left;
                         pages[0].subObjects.Add(messageLabel);
                     }
