@@ -8,7 +8,7 @@ namespace RainMeadow
         {
             if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.LAN)
 			{
-            	OnlineManager.GetLANNetIO().ForgetPlayer(processingPlayer);
+            	OnlineManager.netIO.ForgetPlayer(processingPlayer);
 			}
         }
     }

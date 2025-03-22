@@ -56,7 +56,7 @@ namespace RainMeadow
             supported_matchmakers.Clear();
             instances.Clear();
 
-            if (OnlineManager.netIO is SteamNetIO) {
+            if (OnlineManager.steamNetIO != null) {
                 instances.Add(MatchMakingDomain.Steam, new SteamMatchmakingManager());
                 supported_matchmakers.Add(MatchMakingDomain.Steam);
             }
@@ -197,7 +197,7 @@ namespace RainMeadow
             RainMeadow.Debug($"Actually removing player:{player}");
             OnlineManager.players.Remove(player);
             OnlineManager.netIO.ForgetPlayer(player);
-			OnlineManager.altNetIO?.ForgetPlayer(player);
+			OnlineManager.steamNetIO?.ForgetPlayer(player);
 
             ChatLogManager.LogMessage(Utils.Translate("Rain Meadow"), (player.id.GetPersonaName()) + " " + Utils.Translate("left the game."));
         }

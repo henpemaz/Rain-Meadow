@@ -361,7 +361,7 @@ namespace RainMeadow
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>
             {
-                if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
+                if (OnlineManager.steamNetIO == null && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
                     self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager, 

@@ -92,7 +92,7 @@ namespace RainMeadow {
             }
 
             public bool isLoopback() {
-                if (OnlineManager.GetLANNetIO() is LANNetIO netio) {
+                if (OnlineManager.netIO is LANNetIO netio) {
                     if (netio.manager.port != endPoint?.Port) return false;
                 }
 
@@ -109,7 +109,7 @@ namespace RainMeadow {
             }
         }
         public override void initializeMePlayer() {
-            if (OnlineManager.GetLANNetIO() is LANNetIO netio) {
+            if (OnlineManager.netIO is LANNetIO netio) {
                 OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(
                     UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
                 if (RainMeadow.rainMeadowOptions.LanUserName.Value.Length > 0) {
@@ -126,7 +126,7 @@ namespace RainMeadow {
             // To create a proper list, we need to send a message to the broadcast endpoint.
             // and wait for responces from possible hosts.
             for (int i = 0; i < 8; i++) {
-                if (OnlineManager.GetLANNetIO() is LANNetIO lanentio) {
+                if (OnlineManager.netIO is LANNetIO lanentio) {
                     using (MemoryStream memoryStream = new())
                     using (BinaryWriter writer = new(memoryStream)) {
                         lanentio.SendBroadcast(new RequestLobbyPacket());
@@ -157,12 +157,12 @@ namespace RainMeadow {
 
         public void SendLobbyInfo(OnlinePlayer other) {
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner) {
-                if (OnlineManager.GetLANNetIO() is LANNetIO lannetio) {
+                if (OnlineManager.netIO is LANNetIO lannetio) {
                     var packet = new InformLobbyPacket(
                         maxplayercount, Utils.Translate("LAN Lobby"), OnlineManager.lobby.hasPassword,
                         OnlineManager.lobby.gameModeType.value, OnlineManager.players.Count,
                         RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()), RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
-                    OnlineManager.GetLANNetIO().SendP2P(other, packet, NetIO.SendType.Unreliable, true);
+                    OnlineManager.netIO.SendP2P(other, packet, NetIO.SendType.Unreliable, true);
                 }
             }
         }
@@ -180,7 +180,7 @@ namespace RainMeadow {
         public override void SendChatMessage(string message) {
             foreach (OnlinePlayer player in OnlineManager.players) {
                 if (player.isMe) continue;
-                OnlineManager.GetLANNetIO().SendP2P(player, new ChatMessagePacket(message), NetIO.SendType.Reliable);
+                OnlineManager.netIO.SendP2P(player, new ChatMessagePacket(message), NetIO.SendType.Reliable);
             }
 
             RecieveChatMessage(OnlineManager.mePlayer, message);
@@ -216,7 +216,7 @@ namespace RainMeadow {
             if (OnlineManager.players.Contains(joiningPlayer)) { return; }
             OnlineManager.players.Add(joiningPlayer);
             HandleJoin(joiningPlayer);
-            (OnlineManager.GetLANNetIO() as LANNetIO)?.SendAcknoledgement(joiningPlayer);
+            (OnlineManager.netIO as LANNetIO)?.SendAcknoledgement(joiningPlayer);
             RainMeadow.Debug($"Added {joiningPlayer} to the lobby matchmaking player list");
 
             if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
@@ -228,12 +228,12 @@ namespace RainMeadow {
                     if (player.isMe || player == joiningPlayer)
                         continue;
 
-                    OnlineManager.GetLANNetIO().SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] { joiningPlayer }), 
+                    OnlineManager.netIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, new OnlinePlayer[] { joiningPlayer }), 
                         NetIO.SendType.Reliable);
                 }
 
                 // Tell joining peer to create everyone in the server
-                OnlineManager.GetLANNetIO().SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, 
+                OnlineManager.netIO.SendP2P(joiningPlayer, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Add, 
                     OnlineManager.players.Append(OnlineManager.mePlayer).ToArray()), 
                     NetIO.SendType.Reliable);
             }
@@ -258,11 +258,11 @@ namespace RainMeadow {
                     if (player.isMe)
                         continue;
 
-                    OnlineManager.GetLANNetIO().SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { leavingPlayer }), 
+                    OnlineManager.netIO.SendP2P(player, new ModifyPlayerListPacket(ModifyPlayerListPacket.Operation.Remove, new OnlinePlayer[] { leavingPlayer }), 
                         NetIO.SendType.Reliable);
                 }
             }
-            OnlineManager.GetLANNetIO().ForgetPlayer(leavingPlayer);
+            OnlineManager.netIO.ForgetPlayer(leavingPlayer);
             OnPlayerListReceivedEvent(playerList.ToArray());
         }
         string lobbyPassword = "";
@@ -279,7 +279,7 @@ namespace RainMeadow {
                 }
                 
                 RainMeadow.Debug("Sending Request to join lobby...");
-                OnlineManager.GetLANNetIO().SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
+                OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
                     new RequestJoinPacket(OnlineManager.mePlayer.id.name), NetIO.SendType.Reliable, true);
             } else {
                 RainMeadow.Error("Invalid lobby type");
@@ -316,13 +316,13 @@ namespace RainMeadow {
             if (OnlineManager.players is not null) {
                 if (OnlineManager.players.Count > 1) {
                     foreach (OnlinePlayer p in  OnlineManager.players) {
-                        OnlineManager.GetLANNetIO().SendP2P(p, 
+                        OnlineManager.netIO.SendP2P(p, 
                             new SessionEndPacket(), 
                                 NetIO.SendType.Reliable);
                     }
                 }
             }
-            OnlineManager.GetLANNetIO().ForgetEverything();
+            OnlineManager.netIO.ForgetEverything();
         }
 
         public override OnlinePlayer GetLobbyOwner() {
