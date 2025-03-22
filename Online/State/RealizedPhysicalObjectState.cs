@@ -19,12 +19,25 @@ namespace RainMeadow
             chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
+        
+        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po.grabbedBy.Any((x) => {
+                if (x.grabber == null) return false;
+                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
+                if (onlinegrabber == null) return false;
+                return onlinegrabber.lenientPos;
+            })) return true;
+
+            return false;
+        }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
             if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
+
+            opo.lenientPos = ShouldPosBeLenient(po);
             if (!opo.lenientPos)
             {
                 for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions

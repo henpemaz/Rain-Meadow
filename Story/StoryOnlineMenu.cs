@@ -26,12 +26,14 @@ namespace RainMeadow
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
+        int actualSeriesIndex;
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
+            actualSeriesIndex = slugcatPageIndex;
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
@@ -302,9 +304,10 @@ namespace RainMeadow
             }
         }
 
+
         public int GetCurrentlySelectedOfSeries(string series) => series switch
         {
-            "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : slugcatPageIndex,
+            "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : actualSeriesIndex,
             _ => -1,
         };
 
@@ -313,6 +316,11 @@ namespace RainMeadow
             switch (series)
             {
                 case "scugButtons":
+                    actualSeriesIndex = to;
+                    if (to >= slugcatPages.Count) {
+                        to = 0;
+                    }
+
                     slugcatPageIndex = to;
                     return;
             }
@@ -344,14 +352,21 @@ namespace RainMeadow
             slugcatLabel = new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true);
             pages[0].subObjects.Add(slugcatLabel);
 
-            scugButtons = new List<EventfulSelectOneButton>();
-            // hack to make EventfulSelectOneButton happy. Can't update pos otherwise.
-            var fScugButtons = new EventfulSelectOneButton[slugcatColorOrder.Count];
-            for (var i = 0; i < slugcatColorOrder.Count; i++)
+
+            var SelectableSlugcats = slugcatColorOrder.AsEnumerable();
+            if (ModManager.MSC) {
+                if (!SelectableSlugcats.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
+                    SelectableSlugcats = SelectableSlugcats.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                }
+            }
+
+            var slugcatsArray = SelectableSlugcats.ToArray();
+            scugButtons = scugButtons = new List<EventfulSelectOneButton>();
+            for (var i = 0; i < slugcatsArray.Length; i++)
             {
-                var scug = slugcatColorOrder[i];
+                var scug = slugcatsArray[i];
                 pos -= new Vector2(0, 38);
-                var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), fScugButtons, i);
+                var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
                 pages[0].subObjects.Add(btn);
                 btn.OnClick += (_) =>
                 {
