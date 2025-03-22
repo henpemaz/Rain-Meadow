@@ -259,15 +259,6 @@ Missing DLC Mods that have to be enabled: |Mods DLC perdidos que tienen que esta
 // Remix Options
 Arena|Arena
 LAN|LAN
-Disable Pause Menu Animation|Desactivar animación del menú de pausa
-If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
-Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
-Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
-Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
-Unlock Emote|Desbl. emote
-Unlock Skin|Desbl. aspecto
-Unlock Character|Desbl. personaje
-Reset all progression|Reiniciar todo el progreso
 Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo Meadow.
 Show usernames|Mostrar nombres de usuario
 Username Toggle|Ver los nombres sin mantener pulsado
@@ -285,6 +276,15 @@ Vanilla|Vanilla
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|Si el DLC Downpour no está activado, la intro vanilla será usada en su lugar.
 Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
+Disable Pause Menu Animation|Desactivar animación del menú de pausa
+If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
+Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
+Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
+Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
+Unlock Emote|Desbl. emote
+Unlock Skin|Desbl. aspecto
+Unlock Character|Desbl. personaje
+Reset all progression|Reiniciar todo el progreso
 Ready to shelter/gate|Preparado para hibernar o pasar de región
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
