@@ -63,7 +63,7 @@ namespace RainMeadow
 
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (isArenaMode(out var arena) && self.IsLocal())
+            if (OnlineManager.lobby != null && self.IsLocal())
             {
                 self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
             }
@@ -77,7 +77,7 @@ namespace RainMeadow
                 return true;
             }
 
-            if (ModManager.MSC && isArenaMode(out var _) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
+            if (ModManager.MSC && (OnlineManager.lobby != null) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
             {
                 return false;
             }

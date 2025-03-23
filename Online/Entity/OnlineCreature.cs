@@ -188,7 +188,7 @@ namespace RainMeadow
                 RainMeadow.Error("realized creature not found for: " + this);
                 return;
             }
-            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
+            if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
                 OnlineManager.RunDeferred(() => this.didParry = false);

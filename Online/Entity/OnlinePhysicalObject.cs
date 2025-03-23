@@ -497,7 +497,7 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
-            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
+            if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
                 OnlineManager.RunDeferred(() => this.didParry = false);

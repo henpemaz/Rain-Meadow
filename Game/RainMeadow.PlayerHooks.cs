@@ -68,7 +68,7 @@ public partial class RainMeadow
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
         Color orig_color = orig(name);
         if (OnlineManager.lobby != null) {
-            if (name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+            if (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
                 return new Color(0.467f, 0.867f, 0.812f);
             }
         }
