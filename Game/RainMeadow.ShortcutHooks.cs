@@ -223,8 +223,12 @@ namespace RainMeadow
                     selfonlineobj.reclaim_grasps.Clear();
                     creatures_who_reclaim_sticks.Remove(selfonlineobj);
 
+                    List<AbstractPhysicalObject> immidiate_connections = new();
+                    // we only care about our immidiete connections for now
+                    self.abstractCreature.AddConnected(ref immidiate_connections);
                     // If the shortcut we are entering is leaving the room.
-                    foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
+                    foreach (AbstractPhysicalObject obj in immidiate_connections) {
+
                         // what objects are coming with us?
                         var onlineobj = obj.GetOnlineObject();
                         if (onlineobj == null) {
