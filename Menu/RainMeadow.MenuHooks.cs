@@ -33,6 +33,27 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
             On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
             On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
+
+            On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
+        }
+
+        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, global::Menu.SlugcatSelectMenu self) {
+            if (isStoryMode(out _)) {
+                var storymenu = self as StoryOnlineMenu;
+                if (storymenu == null) {
+                    Error("self was not a StoryOnlineMenu.");
+                } else if (storymenu.colorInterface == null) {
+                    storymenu.SetupSelectableSlugcats();
+                    Vector2 pos = new Vector2(1000f - (1366f - storymenu.manager.rainWorld.options.ScreenSize.x) / 2f, storymenu.manager.rainWorld.options.ScreenSize.y - 100f);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(storymenu.selectableSlugcats[storymenu.SelectedIndex], pos);
+                    self.pages[0].subObjects.Add(self.colorInterface);
+                    return;
+                }
+            }
+            
+
+            orig(self);
+            return;
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)

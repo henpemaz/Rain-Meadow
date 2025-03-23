@@ -55,6 +55,7 @@ public partial class RainMeadow
         IL.Player.checkInput += Player_checkInput_IgnoreIfCarryingSlugNPC;
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
+        On.PlayerGraphics.DefaultSlugcatColor += PlayerGraphics_DefaultSlugcatColor;
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
@@ -62,7 +63,17 @@ public partial class RainMeadow
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
 
+    Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
+        Color orig_color = orig(name);
+        if (OnlineManager.lobby != null) {
+            if (name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+                return new Color(0.467f, 0.867f, 0.812f);
+            }
+        }
+
+        return orig_color;
     }
 
     private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self) {
@@ -93,7 +104,7 @@ public partial class RainMeadow
                         if (other.isNPC) continue;
                         if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
                         if (!other.Consious) continue;
-                        if (other.onBack != null) continue;
+                        // if (other.onBack != null) continue; // this is pretty funny
 
 
                         var viable = false;
@@ -178,6 +189,8 @@ public partial class RainMeadow
             if (self.slugcat.isNPC) return;
 
             if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug();
+
+            self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
         }
     }
 
@@ -203,7 +216,10 @@ public partial class RainMeadow
                 
                 return controller;
             });
-                
+
+            // Delegate inserted after this.input[0] = RWInput.PlayerInput(num);
+
+
         }
         catch (Exception e)
         {
@@ -310,6 +326,27 @@ public partial class RainMeadow
                 }
 
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
+            }
+
+            if (!self.isNPC) {
+                Player? grabbingplayer = self.grabbedBy.FirstOrDefault(x => x.grabber is Player)?.grabber as Player;
+                if (grabbingplayer != null) {
+                    if (!self.input[0].AnyDirectionalInput) {
+                        self.input[0].x = grabbingplayer.input[0].x;
+                        self.input[0].y = grabbingplayer.input[0].y;
+                        if (grabbingplayer.bodyMode == Player.BodyModeIndex.Crawl && self.standing)
+                        {
+                            self.input[0].y = -1;
+                        }
+                        if (grabbingplayer.bodyMode == Player.BodyModeIndex.Stand && !self.standing)
+                        {
+                            self.input[0].y = 1;
+                        }
+
+                        self.input[0].jmp = grabbingplayer.input[0].jmp;
+                    }
+                } 
+
             }
         }
     }

@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using RWCustom;
 using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -154,11 +155,29 @@ namespace RainMeadow
                         result = false;
                         break;
                     }
+
+                    if (absCrit.IsLocal() || onlineobj.isMine) {
+                        if (!onlineobj.readyForVessel) { 
+                            Trace($"Denied because online object owner was not ready.");
+                            result = false;
+                            break;
+                        }
+                    }
                 }   
             }
 
 
-            if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
+            // If entity is ours, game handles it normally.
+            if (onlineEntity.isMine) {
+                if (result) {
+                    foreach(OnlinePhysicalObject? Otheronlineobj in absCrit.GetAllConnectedObjects().Select(x => x.GetOnlineObject())) {
+                        if (Otheronlineobj is null) continue;
+                        if (Otheronlineobj.owner is null) continue;
+                        Otheronlineobj.owner.InvokeRPC(onlineEntity.EverybodiesReadyForVessel);
+                    }            
+                }
+                return result;
+            } 
             if (onlineEntity.roomSession?.absroom != vessel.room)
             {
                 Trace($"Denied because in wrong room: vessel at {vessel.room.name}:{vessel.room.index} entity at:{onlineEntity.roomSession?.absroom.name ?? "null"}{onlineEntity.roomSession?.absroom.index.ToString() ?? "null"}");
@@ -237,7 +256,7 @@ namespace RainMeadow
         }
 
 
-        private void MakeConnectionsLoadRoom(Creature self, IntVector2 entrancePos) {
+        private bool HandleUnownedConnections(Creature self, IntVector2 entrancePos) {
             // This is so that our unowned connected objects load the room we are about to enter.
             // Specifically helpful for backpacked player Slugcats.
             
@@ -256,8 +275,13 @@ namespace RainMeadow
 
                         // They're not ready for the vessel because we haven't told them about it yet.
                         onlineobj.readyForVessel = false;
-                        if (onlineobj.isTransferable || !onlineobj.isMine) continue;
+                        if (onlineobj.isTransferable || onlineobj.isMine) continue;
 
+                        
+
+                        return false;
+
+                        // UNUSED: Could be redone in the future
                         // If the objects mine. I should get ready...
                         var abstractRoom = self.room.world.GetAbstractRoom(destroom);
                         abstractRoom.world.ActivateRoom(abstractRoom);
@@ -270,18 +294,9 @@ namespace RainMeadow
                         }   
                     }
                 }
-            }  else {
-                foreach (AbstractPhysicalObject obj in self.abstractCreature.GetAllConnectedObjects()) {
-                    var onlineobj = obj.GetOnlineObject();
-                    if (onlineobj == null) {
-                        Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
-                        continue;
-                    }
-
-                    // If it's not a room exit. they are ready.
-                    onlineobj.readyForVessel = true;
-                }
             }
+
+            return true; 
         }
 
         // event driven shortcutting for remotes
@@ -310,29 +325,31 @@ namespace RainMeadow
 
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
-                MakeConnectionsLoadRoom(self, entrancePos);
-                RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
-                orig(self, entrancePos, carriedByOther);
-                onlineCreature.enteringShortCut = false;
-                if (room.isOwner) // proccessed, now broadcast
-                {
-                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
+                if (HandleUnownedConnections(self, entrancePos)) {
+                    RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
+                    orig(self, entrancePos, carriedByOther);
+                    onlineCreature.enteringShortCut = false;
+                    if (room.isOwner) // proccessed, now broadcast
+                    {
+                        onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                    }
+                } else self.enteringShortCut = null;
             }
             else if (onlineCreature.isMine)
             {
-                MakeConnectionsLoadRoom(self, entrancePos);
-                orig(self, entrancePos, carriedByOther);
-                RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
-                
-                if (room.isOwner) // now broadcast
-                {
-                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
-                else // tell room-owner about it so it gets broadcasted
-                {
-                    room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
+                if (HandleUnownedConnections(self, entrancePos)) {
+                    orig(self, entrancePos, carriedByOther);
+                    RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
+                    
+                    if (room.isOwner) // now broadcast
+                    {
+                        onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                    }
+                    else // tell room-owner about it so it gets broadcasted
+                    {
+                        room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
+                    }
+                } else self.enteringShortCut = null;
             }
             else
             {
