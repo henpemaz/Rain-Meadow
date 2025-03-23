@@ -21,24 +21,30 @@ namespace RainMeadow
         MenuLabel slugcatLabel;
 
         SlugcatCustomization personaSettings;
-        List<EventfulSelectOneButton> scugButtons;
+        EventfulSelectOneButton[] scugButtons;
+        public SlugcatStats.Name[] selectableSlugcats { get; private set; }
 
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
-        int actualSeriesIndex;
+        public int actualSelectedIndex = -1;
+        public int SelectedIndex { get => (actualSelectedIndex < 0)? slugcatPageIndex : actualSelectedIndex;   private set {
+            actualSelectedIndex = value;
+        } }
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
-            actualSeriesIndex = slugcatPageIndex;
+            SelectedIndex = slugcatPageIndex;
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
             restartCheckboxPos = restartCheckbox.pos;
+            
 
+            SetupSelectableSlugcats();
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
 
@@ -63,6 +69,19 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
+        public void SetupSelectableSlugcats() {
+            if (selectableSlugcats == null) {
+                var SelectableSlugcatsEnumerable = slugcatColorOrder.AsEnumerable();
+                if (ModManager.MSC) {
+                    if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
+                        SelectableSlugcatsEnumerable = SelectableSlugcatsEnumerable.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                    }
+                }
+
+                selectableSlugcats = SelectableSlugcatsEnumerable.ToArray();
+            }
+        }   
+
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
             if (OnlineManager.lobby.isOwner)
@@ -85,12 +104,12 @@ namespace RainMeadow
             if (this.colorChecked)
             {
                 List<Color> val = new();
-                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value].Count; i++)
+                for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value].Count; i++)
                 {
                     Vector3 vector = new Vector3(1f, 1f, 1f);
-                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Contains(","))
+                    if (manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value][i].Contains(","))
                     {
-                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[slugcatColorOrder[slugcatPageIndex].value][i].Split(new char[1] { ',' });
+                        string[] array = manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value][i].Split(new char[1] { ',' });
                         vector = new Vector3(float.Parse(array[0], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[1], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture), float.Parse(array[2], (NumberStyles)511, (IFormatProvider)(object)CultureInfo.InvariantCulture));
                     }
                     val.Add(RWCustom.Custom.HSL2RGB(vector[0], vector[1], vector[2]));
@@ -101,7 +120,7 @@ namespace RainMeadow
             else
             {
                 // Use the default colors for this slugcat when the checkbox is unchecked
-                personaSettings.currentColors = PlayerGraphics.DefaultBodyPartColorHex(slugcatColorOrder[slugcatPageIndex]).Select(Custom.hexToColor).ToList();
+                personaSettings.currentColors = PlayerGraphics.DefaultBodyPartColorHex(selectableSlugcats[SelectedIndex]).Select(Custom.hexToColor).ToList();
             }
             manager.arenaSitting = null;
             if (restartCheckbox != null && restartCheckbox.Checked)
@@ -307,7 +326,7 @@ namespace RainMeadow
 
         public int GetCurrentlySelectedOfSeries(string series) => series switch
         {
-            "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : actualSeriesIndex,
+            "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : SelectedIndex,
             _ => -1,
         };
 
@@ -316,7 +335,7 @@ namespace RainMeadow
             switch (series)
             {
                 case "scugButtons":
-                    actualSeriesIndex = to;
+                    SelectedIndex = to;
                     if (to >= slugcatPages.Count) {
                         to = 0;
                     }
@@ -351,20 +370,10 @@ namespace RainMeadow
             var pos = new Vector2(394, 553);
             slugcatLabel = new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true);
             pages[0].subObjects.Add(slugcatLabel);
-
-
-            var SelectableSlugcats = slugcatColorOrder.AsEnumerable();
-            if (ModManager.MSC) {
-                if (!SelectableSlugcats.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
-                    SelectableSlugcats = SelectableSlugcats.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
-                }
-            }
-
-            var slugcatsArray = SelectableSlugcats.ToArray();
-            scugButtons = scugButtons = new List<EventfulSelectOneButton>();
-            for (var i = 0; i < slugcatsArray.Length; i++)
+            scugButtons  = new EventfulSelectOneButton[selectableSlugcats.Length];
+            for (var i = 0; i < selectableSlugcats.Length; i++)
             {
-                var scug = slugcatsArray[i];
+                var scug = selectableSlugcats[i];
                 pos -= new Vector2(0, 38);
                 var btn = new EventfulSelectOneButton(this, pages[0], Translate(SlugcatStats.getSlugcatName(scug)), "scugButtons", pos, new Vector2(110, 30), scugButtons, i);
                 pages[0].subObjects.Add(btn);
@@ -378,8 +387,7 @@ namespace RainMeadow
                         AddColorButtons();
                     }
                 };
-                scugButtons.Add(btn);
-
+                scugButtons[i] = btn;
             }
         }
 

@@ -95,7 +95,6 @@ namespace RainMeadow
         public bool lenientPos;
         public bool didParry;
         public bool beingMoved;
-        public bool readyForVessel; 
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
         public RoomSession roomSession => this.currentlyJoinedResource as RoomSession; // shorthand
@@ -405,6 +404,10 @@ namespace RainMeadow
                             if (player.slugOnBack != null) {
                                 player.slugOnBack.DropSlug();
                             }
+
+                            if (player.onBack != null) {
+                                player.onBack.slugOnBack.DropSlug();
+                            }
                         }
 
                         if (apo.Room?.realizedRoom is Room room)
@@ -552,15 +555,6 @@ namespace RainMeadow
                 default:
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
-        }
-
-        [RPCMethod]
-        public void ReadyForVessel(RPCEvent e) {
-            if (e.from != owner) {
-                RainMeadow.Debug($"Not owner, ignoring vessel request for {this}");
-                return;
-            }
-            this.readyForVessel = true;            
         }
     }
 }
