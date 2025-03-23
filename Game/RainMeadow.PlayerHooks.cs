@@ -83,16 +83,22 @@ public partial class RainMeadow
         if (OnlineManager.lobby == null) return;
         if (slugcat == null) return;
 
-        if (!slugcat.isNPC && slugcat.input[0].jmp) {
-            slugcat.jumpChunk = self.owner.mainBodyChunk;
-            slugcat.JumpOnChunk();
+        if (slugcat.IsLocal()) {
+            if (!slugcat.isNPC && slugcat.input[0].jmp) {
+                slugcat.jumpChunk = self.owner.mainBodyChunk;
+                slugcat.JumpOnChunk();
+            }
         }
+
     }
 
     // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
     private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu) {
         orig(self, eu);
         if (OnlineManager.lobby == null) return;
+        if (!OnlineManager.lobby.gameMode.PlayersCanStack) {
+            return;
+        }
 
         float range = 26 + self.bodyChunks[1].rad;
         if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 
@@ -939,6 +945,13 @@ public partial class RainMeadow
         if (!self.isNPC) {
             if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return false;
         }
+
+        if (OnlineManager.lobby != null) {
+            if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && obj is Player p && !p.isNPC) {
+                return false;
+            }
+        }
+
         
         return orig(self, obj);
     }
