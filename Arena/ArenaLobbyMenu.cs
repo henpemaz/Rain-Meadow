@@ -647,14 +647,14 @@ namespace RainMeadow
                 {
                     if (!player.isMe)
                     {
-                        if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.inLobbyId, out var existingValue))
+                        if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.ToString(), out var existingValue))
                         {
                             RainMeadow.Debug("Player already exists in slug dictionary");
                         }
                         else
                         {
                             // Key does not exist, you can add it if needed
-                            arena.playersInLobbyChoosingSlugs.Add(player.inLobbyId, 0);
+                            arena.playersInLobbyChoosingSlugs.Add(player.id.ToString(), 0);
                         }
 
                         if (arena.playersReadiedUp.list.Contains(player.id))
@@ -703,9 +703,9 @@ namespace RainMeadow
                 classButtons[0].readyForCombat = true;
                 classButtons[0].profileIdentifier = OnlineManager.mePlayer;
                 int currentColorIndex;
-                if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.inLobbyId, out var existingValue))
+                if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.id.ToString(), out var existingValue))
                 {
-                    currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.inLobbyId];
+                    currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()];
                     RainMeadow.Debug("Player already exists in dictionary");
                     RainMeadow.Debug("Current index" + currentColorIndex);
                     classButtons[0].portrait.fileName = ArenaImage(allSlugs[currentColorIndex], currentColorIndex);
@@ -716,7 +716,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Player did NOT exist in dictionary");
                     currentColorIndex = 0;
-                    arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.inLobbyId, currentColorIndex);
+                    arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.ToString(), currentColorIndex);
 
                 }
 
@@ -740,7 +740,7 @@ namespace RainMeadow
                         }
                     }
 
-                    arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.inLobbyId] = currentColorIndex;
+                    arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
                 };
                 pages[0].subObjects.Add(classButtons[0]);
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
@@ -788,9 +788,12 @@ namespace RainMeadow
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
                 classButtons[localIndex].profileIdentifier = (localIndex == OnlineManager.players.IndexOf(OnlineManager.mePlayer) ? OnlineManager.lobby.owner : OnlineManager.players[localIndex]);
 
-                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[localIndex].inLobbyId, out var currentColorIndexOther))
+                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[i].id.ToString(), out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
+                }else
+                {
+                    currentColorIndexOther = arena.playersInLobbyChoosingSlugs[OnlineManager.players[i].id.ToString()];
                 }
                 classButtons[localIndex].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
                 classButtons[localIndex].portrait.LoadFile();
@@ -950,7 +953,7 @@ namespace RainMeadow
                         BanHammer.BanUser(OnlineManager.players[localIndex]);
                     };
                 }
-                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[currentPlayerPosition].inLobbyId, out var currentColorIndexOther))
+                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[currentPlayerPosition].id.ToString(), out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
                 }
@@ -1012,7 +1015,7 @@ namespace RainMeadow
                     };
                 }
                 classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
-                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[currentPlayerPosition].inLobbyId, out var currentColorIndexOther))
+                if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[currentPlayerPosition].id.ToString(), out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
                 }
