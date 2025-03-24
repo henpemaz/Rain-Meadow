@@ -40,7 +40,7 @@ namespace RainMeadow
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
         public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new Generics.DynamicOrderedPlayerIDs();
 
-        public Dictionary<ushort, int> playersInLobbyChoosingSlugs = new Dictionary<ushort, int>();
+        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
 
 
         public int playerEnteredGame = 0;
