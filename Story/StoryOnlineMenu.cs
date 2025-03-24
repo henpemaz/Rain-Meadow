@@ -28,7 +28,7 @@ namespace RainMeadow
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
         public int actualSelectedIndex = -1;
-        public int SelectedIndex { get => (actualSelectedIndex < 0)? slugcatPageIndex : actualSelectedIndex;   private set {
+        public int SelectedIndex { get => (actualSelectedIndex < 0 || (OnlineManager.lobby?.isOwner ?? false))? slugcatPageIndex : actualSelectedIndex;   private set {
             actualSelectedIndex = value;
         } }
 
