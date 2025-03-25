@@ -3,6 +3,8 @@ using Rewired;
 using RWCustom;
 using System;
 using System.Linq;
+using System.ComponentModel;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -11,40 +13,94 @@ namespace RainMeadow
     public abstract class CreatureController : IOwnAHUD
     {
         public static ConditionalWeakTable<Creature, CreatureController> creatureControllers = new();
+
+        public static Dictionary<CreatureControllerKind, CreatureControllerData> controllerData = new();
+        public class CreatureControllerData
+        {
+            public delegate void InitializeFn(Creature creature, OnlineCreature oc, MeadowAvatarData customization);
+            public delegate bool IsValidFn(Creature creature);
+            public InitializeFn initialize_fn;
+            public IsValidFn isValid_fn;
+        }
+        [TypeConverter(typeof(ExtEnumTypeConverter<CreatureControllerKind>))]
+        public class CreatureControllerKind : ExtEnum<CreatureControllerKind>
+        {
+            public CreatureControllerKind(string name, bool register, CreatureControllerData data) : base(name, register)
+            {
+                if (register)
+                {
+                    controllerData[this] = data;
+                }
+            }
+            //
+            public static CreatureControllerKind CC_Player = new("Player", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is Player player) { new MeadowPlayerController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is Player); }
+            });
+            public static CreatureControllerKind CC_Cicada = new("Cicada", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is Cicada player) { new CicadaController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is Cicada); }
+            });
+            public static CreatureControllerKind CC_Lizard = new("Lizard", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is Lizard player) { new LizardController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is Lizard); }
+            });
+            public static CreatureControllerKind CC_Scavenger = new("Scavenger", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is Scavenger player) { new ScavengerController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is Scavenger); }
+            });
+            public static CreatureControllerKind CC_NeedleWorm = new("NeedleWorm", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is NeedleWorm player) { new NoodleController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is NeedleWorm); }
+            });
+            public static CreatureControllerKind CC_EggBug = new("EggBug", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is EggBug player) { new EggbugController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is EggBug); }
+            });
+            public static CreatureControllerKind CC_LanternMouse = new("LanternMouse", true, new()
+            {
+                initialize_fn = (Creature creature, OnlineCreature oc, MeadowAvatarData customization) => {
+                    if (creature is LanternMouse player) { new LanternMouseController(player, oc, 0, customization); }
+                },
+                isValid_fn = (Creature creature) => { return (creature is LanternMouse); }
+            });
+        }
+
         internal static void BindAvatar(Creature creature, OnlineCreature oc, MeadowAvatarData customization)
         {
-            if (creature is Player player)
+            // ext enum expandable by modifikation :)
+            foreach (var k in controllerData)
             {
-                new MeadowPlayerController(player, oc, 0, customization);
+                if (k.Value.isValid_fn(creature))
+                {
+                    RainMeadow.Debug("did YES match " + k.Key);
+                    k.Value.initialize_fn(creature, oc, customization);
+                    return;
+                }
+                else
+                {
+                    RainMeadow.Debug("did NOT match " + k.Key);
+                }
             }
-            else if (creature is Cicada cada)
-            {
-                new CicadaController(cada, oc, 0, customization);
-            }
-            else if (creature is Lizard liz)
-            {
-                new LizardController(liz, oc, 0, customization);
-            }
-            else if (creature is Scavenger scav)
-            {
-                new ScavengerController(scav, oc, 0, customization);
-            }
-            else if (creature is NeedleWorm noodle)
-            {
-                new NoodleController(noodle, oc, 0, customization);
-            }
-            else if (creature is EggBug bug)
-            {
-                new EggbugController(bug, oc, 0, customization);
-            }
-            else if (creature is LanternMouse mouse)
-            {
-                new LanternMouseController(mouse, oc, 0, customization);
-            }
-            else
-            {
-                throw new InvalidProgrammerException("You need to implement " + creature.ToString());
-            }
+            throw new InvalidProgrammerException("You need to implement " + creature.ToString());
         }
 
         public Creature creature;

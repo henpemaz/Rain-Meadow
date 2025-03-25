@@ -27,6 +27,9 @@ namespace RainMeadow
                 RainMeadow.Debug($"characters loaded: {Character.values.Count}");
                 RainMeadow.Debug($"skins loaded: {Skin.values.Count}");
                 RainMeadow.Debug($"emotes loaded: {Emote.values.Count}");
+
+                _ = CreatureController.CreatureControllerKind.CC_Player;
+                RainMeadow.Debug($"controllers loaded: {CreatureController.CreatureControllerKind.values.Count}");
             }
             catch (Exception e)
             {
