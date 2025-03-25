@@ -202,9 +202,12 @@ namespace RainMeadow
                 {
                     return;
                 }
-                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
+                if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playersReadiedUp.list.Add(userIsReady.id);
+                    if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
+                    {
+                        arena.playersReadiedUp.list.Add(userIsReady.id);
+                    }
                 }
 
                 try
