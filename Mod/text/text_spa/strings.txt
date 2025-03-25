@@ -219,6 +219,66 @@ was ascended by|ha ascendido por parte de
 was zapped by a|ha muerto por una descarga eléctrica de
 was slain by a|ha muerto por
 
+// creature names for death messages
+Pink Lizard|Lagarto Rosa
+Green Lizard|Lagarto Verde
+Blue Lizard|Lagarto Azul
+Yellow Lizard|Lagarto Amarillo
+White Lizard|Lagarto Blanco
+Red Lizard|Lagarto Rojo
+Black Lizard|Lagarto Negro
+Salamander|Salamandra
+Cyan Lizard|Lagarto Cian
+Leech|Sanguijuela
+Sea Leech|Sanguijuela Marina
+Snail|Caracol
+Vulture|Buitre
+Garbage Worm|Gusano de la Basura
+Lantern Mouse|Ratón Farol
+Cicada A|Chicharra A
+Cicada B|Chicharra B
+Jet Fish|Pez Chorro
+Big Eel|Anguila Gigante
+Deer|Ciervo
+Tube Worm|Gusano de las Tuberías
+Daddy Long Legs|Papá Patilargo
+Brother Long Legs|Hermano Patilargo
+Tentacle Plant|Planta de Tentáculos
+Pole Mimic|Mímico de Postes
+Miros Bird|Pájaro Miró
+Temple Guard|Guardia del Templo
+Centipede|Ciempiés
+Red Centipede|Ciempiés Rojo
+Scavenger|Carroñero
+Centiwing|Cienalas
+Small Centipede|Ciempiés Pequeño
+Overseer|Supervisor
+Vulture Grub|Larva de Buitre
+Big Spider|Araña Gigante
+Spitter Spider|Araña Escupidora
+Egg Bug|Bicho Huevo
+Small Needle|Aguja Pequeña
+Big Needle|Aguja Grande
+Drop Bug|Bicho Trampa
+King Vulture|Buitre Real
+Hazer|Calamar Humeante
+Miros Vulture|Buitre Miró
+Caramel Lizard|Lagarto Caramelo
+Eel|Anguila
+Strawberry|Fresa
+Mother Spider|Araña Nodriza
+Terror Long Legs|Madre Patilarga
+Aquapede|Acuípedo
+Hell Bug|Bicho Infernal
+Stowaway Bug|Bicho Polizón
+Elite Scavenger|Carroñero de Élite
+King Scavenger|Carroñero Real
+Inspector|Inspector
+Yeek|Yeek
+Big Jellyfish|Medusa Gigante
+Jungle Leech|Sanguijuela Selvática
+Train Lizard|Lagarto Tren
+
 // Direct Connection Dialogue
 Direct Connection... |Conexión directa... 
 Password:|Contraseña:
