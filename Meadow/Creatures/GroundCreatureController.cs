@@ -610,7 +610,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             bool localTrace = UnityEngine.Input.GetKey(KeyCode.L);
@@ -770,7 +770,7 @@ namespace RainMeadow
         protected abstract void ClearMovementOverride();
         protected abstract void MovementOverride(MovementConnection movementConnection);
 
-        internal override void Update(bool eu)
+        public override void Update(bool eu)
         {
             base.Update(eu);
 

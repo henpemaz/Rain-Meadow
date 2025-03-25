@@ -317,7 +317,7 @@ namespace RainMeadow
             mouse.runSpeed = Custom.LerpAndTick(mouse.runSpeed, 0, 0.4f, 0.1f);
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             if (mouse.specialMoveCounter > 0 && !mouse.room.aimap.TileAccessibleToCreature(mouse.mainBodyChunk.pos, mouse.Template) && !mouse.room.aimap.TileAccessibleToCreature(mouse.bodyChunks[1].pos, mouse.Template))
