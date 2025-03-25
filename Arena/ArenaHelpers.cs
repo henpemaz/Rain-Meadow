@@ -93,7 +93,7 @@ namespace RainMeadow
         }
 
 
-        public static OnlinePlayer FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
+        public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
         {
             try
             {

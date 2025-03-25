@@ -94,16 +94,11 @@ namespace Menu
             labelFadeCounter = ((labelFade == 0f) ? 40 : 0);
             lastPortraitBlack = portraitBlack;
             portraitBlack = Custom.LerpAndTick(portraitBlack, readyForCombat ? 0 : 1, 0.06f, 0.05f); // Set to 1 to grey out
-
         }
 
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            var champBorder = new HSLColor();
-            champBorder.hue = 60f;
-            champBorder.saturation = 1f;
-            champBorder.lightness = 0.5f;
             var champBorderColor = Color.yellow;
 
             menuLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastLabelFade, labelFade, timeStacker), 0.3f);

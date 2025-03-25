@@ -125,15 +125,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
-
-                if ((lobby.gameMode as ArenaOnlineGameMode).reigningChamps != null)
-                {
-                    for (int i = 0; i < (lobby.gameMode as ArenaOnlineGameMode).reigningChamps.list.Count; i++)
-                    {
-                        RainMeadow.Debug((lobby.gameMode as ArenaOnlineGameMode).reigningChamps.list[i]);
-                    }
-                }
-
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);

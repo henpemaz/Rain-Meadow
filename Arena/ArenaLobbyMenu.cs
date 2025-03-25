@@ -783,15 +783,19 @@ namespace RainMeadow
                 }
 
                 classButtons[localIndex] = new ArenaOnlinePlayerJoinButton(this, pages[0], new Vector2(600f + localIndex * num3, 500f) + new Vector2(106f, -20f) + new Vector2((num - 120f) / 2f, 0f) - new Vector2((num3 - 120f) * classButtons.Length, 40f), localIndex);
-                classButtons[localIndex].buttonBehav.greyedOut = true;
                 classButtons[localIndex].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[localIndex].id);
                 classButtons[localIndex].portraitBlack = Custom.LerpAndTick(classButtons[localIndex].portraitBlack, 1f, 0.06f, 0.05f);
                 classButtons[localIndex].profileIdentifier = (localIndex == OnlineManager.players.IndexOf(OnlineManager.mePlayer) ? OnlineManager.lobby.owner : OnlineManager.players[localIndex]);
+                classButtons[localIndex].buttonBehav.greyedOut =
+                    (arena != null && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(classButtons[localIndex].profileIdentifier.id))
+                    ? false // so champ outline border glows
+                    : true;
 
                 if (!arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.players[i].id.ToString(), out var currentColorIndexOther))
                 {
                     currentColorIndexOther = 0;
-                }else
+                }
+                else
                 {
                     currentColorIndexOther = arena.playersInLobbyChoosingSlugs[OnlineManager.players[i].id.ToString()];
                 }

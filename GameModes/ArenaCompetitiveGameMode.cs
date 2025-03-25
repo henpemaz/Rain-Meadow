@@ -46,6 +46,7 @@ namespace RainMeadow
 
         public int playerEnteredGame;
         public bool countdownInitiatedHoldFire;
+        public bool addedChampstoList;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -82,6 +83,7 @@ namespace RainMeadow
             isInGame = false;
             playersReadiedUp.list = new List<MeadowPlayerId>();
             reigningChamps.list = new List<MeadowPlayerId>();
+            addedChampstoList = false;
         }
 
         public void ResetInvDetails()
@@ -112,7 +114,10 @@ namespace RainMeadow
             }
 
         }
-
+        public void ResetChampAddition()
+        {
+            this.addedChampstoList = false;
+        }
         public void ResetScrollTimer()
         {
             this.scrollInitiatedTimer = 0;
@@ -123,6 +128,7 @@ namespace RainMeadow
         {
             ResetScrollTimer();
             ResetInvDetails();
+            ResetChampAddition();
         }
 
         public void ResetAtNextLevel()
@@ -130,6 +136,8 @@ namespace RainMeadow
             ResetScrollTimer();
             ResetGameTimer();
             ResetPlayersEntered();
+            ResetChampAddition();
+
         }
 
         public void ResetGameTimer()
