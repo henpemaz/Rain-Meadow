@@ -104,32 +104,31 @@ namespace RainMeadow
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
         {
             orig(self);
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                if (self.phase == Menu.MultiplayerResults.Phase.Done)
+                {
+                    arena.scrollInitiatedTimer++;
+                }
+                if (arena.scrollInitiatedTimer > 120)
+                {
+                    self.topMiddle.y = self.topMiddle.y + 0.5f;
+                }
+
             }
         }
 
         private void PlayerResultMenu_Update(On.Menu.PlayerResultMenu.orig_Update orig, Menu.PlayerResultMenu self)
         {
             orig(self);
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-                float verticalInput = 0;
-                if (controller is Joystick js)
+                arena.scrollInitiatedTimer++;
+                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                if (arena.scrollInitiatedTimer > 60)
                 {
-                    verticalInput = js.GetAxis(3);
-                }
-
-                if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) || verticalInput > 0)
-                {
-                    self.topMiddle.y -= RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
-                }
-
-                if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W) || verticalInput < 0)
-                {
-                    self.topMiddle.y += RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
+                    self.topMiddle.y = self.topMiddle.y + 0.5f;
                 }
             }
 

@@ -21,8 +21,8 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.ResetViolence();
-                arena.ResetGameTimer();
+                arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
