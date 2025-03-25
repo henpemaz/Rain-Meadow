@@ -115,7 +115,20 @@ namespace RainMeadow
                 {
                     self.topMiddle.y = self.topMiddle.y + 0.5f;
                 }
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.reigningChamps.list.Clear();
 
+                    for (int i = 0; i < self.result.Count; i++)
+                    {
+                        var champ = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber).id;
+                        if (self.result[i].winner && !arena.reigningChamps.list.Contains(champ))
+                        {
+                            arena.reigningChamps.list.Add(champ);
+                        }
+                    }
+                   
+                }
             }
         }
 

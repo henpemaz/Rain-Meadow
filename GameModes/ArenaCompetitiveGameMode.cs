@@ -39,6 +39,7 @@ namespace RainMeadow
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
         public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new Generics.DynamicOrderedPlayerIDs();
+        public Generics.DynamicOrderedPlayerIDs reigningChamps = new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
 
@@ -80,6 +81,7 @@ namespace RainMeadow
             returnToLobby = false;
             isInGame = false;
             playersReadiedUp.list = new List<MeadowPlayerId>();
+            reigningChamps.list = new List<MeadowPlayerId>();
         }
 
         public void ResetInvDetails()
