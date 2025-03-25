@@ -21,6 +21,11 @@ namespace RainMeadow
             arena.ResetAtSession_ctor();
         }
 
+        public virtual void ArenaSessionNextLevel(ArenaOnlineGameMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
+        {
+            arena.ResetAtNextLevel();
+        }
+
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
         {
             self.foodScore = 1;
