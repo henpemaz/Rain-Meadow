@@ -101,9 +101,10 @@ namespace Menu
         {
             base.GrafUpdate(timeStacker);
             var champBorder = new HSLColor();
-            champBorder.hue = 20f;
+            champBorder.hue = 60f;
             champBorder.saturation = 1f;
             champBorder.lightness = 0.5f;
+            var champBorderColor = Color.yellow;
 
             menuLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastLabelFade, labelFade, timeStacker), 0.3f);
             Color color = Color.Lerp(Menu.MenuRGB(Menu.MenuColors.Black), Menu.MenuRGB(Menu.MenuColors.White), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
@@ -121,11 +122,21 @@ namespace Menu
             }
 
             menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White), MyColor(timeStacker), num);
-            portrait.sprite.color = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
+            var ogColor = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
+
+
+            float alternationSpeed = 0.75f; // Adjust for alternation speed.
+            float lerpFactor = Mathf.PingPong(Time.time * alternationSpeed, 1f);
+
 
             if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
             {
-                roundedRect.borderColor = champBorder;
+                roundedRect.borderColor = HSLColor.Lerp(ogColor.ToHSL(), champBorderColor.ToHSL(), lerpFactor);
+                portrait.sprite.color = Color.Lerp(ogColor, champBorderColor, lerpFactor);
+            }
+            else
+            {
+                portrait.sprite.color = ogColor;
             }
         }
     }
