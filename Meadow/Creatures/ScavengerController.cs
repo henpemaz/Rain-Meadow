@@ -436,7 +436,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             if (scavenger.animation is MeadowPointingAnimation pa) pa.alive = false; // stop pointing, unless continued this frame
 

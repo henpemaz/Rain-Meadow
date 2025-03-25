@@ -408,7 +408,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
 
