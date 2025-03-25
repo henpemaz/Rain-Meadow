@@ -86,14 +86,24 @@ namespace RainMeadow
                 label.x = -1000f;
             }
 
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                this.iconString = "Multiplayer_Star";
+            }
+
+            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 this.iconString = "ChieftainA";
             }
+            
+            //if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+            //{
+            //    slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+            //}
+
             else
             {
                 this.iconString = "Kill_Slugcat";
-
             }
 
             this.slugIcon = new FSprite(iconString, true);
@@ -148,9 +158,10 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                    else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+                    else if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
                     {
-                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+                        slugIcon.SetElementByName("Multiplayer_Star");
+                        slugIcon.color = Color.yellow;
                     }
                     else slugIcon.SetElementByName(iconString);
 
