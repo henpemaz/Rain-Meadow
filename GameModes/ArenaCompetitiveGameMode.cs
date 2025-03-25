@@ -80,7 +80,6 @@ namespace RainMeadow
             returnToLobby = false;
             isInGame = false;
             playersReadiedUp.list = new List<MeadowPlayerId>();
-            scrollInitiatedTimer = 0;
         }
 
         public void ResetInvDetails()
