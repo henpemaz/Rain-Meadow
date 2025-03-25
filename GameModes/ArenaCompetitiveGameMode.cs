@@ -40,15 +40,16 @@ namespace RainMeadow
         public Dictionary<string, int> playerResultColors = new Dictionary<string, int>();
         public Generics.DynamicOrderedPlayerIDs playersReadiedUp = new Generics.DynamicOrderedPlayerIDs();
 
-        public Dictionary<ushort, int> playersInLobbyChoosingSlugs = new Dictionary<ushort, int>();
+        public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
 
 
-        public int playerEnteredGame = 0;
+        public int playerEnteredGame;
         public bool countdownInitiatedHoldFire;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int trackSetupTime;
+        public int scrollInitiatedTimer;
 
 
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
@@ -110,10 +111,23 @@ namespace RainMeadow
 
         }
 
+        public void ResetScrollTimer()
+        {
+            this.scrollInitiatedTimer = 0;
+
+        }
+
         public void ResetAtSession_ctor()
         {
+            ResetScrollTimer();
             ResetInvDetails();
+        }
 
+        public void ResetAtNextLevel()
+        {
+            ResetScrollTimer();
+            ResetGameTimer();
+            ResetPlayersEntered();
         }
 
         public void ResetGameTimer()
@@ -122,7 +136,7 @@ namespace RainMeadow
             trackSetupTime = setupTime;
         }
 
-        public void ResetViolence()
+        public void ResetPlayersEntered()
         {
             playerEnteredGame = 0;
         }

@@ -160,7 +160,10 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.playersInLobbyChoosingSlugs[userChangingClass.inLobbyId] = currentColorIndex;
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playersInLobbyChoosingSlugs[userChangingClass.id.ToString()] = currentColorIndex;
+                }
 
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 if (game.manager.upcomingProcess != null)

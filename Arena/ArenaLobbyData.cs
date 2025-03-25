@@ -31,7 +31,7 @@ namespace RainMeadow
             [OnlineField]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
             [OnlineField]
-            public Dictionary<ushort, int> playersChoosingSlugs;
+            public Dictionary<string, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
             [OnlineField(nullable =true)]
@@ -74,7 +74,7 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
-                playersChoosingSlugs = arena.playersInLobbyChoosingSlugs;
+                playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
@@ -118,7 +118,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
-                RainMeadow.Debug(playersReadiedUp.list.Count);
             }
 
             public override Type GetDataType() => typeof(ArenaLobbyData);
