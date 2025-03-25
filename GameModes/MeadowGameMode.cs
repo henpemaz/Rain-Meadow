@@ -463,6 +463,9 @@ namespace RainMeadow
             PlacedObject.Type.GhostSpot,
         };
 
+        public override bool PlayersCanStack => false;
+        public override bool PlayersCanHandhold => false;
+
         public override void GameShutDown(RainWorldGame game)
         {
             MeadowProgression.progressionData.currentCharacterProgress.saveLocation = avatars[0].apo.pos;
