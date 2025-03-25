@@ -404,6 +404,10 @@ namespace RainMeadow
                             if (player.slugOnBack != null) {
                                 player.slugOnBack.DropSlug();
                             }
+
+                            if (player.onBack != null) {
+                                player.onBack.slugOnBack.DropSlug();
+                            }
                         }
 
                         if (apo.Room?.realizedRoom is Room room)
@@ -493,7 +497,7 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
-            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
+            if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
                 OnlineManager.RunDeferred(() => this.didParry = false);

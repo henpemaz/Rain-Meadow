@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -187,7 +188,7 @@ namespace RainMeadow
                 RainMeadow.Error("realized creature not found for: " + this);
                 return;
             }
-            if (RainMeadow.isArenaMode(out var arena) && this.didParry)
+            if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
                 OnlineManager.RunDeferred(() => this.didParry = false);
@@ -203,15 +204,20 @@ namespace RainMeadow
         }
 
         [RPCMethod(runDeferred = true)] // deferred because NPCTransportationDestination needed
-        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther, bool sucked_in_by_remote)
         {
             RainMeadow.Debug(this);
-            enteringShortCut = true;
+            enteringShortCut = !sucked_in_by_remote;
             var creature = (apo.realizedObject as Creature);
             if (creature != null && creature.room != null)
             {
                 try
                 {
+                    if (sucked_in_by_remote) {
+                        creature.SuckedIntoShortCut(entrancePos, carriedByOther);
+                        return;
+                    }
+
                     var room = creature.room;
                     creature.SuckedIntoShortCut(entrancePos, carriedByOther);
                     if (creature.graphicsModule != null)
@@ -275,7 +281,18 @@ namespace RainMeadow
                 }
             }
             enteringShortCut = false;
+        }        
+
+        public struct ReclaimGrasp {
+            public int graspUsed;
+            public OnlineEntity.EntityId onlineGrabbed;
+            public int chunkGrabbed;
+            public Creature.Grasp.Shareability shareability;
+            public float dominance;
+            public bool pacifying;
         }
+        public List<ReclaimGrasp> reclaim_grasps = new();
+        public OnlineEntity.EntityId? reclaim_backpack = null;
 
         public override string ToString()
         {

@@ -5,6 +5,7 @@ namespace RainMeadow
 {
     public static class StoryRPCs
     {
+
         [RPCMethod]
         public static void ChangeFood(short amt)
         {

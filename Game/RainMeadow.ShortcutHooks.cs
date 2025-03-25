@@ -2,6 +2,8 @@
 using MonoMod.Cil;
 using RWCustom;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -16,6 +18,8 @@ namespace RainMeadow
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
+            
+            On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -200,6 +204,95 @@ namespace RainMeadow
             orig(self, creature, type, start, dest);
         }
 
+
+        private List<OnlineCreature> creatures_who_reclaim_sticks = new();
+        private bool IsTakingUnmoveableObject(Creature self, IntVector2 entrancePos) {
+            // This is so that our unowned connected objects load the room we are about to enter.
+            // Specifically helpful for backpacked player Slugcats.
+            
+            ShortcutData shortcutData = self.room.shortcutData(entrancePos);
+            if (shortcutData.shortCutType == ShortcutData.Type.RoomExit) {
+                int destroom = self.room.abstractRoom.connections[shortcutData.destNode];
+                if (destroom > -1) {
+                    var selfonlineobj = self.abstractCreature.GetOnlineCreature();
+                    if (selfonlineobj == null) {
+                        Error($"Entity {self.abstractCreature} - {self.abstractCreature.ID} doesn't exist in online space!");
+                        return true;
+                    }
+                    selfonlineobj.reclaim_backpack = null;
+                    selfonlineobj.reclaim_grasps.Clear();
+                    creatures_who_reclaim_sticks.Remove(selfonlineobj);
+
+                    List<AbstractPhysicalObject> immidiate_connections = new();
+                    // we only care about our immidiete connections for now
+                    self.abstractCreature.AddConnected(ref immidiate_connections);
+                    // If the shortcut we are entering is leaving the room.
+                    foreach (AbstractPhysicalObject obj in immidiate_connections) {
+
+                        // what objects are coming with us?
+                        var onlineobj = obj.GetOnlineObject();
+                        if (onlineobj == null) {
+                            Error($"Entity {obj} - {obj.ID} doesn't exist in online space!");
+                            continue;
+                        }
+
+                        // They're not ready for the vessel because we haven't told them about it yet.
+                        if (onlineobj.isTransferable || onlineobj.owner == selfonlineobj.owner) continue;
+                        bool reclaim_backpack = false;
+                       
+                        if (obj.realizedObject is Player other && self is Player me) {
+                            if (other.slugOnBack?.slugcat == me) {
+                                other.slugOnBack.DropSlug();
+                            }
+
+                            if (me.slugOnBack?.slugcat == other) {
+                                me.slugOnBack.DropSlug();
+                                reclaim_backpack = selfonlineobj.isMine;
+                            }
+                        }
+
+                        List<Creature.Grasp> reclaim_grasps = new();
+                        foreach (Creature.Grasp grasp in self.grasps.Where(x => x != null && x.grabbed == obj.realizedObject)) {
+                            if (grasp.grabbed.abstractPhysicalObject.GetOnlineObject() == null) {
+                                Error($"Grasp does not exist in Online Space {grasp.graspUsed} {grasp.grabbed.abstractPhysicalObject}");
+                            }
+
+                            if (selfonlineobj.isMine) reclaim_grasps.Add(grasp);
+                            grasp.Release();
+                        }
+
+                        if (!self.abstractCreature.GetAllConnectedObjects().Contains(obj)) {
+                            if (selfonlineobj.isMine && onlineobj is OnlineCreature creature) {
+                                selfonlineobj.reclaim_grasps.AddRange(reclaim_grasps.Select(x => new OnlineCreature.ReclaimGrasp{
+                                    graspUsed = x.graspUsed,
+                                    onlineGrabbed = x.grabbed.abstractPhysicalObject.GetOnlineObject().id, // we know this is never null
+                                    chunkGrabbed = x.chunkGrabbed,
+                                    shareability = x.shareability,
+                                    dominance = x.dominance,
+                                    pacifying = x.pacifying
+                                }));
+
+                                if (reclaim_backpack) {
+                                    selfonlineobj.reclaim_backpack = creature.id;
+                                }
+
+                                if (!creatures_who_reclaim_sticks.Contains(selfonlineobj)) {
+                                    creatures_who_reclaim_sticks.Add(selfonlineobj);
+                                }
+                                
+                                creature.owner.InvokeRPC(creature.SuckedIntoShortCut, entrancePos, false, true);
+                            }
+                            continue;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false; 
+        }
+
         // event driven shortcutting for remotes
         private void CreatureSuckedIntoShortCut(On.Creature.orig_SuckedIntoShortCut orig, Creature self, IntVector2 entrancePos, bool carriedByOther)
         {
@@ -227,32 +320,114 @@ namespace RainMeadow
             if (onlineCreature.enteringShortCut) // If this call was from a processing event
             {
                 RainMeadow.Debug($"{onlineCreature} sucked into shortcut from remote");
-                orig(self, entrancePos, carriedByOther);
-                onlineCreature.enteringShortCut = false;
-                if (room.isOwner) // proccessed, now broadcast
-                {
-                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
+
+                if (!IsTakingUnmoveableObject(self, entrancePos)) {
+                    orig(self, entrancePos, carriedByOther);
+                    onlineCreature.enteringShortCut = false;
+                    if (room.isOwner) // proccessed, now broadcast
+                    {
+                        onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
+                    }              
+                } else self.enteringShortCut = null;
+
             }
             else if (onlineCreature.isMine)
             {
-                orig(self, entrancePos, carriedByOther);
-                RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
-                
-                if (room.isOwner) // now broadcast
-                {
-                    onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
-                else // tell room-owner about it so it gets broadcasted
-                {
-                    room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther);
-                }
+                if (!IsTakingUnmoveableObject(self, entrancePos)) {
+                    orig(self, entrancePos, carriedByOther);
+                    RainMeadow.Debug($"{onlineCreature} sucked into shortcut locally");
+                    
+                    if (room.isOwner) // now broadcast
+                    {
+                        onlineCreature.BroadcastRPCInRoomExceptOwners(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
+                    }
+                    else // tell room-owner about it so it gets broadcasted
+                    {
+                        room.owner.InvokeRPC(onlineCreature.SuckedIntoShortCut, entrancePos, carriedByOther, false);
+                    }
+                } else self.enteringShortCut = null;
             }
             else
             {
                 // Don't run
                 // Clear shortcut that it was meant to enter
                 self.enteringShortCut = null;
+            }
+        }
+
+        void attemptToReclaimSticks(OnlineCreature onlineCreature) {
+            if (onlineCreature.apo.realizedObject == null || !onlineCreature.isMine) {
+                onlineCreature.reclaim_backpack = null;
+                onlineCreature.reclaim_grasps.Clear();
+                creatures_who_reclaim_sticks.Remove(onlineCreature);
+                return;
+            }
+
+            if (onlineCreature.reclaim_backpack is null && !onlineCreature.reclaim_grasps.Any()) {
+                onlineCreature.reclaim_backpack = null;
+                onlineCreature.reclaim_grasps.Clear();
+                creatures_who_reclaim_sticks.Remove(onlineCreature);
+                return;
+            }
+
+            if (onlineCreature.realizedCreature.inShortcut) {
+                return;
+            }
+
+            foreach (var grasp in onlineCreature.reclaim_grasps.ToArray()) {
+                if (grasp.onlineGrabbed.FindEntity() is OnlineCreature want_to_grasp) {
+                    if (onlineCreature.creature.realizedCreature.grasps[grasp.graspUsed] != null) {
+                        onlineCreature.reclaim_grasps.Remove(grasp);
+                        continue;
+                    }
+
+                    if (want_to_grasp.apo.realizedObject != null && want_to_grasp.apo.Room == onlineCreature.apo.Room && !want_to_grasp.creature.realizedCreature.inShortcut) {
+                        onlineCreature.creature.realizedCreature.Grab(want_to_grasp.apo.realizedObject, 
+                            grasp.graspUsed, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, false, grasp.pacifying);
+                        onlineCreature.reclaim_grasps.Remove(grasp);
+                    }
+                }
+            }
+
+            if (onlineCreature.reclaim_backpack is not null) {
+                if (onlineCreature.creature.realizedCreature is Player p) {
+                    if (p.slugOnBack == null || p.slugOnBack.HasASlug) {
+                        onlineCreature.reclaim_backpack = null;
+                    } else {
+                        if (onlineCreature.reclaim_backpack.FindEntity() is OnlineCreature want_to_backpack) {
+                            if (want_to_backpack.apo.realizedObject != null && want_to_backpack.apo.Room == onlineCreature.apo.Room && !want_to_backpack.creature.realizedCreature.inShortcut) {
+                                if (want_to_backpack.creature.realizedCreature is Player other) {
+                                    p.slugOnBack.SlugToBack(other);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    onlineCreature.reclaim_backpack = null;
+                }
+            }
+
+
+        }
+
+        void CreatureSpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) {
+            orig(self, pos, newRoom, spitOutAllSticks);
+            if (OnlineManager.lobby != null) {
+                var selfonlineobj = self.abstractCreature.GetOnlineCreature();
+                if (selfonlineobj == null) {
+                    Error($"Entity {self.abstractCreature} - {self.abstractCreature.ID} doesn't exist in online space!");
+                    return;
+                }
+
+                if (selfonlineobj.isMine) {
+                    attemptToReclaimSticks(selfonlineobj);
+                } else {
+                    foreach (var creature in creatures_who_reclaim_sticks.ToArray()) {
+                        if (creature.apo.Room != newRoom.abstractRoom) continue;
+                        if (creature.apo.realizedObject == null) continue;
+                        attemptToReclaimSticks(creature);
+                    }
+                }
             }
         }
     }

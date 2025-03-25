@@ -293,7 +293,7 @@ namespace RainMeadow
             this.blink = Mathf.Max(this.blink, blink);
         }
 
-        internal virtual void Update(bool eu)
+        public virtual void Update(bool eu)
         {
             // Input
             this.CheckInput();
@@ -823,7 +823,7 @@ namespace RainMeadow
             }
         }
 
-        internal virtual void ConsciousUpdate()
+        public virtual void ConsciousUpdate()
         {
             var room = creature.room;
             var chunks = creature.bodyChunks;
@@ -977,7 +977,7 @@ namespace RainMeadow
             this.OnCall();
         }
 
-        internal void AIUpdate(ArtificialIntelligence ai)
+        public void AIUpdate(ArtificialIntelligence ai)
         {
             if (creature.room?.Tiles != null && !ai.pathFinder.DoneMappingAccessibility)
                 ai.pathFinder.accessibilityStepsPerFrame = creature.room.Tiles.Length; // faster, damn it. on entering a new room this needs to complete before it can pathfind
