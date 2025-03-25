@@ -99,6 +99,10 @@ public partial class RainMeadow
         if (!OnlineManager.lobby.gameMode.PlayersCanStack) {
             return;
         }
+        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+        {
+            return;
+        }
 
         float range = 26 + self.bodyChunks[1].rad;
         if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 

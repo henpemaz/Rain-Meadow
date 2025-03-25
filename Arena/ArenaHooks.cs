@@ -115,7 +115,36 @@ namespace RainMeadow
                 {
                     self.topMiddle.y = self.topMiddle.y + 0.5f;
                 }
+                if (OnlineManager.lobby.isOwner && arena.addedChampstoList == false)
+                {
+                    arena.reigningChamps.list.Clear();
 
+                    if (arena != null && arena.reigningChamps != null && arena.reigningChamps.list != null && self.result != null)
+                    {
+                        for (int i = 0; i < self.result.Count; i++)
+                        {
+                            if (self.result[i] != null && self.result[i].winner)
+                            {
+                                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber);
+
+                                if (onlinePlayer != null)
+                                {
+                                    if (!arena.reigningChamps.list.Contains(onlinePlayer.id))
+                                    {
+                                        arena.reigningChamps.list.Add(onlinePlayer.id);
+
+                                    }
+                                }
+                                else
+                                {
+                                    RainMeadow.Error("ArenaHelpers.FindOnlinePlayerByFakePlayerNumber returned null.");
+                                }
+                            }
+                        }
+                        arena.addedChampstoList = true;
+                    }
+
+                }
             }
         }
 

@@ -34,8 +34,10 @@ namespace RainMeadow
             public Dictionary<string, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField(nullable =true)]
+            [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
+            [OnlineField(nullable = true)]
+            public Generics.DynamicOrderedPlayerIDs reigningChamps;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]
@@ -74,6 +76,8 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
+                reigningChamps = new(arena.reigningChamps.list.ToList());
+
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
@@ -89,6 +93,7 @@ namespace RainMeadow
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -103,6 +108,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).onlineArenaSettingsInterfaceeBool = onlineArenaSettingsInterfaceBool;
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
+                (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
+
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
