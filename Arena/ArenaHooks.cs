@@ -107,13 +107,23 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
-                if (self.phase == Menu.MultiplayerResults.Phase.Done)
+
+                if (OnlineManager.players.Count > 4)
                 {
-                    arena.scrollInitiatedTimer++;
-                }
-                if (arena.scrollInitiatedTimer > 120)
-                {
-                    self.topMiddle.y = self.topMiddle.y + 0.5f;
+                    if (self.phase == Menu.MultiplayerResults.Phase.Done)
+                    {
+                        arena.scrollInitiatedTimer++;
+                    }
+                    for (int i = 0; i < self.resultBoxes.Count; i++)
+                    {
+                        if (i == self.resultBoxes.Count - 1 && self.resultBoxes[i].pos.y < 100)
+                        {
+                            if (arena.scrollInitiatedTimer > 180)
+                            {
+                                self.topMiddle.y = self.topMiddle.y + 0.5f;
+                            }
+                        }
+                    }
                 }
                 if (OnlineManager.lobby.isOwner && arena.addedChampstoList == false)
                 {
@@ -153,11 +163,21 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                arena.scrollInitiatedTimer++;
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
-                if (arena.scrollInitiatedTimer > 60)
+
+                if (OnlineManager.players.Count > 4)
                 {
-                    self.topMiddle.y = self.topMiddle.y + 0.5f;
+                    arena.scrollInitiatedTimer++;
+                    for (int i = 0; i < self.resultBoxes.Count; i++)
+                    {
+                        if (i == self.resultBoxes.Count - 1 && self.resultBoxes[i].pos.y < 100)
+                        {
+                            if (arena.scrollInitiatedTimer > 60)
+                            {
+                                self.topMiddle.y = self.topMiddle.y + 0.5f;
+                            }
+                        }
+                    }
                 }
             }
 
