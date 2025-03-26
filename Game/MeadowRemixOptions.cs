@@ -1,4 +1,5 @@
-﻿using Menu.Remix.MixedUI;
+﻿using Menu.Remix;
+using Menu.Remix.MixedUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> SlugcatCustomToggle;
     public readonly Configurable<bool> ReadyToContinueToggle;
     public readonly Configurable<bool> FriendViewClickToActivate;
+    public readonly Configurable<bool> EnableModApplier;
+    public OpCheckBox EnableModApplierCheckBox;
     public readonly Configurable<Color> BodyColor;
     public readonly Configurable<Color> EyeColor;
     public readonly Configurable<KeyCode> SpectatorKey;
@@ -63,6 +66,7 @@ public class RainMeadowOptions : OptionInterface
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
         ReadyToContinueToggle = config.Bind("ContinueToggle", false);
         FriendViewClickToActivate = config.Bind("FriendViewHoldOrToggle", false);
+        EnableModApplier = config.Bind("EnableModApplier", true);
         BodyColor = config.Bind("BodyColor", Color.white);
         EyeColor = config.Bind("EyeColor", Color.black);
         SpectatorKey = config.Bind("SpectatorKey", KeyCode.Tab);
@@ -168,6 +172,9 @@ public class RainMeadowOptions : OptionInterface
                 editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 260f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),
                 editBannedModsButton = new OpSimpleButton(new Vector2(185f, 260f), new Vector2(150f, 30f), Translate("Edit Banned Mods")),
 
+                new OpLabel(410, 290f, Translate("Enable ModApplier")){color=Color.red},
+                EnableModApplierCheckBox = new OpCheckBox(EnableModApplier, new Vector2(440f, 260f)){colorEdge=Color.red},
+
                 new OpLabel(10, 180f, Translate("Chat Log Toggle")),
                 new OpKeyBinder(ChatLogKey, new Vector2(10f, 150), new Vector2(150f, 30f)),
 
@@ -186,6 +193,14 @@ public class RainMeadowOptions : OptionInterface
                     accept = OpTextBox.Accept.Float
                 },
         };
+            EnableModApplierCheckBox.OnChange += () => {
+                if (EnableModApplierCheckBox.value == ValueConverter.ConvertToString(false) && EnableModApplier.Value != false) {
+                    ConfigConnector.CreateDialogBoxYesNo("Disabling this option is unrecommended. Are you sure about this?\n", () => {}, () => {
+                        EnableModApplierCheckBox.value = ValueConverter.ConvertToString(true);
+                    }); 
+                }
+            };
+            
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
             downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
 
