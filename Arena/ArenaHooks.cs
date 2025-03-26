@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
 using Rewired;
@@ -107,13 +107,31 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
-                if (self.phase == Menu.MultiplayerResults.Phase.Done)
+
+                if (OnlineManager.players.Count > 4)
                 {
-                    arena.scrollInitiatedTimer++;
-                }
-                if (arena.scrollInitiatedTimer > 120)
-                {
-                    self.topMiddle.y = self.topMiddle.y + 0.5f;
+                    if (self.phase == Menu.MultiplayerResults.Phase.Done)
+                    {
+                        arena.scrollInitiatedTimer++;
+                    }
+
+                    float lowestY = float.MaxValue; // find lowest box y pos because the list and the boxes are not the same
+                    int lowestIndex = -1;
+
+                    for (int i = 0; i < self.resultBoxes.Count; i++)
+                    {
+                        if (self.resultBoxes[i].pos.y < lowestY)
+                        {
+                            lowestY = self.resultBoxes[i].pos.y;
+                            lowestIndex = i;
+                        }
+                    }
+
+                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 60)
+                    {
+                        self.topMiddle.y += 0.5f;
+                    }
+
                 }
                 if (OnlineManager.lobby.isOwner && arena.addedChampstoList == false)
                 {
@@ -153,11 +171,29 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                arena.scrollInitiatedTimer++;
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
-                if (arena.scrollInitiatedTimer > 60)
+
+                if (OnlineManager.players.Count > 4)
                 {
-                    self.topMiddle.y = self.topMiddle.y + 0.5f;
+                    arena.scrollInitiatedTimer++;
+
+                    float lowestY = float.MaxValue; // find lowest box y pos because the list and the boxes are not the same
+                    int lowestIndex = -1;
+
+                    for (int i = 0; i < self.resultBoxes.Count; i++)
+                    {
+                        if (self.resultBoxes[i].pos.y < lowestY)
+                        {
+                            lowestY = self.resultBoxes[i].pos.y;
+                            lowestIndex = i;
+                        }
+                    }
+
+                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 60)
+                    {
+                        self.topMiddle.y += 0.5f;
+                    }
+
                 }
             }
 
