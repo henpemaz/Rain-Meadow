@@ -114,16 +114,24 @@ namespace RainMeadow
                     {
                         arena.scrollInitiatedTimer++;
                     }
+
+                    float lowestY = float.MaxValue; // find lowest box y pos because the list and the boxes are not the same
+                    int lowestIndex = -1;
+
                     for (int i = 0; i < self.resultBoxes.Count; i++)
                     {
-                        if (i == self.resultBoxes.Count - 1 && self.resultBoxes[i].pos.y < 100)
+                        if (self.resultBoxes[i].pos.y < lowestY)
                         {
-                            if (arena.scrollInitiatedTimer > 180)
-                            {
-                                self.topMiddle.y = self.topMiddle.y + 0.5f;
-                            }
+                            lowestY = self.resultBoxes[i].pos.y;
+                            lowestIndex = i;
                         }
                     }
+
+                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 60)
+                    {
+                        self.topMiddle.y += 0.5f;
+                    }
+
                 }
                 if (OnlineManager.lobby.isOwner && arena.addedChampstoList == false)
                 {
@@ -168,16 +176,24 @@ namespace RainMeadow
                 if (OnlineManager.players.Count > 4)
                 {
                     arena.scrollInitiatedTimer++;
+
+                    float lowestY = float.MaxValue; // find lowest box y pos because the list and the boxes are not the same
+                    int lowestIndex = -1;
+
                     for (int i = 0; i < self.resultBoxes.Count; i++)
                     {
-                        if (i == self.resultBoxes.Count - 1 && self.resultBoxes[i].pos.y < 100)
+                        if (self.resultBoxes[i].pos.y < lowestY)
                         {
-                            if (arena.scrollInitiatedTimer > 60)
-                            {
-                                self.topMiddle.y = self.topMiddle.y + 0.5f;
-                            }
+                            lowestY = self.resultBoxes[i].pos.y;
+                            lowestIndex = i;
                         }
                     }
+
+                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 60)
+                    {
+                        self.topMiddle.y += 0.5f;
+                    }
+
                 }
             }
 
