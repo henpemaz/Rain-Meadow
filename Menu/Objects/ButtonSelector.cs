@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace RainMeadow
 {
-    //a scroller just for predetermined buttons
+    //a scroller just for predetermined buttons, currently only works for 30 posY
     public class ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, float buttonHeight = 30) : RectangularMenuObject(menu, owner, pos, size)
     {
         public int ItemCount => buttons.Count;
@@ -31,6 +31,7 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             for (int i = 0; i < buttons?.Count; i++)
             {
+                buttons[i].pos.y = GetIdealButtonYPos(i);
                 buttons[i].fade = PercentageOverYBound(buttons[i].pos.y);
             }
 
