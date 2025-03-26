@@ -86,14 +86,24 @@ namespace RainMeadow
                 label.x = -1000f;
             }
 
-            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                this.iconString = "Multiplayer_Star";
+            }
+
+            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 this.iconString = "ChieftainA";
             }
+
+            //if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+            //{
+            //    slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+            //}
+
             else
             {
                 this.iconString = "Kill_Slugcat";
-
             }
 
             this.slugIcon = new FSprite(iconString, true);
@@ -144,14 +154,16 @@ namespace RainMeadow
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
                     if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
+                    else if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+                    {
+                        slugIcon.SetElementByName("Multiplayer_Star");
+                        slugIcon.color = owner.PlayerConsideredDead ? lighter_color : Color.yellow;
+                    }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                    else if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
-                    {
-                        slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
-                    }
+                     
                     else slugIcon.SetElementByName(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);

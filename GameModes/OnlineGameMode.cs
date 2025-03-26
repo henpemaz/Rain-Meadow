@@ -69,6 +69,10 @@ namespace RainMeadow
 
             return (configurableBools, configurableFloats, configurableInts);
         }
+
+        public virtual bool PlayersCanStack => true;
+        public virtual bool PlayersCanHandhold => true;
+
         internal static void SetClientRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
             Type type = typeof(MoreSlugcats.MMF);

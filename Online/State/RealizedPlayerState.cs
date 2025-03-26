@@ -207,10 +207,11 @@ namespace RainMeadow
             return i;
         }
 
-        private bool ShouldPosBeLenient(PhysicalObject po)
+        override public bool ShouldPosBeLenient(PhysicalObject po)
         {
             if (po is not Player p) { RainMeadow.Error("target is wrong type: " + po); return false; }
 
+            if (p.onBack != null) return true;
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
             if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
@@ -223,7 +224,6 @@ namespace RainMeadow
 
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
-            if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 

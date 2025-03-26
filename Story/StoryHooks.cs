@@ -109,6 +109,10 @@ namespace RainMeadow
 
             IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
+
+            IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
+            IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
+
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
@@ -237,6 +241,52 @@ namespace RainMeadow
             }
 
             orig(self, box, c);
+        }
+
+
+        private void SlugcatSelectMenu_SliderFix(ILContext context)
+        {
+            /*
+            0	0000	ldarg.0
+            1	0001	ldfld	class [mscorlib]System.Collections.Generic.List`1<class SlugcatStats/Name> Menu.SlugcatSelectMenu::slugcatColorOrder
+            2	0006	ldarg.0
+            3	0007	ldfld	int32 Menu.SlugcatSelectMenu::slugcatPageIndex
+            4	000C	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<class SlugcatStats/Name>::get_Item(int32)
+            5	0011	stloc.0
+            */
+            // SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; becomes 
+            try {
+                ILCursor c = new(context);
+                Func<Instruction, bool>[] predicates = {
+                    x => x.MatchLdarg(0),
+                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatColorOrder))),
+                    x => x.MatchLdarg(0),
+                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatPageIndex))),
+                    x => x.MatchCallvirt(out _), // index into field
+                    x => x.MatchStloc(0)
+                };
+
+                c.GotoNext(MoveType.After, predicates);
+                var label = c.MarkLabel();
+                c.GotoPrev(MoveType.Before, predicates);
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloca, 0);
+                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => {
+                    if (menu is StoryOnlineMenu storyOnlineMenu) {
+                        name = storyOnlineMenu.selectableSlugcats[storyOnlineMenu.SelectedIndex];
+                        return true;
+                    }
+
+                    return false;
+                });
+                c.Emit(OpCodes.Brtrue, label);
+                
+
+            } catch(Exception except) {
+                Logger.LogError(except);
+            }
+            
+
         }
 
         private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)

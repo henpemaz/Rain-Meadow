@@ -75,5 +75,5 @@ Vigaro - Programming, menus		BitiLope - Programming, story		Pudgy Turtle - Progr
 ddemile - Programming, modsync		UO - Programming, story, arena		Saddest - Programming, UI, chat
 notchoc - Programming, story		phanie_ - Illustration			Timbits - Programming, UI, menus
 Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	 invalidunits - Programming, UI, LAN
-forthfora - Programming, modsync
+forthfora - Programming, modsync, WillowWisp - Programming, story
 ```
