@@ -3,6 +3,7 @@ using Menu;
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Globalization;
 using System.Linq;
 using RWCustom;
@@ -15,8 +16,7 @@ namespace RainMeadow
         CheckBox clientWantsToOverwriteSave;
         CheckBox friendlyFire;
         CheckBox reqCampaignSlug;
-        List<SimplerButton> playerButtons = new();
-        List<SimplerSymbolButton> kicButtons = new();
+        ButtonScroller playerScrollBox;
         MenuLabel lobbyLabel;
         MenuLabel slugcatLabel;
 
@@ -28,13 +28,9 @@ namespace RainMeadow
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
         public int actualSelectedIndex = -1;
-        public int SelectedIndex
-        {
-            get => (actualSelectedIndex < 0 || (OnlineManager.lobby?.isOwner ?? false)) ? slugcatPageIndex : actualSelectedIndex; private set
-            {
-                actualSelectedIndex = value;
-            }
-        }
+        public int SelectedIndex { get => (actualSelectedIndex < 0 || (OnlineManager.lobby?.isOwner ?? false))? slugcatPageIndex : actualSelectedIndex;   private set {
+            actualSelectedIndex = value;
+        } }
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -46,7 +42,7 @@ namespace RainMeadow
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
 
             restartCheckboxPos = restartCheckbox.pos;
-
+            
 
             SetupSelectableSlugcats();
             RemoveExcessStoryObjects();
@@ -73,22 +69,18 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         }
 
-        public void SetupSelectableSlugcats()
-        {
-            if (selectableSlugcats == null)
-            {
+        public void SetupSelectableSlugcats() {
+            if (selectableSlugcats == null) {
                 var SelectableSlugcatsEnumerable = slugcatColorOrder.AsEnumerable();
-                if (ModManager.MSC)
-                {
-                    if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup))
-                    {
+                if (ModManager.MSC) {
+                    if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
                         SelectableSlugcatsEnumerable = SelectableSlugcatsEnumerable.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                     }
                 }
 
                 selectableSlugcats = SelectableSlugcatsEnumerable.ToArray();
             }
-        }
+        }   
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
@@ -109,7 +101,7 @@ namespace RainMeadow
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
 
-            if (this.colorChecked)
+            if (colorChecked)
             {
                 List<Color> val = new();
                 for (int i = 0; i < manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value].Count; i++)
@@ -228,36 +220,6 @@ namespace RainMeadow
 
             }
 
-
-            if (playerButtons != null)
-            {
-                playerButtons.ForEach(x => x.pos.y = InputOverride.MoveMenuItemFromYInput(x.pos.y));
-                if (OnlineManager.lobby.isOwner && kicButtons != null)
-                {
-                    kicButtons.ForEach(k => k.pos.y = InputOverride.MoveMenuItemFromYInput(k.pos.y));
-                }
-            }
-
-            if (slugcatLabel != null)
-            {
-                slugcatLabel.pos.y = InputOverride.MoveMenuItemFromYInput(slugcatLabel.pos.y);
-            }
-            if (lobbyLabel != null)
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    lobbyLabel.pos.y = InputOverride.MoveMenuItemFromYInput(lobbyLabel.pos.y);
-                }
-                else
-                {
-                    if (slugcatLabel != null)
-                    {
-                        lobbyLabel.pos.y = slugcatLabel.pos.y;
-                    }
-                }
-            }
-
-
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
@@ -294,14 +256,27 @@ namespace RainMeadow
 
         private void UpdatePlayerList()
         {
-            playerButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
+            Vector2 pos = new(194, 553);
+            playerScrollBox?.RemoveAllButtons();
+            if (playerScrollBox == null)
+            {
+                //for now max is 8
+                playerScrollBox = new(this, pages[0], pos, new(200, 8 * 30));
+                pages[0].subObjects.Add(playerScrollBox);
+            }
+            foreach (OnlinePlayer player in OnlineManager.players)
+            {
+                StoryMenuPlayerButton playerButton = new(this, playerScrollBox, player, OnlineManager.lobby.isOwner && player != OnlineManager.lobby.owner);
+                playerScrollBox.AddButtons(playerButton);
+            }
+
+            /*playerButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
             playerButtons.Clear();
+
             kicButtons.Do(x => StoryMenuHelpers.RemoveMenuObjects(x));
             kicButtons.Clear();
 
-            var pos = new Vector2(194, lobbyLabel.pos.y);
-            RainMeadow.Debug("============" + lobbyLabel.pos.y);
-            RainMeadow.Debug(lobbyLabel.size.y);
+            var pos = new Vector2(194, 553);
             var widthHeight = new Vector2(110, 30);
             foreach (var playerInfo in OnlineManager.players)
             {
@@ -331,7 +306,7 @@ namespace RainMeadow
                 {
                     this.pages[0].subObjects.Add(kickBtn);
                 }
-            }
+            }*/
 
         }
 
@@ -343,11 +318,7 @@ namespace RainMeadow
             }
         }
 
-        private void AddLobbyLabel()
-        {
-            lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
-            this.pages[0].subObjects.Add(lobbyLabel);
-        }
+
         public int GetCurrentlySelectedOfSeries(string series) => series switch
         {
             "scugButtons" => !RainMeadow.rainMeadowOptions.SlugcatCustomToggle.Value ? -1 : SelectedIndex,
@@ -360,8 +331,7 @@ namespace RainMeadow
             {
                 case "scugButtons":
                     SelectedIndex = to;
-                    if (to >= slugcatPages.Count)
-                    {
+                    if (to >= slugcatPages.Count) {
                         to = 0;
                     }
 
@@ -395,7 +365,7 @@ namespace RainMeadow
             var pos = new Vector2(394, 553);
             slugcatLabel = new MenuLabel(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true);
             pages[0].subObjects.Add(slugcatLabel);
-            scugButtons = new EventfulSelectOneButton[selectableSlugcats.Length];
+            scugButtons  = new EventfulSelectOneButton[selectableSlugcats.Length];
             for (var i = 0; i < selectableSlugcats.Length; i++)
             {
                 var scug = selectableSlugcats[i];
@@ -454,7 +424,8 @@ namespace RainMeadow
         private void SetupOnlineMenuItems()
         {
             // Player lobby label
-            AddLobbyLabel();
+            lobbyLabel = new MenuLabel(this, pages[0], Translate("LOBBY"), new Vector2(194, 553), new(110, 30), true);
+            pages[0].subObjects.Add(lobbyLabel);
 
             var invite = new SimplerButton(this, pages[0], Translate("Invite Friends"), new(nextButton.pos.x + 80f, 50f), new(110, 35));
             invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
