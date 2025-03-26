@@ -159,6 +159,10 @@ namespace RainMeadow
                     roundedRect.sprites[i].alpha = fade;
                     roundedRect.fillAlpha = fade / 2;
                 }
+                for (int i = 0; i < selectRect.sprites.Length; i++)
+                {
+                    selectRect.sprites[i].alpha = fade;
+                }
             }
 
             public float fade = 1;
