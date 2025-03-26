@@ -25,6 +25,19 @@ namespace RainMeadow
                 subObjects.Add(kickButton);
             }
         }
+        public override void UpdateFade(float fade)
+        {
+            base.UpdateFade(fade);
+            if (kickButton != null)
+            {
+                kickButton.symbolSprite.alpha = fade;
+                for (int i = 0; i < kickButton.roundedRect.sprites.Length; i++)
+                {
+                    kickButton.roundedRect.sprites[i].alpha = fade;
+                    kickButton.roundedRect.fillAlpha = fade / 2;
+                }
+            }    
+        }
         public bool canKick;
         public SimplerSymbolButton kickButton;
     }
