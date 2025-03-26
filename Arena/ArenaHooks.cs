@@ -127,7 +127,7 @@ namespace RainMeadow
                         }
                     }
 
-                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 60)
+                    if (lowestIndex != -1 && lowestY < 100 && arena.scrollInitiatedTimer > 180)
                     {
                         self.topMiddle.y += 0.5f;
                     }
