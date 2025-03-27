@@ -18,6 +18,18 @@ namespace RainMeadow
         public float UpperBound => size.y;
         public bool CanScrollUp => scrollPos > 0;
         public bool CanScrollDown => scrollPos < MaxScroll;
+        public float ButtonHeight 
+        {
+            get
+            {
+                return buttonHeight;
+            }
+            set
+            {
+                buttonHeight = value;
+                buttons?.ForEach(x => x.size.y = buttonHeight);
+            }
+        }
         public override void Update()
         {
             base.Update();
@@ -72,10 +84,14 @@ namespace RainMeadow
         }
         public void AddButtons(params ScrollerButton[] scrollBoxButtons)
         {
-            IEnumerable<ScrollerButton> newButtons = scrollBoxButtons.Where(x => x != null);
-            buttons.AddRange(newButtons);
-            subObjects.AddRange(newButtons.Where(x => !subObjects.Contains(x)));
-            ConstrainScroll();
+            if (scrollBoxButtons != null)
+            {
+               List<ScrollerButton> newButtons = [..scrollBoxButtons.Where(x => x != null)];
+               newButtons.ForEach(x => x.size.y = buttonHeight);
+               buttons.AddRange(newButtons);
+               subObjects.AddRange(newButtons.Where(x => !subObjects.Contains(x)));
+               ConstrainScroll();
+            }
         }
         public float StepsDownOfItem(int itemIndex)
         {
