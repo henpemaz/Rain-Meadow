@@ -77,7 +77,7 @@ public static class DeathMessage
                 case DeathType.Drown:
                     if ((opo.apo as AbstractCreature).realizedCreature != null && (opo.apo as AbstractCreature).realizedCreature.grabbedBy.Count > 0)
                     {
-                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + (opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name + ".");
+                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
                         break;
                     }
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("drowned."));
@@ -169,11 +169,11 @@ public static class DeathMessage
             if (!ShouldShowDeath(target)) return;
             if ((killer.apo as AbstractCreature).creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Centipede)
             {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was zapped by a") + $" {k}.");
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was zapped by a") + " " + Utils.Translate(k) + ".");
             } 
             else
             {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by a") + $" {k}.");
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by a") + " " + Utils.Translate(k) + ".");
             }
 
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
@@ -208,10 +208,10 @@ public static class DeathMessage
             switch (context)
             {
                 default:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by") + $" {k}.");
+                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
                     break;
                 case 1:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was ascended by") + $" {k}.");
+                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was ascended by") + $" {k}.");
                     break;
             }
 
