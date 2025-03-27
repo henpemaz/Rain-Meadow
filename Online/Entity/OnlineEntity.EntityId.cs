@@ -35,9 +35,17 @@
 
             public void CustomSerialize(Serializer serializer)
             {
-                serializer.Serialize(ref originalOwner);
                 serializer.Serialize(ref type);
-                serializer.Serialize(ref id);
+                serializer.Serialize(ref originalOwner);
+                switch ((byte)type)
+                {
+                case (byte)IdType.none:
+                case (byte)IdType.settings:
+                    break;
+                default:
+                    serializer.Serialize(ref id);
+                    break;
+                }
             }
 
             public override string ToString()
