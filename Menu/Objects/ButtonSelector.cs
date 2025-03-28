@@ -1,189 +1,58 @@
 ﻿using System;
-using System.Linq;
-using System.Collections.Generic;
 using Menu;
 using UnityEngine;
-using RWCustom;
-using System.Reflection;
 
 namespace RainMeadow
 {
-    //a scroller just for predetermined buttons, currently only works for 30 posY
-    public class ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, float buttonHeight = 30) : RectangularMenuObject(menu, owner, pos, size)
+    public class ButtonSelector : SimplerButton
     {
-        public int ItemCount => buttons.Count;
-        public int MaxVisibleItems => (int)(size.y / buttonHeight);
-        public int MaxScroll => Math.Max(0, ItemCount - MaxVisibleItems);
-        public float LowerBound => 0;
-        public float UpperBound => size.y;
-        public bool CanScrollUp => scrollPos > 0;
-        public bool CanScrollDown => scrollPos < MaxScroll;
-        public float ButtonHeight 
+        public float StartingPoint => (downwardsList ? -sizeOfList : size.y) + (downwardsList? -size.y : size.y);
+        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView,float spacingOfButton) : this(menu, owner, displayText, pos, size, amtOfButtonsView * size.y, spacingOfButton)
         {
-            get
-            {
-                return buttonHeight;
-            }
-            set
-            {
-                buttonHeight = value;
-                buttons?.ForEach(x => x.size.y = buttonHeight);
-            }
         }
-        public override void Update()
+        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, float listSize, float spacingOfButton) : base(menu, owner, displayText, pos, size, "Press the button to open a list to select")
         {
-            base.Update();
-            if (MouseOver)
+            sizeOfList = listSize;
+            buttonSpacing = spacingOfButton;
+            OnClick += (_) =>
             {
-                ScrollingUpdate(InputOverride.GetMenuMouseWheelInput()); //not sure the extent of controller users
-            }
-        }
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-            for (int i = 0; i < buttons?.Count; i++)
-            {
-                buttons[i].pos.y = GetIdealButtonYPos(i);
-                buttons[i].fade = PercentageOverYBound(buttons[i].pos.y);
-            }
-
+                OpenCloseList();
+            };
         }
         public override void RemoveSprites()
         {
             base.RemoveSprites();
+            this.ClearMenuObject(ref scroller);
         }
-        public int IndexFromButton(ScrollerButton button)
+        public override void GrafUpdate(float timeStacker)
         {
-            for (int i = 0; i < buttons.Count; i++)
+            base.GrafUpdate(timeStacker);
+            if (scroller != null)
             {
-                if (buttons[i] == button)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-        public void RemoveButton(int index)
-        {
-            if (buttons.Count > index)
-            {
-                buttons[index].RemoveSprites();
-                subObjects.Remove(buttons[index]);
-                buttons.RemoveAt(index);
-                ConstrainScroll();
+                scroller.buttonHeight = size.y;
+                scroller.buttonSpacing = buttonSpacing;
             }
         }
-        public void RemoveAllButtons()
+        public virtual void UpdateUponClosingList()
         {
-            foreach (ScrollerButton button in buttons)
-            {
-                button.RemoveSprites();
-                subObjects.Remove(button);
-            }
-            buttons.Clear();
-        }
-        public void AddButtons(params ScrollerButton[] scrollBoxButtons)
-        {
-            if (scrollBoxButtons != null)
-            {
-               List<ScrollerButton> newButtons = [..scrollBoxButtons.Where(x => x != null)];
-               newButtons.ForEach(x => x.size.y = buttonHeight);
-               buttons.AddRange(newButtons);
-               subObjects.AddRange(newButtons.Where(x => !subObjects.Contains(x)));
-               ConstrainScroll();
-            }
-        }
-        public float StepsDownOfItem(int itemIndex)
-        {
-            float num = 0f;
-            for (int i = 0; i <= Math.Min(itemIndex, buttons.Count - 1); i++)
-            {
-                num += (i > 0) ? Mathf.Pow(Custom.SCurve(1f, 0.3f), 0.5f) : 1f;
-            }
-
-            return num;
-        }
-        public float GetIdealButtonYPos(int index)
-        {
-            if (buttons?.Count > index)
-            {
-                float num = StepsDownOfItem(index);
-                num -=  scrollPos;
-                return size.y - num * buttons[index].pos.y;
-            }
-            return 0;
-        }
-        public void ScrollingUpdate(float yInput)
-        {
-            if ((yInput < 0 && CanScrollUp) || (yInput > 0 && CanScrollDown))
-            {
-                //scrolling up -, scrolling down +
-                AddScroll(yInput);
-                menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Select_Gamepad_Or_Keyboard);
-            }
-        }
-        public void AddScroll(float addDir)
-        {
-            scrollPos += addDir;
-            ConstrainScroll();
-        }
-        public void ConstrainScroll()
-        {
-            scrollPos = Mathf.Clamp(scrollPos, 0, MaxScroll);
-        }
-        public float PercentageOverYBound(float posY)
-        {
-            float topPart = posY + buttonHeight;
-            return (posY < LowerBound) ? 1 - Math.Min(1, (LowerBound - posY) / buttonHeight) :
-                topPart > UpperBound ? 1 - Math.Min(1, (topPart - UpperBound) / buttonHeight) : 1;
 
         }
-
-        public float buttonHeight = buttonHeight, scrollPos;
-        public List<ScrollerButton> buttons = [];
-        public Action<ButtonScroller,ScrollerButton, int> onScrollButtonListClick;
-        public class ScrollerButton : SimplerButton
+        public virtual void OpenCloseList()
         {
-            public ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
+            if (scroller == null)
             {
-                OnClick += (_) =>
-                {
-
-                    if (this.owner is ButtonScroller bSB && bSB.onScrollButtonListClick != null)
-                    {
-                        int index = bSB.IndexFromButton(this);
-                        if (index > -1)
-                        {
-                            bSB.onScrollButtonListClick(bSB, this, index);
-                        }
-                        return;
-                    }
-                    onScrollBoxButtonClick?.Invoke(this);
-                };
+                scroller = new(menu, this, new(0, StartingPoint), new(size.x, sizeOfList));
+                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
+                subObjects.Add(scroller);
+                return;
             }
-            public override bool CurrentlySelectableNonMouse => fade >= 1 && base.CurrentlySelectableNonMouse;
-            public override bool CurrentlySelectableMouse => fade >= 1 && base.CurrentlySelectableMouse; 
-            public override void GrafUpdate(float timeStacker)
-            {
-                base.GrafUpdate(timeStacker);
-                UpdateFade(fade);
-            }
-            public virtual void UpdateFade(float fade)
-            {
-                menuLabel.label.alpha = fade;
-                for (int i = 0; i < roundedRect.sprites.Length; i++)
-                {
-                    roundedRect.sprites[i].alpha = fade;
-                    roundedRect.fillAlpha = fade / 2;
-                }
-                for (int i = 0; i < selectRect.sprites.Length; i++)
-                {
-                    selectRect.sprites[i].alpha = fade;
-                }
-            }
-
-            public float fade = 1;
-            public Action<ScrollerButton> onScrollBoxButtonClick;
+            this.ClearMenuObject(ref scroller);
+            UpdateUponClosingList();
         }
+
+        public bool downwardsList = true;
+        public float sizeOfList, buttonSpacing;
+        public ButtonScroller? scroller;
+        public Func<ButtonSelector,ButtonScroller, ButtonScroller.IPartOfButtonScroller[]>? populateList;
     }
 }
