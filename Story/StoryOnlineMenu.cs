@@ -396,7 +396,7 @@ namespace RainMeadow
             clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
             pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
-        public int TryChangeSlugcatIndex(SlugcatStats.Name scug)
+        public void TryChangeSlugcatIndex(SlugcatStats.Name scug)
         {
             for (int i = 0; i < selectableSlugcats.Length; i++)
             {
@@ -406,7 +406,6 @@ namespace RainMeadow
                     personaSettings.playingAs = scug;
                 }
             }
-            return -1;
         }
         public StoryMenuSlugcatButton[] GetSlugcatSelectionButtons(StoryMenuSlugcatSelector slugcatSelector, ButtonScroller buttonScroller)
         {
