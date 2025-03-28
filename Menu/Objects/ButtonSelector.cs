@@ -7,7 +7,7 @@ namespace RainMeadow
     public class ButtonSelector : SimplerButton
     {
         public float StartingPoint => (downwardsList ? -sizeOfList : size.y) + (downwardsList? -size.y : size.y);
-        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView,float spacingOfButton) : this(menu, owner, displayText, pos, size, amtOfButtonsView * size.y, spacingOfButton)
+        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView, float spacingOfButton) : this(menu, owner, displayText, pos, size, size.y + (Mathf.Max(0, amtOfButtonsView - 1) * (size.y + spacingOfButton)), spacingOfButton)
         {
         }
         public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, float listSize, float spacingOfButton) : base(menu, owner, displayText, pos, size, "Press the button to open a list to select")
