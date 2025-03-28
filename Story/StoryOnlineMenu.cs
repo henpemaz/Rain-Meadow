@@ -31,6 +31,8 @@ namespace RainMeadow
             actualSelectedIndex = value;
         } }
         public static int MaxVisibleOnList => 8;
+        public static float ButtonSpacingOffset => 8;
+        public static float ButtonSizeWithSpacing => 30 + ButtonSpacingOffset;
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -223,6 +225,10 @@ namespace RainMeadow
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
             }
+            if (slugcatSelector != null)
+            {
+                slugcatSelector.slug = CurrentSlugcat;
+            }
 
         }
 
@@ -242,9 +248,9 @@ namespace RainMeadow
             playerScrollBox?.RemoveAllButtons();
             if (playerScrollBox == null)
             {
-                playerScrollBox = new(this, pages[0], new(194,  553 - ((MaxVisibleOnList + 1) * 30)), new(200, MaxVisibleOnList * 30))
+                playerScrollBox = new(this, pages[0], new(194,  553 - ((MaxVisibleOnList + 1) * ButtonSizeWithSpacing)), new(200, MaxVisibleOnList * ButtonSizeWithSpacing))
                 {
-                    buttonSpacing = 8
+                    buttonSpacing = ButtonSpacingOffset
                 };
                 pages[0].subObjects.Add(playerScrollBox);
             }
@@ -317,7 +323,7 @@ namespace RainMeadow
             }
             if (slugcatSelector == null)
             {
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - 30), MaxVisibleOnList, CurrentSlugcat, GetSlugcatSelectionButtons);
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - 30), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 
