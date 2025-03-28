@@ -10,13 +10,14 @@ namespace RainMeadow
 {
     public class StoryMenuPlayerButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner, OnlinePlayer oP, bool isHost) : base(menu, owner, oP.id.name, Vector2.zero, new(110, 30))
+        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner,OnlinePlayer oP, bool canKick) : base(menu, owner, oP.id.name, Vector2.zero, new(110, 30))
         {
-            onScrollBoxButtonClick = (_) => { oP.id.OpenProfileLink(); };
-            canKick = isHost;
+            OnClick += (_) => 
+            { 
+                oP.id.OpenProfileLink(); 
+            };
             if (canKick)
             {
-                //putting kick button's parent to this to update their pos if this pos updates
                 kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(size.x + 15, 0));
                 kickButton.OnClick += (_) =>
                 {
@@ -25,9 +26,14 @@ namespace RainMeadow
                 subObjects.Add(kickButton);
             }
         }
-        public override void UpdateFade(float fade)
+        public override void RemoveSprites()
         {
-            base.UpdateFade(fade);
+            base.RemoveSprites();
+            this.ClearMenuObject(ref kickButton);
+        }
+        public override void UpdateAlpha(float fade)
+        {
+            base.UpdateAlpha(fade);
             if (kickButton != null)
             {
                 kickButton.symbolSprite.alpha = fade;
@@ -38,7 +44,36 @@ namespace RainMeadow
                 }
             }    
         }
-        public bool canKick;
-        public SimplerSymbolButton kickButton;
+        public SimplerSymbolButton? kickButton;
+    }
+    public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
+    {
+        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name slugcat, Action<SlugcatStats.Name> onReceieveSlugcat, Vector2 size = default) : base(menu, owner, menu.Translate(SlugcatStats.getSlugcatName(slugcat)), Vector2.zero, size == default? new(110, 30) : size)
+        {
+            OnClick += (_) =>
+            {
+                onReceieveSlugcat?.Invoke(slugcat);
+            };
+        }
+    }
+    public class StoryMenuSlugcatSelector : ButtonSelector
+    {
+        public StoryMenuSlugcatSelector(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfScugsToShow, SlugcatStats.Name currentSlugcat, Func<StoryMenuSlugcatSelector, ButtonScroller, StoryMenuSlugcatButton[]> populateSlugButtons) : base(menu, owner, "", pos, new(110, 30), amtOfScugsToShow, 8)
+        {
+            slug = currentSlugcat;
+            populateList = (selector, scroller) =>
+            {
+                return populateSlugButtons != null ? populateSlugButtons.Invoke((StoryMenuSlugcatSelector)selector, scroller) : [];
+            };
+        }
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (menuLabel != null)
+            {
+                menuLabel.text = SlugcatStats.getSlugcatName(slug);
+            }
+        }
+        public SlugcatStats.Name slug;
     }
 }
