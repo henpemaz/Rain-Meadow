@@ -49,13 +49,6 @@ namespace RainMeadow
 
             return y + scrollInput * RainMeadow.rainMeadowOptions.ScrollSpeed.Value;
         }
-        public static float GetMenuMouseWheelInput()
-        {
-            var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-            float scrollInput = Input.GetAxis("Mouse ScrollWheel") + ((controller is Rewired.Joystick js) ? -js.GetAxis(3) * -1 : 0) +
-                ((ChatHud.isLogToggled == false && Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S)) ? -1 : 0) + ((ChatHud.isLogToggled == false && Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W)) ? 1 : 0);
-            return scrollInput * RainMeadow.rainMeadow.Options.ScrollSpeed.Value;
-        }
 
     }
 }
