@@ -219,6 +219,66 @@ was ascended by|ha ascendido por parte de
 was zapped by a|ha muerto por una descarga eléctrica de
 was slain by a|ha muerto por
 
+// creature names for death messages
+Pink Lizard|Lagarto Rosa
+Green Lizard|Lagarto Verde
+Blue Lizard|Lagarto Azul
+Yellow Lizard|Lagarto Amarillo
+White Lizard|Lagarto Blanco
+Red Lizard|Lagarto Rojo
+Black Lizard|Lagarto Negro
+Salamander|Salamandra
+Cyan Lizard|Lagarto Cian
+Leech|Sanguijuela
+Sea Leech|Sanguijuela Marina
+Snail|Caracol
+Vulture|Buitre
+Garbage Worm|Gusano de la Basura
+Lantern Mouse|Ratón Farol
+Cicada A|Chicharra A
+Cicada B|Chicharra B
+Jet Fish|Pez Chorro
+Big Eel|Anguila Gigante
+Deer|Ciervo
+Tube Worm|Gusano de las Tuberías
+Daddy Long Legs|Papá Patilargo
+Brother Long Legs|Hermano Patilargo
+Tentacle Plant|Planta de Tentáculos
+Pole Mimic|Mímico de Postes
+Miros Bird|Pájaro Miró
+Temple Guard|Guardia del Templo
+Centipede|Ciempiés
+Red Centipede|Ciempiés Rojo
+Scavenger|Carroñero
+Centiwing|Cienalas
+Small Centipede|Ciempiés Pequeño
+Overseer|Supervisor
+Vulture Grub|Larva de Buitre
+Big Spider|Araña Gigante
+Spitter Spider|Araña Escupidora
+Egg Bug|Bicho Huevo
+Small Needle|Aguja Pequeña
+Big Needle|Aguja Grande
+Drop Bug|Bicho Trampa
+King Vulture|Buitre Real
+Hazer|Calamar Humeante
+Miros Vulture|Buitre Miró
+Caramel Lizard|Lagarto Caramelo
+Eel|Anguila
+Strawberry|Fresa
+Mother Spider|Araña Nodriza
+Terror Long Legs|Madre Patilarga
+Aquapede|Acuípedo
+Hell Bug|Bicho Infernal
+Stowaway Bug|Bicho Polizón
+Elite Scavenger|Carroñero de Élite
+King Scavenger|Carroñero Real
+Inspector|Inspector
+Yeek|Yeek
+Big Jellyfish|Medusa Gigante
+Jungle Leech|Sanguijuela Selvática
+Train Lizard|Lagarto Tren
+
 // Direct Connection Dialogue
 Direct Connection... |Conexión directa... 
 Password:|Contraseña:
@@ -259,15 +319,6 @@ Missing DLC Mods that have to be enabled: |Mods DLC perdidos que tienen que esta
 // Remix Options
 Arena|Arena
 LAN|LAN
-Disable Pause Menu Animation|Desactivar animación del menú de pausa
-If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
-Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
-Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
-Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
-Unlock Emote|Desbl. emote
-Unlock Skin|Desbl. aspecto
-Unlock Character|Desbl. personaje
-Reset all progression|Reiniciar todo el progreso
 Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo Meadow.
 Show usernames|Mostrar nombres de usuario
 Username Toggle|Ver los nombres sin mantener pulsado
@@ -285,6 +336,15 @@ Vanilla|Vanilla
 Downpour|Downpour
 Downpour DLC is not activated, vanilla intro will be used instead|Si el DLC Downpour no está activado, la intro vanilla será usada en su lugar.
 Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
+Disable Pause Menu Animation|Desactivar animación del menú de pausa
+If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
+Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
+Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
+Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
+Unlock Emote|Desbl. emote
+Unlock Skin|Desbl. aspecto
+Unlock Character|Desbl. personaje
+Reset all progression|Reiniciar todo el progreso
 Ready to shelter/gate|Preparado para hibernar o pasar de región
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
@@ -333,3 +393,4 @@ You were removed from the previous online game|Has sido echado de la partida en 
 This player does not have a profile.|Este jugador no tiene un perfil.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente. Algunas características de Rain Meadow han sido desactivadas.
 Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
+Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Por favor, usa un mod externo para acceder a la campaña de Inv.

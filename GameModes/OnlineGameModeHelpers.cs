@@ -42,10 +42,10 @@ namespace RainMeadow
             PlacedObject.Type.CustomDecal,
             PlacedObject.Type.InsectGroup,
             PlacedObject.Type.PlayerPushback,
-            MoreSlugcatsEnums.PlacedObjectType.MSArteryPush,
+            DLCSharedEnums.PlacedObjectType.MSArteryPush,
             PlacedObject.Type.GoldToken,
             PlacedObject.Type.BlueToken,
-            MoreSlugcatsEnums.PlacedObjectType.GreenToken,
+            PlacedObject.Type.GreenToken,
             MoreSlugcatsEnums.PlacedObjectType.WhiteToken,
             MoreSlugcatsEnums.PlacedObjectType.RedToken,
             MoreSlugcatsEnums.PlacedObjectType.DevToken,
@@ -70,15 +70,15 @@ namespace RainMeadow
             PlacedObject.Type.NeuronSpawner,
             PlacedObject.Type.ExitSymbolAncientShelter,
             PlacedObject.Type.BlinkingFlower,
-            MoreSlugcatsEnums.PlacedObjectType.OEsphere,
+            DLCSharedEnums.PlacedObjectType.OEsphere,
             MoreSlugcatsEnums.PlacedObjectType.KarmaShrine,
         };
 
         public HashSet<PlacedObject.Type> creatureRelatedItems = new()
         {
-            MoreSlugcatsEnums.PlacedObjectType.BigJellyFish,
-            MoreSlugcatsEnums.PlacedObjectType.RotFlyPaper,
-            MoreSlugcatsEnums.PlacedObjectType.Stowaway,
+            DLCSharedEnums.PlacedObjectType.BigJellyFish,
+            DLCSharedEnums.PlacedObjectType.RotFlyPaper,
+            DLCSharedEnums.PlacedObjectType.Stowaway,
             //PlacedObject.Type.TempleGuard,
             //MoreSlugcatsEnums.PlacedObjectType.HRGuard,
             //PlacedObject.Type.StuckDaddy,
@@ -114,11 +114,11 @@ namespace RainMeadow
             PlacedObject.Type.VultureMask,          //MSC
             //PlacedObject.Type.HangingPearls,      //MSC
             PlacedObject.Type.Lantern,
-            MoreSlugcatsEnums.PlacedObjectType.GooieDuck,
-            MoreSlugcatsEnums.PlacedObjectType.LillyPuck,
-            MoreSlugcatsEnums.PlacedObjectType.GlowWeed,
+            DLCSharedEnums.PlacedObjectType.GooieDuck,
+            DLCSharedEnums.PlacedObjectType.LillyPuck,
+            DLCSharedEnums.PlacedObjectType.GlowWeed,
             MoreSlugcatsEnums.PlacedObjectType.MoonCloak,
-            MoreSlugcatsEnums.PlacedObjectType.DandelionPeach,
+            DLCSharedEnums.PlacedObjectType.DandelionPeach,
         };
     }
 }

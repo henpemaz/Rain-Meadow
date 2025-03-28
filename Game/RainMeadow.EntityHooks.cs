@@ -267,7 +267,7 @@ namespace RainMeadow
         }
 
         // world transition at gates
-        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self)
+        private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
             if (OnlineManager.lobby != null)
             {
@@ -311,7 +311,7 @@ namespace RainMeadow
                         }
                     }
 
-                    orig(self); // this replace the list of entities in new world with that from old world
+                    orig(self, warpUsed); // this replace the list of entities in new world with that from old world
 
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
@@ -324,7 +324,7 @@ namespace RainMeadow
                 else
                 {
                     // special warp, don't bother with room items
-                    orig(self);
+                    orig(self, warpUsed);
                 }
 
                 foreach (var absplayer in self.game.Players)
@@ -350,7 +350,7 @@ namespace RainMeadow
             }
             else
             {
-                orig(self);
+                orig(self, warpUsed);
             }
         }
 
