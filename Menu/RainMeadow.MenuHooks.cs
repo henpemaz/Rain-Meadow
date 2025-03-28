@@ -35,8 +35,16 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
+            On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
         }
-
+        void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
+        {
+            orig(self, timestacker);
+            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
+            {
+                buttonScroll.UpdateAlpha(buttonScroll.Alpha);
+            }
+        }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, global::Menu.SlugcatSelectMenu self) {
             if (isStoryMode(out _)) {
                 var storymenu = self as StoryOnlineMenu;

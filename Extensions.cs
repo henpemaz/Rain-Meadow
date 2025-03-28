@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using Menu;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -168,6 +169,15 @@ namespace RainMeadow
 
             throw new ArgumentException("no elements in sequence");
         }
+        public static T? GetValueOrDefault<T>(this IList<T> iList, int index)
+        {
+            return iList.GetValueOrDefault(index, default);
+        }
+
+        public static T? GetValueOrDefault<T>(this IList<T> iList, int index, T? defaultVal)
+        {
+            return iList != null && index >= 0 && iList.Count > index? iList[index] : defaultVal;
+        }
 
         public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
         {
@@ -229,6 +239,56 @@ namespace RainMeadow
             catch (ReflectionTypeLoadException e) // happens often with soft-dependencies, did you know
             {
                 return e.Types.Where(x => x != null).ToArray();
+            }
+        }
+        //faster for adding menuobjects smth
+        public static void ClearMenuObjectIList<T>(this MenuObject owner, IEnumerable<T>? menuObjects) where T : MenuObject
+        {
+            if (menuObjects != null)
+            {
+                foreach (MenuObject menuObject in menuObjects)
+                {
+                    owner.ClearMenuObject(menuObject);
+                }
+            }
+        }
+        public static void ClearMenuObject<T>(this MenuObject owner, ref T? subObject) where T : MenuObject
+        {
+            owner.ClearMenuObject(subObject);
+            subObject = null;
+
+        }
+        public static void ClearMenuObject(this MenuObject owner, MenuObject? subObject)
+        {
+            if (subObject != null)
+            {
+                subObject.RemoveSprites();
+                owner.RemoveSubObject(subObject);
+            }
+
+        }
+        public static void TryBind(this MenuObject? menuObject, MenuObject? bindWith, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            if (menuObject != null && bindWith != null)
+            {
+                menuObject.nextSelectable[0] = (left ? bindWith : menuObject.nextSelectable[0]);
+                menuObject.nextSelectable[1] = (top ? bindWith : menuObject.nextSelectable[1]);
+                menuObject.nextSelectable[2] = (right ? bindWith : menuObject.nextSelectable[2]);
+                menuObject.nextSelectable[3] = (bottom ? bindWith : menuObject.nextSelectable[3]);
+            }
+        }
+        public static void TryMutualBind(this Menu.Menu? menu, MenuObject? first, MenuObject? second, bool leftRight = false, bool topDown = false)
+        {
+            if (menu != null && first != null && second != null)
+            {
+                if (leftRight)
+                {
+                    menu.MutualHorizontalButtonBind(first, second);
+                }
+                if (topDown)
+                {
+                    menu.MutualVerticalButtonBind(first, second);
+                }
             }
         }
     }
