@@ -312,7 +312,7 @@ namespace RainMeadow
             Vector2 pos = new(394, 553);
             if (slugcatLabel == null)
             {
-                slugcatLabel = new(this, pages[0], Translate("Slugcats"), pos, new(110, 30), true);
+                slugcatLabel = new(this, pages[0], Translate("Selected Slugcat"), pos, new(110, 30), true);
                 pages[0].subObjects.Add(slugcatLabel);
             }
             if (slugcatSelector == null)
@@ -396,6 +396,18 @@ namespace RainMeadow
             clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
             pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
+        public int TryChangeSlugcatIndex(SlugcatStats.Name scug)
+        {
+            for (int i = 0; i < selectableSlugcats.Length; i++)
+            {
+                if (selectableSlugcats[i] == scug)
+                {
+                    SelectedIndex = i;
+                    personaSettings.playingAs = scug;
+                }
+            }
+            return -1;
+        }
         public StoryMenuSlugcatButton[] GetSlugcatSelectionButtons(StoryMenuSlugcatSelector slugcatSelector, ButtonScroller buttonScroller)
         {
             List<StoryMenuSlugcatButton> slugcatButtons = [];
@@ -416,7 +428,7 @@ namespace RainMeadow
         }
         public void RecieveSlugcat(SlugcatStats.Name scug)
         {
-            personaSettings.playingAs = scug;
+            TryChangeSlugcatIndex(scug); //fix slugcat not matching
             if (colorChecked)
             {
                 RemoveColorButtons();
