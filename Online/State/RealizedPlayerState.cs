@@ -7,18 +7,18 @@ namespace RainMeadow
     public class VinePositionState : OnlineState
     {
         [OnlineField]
-        int vine;
+        ushort index;
         [OnlineFieldHalf]
         float floatPos;
 
         public VinePositionState() { }
-        public VinePositionState(ClimbableVinesSystem.VinePosition vinePos)
+        public VinePositionState(ClimbableVinesSystem.VinePosition vinePos, int index)
         {
-            vine = vinePos.vine;
+            this.index = (ushort)index;
             floatPos = vinePos.floatPos;
         }
 
-        public ClimbableVinesSystem.VinePosition GetVinePosition() => new(vine, floatPos);
+        public ClimbableVinesSystem.VinePosition GetVinePosition(ClimbableVinesSystem system) => new(system.vines[index], floatPos);
     }
 
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
@@ -180,7 +180,7 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
-            vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null ? null : new VinePositionState(p.vinePos);
+            vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null || p.room is null ? null : new VinePositionState(p.vinePos, p.room.climbableVines.vines.IndexOf(p.vinePos.vine));
 
             playerInAntlersState = p.playerInAntlers is null ? null : new PlayerInAntlersState(p.playerInAntlers);
 
@@ -282,10 +282,13 @@ namespace RainMeadow
                 }
             }
 
-            p.vinePos = vinePosState?.GetVinePosition();
-            if (vinePosState is not null)
+            if (p.room.climbableVines != null)
             {
-                p.room.climbableVines.ConnectChunkToVine(p.bodyChunks[0], p.vinePos, p.room.climbableVines.VineRad(p.vinePos));
+                p.vinePos = vinePosState?.GetVinePosition(p.room.climbableVines);
+                if (vinePosState is not null)
+                {
+                    p.room.climbableVines.ConnectChunkToVine(p.bodyChunks[0], p.vinePos, p.room.climbableVines.VineRad(p.vinePos));
+                }
             }
 
             if (playerInAntlersState is not null)

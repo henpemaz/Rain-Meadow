@@ -215,15 +215,15 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
-        private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)
+        private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly, System.Random rnd)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, true);
+                orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, true, rnd);
                 return;
             }
 
-            orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly);
+            orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly, rnd);
         }
 
         public delegate bool orig_RegionGateBool(RegionGate self);

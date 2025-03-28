@@ -570,7 +570,7 @@ namespace RainMeadow
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
                         if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
-                            || trueVillain.abstractPhysicalObject.type == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
+                            || trueVillain.abstractPhysicalObject.type == DLCSharedEnums.AbstractObjectType.SingularityBomb)
                         {
                             // bombs exit quickly, and that's ok.
                             OnlinePhysicalObject onlineVillain = null;
@@ -627,7 +627,7 @@ namespace RainMeadow
                     if (!OnlinePhysicalObject.map.TryGetValue(trueVillain.abstractPhysicalObject, out var onlineTrueVillain))
                     {
                         if (trueVillain.abstractPhysicalObject.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb
-                            || trueVillain.abstractPhysicalObject.type == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.SingularityBomb)
+                            || trueVillain.abstractPhysicalObject.type == DLCSharedEnums.AbstractObjectType.SingularityBomb)
                         {
                             // bombs exit quickly, and that's ok.
                             OnlinePhysicalObject onlineVillain = null;
