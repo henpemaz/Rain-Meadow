@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,33 +39,57 @@ namespace RainMeadow
         /// </summary>
         public static string CommentPrefix => "//";
 
-        public static string[] GetRequiredMods()
+        /// <summary>
+        /// Used to prevent double-checking mods that have already been marked as required.
+        /// Does NOT save the load order.
+        /// This is NOT a replacement for calling GetRequiredMods().
+        /// </summary>
+        private static string[] CurrentRequiredMods = { };
+        public static string[] GetRequiredMods(bool includeDependencies = true)
         {
+
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
             var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
 
             requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
 
+            var fullOverrideList = modInfo.SyncRequiredModsOverride.Union(
+                requiredMods.Where(mod => mod.StartsWith(CommentPrefix)).Select(mod => mod.TrimStart(CommentPrefix)));
+
+            //look through old required mod list
+            var activeMods = ModManager.ActiveMods.Select(mod => mod.id);
+            requiredMods = requiredMods.Union(CurrentRequiredMods).ToList();
+            requiredMods.RemoveAll(mod => !activeMods.Contains(mod)); //if no longer active, remove it
+
             //add dependencies
-            foreach (var mod in ModManager.ActiveMods)
+            if (includeDependencies)
             {
-                if (requiredMods.Contains(mod.id))
-                    requiredMods.AddDistinctRange(mod.requirements);
+                foreach (var mod in ModManager.ActiveMods)
+                {
+                    if (requiredMods.Contains(mod.id))
+                        requiredMods.AddDistinctRange(mod.requirements);
+                }
             }
 
-            //the mod lists are combined first, then ActiveMods is combed through for ids, because that ensures the load order is correct
+            //check .dlls for extra required mods
+            CurrentRequiredMods = GetExtendedHighImpactMods(requiredMods
+                .Union(fullOverrideList.Select(mod => CommentPrefix + mod)) //also; don't check mods that are overrided as not required
+                .Except(fullOverrideList) //double-check that overrided mods are, in fact, removed
+                .ToArray());
+
             return ModManager.ActiveMods
-                .Where(mod => requiredMods.Contains(mod.id))
+                .Where(mod => CurrentRequiredMods.Contains(mod.id))
                 .OrderBy(mod => mod.loadOrder)
                 .Select(mod => mod.id)
+                .Concat(fullOverrideList.Select(mod => CommentPrefix + mod)) //add in overrides as commented
                 .ToArray();
         }
 
         public static string ModIdToName(string id)
         {
             //default case: if the name isn't found, the ID should hopefully be a better replacement than "null" or something
-            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.name ?? id;
+            return ModManager.InstalledMods.FirstOrDefault(mod => mod.id == id)?.LocalizedName ?? id;
         }
 
         public static bool IsModInstalled(string id)
@@ -80,21 +105,129 @@ namespace RainMeadow
         {
             return requiredMods.Split('\n');
         }
-      
+
+        /// <summary>
+        /// Used to prevent double-checking mods that have already been marked as banned.
+        /// This is NOT a replacement for calling GetBannedMods().
+        /// </summary>
+        private static string[] CurrentBannedMods = { };
         public static string[] GetBannedMods()
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
 
-            var syncRequiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
-            var bannedOnlineMods = modInfo.BannedOnlineMods.Except(modInfo.BannedOnlineModsOverride).ToList();
+            //var requiredMods = modInfo.SyncRequiredMods.Except(modInfo.SyncRequiredModsOverride).ToList();
+            var bannedMods = modInfo.BannedOnlineMods
+                .Except(modInfo.BannedOnlineModsOverride) //remove overridden banned mods
+                .Union(modInfo.BannedOnlineModsOverride.Select(mod => CommentPrefix + mod)) //add those overrides as commented to the list
+                .ToList();
 
-            syncRequiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, syncRequiredMods, SyncRequiredModsExplanationComment);
-            bannedOnlineMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedOnlineMods, BannedOnlineModsExplanationComment);
+            //requiredMods = UpdateFromOrWriteToFile(SyncRequiredModsFileName, requiredMods, SyncRequiredModsExplanationComment);
+            bannedMods = UpdateFromOrWriteToFile(BannedOnlineModsFileName, bannedMods, BannedOnlineModsExplanationComment);
+
+            var fullOverrideList = modInfo.BannedOnlineModsOverride.Union(
+                bannedMods.Where(mod => mod.StartsWith(CommentPrefix)).Select(mod => mod.TrimStart(CommentPrefix)));
+
+            //look through old banned mod list
+            var activeMods = ModManager.ActiveMods.Select(mod => mod.id);
+            var oldBannedMods = CurrentBannedMods.Where(mod => mod.StartsWith(CommentPrefix)
+                ? !bannedMods.Contains(mod.TrimStart(CommentPrefix)) //don't include old exluded mods that are no longer excluded
+                : !bannedMods.Contains(CommentPrefix + mod)); //don't include old banned mods that are now excluded
+            bannedMods.Union(oldBannedMods);
 
             // (required + banned) - enabled
-            return syncRequiredMods.Concat(bannedOnlineMods)
-                .Except(ModManager.ActiveMods.Select(mod => mod.id))
+            var initialBanned = GetRequiredMods().Union(bannedMods)
+                .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods
                 .ToArray();
+
+            CurrentBannedMods = GetExtendedHighImpactMods(initialBanned)
+                .Select(mod => activeMods.Contains(mod) ? CommentPrefix + mod : mod) //add CommentPrefix to active mods AGAIN (banned list changed)
+                .Except(fullOverrideList) //re-implement overrides, just in case
+                .ToArray();
+
+            return CurrentBannedMods;
+        }
+
+        /// <summary>
+        /// A list of types that are high-impact (either required or banned).
+        /// Mod plugins will be scanned to see if they implement these types;
+        /// and if so, they will be marked as high-impact
+        /// </summary>
+        private static string[] HighImpactBaseTypes = ["Fisob", "Critob", nameof(PhysicalObject), nameof(Creature), nameof(OnlineState)];
+
+        /// <summary>
+        /// Looks through all active mods (that aren't explicitly allowed)
+        /// to determine if they implement any highImpact base types.
+        /// Used to extend required or banned mod lists.
+        /// </summary>
+        /// <param name="highImpactMods">The banned or required mod list</param>
+        /// <returns></returns>
+        public static string[] GetExtendedHighImpactMods(string[] highImpactMods)
+        {
+            List<string> extendedBannedMods = highImpactMods.ToList();
+
+            foreach (var mod in ModManager.ActiveMods)
+            {
+                if (highImpactMods.Contains(mod.id) || highImpactMods.Contains(CommentPrefix + mod.id))
+                    continue; //if the mod is allowed or already banned, don't try to (re)ban it
+
+                bool modHighImpact = false;
+
+                //get mod dlls
+                List<string> dlls = new();
+                var plugins = Utils.GetDirectoryFilesSafe(Path.Combine(mod.path, "plugins"))
+                    .Union(Utils.GetDirectoryFilesSafe(Path.Combine(mod.NewestPath, "plugins"))
+                    .Union(Utils.GetDirectoryFilesSafe(Path.Combine(mod.TargetedPath, "plugins"))));
+                foreach (var file in plugins)
+                    if (Path.GetExtension(file) == ".dll")
+                        dlls.Add(file);
+
+                //loop through each dll
+                foreach (var file in dlls)
+                {
+                    try
+                    {
+                        //load it as an assembly
+                        var assembly = Assembly.LoadFrom(file);
+                        if (assembly == null)
+                        {
+                            RainMeadow.Debug($"Invalid assembly: {file}");
+                            continue;
+                        }
+
+                        foreach (var type in assembly.GetTypesSafely().ToList())
+                        {
+                            try
+                            {
+                                for (var baseType = type.BaseType; baseType != null; baseType = baseType.BaseType)
+                                {
+                                    //if baseType is a HighImpactBaseType OR contains an RPCMethod, mark it as banned/impact
+                                    if (HighImpactBaseTypes.Contains(baseType.Name)
+                                        || baseType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly).Any(m => m.GetCustomAttribute<RPCMethodAttribute>() != null))
+                                    {
+                                        extendedBannedMods.Add(mod.id);
+                                        modHighImpact = true;
+                                        RainMeadow.Debug($"Marked {mod.id} as high-impact due to implementing a {baseType.Name}; or an RPCMethod.");
+                                        break;
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                RainMeadow.Error(assembly.FullName + ":" + type.FullName);
+                                RainMeadow.Error(e);
+                            }
+                            if (modHighImpact) break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        RainMeadow.Error(ex);
+                    }
+                    if (modHighImpact) break;
+                }
+            }
+
+            return extendedBannedMods.Distinct().ToArray();
         }
 
         /// <summary>
@@ -113,13 +246,21 @@ namespace RainMeadow
                 RainMeadow.Debug($"required: [ {string.Join(", ", requiredMods)} ]");
                 RainMeadow.Debug($"banned:   [ {string.Join(", ", bannedMods)} ]");
                 var active = ModManager.ActiveMods.Select(mod => mod.id).ToList();
+
                 bool reorder = true; //or change mods whatsoever
-                var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
+
+                var disable = GetRequiredMods(false) //don't include dependencies
+                    .Where(mod => !mod.StartsWith(CommentPrefix)) //don't let client's overrides apply
+                    .Union(GetExtendedHighImpactMods(bannedMods)) //extra mod assembly checks
+                    .Where(mod => !requiredMods.Contains(mod) && !requiredMods.Contains(CommentPrefix + mod)) //don't disable commented out mods
+                    .Intersect(active) //only mods currently enabled should be disabled
+                    .ToList();
+
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list
-                enable.RemoveAll(mod => mod == null || mod == "");
-                disable.RemoveAll(mod => mod == null || mod == "");
+                enable.RemoveAll(mod => mod == null || mod == "" || mod.StartsWith(CommentPrefix)); //ignore commented mods, just in case
+                disable.RemoveAll(mod => mod == null || mod == "" || mod.StartsWith(CommentPrefix));
 
                 //determine whether a reorder is necessary
                 if (!disable.Any() && !enable.Any())
@@ -313,12 +454,15 @@ namespace RainMeadow
             var trimmedActiveLines = new List<string>();
             var trimmedDisabledLines = new List<string>();
 
+            bool nonCommentFound = false; //prevents the startingComment from being added to the banned mod list
+
             // Trim non-leading comments (leading comments will be used to exclude mods)
             foreach (var line in existingLines)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     linesToWrite.Add(line);
+                    nonCommentFound = true; //will be triggered by the empty space after startingComment
                     continue;
                 }
 
@@ -331,6 +475,8 @@ namespace RainMeadow
                     trimmedLine = trimmedLine.TrimStart(CommentPrefix);
                     isDisabledLine = true;
                 }
+                else
+                    nonCommentFound = true;
 
                 var commentStartIndex = trimmedLine.IndexOf(CommentPrefix, StringComparison.InvariantCulture);
 
@@ -348,7 +494,8 @@ namespace RainMeadow
 
                 if (isDisabledLine)
                 {
-                    trimmedDisabledLines.Add(trimmedLine);
+                    if (nonCommentFound)
+                        trimmedDisabledLines.Add(trimmedLine);
                 }
                 else
                 {
@@ -366,7 +513,7 @@ namespace RainMeadow
 
             File.WriteAllLines(path, linesToWrite);
 
-            return trimmedActiveLines;
+            return trimmedActiveLines.Union(trimmedDisabledLines.Select(line => CommentPrefix + line)).ToList();
         }
 
         private static List<string> ModIdsToIdAndName(List<string> modIds)
