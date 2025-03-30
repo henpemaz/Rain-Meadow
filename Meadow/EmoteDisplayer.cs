@@ -290,6 +290,9 @@ namespace RainMeadow
                     FSprite fSprite = sLeaser.sprites[i];
                     fSprite.SetPosition(usepos);
                     fSprite.alpha = usealpha;
+
+                    fSprite.shader = FShader.defaultShader; // thanks watcher (see RoomCamera.SpriteLeaser.ctor)
+
                     if (rotate) fSprite.rotation = userot;
                 }
                 if (base.slatedForDeletetion || this.room != rCam.room)
