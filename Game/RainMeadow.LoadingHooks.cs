@@ -9,7 +9,8 @@ namespace RainMeadow
         // World/room load unload wait
         private void LoadingHooks()
         {
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
+            On.WorldLoader.ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues += WorldLoader_ctor;
+
             On.WorldLoader.Update += WorldLoader_Update;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
@@ -227,7 +228,7 @@ namespace RainMeadow
         }
 
         // World request/release
-        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, SlugcatStats.Timeline timeline, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
             if (OnlineManager.lobby != null)
             {
@@ -235,7 +236,7 @@ namespace RainMeadow
 
 
             }
-            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            orig(self, game, playerCharacter, timeline, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
             {
                 try
