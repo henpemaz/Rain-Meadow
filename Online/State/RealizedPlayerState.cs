@@ -282,7 +282,7 @@ namespace RainMeadow
                 }
             }
 
-            if (p.room.climbableVines != null)
+            if (p.room?.climbableVines != null)
             {
                 p.vinePos = vinePosState?.GetVinePosition(p.room.climbableVines);
                 if (vinePosState is not null)
