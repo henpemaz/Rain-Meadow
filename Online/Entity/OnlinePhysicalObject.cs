@@ -182,7 +182,6 @@ namespace RainMeadow
 
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
             RainMeadow.Debug("serializedObject: " + serializedObject);
-
             var apo = SaveState.AbstractPhysicalObjectFromString(world, serializedObject);
             apo.pos = initialState.pos; // game's really bad at parsing this huh specially arena or gates
             EntityID id = world.game.GetNewID();

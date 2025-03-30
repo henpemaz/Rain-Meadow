@@ -133,10 +133,6 @@ namespace RainMeadow
             }
 
             abstractCreature.state.LoadFromString(Regex.Split(array[3], "<cB>"));
-            if (RainMeadow.isArenaMode(out var _))
-            {
-                abstractCreature.Room.world.region = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-            }
             abstractCreature.setCustomFlags();
             return abstractCreature;
         }
