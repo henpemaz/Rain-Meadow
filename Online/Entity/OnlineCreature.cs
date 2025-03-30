@@ -143,6 +143,7 @@ namespace RainMeadow
             EntityID id = world.game.GetNewID();
 
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
+            RainMeadow.Debug("serializedObject: " + serializedObject);
             var apo = AbstractCreatureFromString(world, serializedObject, initialState.pos);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
