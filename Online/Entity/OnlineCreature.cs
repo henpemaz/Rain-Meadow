@@ -144,7 +144,6 @@ namespace RainMeadow
 
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
             RainMeadow.Debug("serializedObject: " + serializedObject);
-
             var apo = AbstractCreatureFromString(world, serializedObject, initialState.pos);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
@@ -197,7 +196,7 @@ namespace RainMeadow
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             RainMeadow.Debug($"{this} hit for {damage}");
-            if(creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
+            if (creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
             if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
@@ -213,7 +212,8 @@ namespace RainMeadow
             {
                 try
                 {
-                    if (sucked_in_by_remote) {
+                    if (sucked_in_by_remote)
+                    {
                         creature.SuckedIntoShortCut(entrancePos, carriedByOther);
                         return;
                     }
@@ -281,9 +281,10 @@ namespace RainMeadow
                 }
             }
             enteringShortCut = false;
-        }        
+        }
 
-        public struct ReclaimGrasp {
+        public struct ReclaimGrasp
+        {
             public int graspUsed;
             public OnlineEntity.EntityId onlineGrabbed;
             public int chunkGrabbed;
