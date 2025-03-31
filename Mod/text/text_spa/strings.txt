@@ -240,7 +240,7 @@ Cicada B|Chicharra B
 Jet Fish|Pez Chorro
 Big Eel|Anguila Gigante
 Deer|Ciervo
-Tube Worm|Gusano de las Tuberías
+Tube Worm|Gusano de Tubería
 Daddy Long Legs|Papá Patilargo
 Brother Long Legs|Hermano Patilargo
 Tentacle Plant|Planta de Tentáculos
@@ -258,7 +258,7 @@ Big Spider|Araña Gigante
 Spitter Spider|Araña Escupidora
 Egg Bug|Bicho Huevo
 Small Needle|Aguja Pequeña
-Big Needle|Aguja Grande
+Big Needle|Aguja Gigante
 Drop Bug|Bicho Trampa
 King Vulture|Buitre Real
 Hazer|Calamar Humeante
@@ -269,15 +269,36 @@ Strawberry|Fresa
 Mother Spider|Araña Nodriza
 Terror Long Legs|Madre Patilarga
 Aquapede|Acuípedo
-Hell Bug|Bicho Infernal
 Stowaway Bug|Bicho Polizón
 Elite Scavenger|Carroñero de Élite
-King Scavenger|Carroñero Real
 Inspector|Inspector
 Yeek|Yeek
 Big Jellyfish|Medusa Gigante
 Jungle Leech|Sanguijuela Selvática
+Hell Bug|Bicho Infernal
+King Scavenger|Carroñero Real
+Slugcat NPC|NPC de Gatobabosa
 Train Lizard|Lagarto Tren
+Barnacle|Percebe
+DrillCrab|Cangrejo Perforador
+SandGrub|Larva de Arena
+BigSandGrub|Larva Gigante de Arena
+BigMoth|Polilla Gigante
+SmallMoth|Polilla Pequeña
+Box Worm|Gusano de Caja
+Fire Sprite|Duende de Fuego
+Rattler|Cascabel
+SkyWhale|Ballena Celestial
+ScavengerTemplar|Carroñero Templario
+ScavengerDisciple|Carroñero Discípulo
+Loach|Locha
+Rot Behemoth|Mastodonte Putrefacto
+Blizzard Lizard|Lagarto Ventisca
+Basilisk Lizard|Lagarto Basilisco
+Indigo Lizard|Lagarto Índigo
+Rat|Rata
+Frog|Rana
+Tardigrade|Tardígrado
 
 // Direct Connection Dialogue
 Direct Connection... |Conexión directa... 
