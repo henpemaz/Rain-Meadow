@@ -112,6 +112,7 @@ namespace RainMeadow
 
             IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
+            IL.Menu.SlugatSelectMenu.Singal +=  IL_SlugcatSelectMenu_SingalFix;
 
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
