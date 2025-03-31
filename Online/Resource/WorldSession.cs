@@ -21,6 +21,10 @@ namespace RainMeadow
         public void BindWorld(World world)
         {
             this.world = world;
+            if (RainMeadow.isArenaMode(out var _)) {
+
+                world.region = new Region("arena", 0, 0, SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer));
+            }
             map.Add(world, this);
         }
 

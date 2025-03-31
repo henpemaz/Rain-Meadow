@@ -39,7 +39,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished, string? denPos)
+        public static void GoToWinScreen(bool malnourished, string? denPos, bool fromWarpPoint)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
@@ -48,7 +48,7 @@ namespace RainMeadow
                 storyGameMode.myLastDenPos = denPos;
             }
 
-            game.Win(malnourished);
+            game.Win(malnourished, fromWarpPoint);
         }
 
         [RPCMethod]
