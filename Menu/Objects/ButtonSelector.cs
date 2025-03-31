@@ -4,11 +4,16 @@ using UnityEngine;
 
 namespace RainMeadow
 {
+    //now includes the first button as another button to view
     public class ButtonSelector : SimplerButton
     {
-        public float StartingPoint => (downwardsList ? -sizeOfList : size.y) + (downwardsList? -size.y : size.y);
-        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView, float spacingOfButton) : this(menu, owner, displayText, pos, size, size.y + (Mathf.Max(0, amtOfButtonsView - 1) * (size.y + spacingOfButton)), spacingOfButton)
+        public float OrigDistanceBetweenButtonYPos => size.y + buttonSpacing;
+        public float ListPosOffset => downwardsList ? -(OrigDistanceBetweenButtonYPos + listDownUpYOffset) : OrigDistanceBetweenButtonYPos + listDownUpYOffset;
+        public float OrigStart => downwardsList ? -sizeOfList : size.y;
+        public float StartingPoint => OrigStart + ListPosOffset;
+        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView, float spacingOfButton) : this(menu, owner, displayText, pos, size, (Mathf.Max(0, amtOfButtonsView - 1) * (size.y + spacingOfButton)), spacingOfButton)
         {
+            //if you set it to one or less... why???
         }
         public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, float listSize, float spacingOfButton) : base(menu, owner, displayText, pos, size, "Press the button to open a list to select")
         {
@@ -51,6 +56,7 @@ namespace RainMeadow
         }
 
         public bool downwardsList = true;
+        public float listDownUpYOffset;
         public float sizeOfList, buttonSpacing;
         public ButtonScroller? scroller;
         public Func<ButtonSelector,ButtonScroller, ButtonScroller.IPartOfButtonScroller[]>? populateList;
