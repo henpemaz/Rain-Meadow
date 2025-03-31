@@ -154,7 +154,7 @@ New skin unlocked|Nuevo aspecto desbloqueado
 // Story Mode
  - New Game| - Juego nuevo
 Current Campaign: |Campaña actual: 
-Slugcats|Gatobabosas
+Selected Slugcat|Gatobabosa seleccionado
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
 Require Campaign Slugcat|Requerir gato de campaña
@@ -415,3 +415,4 @@ This player does not have a profile.|Este jugador no tiene un perfil.
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam no está disponible actualmente. Algunas características de Rain Meadow han sido desactivadas.
 Rain Meadow failed to start|Rain Meadow no se ha iniciado correctamente.
 Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: Por favor, usa un mod externo para acceder a la campaña de Inv.
+Press the button to open a list to select|Pulsa el botón para abrir una lista para seleccionar

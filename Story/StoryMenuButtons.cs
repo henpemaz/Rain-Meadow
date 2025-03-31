@@ -71,7 +71,7 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             if (menuLabel != null)
             {
-                menuLabel.text = SlugcatStats.getSlugcatName(slug);
+                menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
             }
         }
         public SlugcatStats.Name slug;
