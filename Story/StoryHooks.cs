@@ -242,7 +242,29 @@ namespace RainMeadow
 
             orig(self, box, c);
         }
+	    
+	private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
+        {
+            try
+            {
+                /*SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; <- patch this
+		  int index = this.activeColorChooser;
+		 this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
 
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After, x => x.MatchStloc(0));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloca, 0);
+                cursor.EmitDelegate((Menu.SlugcatSelectMenu ssM, ref SlugcatStats.Name name) =>
+                {
+                    name = ssM is StoryOnlineMenu? ssM.colorInterface.slugcatID : name;
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+        }
 
         private void SlugcatSelectMenu_SliderFix(ILContext context)
         {
