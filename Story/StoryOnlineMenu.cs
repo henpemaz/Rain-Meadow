@@ -32,7 +32,10 @@ namespace RainMeadow
         } }
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
-        public static float ButtonSizeWithSpacing => 30 + ButtonSpacingOffset;
+        public static float ButtonSizeWithSpacing => ButtonSize + ButtonSpacingOffset;
+        public static float ButtonSize => 30;
+
+
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -323,8 +326,9 @@ namespace RainMeadow
             }
             if (slugcatSelector == null)
             {
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (2 * ButtonSizeWithSpacing)), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
-                pages[0].subObjects.Add(slugcatSelector);
+                //first player button is 30 pos below size of list. and list is 38 below the title. Plus
+                 slugcatSelector = new(this, pages[0], new(pos.x, pos.y - ButtonSizeWithSpacing - ButtonSize), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                 pages[0].subObjects.Add(slugcatSelector);
             }
 
         }
