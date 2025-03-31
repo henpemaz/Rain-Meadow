@@ -36,7 +36,6 @@ namespace RainMeadow
         public static float ButtonSize => 30;
 
 
-
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
@@ -234,6 +233,19 @@ namespace RainMeadow
             }
 
         }
+        public override void Singal(MenuObject sender, string message)
+        {
+            if (message == "DEFAULTCOL")
+            {
+                manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value] = colorInterface.defaultColors;
+                hueSlider.floatValue = hueSlider.floatValue;
+                satSlider.floatValue = satSlider.floatValue;
+                litSlider.floatValue = litSlider.floatValue;
+                PlaySound(SoundID.MENU_Remove_Level);
+                return;
+            }
+            base.Singal(sender, message);
+        }
 
         public override void ShutDownProcess()
         {
@@ -327,8 +339,8 @@ namespace RainMeadow
             if (slugcatSelector == null)
             {
                 //first player button is 30 pos below size of list. and list is 38 below the title. Plus
-                 slugcatSelector = new(this, pages[0], new(pos.x, pos.y - ButtonSizeWithSpacing - ButtonSize), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
-                 pages[0].subObjects.Add(slugcatSelector);
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - ButtonSizeWithSpacing - ButtonSize), MaxVisibleOnList - 1, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                pages[0].subObjects.Add(slugcatSelector);
             }
 
         }
