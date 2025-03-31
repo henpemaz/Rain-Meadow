@@ -161,11 +161,17 @@ namespace RainMeadow
                 }
 
 
+
                 if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
                 {
 
                     RainMeadow.Debug("Filtered list:" + slugcatName);
                     SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
+                    if (ModManager.Watcher && slugcatStatSlug == SlugcatStats.Name.Night)
+                    {
+                        RainMeadow.Debug("Filtered out Night slugcat");
+                        continue; // Skip the Night slugcat if Watcher mod is active
+                    }
                     filteredList.Add(slugcatStatSlug);
                     if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
                     {
@@ -197,6 +203,7 @@ namespace RainMeadow
             baseGameSlugs.Add(SlugcatStats.Name.Yellow);
             baseGameSlugs.Add(SlugcatStats.Name.Red);
             baseGameSlugs.Add(SlugcatStats.Name.Night);
+
             if (ModManager.MSC)
             {
                 baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
@@ -209,9 +216,40 @@ namespace RainMeadow
 
 
             }
+            if (ModManager.Watcher)
+            {
+                baseGameSlugs.Remove(SlugcatStats.Name.Night);
+                baseGameSlugs.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
+
+            }
+
             return baseGameSlugs;
 
+        }
 
+        public static List<SlugcatStats.Name> VanillaSlugs()
+        {
+            var vanilla = new List<SlugcatStats.Name>();
+            vanilla.Add(SlugcatStats.Name.White);
+            vanilla.Add(SlugcatStats.Name.Yellow);
+            vanilla.Add(SlugcatStats.Name.Red);
+            vanilla.Add(SlugcatStats.Name.Night);
+
+            return vanilla;
+        }
+
+        public static List<SlugcatStats.Name> MSCSlugs()
+        {
+            var msc = new List<SlugcatStats.Name>();
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+
+            return msc;
         }
         public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
         {
