@@ -116,6 +116,8 @@ namespace RainMeadow
                 }
             }
 
+            public override float SendFrequency(Player? player) => 0.25f;
+
             public override void ReadTo(OnlineResource resource)
             {
                 if (resource.isActive)
