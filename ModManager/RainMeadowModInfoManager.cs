@@ -103,8 +103,11 @@ public static class RainMeadowModInfoManager
     {
         var modInfo = new RainMeadowModInfo();
 
-        // TODO: consider mod.modifiesRegions
-        if (Directory.Exists(Path.Combine(mod.path, "modify", "world")))
+        if (Utils.ModDirectoryExists(mod, "modify", "world") //modifies regions
+            || Utils.ModDirectoryExists(mod, "levels") //contains arena levels
+            || Utils.ModFileExists(mod, "world", "regions.txt") //directly modifies regions.txt
+            || Utils.ModFileExists(mod, "world", "gates", "locks.txt") //directly modifies gate locks
+            || Utils.ModDirectoryExists(mod, mod.path, "slugbase")) //slugbase slugcat
         {
             modInfo.SyncRequiredMods.Add(mod.id);
         }
