@@ -39,8 +39,8 @@ max|máx.
 player|jugador
 players|jugadores
 Sort by Ping|Ordenar por el ping
-Sort A-Z|Ordenar de la A a la Z
-Sort Z-A|Ordenar de la Z a la A
+Sort A to Z|Ordenar de la A a la Z
+Sort Z to A|Ordenar de la Z a la A
 Sort by Fullest Lobby|Ordenar por la sala más llena
 Sort by Emptiest Lobby|Ordenar por la sala más vacía
 Unknown Sorting Method|Método de ordenamiento desconocido

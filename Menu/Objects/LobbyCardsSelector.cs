@@ -422,7 +422,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         sideButtons[1].OnClick += CycleSortOrder;
         subObjects.Add(sideButtons[1]);
 
-        sideButtonLabels = new MenuLabel[1];
+        sideButtonLabels = new MenuLabel[2];
         sideButtonLabelsFade = new float[sideButtonLabels.Length, 2];
         for (int j = 0; j < sideButtonLabels.Length; j++)
         {
@@ -499,7 +499,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                     //    sideButtons[1].UpdateSymbol(filter.enabled ? "Meadow_Menu_Cancel_Filter" : "Meadow_Menu_Filter");
                     //    break;
                     case 1:
-                        sideButtonLabels[2].text = filter.GetFormattedSortingOrderName();
+                        sideButtonLabels[1].text = menu.Translate(filter.GetFormattedSortingOrderName());
                         break;
                 }
             }
