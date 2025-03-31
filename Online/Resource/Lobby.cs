@@ -13,6 +13,9 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<System.Type, Dictionary<int, int>> enumMapToLocal = new();
+        public Dictionary<System.Type, Dictionary<int, int>> enumMapToRemote = new();
+        private Dictionary<string, string[]> strEnumMap = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
         public string[] requiredmods;
@@ -56,15 +59,51 @@ namespace RainMeadow
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
 
+                //determine ExtEnum values to be used within the lobby
+                //only sync ExtEnums with less than 256 entries; and give an error message for enums that cannot be synced
+                this.strEnumMap = new(ExtEnumBase.valueDictionary.Count);
+                foreach (var kvp in ExtEnumBase.valueDictionary)
+                {
+                    if (kvp.Value.Count > 255) RainMeadow.Error($"More than 255 entries for ExtEnum {kvp.Key}");
+                    else strEnumMap.Add(EnumTypeToID(kvp.Key), kvp.Value.entries.ToArray());
+                }
+
+                //RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
+                foreach (var kvp in this.strEnumMap)
+                {
+                    try
+                    {
+                        var type = GetExtEnumType(kvp.Key);//Type.GetType(kvp.Key);
+                        if (type == null) throw new NullReferenceException($"Type {kvp.Key} could not be found!");
+                        RainMeadow.Debug($"ExtEnum type {kvp.Key}: {type}; length = {kvp.Value.Length}");
+
+                        Dictionary<int, int> map = new();
+                        for (var i = 0; i < kvp.Value.Length; i++)
+                        {
+                            if (type != null)
+                                map.Add(i, ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]));
+                        }
+                        this.enumMapToLocal.Add(type, map);
+                        this.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key)); //swap the values and the keys
+                    }
+                    catch (Exception ex) { RainMeadow.Error(ex); }
+                }
             }
             else
             {
                 RainMeadow.Debug("Requesting lobby");
                 RequestLobby(password);
             }
-
-
-
+        }
+        //the full type is quite excessive, so instead we will use the short type name and loop through all the options
+        private static Type GetExtEnumType(string shortName)
+        {
+            return ExtEnumBase.valueDictionary.First(kvp => EnumTypeToID(kvp.Key) == shortName).Key;
+        }
+        //appends the assembly name, just in case (shouldn't ever be necessary; just a precaution)
+        private static string EnumTypeToID(Type T)
+        {
+            return T.ToString() + ":" + T.Assembly.FullName;
         }
 
         public void RequestLobby(string? key)
@@ -197,6 +236,8 @@ namespace RainMeadow
             public string[] requiredmods;
             [OnlineField]
             public string[] bannedmods;
+            [OnlineField]
+            public Dictionary<string, string[]> strEnumMap;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedPlayerIDs bannedUsers;
             [OnlineField(nullable = true)]
@@ -217,6 +258,7 @@ namespace RainMeadow
                 inLobbyIds = new(lobby.participants.Select(p => p.inLobbyId).ToList());
                 requiredmods = lobby.requiredmods;
                 bannedmods = lobby.bannedmods;
+                strEnumMap = lobby.strEnumMap;
                 bannedUsers = lobby.bannedUsers;
                 onlineBoolRemixSettings = lobby.configurableBools;
                 onlineFloatRemixSettings = lobby.configurableFloats;
@@ -240,8 +282,6 @@ namespace RainMeadow
                     {
                         RainMeadow.Error("Player not found! " + players.list[i]);
                     }
-
-
                 }
                 lobby.UpdateParticipants(players.list.Select(MatchmakingManager.currentInstance.GetPlayer).Where(p => p is not null).ToList());
                 if (lobby.bannedUsersChecked == false)
@@ -275,6 +315,41 @@ namespace RainMeadow
                         OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
                     }
                     lobby.modsChecked = true;
+                }
+
+                //set the ExtEnum map received from the lobby owner
+                if (lobby.strEnumMap.Count == 0)
+                {
+                    try
+                    {
+                        //RainMeadow.Debug(string.Join("\n", strEnumMap.Select(kvp => $"{kvp.Key}: [ {string.Join(", ", kvp.Value)} ]")));
+                        foreach (var kvp in this.strEnumMap)
+                        {
+                            var type = GetExtEnumType(kvp.Key);//Type.GetType(kvp.Key);
+                            RainMeadow.Debug($"ExtEnum type {kvp.Key}: {type}; length = {kvp.Value.Length}");
+                            Dictionary<int, int> map = new();
+                            for (var i = 0; i < kvp.Value.Length; i++)
+                            {
+                                int idx = ExtEnumBase.valueDictionary[type].entries.IndexOf(kvp.Value[i]);
+                                map.Add(i, idx);
+                                if (i != idx) RainMeadow.Debug($"Differing ExtEnum indices for type {kvp.Key}: {i} -> {idx}");
+                            }
+                            lobby.enumMapToLocal.Add(type, map);
+                            lobby.enumMapToRemote.Add(type, map.ToDictionary(x => x.Value, x => x.Key));
+                        }
+                        lobby.strEnumMap = this.strEnumMap;
+                    }
+                    catch (Exception e)
+                    {
+                        RainMeadow.Error($"failed to sync enums: {e}");
+
+                        //inform user of the error
+                        var manager = RWCustom.Custom.rainWorld.processManager;
+
+                        manager.ShowDialog(new Menu.DialogNotify(manager.rainWorld.inGameTranslator.Translate("Mod Mismatch!") + Environment.NewLine + e, manager));
+
+                        OnlineManager.LeaveLobby(); //and leave the lobby
+                    }
                 }
 
                 base.ReadTo(resource);
