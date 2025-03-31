@@ -323,7 +323,7 @@ namespace RainMeadow
             }
             if (slugcatSelector == null)
             {
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - 30), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (2 * ButtonSizeWithSpacing)), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 
