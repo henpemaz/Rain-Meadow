@@ -427,15 +427,22 @@ namespace RainMeadow
 
                 var slugList = ArenaHelpers.AllSlugcats();
                 var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+                var vanillaSlugs = ArenaHelpers.VanillaSlugs();
+                var mscSlugs = ArenaHelpers.MSCSlugs();
 
                 RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
 
-                if (baseGameSlugs.Contains(classID) && color <= 3)
+                if (vanillaSlugs.Contains(classID))
                 {
                     return "MultiplayerPortrait" + color + "1";
                 }
 
-                if (ModManager.MSC && color > 3 && baseGameSlugs.Contains(classID))
+                if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                {
+                    return "MultiplayerPortrait" + 3 + "1"; // take advantage of nightcat profile pic
+                }
+
+                if (ModManager.MSC && mscSlugs.Contains(classID))
                 {
                     if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
                     {
@@ -1184,7 +1191,7 @@ namespace RainMeadow
                 }
 
 
-                if (!ModManager.MSC)
+                if (!ModManager.MSC && !ModManager.Watcher)
                 {
                     if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
                     {
@@ -1212,6 +1219,13 @@ namespace RainMeadow
                     self.subObjects.Add(self.portrait);
 
                 }
+                if (ModManager.Watcher && player.playerClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                {
+                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    self.subObjects.Add(self.portrait);
+                }
+
+
                 if (ModManager.MSC)
                 {
                     if (player.playerClass == SlugcatStats.Name.Night)
