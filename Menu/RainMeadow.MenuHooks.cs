@@ -36,11 +36,6 @@ namespace RainMeadow
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
-            On.Menu.Menu.UpdateInfoText += On_Menu_UpdateInfoText;
-        }
-        string On_Menu_UpdateInfoText(On.Menu.Menu.orig_UpdateInfoText orig, Menu.Menu self)
-        {
-            return self.selectedObject != null && self.selectedObject is IHaveADescription descripObj ? descripObj.Description : orig(self);
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
