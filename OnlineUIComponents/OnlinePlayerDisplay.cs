@@ -138,7 +138,12 @@ namespace RainMeadow
             this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
 
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
-            if (show || this.alpha > 0 || flashIcons)
+            if (OnlinePhysicalObject.map.TryGetValue(owner.abstractPlayer, out var onlineP) && !onlineP.isMine  && owner.abstractPlayer.realizedCreature != null && (owner.abstractPlayer.realizedCreature as Player).isCamo)
+            {
+                pos.x = -1000;
+
+            }
+            else if (show || this.alpha > 0 || flashIcons)
             {
                 this.lastAlpha = this.alpha;
                 this.blink = 1f;
@@ -163,7 +168,7 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                     
+
                     else slugIcon.SetElementByName(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);

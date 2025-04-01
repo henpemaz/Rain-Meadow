@@ -100,12 +100,11 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
-            new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.setCamo);
+            new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.setRippleLevel);
+
             new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.setCamoDuration);
 
-
             On.Player.CamoUpdate += Player_CamoUpdate;
-
         }
 
         private void Player_CamoUpdate(On.Player.orig_CamoUpdate orig, Player self)
@@ -134,7 +133,7 @@ namespace RainMeadow
             }
         }
 
-        private float setCamo(Func<Player, float> orig, Player self)
+        private float setRippleLevel(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var _))
             {
