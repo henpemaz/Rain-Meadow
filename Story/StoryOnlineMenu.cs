@@ -207,6 +207,7 @@ namespace RainMeadow
 
             }
 
+
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
@@ -233,19 +234,6 @@ namespace RainMeadow
             }
 
         }
-        public override void Singal(MenuObject sender, string message)
-        {
-            if (message == "DEFAULTCOL")
-            {
-                manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value] = colorInterface.defaultColors;
-                hueSlider.floatValue = hueSlider.floatValue;
-                satSlider.floatValue = satSlider.floatValue;
-                litSlider.floatValue = litSlider.floatValue;
-                PlaySound(SoundID.MENU_Remove_Level);
-                return;
-            }
-            base.Singal(sender, message);
-        }
 
         public override void ShutDownProcess()
         {
@@ -263,7 +251,7 @@ namespace RainMeadow
             playerScrollBox?.RemoveAllButtons();
             if (playerScrollBox == null)
             {
-                playerScrollBox = new(this, pages[0], new(194,  553 - ((MaxVisibleOnList + 1) * ButtonSizeWithSpacing)), new(200, MaxVisibleOnList * ButtonSizeWithSpacing))
+                playerScrollBox = new(this, pages[0], new(194,  553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset)
                 {
                     buttonSpacing = ButtonSpacingOffset
                 };
@@ -338,8 +326,8 @@ namespace RainMeadow
             }
             if (slugcatSelector == null)
             {
-                //first player button is 30 pos below size of list. and list is 38 below the title. Plus
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - ButtonSizeWithSpacing - ButtonSize), MaxVisibleOnList - 1, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                //first player button is 30 pos below size of list. and list top part is 30 below the title. Plus
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 

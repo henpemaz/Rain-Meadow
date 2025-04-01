@@ -10,7 +10,7 @@ namespace RainMeadow
 {
     public class StoryMenuPlayerButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner,OnlinePlayer oP, bool canKick) : base(menu, owner, oP.id.name, Vector2.zero, new(110, 30))
+        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner, OnlinePlayer oP, bool canKick, Vector2 size = default) : base(menu, owner, oP.id.name, Vector2.zero, size == default ? new(110, 30) : size)
         {
             OnClick += (_) => 
             { 
@@ -31,17 +31,18 @@ namespace RainMeadow
             base.RemoveSprites();
             this.ClearMenuObject(ref kickButton);
         }
-        public override void UpdateAlpha(float fade)
+        public override void UpdateAlpha(float alpha)
         {
-            base.UpdateAlpha(fade);
+            base.UpdateAlpha(alpha);
             if (kickButton != null)
             {
-                kickButton.symbolSprite.alpha = fade;
+                kickButton.symbolSprite.alpha = alpha;
                 for (int i = 0; i < kickButton.roundedRect.sprites.Length; i++)
                 {
-                    kickButton.roundedRect.sprites[i].alpha = fade;
-                    kickButton.roundedRect.fillAlpha = fade / 2;
+                    kickButton.roundedRect.sprites[i].alpha = alpha;
+                    kickButton.roundedRect.fillAlpha = alpha / 2;
                 }
+                kickButton.GetButtonBehavior.greyedOut = alpha < 1;
             }    
         }
         public SimplerSymbolButton? kickButton;
@@ -71,7 +72,7 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             if (menuLabel != null)
             {
-                menuLabel.text = SlugcatStats.getSlugcatName(slug);
+                menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
             }
         }
         public SlugcatStats.Name slug;
