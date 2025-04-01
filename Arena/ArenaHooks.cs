@@ -1,5 +1,6 @@
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using Rewired;
 using System;
@@ -99,6 +100,17 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
+            new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.setCamo);
+
+        }
+
+        private float setCamo(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 2f;
+            }
+            return orig(self);
         }
 
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)

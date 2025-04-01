@@ -139,6 +139,8 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef tongueAttachedChunk;
+        [OnlineField]
+        public bool isCamo;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -155,6 +157,7 @@ namespace RainMeadow
             isPup = p.playerState.isPup;
             burstX = p.burstX;
             burstY = p.burstY;
+            isCamo = p.isCamo;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
             slugcatRidingOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
@@ -239,6 +242,7 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
+            p.isCamo = isCamo;
             if (p.playerState.isPup != isPup)
                 p.playerState.isPup = isPup;
 
