@@ -101,7 +101,37 @@ namespace RainMeadow
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
             new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.setCamo);
+            new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.setCamoDuration);
 
+
+            On.Player.CamoUpdate += Player_CamoUpdate;
+
+        }
+
+        private void Player_CamoUpdate(On.Player.orig_CamoUpdate orig, Player self)
+        {
+            if (isArenaMode(out var _) && self.IsLocal())
+            {
+                bool isCamo = self.isCamo;
+                if (isCamo)
+                {
+                    self.camoCharge = Mathf.Max(self.camoCharge - 1f, 0f);
+                }
+                else
+                {
+                    self.camoCharge = 0f;
+                }
+                orig(self);
+                bool isCamo2 = self.isCamo;
+                if (isCamo2)
+                {
+                    self.camoCharge = Mathf.Min(self.camoCharge + 1f / 1f, self.usableCamoLimit);
+                }
+            }
+            else
+            {
+                orig(self);
+            }
         }
 
         private float setCamo(Func<Player, float> orig, Player self)
@@ -109,6 +139,24 @@ namespace RainMeadow
             if (isArenaMode(out var _))
             {
                 return 2f;
+            }
+            return orig(self);
+        }
+
+        private float setCamoDuration(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 600f;
+            }
+            return orig(self);
+        }
+
+        private float setActivationDuration(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 30f;
             }
             return orig(self);
         }

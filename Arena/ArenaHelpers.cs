@@ -288,14 +288,16 @@ namespace RainMeadow
 
             }
 
-            if (player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-            {
-                if (player.activateCamoTimer == ((player.startingCamoStateOnActivate == 0) ? player.enterIntoCamoDuration : player.exitOutOfCamoDuration) && player.performingActivationTimer == 0)
-                {
-                    player.ToggleCamo();
-                    player.reachedCamoToggle = true;
-                }
-            }
+            //if (player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            //{
+            //    if (player.activateCamoTimer == ((player.startingCamoStateOnActivate == 0) ? player.enterIntoCamoDuration : player.exitOutOfCamoDuration) && player.performingActivationTimer == 0)
+            //    {
+            //        player.ToggleCamo();
+            //        player.reachedCamoToggle = true;
+
+            //    }
+            //    player.activateCamoTimer++;
+            //}
             //if (player.SlugCatClass == SlugcatStats.Name.Night)
             //{
             //    Nightcat.CheckInputForActivatingNightcat(player);
