@@ -1002,7 +1002,7 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (!otherObject.FriendlyFireSafetyCandidate())
+        if (otherObject.FriendlyFireSafetyCandidate())
         {
             if (otherObject is Player) return false;
         }
