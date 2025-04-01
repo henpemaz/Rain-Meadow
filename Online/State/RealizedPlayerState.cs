@@ -141,6 +141,8 @@ namespace RainMeadow
         public BodyChunkRef tongueAttachedChunk;
         [OnlineField]
         public bool isCamo;
+        [OnlineField]
+        public int activateCamoTimer;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -158,6 +160,7 @@ namespace RainMeadow
             burstX = p.burstX;
             burstY = p.burstY;
             isCamo = p.isCamo;
+            activateCamoTimer = p.activateCamoTimer;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
             slugcatRidingOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
@@ -243,6 +246,7 @@ namespace RainMeadow
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
             p.isCamo = isCamo;
+            p.activateCamoTimer = activateCamoTimer;
             if (p.playerState.isPup != isPup)
                 p.playerState.isPup = isPup;
 
