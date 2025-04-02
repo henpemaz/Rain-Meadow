@@ -1070,7 +1070,7 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(viewPrevPlayer);
         }
 
-        private void AddForceReady() {
+        private void AddForceReadyUp() {
         
                 Action<SimplerButton> forceReadyClick = (_) =>
                 {
