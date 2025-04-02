@@ -8,6 +8,21 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_ForceReadyUp()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                if (lobby.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                lobby.playButton.Clicked();
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_UpdateSelectedChoice(string stringID, int value)
         {
             if (RainMeadow.isArenaMode(out var arena))

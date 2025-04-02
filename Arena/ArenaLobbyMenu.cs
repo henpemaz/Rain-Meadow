@@ -35,6 +35,8 @@ namespace RainMeadow
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimplerButton[] usernameButtons;
+        public SimplerButton forceReady;
+
         public bool meUsernameButtonCreated = false;
         public bool meClassButtonCreated = false;
 
@@ -153,7 +155,26 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
+            if (OnlineManager.lobby.isOwner)
+            {
+                Action<SimplerButton> forceReadyClick = (_) =>
+                {
+                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    {
+                        var player = OnlineManager.players[i];
+                        if (player.isMe)
+                        {
+                            this.playButton.Clicked();
+                        }
+                        if (!arena.playersReadiedUp.list.Contains(player.id))
+                        {
+                            player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReadyUp);
 
+                        }
+                    }
+                };
+                this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+            }
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
 
@@ -377,6 +398,14 @@ namespace RainMeadow
             base.Update();
 
             if (OnlineManager.lobby == null) return;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (this.forceReady != null && arena.playersReadiedUp != null && arena.playersReadiedUp.list != null)
+                {
+                    this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                }
+            }
 
             if (this.totalClientsReadiedUpOnPage != null)
             {
