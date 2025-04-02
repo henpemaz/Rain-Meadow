@@ -151,15 +151,6 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private float setActivationDuration(Func<Player, float> orig, Player self)
-        {
-            if (isArenaMode(out var _))
-            {
-                return 30f;
-            }
-            return orig(self);
-        }
-
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
         {
             orig(self);
