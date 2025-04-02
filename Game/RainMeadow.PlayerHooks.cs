@@ -6,6 +6,7 @@ using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 using RWCustom;
 using UnityEngine;
+using RainMeadow.Arena.Nightcat;
 
 namespace RainMeadow;
 
@@ -59,11 +60,26 @@ public partial class RainMeadow
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
-        
+
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+        On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites2;
     }
+
+    private void PlayerGraphics_DrawSprites2(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+    {
+        orig(self, sLeaser, rCam, timeStacker, camPos);
+        if (isArenaMode(out var arena))
+        {
+            if (self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                Nightcat.NightcatImplementation(arena, self, sLeaser, rCam, timeStacker, camPos);
+            }
+        }
+    }
+
+
 
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
         Color orig_color = orig(name);
