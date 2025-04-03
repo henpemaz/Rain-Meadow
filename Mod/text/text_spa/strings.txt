@@ -170,6 +170,7 @@ Free For All|Todos contra todos
 Ready:|Listos:
 Playlist Progress:|Progreso de la lista:
 WAIT FOR OTHERS|ESTOY LISTO
+FORCE READY|FORZAR LISTO
 LOBBY WILL LOCK|BLOQUEAR SALA
 GAME IN SESSION|EN CURSO
 READY?|¿LISTO?
