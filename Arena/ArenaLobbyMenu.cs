@@ -35,6 +35,9 @@ namespace RainMeadow
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimplerButton[] usernameButtons;
+        public SimplerButton forceReady;
+        private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
+
         public bool meUsernameButtonCreated = false;
         public bool meClassButtonCreated = false;
 
@@ -52,6 +55,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 ArenaHelpers.ResetOnReturnToMenu(arena, this);
+                arena.ResetForceReadyCountDown();
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -153,7 +157,10 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
-
+            if (OnlineManager.lobby.isOwner) {
+             AddForceReadyUp();
+            }
+           
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
 
@@ -377,6 +384,29 @@ namespace RainMeadow
             base.Update();
 
             if (OnlineManager.lobby == null) return;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (this.forceReady != null)
+                {
+                    if (arena.forceReadyCountdownTimer > 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = true;
+                        this.forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                    }
+                    else
+                    {
+                        this.forceReady.menuLabel.text = forceReadyText;
+                    }
+
+                    if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.forceReadyCountdownTimer <= 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                    }
+                }
+
+
+            }
 
             if (this.totalClientsReadiedUpOnPage != null)
             {
@@ -1056,6 +1086,29 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(viewNextPlayer);
             this.pages[0].subObjects.Add(viewPrevPlayer);
         }
+
+        private void AddForceReadyUp() {
+        
+                Action<SimplerButton> forceReadyClick = (_) =>
+                {
+                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    {
+                        var player = OnlineManager.players[i];
+                        if (player.isMe)
+                        {
+                            this.playButton.Clicked();
+                        }
+                        if (!arena.playersReadiedUp.list.Contains(player.id))
+                        {
+                            player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReadyUp);
+
+                        }
+                    }
+                    arena.forceReadyCountdownTimer = 3;
+                };
+                this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+        }
+        
 
     }
 }
