@@ -260,7 +260,6 @@ namespace RainMeadow
             {
                 StoryMenuPlayerButton playerButton = new(this, playerScrollBox, player, OnlineManager.lobby.isOwner && player != OnlineManager.lobby.owner);
                 playerScrollBox.AddScrollObjects(playerButton);
-                playerButton.TryBind(playerScrollBox.scrollSlider, true);
             }
             playerScrollBox.ConstrainScroll();
 
