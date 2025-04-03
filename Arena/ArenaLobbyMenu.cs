@@ -703,8 +703,11 @@ namespace RainMeadow
                 }
                 AddUsernames();
                 AddClassButtons();
-
                 HandleLobbyProfileOverflow();
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.ResetForceReadyCountDownShort();
+                }
 
                 if (this != null)
                 {
@@ -1104,7 +1107,7 @@ namespace RainMeadow
 
                         }
                     }
-                    arena.forceReadyCountdownTimer = 3;
+                    arena.ResetForceReadyCountDownShort();
                 };
                 this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
         }

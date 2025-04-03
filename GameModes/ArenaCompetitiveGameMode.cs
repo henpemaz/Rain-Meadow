@@ -125,6 +125,11 @@ namespace RainMeadow
         {
             this.forceReadyCountdownTimer = 15;
         }
+
+        public void ResetForceReadyCountDownShort()
+        {
+            this.forceReadyCountdownTimer = 5;
+        }
         public void ResetScrollTimer()
         {
             this.scrollInitiatedTimer = 0;
