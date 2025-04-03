@@ -1102,6 +1102,7 @@ namespace RainMeadow
                     if (player.isMe)
                     {
                         this.playButton.Clicked();
+                        continue;
                     }
                     if (!arena.playersReadiedUp.list.Contains(player.id))
                     {
