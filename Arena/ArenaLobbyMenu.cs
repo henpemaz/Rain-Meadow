@@ -1111,7 +1111,7 @@ namespace RainMeadow
                 }
                 arena.ResetForceReadyCountDownShort();
             };
-            this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+            this.forceReady = CreateButton(this.Translate(forceReadyText), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
         }
 
 
