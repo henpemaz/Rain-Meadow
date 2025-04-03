@@ -42,6 +42,7 @@ namespace RainMeadow
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
         private bool flushArenaSittingForWaitingClients = false;
+        private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
 
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
@@ -54,6 +55,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 ArenaHelpers.ResetOnReturnToMenu(arena, this);
+                arena.ResetForceReadyCountDown();
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -173,7 +175,7 @@ namespace RainMeadow
                         }
                     }
                 };
-                this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+                this.forceReady = CreateButton(this.Translate(forceReadyText), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
             }
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
@@ -401,10 +403,25 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
-                if (this.forceReady != null && arena.playersReadiedUp != null && arena.playersReadiedUp.list != null)
+                if (this.forceReady != null)
                 {
-                    this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                    if (arena.forceReadyCountdownTimer > 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = true;
+                        this.forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                    }
+                    else
+                    {
+                        this.forceReady.menuLabel.text = forceReadyText;
+                    }
+
+                    if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.forceReadyCountdownTimer <= 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                    }
                 }
+
+
             }
 
             if (this.totalClientsReadiedUpOnPage != null)
