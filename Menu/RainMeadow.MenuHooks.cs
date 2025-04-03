@@ -59,7 +59,6 @@ namespace RainMeadow
                 }
             }       
             orig(self);
-            return;
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
