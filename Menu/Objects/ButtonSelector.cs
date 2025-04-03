@@ -10,8 +10,8 @@ namespace RainMeadow
     {
         public int NumberOfButtonsToShow { get => amtOfButtonsToShow; set => amtOfButtonsToShow = Mathf.Max(value, 2); } //this includes the open list button itself
         public float OrigDistanceBetweenButtonYPos => size.y + buttonSpacing;
-        public float ListPosOffset => downwardsList ? -(OrigDistanceBetweenButtonYPos + buttonSpacing + listDownUpYOffset) : OrigDistanceBetweenButtonYPos + listDownUpYOffset; //readds the additional button spacing lost
-        public float OrigStart => downwardsList ? -ButtonScroller.CalculateHeightBasedOnAmtOfButtons(NumberOfButtonsToShow - 1, size.y, buttonSpacing) : size.y; //first removes an additional button spacing required
+        public float ListPosOffset => downwardsList ? -(buttonSpacing + listDownUpYOffset) : OrigDistanceBetweenButtonYPos + listDownUpYOffset; //readds the additional button spacing lost
+        public float OrigStart => downwardsList ? -ButtonScroller.CalculateHeightBasedOnAmtOfButtons(NumberOfButtonsToShow - 1, size.y, buttonSpacing) : size.y;
         public float StartingYPoint => OrigStart + ListPosOffset;
 
         public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView, float spacingOfButton, string description = "") : base(menu, owner, displayText, pos, size, description)
