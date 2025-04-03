@@ -157,26 +157,10 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
-            if (OnlineManager.lobby.isOwner)
-            {
-                Action<SimplerButton> forceReadyClick = (_) =>
-                {
-                    for (int i = 0; i < OnlineManager.players.Count; i++)
-                    {
-                        var player = OnlineManager.players[i];
-                        if (player.isMe)
-                        {
-                            this.playButton.Clicked();
-                        }
-                        if (!arena.playersReadiedUp.list.Contains(player.id))
-                        {
-                            player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReadyUp);
-
-                        }
-                    }
-                };
-                this.forceReady = CreateButton(this.Translate(forceReadyText), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+            if (OnlineManager.lobby.isOwner) {
+             AddForceReadyUp();
             }
+           
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
 
@@ -1102,6 +1086,29 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(viewNextPlayer);
             this.pages[0].subObjects.Add(viewPrevPlayer);
         }
+
+        private void AddForceReadyUp() {
+        
+                Action<SimplerButton> forceReadyClick = (_) =>
+                {
+                    for (int i = 0; i < OnlineManager.players.Count; i++)
+                    {
+                        var player = OnlineManager.players[i];
+                        if (player.isMe)
+                        {
+                            this.playButton.Clicked();
+                        }
+                        if (!arena.playersReadiedUp.list.Contains(player.id))
+                        {
+                            player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReadyUp);
+
+                        }
+                    }
+                    arena.forceReadyCountdownTimer = 3;
+                };
+                this.forceReady = CreateButton(this.Translate("FORCE READY"), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+        }
+        
 
     }
 }

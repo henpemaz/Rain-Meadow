@@ -17,8 +17,10 @@ namespace RainMeadow
                 {
                     return;
                 }
-
-                lobby.playButton.Clicked();
+                if (lobby.playButton != null)
+                {
+                    lobby.playButton.Clicked();
+                }
             }
         }
 
