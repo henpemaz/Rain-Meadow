@@ -36,13 +36,13 @@ namespace RainMeadow
 
         public SimplerButton[] usernameButtons;
         public SimplerButton forceReady;
+        private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
 
         public bool meUsernameButtonCreated = false;
         public bool meClassButtonCreated = false;
 
         public ArenaOnlinePlayerJoinButton[] classButtons;
         private bool flushArenaSittingForWaitingClients = false;
-        private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
 
 
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
