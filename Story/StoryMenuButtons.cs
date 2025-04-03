@@ -18,7 +18,7 @@ namespace RainMeadow
             };
             if (canKick)
             {
-                kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(size.x + 15, 0));
+                kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(this.size.x + 15, 0));
                 kickButton.OnClick += (_) =>
                 {
                     BanHammer.BanUser(oP);
