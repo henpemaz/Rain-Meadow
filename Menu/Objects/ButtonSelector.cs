@@ -15,7 +15,7 @@ namespace RainMeadow
         {
             //if you set it to one or less... why???
         }
-        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, float listSize, float spacingOfButton) : base(menu, owner, displayText, pos, size, menu.Translate("Press the button to open a list to select"))
+        public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, float listSize, float spacingOfButton) : base(menu, owner, displayText, pos, size, "Press the button to open a list to select")
         {
             sizeOfList = listSize;
             buttonSpacing = spacingOfButton;
