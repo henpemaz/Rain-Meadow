@@ -188,6 +188,7 @@ namespace RainMeadow
                 c.Index++;
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu));
+
             }
             catch (Exception e)
             {
@@ -243,8 +244,9 @@ namespace RainMeadow
 
             orig(self, box, c);
         }
-	    
-	private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
+
+
+        private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
         {
             try
             {
@@ -278,32 +280,17 @@ namespace RainMeadow
             5	0011	stloc.0
             */
             // SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; becomes 
-            try {
+            try 
+            {
                 ILCursor c = new(context);
-                Func<Instruction, bool>[] predicates = {
-                    x => x.MatchLdarg(0),
-                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatColorOrder))),
-                    x => x.MatchLdarg(0),
-                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatPageIndex))),
-                    x => x.MatchCallvirt(out _), // index into field
-                    x => x.MatchStloc(0)
-                };
-
-                c.GotoNext(MoveType.After, predicates);
-                var label = c.MarkLabel();
-                c.GotoPrev(MoveType.Before, predicates);
+                c.GotoNext(MoveType.After, x => x.MatchStloc(0));
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => {
-                    if (menu is StoryOnlineMenu storyOnlineMenu) {
-                        name = storyOnlineMenu.selectableSlugcats[storyOnlineMenu.SelectedIndex];
-                        return true;
-                    }
+                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => 
+                {
+                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
 
-                    return false;
                 });
-                c.Emit(OpCodes.Brtrue, label);
-                
 
             } catch(Exception except) {
                 Logger.LogError(except);

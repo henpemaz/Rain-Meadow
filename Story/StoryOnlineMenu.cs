@@ -25,11 +25,27 @@ namespace RainMeadow
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
-        public SlugcatStats.Name CurrentSlugcat { get => selectableSlugcats[actualSelectedIndex]; }
+        public SlugcatStats.Name CurrentSlugcat { get => selectableSlugcats[SelectedIndex]; }
         public int actualSelectedIndex = -1;
-        public int SelectedIndex { get => (actualSelectedIndex < 0 || (OnlineManager.lobby?.isOwner ?? false))? slugcatPageIndex : actualSelectedIndex;   private set {
-            actualSelectedIndex = value;
-        } }
+        public int SelectedIndex
+        {
+            get
+            {
+                return actualSelectedIndex < 0 ? slugcatPageIndex : actualSelectedIndex;
+            }
+            private set
+            {
+                if (actualSelectedIndex != value)
+                {
+                    RemoveColorButtons();
+                    actualSelectedIndex = value;
+                    if (colorChecked)
+                    {
+                        AddColorButtons();
+                    }
+                }
+            }
+        }
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSizeWithSpacing => ButtonSize + ButtonSpacingOffset;
@@ -41,13 +57,10 @@ namespace RainMeadow
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
 
-            SelectedIndex = slugcatPageIndex;
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
-
-            restartCheckboxPos = restartCheckbox.pos;
-            
-
+            //removed setting SelectedIndex, it already gets current slugcat page without setting the num at the start
+            restartCheckboxPos = restartCheckbox.pos;       
             SetupSelectableSlugcats();
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
@@ -81,7 +94,6 @@ namespace RainMeadow
                         SelectableSlugcatsEnumerable = SelectableSlugcatsEnumerable.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                     }
                 }
-
                 selectableSlugcats = SelectableSlugcatsEnumerable.ToArray();
             }
         }   
@@ -136,6 +148,7 @@ namespace RainMeadow
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
+         
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
@@ -185,9 +198,21 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null) return;
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
             {
+                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+                storyGameMode.region = CurrentRegion();
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                }
+                pages[0].ClearMenuObject(ref slugcatLabel); //added this just in case you suddenly become a host
+                pages[0].ClearMenuObject(ref slugcatSelector);
+                SelectedIndex = -1;
 
+            }
+            else
+            {
                 if (onlineDifficultyLabel == null)
                 {
                     onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
@@ -204,20 +229,6 @@ namespace RainMeadow
                 {
                     SetupSlugcatList();
                 }
-
-            }
-
-            if (OnlineManager.lobby.isOwner)
-            {
-                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
-                storyGameMode.region = CurrentRegion();
-                if (startButton != null)
-                {
-                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
-                }
-            }
-            else
-            {
                 if (startButton != null)
                 {
                     startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
@@ -226,25 +237,13 @@ namespace RainMeadow
                 {
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
+
             }
             if (slugcatSelector != null)
             {
                 slugcatSelector.slug = CurrentSlugcat;
             }
 
-        }
-        public override void Singal(MenuObject sender, string message)
-        {
-            if (message == "DEFAULTCOL")
-            {
-                manager.rainWorld.progression.miscProgressionData.colorChoices[selectableSlugcats[SelectedIndex].value] = colorInterface.defaultColors;
-                hueSlider.floatValue = hueSlider.floatValue;
-                satSlider.floatValue = satSlider.floatValue;
-                litSlider.floatValue = litSlider.floatValue;
-                PlaySound(SoundID.MENU_Remove_Level);
-                return;
-            }
-            base.Singal(sender, message);
         }
 
         public override void ShutDownProcess()
@@ -260,20 +259,16 @@ namespace RainMeadow
 
         private void UpdatePlayerList()
         {
-            playerScrollBox?.RemoveAllButtons();
+            playerScrollBox?.RemoveAllButtons(false);
             if (playerScrollBox == null)
             {
-                playerScrollBox = new(this, pages[0], new(194,  553 - ((MaxVisibleOnList + 1) * ButtonSizeWithSpacing)), new(200, MaxVisibleOnList * ButtonSizeWithSpacing))
-                {
-                    buttonSpacing = ButtonSpacingOffset
-                };
+                playerScrollBox = new(this, pages[0], new(194, 553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
                 pages[0].subObjects.Add(playerScrollBox);
             }
             foreach (OnlinePlayer player in OnlineManager.players)
             {
                 StoryMenuPlayerButton playerButton = new(this, playerScrollBox, player, OnlineManager.lobby.isOwner && player != OnlineManager.lobby.owner);
                 playerScrollBox.AddScrollObjects(playerButton);
-                playerButton.TryBind(playerScrollBox.scrollSlider, true);
             }
             playerScrollBox.ConstrainScroll();
 
@@ -338,8 +333,8 @@ namespace RainMeadow
             }
             if (slugcatSelector == null)
             {
-                //first player button is 30 pos below size of list. and list is 38 below the title. Plus
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - ButtonSizeWithSpacing - ButtonSize), MaxVisibleOnList - 1, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                //first player button is 30 pos below size of list. and list top part is 30 below the title. Plus
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 
@@ -418,17 +413,6 @@ namespace RainMeadow
             clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
             pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
-        public void TryChangeSlugcatIndex(SlugcatStats.Name scug)
-        {
-            for (int i = 0; i < selectableSlugcats.Length; i++)
-            {
-                if (selectableSlugcats[i] == scug)
-                {
-                    SelectedIndex = i;
-                    personaSettings.playingAs = scug;
-                }
-            }
-        }
         public StoryMenuSlugcatButton[] GetSlugcatSelectionButtons(StoryMenuSlugcatSelector slugcatSelector, ButtonScroller buttonScroller)
         {
             List<StoryMenuSlugcatButton> slugcatButtons = [];
@@ -447,13 +431,27 @@ namespace RainMeadow
             }
             return [.. slugcatButtons];
         }
+        public void TryChangeSlugcatIndex(SlugcatStats.Name scug)
+        {
+            for (int i = 0; i < selectableSlugcats.Length; i++)
+            {
+                if (selectableSlugcats[i] == scug)
+                {
+                    SelectedIndex = i;
+                    personaSettings.playingAs = scug;
+                }
+            }
+        }
         public void RecieveSlugcat(SlugcatStats.Name scug)
         {
-            TryChangeSlugcatIndex(scug); //fix slugcat not matching
-            if (colorChecked)
+            TryChangeSlugcatIndex(scug);
+        }
+        public void UpdateUponChangingSlugcat(SlugcatStats.Name scug)
+        {
+            if (colorsCheckbox != null)
             {
-                RemoveColorButtons();
-                AddColorButtons();
+                colorsCheckbox.Checked = manager.rainWorld.progression.miscProgressionData.colorsEnabled.ContainsKey(scug.value) && 
+                    manager.rainWorld.progression.miscProgressionData.colorsEnabled[scug.value]; //automatically opens color interface if enabled
             }
         }
     }
