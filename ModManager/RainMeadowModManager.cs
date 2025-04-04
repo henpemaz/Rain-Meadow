@@ -56,6 +56,7 @@ namespace RainMeadow
             //the mod lists are combined first, then ActiveMods is combed through for ids, because that ensures the load order is correct
             return ModManager.ActiveMods
                 .Where(mod => requiredMods.Contains(mod.id))
+                .Where(mod => mod.id != "henpemaz_rainmeadow")
                 .OrderBy(mod => mod.loadOrder)
                 .Select(mod => mod.id)
                 .ToArray();
@@ -117,9 +118,9 @@ namespace RainMeadow
                 var disable = GetRequiredMods().Union(bannedMods).Except(requiredMods).Intersect(active).ToList();
                 var enable = requiredMods.Except(active).ToList();
 
-                //clear phony entries to the mod list
-                enable.RemoveAll(mod => mod == null || mod == "");
-                disable.RemoveAll(mod => mod == null || mod == "");
+                //clear phony/bad entries to the mod list
+                enable.RemoveAll(mod => mod == null || mod == "" || mod == "henpemaz_rainmeadow");
+                disable.RemoveAll(mod => mod == null || mod == "" || mod == "henpemaz_rainmeadow");
 
                 //determine whether a reorder is necessary
                 if (!disable.Any() && !enable.Any())

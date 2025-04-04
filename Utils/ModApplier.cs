@@ -29,8 +29,7 @@ namespace RainMeadow
             cancelled = true;
             EndModApplier();
         }
-        private void EndModApplier() => EndModApplier(true);
-        private void EndModApplier(bool clearPopups)
+        private void EndModApplier(bool clearPopups = true)
         {
             On.RainWorld.Update -= RainWorld_Update;
             this.finished = true;
@@ -116,20 +115,32 @@ namespace RainMeadow
                 modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be disabled: ") + string.Join(", ", modsToDisable);
             if (unknownMods.Count > 0)
                 modMismatchString += Environment.NewLine + menu.Translate("Mods that have to be installed: ") + string.Join(", ", unknownMods);
-            else
-                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?");
+            else {
+                if (RainMeadow.rainMeadowOptions.EnableModApplier.Value) {
+                    modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Apply these changes now?");
+                } else {
+                    modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Join regardless?");
+                }
+            }
+                
 
             // modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("You will be returned to the Lobby Select screen");
 
             Action confirmProceed = () =>
             {
+                if (!RainMeadow.rainMeadowOptions.EnableModApplier.Value) {
+                    EndModApplier();
+                    if (OnFinish is not null) this.OnFinish(this);
+                    return;
+                }
+
                 ClearPopups();
                 dialogBox = new DialogAsyncWait(menu, menu.Translate("mod_menu_apply_mods"), new Vector2(480f, 320f));
                 manager.ShowDialog(dialogBox);
                 Start(filesInBadState);
             };
 
-            if (unknownMods.Count > 0)
+            if (unknownMods.Count > 0 && RainMeadow.rainMeadowOptions.EnableModApplier.Value)
             {
                 checkUserConfirmation = new DialogNotify(modMismatchString, new Vector2(480f, 320f), manager, Cancel);
             }
@@ -147,11 +158,23 @@ namespace RainMeadow
             //note: lobby isn't left immediately, because the user still has the option to join
 
             var modMismatchString = menu.Translate("Warning: Differing Mod Load Orders!")
-                + Environment.NewLine + menu.Translate("This may cause unstable play.")
-                + Environment.NewLine + Environment.NewLine + menu.Translate("Reorder your mods now?");
+                + Environment.NewLine + menu.Translate("This may cause unstable play.");
+            
+            if (RainMeadow.rainMeadowOptions.EnableModApplier.Value) {
+                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Reorder your mods now?");
+            } else {
+                modMismatchString += Environment.NewLine + Environment.NewLine + menu.Translate("Join regardless?");
+            }
+                
 
             Action confirmProceed = () =>
             {
+                if (!RainMeadow.rainMeadowOptions.EnableModApplier.Value) {
+                    EndModApplier();
+                    if (OnFinish is not null) this.OnFinish(this);
+                    return;
+                }
+                
                 ClearPopups();
                 if (OnlineManager.lobby != null)
                 {
@@ -163,7 +186,7 @@ namespace RainMeadow
                 Start(filesInBadState);
             };
 
-            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, EndModApplier);
+            checkUserConfirmation = new DialogConfirm(modMismatchString, new Vector2(480f, 320f), manager, confirmProceed, Cancel);
 
             manager.ShowDialog(checkUserConfirmation);
         }
