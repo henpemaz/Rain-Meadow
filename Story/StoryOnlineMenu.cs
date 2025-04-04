@@ -29,10 +29,21 @@ namespace RainMeadow
         public int actualSelectedIndex = -1;
         public int SelectedIndex
         {
-            get => (actualSelectedIndex < 0 || (OnlineManager.lobby?.isOwner ?? false)) ? slugcatPageIndex : actualSelectedIndex;
+            get
+            {
+                return actualSelectedIndex < 0 ? slugcatPageIndex : actualSelectedIndex;
+            }
             private set
             {
-                actualSelectedIndex = value;
+                if (actualSelectedIndex != value)
+                {
+                    RemoveColorButtons();
+                    actualSelectedIndex = value;
+                    if (colorChecked)
+                    {
+                        AddColorButtons();
+                    }
+                }
             }
         }
         public static int MaxVisibleOnList => 8;
@@ -137,6 +148,7 @@ namespace RainMeadow
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
+         
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
@@ -186,9 +198,21 @@ namespace RainMeadow
 
             if (OnlineManager.lobby == null) return;
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner)
             {
+                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+                storyGameMode.region = CurrentRegion();
+                if (startButton != null)
+                {
+                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
+                }
+                pages[0].ClearMenuObject(ref slugcatLabel); //added this just in case you suddenly become a host
+                pages[0].ClearMenuObject(ref slugcatSelector);
+                SelectedIndex = -1;
 
+            }
+            else
+            {
                 if (onlineDifficultyLabel == null)
                 {
                     onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
@@ -213,18 +237,6 @@ namespace RainMeadow
                 {
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
-
-            }
-            else
-            {
-                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
-                storyGameMode.region = CurrentRegion();
-                if (startButton != null)
-                {
-                    startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
-                }
-                pages[0].ClearMenuObject(ref slugcatLabel); //added this just in case you suddenly become a host
-                pages[0].ClearMenuObject(ref slugcatSelector);
 
             }
             if (slugcatSelector != null)
@@ -404,17 +416,6 @@ namespace RainMeadow
             clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
             pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
-        public void TryChangeSlugcatIndex(SlugcatStats.Name scug)
-        {
-            for (int i = 0; i < selectableSlugcats.Length; i++)
-            {
-                if (selectableSlugcats[i] == scug)
-                {
-                    SelectedIndex = i;
-                    personaSettings.playingAs = scug;
-                }
-            }
-        }
         public StoryMenuSlugcatButton[] GetSlugcatSelectionButtons(StoryMenuSlugcatSelector slugcatSelector, ButtonScroller buttonScroller)
         {
             List<StoryMenuSlugcatButton> slugcatButtons = [];
@@ -433,14 +434,20 @@ namespace RainMeadow
             }
             return [.. slugcatButtons];
         }
+        public void TryChangeSlugcatIndex(SlugcatStats.Name scug)
+        {
+            for (int i = 0; i < selectableSlugcats.Length; i++)
+            {
+                if (selectableSlugcats[i] == scug)
+                {
+                    SelectedIndex = i;
+                    personaSettings.playingAs = scug;
+                }
+            }
+        }
         public void RecieveSlugcat(SlugcatStats.Name scug)
         {
-            RemoveColorButtons(); //remove out of range error from value of slider midway when slugcat changes but index acceeds new scug color bound
             TryChangeSlugcatIndex(scug);
-            if (colorChecked)
-            {
-                AddColorButtons();
-            }
         }
     }
 }
