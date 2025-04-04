@@ -259,7 +259,7 @@ namespace RainMeadow
 
         private void UpdatePlayerList()
         {
-            playerScrollBox?.RemoveAllButtons();
+            playerScrollBox?.RemoveAllButtons(false);
             if (playerScrollBox == null)
             {
                 playerScrollBox = new(this, pages[0], new(194, 553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
