@@ -39,10 +39,7 @@ namespace RainMeadow
                 {
                     RemoveColorButtons();
                     actualSelectedIndex = value;
-                    if (colorChecked)
-                    {
-                        AddColorButtons();
-                    }
+                    UpdateUponChangingSlugcat(CurrentSlugcat);
                 }
             }
         }
@@ -262,10 +259,7 @@ namespace RainMeadow
             playerScrollBox?.RemoveAllButtons();
             if (playerScrollBox == null)
             {
-                playerScrollBox = new(this, pages[0], new(194,  553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset)
-                {
-                    buttonSpacing = ButtonSpacingOffset
-                };
+                playerScrollBox = new(this, pages[0], new(194, 553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
                 pages[0].subObjects.Add(playerScrollBox);
             }
             foreach (OnlinePlayer player in OnlineManager.players)
@@ -448,6 +442,14 @@ namespace RainMeadow
         public void RecieveSlugcat(SlugcatStats.Name scug)
         {
             TryChangeSlugcatIndex(scug);
+        }
+        public void UpdateUponChangingSlugcat(SlugcatStats.Name scug)
+        {
+            if (colorsCheckbox != null)
+            {
+                colorsCheckbox.Checked = manager.rainWorld.progression.miscProgressionData.colorsEnabled.ContainsKey(scug.value) && 
+                    manager.rainWorld.progression.miscProgressionData.colorsEnabled[scug.value]; //automatically opens color interface if enabled
+            }
         }
     }
 }
