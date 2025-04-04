@@ -39,7 +39,10 @@ namespace RainMeadow
                 {
                     RemoveColorButtons();
                     actualSelectedIndex = value;
-                    UpdateUponChangingSlugcat(CurrentSlugcat);
+                    if (colorChecked)
+                    {
+                        AddColorButtons();
+                    }
                 }
             }
         }
