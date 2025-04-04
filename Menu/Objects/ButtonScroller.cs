@@ -107,6 +107,10 @@ namespace RainMeadow
         {
             scrollOffset = Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
         }
+        public List<T> GetSpecificButtons<T>()
+        {
+            return [..buttons.OfType<T>()];
+        }
         public int IndexFromButton(IPartOfButtonScroller button)
         {
             for (int i = 0; i < buttons.Count; i++)
@@ -120,6 +124,10 @@ namespace RainMeadow
         }
         public void RemoveButton(int index)
         {
+            RemoveButton(index, true);
+        }
+        public void RemoveButton(int index, bool constrainScroll)
+        {
             if (buttons.Count > index)
             {
                 if (buttons[index] is MenuObject menuObj)
@@ -127,13 +135,24 @@ namespace RainMeadow
                     this.ClearMenuObject(menuObj);
                 }
                 buttons.RemoveAt(index);
+            }
+            if (constrainScroll)
+            {
                 ConstrainScroll();
             }
         }
         public void RemoveAllButtons()
         {
+            RemoveAllButtons(true);
+        }
+        public void RemoveAllButtons(bool constrainScroll)
+        {
             this.ClearMenuObjectIList(buttons.Where(x => x is MenuObject).Cast<MenuObject>());
             buttons.Clear();
+            if (constrainScroll)
+            {
+                ConstrainScroll();
+            }
         }
         public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons)
         {
