@@ -39,8 +39,8 @@ max|máx.
 player|jugador
 players|jugadores
 Sort by Ping|Ordenar por el ping
-Sort A-Z|Ordenar de la A a la Z
-Sort Z-A|Ordenar de la Z a la A
+Sort A to Z|Ordenar de la A a la Z
+Sort Z to A|Ordenar de la Z a la A
 Sort by Fullest Lobby|Ordenar por la sala más llena
 Sort by Emptiest Lobby|Ordenar por la sala más vacía
 Unknown Sorting Method|Método de ordenamiento desconocido
@@ -154,7 +154,7 @@ New skin unlocked|Nuevo aspecto desbloqueado
 // Story Mode
  - New Game| - Juego nuevo
 Current Campaign: |Campaña actual: 
-Slugcats|Gatobabosas
+Selected Slugcat|Gatobabosa seleccionado
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
 Require Campaign Slugcat|Requerir gato de campaña
@@ -170,6 +170,7 @@ Free For All|Todos contra todos
 Ready:|Listos:
 Playlist Progress:|Progreso de la lista:
 WAIT FOR OTHERS|ESTOY LISTO
+FORCE READY|FORZAR LISTO
 LOBBY WILL LOCK|BLOQUEAR SALA
 GAME IN SESSION|EN CURSO
 READY?|¿LISTO?
