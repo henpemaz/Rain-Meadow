@@ -21,10 +21,7 @@ namespace RainMeadow
         public MenuLabel currentLevelProgression;
 
         public MenuLabel displayCurrentGameMode;
-
-        private SimplerSymbolButton viewNextPlayer;
-        private SimplerSymbolButton viewPrevPlayer;
-
+        private SimplerSymbolButton viewNextPlayer, viewPrevPlayer, colorConfigButton;
         private int holdPlayerPosition;
         private int currentPlayerPosition;
         private bool initiatedStartGameForClient;
@@ -193,7 +190,18 @@ namespace RainMeadow
                 this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount, new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 150f), new Vector2(10f, 10f), false);
                 this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
                 this.pages[0].subObjects.Add(currentLevelProgression);
+                if (ModManager.MMF)
+                {
+                    colorConfigButton = new(this, pages[0], "Kill_Slugcat", "", usernameButtons[0].pos + new Vector2(-44, 0f));
+                    colorConfigButton.OnClick += (_) =>
+                    {
+                        manager.ShowDialog(new ColorSlugcatDialog(manager, arena.avatarSettings.playingAs, () => { }));
+                    };
+                    pages[0].subObjects.Add(colorConfigButton);
+                    MutualHorizontalButtonBind(colorConfigButton, usernameButtons[0]);
+                }
             }
+          
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -204,8 +212,6 @@ namespace RainMeadow
             page.subObjects.Add(b);
             return b;
         }
-
-
 
 
         void BuildPlayerSlots()
@@ -369,6 +375,7 @@ namespace RainMeadow
             {
                 return;
             }
+            arena.avatarSettings.currentColors = GetPersonalColors(arena.avatarSettings.playingAs);
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
@@ -379,7 +386,14 @@ namespace RainMeadow
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
         }
-
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (colorConfigButton != null)
+            {
+                colorConfigButton.symbolSprite.alpha = this.IsCustomColorEnabled(arena.avatarSettings.playingAs) ? 1 : 0.2f;
+            }
+        }
         public override void Update()
         {
             base.Update();
@@ -532,10 +546,7 @@ namespace RainMeadow
 
             }
 
-
         }
-
-
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
@@ -563,7 +574,6 @@ namespace RainMeadow
             {
                 infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
-
             if (OnlineManager.lobby.isOwner)
             {
                 if (message == "NEXTONLINEGAME")
@@ -613,7 +623,6 @@ namespace RainMeadow
 
             }
         }
-
 
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
@@ -720,7 +729,10 @@ namespace RainMeadow
 
         }
 
-
+        private List<Color> GetPersonalColors(SlugcatStats.Name id)
+        {
+            return [..this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
+        }
         private void AddClassButtons()
         {
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
