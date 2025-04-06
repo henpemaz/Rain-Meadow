@@ -185,12 +185,7 @@ namespace RainMeadow
         }
         public ColorSlugcatBodyButtons GetColorInterface(SlugcatStats.Name slugcatID, Vector2 pos)
         {
-            List<string> list = PlayerGraphics.DefaultBodyPartColorHex(slugcatID);
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i] = ColorHelpers.SetHSLString(Custom.RGB2HSL(Custom.hexToColor(list[i])));
-            }
-            return new ColorSlugcatBodyButtons(this, pages[0], pos, slugcatID, PlayerGraphics.ColoredBodyPartList(slugcatID), list);
+             return new ColorSlugcatBodyButtons(this, pages[0], pos, slugcatID, PlayerGraphics.ColoredBodyPartList(slugcatID), [.. PlayerGraphics.DefaultBodyPartColorHex(slugcatID).Select(Custom.hexToColor).Select(Custom.RGB2HSL).Select(ColorHelpers.SetHSLString)]);
         }
 
         public const string COLORCHECKBOXID = "COLORCHECKED";
