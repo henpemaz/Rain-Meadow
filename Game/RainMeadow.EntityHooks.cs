@@ -223,10 +223,13 @@ namespace RainMeadow
                     // just ensuring you warp fast!
                     if (OnlineManager.warpLock)
                     {
+                        RainMeadow.Debug("warp-initiate: second phase execute");
+                        orig(self, callback, warpData, useNormalWarpLoader);
                         OnlineManager.warpLock = false;
                     }
                     else
                     {
+                        RainMeadow.Debug("warp-initiate: first send rpc");
                         OnlineManager.warpLock = true;
                         if (OnlineManager.lobby.isOwner)
                         {
@@ -238,14 +241,7 @@ namespace RainMeadow
                                 }
                             }
                         }
-                        else if (RPCEvent.currentRPCEvent is null)
-                        {
-                            // tell host to move everyone else
-                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
-                        }
                         StoryRPCs.PerformWatcherRiftWarp(null, warpData.ToString(), useNormalWarpLoader);
-                        RainMeadow.Debug("initiate special warp FROM A WARP POINT :)");
-                        orig(self, callback, warpData, useNormalWarpLoader);
                     }
                 }
                 else
