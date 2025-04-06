@@ -316,6 +316,8 @@ namespace RainMeadow
             {
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
                 WorldSession newWorldSession = self.worldLoader.world.GetResource() ?? throw new KeyNotFoundException();
+                bool isSameWorld = (self.activeWorld == self.worldLoader.world);
+                
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
                     // Regular gate switch
@@ -378,7 +380,7 @@ namespace RainMeadow
                 }
 
                 // "warps" to the same world, twice, for some bloody reason
-                if (self.activeWorld.name != self.worldLoader.world.name)
+                if (!isSameWorld)
                 {
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
