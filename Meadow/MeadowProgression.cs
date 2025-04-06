@@ -695,7 +695,7 @@ namespace RainMeadow
             progressionData.characterUnlockProgress++;
             if (progressionData.characterUnlockProgress >= characterProgressTreshold)
             {
-                if (NextUnlockableCharacter() is Character character && character != null)
+                if (NextUnlockableCharacter() is Character character)
                 {
                     progressionData.characterProgress.Add(character, new ProgressionData.CharacterProgressionData(character));
                     if (NextUnlockableCharacter() != null) progressionData.characterUnlockProgress -= characterProgressTreshold;
