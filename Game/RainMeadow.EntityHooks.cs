@@ -220,29 +220,28 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    // just ensuring you warp fast!
+                    // may be called twice by accident
                     if (OnlineManager.warpLock)
                     {
-                        RainMeadow.Debug("warp-initiate: second phase execute");
-                        orig(self, callback, warpData, useNormalWarpLoader);
-                        OnlineManager.warpLock = false;
+                        RainMeadow.Debug("warp-initiate: WEEEWOOO CALLED TWICE!!! (this is bad and evil)");
+                        return;
                     }
-                    else
+                    OnlineManager.warpLock = true;
+                    RainMeadow.Debug("warp-initiate: first send rpc");
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        RainMeadow.Debug("warp-initiate: first send rpc");
-                        OnlineManager.warpLock = true;
-                        if (OnlineManager.lobby.isOwner)
+                        foreach (var player in OnlineManager.players)
                         {
-                            foreach (var player in OnlineManager.players)
+                            if (!player.isMe)
                             {
-                                if (!player.isMe)
-                                {
-                                    player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
-                                }
+                                player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
-                        StoryRPCs.PerformWatcherRiftWarp(null, warpData.ToString(), useNormalWarpLoader);
                     }
+                    StoryRPCs.PerformWatcherRiftWarp(null, warpData.ToString(), useNormalWarpLoader);
+                    RainMeadow.Debug("warp-initiate: second phase execute");
+                    orig(self, callback, warpData, useNormalWarpLoader);
+                    OnlineManager.warpLock = false;
                 }
                 else
                 {
