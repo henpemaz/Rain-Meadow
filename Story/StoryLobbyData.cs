@@ -52,6 +52,14 @@ namespace RainMeadow
             public bool requireCampaignSlugcat;
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
+            //watcher stuff
+            [OnlineFieldHalf]
+            public float rippleLevel;
+            [OnlineFieldHalf]
+            public float minimumRippleLevel;
+            [OnlineFieldHalf]
+            public float maximumRippleLevel;
+
             public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
@@ -73,6 +81,9 @@ namespace RainMeadow
                     cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
+                    rippleLevel = storySession.saveState.deathPersistentSaveData.rippleLevel;
+                    minimumRippleLevel = storySession.saveState.deathPersistentSaveData.minimumRippleLevel;
+                    maximumRippleLevel = storySession.saveState.deathPersistentSaveData.maximumRippleLevel;
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
@@ -116,6 +127,9 @@ namespace RainMeadow
                     storySession.saveState.cycleNumber = cycleNumber;
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
+                    storySession.saveState.deathPersistentSaveData.rippleLevel = rippleLevel;
+                    storySession.saveState.deathPersistentSaveData.minimumRippleLevel = minimumRippleLevel;
+                    storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
                     if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
