@@ -161,7 +161,7 @@ Require Campaign Slugcat|Requerir gato de campaña
 Match save|Igualar guar.
 PLAYERS|JUGADORES
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
- to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
+ to spectate, or press PAUSE BUTTON to dismiss message| para espectar o el BOTÓN DE PAUSA para quitar este mensaje
 READY|LISTO
 
 // ArenaCompetitive Mode
@@ -188,6 +188,11 @@ Gorbo|Gorbo
 ???|???
 Winner!|¡Ganador!
 Unknown user|Usuario desconocido
+
+// External Game Modes (only names)
+Tag|Pilla pilla
+Drown|Ahogado
+Capture the Pearl|Captura la perla
 
 // Chat Tutorial
 Press '|Pulsa «
@@ -343,10 +348,10 @@ Arena|Arena
 LAN|LAN
 Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utilizadas en el modo Meadow.
 Show usernames|Mostrar nombres de usuario
-Username Toggle|Ver los nombres sin mantener pulsado
-Replace holding with toggling|Pulsar el botón en vez de mantenerlo.
-Key used for toggling spectator mode|Botón para activar o desactivar el modo espectador
-Stop Inputs While Spectating|Detener entradas al espectear
+Username Toggle|Pulsar para ver los nombres de usuario
+Replace holding with toggling|Reemplazar «mantener» con «pulsar».
+Key used for toggling spectator mode|Activar o desactivar el modo espectador
+Stop Inputs While Spectating|Detener entradas al espectar
 Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Controla qué mods están permitidos en los clientes, editando los archivos de abajo.<LINE>Incluyen instrucciones (en inglés) dentro.
 Edit High-Impact Mods|Editar mods de alto imp.
 Edit Banned Mods|Editar mods prohibidos
@@ -370,7 +375,7 @@ Reset all progression|Reiniciar todo el progreso
 Ready to shelter/gate|Preparado para hibernar o pasar de región
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
-WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden ocasionar corrupciones de datos, realiza una copia de seguridad de tus partidas.
+WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden causar corrupciones de datos, realiza una copia de seguridad de tus partidas.
 Custom Story Slugcat:|Campañas personalizadas:
 If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gatobabosa que sean inestables.
 Countdown timer. Default: 5s|Tiempo de la cuenta atrás. Predeterminado: 5 s
