@@ -22,6 +22,7 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
+        public static bool warpLock;
 
         public static LobbyInfo currentlyJoiningLobby;
         public int milisecondsPerFrame;
@@ -353,7 +354,31 @@ namespace RainMeadow
                         return roomSession;
                     }
                 }
-
+                if (rid.Length >= 4)
+                {
+                    // TODO: this shouldn't be hardcoded
+                    // however, sometimes things just need to be set just 'right'
+                    string[] waRegions = {
+                        "WVWA", "WRRA", "WARA", "WARB",
+                        "WARC", "WARD", "WARE", "WARF",
+                        "WARG", "WAUA", "WBLA", "WPTA",
+                        "WRFA", "WRFB", "WRSA", "WSKA",
+                        "WSKB", "WSKC", "WSKD", "WTDA",
+                        "WTDB", "WORA", "WDSR", "WGWR",
+                        "WHIR", "WSSR", "WSUR",
+                        // EXTRA
+                        "CCCC",
+                    };
+                    var prefixRid = rid.Substring(0, 4);
+                    foreach (var regionName in waRegions)
+                    {
+                        if (prefixRid == regionName)
+                        {
+                            if (rid.Length == 4 && lobby.worldSessions.TryGetValue(rid, out var r3)) return r3;
+                            if (rid.Length > 4 && lobby.worldSessions.TryGetValue(prefixRid, out var r4) && r4.roomSessions.TryGetValue(rid.Substring(4), out var waRoom)) return waRoom;
+                        }
+                    }
+                }
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
             }

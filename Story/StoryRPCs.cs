@@ -127,6 +127,24 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void PerformWatcherRiftWarp(RPCEvent rpc, string warpData, bool useNormalWarpLoader)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            // generate "local" warp point
+            Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
+            newWarpData.FromString(warpData);
+			PlacedObject placedObject = new PlacedObject(PlacedObject.Type.WarpPoint, newWarpData);
+			Watcher.WarpPoint warpPoint = new Watcher.WarpPoint(null, placedObject);
+            game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
+            // SAVE THE WARP POINT!
+            if (RainMeadow.isStoryMode(out var storyGameMode))
+            {
+                storyGameMode.myLastWarp = newWarpData;
+            }
+        }
+
+        [RPCMethod]
         public static void TriggerGhostHunch(string ghostID)
         {
             var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);

@@ -13,6 +13,7 @@ namespace RainMeadow
         private void EntityHooks()
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
+            On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
@@ -212,11 +213,53 @@ namespace RainMeadow
             }
         }
 
+        // echo warps from the waher
+        public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
+        {
+            if (isStoryMode(out var _))
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    // just ensuring you warp fast!
+                    if (OnlineManager.warpLock)
+                    {
+                        OnlineManager.warpLock = false;
+                    }
+                    else
+                    {
+                        OnlineManager.warpLock = true;
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
+                                }
+                            }
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
+                        }
+                        StoryRPCs.PerformWatcherRiftWarp(null, warpData.ToString(), useNormalWarpLoader);
+                        RainMeadow.Debug("initiate special warp FROM A WARP POINT :)");
+                        orig(self, callback, warpData, useNormalWarpLoader);
+                    }
+                }
+                else
+                {
+                    orig(self, callback, warpData, useNormalWarpLoader);
+                }
+            }
+        }
+
         public void OverWorld_InitiateSpecialWarp_SingleRoom(On.OverWorld.orig_InitiateSpecialWarp_SingleRoom orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, string roomName)
         {
             if (OnlineManager.lobby != null)
             {
-                if (isStoryMode(out var storyGameMode))
+                if (isStoryMode(out var _))
                 {
                     if (roomName == "MS_COMMS")
                     {
@@ -273,7 +316,6 @@ namespace RainMeadow
             {
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
                 WorldSession newWorldSession = self.worldLoader.world.GetResource() ?? throw new KeyNotFoundException();
-
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
                     // Regular gate switch
@@ -335,13 +377,22 @@ namespace RainMeadow
                     }
                 }
 
-                oldWorldSession.Deactivate();
-                oldWorldSession.NotNeeded(); // done? let go
+                // "warps" to the same world, twice, for some bloody reason
+                if (self.activeWorld.name != self.worldLoader.world.name)
+                {
+                    oldWorldSession.Deactivate();
+                    oldWorldSession.NotNeeded(); // done? let go
+                }
 
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && OnlineManager.lobby.isOwner)
                 {
                     storyGameMode.changedRegions = true;
                     storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
+                    if (warpUsed)
+                    {
+                        storyGameMode.changedRegions = false;
+                        storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
+                    }
                 }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

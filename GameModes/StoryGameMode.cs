@@ -32,6 +32,7 @@ namespace RainMeadow
         public SlugcatCustomization avatarSettings;
         public StoryClientSettingsData storyClientData;
 
+        public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
 
@@ -44,6 +45,7 @@ namespace RainMeadow
             readyForWin = false;
             readyForGate = ReadyForGate.Closed;
             defaultDenPos = null;
+            myLastWarp = null;
             myLastDenPos = null;
             region = null;
             saveStateString = null;
