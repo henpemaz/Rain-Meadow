@@ -87,7 +87,7 @@ namespace RainMeadow
                 num++;
             }
             menu.TryMutualBind(prevButton, bodyButtons.FirstOrDefault(), true);
-            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton);
+            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton, true);
             bodyButtons = [.. buttons];
             bodyColorBorders = [.. borders];
             (menu as ColorSlugcatDialog)?.RemoveColorInterface();
@@ -120,7 +120,7 @@ namespace RainMeadow
             }
             menu.MutualHorizontalButtonBind(prevButton, nextButton);
             menu.TryMutualBind(prevButton, bodyButtons.FirstOrDefault(), true);
-            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton);
+            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton, true);
         }
         public void DeactivateButtons()
         {
