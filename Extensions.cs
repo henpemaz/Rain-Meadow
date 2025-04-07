@@ -277,7 +277,7 @@ namespace RainMeadow
                 menuObject.nextSelectable[3] = (bottom ? bindWith : menuObject.nextSelectable[3]);
             }
         }
-        public static void TryMutualBind(this Menu.Menu? menu, MenuObject? first, MenuObject? second, bool leftRight = false, bool topDown = false)
+        public static void TryMutualBind(this Menu.Menu? menu, MenuObject? first, MenuObject? second, bool leftRight = false, bool bottomTop = false)
         {
             if (menu != null && first != null && second != null)
             {
@@ -285,7 +285,7 @@ namespace RainMeadow
                 {
                     menu.MutualHorizontalButtonBind(first, second);
                 }
-                if (topDown)
+                if (bottomTop)
                 {
                     menu.MutualVerticalButtonBind(first, second);
                 }
