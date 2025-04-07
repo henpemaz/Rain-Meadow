@@ -131,6 +131,7 @@ namespace RainMeadow
         {
             if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            RainMeadow.Error($"WARP.DATA? {warpData}, Loader={useNormalWarpLoader}");
             // generate "local" warp point
             Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
             newWarpData.FromString(warpData);
@@ -142,6 +143,14 @@ namespace RainMeadow
             {
                 storyGameMode.myLastWarp = newWarpData;
             }
+        }
+
+        [RPCMethod]
+        public static void PrinceSetHighestConversation(RPCEvent rpc, int newValue)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            game.GetStorySession.saveState.miscWorldSaveData.highestPrinceConversationSeen = newValue;
         }
 
         [RPCMethod]

@@ -16,6 +16,8 @@ namespace RainMeadow
             On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
+            On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
+
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
@@ -213,6 +215,29 @@ namespace RainMeadow
             }
         }
 
+        public void Watcher_PrinceBehavior_InitateConversation(On.Watcher.PrinceBehavior.orig_InitateConversation orig, Watcher.PrinceBehavior self)
+        {
+            orig(self);
+            int newValue = self.prince.room.game.GetStorySession.saveState.miscWorldSaveData.highestPrinceConversationSeen;
+            RainMeadow.Debug("prince yap acknowledged");
+            if (OnlineManager.lobby.isOwner)
+            {
+                foreach (var player in OnlineManager.players)
+                {
+                    if (!player.isMe)
+                    {
+                        player.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
+                    }
+                }
+            }
+            else if (RPCEvent.currentRPCEvent is null)
+            {
+                // tell host to move everyone else
+                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
+            }
+            StoryRPCs.PrinceSetHighestConversation(null, newValue);
+        }
+
         // echo warps from the waher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
@@ -221,12 +246,6 @@ namespace RainMeadow
                 if (OnlineManager.lobby != null)
                 {
                     // may be called twice by accident
-                    if (OnlineManager.warpLock)
-                    {
-                        RainMeadow.Debug("warp-initiate: WEEEWOOO CALLED TWICE!!! (this is bad and evil)");
-                        return;
-                    }
-                    OnlineManager.warpLock = true;
                     RainMeadow.Debug("warp-initiate: first send rpc");
                     if (OnlineManager.lobby.isOwner)
                     {
@@ -238,15 +257,9 @@ namespace RainMeadow
                             }
                         }
                     }
-                    StoryRPCs.PerformWatcherRiftWarp(null, warpData.ToString(), useNormalWarpLoader);
                     RainMeadow.Debug("warp-initiate: second phase execute");
-                    orig(self, callback, warpData, useNormalWarpLoader);
-                    OnlineManager.warpLock = false;
                 }
-                else
-                {
-                    orig(self, callback, warpData, useNormalWarpLoader);
-                }
+                orig(self, callback, warpData, useNormalWarpLoader);
             }
         }
 
@@ -359,6 +372,11 @@ namespace RainMeadow
                         room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
                         roomSession2.Activate();
                     }
+                }
+                else if (warpUsed)
+                {
+                    Debug("Watcher warp switchery 1");
+                    orig(self, warpUsed);
                 }
                 else
                 {

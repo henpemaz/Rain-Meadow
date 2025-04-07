@@ -22,7 +22,6 @@ namespace RainMeadow
         public static OnlinePlayer mePlayer;
         public static List<OnlinePlayer> players;
         public static Lobby lobby;
-        public static bool warpLock;
 
         public static LobbyInfo currentlyJoiningLobby;
         public int milisecondsPerFrame;
