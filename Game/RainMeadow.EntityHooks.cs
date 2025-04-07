@@ -245,10 +245,9 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby != null)
                 {
-                    // may be called twice by accident
-                    RainMeadow.Debug("warp-initiate: first send rpc");
                     if (OnlineManager.lobby.isOwner)
                     {
+                        RainMeadow.Debug("warp-initiate: first send rpc");
                         foreach (var player in OnlineManager.players)
                         {
                             if (!player.isMe)
@@ -375,6 +374,40 @@ namespace RainMeadow
                 }
                 else if (warpUsed)
                 {
+                    var room = (self.specialWarpCallback as Watcher.WarpPoint).room; //this shall never be null
+                    if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
+                    {
+                        Debug("Next level switching");
+                        var entities = room.abstractRoom.entities;
+                        for (int i = entities.Count - 1; i >= 0; i--)
+                        {
+                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                            {
+                                oe.apo.LoseAllStuckObjects();
+                                if (!oe.isMine)
+                                {
+                                    // not-online-aware removal
+                                    Debug("removing remote entity from game " + oe);
+                                    oe.beingMoved = true;
+                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    {
+                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                    }
+                                    entities.Remove(oe.apo);
+                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+                                    room.RemoveObject(oe.apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    oe.beingMoved = false;
+                                }
+                                else // mine leave the old online world elegantly
+                                {
+                                    Debug("removing my entity from online " + oe);
+                                    oe.ExitResource(roomSession3);
+                                    oe.ExitResource(roomSession3.worldSession);
+                                }
+                            }
+                        }
+                    }
                     Debug("Watcher warp switchery 1");
                     orig(self, warpUsed);
                 }
@@ -412,6 +445,18 @@ namespace RainMeadow
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {
                     MeadowMusic.NewWorld(self.activeWorld);
+                }
+
+                // force clients to warp AFTER the host
+                if (OnlineManager.lobby.isOwner && warpUsed)
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
+                        }
+                    }
                 }
             }
             else
