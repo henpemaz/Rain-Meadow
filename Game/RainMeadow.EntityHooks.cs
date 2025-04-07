@@ -374,42 +374,50 @@ namespace RainMeadow
                 }
                 else if (warpUsed)
                 {
-                    var room = (self.specialWarpCallback as Watcher.WarpPoint).room; //this shall never be null
-                    if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
+                    if (self.specialWarpCallback is Watcher.WarpPoint warpPoint)
                     {
-                        Debug("Next level switching");
-                        var entities = room.abstractRoom.entities;
-                        for (int i = entities.Count - 1; i >= 0; i--)
+                        var room = warpPoint.room; //this shall never be null
+                        if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
                         {
-                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                            Debug("Next level switching");
+                            var entities = room.abstractRoom.entities;
+                            for (int i = entities.Count - 1; i >= 0; i--)
                             {
-                                oe.apo.LoseAllStuckObjects();
-                                if (!oe.isMine)
+                                if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                                 {
-                                    // not-online-aware removal
-                                    Debug("removing remote entity from game " + oe);
-                                    oe.beingMoved = true;
-                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                    oe.apo.LoseAllStuckObjects();
+                                    if (!oe.isMine)
                                     {
-                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        // not-online-aware removal
+                                        Debug("removing remote entity from game " + oe);
+                                        oe.beingMoved = true;
+                                        if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                                        {
+                                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                                        }
+                                        entities.Remove(oe.apo);
+                                        room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
+                                        room.RemoveObject(oe.apo.realizedObject);
+                                        room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        oe.beingMoved = false;
                                     }
-                                    entities.Remove(oe.apo);
-                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                    room.RemoveObject(oe.apo.realizedObject);
-                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                    oe.beingMoved = false;
-                                }
-                                else // mine leave the old online world elegantly
-                                {
-                                    Debug("removing my entity from online " + oe);
-                                    oe.ExitResource(roomSession3);
-                                    oe.ExitResource(roomSession3.worldSession);
+                                    else // mine leave the old online world elegantly
+                                    {
+                                        Debug("removing my entity from online " + oe);
+                                        oe.ExitResource(roomSession3);
+                                        oe.ExitResource(roomSession3.worldSession);
+                                    }
                                 }
                             }
                         }
+                        Debug("Watcher warp switchery 1");
+                        orig(self, warpUsed);
+                        self.game.cameras[0].WarpMoveCameraPrecast((warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom, (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam);
                     }
-                    Debug("Watcher warp switchery 1");
-                    orig(self, warpUsed);
+                    else
+                    {
+                        RainMeadow.Error("watcher warp point doesnt exist at time of loading");
+                    }
                 }
                 else
                 {
