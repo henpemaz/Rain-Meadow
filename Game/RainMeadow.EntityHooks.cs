@@ -253,7 +253,7 @@ namespace RainMeadow
                         {
                             if (!player.isMe)
                             {
-                                player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, warpData.ToString(), useNormalWarpLoader);
+                                player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
                     }
