@@ -118,8 +118,8 @@ namespace RainMeadow
                 var enable = requiredMods.Except(active).ToList();
 
                 //clear phony entries to the mod list
-                enable.RemoveAll(mod => mod == null || mod == "");
-                disable.RemoveAll(mod => mod == null || mod == "");
+                enable.RemoveAll(mod => mod == null || mod == "" || mod == "henpemaz_rainmeadow");
+                disable.RemoveAll(mod => mod == null || mod == "" || mod == "henpemaz_rainmeadow");
 
                 //determine whether a reorder is necessary
                 if (!disable.Any() && !enable.Any())
