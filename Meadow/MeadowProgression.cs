@@ -917,11 +917,14 @@ namespace RainMeadow
                 private CharacterProgressionData() { }
                 public CharacterProgressionData(Character character)
                 {
-                    unlockedEmotes = emoteEmotes.Take(4).ToList();
-                    unlockedSkins = characterData[character].skins.Take(1).ToList();
-                    selectedSkin = unlockedSkins[0];
-                    saveLocation = characterData[character].startingCoords;
-                    emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
+                    if (character != null)
+                    {
+                        unlockedEmotes = emoteEmotes.Take(4).ToList();
+                        unlockedSkins = characterData[character].skins.Take(1).ToList();
+                        selectedSkin = unlockedSkins[0];
+                        saveLocation = characterData[character].startingCoords;
+                        emoteHotbar = unlockedEmotes.Concat(symbolEmotes.Take(4)).ToList();
+                    }
                 }
             }
         }
