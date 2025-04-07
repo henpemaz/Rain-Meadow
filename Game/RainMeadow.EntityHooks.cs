@@ -16,6 +16,7 @@ namespace RainMeadow
             On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
+            On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
@@ -215,27 +216,40 @@ namespace RainMeadow
             }
         }
 
+        public void Watcher_WarpPoint_Update(On.Watcher.WarpPoint.orig_Update orig, Watcher.WarpPoint self, bool eu)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                self.triggerTime = 0; // clients cant activate or update warp points
+                self.lastTriggerTime = 0;
+            }
+            orig(self, eu); // either host or singleplayer
+        }
+
         public void Watcher_PrinceBehavior_InitateConversation(On.Watcher.PrinceBehavior.orig_InitateConversation orig, Watcher.PrinceBehavior self)
         {
             orig(self);
-            int newValue = self.prince.room.game.GetStorySession.saveState.miscWorldSaveData.highestPrinceConversationSeen;
-            RainMeadow.Debug("prince yap acknowledged");
-            if (OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby != null)
             {
-                foreach (var player in OnlineManager.players)
+                int newValue = self.prince.room.game.GetStorySession.saveState.miscWorldSaveData.highestPrinceConversationSeen;
+                RainMeadow.Debug("prince yap acknowledged");
+                if (OnlineManager.lobby.isOwner)
                 {
-                    if (!player.isMe)
+                    foreach (var player in OnlineManager.players)
                     {
-                        player.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
+                        }
                     }
                 }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    // tell host to move everyone else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
+                }
+                StoryRPCs.PrinceSetHighestConversation(null, newValue);
             }
-            else if (RPCEvent.currentRPCEvent is null)
-            {
-                // tell host to move everyone else
-                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
-            }
-            StoryRPCs.PrinceSetHighestConversation(null, newValue);
         }
 
         // echo warps from the waher
