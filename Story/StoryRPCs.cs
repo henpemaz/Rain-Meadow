@@ -149,6 +149,15 @@ namespace RainMeadow
                     }
                     abstractRoom2.RealizeRoom(game.overWorld.activeWorld, game);
                 }
+                // throw everyone into the same room
+                for (int j = 0; j < game.Players.Count; j++)
+                {
+                    if (game.Players[j].realizedCreature != null)
+                    {
+                        game.Players[j].realizedCreature.PlaceInRoom(abstractRoom2.realizedRoom);
+                    }
+                }
+                //
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);

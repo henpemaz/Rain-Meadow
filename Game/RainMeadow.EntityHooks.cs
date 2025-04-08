@@ -269,6 +269,17 @@ namespace RainMeadow
                                 player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
+                        if (callback != null)
+                        {
+                            // throw everyone into the same room
+                            for (int j = 0; j < self.game.Players.Count; j++)
+                            {
+                                if (self.game.Players[j].realizedCreature != null)
+                                {
+                                    self.game.Players[j].realizedCreature.PlaceInRoom(callback.getSourceRoom());
+                                }
+                            }
+                        }
                     }
                     RainMeadow.Debug("warp-initiate: second phase execute");
                 }
@@ -425,7 +436,9 @@ namespace RainMeadow
                             }
                         }
                         Debug("Watcher warp switchery 1");
+                        // THIS MAY BE A BAD IDEA; but we can't let the world loader delete our players
                         orig(self, warpUsed);
+
                         self.game.cameras[0].WarpMoveCameraPrecast((warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom, (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam);
                     }
                     else
