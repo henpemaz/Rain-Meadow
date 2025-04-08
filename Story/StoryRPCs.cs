@@ -150,11 +150,12 @@ namespace RainMeadow
                     abstractRoom2.RealizeRoom(game.overWorld.activeWorld, game);
                 }
                 // throw everyone into the same room
-                for (int j = 0; j < game.Players.Count; j++)
+                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 {
-                    if (game.Players[j].realizedCreature != null)
+                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
                     {
-                        game.Players[j].realizedCreature.PlaceInRoom(abstractRoom2.realizedRoom);
+                        ac.realizedCreature.PlaceInRoom(abstractRoom2.realizedRoom);
                     }
                 }
                 //

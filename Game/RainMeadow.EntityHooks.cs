@@ -3,6 +3,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -269,15 +270,13 @@ namespace RainMeadow
                                 player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
-                        if (callback != null)
+                        // throw everyone into the same room
+                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                         {
-                            // throw everyone into the same room
-                            for (int j = 0; j < self.game.Players.Count; j++)
+                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
                             {
-                                if (self.game.Players[j].realizedCreature != null)
-                                {
-                                    self.game.Players[j].realizedCreature.PlaceInRoom(callback.getSourceRoom());
-                                }
+                                ac.realizedCreature.PlaceInRoom(callback.getSourceRoom());
                             }
                         }
                     }
