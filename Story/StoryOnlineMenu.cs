@@ -200,7 +200,7 @@ namespace RainMeadow
             if (storyGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
-                SelectedIndex = -1;
+                CurrentSlugcat = storyGameMode.currentCampaign;
             }
             else
             {
@@ -221,52 +221,12 @@ namespace RainMeadow
             {
                 OnlineManager.LeaveLobby();
             }
+            RainMeadow.rainMeadowOptions._SaveConfigFile(); //im just gonna allow this for now, since idk updates in slider set value
             base.ShutDownProcess();
         }
         public override string UpdateInfoText()
         {
             return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
-        }
-        public bool? GetOnlineChecked(CheckBox box)
-        {
-            if (RainMeadow.isStoryMode(out StoryGameMode storyGameMode))
-            {
-                if (box.IDString == "CLIENTSAVERESET")
-                {
-                    return storyGameMode.saveToDisk;
-                }
-                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
-                {
-                    return storyGameMode.friendlyFire;
-                }
-                if (box.IDString == "CAMPAIGNSLUGONLY")
-                {
-                    return storyGameMode.requireCampaignSlugcat;
-                }
-            }
-            return null; //get checked reutrns orig is bool is null :p
-        }
-        public bool SetOnlineChecked(CheckBox box, bool c)
-        {
-            if (RainMeadow.isStoryMode(out StoryGameMode storyGameMode))
-            {
-                if (box.IDString == "CLIENTSAVERESET")
-                {
-                    storyGameMode.saveToDisk = c;
-                    return true; //setchecked hook checks if it returns true, if true it returns else it calls orig
-                }
-                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
-                {
-                    storyGameMode.friendlyFire = c;
-                    return true;
-                }
-                if (box.IDString == "CAMPAIGNSLUGONLY")
-                {
-                    storyGameMode.requireCampaignSlugcat = c;
-                    return true;
-                }
-            }
-            return false;
         }
         private void UpdatePlayerList()
         {
@@ -430,6 +390,11 @@ namespace RainMeadow
         }
         private void TryChangeSlugcatIndex(SlugcatStats.Name scug)
         {
+            if (scug == slugcatColorOrder[slugcatPageIndex])
+            {
+                SelectedIndex = -1;
+                return;
+            }
             for (int i = 0; i < SelectableSlugcats.Length; i++)
             {
                 if (SelectableSlugcats[i] == scug)
