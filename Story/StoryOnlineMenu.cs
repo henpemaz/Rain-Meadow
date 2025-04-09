@@ -195,12 +195,20 @@ namespace RainMeadow
                 {
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
-
+                int campaignIndex = indexFromColor(storyGameMode.currentCampaign);
+                if (campaignIndex == -1)
+                {
+                    RainMeadow.Debug("WARNING! CAMPAIGN SLUGCAT is not found on list!! OWNER USING ANOTHER SLUGCAT?");
+                }
+                else
+                {
+                    slugcatPageIndex = campaignIndex;
+                }
             }
             if (storyGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
-                CurrentSlugcat = storyGameMode.currentCampaign;
+                SelectedIndex = -1;
             }
             else
             {
@@ -390,11 +398,6 @@ namespace RainMeadow
         }
         private void TryChangeSlugcatIndex(SlugcatStats.Name scug)
         {
-            if (scug == slugcatColorOrder[slugcatPageIndex])
-            {
-                SelectedIndex = -1;
-                return;
-            }
             for (int i = 0; i < SelectableSlugcats.Length; i++)
             {
                 if (SelectableSlugcats[i] == scug)
