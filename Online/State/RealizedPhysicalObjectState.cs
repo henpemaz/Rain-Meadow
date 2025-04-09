@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CoralBrain;
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -21,6 +22,10 @@ namespace RainMeadow
         }
         
         virtual public bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po is SSOracleSwarmer)
+            {
+                return true;
+            }
             if (po.grabbedBy.Any((x) => {
                 if (x.grabber == null) return false;
                 var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();

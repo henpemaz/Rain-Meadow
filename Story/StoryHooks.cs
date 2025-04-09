@@ -93,6 +93,7 @@ namespace RainMeadow
             On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
+            On.DaddyLongLegs.PlaceInRoom += DaddyLongLegs_PlaceInRoom;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
             On.Oracle.ctor += Oracle_ctor;
@@ -121,6 +122,20 @@ namespace RainMeadow
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
+        }
+
+        private void DaddyLongLegs_PlaceInRoom(On.DaddyLongLegs.orig_PlaceInRoom orig, DaddyLongLegs self, Room placeRoom)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, placeRoom);
+                return;
+            }
+            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
+            if (room.isOwner)
+            {
+                orig(self, placeRoom);
+            }
         }
 
         private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world) {
