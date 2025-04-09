@@ -46,6 +46,7 @@ namespace RainMeadow
         public bool flashIcons;
         public float fadeSpeed;
         public int realPing;
+        public bool showPing;
 
         SlugcatCustomization customization;
 
@@ -121,11 +122,12 @@ namespace RainMeadow
             this.username.x = -1000f;
             this.username.color = lighter_color;
 
+            showPing = false;
             this.realPing = System.Math.Max(1, player.ping - 16);
             this.pingLabel = new FLabel(Custom.GetFont(), $"({realPing})"); //{System.Math.Max(1, player.ping - 16)})
             owner.hud.fContainers[0].AddChild(this.pingLabel);
             this.pingLabel.color = lighter_color;
-
+            this.pingLabel.alpha = showPing ? 1 :0;
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
@@ -154,6 +156,10 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe)
+                    {
+                        this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
+                    }
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
@@ -171,7 +177,7 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                     
+
                     else slugIcon.SetElementByName(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
@@ -184,6 +190,7 @@ namespace RainMeadow
 
                 this.counter++;
             }
+
             if (!show) this.lastAlpha = this.alpha;
 
             for (int i = 0; i < messageQueue.Count;)
@@ -221,7 +228,12 @@ namespace RainMeadow
             this.username.x = pos.x;
             this.username.y = pos.y;
 
-            
+            if (this.realPing < 100)
+            {
+                pingLabel.color = Color.green;
+            }
+
+
             if (this.realPing > 100)
             {
                 pingLabel.color = Color.yellow;
@@ -248,7 +260,7 @@ namespace RainMeadow
                         first = false;
                         this.username.x = pos.x - (messageLabels[i]._textRect.width / 2);
                         this.messageLabels[i].x = pos.x + (username._textRect.width / 2);
-                        this.pingLabel.x = this.messageLabels[i].x + (this.messageLabels[i]._textRect.width / 2) + 10f; // Position after the first message
+                        this.pingLabel.x = this.messageLabels[i].x + (this.messageLabels[i]._textRect.width / 2) + 20f; // Position after the first message
                         this.pingLabel.y = username.y;
                     }
                     else
@@ -262,7 +274,7 @@ namespace RainMeadow
             else
             {
                 this.username.text = customization.nickname;
-                this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 10f; // Position after the username
+                this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
                 this.pingLabel.y = username.y;
                 pos.y += 20;
             }

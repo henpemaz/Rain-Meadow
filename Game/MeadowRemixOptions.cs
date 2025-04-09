@@ -29,6 +29,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockArtiStun;
 
     public readonly Configurable<float> ScrollSpeed;
+    public readonly Configurable<bool> ShowPing;
+
 
 
     public readonly Configurable<string> LanUserName;
@@ -78,6 +80,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        ShowPing = config.Bind("ShowPing", false);
 
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
 
@@ -174,8 +177,11 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(210, 180f, Translate("Chat Talk Button")),
                 new OpKeyBinder(ChatButtonKey, new Vector2(210f, 150), new Vector2(150f, 30f)),
 
-                new OpLabel(410, 180f, Translate("Chat Log On/Off")),
-                new OpCheckBox(ChatLogOnOff, new Vector2(440f, 150f)),
+                new OpLabel(410, 120f, Translate("Chat Log On/Off")),
+                new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
+
+                new OpLabel(210, 120f, Translate("Show Ping")),
+                new OpCheckBox(ShowPing, new Vector2(210, 90f)),
 
                 new OpLabel(10, 120, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
