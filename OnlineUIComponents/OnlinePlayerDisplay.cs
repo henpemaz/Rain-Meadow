@@ -124,7 +124,7 @@ namespace RainMeadow
 
             showPing = false;
             this.realPing = System.Math.Max(1, player.ping - 16);
-            this.pingLabel = new FLabel(Custom.GetFont(), $"({realPing})"); //{System.Math.Max(1, player.ping - 16)})
+            this.pingLabel = new FLabel(Custom.GetFont(), $"({realPing}ms)"); //{System.Math.Max(1, player.ping - 16)})
             owner.hud.fContainers[0].AddChild(this.pingLabel);
             this.pingLabel.color = lighter_color;
             this.pingLabel.alpha = showPing ? 1 :0;
@@ -210,7 +210,7 @@ namespace RainMeadow
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             var pos = vector;
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
-            this.pingLabel.text = $"({realPing})";
+            this.pingLabel.text = $"({realPing}ms)";
 
 
             this.arrowSprite.x = pos.x;
