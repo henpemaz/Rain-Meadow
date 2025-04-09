@@ -44,7 +44,7 @@ namespace RainMeadow
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-            IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner; 
+            IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner;
             On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
             // On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
@@ -113,7 +113,7 @@ namespace RainMeadow
 
             IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
-            IL.Menu.SlugcatSelectMenu.Singal +=  IL_SlugcatSelectMenu_SingalFix;
+            IL.Menu.SlugcatSelectMenu.Singal += IL_SlugcatSelectMenu_SingalFix;
 
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
@@ -131,19 +131,23 @@ namespace RainMeadow
                 orig(self, placeRoom);
                 return;
             }
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (room.isOwner)
+            if (RoomSession.map.TryGetValue(placeRoom.abstractRoom, out var room))
             {
-                orig(self, placeRoom);
+                if (room.isOwner)
+                {
+                    orig(self, placeRoom);
+                }
             }
         }
 
-        private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world) {
+        private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
+        {
             orig(self, creature, world);
-            if (isStoryMode(out var storyGameMode) && !self.isNPC) {
+            if (isStoryMode(out var storyGameMode) && !self.isNPC)
+            {
                 IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
                 self.slugcatStats.maxFood = intVector.x;
-                self.slugcatStats.foodToHibernate = intVector.y; 
+                self.slugcatStats.foodToHibernate = intVector.y;
             }
         }
 
@@ -266,8 +270,8 @@ namespace RainMeadow
             try
             {
                 /*SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; <- patch this
-		  int index = this.activeColorChooser;
-		 this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
+          int index = this.activeColorChooser;
+         this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
 
                 ILCursor cursor = new(il);
                 cursor.GotoNext(MoveType.After, x => x.MatchStloc(0));
@@ -275,7 +279,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldloca, 0);
                 cursor.EmitDelegate((Menu.SlugcatSelectMenu ssM, ref SlugcatStats.Name name) =>
                 {
-                    name = ssM is StoryOnlineMenu? ssM.colorInterface.slugcatID : name;
+                    name = ssM is StoryOnlineMenu ? ssM.colorInterface.slugcatID : name;
                 });
             }
             catch (Exception ex)
@@ -295,22 +299,24 @@ namespace RainMeadow
             5	0011	stloc.0
             */
             // SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; becomes 
-            try 
+            try
             {
                 ILCursor c = new(context);
                 c.GotoNext(MoveType.After, x => x.MatchStloc(0));
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => 
+                c.EmitDelegate((Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) =>
                 {
                     name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
 
                 });
 
-            } catch(Exception except) {
+            }
+            catch (Exception except)
+            {
                 Logger.LogError(except);
             }
-            
+
 
         }
 
@@ -894,32 +900,39 @@ namespace RainMeadow
                     self.AddPart(new ChatHud(self, cam));
             }
         }
-        private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self) {
-            if (OnlineManager.lobby != null && isStoryMode(out var story)) {
-                if (!OnlineManager.lobby.isOwner) {
+        private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self)
+        {
+            if (OnlineManager.lobby != null && isStoryMode(out var story))
+            {
+                if (!OnlineManager.lobby.isOwner)
+                {
 
                     // base game checks copied over
-                    if (ModManager.MSC && 
-                        !self.IsPupFoodMeter && self.pupBars == null && 
-                        (self.hud.owner as Player).room != null && 
+                    if (ModManager.MSC &&
+                        !self.IsPupFoodMeter && self.pupBars == null &&
+                        (self.hud.owner as Player).room != null &&
                         (self.hud.owner as Player).room.game.spawnedPendingObjects)
-			        {
+                    {
                         self.pupBars = new();
                         int num = 1;
                         if (story.pups is not null)
-                        foreach (AbstractCreature pup in story.pups) {
-                            if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null) {
-                                continue;
-                            }
+                            foreach (AbstractCreature pup in story.pups)
+                            {
+                                if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null)
+                                {
+                                    continue;
+                                }
 
-                            if (pup.realizedCreature is Player NPC) {
-                                FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, NPC, num);
-                                foodMeter.abstractPup = pup;
-                                self.hud.AddPart(foodMeter);
-                                self.pupBars.Add(foodMeter);
-                                num++;
-                            } else RainMeadow.Error("Pup wasn't a realized player");
-                        }
+                                if (pup.realizedCreature is Player NPC)
+                                {
+                                    FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, NPC, num);
+                                    foodMeter.abstractPup = pup;
+                                    self.hud.AddPart(foodMeter);
+                                    self.pupBars.Add(foodMeter);
+                                    num++;
+                                }
+                                else RainMeadow.Error("Pup wasn't a realized player");
+                            }
                     }
                     return;
                 }
@@ -928,11 +941,15 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context) {
-            try {
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context)
+        {
+            try
+            {
                 ILCursor cursor = new(context);
-                cursor.EmitDelegate(() => {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                cursor.EmitDelegate(() =>
+                {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    {
                         if (!OnlineManager.lobby.isOwner) return;
                         story.pups.Clear();
                     }
@@ -943,8 +960,10 @@ namespace RainMeadow
                 // Add pups to gamemode list
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloc_1);
-                cursor.EmitDelegate((FoodMeter self, int i) => {
-                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                cursor.EmitDelegate((FoodMeter self, int i) =>
+                {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story))
+                    {
                         if (!OnlineManager.lobby.isOwner) return;
 
                         var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
@@ -952,7 +971,9 @@ namespace RainMeadow
                     }
                 });
 
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 Logger.LogError(except);
             }
         }
