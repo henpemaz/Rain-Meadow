@@ -75,7 +75,6 @@ namespace RainMeadow
 
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
-            //removed setting SelectedIndex, it already gets current slugcat page without setting the num at the start
             restartCheckboxPos = restartCheckbox.pos;       
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
@@ -126,9 +125,7 @@ namespace RainMeadow
             // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
-            // Use the default colors for this slugcat when the checkbox is unchecked
-            // Use CustomColors when rw saves say its enabled regardless of remix, however dont open color config when remix isnt on since it contains enums and translations
-            personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs);
+            personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             manager.arenaSitting = null;
             if (restartChecked)
             {
