@@ -21,10 +21,10 @@ namespace RainMeadow
         StoryMenuSlugcatSelector? slugcatSelector;
         SlugcatCustomization personaSettings;
         SlugcatStats.Name[] selectableSlugcats;
+        SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
-        int actualSelectedIndex = -1, actualPlayerSelectedIndex = -1;
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -37,45 +37,27 @@ namespace RainMeadow
         {
             get
             {
-                return SelectableSlugcats[PlayerSelectedIndex];
+                return playerSelectedSlugcat ?? SelectableSlugcats[slugcatPageIndex];
+            }
+            set
+            {
+                playerSelectedSlugcat = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                CurrentSlugcat = PlayerSelectedSlugcat;
             }
         }
         public SlugcatStats.Name CurrentSlugcat
         {
             get
             {
-                return SelectableSlugcats[SelectedIndex];
+                return currentSlugcat ?? SelectableSlugcats[slugcatPageIndex];
             }
             set
             {
-                RecieveSlugcat(value);
-            }
-        }
-        protected int PlayerSelectedIndex //store's players original choice, slugcatpageindex check cuz maybe player wants change their slugcat with campaign selecting
-        {
-            get
-            {
-                return actualPlayerSelectedIndex < 0? slugcatPageIndex : actualPlayerSelectedIndex;
-            }
-            set
-            {
-                actualPlayerSelectedIndex = value >= 0 ? value != slugcatPageIndex? value: -1 :actualPlayerSelectedIndex;
-            }
-        }
-        public int SelectedIndex
-        {
-            get
-            {
-                return actualSelectedIndex < 0 ? slugcatPageIndex : actualSelectedIndex;
-            }
-            private set
-            {
-                if (actualSelectedIndex != value)
+                if (currentSlugcat != value)
                 {
                     RemoveColorButtons();
-                    actualSelectedIndex = value;
-                    PlayerSelectedIndex = actualSelectedIndex;
-                    UpdateUponChangingSlugcat(CurrentSlugcat);
+                    currentSlugcat = value;
+                    UpdateUponChangingSlugcat(currentSlugcat);
                 }
             }
         }
@@ -138,7 +120,6 @@ namespace RainMeadow
             {
                 storyGameMode.currentCampaign = storyGameCharacter;
             }
-            storyGameMode.currentCampaign = OnlineManager.lobby.isOwner ? storyGameCharacter : storyGameMode.currentCampaign;
             personaSettings.playingAs = storyGameMode.requireCampaignSlugcat ? storyGameMode.currentCampaign : PlayerSelectedSlugcat; //double check just incase
 
             // TODO: figure out how to reuse vanilla StartGame
@@ -147,7 +128,6 @@ namespace RainMeadow
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
             // Use the default colors for this slugcat when the checkbox is unchecked
             // Use CustomColors when rw saves say its enabled regardless of remix, however dont open color config when remix isnt on since it contains enums and translations
-            //safe check custom colors on for the player's playing as
             personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs);
             manager.arenaSitting = null;
             if (restartChecked)
@@ -195,25 +175,16 @@ namespace RainMeadow
                 {
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
-                int campaignIndex = indexFromColor(storyGameMode.currentCampaign);
-                if (campaignIndex == -1)
-                {
-                    RainMeadow.Debug("WARNING! CAMPAIGN SLUGCAT is not found on list!! OWNER USING ANOTHER SLUGCAT?");
-                }
-                else
-                {
-                    slugcatPageIndex = campaignIndex;
-                }
             }
             if (storyGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
-                SelectedIndex = -1;
+                CurrentSlugcat = storyGameMode.currentCampaign;
             }
             else
             {
                 SetupSlugcatList();
-                SelectedIndex = PlayerSelectedIndex;
+                CurrentSlugcat = PlayerSelectedSlugcat;
             }
             if (slugcatSelector != null)
             {
@@ -381,30 +352,13 @@ namespace RainMeadow
                 {
                     StoryMenuSlugcatButton storyMenuSlugcatButton = new(this, buttonScroller, SelectableSlugcats[i], (scug) =>
                     {
-                        CurrentSlugcat = scug;
+                        PlayerSelectedSlugcat = scug;
                         slugcatSelector.OpenCloseList(false, true, true);
                     });
                     slugcatButtons.Add(storyMenuSlugcatButton);
                 }
             }
             return [.. slugcatButtons];
-        }
-        private void RecieveSlugcat(SlugcatStats.Name scug)
-        {
-            if (scug != CurrentSlugcat)
-            {
-                TryChangeSlugcatIndex(scug);
-            }
-        }
-        private void TryChangeSlugcatIndex(SlugcatStats.Name scug)
-        {
-            for (int i = 0; i < SelectableSlugcats.Length; i++)
-            {
-                if (SelectableSlugcats[i] == scug)
-                {
-                    SelectedIndex = i;
-                }
-            }
         }
         private void UpdateUponChangingSlugcat(SlugcatStats.Name scug)
         {
