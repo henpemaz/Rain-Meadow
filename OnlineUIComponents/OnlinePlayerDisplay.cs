@@ -1,4 +1,4 @@
-﻿using RWCustom;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -159,7 +159,7 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
-                    if (RainMeadow.rainMeadowOptions.ShowPing.Value  )//
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe  )//
                     {
                         this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
                     }
@@ -230,7 +230,7 @@ namespace RainMeadow
             this.username.x = pos.x;
             this.username.y = pos.y;
 
-            if (this.realPing < 100)
+            if (this.realPing <= 100)
             {
                 pingLabel.color = Color.green;
             }
