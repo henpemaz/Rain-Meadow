@@ -93,7 +93,6 @@ namespace RainMeadow
             On.OracleSwarmer.BitByPlayer += OracleSwarmer_BitByPlayer;
             On.SLOracleSwarmer.BitByPlayer += SLOracleSwarmer_BitByPlayer;
             On.CoralBrain.CoralNeuronSystem.PlaceSwarmers += OnCoralNeuronSystem_PlaceSwarmers;
-            On.DaddyLongLegs.PlaceInRoom += DaddyLongLegs_PlaceInRoom;
             On.SSOracleSwarmer.NewRoom += SSOracleSwarmer_NewRoom;
 
             On.Oracle.ctor += Oracle_ctor;
@@ -122,22 +121,6 @@ namespace RainMeadow
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
-        }
-
-        private void DaddyLongLegs_PlaceInRoom(On.DaddyLongLegs.orig_PlaceInRoom orig, DaddyLongLegs self, Room placeRoom)
-        {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self, placeRoom);
-                return;
-            }
-            if (RoomSession.map.TryGetValue(placeRoom.abstractRoom, out var room))
-            {
-                if (room.isOwner)
-                {
-                    orig(self, placeRoom);
-                }
-            }
         }
 
         private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
@@ -270,8 +253,8 @@ namespace RainMeadow
             try
             {
                 /*SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; <- patch this
-          int index = this.activeColorChooser;
-         this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
+		  int index = this.activeColorChooser;
+		 this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
 
                 ILCursor cursor = new(il);
                 cursor.GotoNext(MoveType.After, x => x.MatchStloc(0));
@@ -946,8 +929,7 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(context);
-                cursor.EmitDelegate(() =>
-                {
+                cursor.EmitDelegate(() => {
                     if (OnlineManager.lobby != null && isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
@@ -960,8 +942,7 @@ namespace RainMeadow
                 // Add pups to gamemode list
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.Emit(OpCodes.Ldloc_1);
-                cursor.EmitDelegate((FoodMeter self, int i) =>
-                {
+                cursor.EmitDelegate((FoodMeter self, int i) => {
                     if (OnlineManager.lobby != null && isStoryMode(out var story))
                     {
                         if (!OnlineManager.lobby.isOwner) return;
