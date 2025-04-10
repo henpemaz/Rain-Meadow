@@ -30,6 +30,7 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
+    public readonly Configurable<int> ShowPingLocation;
 
 
 
@@ -81,7 +82,7 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         ShowPing = config.Bind("ShowPing", false);
-
+        ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
 
 
@@ -92,6 +93,7 @@ public class RainMeadowOptions : OptionInterface
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
+        
 
     }
 
