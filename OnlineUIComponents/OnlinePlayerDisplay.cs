@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace RainMeadow
 {
@@ -15,6 +16,7 @@ namespace RainMeadow
         public FLabel pingLabel;
         public FSprite slugIcon;
         public OnlinePlayer player;
+        public bool pingSpotDefault;
         public class Message
         {
             public int timer;
@@ -128,6 +130,8 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.pingLabel);
             this.pingLabel.color = lighter_color;
             this.pingLabel.alpha = showPing ? 1 :0;
+            this.pingSpotDefault = true;
+
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
@@ -156,7 +160,7 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
-                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe)
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe )//
                     {
                         this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
                     }
@@ -212,7 +216,6 @@ namespace RainMeadow
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
             this.pingLabel.text = $"({realPing}ms)";
 
-
             this.arrowSprite.x = pos.x;
             this.arrowSprite.y = pos.y;
             this.arrowSprite.rotation = RWCustom.Custom.VecToDeg(owner.pointDir * -1);
@@ -261,7 +264,10 @@ namespace RainMeadow
                         this.username.x = pos.x - (messageLabels[i]._textRect.width / 2);
                         this.messageLabels[i].x = pos.x + (username._textRect.width / 2);
                         this.pingLabel.x = this.messageLabels[i].x + (this.messageLabels[i]._textRect.width / 2) + 20f; // Position after the first message
-                        this.pingLabel.y = username.y;
+                        if (this.pingSpotDefault)
+                        {
+                            this.pingLabel.y = username.y;
+                        }
                     }
                     else
                     {
@@ -274,10 +280,23 @@ namespace RainMeadow
             else
             {
                 this.username.text = customization.nickname;
-                this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
-                this.pingLabel.y = username.y;
+                if (this.pingSpotDefault)
+                {
+                    this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
+                    this.pingLabel.y = username.y;
+                }
                 pos.y += 20;
             }
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                pingSpotDefault = !pingSpotDefault;
+            }
+            if (pingSpotDefault == false)
+            {
+                this.pingLabel.y = this.gradient.y - 25f;
+                this.pingLabel.x = pos.x;
+            }
+
 
 
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
