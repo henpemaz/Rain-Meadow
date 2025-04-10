@@ -114,7 +114,7 @@ namespace RainMeadow
         // get real, and customize
         private void AbstractCreature_Realize(On.AbstractCreature.orig_Realize orig, AbstractCreature self)
         {
-            if(OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 UnityEngine.Random.seed = self.ID.RandomSeed;
             }
@@ -270,19 +270,23 @@ namespace RainMeadow
                                 player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
-                        // throw everyone into the same room
-                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                        {
-                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
-                            {
-                                ac.realizedCreature.PlaceInRoom(callback.getSourceRoom());
-                            }
-                        }
+                        //// throw everyone into the same room
+                        //foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                        //{
+                        //    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        //    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
+                        //    {
+                        //        ac.realizedCreature.PlaceInRoom(callback.getSourceRoom());
+                        //    }
+                        //}
                     }
                     RainMeadow.Debug("warp-initiate: second phase execute");
                 }
                 orig(self, callback, warpData, useNormalWarpLoader);
+
+
+
+
             }
         }
 
@@ -348,7 +352,7 @@ namespace RainMeadow
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
                 WorldSession newWorldSession = self.worldLoader.world.GetResource() ?? throw new KeyNotFoundException();
                 bool isSameWorld = (self.activeWorld == self.worldLoader.world);
-                
+
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
                     // Regular gate switch

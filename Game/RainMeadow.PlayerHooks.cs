@@ -458,7 +458,6 @@ public partial class RainMeadow
             }
         }
 
-
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)

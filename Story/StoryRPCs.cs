@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rewired.Data.Mapping;
+using System;
 using System.Linq;
 
 namespace RainMeadow
@@ -115,7 +116,7 @@ namespace RainMeadow
             game.manager.nextSlideshow = MoreSlugcats.MoreSlugcatsEnums.SlideShowID.RivuletAltEnd;
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
         }
-        
+
         [RPCMethod]
         public static void GoToSpearmasterEnding(RPCEvent rpc)
         {
@@ -150,15 +151,8 @@ namespace RainMeadow
                     abstractRoom2.RealizeRoom(game.overWorld.activeWorld, game);
                 }
                 // throw everyone into the same room
-                foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                {
-                    if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                    if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
-                    {
-                        ac.realizedCreature.PlaceInRoom(abstractRoom2.realizedRoom);
-                    }
-                }
-                //
+
+
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
