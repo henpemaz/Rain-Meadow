@@ -358,7 +358,7 @@ namespace RainMeadow
                 {
                     // For watcher, which needs 4-letter worlds
                     if (rid.Length == 4 && lobby.worldSessions.TryGetValue(rid, out var r3)) return r3;
-                    if (rid.Length > 4 && lobby.worldSessions.TryGetValue(prefixRid, out var r4) && r4.roomSessions.TryGetValue(rid.Substring(4), out var waRoom)) return waRoom;
+                    if (rid.Length > 4 && lobby.worldSessions.TryGetValue(rid.Substring(0, 4), out var r4) && r4.roomSessions.TryGetValue(rid.Substring(4), out var waRoom)) return waRoom;
                 }
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
