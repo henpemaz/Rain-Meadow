@@ -37,7 +37,7 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? SelectableSlugcats[slugcatPageIndex];
+                return playerSelectedSlugcat ?? slugcatPages[slugcatPageIndex];
             }
             set
             {
