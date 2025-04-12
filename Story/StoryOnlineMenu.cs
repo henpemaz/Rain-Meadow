@@ -37,7 +37,7 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? SelectableSlugcats[slugcatPageIndex];
+                return playerSelectedSlugcat ?? slugcatColorOrder[slugcatPageIndex];
             }
             set
             {
@@ -49,7 +49,7 @@ namespace RainMeadow
         {
             get
             {
-                return currentSlugcat ?? SelectableSlugcats[slugcatPageIndex];
+                return currentSlugcat ?? slugcatColorOrder[slugcatPageIndex];
             }
             set
             {
