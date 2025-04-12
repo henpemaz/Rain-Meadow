@@ -14,10 +14,10 @@ namespace RainMeadow
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
             this.game = game;
-            pages.Add(new Page(this, null, "spectator", 0));
+            pages.Add(new(this, null, "spectator", 0));
             selectedObject = null;
-            pos = new Vector2(1180, 553);
-            pages[0].subObjects.Add(new Menu.MenuLabel(this, this.pages[0], this.Translate("PLAYERS"), this.pos, new(110, 30), true));
+            Vector2 pos = new(1180, 553);
+            pages[0].subObjects.Add(new Menu.MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
             playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
             pages[0].subObjects.Add(playerScroller);
             playerScroller.ConstrainScroll();
@@ -32,13 +32,14 @@ namespace RainMeadow
 
             for (int i = playerButtons.Count - 1; i >= 0; i--)
             {
-                PlayerButton button = playerButtons[i];
+                PlayerButton button = playerButtons[i] ;
                 if (newPlayers.Contains(button.player))
                 {
                     newPlayers.Remove(button.player);
                     continue;
                 }
-                playerScroller.RemoveButton(i, false);
+                playerScroller.ClearMenuObject(button);
+                playerScroller.buttons.Remove(button);
             }
             foreach (OnlinePlayer player in newPlayers)
             {
@@ -78,7 +79,6 @@ namespace RainMeadow
             spectatee = aC;
         }
         public AbstractCreature? spectatee;
-        public Vector2 pos;
         public RainWorldGame game;
         public ButtonScroller playerScroller;
         public class PlayerButton : ButtonScroller.ScrollerButton
@@ -158,12 +158,11 @@ namespace RainMeadow
                         {
                             BanHammer.BanUser(player);
                             menu.PlaySound(SoundID.MENU_Remove_Level);
+                            return;
                         }
-                        else
-                        {
-                            BanClickedOnce = true;
-                            menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
-                        }
+                        BanClickedOnce = true;
+                        menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+
                     };
                     subObjects.Add(kickbutton);
                 }
