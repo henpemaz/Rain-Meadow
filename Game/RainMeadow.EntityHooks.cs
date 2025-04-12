@@ -455,6 +455,11 @@ namespace RainMeadow
                             if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                             if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
                             {
+                                // do not get stuck on the bottom left
+                                if (opo1.isMine)
+                                {
+                                    ac.pos.Tile = new RWCustom.IntVector2((int)(self.specialWarpPointGoal.destPos.Value.x / 20f), (int)(self.specialWarpPointGoal.destPos.Value.y / 20f));
+                                }
                                 opo1.beingMoved = false;
                             }
                         }

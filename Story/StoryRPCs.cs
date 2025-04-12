@@ -143,7 +143,7 @@ namespace RainMeadow
                 var abstractRoom2 = game.overWorld.activeWorld.GetAbstractRoom(sourceRoomName);
                 if (abstractRoom2.realizedRoom == null)
                 {
-                    if (game.overWorld.game.roomRealizer != null)
+                    if (game.roomRealizer != null)
                     {
                         game.roomRealizer = new RoomRealizer(game.roomRealizer.followCreature, game.overWorld.activeWorld);
                     }
