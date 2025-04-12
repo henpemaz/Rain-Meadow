@@ -45,23 +45,20 @@ namespace RainMeadow
                 buttonScroll.UpdateAlpha(buttonScroll.Alpha);
             }
         }
-        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, global::Menu.SlugcatSelectMenu self) {
-            if (isStoryMode(out _)) {
-                var storymenu = self as StoryOnlineMenu;
-                if (storymenu == null) {
-                    Error("self was not a StoryOnlineMenu.");
-                } else if (storymenu.colorInterface == null) {
-                    storymenu.SetupSelectableSlugcats();
-                    Vector2 pos = new Vector2(1000f - (1366f - storymenu.manager.rainWorld.options.ScreenSize.x) / 2f, storymenu.manager.rainWorld.options.ScreenSize.y - 100f);
-                    self.colorInterface = self.GetColorInterfaceForSlugcat(storymenu.selectableSlugcats[storymenu.SelectedIndex], pos);
+        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self) 
+        {
+            if (self is StoryOnlineMenu sOM)
+            {
+                if (sOM.colorInterface == null)
+                {
+                    sOM.SetupSelectableSlugcats();
+                    Vector2 pos = new(1000f - (1366f - sOM.manager.rainWorld.options.ScreenSize.x) / 2f, sOM.manager.rainWorld.options.ScreenSize.y - 100f);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.CurrentSlugcat, pos);
                     self.pages[0].subObjects.Add(self.colorInterface);
-                    return;
+                    //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
                 }
-            }
-            
-
+            }       
             orig(self);
-            return;
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)

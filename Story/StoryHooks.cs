@@ -107,13 +107,12 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
 
             IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.Singal +=  IL_SlugcatSelectMenu_SingalFix;
-
+            IL.Menu.SlugcatSelectMenu.SetChecked += IL_SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
@@ -153,98 +152,110 @@ namespace RainMeadow
             }
         }
 
-        private void SlugcatSelectMenu_ctor(ILContext il)
-        {
-            try
-            {
-                // add colors checkbox regardless if remix disabled
-                var c = new ILCursor(il);
-                c.GotoNext(
-                    i => i.MatchStfld<Menu.SlugcatSelectMenu>("colorsCheckbox")
-                );
-                c.GotoPrev(MoveType.AfterLabel,
-                    i => i.MatchLdsfld<ModManager>("MMF"),
-                    i => i.MatchBrfalse(out _)
-                );
-                c.Index++;
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((bool showColorsCheckbox, Menu.SlugcatSelectMenu self) => showColorsCheckbox || (isStoryMode(out _) && self is StoryOnlineMenu));
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
-        }
-
         private void SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg(ILContext il)
         {
             try
             {
                 var c = new ILCursor(il);
-                c.GotoNext(MoveType.AfterLabel,
+                //patch going next page transfers your prev page "custom color on?"
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                /*c.GotoNext(MoveType.AfterLabel,
                     i => i.MatchLdsfld<ModManager>("MMF"),
                     i => i.MatchBrfalse(out _)
                 );
                 c.Index++;
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu));
+                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu)); dont overload remix flag as makes slider ids null*/
+
             }
             catch (Exception e)
             {
                 Logger.LogError(e);
             }
         }
-
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     return storyGameMode.saveToDisk;
                 }
-
-                if (box.IDString == "ONLINEFRIENDLYFIRE")
+                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     return storyGameMode.friendlyFire;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     return storyGameMode.requireCampaignSlugcat;
                 }
             }
-
             return orig(self, box);
         }
-
         private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     storyGameMode.saveToDisk = c;
                     return;
                 }
-
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
                     return;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     storyGameMode.requireCampaignSlugcat = c;
                     return;
                 }
             }
-
             orig(self, box, c);
         }
-	    
-	private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
+        private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                /*cursor.GotoNext(MoveType.After, x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((SlugcatStats.Name slugcat, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat : slugcat;
+                }); not required now i suppose*/
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error(ex);
+            }
+        }
+        private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
         {
             try
             {
@@ -278,32 +289,17 @@ namespace RainMeadow
             5	0011	stloc.0
             */
             // SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; becomes 
-            try {
+            try 
+            {
                 ILCursor c = new(context);
-                Func<Instruction, bool>[] predicates = {
-                    x => x.MatchLdarg(0),
-                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatColorOrder))),
-                    x => x.MatchLdarg(0),
-                    x => x.MatchLdfld(typeof(Menu.SlugcatSelectMenu).GetField(nameof(Menu.SlugcatSelectMenu.slugcatPageIndex))),
-                    x => x.MatchCallvirt(out _), // index into field
-                    x => x.MatchStloc(0)
-                };
-
-                c.GotoNext(MoveType.After, predicates);
-                var label = c.MarkLabel();
-                c.GotoPrev(MoveType.Before, predicates);
+                c.GotoNext(MoveType.After, x => x.MatchStloc(0));
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, 0);
-                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => {
-                    if (menu is StoryOnlineMenu storyOnlineMenu) {
-                        name = storyOnlineMenu.selectableSlugcats[storyOnlineMenu.SelectedIndex];
-                        return true;
-                    }
+                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => 
+                {
+                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
 
-                    return false;
                 });
-                c.Emit(OpCodes.Brtrue, label);
-                
 
             } catch(Exception except) {
                 Logger.LogError(except);
@@ -317,8 +313,8 @@ namespace RainMeadow
             orig(self, slider, f);
             if (isStoryMode(out _) && self.colorInterface is not null)
             {
-                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
-                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
+                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(0)?.color ?? rainMeadowOptions.BodyColor.Value; //safe check just in case!
+                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(1)?.color ?? rainMeadowOptions.EyeColor.Value;
             }
         }
 

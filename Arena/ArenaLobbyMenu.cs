@@ -21,10 +21,7 @@ namespace RainMeadow
         public MenuLabel currentLevelProgression;
 
         public MenuLabel displayCurrentGameMode;
-
-        private SimplerSymbolButton viewNextPlayer;
-        private SimplerSymbolButton viewPrevPlayer;
-
+        private SimplerSymbolButton viewNextPlayer, viewPrevPlayer, colorConfigButton;
         private int holdPlayerPosition;
         private int currentPlayerPosition;
         private bool initiatedStartGameForClient;
@@ -35,6 +32,9 @@ namespace RainMeadow
         int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
 
         public SimplerButton[] usernameButtons;
+        public SimplerButton forceReady;
+        private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
+
         public bool meUsernameButtonCreated = false;
         public bool meClassButtonCreated = false;
 
@@ -52,6 +52,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 ArenaHelpers.ResetOnReturnToMenu(arena, this);
+                arena.ResetForceReadyCountDown();
             }
 
             allSlugs = ArenaHelpers.AllSlugcats();
@@ -153,6 +154,10 @@ namespace RainMeadow
         {
             BuildPlayerSlots();
             AddAbovePlayText();
+            if (OnlineManager.lobby.isOwner)
+            {
+                AddForceReadyUp();
+            }
 
             if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
             {
@@ -185,7 +190,18 @@ namespace RainMeadow
                 this.currentLevelProgression = new MenuLabel(this, pages[0], this.Translate($"Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount, new Vector2(displayCurrentGameMode.pos.x, usernameButtons[0].pos.y + 150f), new Vector2(10f, 10f), false);
                 this.currentLevelProgression.label.alignment = FLabelAlignment.Left;
                 this.pages[0].subObjects.Add(currentLevelProgression);
+                if (ModManager.MMF)
+                {
+                    colorConfigButton = new(this, pages[0], "Kill_Slugcat", "", usernameButtons[0].pos + new Vector2(-44, 0f));
+                    colorConfigButton.OnClick += (_) =>
+                    {
+                        manager.ShowDialog(new ColorSlugcatDialog(manager, arena.avatarSettings.playingAs, () => { }));
+                    };
+                    pages[0].subObjects.Add(colorConfigButton);
+                    MutualHorizontalButtonBind(colorConfigButton, usernameButtons[0]);
+                }
             }
+          
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -196,8 +212,6 @@ namespace RainMeadow
             page.subObjects.Add(b);
             return b;
         }
-
-
 
 
         void BuildPlayerSlots()
@@ -361,6 +375,7 @@ namespace RainMeadow
             {
                 return;
             }
+            arena.avatarSettings.currentColors = GetPersonalColors(arena.avatarSettings.playingAs);
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
@@ -371,12 +386,42 @@ namespace RainMeadow
             this.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
         }
-
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (colorConfigButton != null)
+            {
+                colorConfigButton.symbolSprite.alpha = this.IsCustomColorEnabled(arena.avatarSettings.playingAs) ? 1 : 0.2f;
+            }
+        }
         public override void Update()
         {
             base.Update();
 
             if (OnlineManager.lobby == null) return;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (this.forceReady != null)
+                {
+                    if (arena.forceReadyCountdownTimer > 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = true;
+                        this.forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                    }
+                    else
+                    {
+                        this.forceReady.menuLabel.text = forceReadyText;
+                    }
+
+                    if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.forceReadyCountdownTimer <= 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                    }
+                }
+
+
+            }
 
             if (this.totalClientsReadiedUpOnPage != null)
             {
@@ -501,10 +546,7 @@ namespace RainMeadow
 
             }
 
-
         }
-
-
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
@@ -532,7 +574,6 @@ namespace RainMeadow
             {
                 infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
-
             if (OnlineManager.lobby.isOwner)
             {
                 if (message == "NEXTONLINEGAME")
@@ -582,7 +623,6 @@ namespace RainMeadow
 
             }
         }
-
 
 
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
@@ -673,8 +713,11 @@ namespace RainMeadow
                 }
                 AddUsernames();
                 AddClassButtons();
-
                 HandleLobbyProfileOverflow();
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.ResetForceReadyCountDownShort();
+                }
 
                 if (this != null)
                 {
@@ -686,7 +729,10 @@ namespace RainMeadow
 
         }
 
-
+        private List<Color> GetPersonalColors(SlugcatStats.Name id)
+        {
+            return [..this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
+        }
         private void AddClassButtons()
         {
             classButtons = new ArenaOnlinePlayerJoinButton[OnlineManager.players.Count];
@@ -1056,6 +1102,31 @@ namespace RainMeadow
             this.pages[0].subObjects.Add(viewNextPlayer);
             this.pages[0].subObjects.Add(viewPrevPlayer);
         }
+
+        private void AddForceReadyUp()
+        {
+
+            Action<SimplerButton> forceReadyClick = (_) =>
+            {
+                for (int i = 0; i < OnlineManager.players.Count; i++)
+                {
+                    var player = OnlineManager.players[i];
+                    if (player.isMe)
+                    {
+                        this.playButton.Clicked();
+                        continue;
+                    }
+                    if (!arena.playersReadiedUp.list.Contains(player.id))
+                    {
+                        player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReadyUp);
+
+                    }
+                }
+                arena.ResetForceReadyCountDownShort();
+            };
+            this.forceReady = CreateButton(this.Translate(forceReadyText), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+        }
+
 
     }
 }

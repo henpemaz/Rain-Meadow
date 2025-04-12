@@ -488,6 +488,7 @@ namespace RainMeadow
                     int length = creature.room.abstractRoom.connections.Length;
                     for (int i = 0; i < length; i++)
                     {
+                        if (creature.room.exitAndDenIndex.Length == i) return; // some MSC gates aren't properly set up? might also be loadworldas issues
                         var pos = creature.room.MiddleOfTile(creature.room.exitAndDenIndex[i]);
                         if (Custom.DistLess(pos, creature.mainBodyChunk.pos, 500f)) // close enough
                         {

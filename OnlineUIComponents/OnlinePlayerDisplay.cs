@@ -1,7 +1,9 @@
-﻿using RWCustom;
+using RWCustom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace RainMeadow
 {
@@ -11,6 +13,7 @@ namespace RainMeadow
         public FSprite gradient;
         public FLabel username;
         public List<FLabel> messageLabels = new();
+        public FLabel pingLabel;
         public FSprite slugIcon;
         public OnlinePlayer player;
         public class Message
@@ -42,8 +45,9 @@ namespace RainMeadow
         public int onlineTimeSinceSpawn;
         public string iconString;
         public bool flashIcons;
-
         public float fadeSpeed;
+        public int realPing;
+        public bool showPing;
 
         SlugcatCustomization customization;
 
@@ -119,6 +123,14 @@ namespace RainMeadow
             this.username.x = -1000f;
             this.username.color = lighter_color;
 
+            showPing = false;
+            this.realPing = System.Math.Max(1, player.ping - 16);
+            this.pingLabel = new FLabel(Custom.GetFont(), $"({realPing}ms)"); //{System.Math.Max(1, player.ping - 16)})
+            owner.hud.fContainers[0].AddChild(this.pingLabel);
+            this.pingLabel.color = lighter_color;
+            this.pingLabel.alpha = showPing ? 1 :0;
+           
+
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
             this.arrowSprite.alpha = 0f;
@@ -133,6 +145,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            this.realPing = System.Math.Max(1, player.ping - 16);
             onlineTimeSinceSpawn++;
 
             this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
@@ -146,6 +159,10 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe  )//
+                    {
+                        this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
+                    }
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
@@ -163,7 +180,7 @@ namespace RainMeadow
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
                     else if (owner.PlayerInGate) slugIcon.SetElementByName("ShortcutGate");
                     else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                     
+
                     else slugIcon.SetElementByName(iconString);
 
                     if (flashIcons) this.alpha = Mathf.Lerp(lighter_color.a, 0f, (Mathf.Cos(owner.owner.hudCounter / fadeSpeed) + 1f) / 2f);
@@ -176,6 +193,7 @@ namespace RainMeadow
 
                 this.counter++;
             }
+
             if (!show) this.lastAlpha = this.alpha;
 
             for (int i = 0; i < messageQueue.Count;)
@@ -195,6 +213,7 @@ namespace RainMeadow
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             var pos = vector;
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
+            this.pingLabel.text = $"({realPing}ms)";
 
             this.arrowSprite.x = pos.x;
             this.arrowSprite.y = pos.y;
@@ -205,9 +224,27 @@ namespace RainMeadow
             this.gradient.scale = Mathf.Lerp(80f, 110f, num) / 16f;
             this.gradient.alpha = 0.17f * Mathf.Pow(num, 2f);
 
+
+
             pos.y += 20f;
             this.username.x = pos.x;
             this.username.y = pos.y;
+
+            if (this.realPing <= 100)
+            {
+                pingLabel.color = Color.green;
+            }
+
+
+            if (this.realPing > 100)
+            {
+                pingLabel.color = Color.yellow;
+            }
+
+            if (this.realPing > 200)
+            {
+                pingLabel.color = Color.red;
+            }
 
             if (messageQueue.Count > 0)
             {
@@ -225,6 +262,11 @@ namespace RainMeadow
                         first = false;
                         this.username.x = pos.x - (messageLabels[i]._textRect.width / 2);
                         this.messageLabels[i].x = pos.x + (username._textRect.width / 2);
+                        this.pingLabel.x = this.messageLabels[i].x + (this.messageLabels[i]._textRect.width / 2) + 20f; // Position after the first message
+                        if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
+                        {
+                            this.pingLabel.y = username.y;
+                        }
                     }
                     else
                     {
@@ -237,8 +279,32 @@ namespace RainMeadow
             else
             {
                 this.username.text = customization.nickname;
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
+                {
+                    this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
+                    this.pingLabel.y = username.y;
+                }
                 pos.y += 20;
             }
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
+            }
+            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
+            {
+                this.pingLabel.y = this.gradient.y - 25f;
+                this.pingLabel.x = pos.x;
+            }
+
+            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 2)
+            {
+                this.pingLabel.alpha = 0;
+            }
+            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
+            {
+                RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
+            }
+
 
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
