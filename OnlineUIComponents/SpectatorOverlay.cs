@@ -17,7 +17,7 @@ namespace RainMeadow
             pages.Add(new(this, null, "spectator", 0));
             selectedObject = null;
             Vector2 pos = new(1180, 553);
-            pages[0].subObjects.Add(new Menu.MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
+            pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
             playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
             pages[0].subObjects.Add(playerScroller);
             playerScroller.ConstrainScroll();
@@ -81,7 +81,7 @@ namespace RainMeadow
         public AbstractCreature? spectatee;
         public RainWorldGame game;
         public ButtonScroller playerScroller;
-        public class PlayerButton : ButtonScroller.ScrollerButton
+        public class PlayerButton : ButtonScroller.ScrollerButton //makes sense to just remove the pos property
         {
             public bool BanClickedOnce
             {
@@ -96,7 +96,7 @@ namespace RainMeadow
                         HoldKick = true;
                         banClickedOnce = value;
                         labelColor = banClickedOnce ? MenuColor(MenuColors.DarkRed) : MenuColor(MenuColors.MediumGrey);
-                        Description = banClickedOnce ? "Press again to ban player! Select another button if you dont want to!" : "";
+                        Description = banClickedOnce ? "Press again to ban player!" : "";
                         menu.infolabelDirty = true;
                         HoldKick = false;
                     }
@@ -156,7 +156,7 @@ namespace RainMeadow
                     {
                         if (BanClickedOnce)
                         {
-                            BanHammer.BanUser(player);
+                            BanHammer.BanUser(this.player);
                             menu.PlaySound(SoundID.MENU_Remove_Level);
                             return;
                         }
@@ -166,7 +166,7 @@ namespace RainMeadow
                     };
                     subObjects.Add(kickbutton);
                 }
-                if (kickbutton == null && player != OnlineManager.mePlayer)  //prevent double sprites and double updating
+                if (kickbutton == null && player != OnlineManager.mePlayer)
                 {
                     kickbutton = new(menu, this, ClientMuteSymbol, "MUTEPLAYER", new(this.size.x + 10, 0));
                     kickbutton.OnClick += (_) =>
