@@ -20,7 +20,6 @@ namespace RainMeadow
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
             playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
             pages[0].subObjects.Add(playerScroller);
-            playerScroller.ConstrainScroll();
         }
 
         private bool UpdateList()
@@ -38,14 +37,13 @@ namespace RainMeadow
                     newPlayers.Remove(button.player);
                     continue;
                 }
-                playerScroller.ClearMenuObject(button);
-                playerScroller.buttons.Remove(button);
+                playerScroller.RemoveButton(button, false);
             }
             foreach (OnlinePlayer player in newPlayers)
             {
                 OnlinePhysicalObject? foundPlayer = realizedPlayers.FirstOrDefault(x => x.owner == player);
-                PlayerButton button = foundPlayer == null? new(this, playerScroller, player, null, OnlineManager.lobby.isOwner && !player.isMe) : new(this, playerScroller, player, foundPlayer, OnlineManager.lobby.isOwner && !foundPlayer.isMine);
-                playerScroller.AddScrollObjects(button);
+                PlayerButton playerButton = new(this, playerScroller, player, foundPlayer, playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && (foundPlayer == null ? !player.isMe : !foundPlayer.isMine));
+                playerScroller.AddScrollObjects(playerButton);
             }
             playerScroller.ConstrainScroll();
             return true;
@@ -130,7 +128,6 @@ namespace RainMeadow
                             RainMeadow.Debug($"Removed {name} from mute list");
                             OnlineManager.lobby.gameMode.mutedPlayers.Remove(name);
                         }
-                        menu.PlaySound(value? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
                         kickbutton?.UpdateSymbol(ClientMuteSymbol);
                     }
                 }
@@ -140,7 +137,7 @@ namespace RainMeadow
             {
                 get => menu as SpectatorOverlay;
             }
-            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, OnlinePhysicalObject? opo, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.name, Vector2.zero, size == default ? new(110, 30) : size)
+            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, OnlinePhysicalObject? opo, Vector2 pos, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.name, pos, size == default ? new(110, 30) : size)
             {
                 this.player = player;
                 this.opo = opo;
@@ -172,6 +169,7 @@ namespace RainMeadow
                     kickbutton.OnClick += (_) =>
                     {
                         MutePlayer ^= true;
+                        menu.PlaySound(MutePlayer ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
                     };
                     subObjects.Add(kickbutton);
                 }
