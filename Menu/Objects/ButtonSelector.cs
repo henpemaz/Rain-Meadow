@@ -36,6 +36,14 @@ namespace RainMeadow
                 scroller.buttonSpacing = buttonSpacing;
             }
         }
+        public virtual void RefreshScrollerList()
+        {
+            if (scroller != null)
+            {
+                CloseList(false, false);
+                OpenList(false);
+            }
+        }
         public void OpenCloseList()
         {
             OpenCloseList(scroller == null, true, true);
