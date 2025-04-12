@@ -37,7 +37,7 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? slugcatPages[slugcatPageIndex];
+                return playerSelectedSlugcat ?? SelectableSlugcats[slugcatPageIndex];
             }
             set
             {
@@ -49,7 +49,7 @@ namespace RainMeadow
         {
             get
             {
-                return currentSlugcat ?? slugcatPages[slugcatPageIndex];
+                return currentSlugcat ?? SelectableSlugcats[slugcatPageIndex];
             }
             set
             {
@@ -185,7 +185,7 @@ namespace RainMeadow
             }
             if (slugcatSelector != null)
             {
-                slugcatSelector.slug = CurrentSlugcat;
+                slugcatSelector.Slug = CurrentSlugcat;
             }
 
         }
@@ -345,7 +345,7 @@ namespace RainMeadow
             List<StoryMenuSlugcatButton> slugcatButtons = [];
             for (int i = 0; i < SelectableSlugcats.Length; i++)
             {
-                if (SelectableSlugcats[i] != slugcatSelector.slug)
+                if (SelectableSlugcats[i] != slugcatSelector.Slug)
                 {
                     StoryMenuSlugcatButton storyMenuSlugcatButton = new(this, buttonScroller, SelectableSlugcats[i], (scug) =>
                     {
@@ -361,7 +361,7 @@ namespace RainMeadow
         {
             if (colorsCheckbox != null)
             {
-                colorsCheckbox.Checked = this.IsCustomColorEnabled(scug); //automatically opens color interface if enabled
+                colorsCheckbox.Checked = colorChecked; //this.IsCustomColorEnabled(scug); //automatically opens color interface if enabled
             }
         }
     }

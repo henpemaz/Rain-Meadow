@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HarmonyLib;
 using Menu;
 using UnityEngine;
 
@@ -49,13 +50,23 @@ namespace RainMeadow
     }
     public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name slugcat, Action<SlugcatStats.Name> onReceieveSlugcat, Vector2 size = default) : base(menu, owner, menu.Translate(SlugcatStats.getSlugcatName(slugcat)), Vector2.zero, size == default? new(110, 30) : size)
+        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name slugcat, Action<SlugcatStats.Name> onReceieveSlugcat, Vector2 size = default) : base(menu, owner, "", Vector2.zero, size == default? new(110, 30) : size)
         {
+            slug = slugcat;
             OnClick += (_) =>
             {
-                onReceieveSlugcat?.Invoke(slugcat);
+                onReceieveSlugcat?.Invoke(slug);
             };
         }
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (menuLabel != null)
+            {
+                menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
+            }
+        }
+        public SlugcatStats.Name slug;
     }
     public class StoryMenuSlugcatSelector : ButtonSelector
     {
@@ -73,6 +84,21 @@ namespace RainMeadow
             if (menuLabel != null)
             {
                 menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
+            }
+        }
+        public SlugcatStats.Name Slug
+        {
+            get
+            {
+                return slug;
+            }
+            set
+            {
+                if (value != slug)
+                {
+                    slug = value;
+                    RefreshScrollerList();
+                }
             }
         }
         public SlugcatStats.Name slug;
