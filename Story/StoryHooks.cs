@@ -944,6 +944,9 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
         {
+            // ok but remember the watcher hates good portals
+            self.GetStorySession.importantWarpPointTransferedEntities.Clear();
+            self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
             if (isStoryMode(out var storyGameMode))
             {
                 if (OnlineManager.lobby.isOwner)
@@ -960,7 +963,6 @@ namespace RainMeadow
                     return;
                 }
             }
-
             orig(self, malnourished, fromWarpPoint);
         }
 

@@ -270,15 +270,7 @@ namespace RainMeadow
                                 player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
-                        // throw everyone into the same room
-                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                        {
-                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
-                            {
-                                ac.realizedCreature.PlaceInRoom(callback.getSourceRoom());
-                            }
-                        }
+                        // do nat throw everyone into the same room?
                     }
                     RainMeadow.Debug("warp-initiate: second phase execute");
                 }
@@ -338,6 +330,12 @@ namespace RainMeadow
             {
                 orig(self, callback, roomName);
             }
+        }
+
+        internal static bool IsNonHostSlugcat(AbstractPhysicalObject apo)
+        {
+            // redundant because host controls -- && ac.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
+            return apo is AbstractCreature ac && OnlinePhysicalObject.map.TryGetValue(ac, out var opo) && opo.owner == OnlineManager.lobby.owner; // must only be host
         }
 
         // world transition at gates
@@ -401,6 +399,7 @@ namespace RainMeadow
                     if (self.specialWarpCallback is Watcher.WarpPoint warpPoint)
                     {
                         var room = warpPoint.room; //this shall never be null
+                        var destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
                         if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
                         {
                             Debug("Next level switching");
@@ -435,10 +434,31 @@ namespace RainMeadow
                             }
                         }
                         Debug("Watcher warp switchery 1");
-                        // THIS MAY BE A BAD IDEA; but we can't let the world loader delete our players
+                        //it will move places
+                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                        {
+                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
+                            {
+                                opo1.beingMoved = true;
+                            }
+                        }
                         orig(self, warpUsed);
-
-                        self.game.cameras[0].WarpMoveCameraPrecast((warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom, (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam);
+                        // just remove anyone NOT the host :)
+                        //self.game.GetStorySession.pendingWarpPointTransferObjects.RemoveAll(IsNonHostSlugcat);
+                        self.game.GetStorySession.pendingWarpPointTransferObjects.Clear();
+                        self.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
+                        self.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
+                        //no longer moves places
+                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                        {
+                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
+                            {
+                                opo1.beingMoved = false;
+                            }
+                        }
+                        self.game.cameras[0].WarpMoveCameraPrecast(destRoom, (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam);
                     }
                     else
                     {
@@ -451,6 +471,7 @@ namespace RainMeadow
                     orig(self, warpUsed);
                 }
 
+                // apo's in stomach (isn't realized but has to be "carried" over)
                 foreach (var absplayer in self.game.Players)
                 {
                     if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
