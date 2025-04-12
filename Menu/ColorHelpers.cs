@@ -75,5 +75,9 @@ namespace RainMeadow
         {
             return Custom.HSL2RGB(hsl.x % 1, hsl.y, hsl.z);
         }
+        public static List<Color> GetCustomColors(this Menu.Menu menu, SlugcatStats.Name id)
+        {
+            return menu.IsCustomColorEnabled(id)? [..menu.GetMenuHSLs(id).Select(HSL2RGB)] : [..PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
+        }
     }
 }

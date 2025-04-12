@@ -27,8 +27,9 @@ namespace RainMeadow
             set
             {
                 scrollOffset = value;
-                ConstrainScroll();
+                DirectConstrainScroll();
                 scrollSliderValue = MaxDownScroll > 0 ? Mathf.InverseLerp(MaxDownScroll, 0, scrollOffset) : 1; //lower slider value means down, higher means up
+
             }
         }
         public float LowerBound => 0;
@@ -103,9 +104,13 @@ namespace RainMeadow
         {
             DownScrollOffset += addDir;
         }
-        public void ConstrainScroll()
+        public void ConstrainScroll() //for clamping scroll, also updating slider
         {
-            scrollOffset = Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
+            DownScrollOffset = Mathf.Clamp(DownScrollOffset, 0, MaxDownScroll);
+        }
+        protected void DirectConstrainScroll() //for direct scroll clamp, like for DownScrollOffset set method, this doesnt not update slider value
+        {
+            scrollOffset =  Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
         }
         public List<T> GetSpecificButtons<T>()
         {
