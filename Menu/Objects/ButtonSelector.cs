@@ -40,8 +40,9 @@ namespace RainMeadow
         {
             if (scroller != null)
             {
-                CloseList(false, false);
-                OpenList(false);
+                scroller.RemoveAllButtons(false);
+                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
+                scroller.ConstrainScroll();
             }
         }
         public void OpenCloseList()
