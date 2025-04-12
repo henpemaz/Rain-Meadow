@@ -133,13 +133,21 @@ namespace RainMeadow
         }
         public void RemoveButton(int index, bool constrainScroll)
         {
-            if (buttons.Count > index)
+            RemoveButton(buttons.GetValueOrDefault(index), constrainScroll);
+        }
+        public void RemoveButton(IPartOfButtonScroller? button)
+        {
+            RemoveButton(button, true);
+        }
+        public void RemoveButton(IPartOfButtonScroller? button, bool constrainScroll)
+        {
+            if (button != null)
             {
-                if (buttons[index] is MenuObject menuObj)
+                if (button is MenuObject menuObj)
                 {
                     this.ClearMenuObject(menuObj);
                 }
-                buttons.RemoveAt(index);
+                buttons.Remove(button);
             }
             if (constrainScroll)
             {
