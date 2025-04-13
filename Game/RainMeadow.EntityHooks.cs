@@ -245,8 +245,7 @@ namespace RainMeadow
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
-                {
-                    // tell host to move everyone else
+                { // tell host to move everyone else
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PrinceSetHighestConversation, newValue);
                 }
                 StoryRPCs.PrinceSetHighestConversation(null, newValue);
@@ -264,13 +263,12 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("warp-initiate: first send rpc");
                         foreach (var player in OnlineManager.players)
-                        {
+                        { // do nat throw everyone into the same room?
                             if (!player.isMe)
                             {
                                 player.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, callback.getSourceRoom().abstractRoom.name, warpData.ToString(), useNormalWarpLoader);
                             }
                         }
-                        // do nat throw everyone into the same room?
                     }
                     RainMeadow.Debug("warp-initiate: second phase execute");
                 }
@@ -400,6 +398,7 @@ namespace RainMeadow
                     {
                         var room = warpPoint.room; //this shall never be null
                         var destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
+                        var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
                         if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
                         {
                             Debug("Next level switching");
@@ -444,26 +443,24 @@ namespace RainMeadow
                             }
                         }
                         orig(self, warpUsed);
-                        // just remove anyone NOT the host :)
-                        //self.game.GetStorySession.pendingWarpPointTransferObjects.RemoveAll(IsNonHostSlugcat);
+                        // remove uneeded item transportation between warps (makes dupes for no reason)
+                        // we should rather manually do it ourselves, and remember to always identify APOs that traverse regions
                         self.game.GetStorySession.pendingWarpPointTransferObjects.Clear();
                         self.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
                         self.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
-                        //no longer moves places
                         foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                        {
+                        { //no longer moves places
                             if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
                             if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac && ac.realizedCreature != null)
                             {
-                                // do not get stuck on the bottom left
                                 if (opo1.isMine)
-                                {
+                                { // do not get stuck on the bottom left
                                     ac.pos.Tile = new RWCustom.IntVector2((int)(self.specialWarpPointGoal.destPos.Value.x / 20f), (int)(self.specialWarpPointGoal.destPos.Value.y / 20f));
                                 }
                                 opo1.beingMoved = false;
                             }
                         }
-                        self.game.cameras[0].WarpMoveCameraPrecast(destRoom, (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam);
+                        self.game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
                     }
                     else
                     {
@@ -475,21 +472,35 @@ namespace RainMeadow
                     // special warp, don't bother with room items
                     orig(self, warpUsed);
                 }
-                foreach (var absplayer in self.game.Players)
-                {
-                    if (absplayer.realizedCreature is Player player)
+
+                if (warpUsed)
+                { // and for warps we require a more manual approach; to properly make aware of old APOs entering a new region
+                    foreach (var absplayer in self.game.Players)
                     {
-                        player.slugOnBack?.DropSlug();
-                        if (player.objectInStomach is AbstractPhysicalObject apo)
-                        { // apo's in stomach (isn't realized but has to be "carried" over)
-                            newWorldSession.ApoEnteringWorld(apo);
-                        }
-                        for (int k = 0; k < player.grasps.Length; k++)
-                        { // grasped objects (i.e toys from WAUA_TOYS)
-                            if (player.grasps[k] != null && player.grasps[k].grabbed != null)
-                            {
-                                newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
+                        if (absplayer.realizedCreature is Player player)
+                        {
+                            player.slugOnBack?.DropSlug();
+                            if (player.objectInStomach is AbstractPhysicalObject apo)
+                            { // apo's in stomach (isn't realized but has to be "carried" over)
+                                newWorldSession.ApoEnteringWorld(apo);
                             }
+                            for (int k = 0; k < player.grasps.Length; k++)
+                            { // grasped objects (i.e toys from WAUA_TOYS)
+                                if (player.grasps[k] != null && player.grasps[k].grabbed != null)
+                                {
+                                    newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                { //normal code for gates
+                    foreach (var absplayer in self.game.Players)
+                    {
+                        if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                        {
+                            newWorldSession.ApoEnteringWorld(apo);
                         }
                     }
                 }
@@ -512,9 +523,8 @@ namespace RainMeadow
                     MeadowMusic.NewWorld(self.activeWorld);
                 }
 
-                // force clients to warp AFTER the host
                 if (OnlineManager.lobby.isOwner && warpUsed)
-                {
+                { // force clients to warp AFTER the host
                     foreach (var player in OnlineManager.players)
                     {
                         if (!player.isMe)
