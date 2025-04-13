@@ -72,7 +72,7 @@ namespace RainMeadow
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
             DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
-            Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple //visual glitches and does not really hurt to exclude
+            Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };
 
         public override bool AllowedInMode(PlacedObject item)

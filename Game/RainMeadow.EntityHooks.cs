@@ -19,6 +19,7 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
+            IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -227,6 +228,35 @@ namespace RainMeadow
             orig(self, eu); // either host or singleplayer
         }
 
+        public void Watcher_Barnacle_LoseShell(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                ILLabel endFirstLoop = null;
+                c.GotoNext(moveType: MoveType.Before, //code that can be run by client safely
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdcI4(20),
+                    i => i.MatchStfld<Watcher.Barnacle>("temporaryDamageImmunity")
+                );
+                //c.MoveAfterLabels();
+                c.MarkLabel(skip);
+                c.GotoPrev(moveType: MoveType.Before, // right before 2 while loops
+                    i => i.MatchLdcI4(0),
+                    i => i.MatchStloc(0),
+                    i => i.MatchBr(out endFirstLoop)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby == null || (self.abstractCreature is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo) && opo.isMine));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
         public void Watcher_PrinceBehavior_InitateConversation(On.Watcher.PrinceBehavior.orig_InitateConversation orig, Watcher.PrinceBehavior self)
         {
             orig(self);
@@ -396,12 +426,12 @@ namespace RainMeadow
                 {
                     if (self.specialWarpCallback is Watcher.WarpPoint warpPoint)
                     {
-                        var room = warpPoint.room; //this shall never be null
-                        var destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
+                        Room room = warpPoint.room; //this shall never be null
+                        string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
                         var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
                         if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
                         {
-                            Debug("Next level switching");
+                            RainMeadow.Debug("Next level switching into");
                             var entities = room.abstractRoom.entities;
                             for (int i = entities.Count - 1; i >= 0; i--)
                             {
@@ -411,7 +441,7 @@ namespace RainMeadow
                                     if (!oe.isMine)
                                     {
                                         // not-online-aware removal
-                                        Debug("removing remote entity from game " + oe);
+                                        RainMeadow.Debug("removing remote entity from game " + oe);
                                         oe.beingMoved = true;
                                         if (oe.apo.realizedObject is Creature c && c.inShortcut)
                                         {
@@ -425,14 +455,14 @@ namespace RainMeadow
                                     }
                                     else // mine leave the old online world elegantly
                                     {
-                                        Debug("removing my entity from online " + oe);
+                                        RainMeadow.Debug("removing my entity from online " + oe);
                                         oe.ExitResource(roomSession3);
                                         oe.ExitResource(roomSession3.worldSession);
                                     }
                                 }
                             }
                         }
-                        Debug("Watcher warp switchery 1");
+                        RainMeadow.Debug("Watcher warp switchery 1 {destRoom}");
                         //it will move places
                         foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                         {

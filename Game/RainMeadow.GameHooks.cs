@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
@@ -439,6 +439,24 @@ namespace RainMeadow
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
+                //
+                // section 2: prevent toys in WAUA_TOYS from duplicating
+                c = new ILCursor(il);
+                for (int i = 0; i < 4; i++)
+                { // SpinToy, BallToy, SoftToy, WeirdToy
+                    var skipApo = il.DefineLabel();
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<RainWorldGame>("get_GetStorySession"),
+                        i => i.MatchLdfld<StoryGameSession>("saveState"),
+                        i => i.MatchLdfld<SaveState>("deathPersistentSaveData"),
+                        i => i.MatchLdfld<DeathPersistentSaveData>("sawVoidBathSlideshow"),
+                        i => i.MatchBrfalse(out skipApo)
+                    );
+                    //c.MoveAfterLabels();
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
+                    c.Emit(OpCodes.Brfalse, skipApo);
+                }
             }
             catch (Exception e)
             {
