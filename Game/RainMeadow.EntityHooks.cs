@@ -475,13 +475,23 @@ namespace RainMeadow
                     // special warp, don't bother with room items
                     orig(self, warpUsed);
                 }
-
-                // apo's in stomach (isn't realized but has to be "carried" over)
                 foreach (var absplayer in self.game.Players)
                 {
-                    if (absplayer.realizedCreature is Player player && player.objectInStomach is AbstractPhysicalObject apo)
+                    if (absplayer.realizedCreature is Player player)
                     {
-                        newWorldSession.ApoEnteringWorld(apo);
+                        // apo's in stomach (isn't realized but has to be "carried" over)
+                        if (player.objectInStomach is AbstractPhysicalObject apo)
+                        {
+                            newWorldSession.ApoEnteringWorld(apo);
+                        }
+                        // grasped objects (i.e toys from WAUA_TOYS)
+                        for (int k = 0; k < player.grasps.Length; k++)
+                        {
+                            if (player.grasps[k] != null && player.grasps[k].grabbed != null)
+                            {
+                                newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
+                            }
+                        }
                     }
                 }
 
