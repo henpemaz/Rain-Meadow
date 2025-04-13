@@ -86,10 +86,10 @@ namespace RainMeadow
                 bodyColors.Add(bodyColor, num);
                 num++;
             }
-            menu.TryMutualBind(prevButton, bodyButtons.FirstOrDefault(), true);
-            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton, true);
             bodyButtons = [.. buttons];
             bodyColorBorders = [.. borders];
+            menu.TryMutualBind(prevButton, bodyButtons.FirstOrDefault(), true);
+            menu.TryMutualBind(bodyButtons.LastOrDefault(), nextButton, true);
             (menu as ColorSlugcatDialog)?.RemoveColorInterface();
         }
         public void SafeSaveColor()
