@@ -71,7 +71,8 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
-            DLCSharedEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
+            DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
+            Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple //visual glitches and does not really hurt to exclude
         };
 
         public override bool AllowedInMode(PlacedObject item)
@@ -107,6 +108,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //does not need to be kept track of
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)

@@ -479,14 +479,13 @@ namespace RainMeadow
                 {
                     if (absplayer.realizedCreature is Player player)
                     {
-                        // apo's in stomach (isn't realized but has to be "carried" over)
+                        player.slugOnBack?.DropSlug();
                         if (player.objectInStomach is AbstractPhysicalObject apo)
-                        {
+                        { // apo's in stomach (isn't realized but has to be "carried" over)
                             newWorldSession.ApoEnteringWorld(apo);
                         }
-                        // grasped objects (i.e toys from WAUA_TOYS)
                         for (int k = 0; k < player.grasps.Length; k++)
-                        {
+                        { // grasped objects (i.e toys from WAUA_TOYS)
                             if (player.grasps[k] != null && player.grasps[k].grabbed != null)
                             {
                                 newWorldSession.ApoEnteringWorld(player.grasps[k].grabbed.abstractPhysicalObject);
