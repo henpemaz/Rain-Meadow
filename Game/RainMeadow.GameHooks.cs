@@ -26,6 +26,7 @@ namespace RainMeadow
             On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
+            On.RegionState.InfectRegionRoomWithSentientRot += RegionState_InfectRegionRoomWithSentientRot;
 
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
@@ -347,6 +348,29 @@ namespace RainMeadow
 
 
             orig(self);
+        }
+
+        private bool RegionState_InfectRegionRoomWithSentientRot(On.RegionState.orig_InfectRegionRoomWithSentientRot orig, RegionState self, float amount, string roomName)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
+            {
+                if (orig(self, amount, roomName))
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.InfectRegionRoomWithSentientRot, amount, roomName);
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return orig(self, amount, roomName);
+            }
         }
 
         // Prevent gameplay items

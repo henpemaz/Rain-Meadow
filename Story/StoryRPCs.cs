@@ -178,6 +178,22 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void InfectRegionRoomWithSentientRot(RPCEvent rpc, float amount, string roomName)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            RainMeadow.Debug($"setting infection of {roomName} to {amount}");
+            // fill if does not exist - otherwise simply set :)
+            int regionNumber = game.overWorld.activeWorld.region.regionNumber;
+            if (!game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression.ContainsKey(roomName))
+            {
+                RegionState.SentientRotState value = new RegionState.SentientRotState();
+                game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression[roomName] = value;
+            }
+            game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression[roomName].rotIntensity = amount;
+        }
+
+        [RPCMethod]
         public static void PrinceSetHighestConversation(RPCEvent rpc, int newValue)
         {
             if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
