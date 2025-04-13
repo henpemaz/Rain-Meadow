@@ -32,6 +32,7 @@ namespace RainMeadow
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+            On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
@@ -1397,6 +1398,15 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
+        }
+
+        // This is nescesary because sometimes ripple levels are not properly synched
+        // we should probably synch them -- but at the moment this helps avoid black screens of death
+        private string HUD_KarmaMeter_RippleSymbolSprite(On.HUD.KarmaMeter.orig_RippleSymbolSprite orig, bool small, float rippleLevel)
+        {
+            double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
+            num = Math.Max(num, 1.0);
+			return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)

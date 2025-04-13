@@ -291,7 +291,6 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.isOwner)
                     {
-                        RainMeadow.Debug("warp-initiate: first send rpc");
                         foreach (var player in OnlineManager.players)
                         { // do nat throw everyone into the same room?
                             if (!player.isMe)
@@ -300,7 +299,10 @@ namespace RainMeadow
                             }
                         }
                     }
-                    RainMeadow.Debug("warp-initiate: second phase execute");
+                    else
+                    { //tell owner about rift that SHOULD be synched
+                        OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.PerformWatcherRiftWarp, newValue);
+                    }
                 }
                 orig(self, callback, warpData, useNormalWarpLoader);
             }
@@ -485,6 +487,7 @@ namespace RainMeadow
                             {
                                 if (opo1.isMine)
                                 { // do not get stuck on the bottom left
+                                    ac.pos = new WorldCoordinate(destRoom, 0, 0, -1);
                                     ac.pos.Tile = new RWCustom.IntVector2((int)(self.specialWarpPointGoal.destPos.Value.x / 20f), (int)(self.specialWarpPointGoal.destPos.Value.y / 20f));
                                 }
                                 opo1.beingMoved = false;
