@@ -488,6 +488,7 @@ namespace RainMeadow
                 // "warps" to the same world, twice, for some bloody reason
                 if (!isSameWorld)
                 {
+                    Debug("Unsubscribing from old world");
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
@@ -496,11 +497,6 @@ namespace RainMeadow
                 {
                     storyGameMode.changedRegions = true;
                     storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
-                    if (warpUsed)
-                    {
-                        storyGameMode.changedRegions = false;
-                        storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
-                    }
                 }
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

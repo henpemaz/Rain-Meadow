@@ -962,6 +962,13 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
                     return;
                 }
+                // reset gate status
+                if (fromWarpPoint)
+                {
+                    storyGameMode.storyClientData.readyForWin = false;
+                    storyGameMode.changedRegions = false;
+                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
+                }
             }
             orig(self, malnourished, fromWarpPoint);
         }
