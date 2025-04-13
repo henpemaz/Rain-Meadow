@@ -94,7 +94,7 @@ namespace RainMeadow
                         HoldKick = true;
                         banClickedOnce = value;
                         labelColor = banClickedOnce ? MenuColor(MenuColors.DarkRed) : MenuColor(MenuColors.MediumGrey);
-                        Description = banClickedOnce ? "Press again to ban player!" : "";
+                        Description = banClickedOnce ? menu.Translate("Press again to ban player!") : "";
                         menu.infolabelDirty = true;
                         HoldKick = false;
                     }
