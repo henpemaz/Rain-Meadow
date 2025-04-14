@@ -966,13 +966,13 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint, self.GetStorySession.saveState.warpPointTargetAfterWarpPointSave);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint, self.GetStorySession.saveState.warpPointTargetAfterWarpPointSave);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
                     return;
                 }
                 if (fromWarpPoint)
@@ -1319,14 +1319,9 @@ namespace RainMeadow
                 if (storyGameMode.myLastDenPos is not (null or ""))
                 {
                     self.denPosition = storyGameMode.myLastDenPos;
-                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
-                    //
                     if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
                 }
-                if (storyGameMode.myLastWarp is not null)
-                {
-                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
-                }
+                self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
             }
             orig(self, game, survived, newMalnourished);
         }

@@ -39,7 +39,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished, string? denPos, bool fromWarpPoint, string? warpPointTarget)
+        public static void GoToWinScreen(bool malnourished, bool fromWarpPoint, string? denPos, string? warpPointTarget)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
@@ -154,7 +154,7 @@ namespace RainMeadow
         internal static Watcher.WarpPoint PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return null;
-            RainMeadow.Debug($"WARP.DATA? {warpData}, Loader={useNormalWarpLoader}");
+            RainMeadow.Debug($"Warp point? in {sourceRoomName}; data={warpData}, Loader={useNormalWarpLoader}");
             // generate "local" warp point
             Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
             newWarpData.FromString(warpData);
@@ -175,6 +175,7 @@ namespace RainMeadow
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
             OnlineManager.cameraNeedsToBeForcedForWarp = true; //force camera to new room
+            if (RainMeadow.isStoryMode(out var storyGameMode)) storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
             // update camera position
             string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
@@ -188,10 +189,6 @@ namespace RainMeadow
                 game.cameras[0].BlankWarpPointHoldFrame();
             }
             RainMeadow.Debug($"switch camera to {destRoom}");
-            if (RainMeadow.isStoryMode(out var storyGameMode))
-            {
-                storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
-            }
             return warpPoint;
         }
 
@@ -214,6 +211,7 @@ namespace RainMeadow
                 Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
                 newWarpData.FromString(warpData);
                 game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
+                if (RainMeadow.isStoryMode(out var storyGameMode)) storyGameMode.myLastWarp = newWarpData;
                 game.Win(false, true);
             }
             else
@@ -231,6 +229,16 @@ namespace RainMeadow
             if (game.overWorld.specialWarpCallback is Watcher.WarpPoint warpPoint)
             {
                 RainMeadow.Debug($"Forcing client to warp");
+                if (warpPoint.room != null)
+                {
+                    if (RoomSession.map.TryGetValue(warpPoint.room.abstractRoom, out var rs) && !rs.isActive)
+                    {
+                        RainMeadow.Debug("subscribing to room with warp");
+                        rs.Activate();
+                        rs.Needed();
+                    }
+                    // problem?
+                }
                 warpPoint.PerformWarp();
             }
             else
