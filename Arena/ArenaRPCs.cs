@@ -1,6 +1,7 @@
 ﻿using Menu;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Threading;
 
 namespace RainMeadow
 {
@@ -13,10 +14,21 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                var stillInGame = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as MultiplayerResults);
+
+                if (stillInGame != null)
+                {
+                    arena.returnToLobby = true;
+                    stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                    stillInGame.manager.rainWorld.options.DeleteArenaSitting();
+                    stillInGame.ArenaSitting.players.Clear();
+                    return;
+                }
                 if (lobby.manager.upcomingProcess != null)
                 {
                     return;
                 }
+
                 if (lobby.playButton != null)
                 {
                     lobby.playButton.Clicked();
