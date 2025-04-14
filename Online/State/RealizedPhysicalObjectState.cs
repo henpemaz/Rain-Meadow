@@ -21,6 +21,10 @@ namespace RainMeadow
         }
         
         virtual public bool ShouldPosBeLenient(PhysicalObject po) {
+          if (po is SSOracleSwarmer) // no flying neuron syncs!
+            {
+                return true;
+            }
             if (po.grabbedBy.Any((x) => {
                 if (x.grabber == null) return false;
                 var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
