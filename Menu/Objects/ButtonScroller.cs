@@ -213,11 +213,11 @@ namespace RainMeadow
             public float Alpha { get => alpha; set => alpha = value; }
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
+
             public override bool CurrentlySelectableNonMouse => alpha >= 1 && base.CurrentlySelectableNonMouse;
             public override bool CurrentlySelectableMouse => alpha >= 1 && base.CurrentlySelectableMouse;
-            public virtual void UpdateAlpha(float alpha)
+            public virtual void UpdateAlpha(float alpha) //should be for changing graphics, dependent on frame refresh rate
             {
-                this.alpha = alpha;
                 menuLabel.label.alpha = alpha;
                 for (int i = 0; i < roundedRect.sprites.Length; i++)
                 {
@@ -228,9 +228,9 @@ namespace RainMeadow
                 {
                     selectRect.sprites[i].alpha = alpha;
                 }
-                GetButtonBehavior.greyedOut = alpha < 1;
+                buttonBehav.greyedOut = forceGreyedOut || alpha < 1;
             }
-
+            public bool forceGreyedOut;
             public float alpha = 1;
         }
         public interface IPartOfButtonScroller //allows other derived objects to be part of the button scroller
