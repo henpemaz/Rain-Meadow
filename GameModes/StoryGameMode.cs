@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -105,17 +105,27 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+
+
             return true;
         }
 
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (rs.worldSession.region.name == "SS") // no syncs in 5p for lag reduction
+            {
+                if (apo.type == AbstractPhysicalObject.AbstractObjectType.SSOracleSwarmer)
+                {
+                    return false;
+                }
+            }
             return true;
         }
 
