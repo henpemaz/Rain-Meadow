@@ -56,7 +56,7 @@ namespace RainMeadow
             {
                 AbstractCreature? ac = button.opo?.apo as AbstractCreature;
                 button.toggled = ac != null && ac == spectatee;
-                button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
+                button.forceGreyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
         }
         public override string UpdateInfoText()
@@ -91,22 +91,12 @@ namespace RainMeadow
                 {
                     if (value != banClickedOnce)
                     {
-                        HoldKick = true;
+                        forceKickGreyOut = true;
                         banClickedOnce = value;
                         labelColor = banClickedOnce ? MenuColor(MenuColors.DarkRed) : MenuColor(MenuColors.MediumGrey);
                         Description = banClickedOnce ? menu.Translate("Press again to ban player!") : "";
                         menu.infolabelDirty = true;
-                        HoldKick = false;
-                    }
-                }
-            }
-            public bool HoldKick
-            {
-                set
-                {
-                    if (kickbutton != null)
-                    {
-                        kickbutton.buttonBehav.greyedOut = value;
+                        forceKickGreyOut = false;
                     }
                 }
             }
@@ -191,7 +181,7 @@ namespace RainMeadow
                         kickbutton.roundedRect.sprites[i].alpha = alpha;
                         kickbutton.roundedRect.fillAlpha = alpha / 2;
                     }
-                    kickbutton.GetButtonBehavior.greyedOut = alpha < 1;
+                    kickbutton.GetButtonBehavior.greyedOut = forceKickGreyOut || alpha < 1;
                 }
             }
             public override void Update()
@@ -200,7 +190,7 @@ namespace RainMeadow
                 BanClickedOnce = menu.selectedObject == kickbutton && BanClickedOnce;
             }
 
-            public bool banClickedOnce;
+            public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
             public OnlinePhysicalObject? opo;
             public SimplerSymbolButton? kickbutton;
