@@ -174,11 +174,11 @@ namespace RainMeadow
                 // do nat throw everyone into the same room?
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
+            OnlineManager.cameraNeedsToBeForcedForWarp = true; //force camera to new room
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
             // update camera position
             string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
             var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
-
             // emulate as if we did actually warp
             game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
             if (game.cameras[0].warpPointTimer == null)
@@ -187,14 +187,11 @@ namespace RainMeadow
                 game.cameras[0].warpPointTimer.MoveToSecondHalf();
                 game.cameras[0].BlankWarpPointHoldFrame();
             }
-
             RainMeadow.Debug($"switch camera to {destRoom}");
-
             if (RainMeadow.isStoryMode(out var storyGameMode))
             {
                 storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
             }
-            OnlineManager.forceWarp = true;
             return warpPoint;
         }
 

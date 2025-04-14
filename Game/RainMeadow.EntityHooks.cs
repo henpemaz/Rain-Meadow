@@ -397,6 +397,17 @@ namespace RainMeadow
                 newRoom.game.GetStorySession.pendingWarpPointTransferObjects.Clear();
                 newRoom.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 newRoom.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
+
+                if (OnlineManager.cameraNeedsToBeForcedForWarp)
+                {
+                    // once again, force camera
+                    var destCam = (self.overrideData != null) ? self.overrideData.destCam : self.Data.destCam;
+                    for (int l = 0; l < newRoom.game.cameras.Length; l++)
+                    {
+                        newRoom.game.cameras[0].WarpMoveCameraActual(newRoom, destCam);
+                    }
+                }
+                OnlineManager.cameraNeedsToBeForcedForWarp = false;
             }
             else
             {
