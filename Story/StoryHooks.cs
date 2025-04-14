@@ -956,22 +956,23 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
         {
-            // ok but remember the watcher hates good portals
-            self.GetStorySession.importantWarpPointTransferedEntities.Clear();
-            self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode) && OnlineManager.lobby != null)
             {
+                // ok but remember the watcher hates good portals so we have to clean stuff up
+                self.GetStorySession.pendingWarpPointTransferObjects.Clear();
+                self.GetStorySession.importantWarpPointTransferedEntities.Clear();
+                self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint, self.GetStorySession.saveState.warpPointTargetAfterWarpPointSave);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint, self.GetStorySession.saveState.warpPointTargetAfterWarpPointSave);
                     return;
                 }
                 if (fromWarpPoint)
@@ -1313,12 +1314,19 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
-            if (isStoryMode(out var storyGameMode) && storyGameMode.myLastDenPos is not (null or ""))
+            if (isStoryMode(out var storyGameMode))
             {
-                self.denPosition = storyGameMode.myLastDenPos;
-                self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
-                //
-                if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos is not (null or ""))
+                {
+                    self.denPosition = storyGameMode.myLastDenPos;
+                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                    //
+                    if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                }
+                if (storyGameMode.myLastWarp is not null)
+                {
+                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
             }
             orig(self, game, survived, newMalnourished);
         }
