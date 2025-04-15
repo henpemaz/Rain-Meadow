@@ -46,6 +46,15 @@ namespace RainMeadow
             return null;
         }
 
+        // see RealizedPhysicalObject constructor.
+        override public bool ShouldSyncChunks(PhysicalObject po) {
+            if(po is Creature critter) {
+                if (critter.inShortcut) return false;
+            }
+
+            return true;
+        }
+
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);

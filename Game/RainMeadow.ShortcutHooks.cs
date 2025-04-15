@@ -19,7 +19,7 @@ namespace RainMeadow
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
             On.Creature.SuckedIntoShortCut += CreatureSuckedIntoShortCut;
             
-            On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
+            // On.Creature.SpitOutOfShortCut += CreatureSpitOutOfShortCut;
         }
 
         // adds to entities already so no need to hook it!
@@ -122,6 +122,65 @@ namespace RainMeadow
                     return false;
                 });
                 c.Emit(OpCodes.Brtrue, skip);
+                //                 503	068A	ldarg.0
+                // 504	068B	ldfld	class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/Vessel> ShortcutHandler::betweenRoomsWaitingLobby
+                // 505	0690	ldloc.s	V_8 (8)
+                // 506	0692	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/Vessel>::get_Item(int32)
+                // 507	0697	ldfld	class Creature ShortcutHandler/Vessel::creature
+                // 508	069C	callvirt	instance class AbstractCreature Creature::get_abstractCreature()
+                // 509	06A1	ldc.i4.0
+                // 510	06A2	callvirt	instance bool AbstractCreature::FollowedByCamera(int32)
+                // 511	06A7	brfalse.s	529 (06E9) ldloca.s V_9 (9)
+
+                Mono.Cecil.FieldReference? creature = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
+                    i => i.MatchLdloc(out indexvar),
+                    i => i.MatchCallOrCallvirt(out _),
+                    i => i.MatchLdfld(out creature),
+                    i => i.MatchCallOrCallvirt<AbstractCreature>("get_abstractCreature"),
+                    i => i.MatchLdcI4(0),
+                    i => i.MatchCallOrCallvirt<AbstractCreature>("FollowedByCamera")
+                );
+                c.Emit(OpCodes.Ldfld, creature);
+                c.EmitDelegate((bool follow, Creature creature) => {
+                    if (OnlineManager.lobby != null) {
+                        var oncreature = creature.abstractCreature.GetOnlineCreature();
+                        if (oncreature != null) {
+                            if (oncreature.isMine && !oncreature.isTransferable)
+                            return true;
+                        }
+                    }
+                    return follow;
+                });
+                // // 144	01DE	ldloc.2
+                // // 145	01DF	ldarg.0
+                // // 146	01E0	ldfld	class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/ShortCutVessel> ShortcutHandler::transportVessels
+                // // 147	01E5	ldloc.0
+                // // 148	01E6	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/ShortCutVessel>::get_Item(int32)
+                // // 149	01EB	ldfld	valuetype RWCustom.IntVector2 ShortcutHandler/ShortCutVessel::pos
+                // // 150	01F0	callvirt	instance class Room/Tile Room::GetTile(valuetype RWCustom.IntVector2)
+                // // 151	01F5	ldfld	valuetype Room/Tile/TerrainType Room/Tile::Terrain
+                // // 152	01FA	ldc.i4.4
+                // // 153	01FB	bne.un.s	165 (0220) ldarg.0 
+                // c.GotoNext(moveType: MoveType.After,
+                //     i => i.MatchLdloc(2),
+                //     i => i.MatchLdarg(0),
+                //     i => i.MatchLdfld<ShortcutHandler>("transportVessels"),
+                //     i => i.MatchLdloc(0),
+                //     i => i.MatchCallOrCallvirt(out _),
+                //     i => i.MatchLdfld<ShortcutHandler.ShortCutVessel>("pos"),
+                //     i => i.MatchCallOrCallvirt<Room>("GetTile"),
+                //     i => i.MatchLdfld<Room.Tile>("Terrain"),
+                //     i => i.MatchLdcI4((int)Room.Tile.TerrainType.ShortcutEntrance),
+                //     i => i.MatchBneUn(out _)
+                // );
+                
+
+
+
+
             }
             catch (Exception e)
             {
@@ -141,7 +200,6 @@ namespace RainMeadow
                 RainMeadow.Error($"Untracked entity: " + absCrit);
                 return result;
             }
-            if (onlineEntity.isMine) return result; // If entity is ours, game handles it normally.
             if (onlineEntity.roomSession?.absroom != vessel.room)
             {
                 Trace($"Denied because in wrong room: vessel at {vessel.room.name}:{vessel.room.index} entity at:{onlineEntity.roomSession?.absroom.name ?? "null"}{onlineEntity.roomSession?.absroom.index.ToString() ?? "null"}");
@@ -155,8 +213,14 @@ namespace RainMeadow
                 {
                     if (innerOnlineEntity.roomSession?.absroom != vessel.room)
                     {
-                        Trace($"Denied because of connected object: {innerOnlineEntity}");
-                        result = false; // Same for all connected entities
+                        if (!apo.CanMove()) {
+                            Trace($"Denied because of connected object: {innerOnlineEntity}");
+                            result = false; // Same for all connected entities
+                        } else {
+                            WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, vessel.entranceNode);
+                            apo.Move(newCoord);
+                        }
+
                     }
                 }
                 else
@@ -209,6 +273,8 @@ namespace RainMeadow
         private bool IsTakingUnmoveableObject(Creature self, IntVector2 entrancePos) {
             // This is so that our unowned connected objects load the room we are about to enter.
             // Specifically helpful for backpacked player Slugcats.
+
+            return false;
             
             ShortcutData shortcutData = self.room.shortcutData(entrancePos);
             if (shortcutData.shortCutType == ShortcutData.Type.RoomExit) {
@@ -352,82 +418,6 @@ namespace RainMeadow
                 // Don't run
                 // Clear shortcut that it was meant to enter
                 self.enteringShortCut = null;
-            }
-        }
-
-        void attemptToReclaimSticks(OnlineCreature onlineCreature) {
-            if (onlineCreature.apo.realizedObject == null || !onlineCreature.isMine) {
-                onlineCreature.reclaim_backpack = null;
-                onlineCreature.reclaim_grasps.Clear();
-                creatures_who_reclaim_sticks.Remove(onlineCreature);
-                return;
-            }
-
-            if (onlineCreature.reclaim_backpack is null && !onlineCreature.reclaim_grasps.Any()) {
-                onlineCreature.reclaim_backpack = null;
-                onlineCreature.reclaim_grasps.Clear();
-                creatures_who_reclaim_sticks.Remove(onlineCreature);
-                return;
-            }
-
-            if (onlineCreature.realizedCreature.inShortcut) {
-                return;
-            }
-
-            foreach (var grasp in onlineCreature.reclaim_grasps.ToArray()) {
-                if (grasp.onlineGrabbed.FindEntity() is OnlineCreature want_to_grasp) {
-                    if (onlineCreature.creature.realizedCreature.grasps[grasp.graspUsed] != null) {
-                        onlineCreature.reclaim_grasps.Remove(grasp);
-                        continue;
-                    }
-
-                    if (want_to_grasp.apo.realizedObject != null && want_to_grasp.apo.Room == onlineCreature.apo.Room && !want_to_grasp.creature.realizedCreature.inShortcut) {
-                        onlineCreature.creature.realizedCreature.Grab(want_to_grasp.apo.realizedObject, 
-                            grasp.graspUsed, grasp.chunkGrabbed, grasp.shareability, grasp.dominance, false, grasp.pacifying);
-                        onlineCreature.reclaim_grasps.Remove(grasp);
-                    }
-                }
-            }
-
-            if (onlineCreature.reclaim_backpack is not null) {
-                if (onlineCreature.creature.realizedCreature is Player p) {
-                    if (p.slugOnBack == null || p.slugOnBack.HasASlug) {
-                        onlineCreature.reclaim_backpack = null;
-                    } else {
-                        if (onlineCreature.reclaim_backpack.FindEntity() is OnlineCreature want_to_backpack) {
-                            if (want_to_backpack.apo.realizedObject != null && want_to_backpack.apo.Room == onlineCreature.apo.Room && !want_to_backpack.creature.realizedCreature.inShortcut) {
-                                if (want_to_backpack.creature.realizedCreature is Player other) {
-                                    p.slugOnBack.SlugToBack(other);
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    onlineCreature.reclaim_backpack = null;
-                }
-            }
-
-
-        }
-
-        void CreatureSpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) {
-            orig(self, pos, newRoom, spitOutAllSticks);
-            if (OnlineManager.lobby != null) {
-                var selfonlineobj = self.abstractCreature.GetOnlineCreature();
-                if (selfonlineobj == null) {
-                    Error($"Entity {self.abstractCreature} - {self.abstractCreature.ID} doesn't exist in online space!");
-                    return;
-                }
-
-                if (selfonlineobj.isMine) {
-                    attemptToReclaimSticks(selfonlineobj);
-                } else {
-                    foreach (var creature in creatures_who_reclaim_sticks.ToArray()) {
-                        if (creature.apo.Room != newRoom.abstractRoom) continue;
-                        if (creature.apo.realizedObject == null) continue;
-                        attemptToReclaimSticks(creature);
-                    }
-                }
             }
         }
     }

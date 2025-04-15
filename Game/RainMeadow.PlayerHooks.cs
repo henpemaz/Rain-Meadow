@@ -61,6 +61,8 @@ public partial class RainMeadow
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
+        On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
+        On.Player.CanEatMeat += Player_CanEatMeat;
         
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
@@ -95,6 +97,26 @@ public partial class RainMeadow
         {
             orig(self);
         }
+    }
+
+    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit) {
+        if (OnlineManager.lobby != null) {
+            if (self.standing && self.CanPutSlugToBack) {
+                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p)) {
+                    return false;
+                }
+            }
+        }
+        return orig(self, crit);
+    }
+
+    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate) {
+        if (OnlineManager.lobby != null) {
+            if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            return true;
+        }
+
+        return orig(self, pickUpCandidate);
     }
 
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
@@ -229,9 +251,12 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && self.slugcat != null)
         {
             if (self.slugcat.isNPC) return;
+            self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
 
-            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
-            else self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
+            if (self.slugcat.input[0].jmp) {
+                self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
+            }
+             
         }
     }
 
