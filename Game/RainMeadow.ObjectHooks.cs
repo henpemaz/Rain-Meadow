@@ -51,14 +51,18 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, numIndex);
                 c.EmitDelegate((float value) =>
                 {
-                    float minVelY = -50.0F;
-                    float maxVelY = 50.0F;
-                    if (splashObjectCount >= 80 || value <= minVelY || value >= maxVelY)
-                    { //dont spawn any splashes after N splashes over 40 ticks OR has too much velocity
-                        return 0.0F;
+                    if (OnlineManager.lobby != null)
+                    {
+                        float minVelY = -50.0F;
+                        float maxVelY = 50.0F;
+                        if (splashObjectCount >= 50 || value <= minVelY || value >= maxVelY)
+                        { //dont spawn any splashes after N splashes over 40 ticks OR has too much velocity
+                            return 0.0F;
+                        }
+                        splashObjectCount += (int)Mathf.Abs(num3 * ((num3 < 0f) ? 0.25f : 0.55f));
+                        return Math.Max(Math.Min(value, 10.0F), -20.0F);
                     }
-                    splashObjectCount += (int)Mathf.Abs(num3 * ((num3 < 0f) ? 0.25f : 0.55f));
-                    return Math.Max(Math.Min(value, 10.0F), -20.0F);
+                    return value; //default behaviour on singleplayer, just in case
                 });
                 c.Emit(OpCodes.Stloc, numIndex);
                 c.MarkLabel(skip);
