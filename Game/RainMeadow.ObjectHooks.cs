@@ -6,9 +6,67 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        internal static int splashObjectCount = 0;
+        internal static int splashTickCount = 0;
+
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+            IL.Water.Update += Water_Update;
+            On.Water.Update += Water_Update2;
+        }
+
+        private void Water_Update2(On.Water.orig_Update orig, Water self)
+        {
+            if (splashTickCount >= 40)
+            { //40 ticks per second, good metric, very primtive but works
+                splashTickCount = 0;
+                splashObjectCount = 0;
+            }
+            orig(self);
+            splashTickCount += 1;
+        }
+
+        // дLimits particles to about 7-10 per splash, as to not lag everyone because some random creature decided
+        // to glitch out near a pond
+        private void Water_Update(ILContext il)
+        {
+            try
+            {
+                int numIndex = 0;
+                int tmpIndex1 = 0;
+                ILLabel label1 = null;
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchBleUn(out label1),
+                    i => i.MatchLdloc(out tmpIndex1),
+                    i => i.MatchLdflda<BodyChunk>("vel"),
+                    i => i.MatchLdfld<UnityEngine.Vector2>("y"),
+                    i => i.MatchStloc(out numIndex)
+                );
+                c.MoveAfterLabels();
+                c.EmitDelegate(() => OnlineManager.lobby != null);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldloc, numIndex);
+                c.EmitDelegate((float value) =>
+                {
+                    float minVelY = -50.0F;
+                    float maxVelY = 50.0F;
+                    if (splashObjectCount >= 80 || value <= minVelY || value >= maxVelY)
+                    { //dont spawn any splashes after N splashes over 40 ticks OR has too much velocity
+                        return 0.0F;
+                    }
+                    splashObjectCount += (int)Mathf.Abs(num3 * ((num3 < 0f) ? 0.25f : 0.55f));
+                    return Math.Max(Math.Min(value, 10.0F), -20.0F);
+                });
+                c.Emit(OpCodes.Stloc, numIndex);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void Room_Update(ILContext il)
