@@ -83,13 +83,16 @@ namespace RainMeadow
         {
             foreach (var item in room.roomSettings.placedObjects)
             {
-                if (!AllowedInMode(item))
+                if (item.active)
                 {
-                    item.active = false;
-                }
-                if (item.active && RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && rs.isPending && avoidDupePlacedObjects.Contains(item.type))
-                {
-                    item.active = false;
+                    if (!AllowedInMode(item))
+                    {
+                        item.active = false;
+                    }
+                    if (RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && rs.isPending && avoidDupePlacedObjects.Contains(item.type))
+                    {
+                        item.active = false;
+                    }
                 }
             }
 
