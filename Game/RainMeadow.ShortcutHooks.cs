@@ -213,12 +213,25 @@ namespace RainMeadow
                 {
                     if (innerOnlineEntity.roomSession?.absroom != vessel.room)
                     {
-                        if (!apo.CanMove()) {
-                            Trace($"Denied because of connected object: {innerOnlineEntity}");
-                            result = false; // Same for all connected entities
-                        } else {
-                            WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, vessel.entranceNode);
-                            apo.Move(newCoord);
+                        if (onlineEntity.owner == innerOnlineEntity.owner) continue;
+                        Trace($"Denied because of connected object: {innerOnlineEntity}");
+                        result = false; // Same for all connected entities
+                        if (apo.Room != vessel.room && apo.CanMove()) {
+
+                            bool ready = true;
+                            if (!innerOnlineEntity.isTransferable) {
+                                apo.world.ActivateRoom(vessel.room);
+                                ready = ready && vessel.room.realizedRoom.ReadyForPlayer;
+                            }
+                            
+                            RoomSession? session = vessel.room.GetResource();
+                            if (session is not null) {
+                                session.Needed();
+                                if (session.isAvailable && !session.isPending && ready) {
+                                    WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, -1);
+                                    apo.Move(newCoord);
+                                }
+                            }
                         }
 
                     }
