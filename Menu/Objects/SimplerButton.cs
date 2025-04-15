@@ -11,8 +11,12 @@ namespace RainMeadow
             this.description = description;
         }
 
-        private readonly string description;
-        public string Description => description;
+        public string description;
+        public string Description
+        {
+            get => description;
+            set => description = value;
+        }
 
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
         public event Action<SimplerButton> OnClick;
