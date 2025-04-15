@@ -1291,7 +1291,7 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition}");
 
-                RainMeadow.Debug($"OAUGH WAPYPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
+                RainMeadow.Debug($"OAUGH WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
                 {
                     storyGameMode.myLastWarp = currentSaveState.warpPointTargetAfterWarpPointSave;
@@ -1300,7 +1300,7 @@ namespace RainMeadow
                 {
                     currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
                 }
-                RainMeadow.Debug($"OAUGH WAPYPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
+                RainMeadow.Debug($"OAUGH WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
             }
 
             return currentSaveState;
@@ -1321,7 +1321,10 @@ namespace RainMeadow
                     self.denPosition = storyGameMode.myLastDenPos;
                     if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
                 }
-                self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                if (storyGameMode.myLastWarp is not null)
+                {
+                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
             }
             orig(self, game, survived, newMalnourished);
         }

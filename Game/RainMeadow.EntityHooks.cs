@@ -252,7 +252,7 @@ namespace RainMeadow
                 );
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby == null || (self.abstractCreature is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo) && opo.isMine));
-                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Brfalse, skip); //only may the object owner (or singleplayer) add rocks for a barnacle
             }
             catch (Exception e)
             {
@@ -366,21 +366,18 @@ namespace RainMeadow
         // echo warps from the waher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
-            if (isStoryMode(out var _))
+            orig(self, callback, warpData, useNormalWarpLoader);
+            if (OnlineManager.lobby != null && isStoryMode(out var _) && callback is Watcher.WarpPoint warpPoint)
             {
-                orig(self, callback, warpData, useNormalWarpLoader);
-                if (OnlineManager.lobby != null && callback is Watcher.WarpPoint warpPoint)
+                string sourceRoomName = warpPoint.getSourceRoom() == null ? "" : warpPoint.getSourceRoom().abstractRoom.name;
+                RainMeadow.Debug($"doing warp point from {sourceRoomName}");
+                if (OnlineManager.lobby.isOwner)
                 {
-                    string sourceRoomName = warpPoint.getSourceRoom() == null ? "" : warpPoint.getSourceRoom().abstractRoom.name;
-                    RainMeadow.Debug($"doing warp point from {sourceRoomName}");
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        foreach (var player in OnlineManager.players)
-                        { // do nat throw everyone into the same room?
-                            if (!player.isMe)
-                            {
-                                player.InvokeOnceRPC(StoryRPCs.NormalExecuteWatcherRiftWarp, sourceRoomName, warpData.ToString(), useNormalWarpLoader);
-                            }
+                    foreach (var player in OnlineManager.players)
+                    { // do nat throw everyone into the same room?
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.NormalExecuteWatcherRiftWarp, sourceRoomName, warpData.ToString(), useNormalWarpLoader);
                         }
                     }
                 }
@@ -535,7 +532,6 @@ namespace RainMeadow
                     { //echo activation is special edge case
                         if (room == null) RainMeadow.Error("warp point with a null room");
                         RainMeadow.Debug("this an echo warp");
-                        orig(self, warpUsed);
                     }
                     // We delete every single entitity in the old world, every single one, even our
                     // slugcats are deleted, nothing is spared, this is because if we dont do this
@@ -573,33 +569,25 @@ namespace RainMeadow
                             }
                         }
                     }
-
-                    if (!isEchoWarp)
-                    { //do not execute this on echo warp, only on first world load; ok?
-                        RainMeadow.Debug($"Watcher warp switchery APOs preparations");
-                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                        { //it will move places
-                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
-                            {
-                                opo1.beingMoved = true;
-                            }
+                    RainMeadow.Debug($"Watcher warp switchery APOs preparations");
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    { //it will move places
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
+                        {
+                            opo1.beingMoved = true;
                         }
-                        orig(self, warpUsed);
-                        foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                        { //no longer moves places
-                            if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                            if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
-                            {
-                                if (opo1.isMine)
-                                { // do not get stuck on the bottom left
-                                    ac.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
-                                }
-                                opo1.beingMoved = false;
-                            }
-                        }
-                        RainMeadow.Debug($"Watcher warp switchery post");
                     }
+                    orig(self, warpUsed);
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    { //no longer moves places
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo1 && opo1.apo is AbstractCreature ac)
+                        {
+                            opo1.beingMoved = false;
+                        }
+                    }
+                    RainMeadow.Debug($"Watcher warp switchery post");
                 }
                 else
                 {
@@ -607,7 +595,7 @@ namespace RainMeadow
                     orig(self, warpUsed);
                 }
 
-                if (warpUsed && !isEchoWarp)
+                if (warpUsed)
                 { // and for warps we require a more manual approach; to properly make aware of old APOs entering a new region
                     foreach (var absplayer in self.game.Players)
                     {

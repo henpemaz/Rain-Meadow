@@ -207,7 +207,7 @@ namespace RainMeadow
             Watcher.WarpPoint warpPoint = PerformWarpHelper(sourceRoomName, warpData, true);
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
-                RainMeadow.Debug($"warp of kind echo executed; going to win screen");
+                RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                 Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
                 newWarpData.FromString(warpData);
                 game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
