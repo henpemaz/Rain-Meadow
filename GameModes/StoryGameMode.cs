@@ -69,8 +69,31 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
-            DLCSharedEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
+            DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
         };
+
+        public HashSet<PlacedObject.Type> avoidDupePlacedObjects = new()
+        {
+            PlacedObject.Type.DangleFruit,
+            PlacedObject.Type.StuckDaddy
+            // maybe adds stowaways
+        };
+
+        public override void FilterItems(Room room)
+        {
+            foreach (var item in room.roomSettings.placedObjects)
+            {
+                if (!AllowedInMode(item))
+                {
+                    item.active = false;
+                }
+                if (item.active && RoomSession.map.TryGetValue(room.abstractRoom, out var rs) && rs.isPending && avoidDupePlacedObjects.Contains(item.type))
+                {
+                    item.active = false;
+                }
+            }
+
+        }
 
         public override bool AllowedInMode(PlacedObject item)
         {
@@ -265,19 +288,25 @@ namespace RainMeadow
         }
     }
 
-    public static class StoryModeExtensions {
-        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature) {
-            if (creature is Player p) {
+    public static class StoryModeExtensions
+    {
+        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature)
+        {
+            if (creature is Player p)
+            {
                 if (p.isNPC) return false;
-            } else return false;
+            }
+            else return false;
 
-            if (RainMeadow.isStoryMode(out var story)) {
+            if (RainMeadow.isStoryMode(out var story))
+            {
                 return !story.friendlyFire;
             }
-            if (RainMeadow.isArenaMode(out var arena)) {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
                 return arena.countdownInitiatedHoldFire;
             }
-            
+
             return false;
         }
     }
