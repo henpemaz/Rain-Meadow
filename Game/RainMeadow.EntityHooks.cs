@@ -15,6 +15,7 @@ namespace RainMeadow
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
             On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
+            IL.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint2;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
@@ -366,11 +367,16 @@ namespace RainMeadow
         // echo warps from the waher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
         {
-            orig(self, callback, warpData, useNormalWarpLoader);
-            if (OnlineManager.lobby != null && isStoryMode(out var _) && callback is Watcher.WarpPoint warpPoint)
+            if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)
             {
+                if (callback.getSourceRoom() == null)
+                {
+                    self.warpData = storyGameMode.myLastWarp;
+                    storyGameMode.lastWarpIsEcho = true;
+                }
+                orig(self, callback, warpData, useNormalWarpLoader);
                 string sourceRoomName = warpPoint.getSourceRoom() == null ? "" : warpPoint.getSourceRoom().abstractRoom.name;
-                RainMeadow.Debug($"doing warp point from {sourceRoomName}");
+                RainMeadow.Debug($"doing warp point from {sourceRoomName}, data={warpData.ToString()}");
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
@@ -381,6 +387,38 @@ namespace RainMeadow
                         }
                     }
                 }
+            }
+            else
+            {
+                orig(self, callback, warpData, useNormalWarpLoader);
+            }
+        }
+
+        public void OverWorld_InitiateSpecialWarp_WarpPoint2(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.Before, //code that can be run by client safely
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdcI4(1),
+                    i => i.MatchStfld<OverWorld>("worldLoadedFromWarp")
+                );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_2);
+                c.EmitDelegate((OverWorld self, Watcher.WarpPoint.WarpPointData warpData) => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && storyGameMode.lastWarpIsEcho)
+                    {
+                        RainMeadow.Debug($"LAST WARP ECHO OK ACK");
+                        self.warpData = storyGameMode.myLastWarp; //OVERRIDE WARP DATA VERY IMPORTANT!
+                        warpData = storyGameMode.myLastWarp;
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
@@ -440,7 +478,7 @@ namespace RainMeadow
 
         private void WarpPoint_NewWorldLoaded_Room(On.Watcher.WarpPoint.orig_NewWorldLoaded_Room orig, Watcher.WarpPoint self, Room newRoom)
         {
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode))
             {
                 orig(self, newRoom);
                 // remove uneeded item transportation between warps (makes dupes for no reason)
@@ -448,15 +486,15 @@ namespace RainMeadow
                 newRoom.game.GetStorySession.pendingWarpPointTransferObjects.Clear();
                 newRoom.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 newRoom.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
-
-                if (OnlineManager.cameraNeedsToBeForcedForWarp)
+                if (storyGameMode.warpCameraFix)
                 {
+                    RainMeadow.Debug($"new room loaded! forcing camera to {newRoom.abstractRoom.name}");
                     for (int l = 0; l < newRoom.game.cameras.Length; l++)
                     { // once again, force camera
                         newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
                     }
                 }
-                OnlineManager.cameraNeedsToBeForcedForWarp = false;
+                storyGameMode.warpCameraFix = false;
             }
             else
             {
@@ -532,6 +570,11 @@ namespace RainMeadow
                     { //echo activation is special edge case
                         if (room == null) RainMeadow.Error("warp point with a null room");
                         RainMeadow.Debug("this an echo warp");
+                        if (isStoryMode(out var storyGameMode))
+                        {
+                            storyGameMode.warpCameraFix = true;
+                            self.warpData = storyGameMode.myLastWarp; //OVERRIDE WARP DATA VERY IMPORTANT!
+                        }
                     }
                     // We delete every single entitity in the old world, every single one, even our
                     // slugcats are deleted, nothing is spared, this is because if we dont do this
@@ -601,6 +644,10 @@ namespace RainMeadow
                     {
                         if (absplayer.realizedCreature is Player player)
                         {
+                            RainMeadow.Debug($"fixing player");
+                            // do not get stuck on bottom left
+                            player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
+
                             player.slugOnBack?.DropSlug();
                             if (player.objectInStomach is AbstractPhysicalObject apo)
                             { // apo's in stomach (isn't realized but has to be "carried" over)

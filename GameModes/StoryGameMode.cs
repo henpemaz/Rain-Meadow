@@ -23,6 +23,8 @@ namespace RainMeadow
         public SlugcatStats.Name currentCampaign;
         public bool requireCampaignSlugcat;
         public string? saveStateString;
+        public bool warpCameraFix = false;
+        public bool lastWarpIsEcho = false;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
@@ -47,6 +49,8 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastWarp = null;
             myLastDenPos = null;
+            warpCameraFix = false;
+            lastWarpIsEcho = false;
             region = null;
             saveStateString = null;
             pups = new();

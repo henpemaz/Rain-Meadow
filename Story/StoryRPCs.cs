@@ -47,12 +47,13 @@ namespace RainMeadow
             {
                 storyGameMode.myLastDenPos = denPos;
                 storyGameMode.myLastWarp = null;
-            }
-            if (warpPointTarget != null)
-            { //construct data
-                var warpPointData = new Watcher.WarpPoint.WarpPointData(null);
-                warpPointData.FromString(warpPointTarget);
-                game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
+                if (warpPointTarget != null)
+                { //construct data
+                    var warpPointData = new Watcher.WarpPoint.WarpPointData(null);
+                    warpPointData.FromString(warpPointTarget);
+                    storyGameMode.myLastWarp = warpPointData;
+                    game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
+                }
             }
             game.Win(malnourished, fromWarpPoint);
         }
@@ -174,8 +175,11 @@ namespace RainMeadow
                 // do nat throw everyone into the same room?
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
-            OnlineManager.cameraNeedsToBeForcedForWarp = true; //force camera to new room
-            if (RainMeadow.isStoryMode(out var storyGameMode)) storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
+            if (RainMeadow.isStoryMode(out var storyGameMode))
+            {
+                storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
+                storyGameMode.warpCameraFix = true; //force camera to new room
+            }
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
             // update camera position
             string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
@@ -208,10 +212,12 @@ namespace RainMeadow
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
-                Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
-                newWarpData.FromString(warpData);
+                var newWarpData = (warpPoint.overrideData != null) ? warpPoint.overrideData : warpPoint.Data;
                 game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
-                if (RainMeadow.isStoryMode(out var storyGameMode)) storyGameMode.myLastWarp = newWarpData;
+                if (RainMeadow.isStoryMode(out var storyGameMode))
+                {
+                    storyGameMode.myLastWarp = newWarpData;
+                }
                 game.Win(false, true);
             }
             else

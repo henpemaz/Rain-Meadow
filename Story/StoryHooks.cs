@@ -84,6 +84,7 @@ namespace RainMeadow
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             IL.SaveState.SessionEnded += SaveState_SessionEnded_DontAssumePlayerRealized;
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+            On.SaveState.GetSaveStateDenToUse += SaveState_GetSaveStateDenToUse;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
@@ -1280,7 +1281,9 @@ namespace RainMeadow
                     currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
+
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || currentSaveState.denPosition != storyGameMode.defaultDenPos)
                 {
                     storyGameMode.myLastDenPos = currentSaveState.denPosition;
@@ -1289,9 +1292,6 @@ namespace RainMeadow
                 {
                     currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition}");
-
-                RainMeadow.Debug($"OAUGH WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
                 {
                     storyGameMode.myLastWarp = currentSaveState.warpPointTargetAfterWarpPointSave;
@@ -1300,7 +1300,8 @@ namespace RainMeadow
                 {
                     currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
                 }
-                RainMeadow.Debug($"OAUGH WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
+                RainMeadow.Debug($"FINAL DENPOS save:{currentSaveState.denPosition}");
+                RainMeadow.Debug($"FINAL WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
             }
 
             return currentSaveState;
@@ -1363,6 +1364,20 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private string SaveState_GetSaveStateDenToUse(On.SaveState.orig_GetSaveStateDenToUse orig, SaveState self)
+        {
+            // Savefile logic is not cooperative (with our code); this is a way to ensure that PLEASE
+            // you WARP us into the room we were meant to be warped into, instead of some random room
+            // or wose, a "room out of bounds" (i.e index > region total index)
+            if (OnlineManager.lobby != null && self.warpPointTargetAfterWarpPointSave != null)
+            {
+                string destRoom = self.warpPointTargetAfterWarpPointSave.destRoom;
+                RainMeadow.Debug($"hijacking denpos to be {destRoom}");
+                return destRoom;
+            }
+            return orig(self);
         }
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
