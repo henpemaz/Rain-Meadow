@@ -38,12 +38,7 @@ namespace RainMeadow
                     isActive = false;
                 }
             }
-
-            if (spectatorOverlay != null)
-            {
-                spectatorOverlay.GrafUpdate(timeStacker);
-                spectatorOverlay.pages[0].pos.y = InputOverride.MoveMenuItemFromYInput(spectatorOverlay.pages[0].pos.y);
-            }
+            spectatorOverlay?.GrafUpdate(timeStacker);
         }
 
         public override void Update()
