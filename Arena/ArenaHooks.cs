@@ -1191,7 +1191,7 @@ namespace RainMeadow
                 }
 
 
-                if (!ModManager.MSC && !ModManager.Watcher)
+                if (!ModManager.MSC)
                 {
                     if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
                     {
