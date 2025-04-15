@@ -32,6 +32,7 @@ namespace RainMeadow
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+            On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
@@ -83,6 +84,7 @@ namespace RainMeadow
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             IL.SaveState.SessionEnded += SaveState_SessionEnded_DontAssumePlayerRealized;
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+            On.SaveState.GetSaveStateDenToUse += SaveState_GetSaveStateDenToUse;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
@@ -107,13 +109,12 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            IL.Menu.SlugcatSelectMenu.ctor += SlugcatSelectMenu_ctor;
             IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
 
             IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
             IL.Menu.SlugcatSelectMenu.Singal +=  IL_SlugcatSelectMenu_SingalFix;
-
+            IL.Menu.SlugcatSelectMenu.SetChecked += IL_SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
@@ -153,41 +154,31 @@ namespace RainMeadow
             }
         }
 
-        private void SlugcatSelectMenu_ctor(ILContext il)
-        {
-            try
-            {
-                // add colors checkbox regardless if remix disabled
-                var c = new ILCursor(il);
-                c.GotoNext(
-                    i => i.MatchStfld<Menu.SlugcatSelectMenu>("colorsCheckbox")
-                );
-                c.GotoPrev(MoveType.AfterLabel,
-                    i => i.MatchLdsfld<ModManager>("MMF"),
-                    i => i.MatchBrfalse(out _)
-                );
-                c.Index++;
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((bool showColorsCheckbox, Menu.SlugcatSelectMenu self) => showColorsCheckbox || (isStoryMode(out _) && self is StoryOnlineMenu));
-            }
-            catch (Exception e)
-            {
-                Logger.LogError(e);
-            }
-        }
-
         private void SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg(ILContext il)
         {
             try
             {
                 var c = new ILCursor(il);
-                c.GotoNext(MoveType.AfterLabel,
+                //patch going next page transfers your prev page "custom color on?"
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                /*c.GotoNext(MoveType.AfterLabel,
                     i => i.MatchLdsfld<ModManager>("MMF"),
                     i => i.MatchBrfalse(out _)
                 );
                 c.Index++;
                 c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu));
+                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu)); dont overload remix flag as makes slider ids null*/
 
             }
             catch (Exception e)
@@ -195,57 +186,79 @@ namespace RainMeadow
                 Logger.LogError(e);
             }
         }
-
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     return storyGameMode.saveToDisk;
                 }
-
-                if (box.IDString == "ONLINEFRIENDLYFIRE")
+                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     return storyGameMode.friendlyFire;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     return storyGameMode.requireCampaignSlugcat;
                 }
             }
-
             return orig(self, box);
         }
-
         private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu)
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     storyGameMode.saveToDisk = c;
                     return;
                 }
-
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
                     return;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     storyGameMode.requireCampaignSlugcat = c;
                     return;
                 }
             }
-
             orig(self, box, c);
         }
 
+        private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                /*cursor.GotoNext(MoveType.After, x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((SlugcatStats.Name slugcat, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat : slugcat;
+                }); not required now i suppose*/
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
 
+            }
+            catch (Exception ex)
+            {
+                RainMeadow.Error(ex);
+            }
+        }
+        
         private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
         {
             try
@@ -304,8 +317,8 @@ namespace RainMeadow
             orig(self, slider, f);
             if (isStoryMode(out _) && self.colorInterface is not null)
             {
-                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
-                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
+                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(0)?.color ?? rainMeadowOptions.BodyColor.Value; //safe check just in case!
+                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(1)?.color ?? rainMeadowOptions.EyeColor.Value;
             }
         }
 
@@ -944,23 +957,31 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
         {
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode) && OnlineManager.lobby != null)
             {
+                // ok but remember the watcher hates good portals so we have to clean stuff up
+                self.GetStorySession.pendingWarpPointTransferObjects.Clear();
+                self.GetStorySession.importantWarpPointTransferedEntities.Clear();
+                self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
                     return;
                 }
+                if (fromWarpPoint)
+                { // reset gate status
+                    storyGameMode.changedRegions = false;
+                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
+                }
             }
-
             orig(self, malnourished, fromWarpPoint);
         }
 
@@ -1260,7 +1281,9 @@ namespace RainMeadow
                     currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
+
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || currentSaveState.denPosition != storyGameMode.defaultDenPos)
                 {
                     storyGameMode.myLastDenPos = currentSaveState.denPosition;
@@ -1269,9 +1292,6 @@ namespace RainMeadow
                 {
                     currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition}");
-
-                RainMeadow.Debug($"OAUGH WAPYPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
                 {
                     storyGameMode.myLastWarp = currentSaveState.warpPointTargetAfterWarpPointSave;
@@ -1280,7 +1300,8 @@ namespace RainMeadow
                 {
                     currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
                 }
-                RainMeadow.Debug($"OAUGH WAPYPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
+                RainMeadow.Debug($"FINAL DENPOS save:{currentSaveState.denPosition}");
+                RainMeadow.Debug($"FINAL WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
             }
 
             return currentSaveState;
@@ -1294,12 +1315,17 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
-            if (isStoryMode(out var storyGameMode) && storyGameMode.myLastDenPos is not (null or ""))
+            if (isStoryMode(out var storyGameMode))
             {
-                self.denPosition = storyGameMode.myLastDenPos;
-                self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
-                //
-                if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos is not (null or ""))
+                {
+                    self.denPosition = storyGameMode.myLastDenPos;
+                    if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                }
+                if (storyGameMode.myLastWarp is not null)
+                {
+                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
             }
             orig(self, game, survived, newMalnourished);
         }
@@ -1338,6 +1364,20 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private string SaveState_GetSaveStateDenToUse(On.SaveState.orig_GetSaveStateDenToUse orig, SaveState self)
+        {
+            // Savefile logic is not cooperative (with our code); this is a way to ensure that PLEASE
+            // you WARP us into the room we were meant to be warped into, instead of some random room
+            // or wose, a "room out of bounds" (i.e index > region total index)
+            if (OnlineManager.lobby != null && self.warpPointTargetAfterWarpPointSave != null)
+            {
+                string destRoom = self.warpPointTargetAfterWarpPointSave.destRoom;
+                RainMeadow.Debug($"hijacking denpos to be {destRoom}");
+                return destRoom;
+            }
+            return orig(self);
         }
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
@@ -1379,6 +1419,15 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
+        }
+
+        // This is nescesary because sometimes ripple levels are not properly synched
+        // we should probably synch them -- but at the moment this helps avoid black screens of death
+        private string HUD_KarmaMeter_RippleSymbolSprite(On.HUD.KarmaMeter.orig_RippleSymbolSprite orig, bool small, float rippleLevel)
+        {
+            double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
+            num = Math.Max(num, 1.0);
+			return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)

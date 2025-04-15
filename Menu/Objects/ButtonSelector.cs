@@ -13,14 +13,13 @@ namespace RainMeadow
         public float ListPosOffset => downwardsList ? -(buttonSpacing + listDownUpYOffset) : OrigDistanceBetweenButtonYPos + listDownUpYOffset; //readds the additional button spacing lost
         public float OrigStart => downwardsList ? -ButtonScroller.CalculateHeightBasedOnAmtOfButtons(NumberOfButtonsToShow - 1, size.y, buttonSpacing) : size.y;
         public float StartingYPoint => OrigStart + ListPosOffset;
-
         public ButtonSelector(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, int amtOfButtonsView, float spacingOfButton, string description = "") : base(menu, owner, displayText, pos, size, description)
         {
             NumberOfButtonsToShow = amtOfButtonsView;
             buttonSpacing = spacingOfButton;
             OnClick += (_) =>
             {
-                OpenCloseList();
+                OpenCloseList(scroller == null, true, false);
             };
         }
         public override void RemoveSprites()
@@ -37,23 +36,59 @@ namespace RainMeadow
                 scroller.buttonSpacing = buttonSpacing;
             }
         }
-        public virtual void UpdateUponClosingList()
+        public virtual void RefreshScrollerList()
         {
-            menu.PlaySound(SoundID.MENU_MultipleChoice_Clicked);
+            if (scroller != null)
+            {
+                scroller.RemoveAllButtons(false);
+                scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
+                scroller.ConstrainScroll();
+            }
         }
-        public virtual void OpenCloseList()
+        public void OpenCloseList()
+        {
+            OpenCloseList(scroller == null, true, true);
+        }
+        public virtual void OpenCloseList(bool open, bool playSound, bool playSelectedIfClose)
+        {
+            if (open)
+            {
+                OpenList(playSound);
+            }
+            else
+            {
+                CloseList(playSound, playSelectedIfClose);
+            }
+        }
+        public virtual void OpenList(bool playSound)
         {
             if (scroller == null)
             {
                 scroller = new(menu, this, new(0, StartingYPoint), NumberOfButtonsToShow - 1, size.x, size.y, buttonSpacing);
                 scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
                 subObjects.Add(scroller);
-                return;
+                if (playSound)
+                {
+                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
+                }
             }
-            this.ClearMenuObject(ref scroller);
-            UpdateUponClosingList();
         }
-
+        public virtual void CloseList(bool playSound, bool playSelected)
+        {
+            if (scroller != null)
+            {
+                if (playSound)
+                {
+                    menu.PlaySound(playSelected? SoundID.MENU_MultipleChoice_Clicked : SoundID.MENU_Checkbox_Uncheck);
+                }
+                this.ClearMenuObject(ref scroller);
+                UpdateUponClosingList();
+            }
+        }
+        public virtual void UpdateUponClosingList()
+        {
+           
+        }
         public bool downwardsList = true;
         public float listDownUpYOffset, buttonSpacing;
         private int amtOfButtonsToShow;

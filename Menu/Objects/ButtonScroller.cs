@@ -27,8 +27,9 @@ namespace RainMeadow
             set
             {
                 scrollOffset = value;
-                ConstrainScroll();
+                DirectConstrainScroll();
                 scrollSliderValue = MaxDownScroll > 0 ? Mathf.InverseLerp(MaxDownScroll, 0, scrollOffset) : 1; //lower slider value means down, higher means up
+
             }
         }
         public float LowerBound => 0;
@@ -103,9 +104,13 @@ namespace RainMeadow
         {
             DownScrollOffset += addDir;
         }
-        public void ConstrainScroll()
+        public void ConstrainScroll() //for clamping scroll, also updating slider
         {
-            scrollOffset = Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
+            DownScrollOffset = Mathf.Clamp(DownScrollOffset, 0, MaxDownScroll);
+        }
+        protected void DirectConstrainScroll() //for direct scroll clamp, like for DownScrollOffset set method, this doesnt not update slider value
+        {
+            scrollOffset =  Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
         }
         public List<T> GetSpecificButtons<T>()
         {
@@ -128,13 +133,21 @@ namespace RainMeadow
         }
         public void RemoveButton(int index, bool constrainScroll)
         {
-            if (buttons.Count > index)
+            RemoveButton(buttons.GetValueOrDefault(index), constrainScroll);
+        }
+        public void RemoveButton(IPartOfButtonScroller? button)
+        {
+            RemoveButton(button, true);
+        }
+        public void RemoveButton(IPartOfButtonScroller? button, bool constrainScroll)
+        {
+            if (button != null)
             {
-                if (buttons[index] is MenuObject menuObj)
+                if (button is MenuObject menuObj)
                 {
                     this.ClearMenuObject(menuObj);
                 }
-                buttons.RemoveAt(index);
+                buttons.Remove(button);
             }
             if (constrainScroll)
             {
@@ -200,11 +213,11 @@ namespace RainMeadow
             public float Alpha { get => alpha; set => alpha = value; }
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
+
             public override bool CurrentlySelectableNonMouse => alpha >= 1 && base.CurrentlySelectableNonMouse;
             public override bool CurrentlySelectableMouse => alpha >= 1 && base.CurrentlySelectableMouse;
-            public virtual void UpdateAlpha(float alpha)
+            public virtual void UpdateAlpha(float alpha) //should be for changing graphics, dependent on frame refresh rate
             {
-                this.alpha = alpha;
                 menuLabel.label.alpha = alpha;
                 for (int i = 0; i < roundedRect.sprites.Length; i++)
                 {
@@ -215,9 +228,9 @@ namespace RainMeadow
                 {
                     selectRect.sprites[i].alpha = alpha;
                 }
-                GetButtonBehavior.greyedOut = alpha < 1;
+                buttonBehav.greyedOut = forceGreyedOut || alpha < 1;
             }
-
+            public bool forceGreyedOut;
             public float alpha = 1;
         }
         public interface IPartOfButtonScroller //allows other derived objects to be part of the button scroller

@@ -18,6 +18,8 @@ namespace RainMeadow
             public string? defaultDenPos;
             [OnlineField(nullable = true)]
             public string? region;
+            [OnlineField(nullable = true)]
+            public string? defaultWarpPos; //this is mainly so clients do not brick saves when activating echoes
             [OnlineField]
             public bool isInGame;
             [OnlineField]

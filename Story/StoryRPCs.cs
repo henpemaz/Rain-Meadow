@@ -40,15 +40,22 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished, string? denPos, bool fromWarpPoint)
+        public static void GoToWinScreen(bool malnourished, bool fromWarpPoint, string? denPos, string? warpPointTarget)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
             if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
             {
                 storyGameMode.myLastDenPos = denPos;
+                storyGameMode.myLastWarp = null;
+                if (warpPointTarget != null)
+                { //construct data
+                    var warpPointData = new Watcher.WarpPoint.WarpPointData(null);
+                    warpPointData.FromString(warpPointTarget);
+                    storyGameMode.myLastWarp = warpPointData;
+                    game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
+                }
             }
-
             game.Win(malnourished, fromWarpPoint);
         }
 
@@ -60,6 +67,7 @@ namespace RainMeadow
             if (RainMeadow.isStoryMode(out var storyGameMode) && !storyGameMode.hasSheltered)
             {
                 storyGameMode.myLastDenPos = denPos;
+                storyGameMode.myLastWarp = null;
             }
 
             game.GoToStarveScreen();
@@ -127,13 +135,28 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
         }
 
-        // Perform a warp (precast, host needs to "finish" to activate)
+        // Raises ripple level, usually client also tells
         [RPCMethod]
-        public static void PerformWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, bool useNormalWarpLoader)
+        public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
         {
-            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-            RainMeadow.Debug($"WARP.DATA? {warpData}, Loader={useNormalWarpLoader}");
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
+            storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
+            storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
+            storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+        }
+
+        [RPCMethod]
+        public static void PlayRaiseRippleLevelAnimation()
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+			game.cameras[0].hud.karmaMeter.UpdateGraphic();
+			game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+        }
+
+        internal static Watcher.WarpPoint PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader)
+        {
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return null;
+            RainMeadow.Debug($"Warp point? in {sourceRoomName}; data={warpData}, Loader={useNormalWarpLoader}");
             // generate "local" warp point
             Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
             newWarpData.FromString(warpData);
@@ -144,23 +167,64 @@ namespace RainMeadow
                 var abstractRoom2 = game.overWorld.activeWorld.GetAbstractRoom(sourceRoomName);
                 if (abstractRoom2.realizedRoom == null)
                 {
-                    if (game.overWorld.game.roomRealizer != null)
+                    if (game.roomRealizer != null)
                     {
                         game.roomRealizer = new RoomRealizer(game.roomRealizer.followCreature, game.overWorld.activeWorld);
                     }
                     abstractRoom2.RealizeRoom(game.overWorld.activeWorld, game);
                 }
-                // throw everyone into the same room
-
-
+                // do nat throw everyone into the same room?
                 warpPoint.room = abstractRoom2.realizedRoom;
             }
-            game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
             if (RainMeadow.isStoryMode(out var storyGameMode))
             {
                 storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
+                storyGameMode.warpCameraFix = true; //force camera to new room
             }
-            OnlineManager.forceWarp = true;
+            game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
+            // update camera position
+            string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
+            var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
+            // emulate as if we did actually warp
+            game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
+            if (game.cameras[0].warpPointTimer == null)
+            {
+                game.cameras[0].warpPointTimer = new Watcher.WarpPoint.WarpPointTimer(warpPoint.activateAnimationTime * 2f, warpPoint);
+                game.cameras[0].warpPointTimer.MoveToSecondHalf();
+                game.cameras[0].BlankWarpPointHoldFrame();
+            }
+            RainMeadow.Debug($"switch camera to {destRoom}");
+            return warpPoint;
+        }
+
+        // Perform a warp (precast, host needs to "finish" to activate)
+        [RPCMethod]
+        public static void NormalExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, bool useNormalWarpLoader)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            PerformWarpHelper(sourceRoomName, warpData, useNormalWarpLoader);
+        }
+
+        // Performs a warp via an echo, can be triggered by anyone
+        [RPCMethod]
+        public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData)
+        {
+            Watcher.WarpPoint warpPoint = PerformWarpHelper(sourceRoomName, warpData, true);
+            if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+            {
+                RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
+                var newWarpData = (warpPoint.overrideData != null) ? warpPoint.overrideData : warpPoint.Data;
+                game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
+                if (RainMeadow.isStoryMode(out var storyGameMode))
+                {
+                    storyGameMode.myLastWarp = newWarpData;
+                }
+                game.Win(false, true);
+            }
+            else
+            {
+                RainMeadow.Error($"warp of kind echo FAILED because upcoming process exists");
+            }
         }
 
         // Once host finishes animation and stuff, force client to perform warp
@@ -172,12 +236,38 @@ namespace RainMeadow
             if (game.overWorld.specialWarpCallback is Watcher.WarpPoint warpPoint)
             {
                 RainMeadow.Debug($"Forcing client to warp");
+                if (warpPoint.room != null)
+                {
+                    if (RoomSession.map.TryGetValue(warpPoint.room.abstractRoom, out var rs) && !rs.isActive)
+                    {
+                        RainMeadow.Debug("subscribing to room with warp");
+                        rs.Activate();
+                        rs.Needed();
+                    }
+                    // problem?
+                }
                 warpPoint.PerformWarp();
             }
             else
             {
                 RainMeadow.Error($"warp does not exist? damn we are desynched i think");
             }
+        }
+
+        [RPCMethod]
+        public static void InfectRegionRoomWithSentientRot(RPCEvent rpc, float amount, string roomName)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            RainMeadow.Debug($"setting infection of {roomName} to {amount}");
+            // fill if does not exist - otherwise simply set :)
+            int regionNumber = game.overWorld.activeWorld.region.regionNumber;
+            if (!game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression.ContainsKey(roomName))
+            {
+                RegionState.SentientRotState value = new RegionState.SentientRotState();
+                game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression[roomName] = value;
+            }
+            game.GetStorySession.saveState.regionStates[regionNumber].sentientRotProgression[roomName].rotIntensity = amount;
         }
 
         [RPCMethod]
