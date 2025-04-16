@@ -32,15 +32,30 @@ namespace RainMeadow
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
 
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
-
-            On.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
+            IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
-        private void MirosBirdAbstractAI_Raid(On.MirosBirdAbstractAI.orig_Raid orig, MirosBirdAbstractAI self)
+        private void MirosBirdAbstractAI_Raid(ILContext il)
         {
-            if (OnlineManager.lobby == null) orig(self);
+            try
+            {
+                var c = new ILCursor(il);
+                ILLabel skip = null;
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdloc(0),
+                    i => i.MatchLdcI4(3),
+                    i => i.MatchBge(out skip)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby != null);
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
