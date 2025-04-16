@@ -695,7 +695,10 @@ namespace RainMeadow
                     else
                     {
                         // Key does not exist, you can add it if needed
-                        OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, player, 0); // default to slugcat 0
+                        if (!OnlineManager.lobby.isOwner)
+                        {
+                            OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, player, 0); // default to slugcat 0
+                        }
                     }
 
                     if (arena.playersReadiedUp.list.Contains(player.id))
