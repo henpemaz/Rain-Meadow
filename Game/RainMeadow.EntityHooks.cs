@@ -48,8 +48,7 @@ namespace RainMeadow
                     i => i.MatchLdcI4(3),
                     i => i.MatchBge(out skip)
                 );
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby != null);
+                c.EmitDelegate(() => OnlineManager.lobby != null);
                 c.Emit(OpCodes.Brtrue, skip);
             }
             catch (Exception e)
