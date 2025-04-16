@@ -238,22 +238,17 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
-                ILLabel endFirstLoop = null;
+                ILLabel spawnRocks = null;
                 c.GotoNext(moveType: MoveType.Before, //code that can be run by client safely
                     i => i.MatchLdarg(0),
-                    i => i.MatchLdcI4(20),
-                    i => i.MatchStfld<Watcher.Barnacle>("temporaryDamageImmunity")
-                );
-                //c.MoveAfterLabels();
-                c.MarkLabel(skip);
-                c.GotoPrev(moveType: MoveType.Before, // right before 2 while loops
-                    i => i.MatchLdcI4(0),
-                    i => i.MatchStloc(0),
-                    i => i.MatchBr(out endFirstLoop)
+                    i => i.MatchLdfld<UpdatableAndDeletable>("room"),
+                    i => i.MatchBrtrue(out spawnRocks),
+                    i => i.MatchRet(),
                 );
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby == null || (self.abstractCreature is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo) && opo.isMine));
-                c.Emit(OpCodes.Brfalse, skip); //only may the object owner (or singleplayer) add rocks for a barnacle
+                c.Emit(OpCodes.Brtrue, spawnRocks); //only may the object owner (or singleplayer) add rocks for a barnacle
+                c.Emit(OpCodes.Ret);
             }
             catch (Exception e)
             {
