@@ -763,7 +763,7 @@ namespace RainMeadow
                         OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
                     } else
                     {
-                        arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.ToString(), currentColorIndex);
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex);
                     }
 
                 }
