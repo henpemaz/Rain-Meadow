@@ -33,7 +33,14 @@ namespace RainMeadow
 
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
 
+            On.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
+
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+        }
+
+        private void MirosBirdAbstractAI_Raid(On.MirosBirdAbstractAI.orig_Raid orig, MirosBirdAbstractAI self)
+        {
+            if (OnlineManager.lobby == null) orig(self);
         }
 
         private bool AbstractCreature_Quantify(Func<AbstractCreature, bool> orig, AbstractCreature self)
