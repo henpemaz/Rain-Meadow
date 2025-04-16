@@ -761,6 +761,9 @@ namespace RainMeadow
                     if (!OnlineManager.lobby.isOwner)
                     {
                         OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
+                    } else
+                    {
+                        arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.ToString(), currentColorIndex);
                     }
 
                 }
@@ -783,6 +786,10 @@ namespace RainMeadow
                         {
                             player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
                         }
+                    }
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
                     }
                 };
                 pages[0].subObjects.Add(classButtons[0]);
