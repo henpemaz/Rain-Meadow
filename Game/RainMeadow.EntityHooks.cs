@@ -243,7 +243,7 @@ namespace RainMeadow
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<UpdatableAndDeletable>("room"),
                     i => i.MatchBrtrue(out spawnRocks),
-                    i => i.MatchRet(),
+                    i => i.MatchRet()
                 );
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Watcher.Barnacle self) => OnlineManager.lobby == null || (self.abstractCreature is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo) && opo.isMine));
