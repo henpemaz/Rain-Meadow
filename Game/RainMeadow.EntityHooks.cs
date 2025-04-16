@@ -48,8 +48,9 @@ namespace RainMeadow
                     i => i.MatchLdcI4(3),
                     i => i.MatchBge(out skip)
                 );
-                c.EmitDelegate(() => OnlineManager.lobby != null);
-                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((MirosBirdAbstractAI self) => OnlineManager.lobby == null || self.parent.IsLocal());
+                c.Emit(OpCodes.Brfalse, skip);
             }
             catch (Exception e)
             {
