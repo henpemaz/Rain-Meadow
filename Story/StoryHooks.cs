@@ -963,7 +963,7 @@ namespace RainMeadow
                 self.GetStorySession.pendingWarpPointTransferObjects.Clear();
                 self.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
-                string lastWarpPoint = (storyGameMode.myLastWarp == null) ? "" : storyGameMode.myLastWarp.ToString();
+                string lastWarpPoint = (storyGameMode.myLastWarp != null) ? storyGameMode.myLastWarp.ToString() : null;
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
