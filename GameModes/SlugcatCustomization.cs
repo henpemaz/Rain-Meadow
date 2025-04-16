@@ -15,6 +15,7 @@ namespace RainMeadow
 
         public SlugcatStats.Name playingAs;
         public string nickname;
+        public InGameTranslator.LanguageID language; //used to select font for nickname display
 
         public SlugcatCustomization() { }
 
@@ -57,6 +58,8 @@ namespace RainMeadow
             public SlugcatStats.Name playingAs;
             [OnlineField]
             public string nickname;
+            [OnlineField]
+            public InGameTranslator.LanguageID language; //used to select font for nickname display
 
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
@@ -64,6 +67,7 @@ namespace RainMeadow
                 customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
+                language = slugcatCustomization.language;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -72,6 +76,7 @@ namespace RainMeadow
                 slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
+                slugcatCustomization.language = language;
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);

@@ -57,7 +57,10 @@ namespace RainMeadow
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            avatarSettings = new SlugcatCustomization() {
+                nickname = OnlineManager.mePlayer.id.name,
+                language = RWCustom.Custom.rainWorld.inGameTranslator.currentLanguage
+            };
         }
 
         public override ProcessManager.ProcessID MenuProcessId()

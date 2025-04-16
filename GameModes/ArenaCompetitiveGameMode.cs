@@ -66,7 +66,10 @@ namespace RainMeadow
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
-            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            avatarSettings = new SlugcatCustomization() {
+                nickname = OnlineManager.mePlayer.id.name,
+                language = RWCustom.Custom.rainWorld.inGameTranslator.currentLanguage
+            };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();

@@ -50,12 +50,14 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             customization.nickname = value;
+            customization.language = RWCustom.Custom.rainWorld.inGameTranslator.currentLanguage;
         }
 
         private void NicknameBox_OnValueChanged(UIconfig config, string value, string oldValue)
         {
             RainMeadow.DebugMe();
             customization.nickname = value;
+            customization.language = RWCustom.Custom.rainWorld.inGameTranslator.currentLanguage;
         }
 
         private void SlugcatSelector_OnValueChanged(UIconfig config, string value, string oldValue)

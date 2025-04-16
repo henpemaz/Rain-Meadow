@@ -11,7 +11,7 @@ namespace RainMeadow
     {
         public FSprite arrowSprite;
         public FSprite gradient;
-        public FLabel username;
+        public FForeignLanguageLabel username;
         public List<FLabel> messageLabels = new();
         public FLabel pingLabel;
         public FSprite slugIcon;
@@ -117,7 +117,7 @@ namespace RainMeadow
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
-            this.username = new FLabel(Custom.GetFont(), customization.nickname);
+            this.username = new FForeignLanguageLabel(Utils.GetLanguageFont(customization.language), customization.nickname);
             owner.hud.fContainers[0].AddChild(this.username);
             this.username.alpha = 0f;
             this.username.x = -1000f;
@@ -248,6 +248,7 @@ namespace RainMeadow
 
             if (messageQueue.Count > 0)
             {
+                this.username.SetFont(Utils.GetLanguageFont(customization.language));
                 this.username.text = customization.nickname + ": ";
 
                 while (messageQueue.Count > messageLabels.Count) messageQueue.Dequeue();
@@ -278,6 +279,7 @@ namespace RainMeadow
             }
             else
             {
+                this.username.SetFont(Utils.GetLanguageFont(customization.language));
                 this.username.text = customization.nickname;
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {

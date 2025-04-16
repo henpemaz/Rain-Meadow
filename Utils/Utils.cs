@@ -13,6 +13,20 @@ namespace RainMeadow
     {
         public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
 
+        // Obtains a font but using the specified language font (as opposed to defualting the user one on GetFont())
+		public static string GetLanguageFont(InGameTranslator.LanguageID language)
+		{
+			if (ModManager.NonPrepackagedModsInstalled && ModManager.InitializationScreenFinished && Custom.rainWorld != null && (language == InGameTranslator.LanguageID.Korean || language == InGameTranslator.LanguageID.Japanese || language == InGameTranslator.LanguageID.Chinese))
+			{
+				return "font" + LocalizationTranslator.LangShort(language) + "Full";
+			}
+			if (!(Custom.rainWorld == null) && (!(language != InGameTranslator.LanguageID.Japanese) || !(language != InGameTranslator.LanguageID.Korean) || !(language != InGameTranslator.LanguageID.Chinese) || !(language != InGameTranslator.LanguageID.Russian)))
+			{
+				return "font" + LocalizationTranslator.LangShort(language);
+			}
+			return "font";
+		}
+
         public static string Translate(string text)
         {
             return Translator.Translate(text);
