@@ -172,6 +172,11 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
 
+                sw = Stopwatch.StartNew();
+                ArenaHelpers.InitializeBuiltinTypes();
+                sw.Stop();
+                RainMeadow.Debug($"ArenaHelpers.InitializeBuiltinTypes: {sw.Elapsed}");
+
                 AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assetbundles/rainmeadow"));
                 Shader[] newShaders = bundle.LoadAllAssets<Shader>();
                 foreach (Shader shader in newShaders)
