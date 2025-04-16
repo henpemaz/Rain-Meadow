@@ -963,17 +963,18 @@ namespace RainMeadow
                 self.GetStorySession.pendingWarpPointTransferObjects.Clear();
                 self.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
+                string lastWarpPoint = (storyGameMode.myLastWarp == null) ? "" : storyGameMode.myLastWarp.ToString();
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, lastWarpPoint);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, storyGameMode.myLastWarp.ToString());
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, lastWarpPoint);
                     return;
                 }
                 if (fromWarpPoint)
