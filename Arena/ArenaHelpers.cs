@@ -5,19 +5,19 @@ namespace RainMeadow
 {
     public static class ArenaHelpers
     {
-        public static List<SlugcatStats.Name> allSlugcats = null;
-        public static List<SlugcatStats.Name> baseGameSlugcats = null;
-        public static List<SlugcatStats.Name> vanillaSlugcats = null;
-        public static List<SlugcatStats.Name> mscSlugcats = null;
+        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
         public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
 
         public static void InitializeBuiltinTypes()
         {
             // reinitialize
-            vanillaSlugcats = new List<SlugcatStats.Name>();
-            baseGameSlugcats = new List<SlugcatStats.Name>();
-            mscSlugcats = new List<SlugcatStats.Name>();
-            allSlugcats = new List<SlugcatStats.Name>();
+            vanillaSlugcats.Clear();
+            baseGameSlugcats.Clear();
+            mscSlugcats.Clear();
+            allSlugcats.Clear();
             //
             vanillaSlugcats.Add(SlugcatStats.Name.White);
             vanillaSlugcats.Add(SlugcatStats.Name.Yellow);
