@@ -1023,7 +1023,7 @@ namespace RainMeadow
 
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[currentPlayerPosition].id);
                 }
                 catch
                 {
@@ -1085,7 +1085,7 @@ namespace RainMeadow
 
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[currentPlayerPosition].id);
                 }
                 catch
                 {
