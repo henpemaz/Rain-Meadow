@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Menu;
+using Menu.Remix.MixedUI;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryOnlineMenu : SlugcatSelectMenu
+    public class StoryOnlineMenu : SlugcatSelectMenu, IChatSubscriber
     {
         CheckBox clientWantsToOverwriteSave;
         CheckBox friendlyFire;
@@ -25,6 +26,16 @@ namespace RainMeadow
         StoryGameMode storyGameMode;
         MenuLabel onlineDifficultyLabel;
         Vector2 restartCheckboxPos;
+        
+        //chat
+        public List<MenuObject> chatSubObjects = new();
+        public List<(string, string)> chatLog = new();
+        public int currentLogIndex = 0;
+        private const int maxVisibleMessages = 13;
+        private int startIndex;
+        public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
+        public bool Active => true;
+
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -99,6 +110,7 @@ namespace RainMeadow
             UpdatePlayerList();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+            ChatLogManager.Subscribe(this);
         }
 
         public void SetupSelectableSlugcats() {
@@ -362,6 +374,82 @@ namespace RainMeadow
             if (colorsCheckbox != null)
             {
                 colorsCheckbox.Checked = colorChecked; //this.IsCustomColorEnabled(scug); //automatically opens color interface if enabled
+            }
+        }
+
+        public void AddMessage(string user, string message)
+        {
+            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
+            this.chatLog.Add((user, message));
+            this.UpdateLogDisplay();
+        }
+
+        public void UpdateLogDisplay()
+        {
+            if (chatLog.Count > 0)
+            {
+                startIndex = Mathf.Clamp(chatLog.Count - maxVisibleMessages - currentLogIndex, 0, chatLog.Count - maxVisibleMessages);
+                var logsToRemove = new List<MenuObject>();
+
+                // First, collect all the logs to remove
+                foreach (var log in chatSubObjects)
+                {
+                    log.RemoveSprites();
+                    logsToRemove.Add(log);
+                }
+
+                // Now remove the logs from the original collection
+                foreach (var log in logsToRemove)
+                {
+                    pages[0].RemoveSubObject(log);
+                }
+
+                float yOffSet = 0;
+                var visibleLog = chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                foreach (var (username, message) in visibleLog)
+                {
+                    if (username is null or "")
+                    {
+                        // system message
+                        var messageLabel = new MenuLabel(this, pages[0], message,
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        messageLabel.label.alignment = FLabelAlignment.Left;
+                        messageLabel.label.color = SYSTEM_COLOR;
+                        chatSubObjects.Add(messageLabel);
+                        pages[0].subObjects.Add(messageLabel);
+                    }
+                    else
+                    {
+                        float H = 0f;
+                        float S = 0f;
+                        float V = 0f;
+
+                        var color = Color.white;
+                        var colorNew = color;
+
+                        Color.RGBToHSV(color, out H, out S, out V);
+                        if (V < 0.8f) { colorNew = Color.HSVToRGB(H, S, 0.8f); }
+
+                        var usernameLabel = new MenuLabel(this, pages[0], username,
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        usernameLabel.label.alignment = FLabelAlignment.Left;
+                        usernameLabel.label.color = colorNew;
+                        chatSubObjects.Add(usernameLabel);
+                        pages[0].subObjects.Add(usernameLabel);
+
+                        var usernameWidth = LabelTest.GetWidth(usernameLabel.label.text);
+                        var messageLabel = new MenuLabel(this, pages[0], $": {message}",
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f + usernameWidth + 2f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        messageLabel.label.alignment = FLabelAlignment.Left;
+                        chatSubObjects.Add(messageLabel);
+                        pages[0].subObjects.Add(messageLabel);
+                    }
+                    yOffSet += 20f;
+                }
             }
         }
     }

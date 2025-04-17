@@ -9,17 +9,15 @@ namespace RainMeadow
     public class ChatLogOverlay : Menu.Menu
     {
         private ChatHud chatHud;
-        public RainWorldGame game;
         private Dictionary<string, Color> colorDictionary = new();
         private const int maxVisibleMessages = 13;
         private int startIndex;
 
         public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
 
-        public ChatLogOverlay(ChatHud chatHud, ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
+        public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
             this.chatHud = chatHud;
-            this.game = game;
             pages.Add(new Page(this, null, "chat", 0));
 
             UpdateLogDisplay();
