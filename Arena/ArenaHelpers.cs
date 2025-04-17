@@ -66,8 +66,6 @@ namespace RainMeadow
             }
             if (arena.returnToLobby)
             {
-                //lobby.clientReadiedUp = false;
-
                 arena.playersReadiedUp.list.Clear();
 
                 arena.returnToLobby = false;
