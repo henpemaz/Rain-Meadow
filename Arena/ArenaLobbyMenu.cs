@@ -352,19 +352,16 @@ namespace RainMeadow
                         arena.playersReadiedUp.list.Add(OnlineManager.mePlayer.id);
                     }
                 }
-
-                if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
+                else
                 {
-                    foreach (var player in OnlineManager.players)
+
+                    if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
-                        if (!player.isMe)
-                        {
-                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
-                        }
+                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
+                        this.playButton.menuLabel.text = this.Translate("Waiting for others...");
+                        this.playButton.inactive = true;
+                        this.playButton.buttonBehav.greyedOut = true;
                     }
-                    this.playButton.menuLabel.text = this.Translate("Waiting for others...");
-                    this.playButton.inactive = true;
-                    this.playButton.buttonBehav.greyedOut = true;
                 }
                 return;
             }
@@ -763,7 +760,8 @@ namespace RainMeadow
                     if (!OnlineManager.lobby.isOwner)
                     {
                         OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
-                    } else
+                    }
+                    else
                     {
                         arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
                     }

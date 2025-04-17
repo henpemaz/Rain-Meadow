@@ -226,17 +226,9 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    return;
-                }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
-                    {
-                        arena.playersReadiedUp.list.Add(userIsReady.id);
-                    }
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
 
             }
