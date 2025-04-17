@@ -21,6 +21,7 @@ namespace RainMeadow
                     stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
                     stillInGame.manager.rainWorld.options.DeleteArenaSitting();
                     stillInGame.ArenaSitting.players.Clear();
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
                     return;
                 }
                 if (lobby.manager.upcomingProcess != null)
