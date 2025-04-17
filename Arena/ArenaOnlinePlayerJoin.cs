@@ -100,6 +100,19 @@ namespace Menu
         {
             base.GrafUpdate(timeStacker);
             var champBorderColor = Color.yellow;
+            if (RainMeadow.RainMeadow.isArenaMode(out var arena) && profileIdentifier != OnlineManager.mePlayer)
+            {
+                if (arena.playersReadiedUp != null &&
+                      arena.playersReadiedUp.list != null &&
+                      arena.playersReadiedUp.list.Contains(profileIdentifier.id))
+                {
+                    readyForCombat = true;
+                }
+                else
+                {
+                    readyForCombat = false;
+                }
+            }
 
             menuLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastLabelFade, labelFade, timeStacker), 0.3f);
             Color color = Color.Lerp(Menu.MenuRGB(Menu.MenuColors.Black), Menu.MenuRGB(Menu.MenuColors.White), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
@@ -124,7 +137,7 @@ namespace Menu
             float lerpFactor = Mathf.PingPong(Time.time * alternationSpeed, 1f);
 
 
-            if (RainMeadow.RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
+            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
             {
                 roundedRect.borderColor = HSLColor.Lerp(ogColor.ToHSL(), champBorderColor.ToHSL(), lerpFactor);
                 portrait.sprite.color = Color.Lerp(ogColor, champBorderColor, lerpFactor);
