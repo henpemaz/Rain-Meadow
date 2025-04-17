@@ -201,7 +201,7 @@ namespace RainMeadow
                     MutualHorizontalButtonBind(colorConfigButton, usernameButtons[0]);
                 }
             }
-          
+
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -550,6 +550,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
+            manager.rainWorld.progression.SaveProgression(true, true);
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 OnlineManager.LeaveLobby();
@@ -688,28 +689,24 @@ namespace RainMeadow
 
                 foreach (var player in OnlineManager.players)
                 {
-                    if (!player.isMe)
+                    if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.ToString(), out var existingValue))
                     {
-                        if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.ToString(), out var existingValue))
+                        RainMeadow.Debug("Player already exists in slug dictionary");
+                    }
+                    else
+                    {
+                        // Key does not exist, you can add it if needed
+                        if (!OnlineManager.lobby.isOwner)
                         {
-                            RainMeadow.Debug("Player already exists in slug dictionary");
-                        }
-                        else
-                        {
-                            // Key does not exist, you can add it if needed
-                            arena.playersInLobbyChoosingSlugs.Add(player.id.ToString(), 0);
-                        }
-
-                        if (arena.playersReadiedUp.list.Contains(player.id))
-                        {
-                            RainMeadow.Debug($"Player {player.id.name} is readied up");
-                        }
-                        else
-                        {
-                            // Key does not exist, you can add it if needed
-                            //arena.playersReadiedUp.Add(player.inLobbyId);
+                            OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, player, 0); // default to slugcat 0
                         }
                     }
+
+                    if (arena.playersReadiedUp.list.Contains(player.id))
+                    {
+                        RainMeadow.Debug($"Player {player.id.name} is readied up");
+                    }
+
                 }
                 AddUsernames();
                 AddClassButtons();
@@ -731,7 +728,7 @@ namespace RainMeadow
 
         private List<Color> GetPersonalColors(SlugcatStats.Name id)
         {
-            return [..this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
+            return [.. this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
         }
         private void AddClassButtons()
         {
@@ -765,7 +762,13 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Player did NOT exist in dictionary");
                     currentColorIndex = 0;
-                    arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.ToString(), currentColorIndex);
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
+                    } else
+                    {
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    }
 
                 }
 
@@ -788,8 +791,10 @@ namespace RainMeadow
                             player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
                         }
                     }
-
-                    arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    }
                 };
                 pages[0].subObjects.Add(classButtons[0]);
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
