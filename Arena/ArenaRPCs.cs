@@ -239,22 +239,22 @@ namespace RainMeadow
                     }
                 }
 
-                try
-                {
-                    for (int i = 0; i < game.classButtons.Length; i++)
-                    {
-                        if (game.classButtons[i].profileIdentifier == userIsReady)
-                        {
-                            game.classButtons[i].readyForCombat = true;
+                //try
+                //{
+                //    for (int i = 0; i < game.classButtons.Length; i++)
+                //    {
+                //        if (game.classButtons[i].profileIdentifier == userIsReady)
+                //        {
+                //            game.classButtons[i].readyForCombat = true;
 
-                        }
+                //        }
 
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find user");
-                }
+                //    }
+                //}
+                //catch
+                //{
+                //    RainMeadow.Debug("Could not find user");
+                //}
 
 
 
