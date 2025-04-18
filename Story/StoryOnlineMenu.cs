@@ -408,8 +408,7 @@ namespace RainMeadow
             {
                 this.chatTextBox.DelayedUnload(0.1f);
                 this.chatTextBox.RemoveSprites();
-                pages[0].RemoveSubObject(this.chatTextBox);
-                this.chatTextBox = null;
+                pages[0].ClearMenuObject(ref this.chatTextBox);
             }
             if (this.isChatToggled && this.chatTextBox is null)
             {
