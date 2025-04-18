@@ -404,11 +404,8 @@ namespace RainMeadow
 
         internal void ResetChatInput()
         {
-            if (this.chatTextBox is not null)
-            {
-                this.chatTextBox?.DelayedUnload(0.1f);
-                pages[0].ClearMenuObject(ref this.chatTextBox);
-            }
+            this.chatTextBox?.DelayedUnload(0.1f);
+            pages[0].ClearMenuObject(ref this.chatTextBox);
             if (this.isChatToggled && this.chatTextBox is null)
             {
                 this.chatTextBox = new ChatTextBox(this, pages[0], "", new Vector2(this.chatTextBoxPos.x + 24, 0), new(575, 30));
