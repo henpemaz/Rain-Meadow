@@ -22,7 +22,7 @@ namespace Menu
 
         public int index;
 
-        public MenuIllustration portrait;
+        public MenuIllustration? portrait;
 
         public float labelFade;
 
@@ -38,13 +38,11 @@ namespace Menu
 
         public bool readyForCombat;
 
-        public ArenaOnlineGameMode arena;
-
-        private ArenaLobbyMenu arenaMenu;
-
         public MenuIllustration joinButtonImage;
 
-        public SimplerSymbolButton kickButton;
+        public SimplerButton usernameButton;
+
+        public SimplerSymbolButton? kickButton;
 
         public OnlinePlayer profileIdentifier;
 
@@ -64,24 +62,31 @@ namespace Menu
             return HSLColor.Lerp(from, Menu.MenuColor(Menu.MenuColors.Black), black).rgb;
         }
 
-        public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index)
+        public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index, OnlinePlayer player, bool canKick)
             : base(menu, owner, pos, new Vector2(100f, 100f))
         {
             this.index = index;
-            roundedRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: true);
-            subObjects.Add(roundedRect);
-            selectRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: false);
-            subObjects.Add(selectRect);
-            portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
-            subObjects.Add(portrait);
-            string text = menu.Translate("");
+            profileIdentifier = player;
+            roundedRect = new(menu, this, new Vector2(0f, 0f), size, filled: true);
+            selectRect = new(menu, this, new Vector2(0f, 0f), size, filled: false);
+            portrait = new(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
             readyForCombat = false;
+            string text = "";
             float num = 0f;
-            menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
-            subObjects.Add(menuLabel);
-
+            menuLabel = new(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
+            usernameButton = new(menu, this, profileIdentifier.id.name, new(0, -40), new(100, 30));
+            subObjects.AddRange([roundedRect, selectRect, portrait, menuLabel, usernameButton]);
+            if (canKick)
+            {
+                kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(40, 110));
+                kickButton.OnClick += (_) =>
+                {
+                    RainMeadow.RainMeadow.Debug(string.Format("Kicked User: {0}", profileIdentifier), "/Arena/ArenaLobbyMenu.cs", "AddClassButtons");
+                    BanHammer.BanUser(profileIdentifier);
+                };
+                subObjects.Add(kickButton);
+            }
         }
-
         public override void Update()
         {
             base.Update();
@@ -95,7 +100,6 @@ namespace Menu
             lastPortraitBlack = portraitBlack;
             portraitBlack = Custom.LerpAndTick(portraitBlack, readyForCombat ? 0 : 1, 0.06f, 0.05f); // Set to 1 to grey out
         }
-
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
@@ -147,5 +151,15 @@ namespace Menu
                 portrait.sprite.color = ogColor;
             }
         }
+        public void SetNewPortrait(string newFile)
+        {
+            if (portrait!.fileName != newFile)
+            {
+                portrait.fileName = newFile;
+                portrait.LoadFile();
+                portrait.sprite.SetElementByName(portrait.fileName);
+            }
+        }
+
     }
 }
