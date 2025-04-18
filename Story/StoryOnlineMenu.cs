@@ -407,10 +407,11 @@ namespace RainMeadow
             if (this.chatTextBox is not null)
             {
                 this.chatTextBox.DelayedUnload(0.1f);
+                this.chatTextBox.RemoveSprites();
                 pages[0].RemoveSubObject(this.chatTextBox);
                 this.chatTextBox = null;
             }
-            if (this.isChatToggled)
+            if (this.isChatToggled && this.chatTextBox is null)
             {
                 this.chatTextBox = new ChatTextBox(this, pages[0], "", new Vector2(this.chatTextBoxPos.x + 24, 0), new(575, 30));
                 pages[0].subObjects.Add(this.chatTextBox);
