@@ -35,12 +35,10 @@ namespace RainMeadow {
             // https://superuser.com/questions/698244/ip-address-that-is-the-equivalent-of-dev-null
             static readonly IPEndPoint BlackHole = new IPEndPoint(IPAddress.Parse("253.253.253.253"), 999); 
             public IPEndPoint endPoint;
-            public LANPlayerId(IPEndPoint? endPoint) : base(
-                    UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
+            public LANPlayerId(IPEndPoint? endPoint) : base(UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
             {
                 this.endPoint = endPoint ?? BlackHole;
             }
-
             public override void OpenProfileLink() {
                 string dialogue = "";
                 bool isMe = isLoopback();
@@ -58,16 +56,13 @@ namespace RainMeadow {
                     new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)), 
                         OnlineManager.instance.manager, null));
             }
-
             public void reset()
             {
                 this.endPoint = BlackHole;
             }
-
             public override int GetHashCode() {
                 return this.endPoint?.GetHashCode() ?? 0;
             }
-
             public override void CustomSerialize(Serializer serializer)
             {
                 if (serializer.IsWriting) {
@@ -79,6 +74,7 @@ namespace RainMeadow {
                         serializer.writer.Write((int)endPoint.Address.GetAddressBytes().Length);
                         serializer.writer.Write(endPoint.Address.GetAddressBytes());
                     }
+                    serializer.writer.Write(index);
                 } else if (serializer.IsReading) {
                     bool issender = serializer.reader.ReadBoolean();
                     if (issender) {
@@ -88,9 +84,9 @@ namespace RainMeadow {
                         byte[] endpointbytes = serializer.reader.ReadBytes(serializer.reader.ReadInt32());
                         this.endPoint = new IPEndPoint(new IPAddress(endpointbytes), port);
                     }
+                    index = serializer.reader.ReadInt32();
                 }
             }
-
             public bool isLoopback() {
                 if (OnlineManager.netIO is LANNetIO netio) {
                     if (netio.manager.port != endPoint?.Port) return false;
@@ -98,7 +94,6 @@ namespace RainMeadow {
 
                 return UDPPeerManager.isLoopback(endPoint.Address);
             }
-
             public override bool Equals(MeadowPlayerId other)
             {
                 
@@ -107,19 +102,21 @@ namespace RainMeadow {
                 }
                 return false;
             }
+            public override string RealID()
+            {
+                return name;//$"{endPoint.Port}|{string.Join(",", endPoint.Address.GetAddressBytes().Select(x => x.ToString()))}"; //idk yet
+            }
+            public int index = -1;
         }
         public override void initializeMePlayer() {
             if (OnlineManager.netIO is LANNetIO netio) {
                 
-                OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(
-                    UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
+                OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
                 if (RainMeadow.rainMeadowOptions.LanUserName.Value.Length > 0) {
                     OnlineManager.mePlayer.id.name = RainMeadow.rainMeadowOptions.LanUserName.Value;
                 }
             } 
-        }
-
-        
+        }     
         static List<LANLobbyInfo> lobbyinfo = new();
         public override void RequestLobbyList() {
             lobbyinfo.Clear();
