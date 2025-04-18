@@ -14,27 +14,30 @@ namespace RainMeadow
 {
     public class StoryOnlineMenu : SlugcatSelectMenu, IChatSubscriber
     {
-        CheckBox clientWantsToOverwriteSave;
-        CheckBox friendlyFire;
-        CheckBox reqCampaignSlug;
-        MenuLabel? lobbyLabel, slugcatLabel;
-        ButtonScroller? playerScrollBox;
-        StoryMenuSlugcatSelector? slugcatSelector;
-        SlugcatCustomization personaSettings;
-        SlugcatStats.Name[] selectableSlugcats;
-        SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
-        StoryGameMode storyGameMode;
-        MenuLabel onlineDifficultyLabel;
-        Vector2 restartCheckboxPos;
+        private CheckBox clientWantsToOverwriteSave;
+        private CheckBox friendlyFire;
+        private CheckBox reqCampaignSlug;
+        private MenuLabel? lobbyLabel, slugcatLabel;
+        private ButtonScroller? playerScrollBox;
+        private StoryMenuSlugcatSelector? slugcatSelector;
+        private SlugcatCustomization personaSettings;
+        private SlugcatStats.Name[] selectableSlugcats;
+        private SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
+        private StoryGameMode storyGameMode;
+        private MenuLabel onlineDifficultyLabel;
+        private Vector2 restartCheckboxPos;
         
-        //chat
-        public List<MenuObject> chatSubObjects = new();
-        public List<(string, string)> chatLog = new();
-        public int currentLogIndex = 0;
+        //Chat constants
         private const int maxVisibleMessages = 13;
-        private int startIndex;
-        public Color SYSTEM_COLOR = new(1f, 1f, 0.3333333f);
-        public bool Active => true;
+        public bool Active => isChatToggled;
+        //Chat variables
+        private List<MenuObject> chatSubObjects = new();
+        private List<(string, string)> chatLog = new();
+        private int currentLogIndex = 0;
+        private bool isChatToggled = false;
+        private ChatTextBox chatTextBox;
+        private Vector2 chatTextBoxPos;
+        private Dictionary<string, Color> colorDictionary = new();
 
         public SlugcatStats.Name[] SelectableSlugcats
         {
@@ -110,6 +113,8 @@ namespace RainMeadow
             UpdatePlayerList();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+
+            ChatTextBox.OnShutDownRequest += ResetChatInput;
             ChatLogManager.Subscribe(this);
         }
 
@@ -204,6 +209,9 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
+            ChatTextBox.OnShutDownRequest -= ResetChatInput;
+            ChatLogManager.Unsubscribe(this);
+
             RainMeadow.DebugMe();
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game) // if join on sleep/deathscreen this needs to be added here as well
             {
@@ -324,6 +332,15 @@ namespace RainMeadow
             invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
             pages[0].subObjects.Add(invite);
 
+            this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
+            var toggleChat = new SimplerSymbolButton(this, pages[0], "Kill_Slugcat", "", this.chatTextBoxPos);
+            toggleChat.OnClick += (_) => {
+                this.isChatToggled = !this.isChatToggled;
+                this.ResetChatInput();
+                this.UpdateLogDisplay();
+            };
+            pages[0].subObjects.Add(toggleChat);
+
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
@@ -385,11 +402,38 @@ namespace RainMeadow
             this.UpdateLogDisplay();
         }
 
-        public void UpdateLogDisplay()
+        internal void ResetChatInput()
         {
+            if (this.chatTextBox is not null)
+            {
+                this.chatTextBox.DelayedUnload(0.1f);
+                pages[0].RemoveSubObject(this.chatTextBox);
+                this.chatTextBox = null;
+            }
+            if (this.isChatToggled)
+            {
+                this.chatTextBox = new ChatTextBox(this, pages[0], "", new Vector2(this.chatTextBoxPos.x + 24, 0), new(575, 30));
+                pages[0].subObjects.Add(this.chatTextBox);
+            }
+        }
+
+        internal void UpdateLogDisplay()
+        {
+            if (!this.isChatToggled)
+            {
+                var list = new List<MenuObject>();
+                foreach (var e in chatSubObjects)
+                {
+                    e.RemoveSprites();
+                    list.Add(e);
+                }
+                foreach (var e in list) pages[0].RemoveSubObject(e);
+                chatSubObjects.Clear(); //do not keep gc stuff!
+                return;
+            }
             if (chatLog.Count > 0)
             {
-                startIndex = Mathf.Clamp(chatLog.Count - maxVisibleMessages - currentLogIndex, 0, chatLog.Count - maxVisibleMessages);
+                int startIndex = Mathf.Clamp(chatLog.Count - maxVisibleMessages - currentLogIndex, 0, chatLog.Count - maxVisibleMessages);
                 var logsToRemove = new List<MenuObject>();
 
                 // First, collect all the logs to remove
@@ -402,8 +446,11 @@ namespace RainMeadow
                 // Now remove the logs from the original collection
                 foreach (var log in logsToRemove)
                 {
+                    chatSubObjects.Remove(log);
                     pages[0].RemoveSubObject(log);
                 }
+
+                ChatLogManager.UpdatePlayerColors();
 
                 float yOffSet = 0;
                 var visibleLog = chatLog.Skip(startIndex).Take(maxVisibleMessages);
@@ -416,27 +463,19 @@ namespace RainMeadow
                             new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
                             new Vector2(manager.rainWorld.screenSize.x, 30f), false);
                         messageLabel.label.alignment = FLabelAlignment.Left;
-                        messageLabel.label.color = SYSTEM_COLOR;
+                        messageLabel.label.color = ChatLogManager.defaultSystemColor;
                         chatSubObjects.Add(messageLabel);
                         pages[0].subObjects.Add(messageLabel);
                     }
                     else
                     {
-                        float H = 0f;
-                        float S = 0f;
-                        float V = 0f;
-
-                        var color = Color.white;
-                        var colorNew = color;
-
-                        Color.RGBToHSV(color, out H, out S, out V);
-                        if (V < 0.8f) { colorNew = Color.HSVToRGB(H, S, 0.8f); }
+                        var color = ChatLogManager.GetDisplayPlayerColor(username);
 
                         var usernameLabel = new MenuLabel(this, pages[0], username,
                             new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
                             new Vector2(manager.rainWorld.screenSize.x, 30f), false);
                         usernameLabel.label.alignment = FLabelAlignment.Left;
-                        usernameLabel.label.color = colorNew;
+                        usernameLabel.label.color = color;
                         chatSubObjects.Add(usernameLabel);
                         pages[0].subObjects.Add(usernameLabel);
 
