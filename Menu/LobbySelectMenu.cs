@@ -326,7 +326,6 @@ namespace RainMeadow
         
         public void RequestLobbyJoin(LobbyInfo lobby, string? password = null)
         {
-            ChatLogManager.ResetPlayerColors();
             RainMeadow.DebugMe();
             MatchmakingManager.currentInstance.RequestJoinLobby(lobby, password);
         }
