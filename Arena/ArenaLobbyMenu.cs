@@ -16,7 +16,6 @@ namespace RainMeadow
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
-        public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
         public MenuLabel currentLevelProgression;
 
@@ -322,7 +321,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
 
-            if (arena.isInGame && !clientReadiedUp)
+            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
             {
                 return;
             }
@@ -351,21 +350,17 @@ namespace RainMeadow
                         arena.playersReadiedUp.list.Add(OnlineManager.mePlayer.id);
                     }
                 }
-
-                if (OnlineManager.players.Count > 1 && !clientReadiedUp)
+                else
                 {
-                    foreach (var player in OnlineManager.players)
+
+                    if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
-                        if (!player.isMe)
-                        {
-                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
-                        }
+                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
+                        this.playButton.menuLabel.text = this.Translate("Waiting for others...");
+                        this.playButton.inactive = true;
+                        this.playButton.buttonBehav.greyedOut = true;
                     }
-                    this.playButton.menuLabel.text = this.Translate("Waiting for others...");
-                    this.playButton.inactive = true;
-                    this.playButton.buttonBehav.greyedOut = true;
                 }
-                clientReadiedUp = true;
                 return;
             }
 
@@ -437,7 +432,7 @@ namespace RainMeadow
 
             }
 
-            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
+            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
             {
                 this.StartGame();
                 initiatedStartGameForClient = true;
@@ -479,7 +474,7 @@ namespace RainMeadow
                 }
 
 
-                if (clientReadiedUp && OnlineManager.players.Count > 1)
+                if (arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && OnlineManager.players.Count > 1)
                 {
                     this.playButton.inactive = true;
                 }
@@ -510,24 +505,24 @@ namespace RainMeadow
                     if (arena.isInGame)
                     {
                         this.playButton.inactive = true;
-                        if (!clientReadiedUp) // you're late
+                        if (!arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id)) // you're late
                         {
                             this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
 
                         }
                     }
-                    if (!arena.isInGame && !clientReadiedUp)
+                    if (!arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
                         this.playButton.menuLabel.text = this.Translate("READY?");
                         this.playButton.inactive = false;
                     }
-                    if (!arena.isInGame && clientReadiedUp && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
+                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
                     {
                         this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                         this.playButton.inactive = true;
                     }
 
-                    if (!arena.isInGame && clientReadiedUp && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
                     {
                         this.playButton.menuLabel.text = this.Translate("Waiting for host...");
                         this.playButton.inactive = true;
@@ -763,7 +758,8 @@ namespace RainMeadow
                     if (!OnlineManager.lobby.isOwner)
                     {
                         OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
-                    } else
+                    }
+                    else
                     {
                         arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
                     }
