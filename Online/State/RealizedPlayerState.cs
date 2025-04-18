@@ -138,7 +138,9 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "tongue")]
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
-        public BodyChunkRef tongueAttachedChunk;
+        public BodyChunkRef? tongueAttachedChunk;
+        [OnlineFieldHalf(nullable = true)]
+        private Vector2? pointingDir;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -167,6 +169,7 @@ namespace RainMeadow
                 tongueRequestedLength = tongue.requestedRopeLength;
                 tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
             }
+
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -186,6 +189,14 @@ namespace RainMeadow
 
             analogInputX = i.analogueDir.x;
             analogInputY = i.analogueDir.y;
+
+            // Pointing
+            if (p.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
+                if (handIndex >= 0 && playerGraphics.hands[handIndex].reachingForObject)
+                    pointingDir = playerGraphics.hands[handIndex].absoluteHuntPos;
+            }
         }
 
         public Player.InputPackage GetInput()
@@ -226,8 +237,6 @@ namespace RainMeadow
             var p = oc?.apo.realizedObject as Player;
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
-
-
 
             p.monkAscension = monkAscension;
             p.burstY = burstY;
@@ -299,6 +308,21 @@ namespace RainMeadow
             {
                 p.playerInAntlers.playerDisconnected = true;
                 p.playerInAntlers = null;
+            }
+
+            // Pointing
+            if (p.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
+                if (handIndex >= 0)
+                {
+                    playerGraphics.hands[handIndex].reachingForObject = pointingDir is not null;
+                    if (pointingDir is not null)
+                    {
+                        playerGraphics.LookAtPoint(pointingDir.Value, Pointing.LookInterest);
+                        playerGraphics.hands[handIndex].absoluteHuntPos = pointingDir.Value;
+                    }
+                }
             }
         }
     }
