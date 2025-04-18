@@ -455,7 +455,6 @@ namespace RainMeadow
                         player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
                     }
                 }
-                bool isOwner2 = OnlineManager.lobby.isOwner;
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
@@ -474,10 +473,10 @@ namespace RainMeadow
             }
             if (slugcatPlayerButtons.PagesOn)
             {
-                slugcatPlayerButtons.ActivateButtons();
+                slugcatPlayerButtons.ActivatePageButtons();
                 return;
             }
-            slugcatPlayerButtons.DeactivateButtons();
+            slugcatPlayerButtons.DeactivatePageButtons();
 
         }
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)

@@ -11,7 +11,8 @@ namespace RainMeadow
     public class ArenaOnlineSlugcatButtons : PositionedMenuObject //uponPopulate changes have to be on the parameter especially for ctor
     {
         public float XOffset => 120;
-        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, Mathf.Max(OtherOnlinePlayers.Count - 1, 0) / PerPage); }
+        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, MaxOffset); }
+        public int MaxOffset => Mathf.Max(OtherOnlinePlayers.Count - 1, 0) / PerPage;
         public int PerPage { get => perPage; set => perPage = Mathf.Max(perPage, 1); } //excludes first button
         public bool PagesOn =>  OtherOnlinePlayers?.Count > PerPage;
         public List<OnlinePlayer> OtherOnlinePlayers => [..onlinePlayers.Where(x => !x.isMe)];
@@ -25,15 +26,24 @@ namespace RainMeadow
             PopulatePage(CurrentOffset);
             if (PagesOn)
             {
-                ActivateButtons();
+                ActivatePageButtons();
             }
         }
         public override void RemoveSprites()
         {
             base.RemoveSprites();
             this.ClearMenuObject(ref meButton);
-            DeactivateButtons();
+          
+            DeactivatePageButtons();
             ClearInterface();
+        }
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (pageStater != null)
+            {
+                pageStater.text = $"{CurrentOffset + 1}/{MaxOffset + 1}";
+            }
         }
         public override void Singal(MenuObject sender, string message)
         {
@@ -68,7 +78,7 @@ namespace RainMeadow
             List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
             while (num < otherOnlinePlayers.Count && num < (CurrentOffset + 1) * PerPage)
             {
-                ArenaOnlinePlayerJoinButton playerButton = GetArenaPlayerButton(new(XOffset + (num % PerPage * XOffset), meButton.pos.y), OnlineManager.mePlayer);
+                ArenaOnlinePlayerJoinButton playerButton = GetArenaPlayerButton(new(XOffset + (num % PerPage * XOffset), meButton!.pos.y), otherOnlinePlayers[num]);
                 subObjects.Add(playerButton);
                 menu.TryMutualBind(newArenaPlayerButtons.GetValueOrDefault((num - 1) % PerPage), playerButton, true);
                 newArenaPlayerButtons.Add(playerButton);
@@ -83,7 +93,7 @@ namespace RainMeadow
             this.ClearMenuObjectIList(otherArenaPlayerButtons);
             otherArenaPlayerButtons = refresh ? [] : null;
         }
-        public void ActivateButtons()
+        public void ActivatePageButtons()
         {
             if (viewPrevPlayer == null)
             {
@@ -97,12 +107,18 @@ namespace RainMeadow
                 viewNextPlayer.symbolSprite.rotation = 90f;
                 subObjects.Add(viewNextPlayer);
             }
+            if (pageStater == null)
+            {
+                pageStater = new(menu, this, "", new((PerPage + 2) * XOffset, 70), new(70, 30), false);
+                subObjects.AddRange([meButton, pageStater]);
+            }
             RefreshSelectables();
         }
-        public void DeactivateButtons()
+        public void DeactivatePageButtons()
         {
             this.ClearMenuObject(ref viewPrevPlayer);
             this.ClearMenuObject(ref viewNextPlayer);
+            this.ClearMenuObject(ref pageStater);
         }
         public void RefreshSelectables()
         {
@@ -126,6 +142,7 @@ namespace RainMeadow
         }
         public const string PREVSINGAL = "ARENAONLINESLUGCATBUTTONS_PREV", NEXTSINGAL = "ARENAONLINESLUGCATBUTTONS_NEXT";
         private int currentOffset, perPage;
+        public MenuLabel? pageStater;
         public SimplerSymbolButton? viewNextPlayer, viewPrevPlayer;
         public ArenaOnlinePlayerJoinButton? meButton;
         public ArenaOnlinePlayerJoinButton[]? otherArenaPlayerButtons = [];
