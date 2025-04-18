@@ -15,6 +15,8 @@ namespace RainMeadow
         private IntVector2? enteringShortcut;
         [OnlineField]
         private WorldCoordinate transportationDestination;
+        [OnlineField(nullable = true)]
+        public ArtificialIntelligenceState? artificialIntelligenceState;
 
         public RealizedCreatureState() { }
         public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
@@ -26,6 +28,22 @@ namespace RainMeadow
             stun = (short)creature.stun;
             enteringShortcut = creature.enteringShortCut;
             transportationDestination = creature.NPCTransportationDestination;
+            artificialIntelligenceState = GetCreatureAIState(onlineCreature);
+        }
+
+        private bool ShouldSyncAI(CreatureTemplate.Type type) {
+            if (type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC) return true;
+            return false;
+        }
+
+        protected virtual ArtificialIntelligenceState? GetCreatureAIState(OnlineCreature onlineCreature)
+        {
+            if (onlineCreature.apo is AbstractCreature creature && creature.creatureTemplate.AI) {
+                if (ShouldSyncAI(creature.creatureTemplate.type)) {
+                    return new ArtificialIntelligenceState(onlineCreature);
+                }
+            }
+            return null;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
