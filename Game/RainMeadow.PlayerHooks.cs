@@ -59,10 +59,32 @@ public partial class RainMeadow
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
+        On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
+        On.Player.CanEatMeat += Player_CanEatMeat;
         
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit) {
+        if (OnlineManager.lobby != null) {
+            if (self.standing && self.CanPutSlugToBack) {
+                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p)) {
+                    return false;
+                }
+            }
+        }
+        return orig(self, crit);
+    }
+
+    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate) {
+        if (OnlineManager.lobby != null) {
+            if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            return true;
+        }
+
+        return orig(self, pickUpCandidate);
     }
 
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {

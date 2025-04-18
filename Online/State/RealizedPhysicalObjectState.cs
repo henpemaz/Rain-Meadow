@@ -16,8 +16,20 @@ namespace RainMeadow
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            // LenientPos indictates that a physical object's position may cause graphical or errors due to latency.
+            // Sometimes, this isn't enough. 
+
+            // Here ShouldSyncChunks being false indicates that the creature's chunk state would not be valid, even if it arrived on time
+            if (ShouldSyncChunks(onlineEntity.apo.realizedObject)) {
+                chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            } else {
+                chunkStates = Array.Empty<ChunkState>();
+            }
+            
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+        }
+        virtual public bool ShouldSyncChunks(PhysicalObject po) {
+            return true;
         }
         
         virtual public bool ShouldPosBeLenient(PhysicalObject po) {
