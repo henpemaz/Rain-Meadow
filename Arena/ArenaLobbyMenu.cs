@@ -465,7 +465,6 @@ namespace RainMeadow
             arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
             for (int i = 0; i < slugcatPlayerButtons.otherArenaPlayerButtons?.Length; i++)
             {
-                int realIndex = slugcatPlayerButtons.PerPage * slugcatPlayerButtons.CurrentOffset + i;
                 ArenaOnlinePlayerJoinButton playerButton = slugcatPlayerButtons.otherArenaPlayerButtons[i];
                 playerButton.portraitBlack = Custom.LerpAndTick(playerButton.portraitBlack, 1f, 0.06f, 0.05f);
                 playerButton.readyForCombat = arena.playersReadiedUp.list.Contains(playerButton.profileIdentifier.id);
