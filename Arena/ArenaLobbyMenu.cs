@@ -18,9 +18,9 @@ namespace RainMeadow
         private static float num3 = num - num2;
         public MenuLabel totalClientsReadiedUpOnPage;
         public MenuLabel currentLevelProgression;
-
         public MenuLabel displayCurrentGameMode;
         private SimplerSymbolButton viewNextPlayer, viewPrevPlayer, colorConfigButton;
+        public ColorSlugcatDialog colorConfigDialog;
         private int holdPlayerPosition;
         private int currentPlayerPosition;
         private bool initiatedStartGameForClient;
@@ -194,7 +194,8 @@ namespace RainMeadow
                     colorConfigButton = new(this, pages[0], "Kill_Slugcat", "", usernameButtons[0].pos + new Vector2(-44, 0f));
                     colorConfigButton.OnClick += (_) =>
                     {
-                        manager.ShowDialog(new ColorSlugcatDialog(manager, arena.avatarSettings.playingAs, () => { }));
+                        colorConfigDialog = new(manager, arena.avatarSettings.playingAs, () => { });
+                        manager.ShowDialog(colorConfigDialog);
                     };
                     pages[0].subObjects.Add(colorConfigButton);
                     MutualHorizontalButtonBind(colorConfigButton, usernameButtons[0]);
@@ -322,7 +323,6 @@ namespace RainMeadow
         private void StartGame()
         {
             RainMeadow.DebugMe();
-
             if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
             {
                 return;
@@ -369,6 +369,10 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner && !arena.isInGame)
             {
                 return;
+            }
+            if (colorConfigDialog != null)
+            {
+                manager.StopSideProcess(colorConfigDialog); //force getting rid of dialog
             }
             arena.avatarSettings.currentColors = GetPersonalColors(arena.avatarSettings.playingAs);
             InitializeNewOnlineSitting();
