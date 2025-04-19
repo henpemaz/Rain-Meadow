@@ -154,15 +154,18 @@ New skin unlocked|Nuevo aspecto desbloqueado
 // Story Mode
  - New Game| - Juego nuevo
 Current Campaign: |Campaña actual: 
-Selected Slugcat|Gatobabosa seleccionado
+Selected Slugcat|Babosa seleccionada
+Slugpup|Cría
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
 Require Campaign Slugcat|Requerir gato de campaña
 Match save|Igualar guar.
 PLAYERS|JUGADORES
+Press again to ban player!|¡Pulsa otra vez para banear al jugador!
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
- to spectate, or press PAUSE BUTTON to dismiss message| para espectar o el BOTÓN DE PAUSA para quitar este mensaje
+ to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
 READY|LISTO
+Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gatobabosa
 
 // ArenaCompetitive Mode
 Current Mode:|Modo actual:
@@ -170,7 +173,7 @@ Free For All|Todos contra todos
 Ready:|Listos:
 Playlist Progress:|Progreso de la lista:
 WAIT FOR OTHERS|ESTOY LISTO
-FORCE READY|FORZAR LISTO
+FORCE READY|FORZAR LISTOS
 LOBBY WILL LOCK|BLOQUEAR SALA
 GAME IN SESSION|EN CURSO
 READY?|¿LISTO?
@@ -179,8 +182,7 @@ Waiting for host...|Espera al anfitrión
 Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
 Waiting|Esperando
 Prepare for combat,|Prepárate para el combate,
-Slugpup|Cría
-Paincat|Paincat
+Paincat|Gatodolor
 Inv|Inv
 Enot|Enot
 Sofanthiel|Sofanthiel
@@ -207,23 +209,23 @@ left the game.|se ha ido de la partida.
 // Death Messages
 died.|ha muerto.
 was crushed by the rain.|ha perecido por la lluvia.
-fell into the abyss.|ha caído hacia el abismo.
-was drowned by|se ha ahogado por
+fell into the abyss.|se ha caído al abismo.
+was drowned by|ha sido ahogado por
 drowned.|se ha ahogado.
 hit the ground too hard.|se ha golpeado muy fuerte contra el suelo.
-was killed through unknown means.|ha muerto por medios desconocidos.
+was killed through unknown means.|ha sido asesinado por medios desconocidos.
 tried to swim in burning liquid.|ha intentado nadar en líquido ardiente.
-spontaneously combusted.|se ha quemado de manera espontánea.
+spontaneously combusted.|se ha quemado espontáneamente.
 froze to death.|se ha congelado hasta la muerte.
-was swallowed by the grass.|ha sucumbido por el césped.
-was swallowed by the walls.|ha sucumbido por las paredes.
-was electrocuted.|se ha electrocutado.
-licked the power.|ha lamido la energía eléctrica.
-was consummed by the swarm.|se ha rendido ante el hervidero.
+was swallowed by the grass.|ha sido tragado por el césped.
+was swallowed by the walls.|ha sido tragado por las paredes.
+was electrocuted.|ha sido electrocutado.
+licked the power.|ha lamido la energía.
+was consummed by the swarm.|ha sido consumido por el enjambre de arañas.
 was slain by|ha muerto a manos de
 was ascended by|ha ascendido por parte de
-was zapped by a|ha muerto por una descarga eléctrica de
-was slain by a|ha muerto por
+was zapped by a|ha sido electrocutado por
+was slain by a|ha sido asesinado por
 
 // creature names for death messages
 Pink Lizard|Lagarto Rosa
@@ -317,15 +319,16 @@ Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás
 // LAN Matchmaking Manager
 LAN Lobby|Sala de LAN
 Nobody|Nadie
-Your network interface(s) are|Tus interfaces de red son
+Your network interface(s) are|Tu(s) interfaz/ces de red son
 <NAME> network interface is |La interfaz de red de <NAME> es 
 You are |Tú eres 
 This player is |Este jugador es 
 the owner of the lobby.|el dueño de la sala.
-Players can “Direct Connect” to this lobby through |Los jugadores pueden conectarse directamente a esta sala a través de 
-your|tus
-their|sus
- interface(s).| interfaces.
+Players can “Direct Connect” to this lobby through |Los jugadores pueden conectarse directamente a esta sala por 
+your|tu(s)
+their|su(s)
+ interface(s).| interfaz/ces.
+ player index is | índice de jugador es 
 You cannot use this feature here.|No puedes usar esta característica aquí.
 
 // Mod Applier
@@ -333,15 +336,15 @@ Error loading mods!|¡Error al cargar mods!
 A restart is required to finish applying the mod changes.|Es necesario un reinicio para terminar de aplicar los cambios de mods.
 Restarting now...|Reiniciando...
 Mod Mismatch!|¡Mods desvinculados!
-Mods that have to be enabled: |Mods que tienen que estar activados: 
-Mods that have to be disabled: |Mods que tienen que estar desactivados: 
-Mods that have to be installed: |Mods que tienen que estar instalados: 
+Mods that have to be enabled: |Mods que deben estar activados: 
+Mods that have to be disabled: |Mods que deben estar desactivados: 
+Mods that have to be installed: |Mods que deben estar instalados: 
 Apply these changes now?|¿Aplicar ahora estos cambios?
 Warning: Differing Mod Load Orders!|Advertencia: ¡Órdenes discrepantes en la carga de mods!
 This may cause unstable play.|Esto puede ocasionar una jugabilidad inestable.
 Reorder your mods now?|¿Reordenar ahora tus mods?
 Cannot join due to missing DLC!|¡No puedes unirte debido a la falta de DLC!
-Missing DLC Mods that have to be enabled: |Mods DLC perdidos que tienen que estar activados: 
+Missing DLC Mods that have to be enabled: |Mods DLC perdidos que deben estar activados: 
 
 // Remix Options
 Arena|Arena
@@ -351,13 +354,14 @@ Show usernames|Mostrar nombres de usuario
 Username Toggle|Pulsar para ver los nombres de usuario
 Replace holding with toggling|Reemplazar «mantener» con «pulsar».
 Key used for toggling spectator mode|Activar o desactivar el modo espectador
-Stop Inputs While Spectating|Detener entradas al espectar
+Stop Inputs While Spectating|Detener entradas al espectear
 Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Controla qué mods están permitidos en los clientes, editando los archivos de abajo.<LINE>Incluyen instrucciones (en inglés) dentro.
 Edit High-Impact Mods|Editar mods de alto imp.
 Edit Banned Mods|Editar mods prohibidos
 Chat Log Toggle|Botón para ver o quitar el chat
 Chat Talk Button|Botón para hablar por el chat
 Chat Log On/Off|Mostrar el chat
+Show Ping|Mostrar el ping
 Introroll|Intro de apertura
 Vanilla|Vanilla
 Downpour|Downpour
@@ -373,7 +377,7 @@ Unlock Skin|Desbl. aspecto
 Unlock Character|Desbl. personaje
 Reset all progression|Reiniciar todo el progreso
 Ready to shelter/gate|Preparado para hibernar o pasar de región
-If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los iconos siempre aparecerán en pantalla en una puerta o refugio.
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los íconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
 WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden causar corrupciones de datos, realiza una copia de seguridad de tus partidas.
 Custom Story Slugcat:|Campañas personalizadas:
