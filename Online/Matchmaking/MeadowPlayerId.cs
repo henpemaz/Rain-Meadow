@@ -21,6 +21,7 @@ namespace RainMeadow
 
         public abstract void CustomSerialize(Serializer serializer);
         public abstract bool Equals(MeadowPlayerId other);
+        public abstract string RealID();
         public override bool Equals(object obj)
         {
             return Equals(obj as MeadowPlayerId);

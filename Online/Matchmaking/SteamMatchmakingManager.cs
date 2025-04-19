@@ -44,7 +44,10 @@ namespace RainMeadow
             {
                 return other is SteamPlayerId otherS && steamID == otherS.steamID;
             }
-
+            public override string RealID()
+            {
+                return steamID.m_SteamID.ToString();
+            }
             public override int GetHashCode()
             {
                 return steamID.GetHashCode();
