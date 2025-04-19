@@ -7,17 +7,7 @@ namespace RainMeadow
     public class RealizedSpearState : RealizedWeaponState
     {
         [OnlineFieldHalf(group = "spear", nullable = true)]
-        private Vector2? stuckInWall;
-        [OnlineField(group = "spear", nullable = true)]
-        private BodyChunkRef? stuckInChunk;
-        [OnlineField(group = "spear", nullable = true)]
-        private AppendageRef? stuckInAppendage;
-        [OnlineField(group = "spear")]
-        private sbyte stuckBodyPart;
-        [OnlineFieldHalf(group = "spear")]
-        private float stuckRotation;
-        [OnlineField(group = "spear")]
-        private sbyte stuckInWallCycles;
+        private StuckSpearState? stuck;
         [OnlineField(group = "spear")]
         private bool needleActive = true;
         [OnlineFieldHalf(group = "spear")]
@@ -27,39 +17,50 @@ namespace RainMeadow
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var spear = (Spear)onlineEntity.apo.realizedObject;
-            stuckInWall = spear.stuckInWall;
-            stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
             spearDamageBonus = spear.spearDamageBonus;
 
             if (spear.stuckInObject != null)
             {
-                stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk);
-                stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
-                stuckBodyPart = (sbyte)spear.stuckBodyPart;
-                stuckRotation = spear.stuckRotation;
+                stuck = new();
+                stuck.stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk);
+                stuck.stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
+                stuck.stuckBodyPart = (sbyte)spear.stuckBodyPart;
+                stuck.stuckRotation = spear.stuckRotation;
             }
-            else stuckInChunk = null;
+            else if (spear.stuckInWall != null)
+            {
+                stuck = new();
+                stuck.stuckInWall = spear.stuckInWall;
+                stuck.stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
+                stuck.stuckInChunk = null;
+            }
+            else
+            {
+                stuck = null;
+            }
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            spear.stuckInWall = stuckInWall;
-            spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
-            spear.spearDamageBonus = spearDamageBonus;
-            if (!stuckInWall.HasValue)
-                spear.addPoles = false;
-            spear.spearmasterNeedle_hasConnection = needleActive;
-
-            if (stuckInChunk is not null)
+            if (stuck != null)
             {
-                spear.stuckInObject = stuckInChunk.owner;
-                spear.stuckInChunkIndex = stuckInChunk.index;
-                spear.stuckInAppendage = spear.stuckInObject != null ? stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
-                spear.stuckBodyPart = stuckBodyPart;
-                spear.stuckRotation = stuckRotation;
+                spear.stuckInWall = stuck.stuckInWall;
+                spear.abstractSpear.stuckInWallCycles = stuck.stuckInWallCycles;
+                spear.spearDamageBonus = spearDamageBonus;
+                if (!stuck.stuckInWall.HasValue)
+                    spear.addPoles = false;
+                if (stuck.stuckInChunk is not null)
+                {
+                    spear.stuckInObject = stuck.stuckInChunk.owner;
+                    spear.stuckInChunkIndex = stuck.stuckInChunk.index;
+                    spear.stuckInAppendage = spear.stuckInObject != null ? stuck.stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
+                    spear.stuckBodyPart = stuck.stuckBodyPart;
+                    spear.stuckRotation = stuck.stuckRotation;
+                }
             }
+            spear.spearmasterNeedle_hasConnection = needleActive;
 
             base.ReadTo(onlineEntity);
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
@@ -113,5 +114,21 @@ namespace RainMeadow
         {
             return new PhysicalObject.Appendage.Pos(appendageOwner.appendages[appIndex], prevSegment, distanceToNext);
         }
+    }
+
+    public class StuckSpearState : RealizedWeaponState
+    {
+        [OnlineFieldHalf(group = "stuck", nullable = true)]
+        public Vector2? stuckInWall;
+        [OnlineField(group = "stuck", nullable = true)]
+        public BodyChunkRef? stuckInChunk;
+        [OnlineField(group = "stuck", nullable = true)]
+        public AppendageRef? stuckInAppendage;
+        [OnlineField(group = "stuck")]
+        public sbyte stuckBodyPart;
+        [OnlineFieldHalf(group = "stuck")]
+        public float stuckRotation;
+        [OnlineField(group = "stuck")]
+        public sbyte stuckInWallCycles;
     }
 }

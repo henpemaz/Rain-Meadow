@@ -89,30 +89,15 @@ namespace RainMeadow
             c.vel = vel;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is ChunkState other && Equals(other);
-        }
-
+        public override bool Equals(object obj) => obj is ChunkState other && Equals(other);
         public bool Equals(ChunkState other)
         {
             //return other != null && pos == other.pos && vel == other.vel;
             return other as object != null && pos.CloseEnough(other.pos, 1 / 4f) && vel.CloseEnoughZeroSnap(other.vel, 1 / 256f);
         }
 
-        public static bool operator ==(ChunkState lhs, ChunkState rhs)
-        {
-            return lhs as object != null && lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(ChunkState lhs, ChunkState rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-        public override int GetHashCode()
-        {
-            return pos.GetHashCode() + vel.GetHashCode();
-        }
+        public static bool operator ==(ChunkState lhs, ChunkState rhs) => lhs as object != null && lhs.Equals(rhs);
+        public static bool operator !=(ChunkState lhs, ChunkState rhs) => !(lhs == rhs);
+        public override int GetHashCode() => pos.GetHashCode() + vel.GetHashCode();
     }
 }
