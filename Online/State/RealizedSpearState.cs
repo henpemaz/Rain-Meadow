@@ -6,7 +6,7 @@ namespace RainMeadow
 {
     public class RealizedSpearState : RealizedWeaponState
     {
-        [OnlineFieldHalf(group = "spear", nullable = true)]
+        [OnlineField(group = "spear", nullable = true)]
         private StuckSpearState? stuck;
         [OnlineField(group = "spear")]
         private bool needleActive = true;
@@ -116,7 +116,7 @@ namespace RainMeadow
         }
     }
 
-    public class StuckSpearState : RealizedWeaponState
+    public class StuckSpearState : OnlineState
     {
         [OnlineFieldHalf(group = "stuck", nullable = true)]
         public Vector2? stuckInWall;
