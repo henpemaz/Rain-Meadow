@@ -33,9 +33,37 @@ namespace RainMeadow
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
 
+            On.SSOracleBehavior.NewAction += SSOracleBehavior_NewAction;
+
             On.EggBug.DropEggs += EggBug_DropEggs;
             On.Vulture.DropMask += Vulture_DropMask;
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
+        }
+
+        private void SSOracleBehavior_NewAction(On.SSOracleBehavior.orig_NewAction orig, SSOracleBehavior self, SSOracleBehavior.Action nextAction)
+        {
+            if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo))
+            {
+                if (opo.roomSession.isOwner && opo.isMine)
+                { //we own the entity xaxax
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(opo.TriggerOracleAction, nextAction);
+                        }
+                    }
+                    orig(self, nextAction);
+                }
+                else if (RealizedSSOracleState.PebblesActionAllow)
+                {
+                    orig(self, nextAction);
+                }
+            }
+            else
+            {
+                orig(self, nextAction);
+            }
         }
 
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)

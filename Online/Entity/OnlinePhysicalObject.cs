@@ -555,5 +555,16 @@ namespace RainMeadow
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
         }
+
+        [RPCMethod]
+        public void TriggerOracleAction(SSOracleBehavior.Action nextAction)
+        {
+            if (apo.realizedObject is Oracle oracle && oracle.oracleBehavior is SSOracleBehavior ssBehavior)
+            {
+                RealizedSSOracleState.PebblesActionAllow = true;
+                ssBehavior.NewAction(nextAction);
+                RealizedSSOracleState.PebblesActionAllow = false;
+            }
+        }
     }
 }

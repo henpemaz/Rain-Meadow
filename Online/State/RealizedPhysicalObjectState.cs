@@ -20,15 +20,15 @@ namespace RainMeadow
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
         
-        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
-            if (po.grabbedBy.Any((x) => {
-                if (x.grabber == null) return false;
-                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
-                if (onlinegrabber == null) return false;
-                return onlinegrabber.lenientPos;
-            })) return true;
-
-            return false;
+        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po is Oracle _)
+                return true;
+            return po.grabbedBy.Any((x) => {
+                if (x.grabber == null)
+                    return false;
+                var oe = x.grabber.abstractCreature.GetOnlineCreature();
+                return oe != null && oe.lenientPos;
+            });
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
