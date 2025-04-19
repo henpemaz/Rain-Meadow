@@ -46,13 +46,16 @@ namespace RainMeadow
         /// <summary>
         /// Obtains the available (free) hand that can be used for pointing
         /// </summary>
-        internal static int GetHandIndex(Creature realizedPlayer)
+        internal static int GetHandIndex(Creature? realizedPlayer)
         {
-            for (int i = 1; i >= 0 && realizedPlayer is not null; i--)
+            if (realizedPlayer is not null && realizedPlayer.graphicsModule is PlayerGraphics playerGraphics)
             {
-                if ((realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon) && realizedPlayer.graphicsModule is PlayerGraphics playerGraphics && playerGraphics.hands[1 - i].reachedSnapPosition)
+                for (int i = 1; i >= 0; i--)
                 {
-                    return i;
+                    if ((realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon) && playerGraphics.hands[1 - i].reachedSnapPosition)
+                    {
+                        return i;
+                    }
                 }
             }
             return -1;
