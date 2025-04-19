@@ -172,7 +172,6 @@ namespace RainMeadow.Game
                     lastViolence.Remove(player);
                 }
                 lastViolence.Add(player, new ViolentAction(source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus, callerType, caller));
-                ChatLogManager.LogSystemMessage("VIOLENT EVENT " + callerType + " ATTACKS " + player);
             }
         }
 
