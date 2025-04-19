@@ -12,12 +12,16 @@ namespace RainMeadow
 {
     
 
-    public class LANNetIO : NetIO {
+    public class LANNetIO : NetIO 
+    {
         public readonly UDPPeerManager manager;
-        public LANNetIO() {
+        public LANNetIO() 
+        {
             manager = new();
-            manager.OnPeerForgotten += (peer) => {
-                if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+            manager.OnPeerForgotten += (peer) => 
+            {
+                if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) 
+                {
                     return;
                 }
                 List<OnlinePlayer> playerstoRemove = new();
@@ -39,23 +43,24 @@ namespace RainMeadow
             };
         }
 
-        public void SendBroadcast(Packet packet) {
+        public void SendBroadcast(Packet packet) 
+        {
             RainMeadow.DebugMe();
             for (int broadcast_port = UDPPeerManager.DEFAULT_PORT; 
                 broadcast_port < (UDPPeerManager.FIND_PORT_ATTEMPTS + UDPPeerManager.DEFAULT_PORT); 
                 broadcast_port++) {
                 IPEndPoint point = new(IPAddress.Broadcast, broadcast_port);
 
-                var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(point);
+                OnlinePlayer? player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager)!.GetPlayerLAN(point);
                 if (player == null)
                 {
                     RainMeadow.Debug("Player not found! Instantiating new at: " + point);
-                    var playerid = new LANMatchmakingManager.LANPlayerId(point);
+                    LANMatchmakingManager.LANPlayerId playerid = new(point);
                     player = new OnlinePlayer(playerid);
                 }
 
-                MemoryStream memory = new MemoryStream(128);
-                BinaryWriter writer = new BinaryWriter(memory);
+                MemoryStream memory = new(128);
+                BinaryWriter writer = new(memory);
 
                 Packet.Encode(packet, writer, player);
 
@@ -64,13 +69,16 @@ namespace RainMeadow
                     UDPPeerManager.PacketType.UnreliableBroadcast, true);
                 }
         }
-        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
-            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+        public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) 
+        {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) 
+            {
                 return;
             }
-            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
-                MemoryStream memory = new MemoryStream(128);
-                BinaryWriter writer = new BinaryWriter(memory);
+            if (player.id is LANMatchmakingManager.LANPlayerId lanid) 
+            {
+                MemoryStream memory = new(128);
+                BinaryWriter writer = new(memory);
 
                 Packet.Encode(packet, writer, player);
                 manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch

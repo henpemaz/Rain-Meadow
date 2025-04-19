@@ -6,11 +6,13 @@ namespace RainMeadow
     public class RequestJoinPacket : Packet
     {
         public string LanUserName = "";
+        public int Index = -1;
         public override Type type => Type.RequestJoin;
 
         public RequestJoinPacket() {}
-        public RequestJoinPacket(string name) {
+        public RequestJoinPacket(string name, int index) {
             LanUserName = name;
+            Index = index;
         }
 
         public override void Process()
@@ -20,10 +22,14 @@ namespace RainMeadow
             {
                 var matchmaker = (LANMatchmakingManager)MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN];
 
-                if (LanUserName.Length > 0) {
+                if (LanUserName.Length > 0) 
+                {
                     processingPlayer.id.name = LanUserName;
                 }
-
+                if (Index > -1 && processingPlayer.id is LANMatchmakingManager.LANPlayerId lanPlayerID)
+                {
+                    lanPlayerID.index = Index;
+                }
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);
@@ -46,12 +52,14 @@ namespace RainMeadow
         {
             base.Serialize(writer);
             writer.WriteNullTerminatedString(LanUserName);
+            writer.Write(Index);
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             LanUserName = reader.ReadNullTerminatedString();
+            Index = reader.ReadInt32();
         }
     }
 }
