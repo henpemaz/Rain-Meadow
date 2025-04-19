@@ -218,6 +218,14 @@ was slain by|ha muerto a manos de
 was ascended by|ha ascendido por parte de
 was zapped by a|ha muerto por una descarga eléctrica de
 was slain by a|ha muerto por
+was electrocuted in the water.|ha sido electrocutado bajo el agua.
+was obliterated by the sandstorm.|fue asfixiado por el terregal.
+died from poison.|murio envenenado.
+was struck by lightning.|le ha caido un rayo.
+was consumed by locusts.|fue consumido por el enjambre.
+swam with the ripples.|nado entre los ondulantes.
+experienced the force of fresh fruit.|experimento la fuerza de la fruta fresca.
+was burnt to a crisp.|fue achicharrado.
 
 // creature names for death messages
 Pink Lizard|Lagarto Rosa
