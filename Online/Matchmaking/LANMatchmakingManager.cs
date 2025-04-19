@@ -95,7 +95,7 @@ namespace RainMeadow {
                     {
                         LANPlayerId? lanPlayer = (serializer.currPlayer.id as LANPlayerId);
                         endPoint = lanPlayer?.endPoint ?? BlackHole;
-                        index = lanPlayer?.index ?? 0;
+                        index = lanPlayer?.index ?? -1;
                     } 
                     else 
                     {
