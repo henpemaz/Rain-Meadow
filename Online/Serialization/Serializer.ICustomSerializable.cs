@@ -155,8 +155,26 @@ namespace RainMeadow
             }
         }
 
+        internal static Dictionary<Serializer.TypeInfo, MethodInfo> serializerMethods = new();
+
         // tempting to try and cache this, would need a query icomparable
+        // liz: say no more!
         internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
+        {
+            var key = new Serializer.TypeInfo(fieldType, nullable, polymorphic, longList);
+            MethodInfo cached = null;
+            if (serializerMethods.TryGetValue(key, out cached))
+            {
+                RainMeadow.Debug($"Using cached method for {key}");
+                return cached;
+            }
+            RainMeadow.Debug($"Adding cached method for {key}");
+            var method = MakeSerializationMethod(fieldType, nullable, polymorphic, longList);
+            serializerMethods.Add(key, method);
+            return method;
+        }
+
+        internal static MethodInfo MakeSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var arguments = new { nullable, polymorphic, longList }; // one hell of a drug
             if (typeof(OnlineState).IsAssignableFrom(fieldType))
