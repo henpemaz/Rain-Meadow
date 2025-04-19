@@ -43,26 +43,27 @@ namespace RainMeadow
 
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
-            if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
-            if (onlineObject.apo.realizedObject is Oracle oracle)
+            PhysicalObject po = onlineObject.apo.realizedObject;
+            if (po.room?.world?.name == "SS" && (po is Rock || po is SSOracleSwarmer))
+            { //Extreme leniency (and less detail data) on 5 pebbles
+                return new RealizedPhysicalObjectState(onlineObject);
+            }
+            if (po is Oracle oracle)
             {
-                if (oracle.oracleBehavior is SLOracleBehavior)
-                {
-                    return new RealizedSLOracleState(onlineObject);
-                }
+                //if (oracle.oracleBehavior is SSOracleBehavior) return new RealizedSSOracleState(onlineObject); //5P
+                if (oracle.oracleBehavior is SLOracleBehavior) return new RealizedSLOracleState(onlineObject); //Lttm
                 return new RealizedOracleState(onlineObject);
             }
-            if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
-            if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
-            if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
-            if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
-            if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
-            if (onlineObject.apo.realizedObject is SporePlant) return new RealizedSporePlantState(onlineObject);
-            if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
-            if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
-            if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
-            if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
-
+            if (po is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
+            if (po is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
+            if (po is Spear) return new RealizedSpearState(onlineObject);
+            if (po is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
+            if (po is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
+            if (po is SporePlant) return new RealizedSporePlantState(onlineObject);
+            if (po is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
+            if (po is VultureGrub) return new RealizedVultureGrubState(onlineObject);
+            if (po is DangleFruit) return new RealizedDangleFruitState(onlineObject);
+            if (po is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
             return new RealizedPhysicalObjectState(onlineObject);
         }
 

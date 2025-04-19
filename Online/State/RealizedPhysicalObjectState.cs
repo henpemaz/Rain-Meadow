@@ -16,19 +16,30 @@ namespace RainMeadow
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+            var opo = onlineEntity as OnlinePhysicalObject;
+            var po = opo.apo.realizedObject;
+            if (opo.lenientPos)
+            {
+                //Lenient pos does not sync "static" chunk states
+                //however it is important to atleast have 1 element to prevent crashes
+                chunkStates = new[]{ new ChunkState(po.firstChunk) };
+            }
+            else
+            {
+                chunkStates = po.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            }
+            collisionLayer = (byte)po.collisionLayer;
         }
-        
-        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
-            if (po.grabbedBy.Any((x) => {
-                if (x.grabber == null) return false;
-                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
-                if (onlinegrabber == null) return false;
-                return onlinegrabber.lenientPos;
-            })) return true;
 
-            return false;
+        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po.room?.world?.name == "SS" && (po is Oracle || po is PebblesPearl || po is Rock || po is OracleSwarmer || po is SSOracleSwarmer))
+                return true; // 5 pebbles leniency due to 0G
+            return po.grabbedBy.Any((x) => {
+                if (x.grabber == null)
+                    return false;
+                var oe = x.grabber.abstractCreature.GetOnlineCreature();
+                return oe != null && oe.lenientPos;
+            });
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
@@ -78,30 +89,15 @@ namespace RainMeadow
             c.vel = vel;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is ChunkState other && Equals(other);
-        }
-
+        public override bool Equals(object obj) => obj is ChunkState other && Equals(other);
         public bool Equals(ChunkState other)
         {
             //return other != null && pos == other.pos && vel == other.vel;
             return other as object != null && pos.CloseEnough(other.pos, 1 / 4f) && vel.CloseEnoughZeroSnap(other.vel, 1 / 256f);
         }
 
-        public static bool operator ==(ChunkState lhs, ChunkState rhs)
-        {
-            return lhs as object != null && lhs.Equals(rhs);
-        }
-
-        public static bool operator !=(ChunkState lhs, ChunkState rhs)
-        {
-            return !(lhs == rhs);
-        }
-
-        public override int GetHashCode()
-        {
-            return pos.GetHashCode() + vel.GetHashCode();
-        }
+        public static bool operator ==(ChunkState lhs, ChunkState rhs) => lhs as object != null && lhs.Equals(rhs);
+        public static bool operator !=(ChunkState lhs, ChunkState rhs) => !(lhs == rhs);
+        public override int GetHashCode() => pos.GetHashCode() + vel.GetHashCode();
     }
 }
