@@ -16,7 +16,6 @@ namespace RainMeadow
         private static float num = 120f;
         private static float num2 = 0f;
         private static float num3 = num - num2;
-        public bool clientReadiedUp = false;
         public MenuLabel totalClientsReadiedUpOnPage;
         public MenuLabel currentLevelProgression;
 
@@ -201,7 +200,7 @@ namespace RainMeadow
                     MutualHorizontalButtonBind(colorConfigButton, usernameButtons[0]);
                 }
             }
-          
+
         }
 
         SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
@@ -324,7 +323,7 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
 
-            if (arena.isInGame && !clientReadiedUp)
+            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
             {
                 return;
             }
@@ -353,21 +352,17 @@ namespace RainMeadow
                         arena.playersReadiedUp.list.Add(OnlineManager.mePlayer.id);
                     }
                 }
-
-                if (OnlineManager.players.Count > 1 && !clientReadiedUp)
+                else
                 {
-                    foreach (var player in OnlineManager.players)
+
+                    if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
-                        if (!player.isMe)
-                        {
-                            player.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
-                        }
+                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
+                        this.playButton.menuLabel.text = this.Translate("Waiting for others...");
+                        this.playButton.inactive = true;
+                        this.playButton.buttonBehav.greyedOut = true;
                     }
-                    this.playButton.menuLabel.text = this.Translate("Waiting for others...");
-                    this.playButton.inactive = true;
-                    this.playButton.buttonBehav.greyedOut = true;
                 }
-                clientReadiedUp = true;
                 return;
             }
 
@@ -439,7 +434,7 @@ namespace RainMeadow
 
             }
 
-            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && clientReadiedUp)  // time to go
+            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
             {
                 this.StartGame();
                 initiatedStartGameForClient = true;
@@ -481,7 +476,7 @@ namespace RainMeadow
                 }
 
 
-                if (clientReadiedUp && OnlineManager.players.Count > 1)
+                if (arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && OnlineManager.players.Count > 1)
                 {
                     this.playButton.inactive = true;
                 }
@@ -512,24 +507,24 @@ namespace RainMeadow
                     if (arena.isInGame)
                     {
                         this.playButton.inactive = true;
-                        if (!clientReadiedUp) // you're late
+                        if (!arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id)) // you're late
                         {
                             this.playButton.menuLabel.text = this.Translate("GAME IN SESSION");
 
                         }
                     }
-                    if (!arena.isInGame && !clientReadiedUp)
+                    if (!arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
                         this.playButton.menuLabel.text = this.Translate("READY?");
                         this.playButton.inactive = false;
                     }
-                    if (!arena.isInGame && clientReadiedUp && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
+                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
                     {
                         this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                         this.playButton.inactive = true;
                     }
 
-                    if (!arena.isInGame && clientReadiedUp && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
                     {
                         this.playButton.menuLabel.text = this.Translate("Waiting for host...");
                         this.playButton.inactive = true;
@@ -550,6 +545,7 @@ namespace RainMeadow
         public override void ShutDownProcess()
         {
             RainMeadow.DebugMe();
+            manager.rainWorld.progression.SaveProgression(true, true);
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 OnlineManager.LeaveLobby();
@@ -688,28 +684,24 @@ namespace RainMeadow
 
                 foreach (var player in OnlineManager.players)
                 {
-                    if (!player.isMe)
+                    if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.ToString(), out var existingValue))
                     {
-                        if (arena.playersInLobbyChoosingSlugs.TryGetValue(player.id.ToString(), out var existingValue))
+                        RainMeadow.Debug("Player already exists in slug dictionary");
+                    }
+                    else
+                    {
+                        // Key does not exist, you can add it if needed
+                        if (!OnlineManager.lobby.isOwner)
                         {
-                            RainMeadow.Debug("Player already exists in slug dictionary");
-                        }
-                        else
-                        {
-                            // Key does not exist, you can add it if needed
-                            arena.playersInLobbyChoosingSlugs.Add(player.id.ToString(), 0);
-                        }
-
-                        if (arena.playersReadiedUp.list.Contains(player.id))
-                        {
-                            RainMeadow.Debug($"Player {player.id.name} is readied up");
-                        }
-                        else
-                        {
-                            // Key does not exist, you can add it if needed
-                            //arena.playersReadiedUp.Add(player.inLobbyId);
+                            OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, player, 0); // default to slugcat 0
                         }
                     }
+
+                    if (arena.playersReadiedUp.list.Contains(player.id))
+                    {
+                        RainMeadow.Debug($"Player {player.id.name} is readied up");
+                    }
+
                 }
                 AddUsernames();
                 AddClassButtons();
@@ -731,7 +723,7 @@ namespace RainMeadow
 
         private List<Color> GetPersonalColors(SlugcatStats.Name id)
         {
-            return [..this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
+            return [.. this.IsCustomColorEnabled(id) ? this.GetMenuHSLs(id).Select(ColorHelpers.HSL2RGB) : PlayerGraphics.DefaultBodyPartColorHex(id).Select(Custom.hexToColor)];
         }
         private void AddClassButtons()
         {
@@ -765,7 +757,14 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Player did NOT exist in dictionary");
                     currentColorIndex = 0;
-                    arena.playersInLobbyChoosingSlugs.Add(OnlineManager.mePlayer.id.ToString(), currentColorIndex);
+                    if (!OnlineManager.lobby.isOwner)
+                    {
+                        OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
+                    }
+                    else
+                    {
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    }
 
                 }
 
@@ -788,8 +787,10 @@ namespace RainMeadow
                             player.InvokeRPC(ArenaRPCs.Arena_NotifyClassChange, OnlineManager.mePlayer, currentColorIndex);
                         }
                     }
-
-                    arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()] = currentColorIndex;
+                    }
                 };
                 pages[0].subObjects.Add(classButtons[0]);
                 arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
@@ -1018,7 +1019,7 @@ namespace RainMeadow
 
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[currentPlayerPosition].id);
                 }
                 catch
                 {
@@ -1080,7 +1081,7 @@ namespace RainMeadow
 
                 try
                 {
-                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[holdPlayerPosition].id);
+                    classButtons[holdPlayerPosition].readyForCombat = arena.playersReadiedUp.list.Contains(OnlineManager.players[currentPlayerPosition].id);
                 }
                 catch
                 {
