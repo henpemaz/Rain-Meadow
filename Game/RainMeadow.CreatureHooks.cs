@@ -44,20 +44,9 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo))
             {
-                if (opo.roomSession.isOwner && opo.isMine)
-                { //we own the entity xaxax
-                    foreach (var player in OnlineManager.players)
-                    {
-                        if (!player.isMe)
-                        {
-                            player.InvokeOnceRPC(opo.TriggerOracleAction, nextAction);
-                        }
-                    }
-                    orig(self, nextAction);
-                }
-                else if (RealizedSSOracleState.PebblesActionAllow)
+                if ((opo.roomSession.isOwner && opo.isMine) || RealizedSSOracleState.allowActionChange)
                 {
-                    orig(self, nextAction);
+                    orig(self, nextAction); //we own the entity.
                 }
             }
             else
