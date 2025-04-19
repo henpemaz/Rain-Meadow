@@ -32,6 +32,7 @@ namespace RainMeadow
             On.PlayerProgression.SaveToDisk += PlayerProgression_SaveToDisk;
             On.Menu.KarmaLadderScreen.Update += KarmaLadderScreen_Update;
             On.Menu.KarmaLadderScreen.Singal += KarmaLadderScreen_Singal;
+            On.HUD.KarmaMeter.RippleSymbolSprite += HUD_KarmaMeter_RippleSymbolSprite;
 
             On.Menu.SleepAndDeathScreen.AddPassageButton += SleepAndDeathScreen_AddPassageButton;
             On.Menu.CustomEndGameScreen.GetDataFromSleepScreen += CustomEndGameScreen_GetDataFromSleepScreen;
@@ -83,6 +84,7 @@ namespace RainMeadow
             On.SaveState.SessionEnded += SaveState_SessionEnded;
             IL.SaveState.SessionEnded += SaveState_SessionEnded_DontAssumePlayerRealized;
             On.SaveState.BringUpToDate += SaveState_BringUpToDate;
+            On.SaveState.GetSaveStateDenToUse += SaveState_GetSaveStateDenToUse;
 
             On.WaterNut.Swell += WaterNut_Swell;
             On.SporePlant.Pacify += SporePlant_Pacify;
@@ -225,6 +227,7 @@ namespace RainMeadow
             }
             orig(self, box, c);
         }
+
         private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
         {
             try
@@ -255,6 +258,7 @@ namespace RainMeadow
                 RainMeadow.Error(ex);
             }
         }
+        
         private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
         {
             try
@@ -953,23 +957,32 @@ namespace RainMeadow
 
         private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
         {
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode) && OnlineManager.lobby != null)
             {
+                // ok but remember the watcher hates good portals so we have to clean stuff up
+                self.GetStorySession.pendingWarpPointTransferObjects.Clear();
+                self.GetStorySession.importantWarpPointTransferedEntities.Clear();
+                self.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
+                string lastWarpPoint = (storyGameMode.myLastWarp != null) ? storyGameMode.myLastWarp.ToString() : null;
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, lastWarpPoint);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, fromWarpPoint, storyGameMode.myLastDenPos, lastWarpPoint);
                     return;
                 }
+                if (fromWarpPoint)
+                { // reset gate status
+                    storyGameMode.changedRegions = false;
+                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
+                }
             }
-
             orig(self, malnourished, fromWarpPoint);
         }
 
@@ -1269,7 +1282,8 @@ namespace RainMeadow
                     currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
                 }
 
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+                RainMeadow.Debug($"START WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
 
                 if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || currentSaveState.denPosition != storyGameMode.defaultDenPos)
                 {
@@ -1279,8 +1293,16 @@ namespace RainMeadow
                 {
                     currentSaveState.denPosition = storyGameMode.myLastDenPos;
                 }
-
-                RainMeadow.Debug($"OAUGH DENPOS save:{currentSaveState.denPosition}");
+                if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
+                {
+                    storyGameMode.myLastWarp = currentSaveState.warpPointTargetAfterWarpPointSave;
+                }
+                else
+                {
+                    currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
+                RainMeadow.Debug($"FINAL DENPOS save:{currentSaveState.denPosition}");
+                RainMeadow.Debug($"FINAL WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
             }
 
             return currentSaveState;
@@ -1294,10 +1316,17 @@ namespace RainMeadow
 
         private void SaveState_SessionEnded(On.SaveState.orig_SessionEnded orig, SaveState self, RainWorldGame game, bool survived, bool newMalnourished)
         {
-            if (isStoryMode(out var storyGameMode) && storyGameMode.myLastDenPos is not (null or ""))
+            if (isStoryMode(out var storyGameMode))
             {
-                self.denPosition = storyGameMode.myLastDenPos;
-                if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos is not (null or ""))
+                {
+                    self.denPosition = storyGameMode.myLastDenPos;
+                    if (OnlineManager.lobby.isOwner) storyGameMode.defaultDenPos = storyGameMode.myLastDenPos;
+                }
+                if (storyGameMode.myLastWarp is not null)
+                {
+                    self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                }
             }
             orig(self, game, survived, newMalnourished);
         }
@@ -1336,6 +1365,20 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
+        }
+
+        private string SaveState_GetSaveStateDenToUse(On.SaveState.orig_GetSaveStateDenToUse orig, SaveState self)
+        {
+            // Savefile logic is not cooperative (with our code); this is a way to ensure that PLEASE
+            // you WARP us into the room we were meant to be warped into, instead of some random room
+            // or wose, a "room out of bounds" (i.e index > region total index)
+            if (OnlineManager.lobby != null && self.warpPointTargetAfterWarpPointSave != null)
+            {
+                string destRoom = self.warpPointTargetAfterWarpPointSave.destRoom;
+                RainMeadow.Debug($"hijacking denpos to be {destRoom}");
+                return destRoom;
+            }
+            return orig(self);
         }
 
         private void SaveState_BringUpToDate(On.SaveState.orig_BringUpToDate orig, SaveState self, RainWorldGame game)
@@ -1377,6 +1420,15 @@ namespace RainMeadow
                 }
             }
             orig(self, sender, message);
+        }
+
+        // This is nescesary because sometimes ripple levels are not properly synched
+        // we should probably synch them -- but at the moment this helps avoid black screens of death
+        private string HUD_KarmaMeter_RippleSymbolSprite(On.HUD.KarmaMeter.orig_RippleSymbolSprite orig, bool small, float rippleLevel)
+        {
+            double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
+            num = Math.Max(num, 1.0);
+			return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)

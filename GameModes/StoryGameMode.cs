@@ -23,6 +23,8 @@ namespace RainMeadow
         public SlugcatStats.Name currentCampaign;
         public bool requireCampaignSlugcat;
         public string? saveStateString;
+        public bool warpCameraFix = false;
+        public bool lastWarpIsEcho = false;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
@@ -32,6 +34,7 @@ namespace RainMeadow
         public SlugcatCustomization avatarSettings;
         public StoryClientSettingsData storyClientData;
 
+        public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
 
@@ -44,7 +47,10 @@ namespace RainMeadow
             readyForWin = false;
             readyForGate = ReadyForGate.Closed;
             defaultDenPos = null;
+            myLastWarp = null;
             myLastDenPos = null;
+            warpCameraFix = false;
+            lastWarpIsEcho = false;
             region = null;
             saveStateString = null;
             pups = new();
@@ -69,7 +75,8 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
-            DLCSharedEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
+            DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
+            Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };
 
         public override bool AllowedInMode(PlacedObject item)
@@ -105,6 +112,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //does not need to be kept track of
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)

@@ -139,12 +139,16 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef tongueAttachedChunk;
+        [OnlineField(group = "watcher")]
+        public bool isCamo;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            isCamo = p.isCamo; // watcher
+
             monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -227,7 +231,8 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
-
+            //watcher
+            p.isCamo = isCamo;
 
             p.monkAscension = monkAscension;
             p.burstY = burstY;
