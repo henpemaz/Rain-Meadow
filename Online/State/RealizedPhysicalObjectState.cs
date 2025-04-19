@@ -16,19 +16,30 @@ namespace RainMeadow
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+            var opo = onlineEntity as OnlinePhysicalObject;
+            var po = opo.apo.realizedObject;
+            if (opo.lenientPos)
+            {
+                //Lenient pos does not sync "static" chunk states
+                //however it is important to atleast have 1 element to prevent crashes
+                chunkStates = new[]{ new ChunkState(po.firstChunk) };
+            }
+            else
+            {
+                chunkStates = po.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            }
+            collisionLayer = (byte)po.collisionLayer;
         }
-        
-        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
-            if (po.grabbedBy.Any((x) => {
-                if (x.grabber == null) return false;
-                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
-                if (onlinegrabber == null) return false;
-                return onlinegrabber.lenientPos;
-            })) return true;
 
-            return false;
+        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po.room?.world?.name == "SS" && (po is Oracle || po is PebblesPearl || po is Rock || po is OracleSwarmer || po is SSOracleSwarmer))
+                return true; // 5 pebbles leniency due to 0G
+            return po.grabbedBy.Any((x) => {
+                if (x.grabber == null)
+                    return false;
+                var oe = x.grabber.abstractCreature.GetOnlineCreature();
+                return oe != null && oe.lenientPos;
+            });
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
