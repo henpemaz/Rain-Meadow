@@ -26,9 +26,9 @@ namespace RainMeadow
                 {
                     processingPlayer.id.name = LanUserName;
                 }
-                if (Index > -1 && processingPlayer.id is LANMatchmakingManager.LANPlayerId lanPlayerID)
+                if (Index > -1)
                 {
-                    lanPlayerID.index = Index;
+                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index = Index;
                 }
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
