@@ -123,7 +123,7 @@ namespace RainMeadow {
             }
             public override string RealID()
             {
-                return name;//$"{endPoint.Port}|{string.Join(",", endPoint.Address.GetAddressBytes().Select(x => x.ToString()))}"; //idk yet
+                return index.ToString();
             }
             public int index;
         }
