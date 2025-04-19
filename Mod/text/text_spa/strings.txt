@@ -222,6 +222,14 @@ was swallowed by the walls.|ha sido tragado por las paredes.
 was electrocuted.|ha sido electrocutado.
 licked the power.|ha lamido la energía.
 was consummed by the swarm.|ha sido consumido por el enjambre de arañas.
+was electrocuted in the water.|ha sido electrocutado en el agua.
+was obliterated by the sandstorm.|ha sido arrasado por la tormenta de arena.
+died from poison.|ha muerto de envenenamiento.
+was struck by lightning.|ha sido golpeado por un rayo.
+was consumed by locusts.|ha sido consumido por las langostas.
+swam with the ripples.|ha nadado con las ondas.
+experienced the force of fresh fruit.|ha experimentado la fuerza de la fruta fresca.
+was burnt to a crisp.|ha sido achicharrado.
 was slain by|ha muerto a manos de
 was ascended by|ha ascendido por parte de
 was zapped by a|ha sido electrocutado por
