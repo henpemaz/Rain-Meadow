@@ -193,7 +193,7 @@ namespace RainMeadow
         {
             return $"{inLobbyId}:{id}";
         }
-        public string GetUniqueID()
+        public string GetUniqueID() //meant more for constant storage of lobby data for steam players else returns their inlobbyid
         {
             return id is SteamMatchmakingManager.SteamPlayerId steamPlayerID ? steamPlayerID.steamID.m_SteamID.ToString() : inLobbyId.ToString();
         }

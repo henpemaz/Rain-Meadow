@@ -61,7 +61,6 @@ namespace RainMeadow {
                     dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) + Utils.Translate( "the owner of the lobby.");
                     dialogue += Environment.NewLine + Utils.Translate("Players can “Direct Connect” to this lobby through ") + (isMe? Utils.Translate("your") : Utils.Translate("their")) + Utils.Translate(" interface(s).");
                 }
-                dialogue += Environment.NewLine + Utils.Translate(isMe? "your" : "their") + Utils.Translate($" player index is ") + index.ToString();
                 OnlineManager.instance.manager.ShowDialog(new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)),  OnlineManager.instance.manager, null));
             }
             public void reset()
