@@ -382,6 +382,19 @@ namespace RainMeadow {
         public override void OpenInvitationOverlay() {
             OnlineManager.instance.manager.ShowDialog(new DialogNotify(Utils.Translate("You cannot use this feature here."), OnlineManager.instance.manager, null));
         }
+        public int TryGetSafeIndex(int origIndex)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                List<LANPlayerId> otherOnlinePlayers = [..OnlineManager.players.Select(x => (LANPlayerId)x.id)]; //called by person who recieves joing person request, this is save checking if their index is the same
+                while (otherOnlinePlayers.Any(x => x.index == origIndex))
+                {
+                    System.Random random = new();
+                    origIndex = random.Next();
+                }
+            }
+            return origIndex;
+        }
         public static int PlayerIndex { get; private set; } = -1;
         static List<LANLobbyInfo> lobbyinfo = [];
     }

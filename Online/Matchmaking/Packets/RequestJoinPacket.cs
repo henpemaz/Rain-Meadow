@@ -26,9 +26,13 @@ namespace RainMeadow
                 {
                     processingPlayer.id.name = LanUserName;
                 }
-                if (Index > -1)
+                if (Index <= -1)
                 {
-                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index = Index;
+                    RainMeadow.Error("PACKAGE IS INVALID!! index called should be more or equals to 0!");
+                }
+                else
+                {
+                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index = matchmaker.TryGetSafeIndex(Index); //this process is called by person who is lobby and recieves it
                 }
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
@@ -42,7 +46,8 @@ namespace RainMeadow
                     OnlineManager.lobby.gameModeType.value,
                     OnlineManager.players.Count,
                     RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()),
-                    RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods())
+                    RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()),
+                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index
                 ), NetIO.SendType.Reliable);
 
             }
