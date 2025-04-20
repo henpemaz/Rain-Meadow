@@ -11,18 +11,15 @@ namespace RainMeadow
     {
         [OnlineField]
         private byte collisionLayer;
-        [OnlineField(nullable = true)]
-        private ChunkStates? chunkStates;
+        [OnlineField]
+        private ChunkStates chunkStates;
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
-            if (!opo.lenientPos)
-            {
-                chunkStates = new ChunkStates(onlineEntity);
-            }
+            chunkStates = opo.lenientPos ? new ChunkStates() : new ChunkStates(onlineEntity);
             collisionLayer = (byte)po.collisionLayer;
         }
 
@@ -55,11 +52,12 @@ namespace RainMeadow
 
     public class ChunkStates : Generics.IPrimaryDelta<ChunkStates>, Serializer.ICustomSerializable
     {
-        private ChunkState[] chunks = [];
-        private DeltaChunkState[]? offsets = null;
-        private bool isDelta = false;
         private const float AcceptableError = 0.25F; // error acceptable between deltas
-        public bool IsEmptyDelta => isDelta;
+        private float AcceptableAccumError => 2.0F * AcceptableError * chunks.Length; // error acceptable on series of deltas
+        private ChunkState[] chunks = [];
+        private DeltaChunkState[] offsets = [];
+        private float accumError = 0.0F;
+        public bool IsEmptyDelta => offsets.Length > 0;
 
         public ChunkStates() { }
         public ChunkStates(OnlinePhysicalObject onlineEntity)
@@ -71,43 +69,49 @@ namespace RainMeadow
 
         private static bool CanDelta(float a, float b) => Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(a)) - Mathf.HalfToFloat(Mathf.FloatToHalf(b))) < AcceptableError;
         private static bool CanDelta(ChunkState chunk) => CanDelta(chunk.pos.x, chunk.lastPos.x) && CanDelta(chunk.pos.y, chunk.lastPos.y);
-        private static bool CanDelta(ChunkState[]? array) => array.All(e => CanDelta(e));
+        private static DeltaChunkState[] GenerateOffsets(ChunkState[] arr) => arr.Select(e => new DeltaChunkState(e.pos - e.lastPos)).ToArray();
 
         /// <summary>
         /// Calculates the error from converting to a half float
         /// </summary>
-        private static float GetHalfError(float a, float b)
-        {
-            float hv = Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(a)) - Mathf.HalfToFloat(Mathf.FloatToHalf(b)));
-            float fv = Mathf.Abs(a - b);
-            return Mathf.Abs(hv - fv);
-        }
-
-        private static DeltaChunkState[] GenerateOffsets(ChunkState[] array)
-        {
-            return array.Select(e => new DeltaChunkState(e.pos - e.lastPos)).ToArray();
-        }
+        private static float GetHalfError(float v) => Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(v)) - v);
 
         public ChunkStates Delta(ChunkStates other)
         {
-            ChunkStates result = new();
-            result.chunks = other != null && other.chunks != null ? other.chunks : this.chunks;
-            result.offsets = GenerateOffsets(result.chunks);
+            ChunkStates result = new()
+            {
+                chunks = this.chunks,
+                offsets = GenerateOffsets(other != null ? other.chunks : this.chunks),
+                accumError = other != null && other.accumError > 0.0F ? other.accumError : this.accumError
+            };
+            if (!chunks.All(CanDelta) || result.accumError >= AcceptableAccumError)
+                result.offsets = []; //do not delta, please fix pos NOW
             return result;
         }
 
         public ChunkStates ApplyDelta(ChunkStates other)
         {
-            ChunkStates result = new();
-            var source = other ?? this;
-            result.chunks = other != null && other.chunks != null ? other.chunks : this.chunks;
-            result.offsets = source.offsets;
-            if (source.offsets != null)
+            ChunkStates result = new()
             {
-                for (int i = 0; i < source.offsets.Length; i++)
+                chunks = this.chunks,
+                offsets = other != null ? other.offsets : [],
+                accumError = other != null && other.accumError > 0.0F ? other.accumError : this.accumError
+            };
+            if (result.offsets.Length > 0)
+            {
+                if (result.chunks.Length != result.offsets.Length)
+                { //force state resend
+                    result.offsets = [];
+                }
+                else
                 { //sync bodychunk positions
-                    result.chunks[i].lastPos = result.chunks[i].pos;
-                    result.chunks[i].pos += source.offsets[i].change;
+                    for (int i = 0; i < result.offsets.Length; i++)
+                    {
+                        result.accumError += GetHalfError(Mathf.Abs(result.chunks[i].lastPos.x - result.chunks[i].pos.x));
+                        result.accumError += GetHalfError(Mathf.Abs(result.chunks[i].lastPos.y - result.chunks[i].pos.y));
+                        result.chunks[i].lastPos = result.chunks[i].pos;
+                        result.chunks[i].pos += result.offsets[i].change;
+                    }
                 }
             }
             return result;
@@ -115,14 +119,7 @@ namespace RainMeadow
 
         public void CustomSerialize(Serializer serializer)
         {
-            isDelta = false;
-            if (serializer.IsWriting && CanDelta(chunks))
-            {
-                isDelta = true;
-                offsets = GenerateOffsets(chunks);
-            }
-            serializer.Serialize(ref isDelta);
-            if (isDelta)
+            if (serializer.IsDelta)
             {
                 if (serializer.IsWriting)
                 {
@@ -175,23 +172,9 @@ namespace RainMeadow
     public class DeltaChunkState : Serializer.ICustomSerializable, IEquatable<DeltaChunkState>
     {
         public Vector2 change;
-
         public DeltaChunkState() { }
-        public DeltaChunkState(Vector2 v)
-        {
-            change = v;
-        }
-
-        public void CustomSerialize(Serializer serializer)
-        {
-            serializer.SerializeHalf(ref change);
-        }
-        
-        public void ReadTo(ref Vector2 v)
-        {
-            v = change;
-        }
-
+        public DeltaChunkState(Vector2 v) { change = v; }
+        public void CustomSerialize(Serializer serializer) => serializer.SerializeHalf(ref change);
         public override bool Equals(object obj) => obj is DeltaChunkState other && Equals(other);
         public bool Equals(DeltaChunkState other) => other as object != null && change.CloseEnough(other.change, 1 / 4f);
         public static bool operator ==(DeltaChunkState lhs, DeltaChunkState rhs) => lhs as object != null && lhs.Equals(rhs);
