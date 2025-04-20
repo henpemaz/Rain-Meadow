@@ -276,7 +276,7 @@ namespace RainMeadow
                         if (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
                         {
                             RainMeadow.Debug($"early creature");
-                            apo.Move(topos);
+                            apo.MoveMovable(topos);
                             if (apo.realizedObject is PhysicalObject po)
                             {
                                 // this line might be problematic because room.cleanout calls apo.Destroy
@@ -294,7 +294,7 @@ namespace RainMeadow
                         {
                             if (topos.TileDefined)
                             {
-                                apo.Move(topos);
+                                apo.MoveMovable(topos);
 
 
                                 if (apo.realizedObject is Creature c)
@@ -316,7 +316,7 @@ namespace RainMeadow
                             {
                                 RainMeadow.Debug("node defined");
 
-                                apo.Move(topos);
+                                apo.MoveMovable(topos);
                                 bool inshortcuts = false;
                                 if (apo.realizedObject is Creature c)
                                 {
@@ -358,7 +358,7 @@ namespace RainMeadow
                             } else {
                                 // some creature got brought into the room by another creature.
                                 RainMeadow.Debug($"item not node defined or tile defined, spawning off-room");
-                                apo.Move(topos);
+                                apo.MoveMovable(topos);
                                 apo.Realize();
                             }
                         }

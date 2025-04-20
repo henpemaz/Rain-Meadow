@@ -71,6 +71,56 @@ namespace RainMeadow
             return true;
         }
 
+        public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
+            foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects()) {
+                if (obj.CanMove(newCoord)) {
+                    if (newCoord.CompareDisregardingTile(obj.pos)) return;
+
+                    obj.timeSpentHere = 0;
+                    if (newCoord.room != obj.pos.room)
+                    {
+                        obj.ChangeRooms(newCoord);
+                    }
+
+                    if (!newCoord.TileDefined && obj.pos.room == newCoord.room)
+                    {
+                        newCoord.Tile = obj.pos.Tile;
+                    }
+
+                    obj.pos = newCoord;
+                    obj.world.GetResource().ApoEnteringWorld(obj);
+                    obj.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(obj, newCoord);
+                } 
+            }
+        }
+
+        public static bool ActuallyInShortcut<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel 
+        {
+            bool checkallrooms = room is null;
+            for (int i = 0; i < vessels.Count; i++)
+            {
+                if (vessels[i].creature != null && ((vessels[i].room == room) || checkallrooms) ) {
+                    if ((vessels[i].creature == creature) || vessels[i].creature.abstractCreature.GetAllConnectedObjects().Contains(creature.abstractCreature)) {
+                        creature.inShortcut = true;
+                        return true;
+                    }
+                } 
+            }
+
+            return false;
+        }
+
+        public static bool ActuallyInShortcut(this Creature creature, AbstractRoom? room = null)
+        {
+            var handler = creature.abstractCreature.world.game.shortcuts;
+            if (ActuallyInShortcut(ref handler.transportVessels, creature, room)) return true;
+            if (ActuallyInShortcut(ref handler.borderTravelVessels, creature, room)) return true;
+            if (ActuallyInShortcut(ref handler.betweenRoomsWaitingLobby, creature, room)) return true;
+
+            return false;
+        }
+
+
         public static bool RemoveFromShortcuts<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel 
         {
             bool removefromallrooms = room is null;
@@ -79,11 +129,10 @@ namespace RainMeadow
                 if (vessels[i].creature == creature && ((vessels[i].room == room) || removefromallrooms))
                 {
                     vessels.RemoveAt(i);
-                    creature.inShortcut = false;
                     return true;
                 }
             }
-
+            creature.inShortcut = false;
             return false;
         }
         public static bool RemoveFromShortcuts(this Creature creature, AbstractRoom? room = null)
