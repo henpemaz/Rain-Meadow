@@ -16,12 +16,14 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
+            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature is Player player)
             {
-                if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+                if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 {
-                    int handIndex = GetHandIndex(ac.realizedCreature);
-                    if (handIndex >= 0) LookAtPoint(ac.realizedCreature, GetOnlinePointingVector(), handIndex);
+                    int handIndex = GetHandIndex(player);
+                    if (handIndex >= 0) LookAtPoint(player, GetOnlinePointingVector(), handIndex);
+                } else {
+                    player.handPointing = -1; //reset hand
                 }
             }
         }
@@ -34,12 +36,13 @@ namespace RainMeadow
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
             Vector2 finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
-            if (realizedPlayer.graphicsModule is PlayerGraphics playerGraphics)
+            if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
             {
                 playerGraphics.LookAtPoint(finalHandPos, Pointing.LookInterest);
                 var handModule = playerGraphics.hands[handIndex];
                 handModule.reachingForObject = true;
                 handModule.absoluteHuntPos = finalHandPos;
+                player.handPointing = handIndex;
             }
         }
 

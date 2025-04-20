@@ -313,14 +313,14 @@ namespace RainMeadow
             // Pointing
             if (p.graphicsModule is PlayerGraphics playerGraphics)
             {
-                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
                 p.handPointing = -1;
+                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
                 if (handIndex >= 0 && pointingDir is not null)
                 {
-                    p.handPointing = handIndex; //important! - check != -1 so we know we are in a "pointing state"
                     playerGraphics.LookAtPoint(pointingDir.Value, Pointing.LookInterest);
                     playerGraphics.hands[handIndex].reachingForObject = true;
                     playerGraphics.hands[handIndex].absoluteHuntPos = pointingDir.Value;
+                    p.handPointing = handIndex; //important! - check != -1 so we know we are in a "pointing state"
                 }
             }
         }

@@ -72,8 +72,8 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && self.handPointing == hand && self.graphicsModule is PlayerGraphics playerGraphics && self.grasps[hand].grabbed is Spear)
         {
             // scary math below
-            var vector = Custom.DegToVec(Custom.AimFromOneVectorToAnother(self.firstChunk.pos, playerGraphics.hands[hand].pos) - 90f);
-            return Vector3.Slerp(vector, Custom.DegToVec((80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
+            var vector = Custom.DegToVec(Custom.AimFromOneVectorToAnother(self.firstChunk.pos, playerGraphics.hands[hand].pos));
+            return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
         }
         return orig(self, hand);
     }
