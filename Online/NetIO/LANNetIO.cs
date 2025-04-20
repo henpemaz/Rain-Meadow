@@ -92,11 +92,13 @@ namespace RainMeadow
 
 
         public void SendAcknoledgement(OnlinePlayer player) {
-            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) 
+            {
                 return;
             }
 
-            if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
+            if (player.id is LANMatchmakingManager.LANPlayerId lanid) 
+            {
                 manager.Send(Array.Empty<byte>(), lanid.endPoint, 
                     UDPPeerManager.PacketType.Reliable, true);
             }
@@ -133,7 +135,8 @@ namespace RainMeadow
 
         public override void RecieveData()
         {
-            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) {
+            if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN) 
+            {
                 return;
             }
 
@@ -146,10 +149,13 @@ namespace RainMeadow
                     byte[]? data = manager.Recieve(out EndPoint? remoteEndpoint);
                     if (data == null) continue;
                     IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
-                    if (iPEndPoint is null) continue;
+                    if (iPEndPoint is null)
+                    {
+                        continue;
+                    }
                     
-                    MemoryStream netStream = new MemoryStream(data);
-                    BinaryReader netReader = new BinaryReader(netStream);
+                    MemoryStream netStream = new(data);
+                    BinaryReader netReader = new(netStream);
                     
                     if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
                     var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
@@ -161,6 +167,8 @@ namespace RainMeadow
                     }
                     
                     Packet.Decode(netReader, player);
+                    netStream.Close(); //system.netio sharing violation error
+                    netReader.Close();
                 }
                 catch (Exception e)
                 {
