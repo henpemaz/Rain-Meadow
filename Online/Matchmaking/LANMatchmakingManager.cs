@@ -37,10 +37,9 @@ namespace RainMeadow {
             // https://superuser.com/questions/698244/ip-address-that-is-the-equivalent-of-dev-null
             static readonly IPEndPoint BlackHole = new IPEndPoint(IPAddress.Parse("253.253.253.253"), 999); 
             public IPEndPoint endPoint;
-            public LANPlayerId(IPEndPoint? endPoint, int index = -1) : base(UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
+            public LANPlayerId(IPEndPoint? endPoint) : base(UsernameGenerator.GenerateRandomUsername(endPoint?.GetHashCode() ?? 0))
             {
                 this.endPoint = endPoint ?? BlackHole;
-                this.index = index;
             }
             public override void OpenProfileLink() {
                 string dialogue = "";
@@ -86,7 +85,6 @@ namespace RainMeadow {
                         serializer.writer.Write((int)endPoint.Port);
                         serializer.writer.Write((int)endPoint.Address.GetAddressBytes().Length);
                         serializer.writer.Write(endPoint.Address.GetAddressBytes());
-                        serializer.writer.Write(index);
                     }
                 } 
                 else if (serializer.IsReading) 
@@ -96,14 +94,12 @@ namespace RainMeadow {
                     {
                         LANPlayerId? lanPlayer = (serializer.currPlayer.id as LANPlayerId);
                         endPoint = lanPlayer?.endPoint ?? BlackHole;
-                        index = lanPlayer?.index ?? -1;
                     } 
                     else 
                     {
                         int port = serializer.reader.ReadInt32();
                         byte[] endpointbytes = serializer.reader.ReadBytes(serializer.reader.ReadInt32());
                         this.endPoint = new IPEndPoint(new IPAddress(endpointbytes), port);
-                        index = serializer.reader.ReadInt32();
                     }
                 }
             }
@@ -122,22 +118,11 @@ namespace RainMeadow {
                 }
                 return false;
             }
-            public override string RealID()
-            {
-                return index.ToString();
-            }
-            public int index;
-        }
-        public LANMatchmakingManager()
-        {
-            System.Random randomizer = new();
-            PlayerIndex = randomizer.Next();
-            RainMeadow.Debug($"My Player Index: {PlayerIndex}");
         }
         public override void initializeMePlayer() {
             if (OnlineManager.netIO is LANNetIO netio) {
                 
-                OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port), PlayerIndex)) { isMe = true };
+                OnlineManager.mePlayer = new OnlinePlayer(new LANPlayerId(new IPEndPoint(UDPPeerManager.getInterfaceAddresses()[0], netio.manager.port))) { isMe = true };
                 if (RainMeadow.rainMeadowOptions.LanUserName.Value.Length > 0) {
                     OnlineManager.mePlayer.id.name = RainMeadow.rainMeadowOptions.LanUserName.Value;
                 }
@@ -306,7 +291,7 @@ namespace RainMeadow {
                 
                 RainMeadow.Debug("Sending Request to join lobby...");
                 OnlineManager.netIO.SendP2P(new OnlinePlayer(new LANPlayerId(lobbyInfo.endPoint)), 
-                    new RequestJoinPacket(OnlineManager.mePlayer.id.name, PlayerIndex), NetIO.SendType.Reliable, true);
+                    new RequestJoinPacket(OnlineManager.mePlayer.id.name), NetIO.SendType.Reliable, true);
             } else 
             {
                 RainMeadow.Error("Invalid lobby type");
@@ -382,20 +367,6 @@ namespace RainMeadow {
         public override void OpenInvitationOverlay() {
             OnlineManager.instance.manager.ShowDialog(new DialogNotify(Utils.Translate("You cannot use this feature here."), OnlineManager.instance.manager, null));
         }
-        public int TryGetSafeIndex(int origIndex)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                List<LANPlayerId> otherOnlinePlayers = [..OnlineManager.players.Select(x => (LANPlayerId)x.id)]; //called by person who recieves joing person request, this is save checking if their index is the same
-                while (otherOnlinePlayers.Any(x => x.index == origIndex))
-                {
-                    System.Random random = new();
-                    origIndex = random.Next();
-                }
-            }
-            return origIndex;
-        }
-        public static int PlayerIndex { get; private set; } = -1;
         static List<LANLobbyInfo> lobbyinfo = [];
     }
 }

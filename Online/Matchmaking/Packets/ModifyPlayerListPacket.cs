@@ -43,13 +43,11 @@ namespace RainMeadow
                 if (includeme) 
                 {
                     writer.WriteNullTerminatedString(OnlineManager.mePlayer.id.name);
-                    writer.Write((OnlineManager.mePlayer.id as LANMatchmakingManager.LANPlayerId)!.index); //this should always be LANPlayerID right?
                 }
 
                 foreach (LANMatchmakingManager.LANPlayerId lanid in lanids)
                 {
                     writer.WriteNullTerminatedString(lanid.name);
-                    writer.Write(lanid.index);
                 }
             }
 
@@ -67,7 +65,6 @@ namespace RainMeadow
                 for (int i = 0; i < players.Length; i++)
                 {
                     players[i].id.name = reader.ReadNullTerminatedString();
-                    (players[i].id as LANMatchmakingManager.LANPlayerId)!.index = reader.ReadInt32();
                 }
             }
             else if (modifyOperation == Operation.Remove)

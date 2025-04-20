@@ -6,13 +6,11 @@ namespace RainMeadow
     public class RequestJoinPacket : Packet
     {
         public string LanUserName = "";
-        public int Index = -1;
         public override Type type => Type.RequestJoin;
 
         public RequestJoinPacket() {}
-        public RequestJoinPacket(string name, int index) {
+        public RequestJoinPacket(string name) {
             LanUserName = name;
-            Index = index;
         }
 
         public override void Process()
@@ -26,14 +24,6 @@ namespace RainMeadow
                 {
                     processingPlayer.id.name = LanUserName;
                 }
-                if (Index <= -1)
-                {
-                    RainMeadow.Error("PACKAGE IS INVALID!! index called should be more or equals to 0!");
-                }
-                else
-                {
-                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index = matchmaker.TryGetSafeIndex(Index); //this process is called by person who is lobby and recieves it
-                }
                 // Tell everyone else about them
                 RainMeadow.Debug("Telling client they got in.");
                 matchmaker.AcknoledgeLANPlayer(processingPlayer);
@@ -46,8 +36,7 @@ namespace RainMeadow
                     OnlineManager.lobby.gameModeType.value,
                     OnlineManager.players.Count,
                     RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()),
-                    RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()),
-                    (processingPlayer.id as LANMatchmakingManager.LANPlayerId)!.index
+                    RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods())
                 ), NetIO.SendType.Reliable);
 
             }
@@ -57,14 +46,12 @@ namespace RainMeadow
         {
             base.Serialize(writer);
             writer.WriteNullTerminatedString(LanUserName);
-            writer.Write(Index);
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             LanUserName = reader.ReadNullTerminatedString();
-            Index = reader.ReadInt32();
         }
     }
 }
