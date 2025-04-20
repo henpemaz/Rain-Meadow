@@ -7,13 +7,12 @@ namespace RainMeadow
 {
     // main-ish component of AbstractPhysicalObjectState
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-    public class RealizedPhysicalObjectState : OnlineState, Serializer.ICustomSerializable
+    public class RealizedPhysicalObjectState : OnlineState
     {
-        private ChunkState[] chunkStates;
-        private DeltaChunkState[] offsets;
+        [OnlineField]
         private byte collisionLayer;
-        // error acceptable between deltas
-        private const float AcceptableError = 0.25F;
+        [OnlineField(nullable = true)]
+        private ChunkStates? chunkStates;
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
@@ -22,37 +21,106 @@ namespace RainMeadow
             var po = opo.apo.realizedObject;
             if (!opo.lenientPos)
             {
-                chunkStates = po.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+                chunkStates = new ChunkStates(onlineEntity);
             }
             collisionLayer = (byte)po.collisionLayer;
         }
 
-        private static bool CanDelta(ChunkState chunk)
-        {
-            float dx = Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(chunk.pos.x)) - Mathf.HalfToFloat(Mathf.FloatToHalf(chunk.lastPos.x)));
-            float dy = Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(chunk.pos.y)) - Mathf.HalfToFloat(Mathf.FloatToHalf(chunk.lastPos.y)));
-            return dx < AcceptableError && dy < AcceptableError;
+        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po.room?.world?.name == "SS" && (po is Oracle || po is PebblesPearl || po is Rock || po is OracleSwarmer || po is SSOracleSwarmer))
+                return true; // 5 pebbles leniency due to 0G
+            return po.grabbedBy.Any((x) => {
+                if (x.grabber == null)
+                    return false;
+                var oe = x.grabber.abstractCreature.GetOnlineCreature();
+                return oe != null && oe.lenientPos;
+            });
         }
-        private static bool CanDelta(ChunkState[] array) => array.All(e => CanDelta(e));
+
+        public virtual void ReadTo(OnlineEntity onlineEntity)
+        {
+            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
+            if (onlineEntity is OnlinePhysicalObject opo)
+            {
+                var po = opo.apo.realizedObject;
+                opo.lenientPos = ShouldPosBeLenient(po);
+                chunkStates?.ReadTo(onlineEntity);
+                if (po.collisionLayer != collisionLayer)
+                {
+                    po.ChangeCollisionLayer(collisionLayer);
+                }
+            }
+        }
+    }
+
+    public class ChunkStates : Generics.IPrimaryDelta<ChunkStates>, Serializer.ICustomSerializable
+    {
+        private ChunkState[] chunks = [];
+        private DeltaChunkState[]? offsets = null;
+        private bool isDelta = false;
+        private const float AcceptableError = 0.25F; // error acceptable between deltas
+        public bool IsEmptyDelta => isDelta;
+
+        public ChunkStates() { }
+        public ChunkStates(OnlinePhysicalObject onlineEntity)
+        {
+            var opo = onlineEntity as OnlinePhysicalObject;
+            var po = opo.apo.realizedObject;
+            if (!opo.lenientPos) chunks = po.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+        }
+
+        private static bool CanDelta(float a, float b) => Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(a)) - Mathf.HalfToFloat(Mathf.FloatToHalf(b))) < AcceptableError;
+        private static bool CanDelta(ChunkState chunk) => CanDelta(chunk.pos.x, chunk.lastPos.x) && CanDelta(chunk.pos.y, chunk.lastPos.y);
+        private static bool CanDelta(ChunkState[]? array) => array.All(e => CanDelta(e));
+
+        /// <summary>
+        /// Calculates the error from converting to a half float
+        /// </summary>
+        private static float GetHalfError(float a, float b)
+        {
+            float hv = Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(a)) - Mathf.HalfToFloat(Mathf.FloatToHalf(b)));
+            float fv = Mathf.Abs(a - b);
+            return Mathf.Abs(hv - fv);
+        }
 
         private static DeltaChunkState[] GenerateOffsets(ChunkState[] array)
         {
-            return array.Select(e => new DeltaChunkState(e.pos + e.vel)).ToArray();
+            return array.Select(e => new DeltaChunkState(e.pos - e.lastPos)).ToArray();
         }
 
-        public override void CustomSerialize(Serializer serializer)
+        public ChunkStates Delta(ChunkStates other)
         {
-            bool isDelta = false;
-            if (serializer.IsWriting)
+            ChunkStates result = new();
+            result.chunks = other != null && other.chunks != null ? other.chunks : this.chunks;
+            result.offsets = GenerateOffsets(result.chunks);
+            return result;
+        }
+
+        public ChunkStates ApplyDelta(ChunkStates other)
+        {
+            ChunkStates result = new();
+            var source = other ?? this;
+            result.chunks = other != null && other.chunks != null ? other.chunks : this.chunks;
+            result.offsets = source.offsets;
+            if (source.offsets != null)
             {
-                if (CanDelta(chunkStates))
-                {
-                    isDelta = true;
-                    offsets = GenerateOffsets(chunkStates);
+                for (int i = 0; i < source.offsets.Length; i++)
+                { //sync bodychunk positions
+                    result.chunks[i].lastPos = result.chunks[i].pos;
+                    result.chunks[i].pos += source.offsets[i].change;
                 }
             }
+            return result;
+        }
 
-            serializer.Serialize(ref collisionLayer);
+        public void CustomSerialize(Serializer serializer)
+        {
+            isDelta = false;
+            if (serializer.IsWriting && CanDelta(chunks))
+            {
+                isDelta = true;
+                offsets = GenerateOffsets(chunks);
+            }
             serializer.Serialize(ref isDelta);
             if (isDelta)
             {
@@ -74,48 +142,31 @@ namespace RainMeadow
             {
                 if (serializer.IsWriting)
                 {
-                    serializer.writer.Write((byte)chunkStates.Length);
+                    serializer.writer.Write((byte)chunks.Length);
                 }
                 if (serializer.IsReading)
                 {
                     var count = serializer.reader.ReadByte();
-                    chunkStates = new ChunkState[count];
+                    chunks = new ChunkState[count];
                 }
-                for (int i = 0; i < chunkStates.Length; i++)
+                for (int i = 0; i < chunks.Length; i++)
                 {
-                    serializer.Serialize(ref chunkStates[i]);
+                    serializer.Serialize(ref chunks[i]);
                 }
             }
         }
 
-        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
-            if (po.room?.world?.name == "SS" && (po is Oracle || po is PebblesPearl || po is Rock || po is OracleSwarmer || po is SSOracleSwarmer))
-                return true; // 5 pebbles leniency due to 0G
-            return po.grabbedBy.Any((x) => {
-                if (x.grabber == null)
-                    return false;
-                var oe = x.grabber.abstractCreature.GetOnlineCreature();
-                return oe != null && oe.lenientPos;
-            });
-        }
-
-        public virtual void ReadTo(OnlineEntity onlineEntity)
+        public virtual void ReadTo(OnlineEntity oe)
         {
-            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
-            if (onlineEntity is OnlinePhysicalObject opo)
+            if (!oe.isPending && oe is OnlinePhysicalObject opo)
             {
                 var po = opo.apo.realizedObject;
-                opo.lenientPos = ShouldPosBeLenient(po);
                 if (!opo.lenientPos)
                 {
-                    for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
+                    for (int i = 0; i < chunks.Length; i++)
                     {
-                        chunkStates[i].ReadTo(po.bodyChunks[i]);
+                        chunks[i].ReadTo(po.bodyChunks[i]);
                     }
-                }
-                if (po.collisionLayer != collisionLayer)
-                {
-                    po.ChangeCollisionLayer(collisionLayer);
                 }
             }
         }
@@ -135,7 +186,7 @@ namespace RainMeadow
         {
             serializer.SerializeHalf(ref change);
         }
-
+        
         public void ReadTo(ref Vector2 v)
         {
             v = change;
