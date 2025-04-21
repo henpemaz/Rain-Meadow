@@ -1,8 +1,7 @@
-﻿using Ionic.Zlib;
-using System.IO;
+﻿using System.IO;
+using System.IO.Compression;
 using System.Linq.Expressions;
 using System.Reflection;
-using K4os.Compression.LZ4.Streams;
 
 namespace RainMeadow
 {
@@ -28,14 +27,14 @@ namespace RainMeadow
         public void Decompress(Stream into)
         {
             using (var compressStream = new MemoryStream(bytes))
-            using (var decompressor = LZ4Stream.Decode(compressStream))
+            using (var decompressor = new LZ4.LZ4Stream(compressStream, CompressionMode.Decompress))
                 decompressor.CopyTo(into);
         }
 
         private static byte[] Compress(Stream input, int len)
         {
             using (var compressStream = new MemoryStream())
-            using (var compressor = LZ4Stream.Encode(compressStream))
+            using (var compressor = new LZ4.LZ4Stream(compressStream, CompressionMode.Compress))
             {
                 input.CopyTo(compressor, len);
                 compressor.Close();
