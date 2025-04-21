@@ -34,7 +34,7 @@ namespace RainMeadow
         private static byte[] Compress(Stream input, int len)
         {
             using (var compressStream = new MemoryStream())
-            using (var compressor = new LZ4.LZ4Stream(compressStream, CompressionMode.Compress))
+            using (var compressor = new LZ4.LZ4Stream(compressStream, CompressionMode.Compress, LZ4.LZ4StreamFlags.HighCompression))
             {
                 input.CopyTo(compressor, len);
                 compressor.Close();
