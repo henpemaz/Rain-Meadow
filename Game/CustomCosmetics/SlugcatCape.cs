@@ -10,7 +10,25 @@ namespace RainMeadow {
                     if (steamid.oid.GetSteamID64() == 76561198400294958) {
                         return RainWorld.SaturatedGold;
                     }
+
+                    // UO's cape
+                    if (steamid.oid.GetSteamID64() == 76561198036949513) {
+                        return new Color(0.4f, 0.2f, 0.6f);
+                    }
+
+
+                    // Saddest's cape
+                    if (steamid.oid.GetSteamID64() == 76561199175221694) {
+                        return new Color(0.337f, 0.514f, 0.741f);
+                    }
+                    
+                    // choc's cape
+                    if (steamid.oid.GetSteamID64() == 76561199518071040) {
+                        return new Color(0.658f, 0.753f, 0.722f);
+                    }
+                    
                 }
+
                 return null;
             } 
             
