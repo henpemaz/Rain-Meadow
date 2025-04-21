@@ -42,7 +42,7 @@ namespace RainMeadow
                     try {
                         if (OnlineManager.lobby != null) {
                             if (!self.player.isNPC && self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter) {
-                                Color? cape = SlugcatCape.HasCape(critter.owner.id);
+                                Color? cape = CapeManager.HasCape(critter.owner.id);
                                 if (cape.HasValue) {
                                     numofsprites += SlugcatCape.totalSprites;
                                     if (!SlugcatCape.cloaked_slugcats.TryGetValue(self, out _)) {
