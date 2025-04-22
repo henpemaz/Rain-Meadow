@@ -1,5 +1,6 @@
 using HarmonyLib;
 using Menu;
+using Menu.Remix.MixedUI;
 using Steamworks;
 using System;
 using System.Collections.Generic;
@@ -11,20 +12,33 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class StoryOnlineMenu : SlugcatSelectMenu
+    public class StoryOnlineMenu : SlugcatSelectMenu, IChatSubscriber
     {
-        CheckBox clientWantsToOverwriteSave;
-        CheckBox friendlyFire;
-        CheckBox reqCampaignSlug;
-        MenuLabel? lobbyLabel, slugcatLabel;
-        ButtonScroller? playerScrollBox;
-        StoryMenuSlugcatSelector? slugcatSelector;
-        SlugcatCustomization personaSettings;
-        SlugcatStats.Name[] selectableSlugcats;
-        SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
-        StoryGameMode storyGameMode;
-        MenuLabel onlineDifficultyLabel;
-        Vector2 restartCheckboxPos;
+        private CheckBox clientWantsToOverwriteSave;
+        private CheckBox friendlyFire;
+        private CheckBox reqCampaignSlug;
+        private MenuLabel? lobbyLabel, slugcatLabel;
+        private ButtonScroller? playerScrollBox;
+        private StoryMenuSlugcatSelector? slugcatSelector;
+        private SlugcatCustomization personaSettings;
+        private SlugcatStats.Name[] selectableSlugcats;
+        private SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
+        private StoryGameMode storyGameMode;
+        private MenuLabel onlineDifficultyLabel;
+        private Vector2 restartCheckboxPos;
+        
+        //Chat constants
+        private const int maxVisibleMessages = 13;
+        public bool Active => isChatToggled;
+        //Chat variables
+        private List<MenuObject> chatSubObjects = new();
+        private List<(string, string)> chatLog = new();
+        private int currentLogIndex = 0;
+        private bool isChatToggled = false;
+        private ChatTextBox chatTextBox;
+        private Vector2 chatTextBoxPos;
+        private Dictionary<string, Color> colorDictionary = new();
+
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -99,6 +113,9 @@ namespace RainMeadow
             UpdatePlayerList();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+
+            ChatTextBox.OnShutDownRequest += ResetChatInput;
+            ChatLogManager.Subscribe(this);
         }
 
         public void SetupSelectableSlugcats() {
@@ -192,6 +209,9 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
+            ChatTextBox.OnShutDownRequest -= ResetChatInput;
+            ChatLogManager.Unsubscribe(this);
+
             RainMeadow.DebugMe();
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game) // if join on sleep/deathscreen this needs to be added here as well
             {
@@ -312,6 +332,15 @@ namespace RainMeadow
             invite.OnClick += (_) => MatchmakingManager.currentInstance.OpenInvitationOverlay();
             pages[0].subObjects.Add(invite);
 
+            this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
+            var toggleChat = new SimplerSymbolButton(this, pages[0], "Kill_Slugcat", "", this.chatTextBoxPos);
+            toggleChat.OnClick += (_) => {
+                this.isChatToggled = !this.isChatToggled;
+                this.ResetChatInput();
+                this.UpdateLogDisplay();
+            };
+            pages[0].subObjects.Add(toggleChat);
+
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
             friendlyFire = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y + 30), 70f, Translate("Friendly Fire"), "ONLINEFRIENDLYFIRE", false);
             reqCampaignSlug = new CheckBox(this, pages[0], this, new Vector2(startButton.pos.x - sameSpotOtherSide, restartCheckboxPos.y), 150f, Translate("Require Campaign Slugcat"), "CAMPAIGNSLUGONLY", false);
@@ -362,6 +391,100 @@ namespace RainMeadow
             if (colorsCheckbox != null)
             {
                 colorsCheckbox.Checked = colorChecked; //this.IsCustomColorEnabled(scug); //automatically opens color interface if enabled
+            }
+        }
+
+        public void AddMessage(string user, string message)
+        {
+            if (OnlineManager.lobby == null) return;
+            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
+            this.chatLog.Add((user, message));
+            this.UpdateLogDisplay();
+        }
+
+        internal void ResetChatInput()
+        {
+            this.chatTextBox?.DelayedUnload(0.1f);
+            pages[0].ClearMenuObject(ref this.chatTextBox);
+            if (this.isChatToggled && this.chatTextBox is null)
+            {
+                this.chatTextBox = new ChatTextBox(this, pages[0], "", new Vector2(this.chatTextBoxPos.x + 24, 0), new(575, 30));
+                pages[0].subObjects.Add(this.chatTextBox);
+            }
+        }
+
+        internal void UpdateLogDisplay()
+        {
+            if (!this.isChatToggled)
+            {
+                var list = new List<MenuObject>();
+                foreach (var e in chatSubObjects)
+                {
+                    e.RemoveSprites();
+                    list.Add(e);
+                }
+                foreach (var e in list) pages[0].RemoveSubObject(e);
+                chatSubObjects.Clear(); //do not keep gc stuff!
+                return;
+            }
+            if (chatLog.Count > 0)
+            {
+                int startIndex = Mathf.Clamp(chatLog.Count - maxVisibleMessages - currentLogIndex, 0, chatLog.Count - maxVisibleMessages);
+                var logsToRemove = new List<MenuObject>();
+
+                // First, collect all the logs to remove
+                foreach (var log in chatSubObjects)
+                {
+                    log.RemoveSprites();
+                    logsToRemove.Add(log);
+                }
+
+                // Now remove the logs from the original collection
+                foreach (var log in logsToRemove)
+                {
+                    chatSubObjects.Remove(log);
+                    pages[0].RemoveSubObject(log);
+                }
+
+                ChatLogManager.UpdatePlayerColors();
+
+                float yOffSet = 0;
+                var visibleLog = chatLog.Skip(startIndex).Take(maxVisibleMessages);
+                foreach (var (username, message) in visibleLog)
+                {
+                    if (username is null or "")
+                    {
+                        // system message
+                        var messageLabel = new MenuLabel(this, pages[0], message,
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        messageLabel.label.alignment = FLabelAlignment.Left;
+                        messageLabel.label.color = ChatLogManager.defaultSystemColor;
+                        chatSubObjects.Add(messageLabel);
+                        pages[0].subObjects.Add(messageLabel);
+                    }
+                    else
+                    {
+                        var color = ChatLogManager.GetDisplayPlayerColor(username);
+
+                        var usernameLabel = new MenuLabel(this, pages[0], username,
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        usernameLabel.label.alignment = FLabelAlignment.Left;
+                        usernameLabel.label.color = color;
+                        chatSubObjects.Add(usernameLabel);
+                        pages[0].subObjects.Add(usernameLabel);
+
+                        var usernameWidth = LabelTest.GetWidth(usernameLabel.label.text);
+                        var messageLabel = new MenuLabel(this, pages[0], $": {message}",
+                            new Vector2(1366f - manager.rainWorld.screenSize.x - 660f + usernameWidth + 2f, 330f - yOffSet),
+                            new Vector2(manager.rainWorld.screenSize.x, 30f), false);
+                        messageLabel.label.alignment = FLabelAlignment.Left;
+                        chatSubObjects.Add(messageLabel);
+                        pages[0].subObjects.Add(messageLabel);
+                    }
+                    yOffSet += 20f;
+                }
             }
         }
     }

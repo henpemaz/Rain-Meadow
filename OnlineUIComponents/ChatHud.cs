@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatHud : HudPart
+    public class ChatHud : HudPart, IChatSubscriber
     {
         private TextPrompt textPrompt;
         private RoomCamera camera;
@@ -43,7 +43,7 @@ namespace RainMeadow
             if (isLogToggled)
             {
                 RainMeadow.Debug("creating log");
-                chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
                 showChatLog = true;
             }
 
@@ -97,7 +97,7 @@ namespace RainMeadow
                 else if (!textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating log");
-                    chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                    chatLogOverlay = new ChatLogOverlay(this, game.manager);
                     showChatLog = true;
                     isLogToggled = true;
                 }
@@ -117,11 +117,10 @@ namespace RainMeadow
                     if (chatLogOverlay is null)
                     {
                         RainMeadow.Debug("creating log");
-                        chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                        chatLogOverlay = new ChatLogOverlay(this, game.manager);
                     }
                 }
             }
-
             
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
