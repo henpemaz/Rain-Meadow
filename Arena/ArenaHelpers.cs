@@ -11,7 +11,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
         public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
 
-        public static void InitializeBuiltinTypes()
+        public static void RecreateSlugcatCache()
         {
             // reinitialize
             vanillaSlugcats.Clear();
