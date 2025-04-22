@@ -1,6 +1,5 @@
 ﻿using Menu;
-using Newtonsoft.Json.Linq;
-using System;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -33,6 +32,25 @@ namespace RainMeadow
                 {
                     lobby.playButton.Clicked();
                 }
+            }
+        }
+        [RPCMethod]
+        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                return;
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                string id = userChangingClass.GetUniqueID();
+                if (!arena.playersInLobbyChoosingSlugs.ContainsKey(id))
+                {
+                    arena.playersInLobbyChoosingSlugs.Add(id, currentColorIndex);
+                    return;
+                }
+                arena.playersInLobbyChoosingSlugs[id] = currentColorIndex;
+
             }
         }
 
@@ -182,44 +200,6 @@ namespace RainMeadow
 
                 }
             }
-        }
-
-        [RPCMethod]
-        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playersInLobbyChoosingSlugs[userChangingClass.id.ToString()] = currentColorIndex;
-                }
-
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-                var Sluglist = ArenaHelpers.AllSlugcats();
-                try
-                {
-                    for (int i = 0; i < game.classButtons.Length; i++)
-                    {
-                        if (game.classButtons[i].profileIdentifier == userChangingClass)
-                        {
-                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
-                            game.classButtons[i].portrait.LoadFile();
-                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
-                        }
-
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find user");
-                }
-
-            }
-
         }
         [RPCMethod]
         public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)

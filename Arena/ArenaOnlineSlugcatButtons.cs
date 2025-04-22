@@ -12,22 +12,26 @@ namespace RainMeadow
     {
         public float XOffset => 120;
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, MaxOffset); }
-        public int MaxOffset => Mathf.Max(OtherOnlinePlayers.Count - 1, 0) / PerPage;
-        public int PerPage { get => perPage; set => perPage = Mathf.Max(perPage, 1); } //excludes first button
-        public bool PagesOn =>  OtherOnlinePlayers?.Count > PerPage;
-        public List<OnlinePlayer> OtherOnlinePlayers => [..onlinePlayers.Where(x => !x.isMe)];
-        public ArenaOnlineSlugcatButtons(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> onlinePlayers, Action<ArenaOnlineSlugcatButtons> uponPopulate) : base(menu, owner, pos)
+        public int MaxOffset => (otherOnlinePlayers?.Count > 0? otherOnlinePlayers.Count -1 : 0) / PerPage;
+        public int PerPage { get => perPage; set => perPage = Mathf.Max(value, 1); } //excludes first button
+        public bool PagesOn
         {
-            uponPopulatingPage = uponPopulate;
+            get
+            {
+                int count = otherOnlinePlayers?.Count ?? 0;
+                RainMeadow.Debug($"PlayerCount: {count}");
+                return otherOnlinePlayers?.Count > PerPage;
+            }
+        }
+        public ArenaOnlineSlugcatButtons(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> otherOnlinePlayers, Action<ArenaOnlineSlugcatButtons> uponPopulate) : base(menu, owner, pos)
+        {
+            currentOffset = 0;
             PerPage = 3;
-            this.onlinePlayers = onlinePlayers;
+            uponPopulatingPage = uponPopulate;
+            this.otherOnlinePlayers = otherOnlinePlayers;
             meButton = GetArenaPlayerButton(Vector2.zero, OnlineManager.mePlayer);
             subObjects.Add(meButton);
             PopulatePage(CurrentOffset);
-            if (PagesOn)
-            {
-                ActivatePageButtons();
-            }
         }
         public override void RemoveSprites()
         {
@@ -60,33 +64,36 @@ namespace RainMeadow
         public void PrevPage()
         {
             menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-            List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
             PopulatePage((CurrentOffset - 1 < 0) ? ((otherOnlinePlayers?.Count > 0) ? ((otherOnlinePlayers.Count - 1) / PerPage) : 0) : (CurrentOffset - 1));
         }
         public void NextPage()
         {
             menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-            List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
             PopulatePage(otherOnlinePlayers == null || otherOnlinePlayers.Count == 0 || CurrentOffset + 1 > (otherOnlinePlayers.Count - 1) / PerPage ? 0 : (CurrentOffset + 1));
         }
         public void PopulatePage(int offset)
         {
             ClearInterface(true);
             CurrentOffset = offset;
-            int num = CurrentOffset * PerPage;
             List<ArenaOnlinePlayerJoinButton> newArenaPlayerButtons = [];
-            List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
-            while (num < otherOnlinePlayers.Count && num < (CurrentOffset + 1) * PerPage)
+            int num = CurrentOffset * PerPage;
+            RainMeadow.Debug($"Player count without me check: {otherOnlinePlayers?.Count ?? 0}");
+            while (num < otherOnlinePlayers?.Count && num < (CurrentOffset + 1) * PerPage)
             {
-                ArenaOnlinePlayerJoinButton playerButton = GetArenaPlayerButton(new(XOffset + (num % PerPage * XOffset), meButton!.pos.y), otherOnlinePlayers[num]);
+                ArenaOnlinePlayerJoinButton playerButton = GetArenaPlayerButton(new(((num % PerPage) + 1) * XOffset, 0), otherOnlinePlayers[num]);
                 subObjects.Add(playerButton);
                 menu.TryMutualBind(newArenaPlayerButtons.GetValueOrDefault((num - 1) % PerPage), playerButton, true);
                 newArenaPlayerButtons.Add(playerButton);
                 num++;
             }
-            otherArenaPlayerButtons = [..newArenaPlayerButtons];
-            RefreshSelectables();
+            otherArenaPlayerButtons = [.. newArenaPlayerButtons];
             uponPopulatingPage(this);
+            if (PagesOn)
+            {
+                ActivatePageButtons();
+                return;
+            }
+            DeactivatePageButtons();
         }
         public void ClearInterface(bool refresh = false)
         {
@@ -97,20 +104,20 @@ namespace RainMeadow
         {
             if (viewPrevPlayer == null)
             {
-                viewPrevPlayer = new(menu, owner, "Menu_Symbol_Arrow", "VIEWPREV", new((perPage + 2) * XOffset, 20));
-                viewPrevPlayer.symbolSprite.rotation = 270f;
+                viewPrevPlayer = new(menu, this, "Menu_Symbol_Arrow", PREVSINGAL, new((PerPage + 1) * XOffset - 10, 20));
+                viewPrevPlayer.symbolSprite.rotation = 270;
                 subObjects.Add(viewPrevPlayer);
             }
             if (viewNextPlayer == null)
             {
-                viewNextPlayer = new(menu, owner, "Menu_Symbol_Arrow", "VIEWNEXT", new(viewPrevPlayer.pos.x, viewPrevPlayer.pos.y + 40));
-                viewNextPlayer.symbolSprite.rotation = 90f;
+                viewNextPlayer = new(menu, this, "Menu_Symbol_Arrow", NEXTSINGAL, new(viewPrevPlayer.pos.x, viewPrevPlayer.pos.y + 40));
+                viewNextPlayer.symbolSprite.rotation = 90;
                 subObjects.Add(viewNextPlayer);
             }
             if (pageStater == null)
             {
                 pageStater = new(menu, this, "", new((PerPage + 2) * XOffset, 70), new(70, 30), false);
-                subObjects.AddRange([meButton, pageStater]);
+                subObjects.Add(pageStater);
             }
             RefreshSelectables();
         }
@@ -119,6 +126,7 @@ namespace RainMeadow
             this.ClearMenuObject(ref viewPrevPlayer);
             this.ClearMenuObject(ref viewNextPlayer);
             this.ClearMenuObject(ref pageStater);
+            RefreshSelectables();
         }
         public void RefreshSelectables()
         {
@@ -129,11 +137,8 @@ namespace RainMeadow
         }
         public ArenaOnlinePlayerJoinButton GetArenaPlayerButton(Vector2 pos, OnlinePlayer onlinePlayer)
         {
-            ArenaOnlinePlayerJoinButton playerButton = new(menu, this, pos, 0, onlinePlayer, OnlineManager.lobby.isOwner && !onlinePlayer.isMe)
-            {
-                profileIdentifier = onlinePlayer
-            };
-            if (playerButton.profileIdentifier == OnlineManager.mePlayer)
+            ArenaOnlinePlayerJoinButton playerButton = new(menu, this, pos, 0, onlinePlayer, OnlineManager.lobby?.isOwner == true && !onlinePlayer.isMe);
+            if (playerButton.profileIdentifier?.isMe == true)
             {
                 playerButton.buttonBehav.greyedOut = false;
                 playerButton.readyForCombat = true;
@@ -146,7 +151,7 @@ namespace RainMeadow
         public SimplerSymbolButton? viewNextPlayer, viewPrevPlayer;
         public ArenaOnlinePlayerJoinButton? meButton;
         public ArenaOnlinePlayerJoinButton[]? otherArenaPlayerButtons = [];
-        public List<OnlinePlayer> onlinePlayers;
+        public List<OnlinePlayer>? otherOnlinePlayers;
         public Action<ArenaOnlineSlugcatButtons> uponPopulatingPage;
     }
 }
