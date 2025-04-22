@@ -209,6 +209,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
+            this.isChatToggled = false;
+            ResetChatInput(); //ensure chat input is properly shutdown
             ChatTextBox.OnShutDownRequest -= ResetChatInput;
             ChatLogManager.Unsubscribe(this);
 
