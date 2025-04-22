@@ -24,7 +24,6 @@ namespace RainMeadow
         private int holdPlayerPosition;
         private int currentPlayerPosition;
         private bool initiatedStartGameForClient;
-        public List<SlugcatStats.Name> allSlugs;
         public Dictionary<string, bool> playersReadiedUp = new Dictionary<string, bool>();
 
 
@@ -54,15 +53,12 @@ namespace RainMeadow
                 arena.ResetForceReadyCountDown();
             }
 
-            allSlugs = ArenaHelpers.AllSlugcats();
             holdPlayerPosition = 3; // the position we want to use for changing as we navigate
             ArenaHelpers.ResetReadyUpLogic(arena, this);
 
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
-
-
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             initiatedStartGameForClient = false;
@@ -749,7 +745,7 @@ namespace RainMeadow
                     currentColorIndex = arena.playersInLobbyChoosingSlugs[OnlineManager.mePlayer.id.ToString()];
                     RainMeadow.Debug("Player already exists in dictionary");
                     RainMeadow.Debug("Current index" + currentColorIndex);
-                    classButtons[0].portrait.fileName = ArenaImage(allSlugs[currentColorIndex], currentColorIndex);
+                    classButtons[0].portrait.fileName = ArenaImage(ArenaHelpers.allSlugcats[currentColorIndex], currentColorIndex);
                     classButtons[0].portrait.LoadFile();
                     classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
                 }
@@ -770,14 +766,14 @@ namespace RainMeadow
 
                 classButtons[0].OnClick += (_) =>
                 {
-                    currentColorIndex = (currentColorIndex + 1) % allSlugs.Count;
-                    allSlugs[currentColorIndex] = allSlugs[currentColorIndex];
-                    classButtons[0].portrait.fileName = ArenaImage(allSlugs[currentColorIndex], currentColorIndex);
+                    currentColorIndex = (currentColorIndex + 1) % ArenaHelpers.allSlugcats.Count;
+                    ArenaHelpers.allSlugcats[currentColorIndex] = ArenaHelpers.allSlugcats[currentColorIndex];
+                    classButtons[0].portrait.fileName = ArenaImage(ArenaHelpers.allSlugcats[currentColorIndex], currentColorIndex);
                     classButtons[0].portrait.LoadFile();
                     classButtons[0].portrait.sprite.SetElementByName(classButtons[0].portrait.fileName);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
 
-                    arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
+                    arena.avatarSettings.playingAs = ArenaHelpers.allSlugcats[currentColorIndex];
                     arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
 
                     foreach (var player in OnlineManager.players)
@@ -793,7 +789,7 @@ namespace RainMeadow
                     }
                 };
                 pages[0].subObjects.Add(classButtons[0]);
-                arena.avatarSettings.playingAs = allSlugs[currentColorIndex];
+                arena.avatarSettings.playingAs = ArenaHelpers.allSlugcats[currentColorIndex];
                 arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
                 meClassButtonCreated = true;
             }
@@ -849,7 +845,7 @@ namespace RainMeadow
                 {
                     currentColorIndexOther = arena.playersInLobbyChoosingSlugs[OnlineManager.players[i].id.ToString()];
                 }
-                classButtons[localIndex].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
+                classButtons[localIndex].portrait.fileName = ArenaImage(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther);
                 classButtons[localIndex].portrait.LoadFile();
                 classButtons[localIndex].portrait.sprite.SetElementByName(classButtons[localIndex].portrait.fileName);
                 pages[0].subObjects.Add(classButtons[localIndex]);
@@ -1012,7 +1008,7 @@ namespace RainMeadow
                     currentColorIndexOther = 0;
                 }
                 classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
-                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
+                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name;
@@ -1074,7 +1070,7 @@ namespace RainMeadow
                     currentColorIndexOther = 0;
                 }
                 classButtons[holdPlayerPosition].profileIdentifier = OnlineManager.players[currentPlayerPosition];
-                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(allSlugs[currentColorIndexOther], currentColorIndexOther);
+                classButtons[holdPlayerPosition].portrait.fileName = ArenaImage(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther);
                 classButtons[holdPlayerPosition].portrait.LoadFile();
                 classButtons[holdPlayerPosition].portrait.sprite.SetElementByName(classButtons[holdPlayerPosition].portrait.fileName);
                 usernameButtons[holdPlayerPosition].menuLabel.text = OnlineManager.players[currentPlayerPosition].id.name;
