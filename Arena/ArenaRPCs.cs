@@ -21,6 +21,7 @@ namespace RainMeadow
                     stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
                     stillInGame.manager.rainWorld.options.DeleteArenaSitting();
                     stillInGame.ArenaSitting.players.Clear();
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
                     return;
                 }
                 if (lobby.manager.upcomingProcess != null)
@@ -225,37 +226,10 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    return;
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
-                    {
-                        arena.playersReadiedUp.list.Add(userIsReady.id);
-                    }
-                }
-
-                try
-                {
-                    for (int i = 0; i < game.classButtons.Length; i++)
-                    {
-                        if (game.classButtons[i].profileIdentifier == userIsReady)
-                        {
-                            game.classButtons[i].readyForCombat = true;
-
-                        }
-
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find user");
-                }
-
-
 
             }
 
