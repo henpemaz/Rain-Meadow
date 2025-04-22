@@ -230,9 +230,8 @@ public partial class RainMeadow
         {
             if (self.slugcat.isNPC) return;
 
-            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug();
-
-            self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
+            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
+            else self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
         }
     }
 
