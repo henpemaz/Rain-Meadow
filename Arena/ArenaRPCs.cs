@@ -199,7 +199,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                var Sluglist = ArenaHelpers.AllSlugcats();
+                var Sluglist = ArenaHelpers.allSlugcats;
                 try
                 {
                     for (int i = 0; i < game.classButtons.Length; i++)
