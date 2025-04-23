@@ -69,7 +69,7 @@ namespace RainMeadow
 
         public static void LeaveLobby()
         {
-
+            ChatLogManager.ResetPlayerColors();
             MatchmakingManager.currentInstance.LeaveLobby();
             netIO?.ForgetEverything();
             lobby = null;
@@ -83,7 +83,6 @@ namespace RainMeadow
             OnlinePhysicalObject.map = new();
 
             RainMeadowModManager.Reset();
-
             
             MatchmakingManager.currentInstance.initializeMePlayer();
             players = new List<OnlinePlayer>() { mePlayer };

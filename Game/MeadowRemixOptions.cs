@@ -166,8 +166,11 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 400f, Translate("Key used for toggling spectator mode")),
                 new OpKeyBinder(SpectatorKey, new Vector2(10f, 370f), new Vector2(150f, 30f)),
 
-                new OpLabel(310, 400f, Translate("Stop Inputs While Spectating")),
-                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 375f)),
+                new OpLabel(310, 445f, Translate("Stop Inputs While Spectating")),
+                new OpCheckBox(StopMovementWhileSpectateOverlayActive, new Vector2(310f, 420)),
+
+                new OpLabel(310, 400f, Translate("Pointing Key")),
+                new OpKeyBinder(PointingKey, new Vector2(310f, 370f), new Vector2(150f, 30f)),
 
                 new OpLabel(10f, 300f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
                 editSyncRequiredModsButton = new OpSimpleButton(new Vector2(10f, 260f), new Vector2(150f, 30f), Translate("Edit High-Impact Mods")),

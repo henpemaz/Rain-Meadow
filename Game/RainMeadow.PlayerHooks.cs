@@ -45,6 +45,8 @@ public partial class RainMeadow
         On.KarmaFlower.BitByPlayer += KarmaFlower_BitByPlayer;
         On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites1;
 
+        On.SlugcatHand.Update += SlugcatHand_Update;
+        On.Player.GetHeldItemDirection += Player_GetHeldItemDirection;
         On.AbstractCreature.ctor += AbstractCreature_ctor;
         On.Player.ShortCutColor += Player_ShortCutColor;
         On.Player.checkInput += Player_checkInput;
@@ -63,6 +65,36 @@ public partial class RainMeadow
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
+    {
+        if (OnlineManager.lobby != null && self.handPointing == hand && self.graphicsModule is PlayerGraphics playerGraphics && self.grasps[hand].grabbed is Spear)
+        {
+            // scary math below
+            var vector = Custom.DegToVec(Custom.AimFromOneVectorToAnother(self.firstChunk.pos, playerGraphics.hands[hand].pos));
+            return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
+        }
+        return orig(self, hand);
+    }
+
+    private void SlugcatHand_Update(On.SlugcatHand.orig_Update orig, SlugcatHand self)
+    {
+        if (OnlineManager.lobby != null && self.owner.owner is Player player)
+        {
+            // Keep the pointing on as if it was a local update, this will be kept until handPointing is
+            // no longer -1, remember this is networking and in some frames we may have non-updated
+            // reachingForObject (see RealizedPlayerState.cs)
+            if (player.graphicsModule is PlayerGraphics playerGraphics && player.handPointing != -1)
+            {
+                playerGraphics.hands[player.handPointing].reachingForObject = true;
+            }
+            orig(self);
+        }
+        else
+        {
+            orig(self);
+        }
     }
 
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
@@ -198,9 +230,8 @@ public partial class RainMeadow
         {
             if (self.slugcat.isNPC) return;
 
-            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug();
-
-            self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
+            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
+            else self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
         }
     }
 

@@ -160,7 +160,7 @@ namespace RainMeadow
             
             domainDropDown = new OpComboBox2(new Configurable<MatchmakingManager.MatchMakingDomain>(
                 MatchmakingManager.currentDomain), where, 160f - 35f, 
-                MatchmakingManager.supported_matchmakers.Select(x => new ListItem(Utils.Translate(x.value))).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+                MatchmakingManager.supported_matchmakers.Select(x => new ListItem(x.value, Utils.Translate(x.value))).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
             domainDropDown.OnChange += () => {
                 MatchmakingManager.currentDomain = new MatchmakingManager.MatchMakingDomain(domainDropDown.value, false);
                 lobbyList.ClearLobbies();

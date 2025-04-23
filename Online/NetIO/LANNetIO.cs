@@ -54,14 +54,14 @@ namespace RainMeadow
                     player = new OnlinePlayer(playerid);
                 }
 
-                MemoryStream memory = new MemoryStream(128);
-                BinaryWriter writer = new BinaryWriter(memory);
+                using (MemoryStream memory = new MemoryStream(128))
+                using (BinaryWriter writer = new BinaryWriter(memory)) {
+                    Packet.Encode(packet, writer, player);
 
-                Packet.Encode(packet, writer, player);
-
-                for (int i = 0; i < 4; i++)
-                manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
-                    UDPPeerManager.PacketType.UnreliableBroadcast, true);
+                    for (int i = 0; i < 4; i++)
+                    manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                        UDPPeerManager.PacketType.UnreliableBroadcast, true);
+                    }
                 }
         }
         public override void SendP2P(OnlinePlayer player, Packet packet, SendType sendType, bool start_conversation = false) {
@@ -69,16 +69,17 @@ namespace RainMeadow
                 return;
             }
             if (player.id is LANMatchmakingManager.LANPlayerId lanid) {
-                MemoryStream memory = new MemoryStream(128);
-                BinaryWriter writer = new BinaryWriter(memory);
+                using (MemoryStream memory = new MemoryStream(128))
+                using (BinaryWriter writer = new BinaryWriter(memory)) {
+                    Packet.Encode(packet, writer, player);
+                    manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
+                        {
+                            NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
+                            NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
+                            _ => UDPPeerManager.PacketType.Unreliable,
+                        }, start_conversation);
+                }
 
-                Packet.Encode(packet, writer, player);
-                manager.Send(memory.GetBuffer(), lanid.endPoint, sendType switch
-                    {
-                        NetIO.SendType.Reliable => UDPPeerManager.PacketType.Reliable,
-                        NetIO.SendType.Unreliable => start_conversation? UDPPeerManager.PacketType.UnreliableBroadcast : UDPPeerManager.PacketType.Unreliable,
-                        _ => UDPPeerManager.PacketType.Unreliable,
-                    }, start_conversation);
             }
         }
 
@@ -140,19 +141,19 @@ namespace RainMeadow
                     IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
                     if (iPEndPoint is null) continue;
                     
-                    MemoryStream netStream = new MemoryStream(data);
-                    BinaryReader netReader = new BinaryReader(netStream);
-                    
-                    if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
-                    var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
-                    if (player == null)
-                    {
-                        RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);
-                        var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);
-                        player = new OnlinePlayer(playerid);
+                    using (MemoryStream netStream = new MemoryStream(data))
+                    using (BinaryReader netReader = new BinaryReader(netStream)) {
+                        if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
+                        var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
+                        if (player == null)
+                        {
+                            RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);
+                            var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);
+                            player = new OnlinePlayer(playerid);
+                        }
+
+                        Packet.Decode(netReader, player);
                     }
-                    
-                    Packet.Decode(netReader, player);
                 }
                 catch (Exception e)
                 {

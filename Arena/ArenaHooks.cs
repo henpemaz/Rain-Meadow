@@ -425,10 +425,10 @@ namespace RainMeadow
                     return "MultiplayerPortrait" + color + "2";
                 }
 
-                var slugList = ArenaHelpers.AllSlugcats();
-                var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
-                var vanillaSlugs = ArenaHelpers.VanillaSlugs();
-                var mscSlugs = ArenaHelpers.MSCSlugs();
+                var slugList = ArenaHelpers.allSlugcats;
+                var baseGameSlugs = ArenaHelpers.baseGameSlugcats;
+                var vanillaSlugs = ArenaHelpers.vanillaSlugcats;
+                var mscSlugs = ArenaHelpers.mscSlugcats;
 
                 RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
 
@@ -1191,9 +1191,9 @@ namespace RainMeadow
                 }
 
 
-                if (!ModManager.MSC && !ModManager.Watcher)
+                if (!ModManager.MSC)
                 {
-                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+                    if (ArenaHelpers.baseGameSlugcats.Contains(player.playerClass))
                     {
                         var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
                               (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
