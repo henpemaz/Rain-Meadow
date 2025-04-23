@@ -638,6 +638,10 @@ namespace RainMeadow
             {
                 manager.StopSideProcess(colorConfigDialog); //force getting rid of dialog
             }
+            if (OnlineManager.lobby.isOwner)
+            {
+                GetArenaSetup?.SaveToFile();
+            }
             arena.avatarSettings.playingAs = ArenaHelpers.allSlugcats.GetValueOrDefault(CurrentColorIndex, ArenaHelpers.allSlugcats[UnityEngine.Random.Range(0, ArenaHelpers.allSlugcats.Count - 1)])!;
             arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
             arena.avatarSettings.currentColors = this.GetCustomColors(arena.avatarSettings.playingAs);
