@@ -278,15 +278,16 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
             {
                 arena.isInGame = true;
-                foreach (var p in OnlineManager.players)
+                foreach (var p in arena.arenaSittingOnlineOrder)
                 {
-                    if (p.isMe) continue; // skip self
-                    p.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                    var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                    if (onlineP.isMe) continue; // skip self
+                    onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
                 }
-
+                arena.initiatedStartGameForClient = true; // set this so we don't notify again
             }
         }
 

@@ -129,6 +129,7 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
+                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {

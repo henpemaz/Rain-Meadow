@@ -23,6 +23,7 @@ namespace RainMeadow
         public bool returnToLobby;
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
+        public bool initiatedStartGameForClient;
 
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
@@ -87,6 +88,7 @@ namespace RainMeadow
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
+            initiatedStartGameForClient = false;
         }
 
         public void ResetInvDetails()
