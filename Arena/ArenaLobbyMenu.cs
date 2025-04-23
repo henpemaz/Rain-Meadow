@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Linq;
 using System.Security.Cryptography;
+using HarmonyLib;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu

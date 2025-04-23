@@ -439,8 +439,7 @@ namespace RainMeadow
                 }
                 if (!ArenaHelpers.baseGameSlugcats.Contains(classID))
                 {
-                    color = 0;
-                    return $"MultiplayerPortrait{color}{1}-{classID}";
+                    return $"MultiplayerPortrait{0}{1}-{classID}";
                 }
             }
             return orig(self, classID, color);
