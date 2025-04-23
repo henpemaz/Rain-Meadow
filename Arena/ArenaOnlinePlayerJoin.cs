@@ -131,6 +131,7 @@ namespace Menu
             else
             {
                 portrait.sprite.color = ogColor;
+                roundedRect.borderColor = ogColor.ToHSL();
             }
         }
         public void SetNewSlugcat(SlugcatStats.Name slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
