@@ -81,8 +81,6 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory(); // please
-
             SetupSelectableSlugcats();
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
@@ -152,6 +150,7 @@ namespace RainMeadow
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
