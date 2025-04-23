@@ -662,7 +662,51 @@ namespace RainMeadow
         }
         private void UpdateLevelCounter()
         {
+
             this.currentLevelProgression.text = this.Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;
+
+            
+
+            if (OnlineManager.lobby == null) return;
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (this.forceReady != null)
+                {
+                    if (arena.forceReadyCountdownTimer > 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = true;
+                        this.forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                    }
+                    else
+                    {
+                        this.forceReady.menuLabel.text = forceReadyText;
+                    }
+
+                    if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.forceReadyCountdownTimer <= 0)
+                    {
+                        this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                    }
+                }
+
+
+            }
+
+            if (this.totalClientsReadiedUpOnPage != null)
+            {
+                UpdateReadyUpLabel();
+            }
+
+            if (this.currentLevelProgression != null)
+            {
+                UpdateLevelCounter();
+            }
+
+            if (this.displayCurrentGameMode != null)
+            {
+                UpdateGameModeLabel();
+
+            }
 
         }
         private void UpdateGameModeLabel()
