@@ -214,6 +214,25 @@ namespace RainMeadow
             }
 
         }
+        [RPCMethod]
+        public static void Arena_NotifyStartGame()
+        {
+            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (lobby == null)
+                {
+                    RainMeadow.Debug("Could not start player");
+                    return;
+                }
+                RainMeadow.Debug("Starting game for player");
+                arena.isInGame = true; // state might be too late
+                lobby.StartGame();
+            }
+        }
+
+
+
 
         [RPCMethod]
         public static void Arena_NextLevelCall()

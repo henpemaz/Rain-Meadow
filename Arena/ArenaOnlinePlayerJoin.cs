@@ -123,7 +123,7 @@ namespace Menu
             float lerpFactor = Mathf.PingPong(Time.time * alternationSpeed, 1f);
 
 
-            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
+            if (arena != null && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
             {
                 roundedRect.borderColor = HSLColor.Lerp(ogColor.ToHSL(), champBorderColor.ToHSL(), lerpFactor);
                 portrait.sprite.color = Color.Lerp(ogColor, champBorderColor, lerpFactor);
