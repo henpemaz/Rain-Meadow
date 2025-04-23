@@ -25,7 +25,7 @@ namespace RainMeadow
             [OnlineField]
             public bool readyForWin;
             [OnlineField]
-            public byte readyForGate;
+            public byte readyForGate, difficultyMode;
             [OnlineField]
             public bool friendlyFire;
             [OnlineField]
@@ -62,11 +62,12 @@ namespace RainMeadow
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
-
+               
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = (byte)storyGameMode.readyForGate;
+                difficultyMode = (byte)storyGameMode.difficultyMode;
                 saveStateString = storyGameMode.saveStateString;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -98,8 +99,8 @@ namespace RainMeadow
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (resource as Lobby);
-
-                (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                StoryGameMode storyGameMode = (lobby!.gameMode as StoryGameMode)!;
+                storyGameMode.defaultDenPos = defaultDenPos;
 
                 if (playerstate != null)
                 {
@@ -124,22 +125,23 @@ namespace RainMeadow
                             (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
                     }
                 }
-                (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+                storyGameMode.currentCampaign = currentCampaign;
 
-                (lobby.gameMode as StoryGameMode).requireCampaignSlugcat = requireCampaignSlugcat;
-                (lobby.gameMode as StoryGameMode).isInGame = isInGame;
-                (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
-                (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
-                (lobby.gameMode as StoryGameMode).readyForGate = (StoryGameMode.ReadyForGate)readyForGate;
-                (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
-                (lobby.gameMode as StoryGameMode).region = region;
+                storyGameMode.requireCampaignSlugcat = requireCampaignSlugcat;
+                storyGameMode.isInGame = isInGame;
+                storyGameMode.changedRegions = changedRegions;
+                storyGameMode.readyForWin = readyForWin;
+                storyGameMode.readyForGate = (StoryGameMode.ReadyForGate)readyForGate;
+                storyGameMode.difficultyMode = (StoryGameMode.DifficultyMode)difficultyMode;
+                storyGameMode.friendlyFire = friendlyFire;
+                storyGameMode.region = region;
 
-                (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
+                storyGameMode.saveStateString = saveStateString;
 
 
                 foreach (OnlineEntity.EntityId pupid in pups) {
                     if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo) {
-                        (lobby.gameMode as StoryGameMode).pups.Add(apo);
+                        storyGameMode.pups.Add(apo);
                     }
                 }
             }
