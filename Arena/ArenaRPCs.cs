@@ -1,4 +1,4 @@
-﻿using Menu;
+using Menu;
 using UnityEngine;
 
 namespace RainMeadow
