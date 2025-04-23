@@ -173,15 +173,13 @@ namespace RainMeadow
                 }
 
                 if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is ArenaLobbyMenu game && game.manager.upcomingProcess is null)) return;
-                
-                var Sluglist = ArenaHelpers.AllSlugcats();
                 try
                 {
                     for (int i = 0; i < game.classButtons.Length; i++)
                     {
                         if (game.classButtons[i].profileIdentifier == userChangingClass)
                         {
-                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
+                            game.classButtons[i].portrait.fileName = game.ArenaImage(ArenaHelpers.allSlugcats[currentColorIndex], currentColorIndex);
                             game.classButtons[i].portrait.LoadFile();
                             game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
                         }
