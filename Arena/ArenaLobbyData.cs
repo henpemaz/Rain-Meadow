@@ -100,7 +100,6 @@ namespace RainMeadow
             {
                 var lobby = (resource as Lobby);
                 (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
-                RainMeadow.Debug(isInGame);
                 (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaOnlineGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
