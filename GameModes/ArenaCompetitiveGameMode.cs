@@ -66,6 +66,7 @@ namespace RainMeadow
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
+            ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
