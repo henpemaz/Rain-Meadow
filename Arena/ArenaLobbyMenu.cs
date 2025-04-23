@@ -9,6 +9,7 @@ using UnityEngine;
 using System.Linq;
 using System.Security.Cryptography;
 using HarmonyLib;
+using System.Numerics;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
@@ -450,10 +451,11 @@ namespace RainMeadow
             {
                 ArenaOnlinePlayerJoinButton playerButton = slugcatPlayerButtons.otherArenaPlayerButtons[i];
                 playerButton.portraitBlack = Custom.LerpAndTick(playerButton.portraitBlack, 1f, 0.06f, 0.05f);
-                playerButton.readyForCombat = arena.playersReadiedUp.list.Contains(playerButton.profileIdentifier.id);
+                playerButton.readyForCombat = arena != null && arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.playersReadiedUp.list.Contains(playerButton.profileIdentifier.id);
                 playerButton.buttonBehav.greyedOut = arena.reigningChamps == null || arena.reigningChamps.list == null || !arena.reigningChamps.list.Contains(playerButton.profileIdentifier.id);
                 int currentColorIndexOther = arena.playersInLobbyChoosingSlugs.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) ? result : 0;
                 playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther, ArenaImage);
+
             }
         }
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
