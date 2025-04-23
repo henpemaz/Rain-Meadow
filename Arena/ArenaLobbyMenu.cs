@@ -143,8 +143,8 @@ namespace RainMeadow
 
             if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
             {
-                this.StartGame();
                 initiatedStartGameForClient = true;
+                this.StartGame();
 
 
             }
