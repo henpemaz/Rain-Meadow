@@ -136,15 +136,6 @@ namespace RainMeadow
 
             }
 
-            //if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
-            //{
-            //    arena.initiatedStartGameForClient = arena.isInGame;
-
-            //    this.StartGame();
-
-
-            //}
-
             if (playButton != null)
             {
 
