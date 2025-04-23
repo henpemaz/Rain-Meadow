@@ -19,7 +19,6 @@ namespace RainMeadow
         private SimplerSymbolButton colorConfigButton;
         private ColorSlugcatDialog colorConfigDialog;
         private ArenaOnlineSlugcatButtons slugcatButtons;
-        private bool initiatedStartGameForClient;
         private Dictionary<string, bool> playersReadiedUp = [];
         private int currentColorIndex = -1;
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
@@ -60,7 +59,6 @@ namespace RainMeadow
             BuildLayout();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-            initiatedStartGameForClient = false;
             if (arena.currentGameMode == "" || arena.currentGameMode is null)
             {
                 arena.currentGameMode = Competitive.CompetitiveMode.value;
@@ -138,13 +136,14 @@ namespace RainMeadow
 
             }
 
-            if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
-            {
-                initiatedStartGameForClient = true;
-                this.StartGame();
+            //if (arena.allPlayersReadyLockLobby && arena.isInGame && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId) && !OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))  // time to go
+            //{
+            //    arena.initiatedStartGameForClient = arena.isInGame;
+
+            //    this.StartGame();
 
 
-            }
+            //}
 
             if (playButton != null)
             {
@@ -241,7 +240,7 @@ namespace RainMeadow
                     flushArenaSittingForWaitingClients = true;
                 }
             }
-           
+
 
         }
         public override void Singal(MenuObject sender, string message)
@@ -401,13 +400,13 @@ namespace RainMeadow
 
             if (slugcatButtons.meButton != null) //shouldnt be null
             {
-                displayCurrentGameMode = new MenuLabel(this, pages[0], Translate($"Current Mode:") + " " + Utils.Translate(arena.currentGameMode ?? ""), slugcatButtons.pos + slugcatButtons.meButton.pos + new Vector2(0, 200), new Vector2(10f, 10f), true);
+                displayCurrentGameMode = new MenuLabel(this, pages[0], Translate($"Current Mode:") + " " + Utils.Translate(arena.currentGameMode ?? ""), slugcatButtons.pos + slugcatButtons.meButton.pos + new Vector2(0, 150), new Vector2(10f, 10f), true);
                 displayCurrentGameMode.label.alignment = FLabelAlignment.Left;
                 // Ready up label
-                totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], Translate($"Ready:") + " " + arena.playersReadiedUp.list.Count + "/" + OnlineManager.players.Count, new Vector2(displayCurrentGameMode.pos.x, displayCurrentGameMode.pos.y - 30), new Vector2(10f, 10f), false);
+                totalClientsReadiedUpOnPage = new MenuLabel(this, pages[0], Translate($"Ready:") + " " + arena.playersReadiedUp.list.Count + "/" + OnlineManager.players.Count, new Vector2(displayCurrentGameMode.pos.x, displayCurrentGameMode.pos.y - 25), new Vector2(10f, 10f), false);
                 totalClientsReadiedUpOnPage.label.alignment = FLabelAlignment.Left;
 
-                currentLevelProgression = new MenuLabel(this, pages[0], Translate($"Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount, new Vector2(displayCurrentGameMode.pos.x, displayCurrentGameMode.pos.y - 50), new Vector2(10f, 10f), false);
+                currentLevelProgression = new MenuLabel(this, pages[0], Translate($"Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount, new Vector2(displayCurrentGameMode.pos.x, displayCurrentGameMode.pos.y - 40), new Vector2(10f, 10f), false);
                 currentLevelProgression.label.alignment = FLabelAlignment.Left;
 
                 pages[0].subObjects.AddRange([displayCurrentGameMode, totalClientsReadiedUpOnPage, currentLevelProgression]);
@@ -443,14 +442,14 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Player did NOT exist in dictionary");
                     CurrentColorIndex = 0;
-                    
+
                 }
                 slugcatButtons.meButton!.OnClick += (arenaSlugcatButton) =>
                 {
                     CurrentColorIndex = (CurrentColorIndex + 1) % ArenaHelpers.allSlugcats.Count;
                     slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, CurrentColorIndex, ArenaImage);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                    RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");                
+                    RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");
                 };
             }
         }
@@ -476,6 +475,13 @@ namespace RainMeadow
             if (OnlineManager.lobby?.isOwner == true)
             {
                 arena.ResetForceReadyCountDownShort();
+                if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null)
+                {
+                    var onlinePlayerIds = OnlineManager.players.Select(x => x.id).ToHashSet();
+
+                    arena.playersReadiedUp.list.RemoveAll(player => !onlinePlayerIds.Contains(player));
+                }
+
             }
             if (this != null)
             {
@@ -588,7 +594,7 @@ namespace RainMeadow
             arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 
         }
-        private void StartGame()
+        public void StartGame()
         {
             RainMeadow.DebugMe();
             if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
@@ -634,6 +640,7 @@ namespace RainMeadow
 
             if (!OnlineManager.lobby.isOwner && !arena.isInGame)
             {
+                RainMeadow.Debug("Host is not in game");
                 return;
             }
             if (colorConfigDialog != null)
@@ -660,7 +667,7 @@ namespace RainMeadow
         private void UpdateLevelCounter()
         {
 
-            this.currentLevelProgression.text = this.Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;      
+            this.currentLevelProgression.text = this.Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;
         }
         private void UpdateGameModeLabel()
         {

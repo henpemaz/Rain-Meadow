@@ -69,10 +69,10 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            
-            if (MatchmakingManager.currentInstance.canSendChatMessages) 
+
+            if (MatchmakingManager.currentInstance.canSendChatMessages)
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
-                
+
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
@@ -281,6 +281,12 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.isInGame = true;
+                foreach (var p in OnlineManager.players)
+                {
+                    if (p.isMe) continue; // skip self
+                    p.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                }
+
             }
         }
 
