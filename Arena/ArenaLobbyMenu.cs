@@ -117,7 +117,7 @@ namespace RainMeadow
                 foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
                 {
                     int colorIndex = arena.playersInLobbyChoosingSlugs.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) ? result : 0;
-                    playerButton.SetNewSlugcat(allSlugs[colorIndex], colorIndex, ArenaImage);
+                    playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[colorIndex], colorIndex, ArenaImage);
                 }
             }
 
@@ -446,7 +446,7 @@ namespace RainMeadow
                 }
                 slugcatButtons.meButton!.OnClick += (arenaSlugcatButton) =>
                 {
-                    CurrentColorIndex = (CurrentColorIndex + 1) % allSlugs.Count;
+                    CurrentColorIndex = (CurrentColorIndex + 1) % ArenaHelpers.allSlugcats.Count;
                     slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, CurrentColorIndex, ArenaImage);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                     RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");                
@@ -639,7 +639,7 @@ namespace RainMeadow
             {
                 manager.StopSideProcess(colorConfigDialog); //force getting rid of dialog
             }
-            arena.avatarSettings.playingAs = allSlugs.GetValueOrDefault(CurrentColorIndex, allSlugs[UnityEngine.Random.Range(0, allSlugs.Count - 1)])!;
+            arena.avatarSettings.playingAs = ArenaHelpers.allSlugcats.GetValueOrDefault(CurrentColorIndex, ArenaHelpers.allSlugcats[UnityEngine.Random.Range(0, ArenaHelpers.allSlugcats.Count - 1)])!;
             arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
             arena.avatarSettings.currentColors = this.GetCustomColors(arena.avatarSettings.playingAs);
             InitializeNewOnlineSitting();
