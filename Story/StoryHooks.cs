@@ -116,7 +116,9 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
             On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
+            On.Menu.PauseMenu.Update += PauseMenu_Update;
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
@@ -134,24 +136,53 @@ namespace RainMeadow
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             orig(self);
-            if (isStoryMode(out var story))
+            if (isStoryMode(out StoryGameMode story))
             {
+                float xDiff = (self.continueButton.pos.x - self.exitButton.pos.x);
+                Vector2 pos = new(self.exitButton.pos.x - xDiff - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f));
                 if (OnlineManager.lobby.isOwner)
                 {
-                    var restartButton = new SimplerButton(self, self.pages[0], self.Translate("RESTART"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
+                    SimplerButton restartButton = new(self, self.pages[0], self.Translate("RESTART"), pos, new Vector2(110f, 30f));
                     restartButton.OnClick += (_) =>
                     {
                         self.game.GoToDeathScreen();
                     };
                     self.pages[0].subObjects.Add(restartButton);
+                    pos.x -= xDiff;
                 }
                 else
                 {
                     self.pauseWarningActive = false;
                 }
+                if (story.difficultyMode != StoryGameMode.DifficultyMode.Hard)
+                {
+                    ButtonScroller.ScrollerButton respawnButton = new(self, self.pages[0], self.Translate("RESPAWN"), pos, new(110, 30))
+                    {
+                        signalText = "RESPAWN"
+                    };
+                    respawnButton.OnClick += (_) =>
+                    {
+                        //race condition
+                        if (story.CanRespawn(out WorldCoordinate? spawn))
+                        {
+                        }
+                    };
+                    self.pages[0].subObjects.Add(respawnButton);
+                }
             }
         }
-
+        private void PauseMenu_Update(On.Menu.PauseMenu.orig_Update orig, Menu.PauseMenu self)
+        {
+            orig(self);
+            if (isStoryMode(out StoryGameMode story))
+            {
+                ButtonScroller.ScrollerButton respawnButton = (ButtonScroller.ScrollerButton)(self.pages[0].subObjects.Find(x => x is ButtonScroller.ScrollerButton scrollButton && scrollButton.signalText == "RESPAWN"));
+                if (respawnButton != null)
+                {
+                    respawnButton.alpha = story.CanRespawn(out _) ? 1 : 0; //we dont want the player to respawn while >-< only while x-x
+                }
+            }
+        }
         private void SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg(ILContext il)
         {
             try
