@@ -13,10 +13,22 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                var stillInGame = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as MultiplayerResults);
+
+                if (stillInGame != null)
+                {
+                    arena.returnToLobby = true;
+                    stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                    stillInGame.manager.rainWorld.options.DeleteArenaSitting();
+                    stillInGame.ArenaSitting.players.Clear();
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
+                    return;
+                }
                 if (lobby.manager.upcomingProcess != null)
                 {
                     return;
                 }
+
                 if (lobby.playButton != null)
                 {
                     lobby.playButton.Clicked();
@@ -187,7 +199,7 @@ namespace RainMeadow
                 {
                     return;
                 }
-                var Sluglist = ArenaHelpers.AllSlugcats();
+                var Sluglist = ArenaHelpers.allSlugcats;
                 try
                 {
                     for (int i = 0; i < game.classButtons.Length; i++)
@@ -214,37 +226,10 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    return;
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
-                if (OnlineManager.lobby.isOwner)
-                {
-                    if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
-                    {
-                        arena.playersReadiedUp.list.Add(userIsReady.id);
-                    }
-                }
-
-                try
-                {
-                    for (int i = 0; i < game.classButtons.Length; i++)
-                    {
-                        if (game.classButtons[i].profileIdentifier == userIsReady)
-                        {
-                            game.classButtons[i].readyForCombat = true;
-
-                        }
-
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find user");
-                }
-
-
 
             }
 

@@ -6,72 +6,72 @@ namespace RainMeadow
 {
     public class Pointing : HudPart
     {
-        private Creature realizedPlayer;
-        private int hand;
-        private Controller controller;
-        private Vector2 finalHandPos;
+        public const float LookInterest = 10f;
+        public Pointing(HUD.HUD hud) : base(hud) { }
 
-        public Pointing(HUD.HUD hud) : base(hud)
-        {
-            controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-            finalHandPos = Vector2.zero;
-        }
-
+        /// <summary>
+        /// Local draw update, counterintuitively this takes care of the input on the player side
+        /// that will later be broadcast to everyone else
+        /// </summary>
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-
-            if (!Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
-                return;
-
-            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
+            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature is Player player)
             {
-                realizedPlayer = ac.realizedCreature;
-            }
-            else
-            {
-                return;
-            }
-
-            Vector2 pointingVector = GetOnlinePointingVector();
-            if (pointingVector == Vector2.zero)
-                return;
-
-            UpdateHandPosition();
-            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
-
-            finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
-            (realizedPlayer.graphicsModule as PlayerGraphics).LookAtPoint(finalHandPos, 10f);
-
-            if (hand > -1)
-            {
-                var handModule = (realizedPlayer.graphicsModule as PlayerGraphics).hands[hand];
-                handModule.reachingForObject = true;
-                handModule.absoluteHuntPos = finalHandPos;
-            }
-        }
-
-        private void UpdateHandPosition()
-        {
-            for (int handy = 1; handy >= 0; handy--)
-            {
-                if ((realizedPlayer.grasps[handy] == null || realizedPlayer.grasps[handy].grabbed is Weapon) &&
-                    (realizedPlayer.graphicsModule as PlayerGraphics).hands[1 - handy].reachedSnapPosition)
+                if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 {
-                    hand = handy;
-                    break;
+                    int handIndex = GetHandIndex(player);
+                    if (handIndex >= 0) LookAtPoint(player, GetOnlinePointingVector(), handIndex);
+                } else {
+                    player.handPointing = -1; //reset hand
                 }
             }
         }
 
-        private Vector2 GetOnlinePointingVector()
+        /// <summary>
+        /// Implementation of "Look at", used only by this class for the specific slugcat
+        /// </summary>
+        private static void LookAtPoint(Creature realizedPlayer, Vector2 pointingVector, int handIndex)
         {
+            var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
+            Vector2 finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
+            if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                playerGraphics.LookAtPoint(finalHandPos, Pointing.LookInterest);
+                var handModule = playerGraphics.hands[handIndex];
+                handModule.reachingForObject = true;
+                handModule.absoluteHuntPos = finalHandPos;
+                player.handPointing = handIndex;
+            }
+        }
+
+        /// <summary>
+        /// Obtains the available (free) hand that can be used for pointing
+        /// </summary>
+        internal static int GetHandIndex(Creature? realizedPlayer)
+        {
+            if (realizedPlayer is not null && realizedPlayer.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                for (int i = 1; i >= 0; i--)
+                {
+                    if ((realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon) && playerGraphics.hands[1 - i].reachedSnapPosition)
+                    {
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+
+        private static Vector2 GetOnlinePointingVector()
+        {
+            var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)
             {
                 Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
                 return Vector2.ClampMagnitude(direction, 1f);
             }
-
             return Futile.mousePosition;
         }
     }
