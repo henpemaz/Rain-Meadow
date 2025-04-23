@@ -1,6 +1,8 @@
 using MoreSlugcats;
+using RainMeadow.Game;
 using System;
 using System.Linq;
+using Watcher;
 
 namespace RainMeadow;
 
@@ -111,6 +113,33 @@ public static class DeathMessage
                     break;
                 case DeathType.Coalescipede:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consummed by the swarm."));
+                    break;
+                case DeathType.UnderwaterShock:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted in the water."));
+                    break;
+
+                // WATCHER
+
+                case DeathType.Sandstorm:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was obliterated by the sandstorm."));
+                    break;
+                case DeathType.Poison:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died from poison."));
+                    break;
+                case DeathType.Lightning:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was struck by lightning."));
+                    break;
+                case DeathType.Locust:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consumed by locusts."));
+                    break;
+                case DeathType.Ripple:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("swam with the ripples."));
+                    break;
+                case DeathType.Pomegranate:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("experienced the force of fresh fruit."));
+                    break;
+                case DeathType.Fire:
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was burnt to a crisp."));
                     break;
             }
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
@@ -252,6 +281,15 @@ public static class DeathMessage
             case Player.Tongue:
                 EnvironmentalRPC(player, DeathType.DeadlyLick);
                 break;
+            case LocustSystem.Swarm:
+                EnvironmentalRPC(player, DeathType.Locust);
+                break;
+            case Player:
+                if (ModManager.Watcher && player.rippleDeathTime > 80)
+                {
+                    EnvironmentalRPC(player, DeathType.Ripple);
+                }
+                break;
         }
     }
 
@@ -290,6 +328,11 @@ public static class DeathMessage
                     EnvironmentalRPC(player, DeathType.Rain);
                     return;
                 }
+                if (player.injectedPoison / player.Template.instantDeathDamageLimit >= 1f)
+                {
+                    EnvironmentalRPC(player, DeathType.Poison);
+                    return;
+                }
 
                 if (ModManager.MSC && player.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer)
                 {
@@ -319,7 +362,33 @@ public static class DeathMessage
                     if (spiders >= player.TotalMass)
                     {
                         EnvironmentalRPC(player, DeathType.Coalescipede);
+                        return;
                     }
+                }
+                // If all else fails check the last cause of violence.
+                DeathContextualizer.lastViolence.TryGetValue(player, out var violentAction);
+                if (violentAction == null)
+                {
+                    return;
+                }
+                // thanks .NET for not supporting using type variables in switch statements
+                switch (violentAction.caller)
+                {
+                    case Pomegranate:
+                        EnvironmentalRPC(player, DeathType.Pomegranate);
+                        break;
+                    case FlameJet:
+                        EnvironmentalRPC(player, DeathType.Fire);
+                        break;
+                    case LightningMaker.StrikeAOE:
+                        EnvironmentalRPC(player, DeathType.Lightning);
+                        break;
+                    case UnderwaterShock:
+                        EnvironmentalRPC(player, DeathType.UnderwaterShock);
+                        break;
+                    case ElectricDeath:
+                        EnvironmentalRPC(player, DeathType.Electric);
+                        break;
                 }
             }
         }
@@ -340,6 +409,14 @@ public static class DeathMessage
         WallRot,
         Electric,
         DeadlyLick,
-        Coalescipede
+        Coalescipede,
+        Sandstorm,
+        Poison,
+        Lightning,
+        Locust,
+        Ripple,
+        Pomegranate,
+        Fire,
+        UnderwaterShock,
     }
 }

@@ -19,7 +19,6 @@ namespace RainMeadow
         private ColorSlugcatDialog colorConfigDialog;
         private ArenaOnlineSlugcatButtons slugcatButtons;
         private bool initiatedStartGameForClient;
-        private List<SlugcatStats.Name> allSlugs;
         private Dictionary<string, bool> playersReadiedUp = [];
         private int currentColorIndex = -1;
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
@@ -42,7 +41,7 @@ namespace RainMeadow
                 }
             }
         }
-        private SlugcatStats.Name SlugcatFromIndex => allSlugs[Mathf.Max(CurrentColorIndex, 0)];
+        private SlugcatStats.Name SlugcatFromIndex => ArenaHelpers.allSlugcats[Mathf.Max(CurrentColorIndex, 0)];
         private List<OnlinePlayer> OtherOnlinePlayers => [.. OnlineManager.players?.Where(x => !(x?.isMe ?? false)) ?? []];
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
@@ -54,13 +53,10 @@ namespace RainMeadow
                 ArenaHelpers.ResetOnReturnToMenu(arena, this);
                 arena.ResetForceReadyCountDown();
             }
-            allSlugs = ArenaHelpers.AllSlugcats();
             ArenaHelpers.ResetReadyUpLogic(arena, this);
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
-
-
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             initiatedStartGameForClient = false;
@@ -466,7 +462,7 @@ namespace RainMeadow
                 playerButton.readyForCombat = arena.playersReadiedUp.list.Contains(playerButton.profileIdentifier.id);
                 playerButton.buttonBehav.greyedOut = arena.reigningChamps == null || arena.reigningChamps.list == null || !arena.reigningChamps.list.Contains(playerButton.profileIdentifier.id);
                 int currentColorIndexOther = arena.playersInLobbyChoosingSlugs.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) ? result : 0;
-                playerButton.SetNewSlugcat(allSlugs[currentColorIndexOther], currentColorIndexOther, ArenaImage);
+                playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther, ArenaImage);
             }
         }
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
@@ -709,4 +705,3 @@ namespace RainMeadow
 
     }
 }
-

@@ -424,9 +424,7 @@ namespace RainMeadow
                     Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-                //var slugList = ArenaHelpers.AllSlugcats(); whats the point? use classID instead of slugList[color]
-                var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
-                if (ArenaHelpers.vanillaSlugs.Contains(classID))
+                if ( ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
                     return $"MultiplayerPortrait{color}1";
                 }
@@ -434,12 +432,12 @@ namespace RainMeadow
                 {
                     return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
                 }
-                if (ModManager.MSC && ArenaHelpers.mscSlugs.Contains(classID))
+                if (ModManager.MSC && ArenaHelpers.mscSlugcats.Contains(classID))
                 {
                     return $"MultiplayerPortrait{(classID == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? UnityEngine.Random.Range(0, 5) : 4)}1-{classID}";
 
                 }
-                if (!baseGameSlugs.Contains(classID))
+                if (!ArenaHelpers.baseGameSlugcats.Contains(classID))
                 {
                     color = 0;
                     return $"MultiplayerPortrait{color}{1}-{classID}";
@@ -1174,7 +1172,7 @@ namespace RainMeadow
 
                 if (!ModManager.MSC)
                 {
-                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+                    if (ArenaHelpers.baseGameSlugcats.Contains(player.playerClass))
                     {
                         var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
                               (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :

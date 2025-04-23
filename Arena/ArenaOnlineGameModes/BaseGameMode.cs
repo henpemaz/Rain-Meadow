@@ -18,6 +18,7 @@ namespace RainMeadow
 
         public virtual void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
+            ArenaHelpers.RecreateSlugcatCache();
             arena.ResetAtSession_ctor();
         }
 
