@@ -113,7 +113,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                UnityEngine.Random.seed = self.ID.RandomSeed;
+                UnityEngine.Random.InitState(self.ID.RandomSeed);
             }
             orig(self);
             if (OnlineManager.lobby != null && self.GetOnlineObject(out var oe))
@@ -143,7 +143,7 @@ namespace RainMeadow
         {
             if(OnlineManager.lobby != null)
             {
-                UnityEngine.Random.seed = self.ID.RandomSeed;
+                UnityEngine.Random.InitState(self.ID.RandomSeed);
             }
             var wasCreature = self.realizedCreature;
             orig(self);

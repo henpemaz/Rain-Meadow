@@ -27,7 +27,7 @@ namespace RainMeadow
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
-            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup; // support non-slug owner
+            IL.HUD.Map.GetSaveState += Map_OwnerFixup; // support non-slug owner
 
             On.RegionGate.ctor += RegionGate_ctor;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone1;

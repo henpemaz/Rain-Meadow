@@ -16,6 +16,7 @@ namespace RainMeadow
         {
             On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
             On.RainWorldGame.ctor += RainWorldGame_ctor;
+            IL.RainWorldGame.ctor += RainWorldGame_ctor2;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
@@ -63,6 +64,42 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 OnlineManager.lobby.gameMode.PostGameStart(self);
+            }
+        }
+
+        private void RainWorldGame_ctor2(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                // pole mimics are the last AbstractCreature to be created, whereas pink lizards are the first
+                ILLabel pmLoop = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_setupValues"),
+                    i => i.MatchLdfld<RainWorldGame.SetupValues>("poleMimics"),
+                    i => i.MatchBlt(out pmLoop)
+                );
+                c.MoveAfterLabels();
+                c.MarkLabel(skip);
+                c.GotoPrev(moveType: MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_world"),
+                    i => i.MatchLdloc(0),
+                    i => i.MatchCallOrCallvirt<World>("GetAbstractRoom"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_world"),
+                    i => i.MatchLdstr("Pink Lizard")
+                );
+                // eligibility criteria; if we are not eligibile to create objects, we skip over the entire AbstractCreature creation process
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) => OnlineManager.lobby == null || (WorldSession.map.TryGetValue(self.world, out var ws) && ws.isOwner));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
