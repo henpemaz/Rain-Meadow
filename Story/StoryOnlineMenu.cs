@@ -81,10 +81,11 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory(); // please
+
             SetupSelectableSlugcats();
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
-
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
             restartCheckboxPos = restartCheckbox.pos;       
