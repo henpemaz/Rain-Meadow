@@ -5,10 +5,6 @@ namespace RainMeadow
 {
     public class StoryGameMode : OnlineGameMode
     {
-        // these are synced by StoryLobbyData
-        public bool isInGame = false;
-        public bool changedRegions = false;
-        public bool readyForWin = false;
         public enum ReadyForGate : byte
         {
             Closed,
@@ -16,7 +12,19 @@ namespace RainMeadow
             Opening,
             Crossed,
         }
+        public enum DifficultyMode : byte
+        {
+            Easy,
+            Medium,
+            Hard,
+        }
+        // these are synced by StoryLobbyData
+        public bool isInGame = false;
+        public bool changedRegions = false;
+        public bool readyForWin = false;
+
         public ReadyForGate readyForGate = ReadyForGate.Closed;
+        public DifficultyMode difficultyMode = DifficultyMode.Medium;
         public bool friendlyFire = false;
         public string? defaultDenPos;
         public string? region = null;
@@ -50,16 +58,13 @@ namespace RainMeadow
             pups = new();
             storyClientData?.Sanitize();
         }
-
         public bool canJoinGame => isInGame && !changedRegions && readyForGate == ReadyForGate.Closed && !readyForWin;
 
         public bool saveToDisk = false;
-
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
         }
-
         public override ProcessManager.ProcessID MenuProcessId()
         {
             return RainMeadow.Ext_ProcessID.StoryMenu;
@@ -71,7 +76,6 @@ namespace RainMeadow
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
             DLCSharedEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
         };
-
         public override bool AllowedInMode(PlacedObject item)
         {
             if (disallowedPlacedObjects.Contains(item.type)) return false;
@@ -106,30 +110,25 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
         };
-
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
-
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
-
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
             return true;
         }
-
         public override SlugcatStats.Name GetStorySessionPlayer(RainWorldGame self)
         {
             return currentCampaign;
         }
-
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
             return currentCampaign;
