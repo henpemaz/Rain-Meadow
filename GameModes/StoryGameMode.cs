@@ -37,6 +37,7 @@ namespace RainMeadow
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
+        public bool warpPointDelay = false;
 
         public List<AbstractCreature> pups;
         public void Sanitize()

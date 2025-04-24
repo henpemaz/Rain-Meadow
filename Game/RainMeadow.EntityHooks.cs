@@ -512,6 +512,20 @@ namespace RainMeadow
                     }
                 }
                 storyGameMode.warpCameraFix = false;
+                if (storyGameMode.warpPointDelay)
+                { // force clients to warp AFTER the host
+                    storyGameMode.warpPointDelay = false;
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        foreach (var player in OnlineManager.players)
+                        {
+                            if (!player.isMe)
+                            {
+                                player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
+                            }
+                        }
+                    }
+                }
             }
             else
             {
@@ -700,20 +714,14 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && !isFirstWarpWorld)
+                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                     {
-                        storyGameMode.changedRegions = true;
-                        storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
-                    }
-                    if (warpUsed && !isEchoWarp)
-                    { // force clients to warp AFTER the host
-                        foreach (var player in OnlineManager.players)
+                        if (!isFirstWarpWorld)
                         {
-                            if (!player.isMe)
-                            {
-                                player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
-                            }
+                            storyGameMode.changedRegions = true;
+                            storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
                         }
+                        storyGameMode.warpPointDelay = warpUsed && !isEchoWarp;
                     }
                 }
 
