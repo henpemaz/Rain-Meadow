@@ -209,6 +209,8 @@ namespace RainMeadow
                 ItemHooks();
                 ObjectHooks();
 
+                CapeManager.FetchCapes();
+
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();
                 this.PlopMachine.OnEnable();
