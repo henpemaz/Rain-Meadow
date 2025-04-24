@@ -280,7 +280,7 @@ namespace RainMeadow
             {
                 slugcatButtons = new(this, pages[0], new(706, 440), OtherOnlinePlayers, UpdateProfilePlayerButtons);
                 pages[0].subObjects.Add(slugcatButtons);
-                if (arena.playersInLobbyChoosingSlugs.TryGetValue(OnlineManager.mePlayer.GetUniqueID(), out int existingValue))
+                if (arena.playersInLobbyChoosingSlugs?.TryGetValue(OnlineManager.mePlayer.GetUniqueID(), out int existingValue) == true)
                 {
                     RainMeadow.Debug("Player already exists in dictionary");
                     RainMeadow.Debug("Current index" + existingValue.ToString());
@@ -617,6 +617,8 @@ namespace RainMeadow
             {
                 foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
                 {
+                    playerButton.readyForCombat = arena.playersReadiedUp?.list?.Contains(playerButton.profileIdentifier.id) == true;
+                    playerButton.buttonBehav.greyedOut = !(arena.reigningChamps?.list?.Contains(playerButton.profileIdentifier.id) == true);
                     int colorIndex = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
                     playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[colorIndex], colorIndex, ArenaImage);
                 }
