@@ -91,38 +91,58 @@ namespace RainMeadow
                 //});
 
 
-                // if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null)
-                // becomes if (this.betweenRoomsWaitingLobby[k].room.realizedRoom == null && ...)
-                int indexvar = default;
-                ILLabel skip = default;
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdarg(0),
-                    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
-                    i => i.MatchLdloc(out indexvar),
-                    i => i.MatchCallOrCallvirt(out _),
-                    i => i.MatchLdfld<ShortcutHandler.Vessel>("room"),
-                    i => i.MatchLdfld<AbstractRoom>("realizedRoom"),
-                    i => i.MatchBrtrue(out skip)
-                    );
+                // this.betweenRoomsWaitingLobby[k].creature.abstractCreature.Move(newCoord)
+                // becomes 
+                //
+                
+                int inbetween_room_index_loc = 0;
+                int newCoord_loc = 0;
+                c.GotoNext(MoveType.Before,
+                // 579	0795	ldarg.0
+                // 580	0796	ldfld	class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/Vessel> ShortcutHandler::betweenRoomsWaitingLobby
+                // 581	079B	ldloc.s	V_8 (8)
+                // 582	079D	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<class ShortcutHandler/Vessel>::get_Item(int32)
+                // 583	07A2	ldfld	class Creature ShortcutHandler/Vessel::creature
+                // 584	07A7	callvirt	instance class AbstractCreature Creature::get_abstractCreature()
+                // 585	07AC	ldloc.s	V_10 (10)
+                // 586	07AE	callvirt	instance void AbstractPhysicalObject::Move(valuetype WorldCoordinate)
+
+                    x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<ShortcutHandler>(nameof(ShortcutHandler.betweenRoomsWaitingLobby)),
+                    x => x.MatchLdloc(out inbetween_room_index_loc),
+                    x => x.MatchCallvirt(out _),
+                    x => x.MatchLdfld<ShortcutHandler.Vessel>(nameof(ShortcutHandler.Vessel.creature)),
+                    x => x.MatchCallvirt(out _),
+                    x => x.MatchLdloc(out newCoord_loc),
+                    x => x.MatchCallvirt<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.Move))
+                );
 
                 c.Emit(OpCodes.Ldarg_0);
-                c.Emit(OpCodes.Ldloc, indexvar);
-                c.EmitDelegate((ShortcutHandler self, int i) =>
-                {
-                    if (OnlineManager.lobby != null)
-                    {
-                        var vessel = self.betweenRoomsWaitingLobby[i];
-                        if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
-                        {
-                            if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
-                            {
-                                return true;
-                            }
+                c.Emit(OpCodes.Ldloc, inbetween_room_index_loc);
+                c.Emit(OpCodes.Ldloc, newCoord_loc);
+                c.EmitDelegate((ShortcutHandler handler, int inbetween_room_index, WorldCoordinate cord) => {
+                    Debug($"{handler}, {inbetween_room_index}, {cord}");
+                    if (OnlineManager.lobby != null) {
+                        var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
+                        if (creature?.GetOnlineCreature() is OnlineCreature oc) {
+                            oc.AllMoving(true);
+                            creature.Move(cord);
+                            oc.AllMoving(false);
+                            return true;
                         }
                     }
                     return false;
                 });
-                c.Emit(OpCodes.Brtrue, skip);
+
+
+                // skip vanilla move if we have an online creature.
+                int curindex = c.Index;
+                ILCursor[] cursor;
+                c.FindNext(out cursor,
+                    x => x.MatchCallvirt<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.Move))
+                );
+
+                c.Emit(OpCodes.Brtrue, cursor[0].Next.Next);
             }
             catch (Exception e)
             {
@@ -172,11 +192,10 @@ namespace RainMeadow
                                 session.Needed();
                                 if (session.isAvailable && !session.isPending && ready) {
                                     WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, -1);
-                                    apo.MoveMovable(newCoord);
+                                    apo.MoveOnly(newCoord);
                                 }
                             }
                         }
-
                     }
                 }
                 else
@@ -295,7 +314,10 @@ namespace RainMeadow
 
         private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) 
         {
-            RainMeadow.DebugMe();            
+            if (OnlineManager.lobby != null) {
+                OnlineManager.RunDeferred(() => self.RemoveFromShortcuts());
+            }
+            
             orig(self, pos, newRoom, spitOutAllSticks);
             if (OnlineManager.lobby == null) {
                 return;

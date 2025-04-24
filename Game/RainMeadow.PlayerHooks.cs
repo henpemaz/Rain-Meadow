@@ -99,7 +99,7 @@ public partial class RainMeadow
             orig(self);
         }
     }
-    
+
     public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self) {
         if (OnlineManager.lobby != null) {
             if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null) {
@@ -263,12 +263,10 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && self.slugcat != null)
         {
             if (self.slugcat.isNPC) return;
+
             self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
-            
-            if (self.slugcat.input[0].jmp) {
-                self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
-            }
+            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
         }
     }
 

@@ -262,8 +262,8 @@ namespace RainMeadow
                 return;
             }
 
-            if (this.roomSession != newRoom || !this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
-                RainMeadow.Error($"{this} is to late to spit out of shortcut.");
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
+                RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
             
@@ -271,14 +271,18 @@ namespace RainMeadow
                 this.creature.Realize();
             }
 
-            var realcreature = this.realizedCreature;
-            if (realcreature.room != newRoom.absroom.realizedRoom || abstractCreature.Room != newRoom.absroom) {
+            var realcreature = this.realizedCreature!;
+            if (abstractCreature.Room != newRoom.absroom) {
                 RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
-                return;
+                if (realcreature.room != null) {
+                    realcreature.room.RemoveObject(realcreature);
+                }
+                AllMoving(true);
+                apo.Move(new WorldCoordinate(newRoom.absroom.index, pos.x, pos.y, -1));
+                AllMoving(false);
             }
 
             
-            realcreature.RemoveFromShortcuts();
             realcreature.SpitOutOfShortCut(pos, roomSession.absroom.realizedRoom, spitOutAllSticks);
         }
 
