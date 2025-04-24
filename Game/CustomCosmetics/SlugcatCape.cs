@@ -151,7 +151,12 @@ namespace RainMeadow {
 
     public void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner) {
         sLeaser.sprites[this.firstSpriteIndex].RemoveFromContainer();
-        rCam.ReturnFContainer("Background").AddChild(sLeaser.sprites[this.firstSpriteIndex]);
+        var background = rCam.ReturnFContainer("Background");
+        if (background == newContatiner) {
+            // looks better 75% of the time
+            background = rCam.ReturnFContainer("BackgroundShortcuts");
+        }
+        background.AddChild(sLeaser.sprites[this.firstSpriteIndex]);
         
     }
 
@@ -160,20 +165,20 @@ namespace RainMeadow {
         {
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             BodyChunk bodyChunk = playerGFX.player.bodyChunks[1];
-            Vector2 normalized = (bodyChunk.pos - mainBodyChunk.pos).normalized;
+            Vector2 normalized = GetBodyNormalized();
             Vector2 a = Custom.PerpendicularVector(normalized);
             for (int i = 0; i <= SlugcatCape.size; i++)
             {
                 float d = (float)i / (float)SlugcatCape.size * 2f - 1f;
                 ref SimpleSegment ptr = ref this.segments[i, 0];
-                ptr.pos = bodyChunk.pos + a * d * 3f;
-                ptr.vel = bodyChunk.vel;
+                ptr.pos = mainBodyChunk.pos + (a * d * 3f) + Vector2.right*-playerGFX.player.flipDirection*0.5f;
+                ptr.vel = mainBodyChunk.vel;
             }
             for (int j = 0; j <= SlugcatCape.size; j++)
             {
                 float d2 = (float)j / (float)SlugcatCape.size * 2f - 1f;
                 ref SimpleSegment ptr2 = ref this.segments[j, 1];
-                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d2 * 5f;
+                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d2 * 5f + Vector2.right*-playerGFX.player.flipDirection*1.0f;
                 ptr2.vel = mainBodyChunk.vel;
             }
         }
@@ -196,14 +201,23 @@ namespace RainMeadow {
             }
         }
 
+        public Vector2 GetBodyNormalized() {
+            BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
+            Vector2 normalized = (playerGFX.player.bodyChunks[1].pos - mainBodyChunk.pos).normalized;
+            if (normalized.x < 0.05f && (playerGFX.player.input[0].x == 0)) {
+                normalized.x = (float)playerGFX.player.flipDirection*0.05f;
+
+                // simplification of sin(acos(x)) 
+                normalized.y = Mathf.Sqrt(1 - normalized.x*normalized.x)*Math.Sign(normalized.y); 
+            }
+
+            return normalized;
+        }
         public void Update()
         {
             float num = SlugcatCape.targetLength / (float)SlugcatCape.size;
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
-            Vector2 normalized = (playerGFX.player.bodyChunks[1].pos - mainBodyChunk.pos).normalized;
-            if (normalized.x < 0.05f) {
-                normalized.x = (float)playerGFX.player.flipDirection*0.05f;
-            }
+            Vector2 normalized = GetBodyNormalized();
 
             Room room = playerGFX.player.room;
             for (int i = 0; i <= SlugcatCape.size; i++)
@@ -235,8 +249,7 @@ namespace RainMeadow {
                     float num4 = 1f - 2f * num2;
                     if (num4 > 0f)
                     {
-                        ptr.vel += -normalized * num4;
-                        ptr.vel.x = ptr.vel.x + num4 * num3 * 3f * (1f - 0.5f * Mathf.Abs(normalized.x));
+                        ptr.vel.x = ptr.vel.x + num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
                     }
                 }
             }

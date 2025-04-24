@@ -9,6 +9,7 @@ namespace RainMeadow
     {
         // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
         public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
+        public bool wearingCape { get; set; } = true;
 
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
@@ -58,12 +59,16 @@ namespace RainMeadow
             [OnlineField]
             public string nickname;
 
+            [OnlineField]
+            public bool wearingCape;
+
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
                 customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
+                wearingCape = slugcatCustomization.wearingCape;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -72,6 +77,7 @@ namespace RainMeadow
                 slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
+                slugcatCustomization.wearingCape = wearingCape;
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);
