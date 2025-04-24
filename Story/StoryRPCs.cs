@@ -157,10 +157,10 @@ namespace RainMeadow
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return null;
             RainMeadow.Debug($"Warp point? in {sourceRoomName}; data={warpData}, Loader={useNormalWarpLoader}");
             // generate "local" warp point
-            Watcher.WarpPoint.WarpPointData newWarpData = new Watcher.WarpPoint.WarpPointData(null);
+            Watcher.WarpPoint.WarpPointData newWarpData = new(null);
             newWarpData.FromString(warpData);
-            PlacedObject placedObject = new PlacedObject(PlacedObject.Type.WarpPoint, newWarpData);
-            Watcher.WarpPoint warpPoint = new Watcher.WarpPoint(null, placedObject);
+            PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, newWarpData);
+            Watcher.WarpPoint warpPoint = new(null, placedObject);
             if (sourceRoomName is not null)
             {
                 var abstractRoom2 = game.overWorld.activeWorld.GetAbstractRoom(sourceRoomName);
@@ -178,7 +178,6 @@ namespace RainMeadow
             if (RainMeadow.isStoryMode(out var storyGameMode))
             {
                 storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
-                storyGameMode.warpCameraFix = true; //force camera to new room
             }
             game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
             // update camera position
@@ -235,17 +234,8 @@ namespace RainMeadow
             if (game.overWorld.specialWarpCallback is Watcher.WarpPoint warpPoint)
             {
                 RainMeadow.Debug($"Forcing client to warp");
-                if (warpPoint.room != null)
-                {
-                    if (RoomSession.map.TryGetValue(warpPoint.room.abstractRoom, out var rs) && !rs.isActive)
-                    {
-                        RainMeadow.Debug("subscribing to room with warp");
-                        rs.Activate();
-                        rs.Needed();
-                    }
-                    // problem?
-                }
-                warpPoint.PerformWarp();
+                warpPoint.activated = false;
+                game.overWorld.readyForWarp = true;
             }
             else
             {

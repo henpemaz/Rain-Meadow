@@ -23,7 +23,6 @@ namespace RainMeadow
         public SlugcatStats.Name currentCampaign;
         public bool requireCampaignSlugcat;
         public string? saveStateString;
-        public bool warpCameraFix = false;
         public bool lastWarpIsEcho = false;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
@@ -37,7 +36,6 @@ namespace RainMeadow
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
-        public bool warpPointDelay = false;
 
         public List<AbstractCreature> pups;
         public void Sanitize()
@@ -50,7 +48,6 @@ namespace RainMeadow
             defaultDenPos = null;
             myLastWarp = null;
             myLastDenPos = null;
-            warpCameraFix = false;
             lastWarpIsEcho = false;
             region = null;
             saveStateString = null;

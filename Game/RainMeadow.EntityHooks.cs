@@ -283,12 +283,11 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 RainMeadow.Debug("spawning warp point from echo");
+                PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, null);
                 SpinningTopData specialData = self.SpecialData;
-                if (specialData != null)
+                // setup data
+                if (specialData != null && placedObject.data is Watcher.WarpPoint.WarpPointData warpData)
                 {
-                    PlacedObject placedObject = new PlacedObject(PlacedObject.Type.WarpPoint, null);
-                    // setup data
-                    var warpData = (placedObject.data as Watcher.WarpPoint.WarpPointData);
                     warpData.destPos = specialData.destPos;
                     warpData.RegionString = specialData.RegionString;
                     warpData.destRoom = specialData.destRoom;
@@ -296,7 +295,11 @@ namespace RainMeadow
                     warpData.panelPos = specialData.panelPos;
                     warpData.deathPersistentWarpPoint = true;
                     warpData.rippleWarp = specialData.rippleWarp;
-                    warpData.oneWay = (specialData.rippleWarp || Region.IsWatcherVanillaRegion(self.room.world.name) || Region.IsVanillaSentientRotRegion(self.room.world.name));
+                    // TODO: All warps by echos are one-way for now this is because we can't reliably obtain the
+                    // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
+                    // same region and room which WILL cause issues - so to remediate that we simply pretend all
+                    // warps made by echoes are one way only.
+                    warpData.oneWay = true; //(specialData.rippleWarp || Region.IsWatcherVanillaRegion(self.room.world.name) || Region.IsVanillaSentientRotRegion(self.room.world.name));
                     if (self.room.game.IsStorySession)
                     {
                         warpData.cycleSpawnedOn = self.room.game.GetStorySession.saveState.cycleNumber;
@@ -495,7 +498,7 @@ namespace RainMeadow
 
         private void WarpPoint_NewWorldLoaded_Room(On.Watcher.WarpPoint.orig_NewWorldLoaded_Room orig, Watcher.WarpPoint self, Room newRoom)
         {
-            if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode))
             {
                 orig(self, newRoom);
                 // remove uneeded item transportation between warps (makes dupes for no reason)
@@ -503,26 +506,19 @@ namespace RainMeadow
                 newRoom.game.GetStorySession.pendingWarpPointTransferObjects.Clear();
                 newRoom.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 newRoom.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
-                if (storyGameMode.warpCameraFix)
-                {
-                    RainMeadow.Debug($"new room loaded! forcing camera to {newRoom.abstractRoom.name}");
-                    for (int l = 0; l < newRoom.game.cameras.Length; l++)
-                    { // once again, force camera
-                        newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
-                    }
+                WorldSession newWorldSession = newRoom.world.GetResource() ?? throw new KeyNotFoundException();
+                RainMeadow.Debug($"new room loaded! forcing camera to {newRoom.abstractRoom.name}");
+                for (int l = 0; l < newRoom.game.cameras.Length; l++)
+                { // once again, force camera
+                    newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
                 }
-                storyGameMode.warpCameraFix = false;
-                if (storyGameMode.warpPointDelay)
-                { // force clients to warp AFTER the host
-                    storyGameMode.warpPointDelay = false;
-                    if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in OnlineManager.players)
                     {
-                        foreach (var player in OnlineManager.players)
+                        if (!player.isMe)
                         {
-                            if (!player.isMe)
-                            {
-                                player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
-                            }
+                            player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
                         }
                     }
                 }
@@ -593,8 +589,7 @@ namespace RainMeadow
                 }
                 else if (warpUsed)
                 {
-                    Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint;
-                    if (warpPoint == null) { throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading"); }
+                    Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading");
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
                     isFirstWarpWorld = (room == null); //do not update gate status afterwards :)
                     if (isEchoWarp || isFirstWarpWorld)
@@ -603,7 +598,6 @@ namespace RainMeadow
                         RainMeadow.Debug("this an echo warp");
                         if (isStoryMode(out var storyGameMode))
                         {
-                            storyGameMode.warpCameraFix = true;
                             self.warpData = storyGameMode.myLastWarp; //OVERRIDE WARP DATA VERY IMPORTANT!
                         }
                     }
@@ -630,8 +624,11 @@ namespace RainMeadow
                                     }
                                     entities.Remove(oe.apo);
                                     room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                    room.RemoveObject(oe.apo.realizedObject);
-                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    if (oe.apo.realizedObject != null)
+                                    {
+                                        room.RemoveObject(oe.apo.realizedObject);
+                                        room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                    }
                                     oe.beingMoved = false;
                                 }
                                 else // mine leave the old online world elegantly
@@ -643,7 +640,7 @@ namespace RainMeadow
                             }
                         }
                     }
-                    RainMeadow.Debug($"Watcher warp switchery APOs preparations");
+                    RainMeadow.Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {self.worldLoader.worldName}/{self.worldLoader.world?.name}");
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     { //it will move places
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -678,7 +675,6 @@ namespace RainMeadow
                             RainMeadow.Debug($"fixing player");
                             // do not get stuck on bottom left
                             player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
-
                             player.slugOnBack?.DropSlug();
                             if (player.objectInStomach is AbstractPhysicalObject apo)
                             { // apo's in stomach (isn't realized but has to be "carried" over)
@@ -714,14 +710,10 @@ namespace RainMeadow
 
                 if (OnlineManager.lobby.isOwner)
                 {
-                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && !isFirstWarpWorld)
                     {
-                        if (!isFirstWarpWorld)
-                        {
-                            storyGameMode.changedRegions = true;
-                            storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
-                        }
-                        storyGameMode.warpPointDelay = warpUsed && !isEchoWarp;
+                        storyGameMode.changedRegions = true;
+                        storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
                     }
                 }
 
