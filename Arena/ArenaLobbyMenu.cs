@@ -308,42 +308,34 @@ namespace RainMeadow
             {
                 ArenaOnlinePlayerJoinButton playerButton = slugcatPlayerButtons.otherArenaPlayerButtons[i];
                 playerButton.portraitBlack = Custom.LerpAndTick(playerButton.portraitBlack, 1f, 0.06f, 0.05f);
-                if (playerButton.profileIdentifier == null)
-                {
-                    RainMeadow.Debug($"Playerbutton {i} profile is null!");
-                    continue;
-                }
-                playerButton.readyForCombat = arena.playersReadiedUp?.list?.Contains(playerButton.profileIdentifier.id) == true;
-                playerButton.buttonBehav.greyedOut = !(arena.reigningChamps?.list?.Contains(playerButton.profileIdentifier.id) == true);
-                int currentColorIndexOther = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
-                playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther, ArenaImage);
 
             }
         }
         private void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
         {
-            BuildPlayerButtons();
-            List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
-            RainMeadow.Debug($"Player count without me: {otherOnlinePlayers.Count}");
-            slugcatButtons.otherOnlinePlayers = otherOnlinePlayers;
-            slugcatButtons.PopulatePage(slugcatButtons.CurrentOffset);
-            if (OnlineManager.lobby?.isOwner == true)
+            if (RainMeadow.isArenaMode(out var arena)) //apparently null lobby can happen, so need!
             {
-                arena.ResetForceReadyCountDownShort();
-                if (arena.playersReadiedUp?.list != null)
+                BuildPlayerButtons();
+                List<OnlinePlayer> otherOnlinePlayers = OtherOnlinePlayers;
+                RainMeadow.Debug($"Player count without me: {otherOnlinePlayers.Count}");
+                slugcatButtons.otherOnlinePlayers = otherOnlinePlayers;
+                slugcatButtons.PopulatePage(slugcatButtons.CurrentOffset);
+                if (OnlineManager.lobby?.isOwner == true)
                 {
-                    var onlinePlayerIds = OnlineManager.players.Select(x => x.id).ToHashSet();
+                    arena.ResetForceReadyCountDownShort();
+                    if (arena.playersReadiedUp?.list != null)
+                    {
+                        var onlinePlayerIds = OnlineManager.players.Select(x => x.id).ToHashSet();
 
-                    arena.playersReadiedUp.list.RemoveAll(player => !onlinePlayerIds.Contains(player));
+                        arena.playersReadiedUp.list.RemoveAll(player => !onlinePlayerIds.Contains(player));
+                    }
+
                 }
-
+                if (this != null)
+                {
+                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                }
             }
-            if (this != null)
-            {
-                ArenaHelpers.ResetReadyUpLogic(arena, this);
-            }
-
-
 
 
         }
@@ -616,17 +608,12 @@ namespace RainMeadow
                 flushArenaSittingForWaitingClients = true;
             }
         }
-        private void UpdateSlugcatButtons()
+        private void UpdateSlugcatButtons() //called under update, so lobby null check isnt needed
         {
             if (slugcatButtons?.otherArenaPlayerButtons != null)
             {
                 foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
                 {
-                    if (playerButton.profileIdentifier == null)
-                    {
-                        RainMeadow.Debug($"Playerbutton looped profile is null!");
-                        continue;
-                    }
                     playerButton.readyForCombat = arena.playersReadiedUp?.list?.Contains(playerButton.profileIdentifier.id) == true;
                     playerButton.buttonBehav.greyedOut = !(arena.reigningChamps?.list?.Contains(playerButton.profileIdentifier.id) == true);
                     int colorIndex = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
