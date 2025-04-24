@@ -419,52 +419,30 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-
                 if (classID == null)
                 {
+                    Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-
-                var slugList = ArenaHelpers.allSlugcats;
-                var baseGameSlugs = ArenaHelpers.baseGameSlugcats;
-                var vanillaSlugs = ArenaHelpers.vanillaSlugcats;
-                var mscSlugs = ArenaHelpers.mscSlugcats;
-
-                RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
-
-                if (vanillaSlugs.Contains(classID))
+                if ( ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
-                    return "MultiplayerPortrait" + color + "1";
+                    return $"MultiplayerPortrait{color}1";
                 }
-
                 if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
-                    return "MultiplayerPortrait" + 3 + "1"; // take advantage of nightcat profile pic
+                    return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
                 }
-
-                if (ModManager.MSC && mscSlugs.Contains(classID))
+                if (ModManager.MSC && ArenaHelpers.mscSlugcats.Contains(classID))
                 {
-                    if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-                    {
-                        int randomChoice = UnityEngine.Random.Range(0, 5);
-                        return "MultiplayerPortrait" + $"{randomChoice}1-" + slugList[color];
-                    }
-                    return "MultiplayerPortrait" + "41-" + slugList[color];
+                    return $"MultiplayerPortrait{(classID == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? UnityEngine.Random.Range(0, 5) : 4)}1-{classID}";
 
                 }
-
-                if (!baseGameSlugs.Contains(classID))
+                if (!ArenaHelpers.baseGameSlugcats.Contains(classID))
                 {
-
-                    color = 0;
-                    return "MultiplayerPortrait" + color + "1-" + classID.ToString();
+                    return $"MultiplayerPortrait{0}{1}-{classID}";
                 }
-                return orig(self, classID, color);
             }
-            else
-            {
-                return orig(self, classID, color);
-            }
+            return orig(self, classID, color);
         }
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
