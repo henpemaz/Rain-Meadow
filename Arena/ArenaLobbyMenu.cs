@@ -7,9 +7,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Linq;
-using System.Security.Cryptography;
-using HarmonyLib;
-using System.Numerics;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
@@ -70,6 +67,10 @@ namespace RainMeadow
         {
             RainMeadow.DebugMe();
             manager.rainWorld.progression.SaveProgression(true, true);
+            if (OnlineManager.lobby?.isOwner == true)
+            {
+                GetArenaSetup?.SaveToFile();
+            }
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
             {
                 OnlineManager.LeaveLobby();
@@ -88,152 +89,34 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (OnlineManager.lobby == null) return;
-
+            if (OnlineManager.lobby == null)
+            {
+                return;
+            }
             if (OnlineManager.lobby.isOwner)
             {
-                if (this.forceReady != null)
+                if (forceReady != null)
                 {
                     if (arena.forceReadyCountdownTimer > 0)
                     {
-                        this.forceReady.buttonBehav.greyedOut = true;
-                        this.forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                        forceReady.buttonBehav.greyedOut = true;
+                        forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
                     }
                     else
                     {
-                        this.forceReady.menuLabel.text = forceReadyText;
+                        forceReady.menuLabel.text = forceReadyText;
                     }
-
-                    if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.forceReadyCountdownTimer <= 0)
+                    if (arena.playersReadiedUp?.list != null && arena.forceReadyCountdownTimer <= 0)
                     {
-                        this.forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
+                        forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
                     }
-                }
-
-
-            }
-            if (slugcatButtons?.otherArenaPlayerButtons != null)
-            {
-                foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
-                {
-                    int colorIndex = arena.playersInLobbyChoosingSlugs.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) ? result : 0;
-                    playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[colorIndex], colorIndex, ArenaImage);
                 }
             }
-
-            if (totalClientsReadiedUpOnPage != null)
-            {
-                UpdateReadyUpLabel();
-            }
-
-            if (currentLevelProgression != null)
-            {
-                UpdateLevelCounter();
-            }
-
-            if (displayCurrentGameMode != null)
-            {
-                UpdateGameModeLabel();
-
-            }
-
-            if (playButton != null)
-            {
-
-                if (arena.playersReadiedUp.list.Count == 0 && arena.returnToLobby)
-                {
-                    playButton.menuLabel.text = Translate("READY?");
-                    playButton.inactive = false;
-                }
-
-                if (OnlineManager.players.Count == 1)
-                {
-                    this.playButton.menuLabel.text = this.Translate("WAIT FOR OTHERS");
-
-                }
-
-                if (this.GetGameTypeSetup.playList.Count == 0 && OnlineManager.lobby.isOwner)
-                {
-                    this.playButton.buttonBehav.greyedOut = true;
-                }
-
-                if (this.GetGameTypeSetup.playList.Count * this.GetGameTypeSetup.levelRepeats >= 0)
-                {
-                    if (this.abovePlayButtonLabel != null)
-                    {
-                        this.abovePlayButtonLabel.RemoveSprites();
-                        this.pages[0].RemoveSubObject(this.abovePlayButtonLabel);
-                    }
-                    if (!OnlineManager.lobby.isOwner) // let clients ready up when no map is selected
-                    {
-                        playButton.buttonBehav.greyedOut = false;
-                    }
-                }
-
-
-                if (arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && OnlineManager.players.Count > 1)
-                {
-                    playButton.inactive = true;
-                }
-
-                if (arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
-                {
-                    arena.allPlayersReadyLockLobby = true;
-
-                    if (OnlineManager.players.Count == 1)
-                    {
-                        playButton.menuLabel.text = Translate("LOBBY WILL LOCK"); // are you sure you want to enter host? Nobody can join you
-
-                    }
-                    else
-                    {
-                        if (OnlineManager.lobby.isOwner)
-                        {
-                            playButton.menuLabel.text = Translate("ENTER");
-                            playButton.inactive = false;
-
-                        }
-                    }
-                }
-
-                // clients
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    if (arena.isInGame)
-                    {
-                        playButton.inactive = true;
-                        if (!arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id)) // you're late
-                        {
-                            playButton.menuLabel.text = Translate("GAME IN SESSION");
-
-                        }
-                    }
-                    if (!arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
-                    {
-                        playButton.menuLabel.text = Translate("READY?");
-                        playButton.inactive = false;
-                    }
-                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
-                    {
-                        playButton.menuLabel.text = Translate("Waiting for others...");
-                        playButton.inactive = true;
-                    }
-
-                    if (!arena.isInGame && arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id) && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
-                    {
-                        playButton.menuLabel.text = Translate("Waiting for host...");
-                        playButton.inactive = true;
-                    }
-                }
-
-                if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
-                {
-                    ArenaHelpers.ResetReadyUpLogic(arena, this);
-                    flushArenaSittingForWaitingClients = true;
-                }
-            }
-
-
+            UpdateSlugcatButtons();
+            UpdateReadyUpLabel();
+            UpdateLevelCounter();
+            UpdateGameModeLabel();
+            UpdatePlayButton();
         }
         public override void Singal(MenuObject sender, string message)
         {
@@ -241,7 +124,7 @@ namespace RainMeadow
             if (message == "BACKTOLOBBY")
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-                base.PlaySound(SoundID.MENU_Switch_Page_Out);
+                PlaySound(SoundID.MENU_Switch_Page_Out);
             }
             if (message == "STARTARENAONLINEGAME")
             {
@@ -250,7 +133,7 @@ namespace RainMeadow
 
             if (message == "INFO" && infoWindow != null)
             {
-                infoWindow.label.text = Regex.Replace(this.Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
+                infoWindow.label.text = Regex.Replace(Translate("Welcome to Arena Online!<LINE>All players must ready up to begin."), "<LINE>", "\r\n");
             }
             if (OnlineManager.lobby.isOwner)
             {
@@ -307,52 +190,26 @@ namespace RainMeadow
             {
                 arena.playList.Clear();
             }
-            if (this.playerClassButtons != null && this.playerClassButtons.Length > 0)
+            pages[0].ClearMenuObjectIList(playerClassButtons);
+            pages[0].ClearMenuObjectIList(playerJoinButtons);
+            pages[0].ClearMenuObject(resumeButton);
+            if (levelSelector != null && levelSelector.levelsPlaylist != null)
             {
-                for (int i = this.playerClassButtons.Length - 1; i >= 0; i--)
-                {
-                    this.playerClassButtons[i].RemoveSprites();
-                    this.pages[0].RecursiveRemoveSelectables(playerClassButtons[i]);
-                }
-            }
-
-            if (this.playerJoinButtons != null && this.playerJoinButtons.Length > 0)
-            {
-                for (int i = this.playerJoinButtons.Length - 1; i >= 0; i--)
-                {
-                    this.playerJoinButtons[i].RemoveSprites();
-                    this.pages[0].RecursiveRemoveSelectables(playerJoinButtons[i]);
-
-
-                }
-            }
-            if (this.resumeButton != null)
-            {
-                this.resumeButton.RemoveSprites();
-                this.pages[0].RecursiveRemoveSelectables(this.resumeButton);
-            }
-
-            if (this.levelSelector != null && this.levelSelector.levelsPlaylist != null)
-            {
-
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    for (int i = this.levelSelector.levelsPlaylist.levelItems.Count - 1; i >= 0; i--)
+                    for (int i = levelSelector.levelsPlaylist.levelItems.Count - 1; i >= 0; i--)
                     {
-                        this.GetGameTypeSetup.playList.RemoveAt(this.GetGameTypeSetup.playList.Count - 1);
-                        this.levelSelector.levelsPlaylist.RemoveLevelItem(new Menu.LevelSelector.LevelItem(this, this.levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
-                        this.levelSelector.levelsPlaylist.ScrollPos = this.levelSelector.levelsPlaylist.LastPossibleScroll;
-                        this.levelSelector.levelsPlaylist.ConstrainScroll();
+                        GetGameTypeSetup.playList.RemoveAt(GetGameTypeSetup.playList.Count - 1);
+                        levelSelector.levelsPlaylist.RemoveLevelItem(new LevelSelector.LevelItem(this, levelSelector.levelsPlaylist, this.levelSelector.levelsPlaylist.levelItems[i].name));
+                        levelSelector.levelsPlaylist.ScrollPos = levelSelector.levelsPlaylist.LastPossibleScroll;
+                        levelSelector.levelsPlaylist.ConstrainScroll();
                     }
-
                 }
                 else
                 {
-                    arena.playList = this.GetGameTypeSetup.playList;
+                    arena.playList = GetGameTypeSetup.playList;
                 }
             }
-
-
         }
         private void OverrideMultiplayerMenu()
         {
@@ -451,9 +308,9 @@ namespace RainMeadow
             {
                 ArenaOnlinePlayerJoinButton playerButton = slugcatPlayerButtons.otherArenaPlayerButtons[i];
                 playerButton.portraitBlack = Custom.LerpAndTick(playerButton.portraitBlack, 1f, 0.06f, 0.05f);
-                playerButton.readyForCombat = arena != null && arena.playersReadiedUp != null && arena.playersReadiedUp.list != null && arena.playersReadiedUp.list.Contains(playerButton.profileIdentifier.id);
-                playerButton.buttonBehav.greyedOut = arena.reigningChamps == null || arena.reigningChamps.list == null || !arena.reigningChamps.list.Contains(playerButton.profileIdentifier.id);
-                int currentColorIndexOther = arena.playersInLobbyChoosingSlugs.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) ? result : 0;
+                playerButton.readyForCombat = arena.playersReadiedUp?.list?.Contains(playerButton.profileIdentifier.id) == true;
+                playerButton.buttonBehav.greyedOut = !(arena.reigningChamps?.list?.Contains(playerButton.profileIdentifier.id) == true);
+                int currentColorIndexOther = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
                 playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[currentColorIndexOther], currentColorIndexOther, ArenaImage);
 
             }
@@ -468,7 +325,7 @@ namespace RainMeadow
             if (OnlineManager.lobby?.isOwner == true)
             {
                 arena.ResetForceReadyCountDownShort();
-                if (arena.playersReadiedUp != null && arena.playersReadiedUp.list != null)
+                if (arena.playersReadiedUp?.list != null)
                 {
                     var onlinePlayerIds = OnlineManager.players.Select(x => x.id).ToHashSet();
 
@@ -594,20 +451,18 @@ namespace RainMeadow
             {
                 return;
             }
-
-            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
-
+            if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive)
+            {
+                return;
+            }
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
             {
                 return; // don't be foolish
             }
-
             if (arena.playersReadiedUp.list.Count != OnlineManager.players.Count && arena.isInGame)
             {
                 return;
             }
-
-
             if (!arena.allPlayersReadyLockLobby)
             {
                 if (OnlineManager.lobby.isOwner)
@@ -640,10 +495,6 @@ namespace RainMeadow
             {
                 manager.StopSideProcess(colorConfigDialog); //force getting rid of dialog
             }
-            if (OnlineManager.lobby.isOwner)
-            {
-                GetArenaSetup?.SaveToFile();
-            }
             arena.avatarSettings.playingAs = ArenaHelpers.allSlugcats.GetValueOrDefault(CurrentColorIndex, ArenaHelpers.allSlugcats[UnityEngine.Random.Range(0, ArenaHelpers.allSlugcats.Count - 1)])!;
             arena.arenaClientSettings.playingAs = arena.avatarSettings.playingAs;
             arena.avatarSettings.currentColors = this.GetCustomColors(arena.avatarSettings.playingAs);
@@ -659,17 +510,117 @@ namespace RainMeadow
         }
         private void UpdateReadyUpLabel()
         {
-            this.totalClientsReadiedUpOnPage.text = this.Translate("Ready:") + " " + arena.playersReadiedUp.list.Count + "/" + OnlineManager.players.Count;
+            if (totalClientsReadiedUpOnPage != null)
+            {
+                totalClientsReadiedUpOnPage.text = Translate("Ready:") + " " + arena.playersReadiedUp.list.Count + "/" + OnlineManager.players.Count;
+            }
         }
         private void UpdateLevelCounter()
         {
-
-            this.currentLevelProgression.text = this.Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;
+            if (currentLevelProgression != null)
+            {
+                currentLevelProgression.text = Translate("Playlist Progress:") + " " + arena.currentLevel + "/" + arena.totalLevelCount;
+            }
         }
         private void UpdateGameModeLabel()
         {
-            this.displayCurrentGameMode.text = Translate("Current Mode:") + " " + Utils.Translate(arena.currentGameMode);
+            if (displayCurrentGameMode != null)
+            {
+                displayCurrentGameMode.text = Translate("Current Mode:") + " " + Translate(arena.currentGameMode);
+            }
 
+        }
+        private void UpdatePlayButton()
+        {
+            if (playButton == null)
+            {
+                return;
+            }
+            if (arena.playersReadiedUp?.list?.Count == 0 && arena.returnToLobby)
+            {
+                playButton.menuLabel.text = Translate("READY?");
+                playButton.inactive = false;
+            }
+            if (OnlineManager.players.Count == 1)
+            {
+                playButton.menuLabel.text = Translate("WAIT FOR OTHERS");
+
+            }
+            if (GetGameTypeSetup.playList.Count == 0 && OnlineManager.lobby.isOwner)
+            {
+                playButton.buttonBehav.greyedOut = true;
+            }
+            if (GetGameTypeSetup.playList.Count * GetGameTypeSetup.levelRepeats >= 0)
+            {
+                pages[0].ClearMenuObject(abovePlayButtonLabel);
+                if (!OnlineManager.lobby.isOwner) // let clients ready up when no map is selected
+                {
+                    playButton.buttonBehav.greyedOut = false;
+                }
+            }
+            if (arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && OnlineManager.players.Count > 1)
+            {
+                playButton.inactive = true;
+            }
+            if (arena.playersReadiedUp?.list?.Count == OnlineManager.players.Count)
+            {
+                arena.allPlayersReadyLockLobby = true;
+                if (OnlineManager.players.Count == 1)
+                {
+                    playButton.menuLabel.text = Translate("LOBBY WILL LOCK"); // are you sure you want to enter host? Nobody can join you
+
+                }
+                else if (OnlineManager.lobby.isOwner)
+                {
+                    playButton.menuLabel.text = Translate("ENTER");
+                    playButton.inactive = false;
+                }
+            }
+            // clients
+            if (!OnlineManager.lobby.isOwner)
+            {
+                if (arena.isInGame)
+                {
+                    playButton.inactive = true;
+                    if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true)) // you're late
+                    {
+                        playButton.menuLabel.text = Translate("GAME IN SESSION");
+
+                    }
+                }
+                if (!arena.isInGame && !(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true))
+                {
+                    playButton.menuLabel.text = Translate("READY?");
+                    playButton.inactive = false;
+                }
+                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
+                {
+                    playButton.menuLabel.text = Translate("Waiting for others...");
+                    playButton.inactive = true;
+                }
+
+                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                {
+                    playButton.menuLabel.text = Translate("Waiting for host...");
+                    playButton.inactive = true;
+                }
+            }
+            if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
+            {
+                ArenaHelpers.ResetReadyUpLogic(arena, this);
+                flushArenaSittingForWaitingClients = true;
+            }
+        }
+        private void UpdateSlugcatButtons()
+        {
+            if (slugcatButtons?.otherArenaPlayerButtons != null)
+            {
+                foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
+                {
+                    int colorIndex = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
+                    playerButton.SetNewSlugcat(ArenaHelpers.allSlugcats[colorIndex], colorIndex, ArenaImage);
+                }
+            }
         }
         private void AddForceReadyUp()
         {
