@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using Menu;
 using MoreSlugcats;
 using RainMeadow;
 using UnityEngine;
+using static RainMeadow.OnlineEntity;
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -283,9 +286,13 @@ namespace RainMeadow
                 arena.isInGame = true;
                 foreach (var p in arena.arenaSittingOnlineOrder)
                 {
-                    var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (onlineP.isMe) continue; // skip self
-                    onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                    if (onlineP != null)
+                    {
+                        if (onlineP.isMe) continue;
+                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                    }
+
                 }
                 arena.initiatedStartGameForClient = true; // set this so we don't notify again
             }
