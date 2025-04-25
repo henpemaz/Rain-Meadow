@@ -10,6 +10,7 @@ namespace RainMeadow
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
+        public bool Freeze { get => forceNonMouseSelectFreeze; set => forceNonMouseSelectFreeze = value; }
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
@@ -21,7 +22,6 @@ namespace RainMeadow
             playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
             pages[0].subObjects.Add(playerScroller);
         }
-
         private bool UpdateList()
         {
             List<PlayerButton> playerButtons = PlayerButtons;
@@ -58,6 +58,11 @@ namespace RainMeadow
                 button.toggled = ac != null && ac == spectatee;
                 button.forceGreyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
+            if (forceNonMouseSelectFreeze && !manager.menuesMouseMode)
+            {
+                selectedObject = null;
+
+            }
         }
         public override string UpdateInfoText()
         {
@@ -79,6 +84,7 @@ namespace RainMeadow
         public AbstractCreature? spectatee;
         public RainWorldGame game;
         public ButtonScroller playerScroller;
+        public bool forceNonMouseSelectFreeze = false;
         public class PlayerButton : ButtonScroller.ScrollerButton //makes sense to just remove the pos property
         {
             public bool BanClickedOnce
