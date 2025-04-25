@@ -46,7 +46,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((Menu.Menu self) =>
                 {
-                    self.allowSelectMove = self is SpectatorOverlay specOverlay? !specOverlay.forceNonMouseSelectFreeze : self.allowSelectMove;
+                    self.allowSelectMove = self.allowSelectMove && !(self is SpectatorOverlay { forceNonMouseSelectFreeze: true });
                 });
             }
             catch (Exception ex)
