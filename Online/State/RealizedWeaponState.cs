@@ -8,13 +8,13 @@ namespace RainMeadow
     {
         [OnlineField]
         protected Weapon.Mode mode;
-        [OnlineFieldHalf]
+        [OnlineFieldHalf(group = "rotation")]
         private float rotation;
-        [OnlineFieldHalf]
+        [OnlineFieldHalf(group = "rotation")]
         private float rotationSpeed;  // is this really necessary?
-        [OnlineField(nullable = true)]
+        [OnlineField(group = "throw", nullable = true)]
         private OnlineCreature? thrownBy;
-        [OnlineField]
+        [OnlineField(group = "throw")]
         private byte throwDir;  // 00> 01v 10< 11^
 
         public RealizedWeaponState() { }
