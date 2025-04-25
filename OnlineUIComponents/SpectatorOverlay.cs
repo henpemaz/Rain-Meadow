@@ -10,7 +10,6 @@ namespace RainMeadow
         public static int MaxVisibleOnList => 8;
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
-        public bool Freeze { get => forceNonMouseSelectFreeze; set => forceNonMouseSelectFreeze = value; }
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
         public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {

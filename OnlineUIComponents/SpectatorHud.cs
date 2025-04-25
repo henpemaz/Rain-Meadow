@@ -57,7 +57,7 @@ namespace RainMeadow
                     }
 
                 }
-                spectatorOverlay.Freeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
+                spectatorOverlay.forceNonMouseSelectFreeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
             }
