@@ -19,7 +19,7 @@ namespace RainMeadow
         private void MenuHooks()
         {
             IntroRollReplacement.OnEnable();
-
+            IL.Menu.Menu.Update += IL_Menu_Update;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
@@ -36,6 +36,23 @@ namespace RainMeadow
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
+        }
+        void IL_Menu_Update(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.TryGotoNext(MoveType.After, x => x.MatchStfld<Menu.Menu>(nameof(Menu.Menu.allowSelectMove)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Menu.Menu self) =>
+                {
+                    self.allowSelectMove = self.allowSelectMove && !(self is SpectatorOverlay { forceNonMouseSelectFreeze: true });
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
