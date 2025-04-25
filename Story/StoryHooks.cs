@@ -1478,7 +1478,7 @@ namespace RainMeadow
                 {
                     if (ac.realizedCreature is Player p) {
                         if (p.touchedNoInputCounter < 20) return false;
-                        if (p.slugOnBack.HasASlug) return false;
+                        if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
                     }
                 }
             }
