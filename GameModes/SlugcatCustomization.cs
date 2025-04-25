@@ -9,7 +9,7 @@ namespace RainMeadow
     {
         // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
         public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
-        public bool wearingCape { get; set; } = true;
+        public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
 
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
