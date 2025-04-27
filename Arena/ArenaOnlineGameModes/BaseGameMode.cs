@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using Menu;
 using MoreSlugcats;
 using RainMeadow;
 using UnityEngine;
+using static RainMeadow.OnlineEntity;
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -18,7 +21,6 @@ namespace RainMeadow
 
         public virtual void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
-            ArenaHelpers.RecreateSlugcatCache();
             arena.ResetAtSession_ctor();
         }
 
@@ -70,10 +72,10 @@ namespace RainMeadow
         public virtual void HUD_InitMultiplayerHud(ArenaOnlineGameMode arena, HUD.HUD self, ArenaGameSession session)
         {
             self.AddPart(new HUD.TextPrompt(self));
-            
-            if (MatchmakingManager.currentInstance.canSendChatMessages) 
+
+            if (MatchmakingManager.currentInstance.canSendChatMessages)
                 self.AddPart(new ChatHud(self, session.game.cameras[0]));
-                
+
             self.AddPart(new SpectatorHud(self, session.game.cameras[0]));
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
@@ -279,9 +281,20 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
             {
                 arena.isInGame = true;
+                foreach (var p in arena.arenaSittingOnlineOrder)
+                {
+                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                    if (onlineP != null)
+                    {
+                        if (onlineP.isMe) continue;
+                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                    }
+
+                }
+                arena.initiatedStartGameForClient = true; // set this so we don't notify again
             }
         }
 

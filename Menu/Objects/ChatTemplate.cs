@@ -35,7 +35,7 @@ namespace RainMeadow
         public override void Update()
         {
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text, false);
-            cursorWrap.sprite.x = _cursorWidth + 20f;
+            cursorWrap.sprite.x = _cursorWidth + 20f + this.pos.x;
             cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             base.Update();
             this.roundedRect.fillAlpha = 1.0f;

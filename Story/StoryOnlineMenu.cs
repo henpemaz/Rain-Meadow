@@ -29,15 +29,13 @@ namespace RainMeadow
         
         //Chat constants
         private const int maxVisibleMessages = 13;
-        public bool Active => isChatToggled;
         //Chat variables
-        private List<MenuObject> chatSubObjects = new();
-        private List<(string, string)> chatLog = new();
+        private List<MenuObject> chatSubObjects = [];
+        private List<(string, string)> chatLog = [];
         private int currentLogIndex = 0;
         private bool isChatToggled = false;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
-        private Dictionary<string, Color> colorDictionary = new();
 
         public SlugcatStats.Name[] SelectableSlugcats
         {
@@ -86,7 +84,6 @@ namespace RainMeadow
             SetupSelectableSlugcats();
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
-
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
             restartCheckboxPos = restartCheckbox.pos;       
@@ -153,6 +150,7 @@ namespace RainMeadow
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
             }
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
@@ -160,8 +158,27 @@ namespace RainMeadow
         {
             base.Update();
 
-            if (OnlineManager.lobby == null) return;
+            if (this.isChatToggled)
+            {
+                if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    if (currentLogIndex < chatLog.Count - 1)
+                    {
+                        currentLogIndex++;
+                        UpdateLogDisplay();
+                    }
+                }
+                else if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    if (currentLogIndex > 0)
+                    {
+                        currentLogIndex--;
+                        UpdateLogDisplay();
+                    }
+                }
+            }
 
+            if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
@@ -209,6 +226,8 @@ namespace RainMeadow
 
         public override void ShutDownProcess()
         {
+            this.isChatToggled = false;
+            ResetChatInput(); //ensure chat input is properly shutdown
             ChatTextBox.OnShutDownRequest -= ResetChatInput;
             ChatLogManager.Unsubscribe(this);
 

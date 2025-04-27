@@ -252,6 +252,40 @@ namespace RainMeadow
             enteringShortCut = false;
         }
 
+        [RPCMethod(runDeferred = true)]
+        public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
+        {
+            RainMeadow.Debug(this);
+            if (this.roomSession.absroom.realizedRoom is null) {
+                RainMeadow.Error($"{this} is trying to enter abstracted room.");
+                apo.Abstractize(apo.pos);
+                return;
+            }
+
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
+                RainMeadow.Error($"{this} is to early to spit out of shortcut.");
+                return;
+            }
+            
+            if (this.realizedCreature is null) {
+                this.creature.Realize();
+            }
+
+            var realcreature = this.realizedCreature!;
+            if (abstractCreature.Room != newRoom.absroom) {
+                RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
+                if (realcreature.room != null) {
+                    realcreature.room.RemoveObject(realcreature);
+                }
+                AllMoving(true);
+                apo.Move(new WorldCoordinate(newRoom.absroom.index, pos.x, pos.y, -1));
+                AllMoving(false);
+            }
+
+            
+            realcreature.SpitOutOfShortCut(pos, roomSession.absroom.realizedRoom, spitOutAllSticks);
+        }
+
         [RPCMethod]
         public void TookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
         {
@@ -282,19 +316,6 @@ namespace RainMeadow
             }
             enteringShortCut = false;
         }
-
-        public struct ReclaimGrasp
-        {
-            public int graspUsed;
-            public OnlineEntity.EntityId onlineGrabbed;
-            public int chunkGrabbed;
-            public Creature.Grasp.Shareability shareability;
-            public float dominance;
-            public bool pacifying;
-        }
-        public List<ReclaimGrasp> reclaim_grasps = new();
-        public OnlineEntity.EntityId? reclaim_backpack = null;
-
         public override string ToString()
         {
             return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";

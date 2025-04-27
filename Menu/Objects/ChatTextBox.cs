@@ -15,7 +15,7 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
-        private static List<IDetour> inputBlockers;
+        private static List<IDetour>? inputBlockers;
         private static bool blockInput = false;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;

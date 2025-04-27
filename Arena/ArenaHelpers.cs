@@ -87,11 +87,11 @@ namespace RainMeadow
                 if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
                     profileColor = Random.Range(0, 4);
-                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
                 else
                 {
-                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
             }
         }
@@ -109,7 +109,6 @@ namespace RainMeadow
 
             return null;
         }
-
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             arena.arenaSittingOnlineOrder = new List<ushort>();
@@ -118,7 +117,6 @@ namespace RainMeadow
             arena.playersReadiedUp.list.Clear();
 
         }
-
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
@@ -131,6 +129,7 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
+                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {
@@ -157,8 +156,6 @@ namespace RainMeadow
 
             return OnlineManager.mePlayer;
         }
-
-
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
         {
             try
@@ -179,7 +176,6 @@ namespace RainMeadow
             return null;
 
         }
-
         public static int FindOnlinePlayerNumber(ArenaOnlineGameMode arena, OnlinePlayer player)
         {
 
@@ -207,12 +203,10 @@ namespace RainMeadow
 
             }
         }
-        
         public static void SetHandler(SimplerButton[] classButtons, int localIndex)
         {
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
-
         public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
         {
             if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
@@ -255,6 +249,7 @@ namespace RainMeadow
             //}
 
         }
+
     }
 
 }

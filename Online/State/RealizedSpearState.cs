@@ -73,6 +73,13 @@ namespace RainMeadow
                 spear.ChangeMode(Weapon.Mode.Free);
             }
         }
+
+        override public bool ShouldPosBeLenient(PhysicalObject po)
+        {
+            if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
+            if (p.onPlayerBack) return true;
+            return false;
+        }
     }
 
     public class AppendageRef : Serializer.ICustomSerializable, IEquatable<AppendageRef>
