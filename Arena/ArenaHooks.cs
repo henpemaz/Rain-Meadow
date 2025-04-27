@@ -1,3 +1,4 @@
+using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
@@ -5,7 +6,9 @@ using Rewired;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
+
 
 namespace RainMeadow
 {
@@ -99,6 +102,63 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
+            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+        }
+
+        private static void Player_Collide2(ILContext il, MethodBase original)
+        {
+            // Find Violence, Inject our RPC call, then run it locally
+            var c = new ILCursor(il);
+
+            try
+            {
+                while (c.TryGotoNext(MoveType.Before,
+                    i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))))
+                {
+                    // Make a skip label
+                    var skip = il.DefineLabel();
+
+                    // Get caller type
+                    c.Emit(OpCodes.Ldtoken, original.DeclaringType);
+                    c.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+
+                    // Load null onto stack if method is static, otherwise load the type
+                    if (original.IsStatic)
+                    {
+                        c.Emit(OpCodes.Ldnull);
+                    }
+                    else
+                    {
+                        c.Emit(OpCodes.Ldarg_0);
+                    }
+
+                    // Replace creature.Violence with a delegate that calls our event first.
+                    c.EmitDelegate((Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus, Type callerType, object caller) =>
+                    {
+                        if (OnlineManager.lobby != null)
+                        {
+                            var onlineCreature = self.abstractPhysicalObject.GetOnlineObject();
+                            if (onlineCreature != null && !onlineCreature.isMine)
+                            {
+                                (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                            }
+                        }
+                    });
+                    c.Emit(OpCodes.Br, skip);
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))
+                    );
+                    c.MarkLabel(skip);
+
+                    RainMeadow.Debug("Gourm Stomp RPC set with " + original.DeclaringType);
+                }
+
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Debug("Gourm Stomp RPC with errors. - Type: " + original.DeclaringType + " - " + e);
+            }
+
         }
 
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
@@ -426,7 +486,7 @@ namespace RainMeadow
                     Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-                if ( ArenaHelpers.vanillaSlugcats.Contains(classID))
+                if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
                     return $"MultiplayerPortrait{color}1";
                 }
