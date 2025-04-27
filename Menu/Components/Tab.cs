@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -17,7 +16,7 @@ public class TabContainer : PositionedMenuObject
         int index;
         TabContainer container;
 
-        public TabButton(string name, TabContainer container, int tabIndex) : base(new(container.pos.x - 20, container.pos.y + container.size.y - 135 - 130 * tabIndex), new(30, 125))
+        public TabButton(string name, TabContainer container, int tabIndex) : base(new(container.pos.x - 23, container.pos.y + container.size.y - 135 - 130 * tabIndex), new(30, 125))
         {
             this.container = container;
             index = tabIndex;
@@ -66,9 +65,14 @@ public class TabContainer : PositionedMenuObject
         tabButtons = [];
 
         background = new RoundedRect(menu, this, new(0, 0), size, true);
+        background.fillAlpha = 0.3f;
+        subObjects.Add(background);
     }
 
-    public void AddTab<O>(string name, List<O> objects) where O : MenuObject, IRestorableMenuObj
+    /// <summary>
+    /// Elements added MUST implement IRestorableMenuObjects, exceptions will be thrown if this is not true
+    /// </summary>
+    public void AddTab(string name, List<MenuObject> objects)
     {
         int index = tabs.Count;
 
@@ -78,14 +82,19 @@ public class TabContainer : PositionedMenuObject
         tabButtons.Add(btn);
 
         subObjects.AddRange(objects);
-        tabs.Add([.. objects.Cast<MenuObject>()]);
+        tabs.Add(objects);
 
         // idk why but if this isn't run on every single object that is added everything just breaks so don't exclude the first set of tab elements added
         for (int objIndex = 0; objIndex < tabs[index].Count; objIndex++)
         {
             MenuObject obj = tabs[index][objIndex];
+
+            if (obj is not IRestorableMenuObject)
+                throw new NotImplementedException("MenuObject added to tab did not implement IRestorableMenuObject");
+            if (obj is PositionedMenuObject posObj) posObj.pos += pos;
+
             obj.RemoveSprites();
-            if (obj is SelectableMenuObject selectableObj) obj.page.selectables.Remove(selectableObj);
+            RecursiveRemoveSelectables(obj);
         }
 
         if (index == 0) SwitchTab(0);
@@ -97,7 +106,7 @@ public class TabContainer : PositionedMenuObject
         {
             MenuObject obj = activeTab[i];
             obj.RemoveSprites();
-            if (obj is SelectableMenuObject selectableObj) obj.page.selectables.Remove(selectableObj);
+            RecursiveRemoveSelectables(obj);
         }
 
         activeIndex = tabIndex;
@@ -106,8 +115,8 @@ public class TabContainer : PositionedMenuObject
         for (int i = 0; i < activeTab.Count; i++)
         {
             MenuObject obj = activeTab[i];
-            if (obj is not IRestorableMenuObj restorableObj)
-                throw new InvalidCastException("An object within a Tab did not implement IRestorableMenuObj");
+            if (obj is not IRestorableMenuObject restorableObj)
+                throw new InvalidCastException("An object within a Tab did not implement IRestorableMenuObject");
             restorableObj.RestoreSprites();
             restorableObj.RestoreSelectables();
         }

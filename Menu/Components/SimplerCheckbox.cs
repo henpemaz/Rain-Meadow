@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class SimplerCheckbox : CheckBox, CheckBox.IOwnCheckBox, IRestorableMenuObj
+public class SimplerCheckbox : CheckBox, CheckBox.IOwnCheckBox, IRestorableMenuObject
 {
     private bool boxChecked;
     public event Action<bool>? OnClick;
