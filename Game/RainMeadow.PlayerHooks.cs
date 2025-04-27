@@ -58,9 +58,12 @@ public partial class RainMeadow
 
         On.SlugcatStats.HiddenOrUnplayableSlugcat += SlugcatStatsOnHiddenOrUnplayableSlugcat;
         On.PlayerGraphics.DefaultSlugcatColor += PlayerGraphics_DefaultSlugcatColor;
+        On.SlugcatHand.EngageInMovement += SlugcatHand_EngageInMovement;
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
+        On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
+        On.Player.CanEatMeat += Player_CanEatMeat;
         
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
@@ -95,6 +98,36 @@ public partial class RainMeadow
         {
             orig(self);
         }
+    }
+
+    public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self) {
+        if (OnlineManager.lobby != null) {
+            if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null) {
+                (self.owner as PlayerGraphics)!.airborneCounter = 0; // fix for weird hand movement when on back.
+            }
+        }
+
+        return orig(self);
+    }
+
+    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit) {
+        if (OnlineManager.lobby != null) {
+            if (self.standing && self.CanPutSlugToBack) {
+                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p)) {
+                    return false;
+                }
+            }
+        }
+        return orig(self, crit);
+    }
+
+    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate) {
+        if (OnlineManager.lobby != null) {
+            if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            return true;
+        }
+
+        return orig(self, pickUpCandidate);
     }
 
     Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
@@ -143,6 +176,7 @@ public partial class RainMeadow
                     if (obj is Player other && other.IsLocal()) {
                         if (other == self) continue;
                         if (other.slugOnBack == null) continue;
+                        if (other.abstractCreature.GetAllConnectedObjects().Contains(self.abstractCreature)) continue;
                         if (other.isNPC) continue;
                         if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
                         if (!other.Consious) continue;
@@ -230,8 +264,9 @@ public partial class RainMeadow
         {
             if (self.slugcat.isNPC) return;
 
+            self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
+            self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
             if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
-            else self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
         }
     }
 
@@ -372,7 +407,8 @@ public partial class RainMeadow
             if (!self.isNPC) {
                 Player? grabbingplayer = self.grabbedBy.FirstOrDefault(x => x.grabber is Player)?.grabber as Player;
                 if (grabbingplayer != null) {
-                    if (!self.input[0].AnyDirectionalInput) {
+                    if (!self.input[0].AnyDirectionalInput && !self.input[0].jmp) 
+                    {
                         self.input[0].x = grabbingplayer.input[0].x;
                         self.input[0].y = grabbingplayer.input[0].y;
                         if (grabbingplayer.bodyMode == Player.BodyModeIndex.Crawl && self.standing)
@@ -982,9 +1018,12 @@ public partial class RainMeadow
         }
 
         if (OnlineManager.lobby != null) {
-            if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && obj is Player p && !p.isNPC) {
-                return false;
+            if (obj is Player p) {
+                if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC) {
+                    return false;
+                }
             }
+
         }
 
         

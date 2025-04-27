@@ -286,6 +286,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Current index" + existingValue.ToString());
                     CurrentColorIndex = existingValue;
                     slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, existingValue, ArenaImage);
+                    (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs = SlugcatFromIndex;
                 }
                 else
                 {
@@ -299,6 +300,10 @@ namespace RainMeadow
                     slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, CurrentColorIndex, ArenaImage);
                     PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                     RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");
+                    (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs = SlugcatFromIndex;
+                    RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
+
+                    
                 };
             }
         }

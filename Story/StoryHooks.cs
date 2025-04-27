@@ -227,7 +227,10 @@ namespace RainMeadow
             }
             orig(self, box, c);
         }
+<<<<<<< HEAD
 
+=======
+>>>>>>> d48265c588ca711f25e41f3396b6714d2e185e24
         private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
         {
             try
@@ -1528,8 +1531,10 @@ namespace RainMeadow
                 foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
                     .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
                 {
-                    if (ac.realizedCreature is Player p && p.touchedNoInputCounter < 20)
-                        return false;
+                    if (ac.realizedCreature is Player p) {
+                        if (p.touchedNoInputCounter < 20) return false;
+                        if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
+                    }
                 }
             }
             return orig(self);

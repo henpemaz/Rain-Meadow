@@ -336,9 +336,11 @@ namespace RainMeadow
                                         entities.Remove(oe.apo);
 
                                         self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                        self.room.RemoveObject(oe.apo.realizedObject);
-                                        self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        if (oe.apo.realizedObject != null)
+                                        {
+                                            self.room.RemoveObject(oe.apo.realizedObject);
+                                            self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        }
                                         oe.beingMoved = false;
                                     }
                                     else // mine leave the old online world elegantly
@@ -1183,9 +1185,9 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
                         {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[userNameBackup] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                         }
                         else
                         {
@@ -1217,10 +1219,10 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
                         {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
+                            RainMeadow.Debug("FOUND" + currentName.GetUniqueID() + currentName.id.name);
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                         }
                         else
                         {

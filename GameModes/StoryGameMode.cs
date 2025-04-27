@@ -271,19 +271,29 @@ namespace RainMeadow
         }
     }
 
-    public static class StoryModeExtensions {
-        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature) {
-            if (creature is Player p) {
+    public static class StoryModeExtensions
+    {
+        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature)
+        {
+            if (creature is Player p)
+            {
                 if (p.isNPC) return false;
-            } else return false;
+                if (RainMeadow.isArenaMode(out var _) && p.room.game.IsArenaSession && p.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false) {
+                    return true; // you are a safety candidate
+                };
 
-            if (RainMeadow.isStoryMode(out var story)) {
+            }
+            else return false;
+
+            if (RainMeadow.isStoryMode(out var story))
+            {
                 return !story.friendlyFire;
             }
-            if (RainMeadow.isArenaMode(out var arena)) {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
                 return arena.countdownInitiatedHoldFire;
             }
-            
+
             return false;
         }
     }
