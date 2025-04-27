@@ -1,10 +1,11 @@
 using System;
 using Menu;
+using RainMeadow.UI.Interfaces;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class SimplerCheckbox : CheckBox, CheckBox.IOwnCheckBox
+public class SimplerCheckbox : CheckBox, CheckBox.IOwnCheckBox, IRestorableMenuObj
 {
     private bool boxChecked;
     public event Action<bool>? OnClick;
@@ -26,5 +27,17 @@ public class SimplerCheckbox : CheckBox, CheckBox.IOwnCheckBox
         if (box != this) throw new Exception("Another CheckBox is using a SimplerCheckbox as a CheckBox handler");
         boxChecked = c;
         OnClick?.Invoke(c);
+    }
+
+    public void RestoreSprites()
+    {
+        for (int i = 0; i < roundedRect.sprites.Length; i++) Container.AddChild(roundedRect.sprites[i]);
+        Container.AddChild(label.label);
+        Container.AddChild(symbolSprite);
+    }
+
+    public void RestoreSelectables()
+    {
+        page.selectables.Add(this);
     }
 }
