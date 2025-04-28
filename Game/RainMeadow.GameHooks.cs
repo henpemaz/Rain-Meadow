@@ -464,6 +464,18 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.gameMode.ShouldSpawnFly(self, spawnRoom))
             {
+                // Add to quantified creature to trick ourselves into thinking we spawned them
+                // this does NOT affect host 
+                AbstractRoom swarmRoom = self.world.GetSwarmRoom(spawnRoom);
+                int relevantNode = swarmRoom.NodesRelevantToCreature(StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Fly));
+                for (int num = 0; num <= relevantNode; ++num)
+                {
+                    int node = swarmRoom.CreatureSpecificToCommonNodeIndex(num, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Fly));
+                    if (node != -1)
+                    {
+                        swarmRoom.AddQuantifiedCreature(node, CreatureTemplate.Type.Fly);
+                    }
+                }
                 return;
             }
             orig(self, spawnRoom);
