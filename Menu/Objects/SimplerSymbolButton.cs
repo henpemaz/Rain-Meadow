@@ -15,5 +15,6 @@ namespace RainMeadow
 
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
         public event Action<SymbolButton> OnClick;
+        public void ResetSubscriptions() => OnClick = delegate { };
     }
 }
