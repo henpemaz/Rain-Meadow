@@ -20,6 +20,13 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
+            On.Watcher.WarpPoint.PerformWarp += (On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self) => {
+                orig(self);
+                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
+                var ws = world.GetResource() ?? throw new KeyNotFoundException();
+                ws.Deactivate();
+                ws.NotNeeded();
+            };
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
