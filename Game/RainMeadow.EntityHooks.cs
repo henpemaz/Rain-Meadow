@@ -20,10 +20,18 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
+            On.Watcher.WarpPoint.PerformWarp += (On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self) => {
+                orig(self);
+                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
+                var ws = world.GetResource() ?? throw new KeyNotFoundException();
+                ws.Deactivate();
+                ws.NotNeeded();
+            };
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
+
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -397,16 +405,6 @@ namespace RainMeadow
                 orig(self, callback, warpData, useNormalWarpLoader);
                 string sourceRoomName = warpPoint.getSourceRoom() == null ? "" : warpPoint.getSourceRoom().abstractRoom.name;
                 RainMeadow.Debug($"doing warp point from {sourceRoomName}, data={warpData.ToString()}");
-                if (OnlineManager.lobby.isOwner)
-                {
-                    foreach (var player in OnlineManager.players)
-                    { // do nat throw everyone into the same room?
-                        if (!player.isMe)
-                        {
-                            player.InvokeOnceRPC(StoryRPCs.NormalExecuteWatcherRiftWarp, sourceRoomName, warpData.ToString(), useNormalWarpLoader);
-                        }
-                    }
-                }
             }
             else
             {
@@ -500,6 +498,8 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
+                var warpData = (self.overrideData ?? self.Data).ToString();
+                string? sourceRoomName = self.getSourceRoom()?.abstractRoom.name;
                 orig(self, newRoom);
                 // remove uneeded item transportation between warps (makes dupes for no reason)
                 // we should rather manually do fit ourselves, and remember to always identify APOs that traverse regions
@@ -507,7 +507,8 @@ namespace RainMeadow
                 newRoom.game.GetStorySession.importantWarpPointTransferedEntities.Clear();
                 newRoom.game.GetStorySession.saveState.importantTransferEntitiesAfterWarpPointSave.Clear();
                 WorldSession newWorldSession = newRoom.world.GetResource() ?? throw new KeyNotFoundException();
-                RainMeadow.Debug($"new room loaded! forcing camera to {newRoom.abstractRoom.name}");
+                RainMeadow.Debug($"new room loaded w={warpData}! forcing camera to {newRoom.abstractRoom.name}");
+
                 for (int l = 0; l < newRoom.game.cameras.Length; l++)
                 { // once again, force camera
                     newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
@@ -515,10 +516,10 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     foreach (var player in OnlineManager.players)
-                    {
+                    { // do nat throw everyone into the same room?
                         if (!player.isMe)
                         {
-                            player.InvokeOnceRPC(StoryRPCs.ForceWatcherWarpOnClient);
+                            player.InvokeOnceRPC(StoryRPCs.NormalExecuteWatcherRiftWarp, sourceRoomName, warpData, false);
                         }
                     }
                 }
