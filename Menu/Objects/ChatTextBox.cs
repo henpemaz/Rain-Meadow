@@ -6,8 +6,6 @@ using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
 
 namespace RainMeadow
 {
@@ -30,7 +28,6 @@ namespace RainMeadow
         {
             lastSentMessage = "";
             cursorPos = 0;
-            if (menu is ChatInputOverlay) inMenu = false;
             this.menu = menu;
             gameObject ??= new GameObject();
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));

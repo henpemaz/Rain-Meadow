@@ -1,8 +1,6 @@
-using IL.RWCustom;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
-using RWCustom;
 using Steamworks;
 using System;
 using System.Globalization;

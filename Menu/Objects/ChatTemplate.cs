@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using Menu;
 using Menu.Remix.MixedUI;
-using Rewired.ControllerExtensions;
-using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -11,7 +9,6 @@ namespace RainMeadow
         public HSLColor labelColor;
         public MenuLabel menuLabel;
         public RoundedRect roundedRect;
-        public bool inMenu = true;
 
         public FSprite _cursor;
         public float _cursorWidth;
