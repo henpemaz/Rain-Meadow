@@ -227,10 +227,7 @@ namespace RainMeadow
             }
             orig(self, box, c);
         }
-<<<<<<< HEAD
-
-=======
->>>>>>> d48265c588ca711f25e41f3396b6714d2e185e24
+        
         private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
         {
             try

@@ -192,6 +192,8 @@ namespace RainMeadow
                 game.cameras[0].BlankWarpPointHoldFrame();
             }
             RainMeadow.Debug($"switch camera to {destRoom}");
+            warpPoint.activated = false;
+            game.overWorld.readyForWarp = true;
             return warpPoint;
         }
 
@@ -222,24 +224,6 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Error($"warp of kind echo FAILED because upcoming process exists");
-            }
-        }
-
-        // Once host finishes animation and stuff, force client to perform warp
-        [RPCMethod]
-        public static void ForceWatcherWarpOnClient(RPCEvent rpc)
-        {
-            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-            if (game.overWorld.specialWarpCallback is Watcher.WarpPoint warpPoint)
-            {
-                RainMeadow.Debug($"Forcing client to warp");
-                warpPoint.activated = false;
-                game.overWorld.readyForWarp = true;
-            }
-            else
-            {
-                RainMeadow.Error($"warp does not exist? damn we are desynched i think");
             }
         }
 
