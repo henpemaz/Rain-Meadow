@@ -275,17 +275,17 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void RegionGateMeetRequirement()
+        public static void RegionGateOrWarpMeetRequirement()
         {
-            if (RainMeadow.isStoryMode(out var storyGameMode) && storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed)
+            if (RainMeadow.isStoryMode(out var storyGameMode) && storyGameMode.readyForTransition == StoryGameMode.ReadyForTransition.Closed)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.MeetRequirement;
+                    storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
                 }
                 else
                 {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(RegionGateMeetRequirement);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(RegionGateOrWarpMeetRequirement);
                 }
             }
         }

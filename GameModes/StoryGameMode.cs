@@ -9,14 +9,14 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool readyForWin = false;
-        public enum ReadyForGate : byte
+        public enum ReadyForTransition : byte
         {
             Closed,
             MeetRequirement,
             Opening,
             Crossed,
         }
-        public ReadyForGate readyForGate = ReadyForGate.Closed;
+        public ReadyForTransition readyForTransition = ReadyForTransition.Closed;
         public bool friendlyFire = false;
         public string? defaultDenPos;
         public string? region = null;
@@ -44,7 +44,7 @@ namespace RainMeadow
             isInGame = false;
             changedRegions = false;
             readyForWin = false;
-            readyForGate = ReadyForGate.Closed;
+            readyForTransition = ReadyForTransition.Closed;
             defaultDenPos = null;
             myLastWarp = null;
             myLastDenPos = null;
@@ -55,7 +55,7 @@ namespace RainMeadow
             storyClientData?.Sanitize();
         }
 
-        public bool canJoinGame => isInGame && !changedRegions && readyForGate == ReadyForGate.Closed && !readyForWin;
+        public bool canJoinGame => isInGame && !changedRegions && readyForTransition == ReadyForTransition.Closed && !readyForWin;
 
         public bool saveToDisk = false;
 
@@ -183,10 +183,10 @@ namespace RainMeadow
                     readyForWin = true;
                 }
 
-                if (readyForGate == ReadyForGate.MeetRequirement)
+                if (readyForTransition == ReadyForTransition.MeetRequirement)
                 {
                     gateRoom = null;
-                    if (inGameClientsData.All(scs => scs.readyForGate))
+                    if (inGameClientsData.All(scs => scs.readyForTransition))
                     {
                         // make sure they're at the same region gate
                         var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
@@ -194,19 +194,19 @@ namespace RainMeadow
                         {
                             RainWorld.roomIndexToName.TryGetValue(rooms.First(), out gateRoom);
                             RainMeadow.Debug($"ready for gate {gateRoom}!");
-                            readyForGate = ReadyForGate.Opening;
+                            readyForTransition = ReadyForTransition.Opening;
                         }
                     }
                 }
-                else if (readyForGate == ReadyForGate.Crossed)
+                else if (readyForTransition == ReadyForTransition.Crossed)
                 {
                     // wait for all players to pass through OR leave the gate room
-                    if (inGameClientsData.All(scs => !scs.readyForGate)
+                    if (inGameClientsData.All(scs => !scs.readyForTransition)
                         || (gateRoom is not null && !inGameAvatarOPOs.Select(opo => opo.apo.Room?.name).Contains(gateRoom))  // HACK: AllPlayersThroughToOtherSide may not get called if warp, which softlocks gates
                         )
                     {
                         RainMeadow.Debug($"all through gate {gateRoom}!");
-                        readyForGate = ReadyForGate.Closed;
+                        readyForTransition = ReadyForTransition.Closed;
                     }
                 }
             }
@@ -256,7 +256,7 @@ namespace RainMeadow
             changedRegions = false;
             hasSheltered = false;
             readyForWin = false;
-            readyForGate = ReadyForGate.Closed;
+            readyForTransition = ReadyForTransition.Closed;
             storyClientData.Sanitize();
         }
 

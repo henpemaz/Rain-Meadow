@@ -20,13 +20,7 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
-            On.Watcher.WarpPoint.PerformWarp += (On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self) => {
-                orig(self);
-                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
-                var ws = world.GetResource() ?? throw new KeyNotFoundException();
-                ws.Deactivate();
-                ws.NotNeeded();
-            };
+            On.Watcher.WarpPoint.PerformWarp += WarpPoint_PerformWarp;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
@@ -254,7 +248,7 @@ namespace RainMeadow
 
         public void Watcher_WarpPoint_Update(On.Watcher.WarpPoint.orig_Update orig, Watcher.WarpPoint self, bool eu)
         {
-            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby is not null && !OnlineManager.lobby.isOwner)
             { // clients cant activate or update warp points unless it is an echo
                 self.triggerTime = 0;
                 self.lastTriggerTime = 0;
@@ -364,6 +358,44 @@ namespace RainMeadow
                         player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation);
                     }
                 }
+            }
+        }
+
+        public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (isStoryMode(out var storyGameMode))
+                {
+                    if (OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
+                    {
+                        var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+                        var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
+                        if (inGameClientsData.All(scs => scs.readyForTransition))
+                        {
+                            // make sure they're at the same room
+                            var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
+                            if (rooms.Distinct().Count() == 1)
+                            {
+                                RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
+                                RainMeadow.Debug($"ready for warp {gateRoom}!");
+                                //storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
+                                orig(self);
+                                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
+                                var ws = world.GetResource() ?? throw new KeyNotFoundException();
+                                ws.Deactivate();
+                                ws.NotNeeded();
+                                return;
+                            }
+                        }
+                    }
+                    self.activationTime = (int)self.activateAnimationTime; //revert change in WarpPoint.Update()
+                    return;
+                }
+            }
+            else
+            {
+                orig(self);
             }
         }
 
@@ -714,7 +746,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && !isFirstWarpWorld)
                     {
                         storyGameMode.changedRegions = true;
-                        storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Crossed;
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Crossed;
                     }
                 }
 
