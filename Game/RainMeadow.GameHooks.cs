@@ -106,9 +106,34 @@ namespace RainMeadow
         {
             try
             {
-                // no construct pause menu if pause menu already there!
+                // close chat bar instead of pausing the game
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                c.GotoNext(
+                    i => i.MatchLdfld<RainWorldGame>("lastPauseButton"),
+                    i => i.MatchBrfalse(out skip)
+                );
+                c.Index++;
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((bool lastPause, RainWorldGame self) =>
+                {
+                    if (lastPause) return true;
+                    if (ChatTextBox.blockInput)
+                    {
+                        self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        ChatTextBox.InvokeShutDownChat();
+                        if ((self.cameras[0].hud.parts.Find(x => x is ChatHud) is ChatHud hud) && !hud.showChatLog)
+                        {
+                            hud.ShutDownChatLog();
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+                );
+
+                // no construct pause menu if pause menu already there!
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchStfld<RainWorldGame>("pauseMenu")
                     );

@@ -156,6 +156,9 @@ namespace RainMeadow
 
         public override void Update()
         {
+            var pause = RWInput.CheckPauseButton(0);
+            if (pause && !lastPauseButton) ToggleChat(false);
+            lastPauseButton = true;
             base.Update();
 
             if (this.isChatToggled)
@@ -353,11 +356,7 @@ namespace RainMeadow
 
             this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
             var toggleChat = new SimplerSymbolButton(this, pages[0], "Kill_Slugcat", "", this.chatTextBoxPos);
-            toggleChat.OnClick += (_) => {
-                this.isChatToggled = !this.isChatToggled;
-                this.ResetChatInput();
-                this.UpdateLogDisplay();
-            };
+            toggleChat.OnClick += (_) => ToggleChat(!this.isChatToggled);
             pages[0].subObjects.Add(toggleChat);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;
@@ -370,6 +369,13 @@ namespace RainMeadow
             }
             pages[0].subObjects.Add(friendlyFire);
             pages[0].subObjects.Add(reqCampaignSlug);
+        }
+
+        public void ToggleChat(bool toggled)
+        {
+            this.isChatToggled = toggled;
+            this.ResetChatInput();
+            this.UpdateLogDisplay();
         }
 
         private void ModifyExistingMenuItems()

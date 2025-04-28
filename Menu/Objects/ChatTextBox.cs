@@ -7,6 +7,7 @@ using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
 using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace RainMeadow
 {
@@ -15,16 +16,21 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
+        private int backspaceHeld = 0;
+        private int arrowHeld = 0;
         private static List<IDetour>? inputBlockers;
-        private static bool blockInput = false;
         public Action<char> OnKeyDown { get; set; }
+        public static bool blockInput = false;
         public static int textLimit = 75;
+        public static int cursorPos = 0;
         public static string lastSentMessage = "";
 
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
             lastSentMessage = "";
+            cursorPos = 0;
+            if (menu is ChatInputOverlay) inMenu = false;
             this.menu = menu;
             gameObject ??= new GameObject();
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
@@ -37,6 +43,7 @@ namespace RainMeadow
         {
             if (!isUnloading)
             {
+                cursorPos = 0;
                 ShouldCapture(false);
                 isUnloading = true;
                 typingHandler.StartCoroutine(Unload(delay));
@@ -51,26 +58,32 @@ namespace RainMeadow
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
+
             }
         }
         private void CaptureInputs(char input)
         {
-            if (input == '\b')
+            // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
+            if (input == '\u007F') return;
+            string msg = lastSentMessage;
+            blockInput = false;
+            if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
             {
-                if (lastSentMessage.Length > 0)
+                if (cursorPos > 0)
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    lastSentMessage = lastSentMessage.Substring(0, lastSentMessage.Length - 1);
+                    lastSentMessage = msg.Remove(cursorPos - 1, 1);
+                    cursorPos--;
                 }
             }
             else if (input == '\n' || input == '\r')
             {
-                if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
+                if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                 {
-                    MatchmakingManager.currentInstance.SendChatMessage(lastSentMessage);
+                    MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)
                     {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);
+                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
                 }
                 else
@@ -78,19 +91,121 @@ namespace RainMeadow
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                     RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
+                // only resets the chat text box if in a story lobby menu, otherwise the text box is just destroyed
                 OnShutDownRequest.Invoke();
                 typingHandler.Unassign(this);
+                lastSentMessage = "";
+                return;
             }
             else
             {
-                if (lastSentMessage.Length < textLimit)
+                if (msg.Length < textLimit)
                 {
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    lastSentMessage += input.ToString();
+                    lastSentMessage = msg.Insert(cursorPos, input.ToString());
+                    cursorPos++;
                 }
             }
+            blockInput = true;
             menuLabel.text = lastSentMessage;
         }
+
+        public override void GrafUpdate(float timeStacker)
+        {
+            var msg = ChatTextBox.lastSentMessage;
+            var len = msg.Length;
+            if (len > 0)
+            {
+                blockInput = false;
+                // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
+                if (Input.GetKey(KeyCode.Backspace) && cursorPos > 0)
+                {
+                    if ((Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) && backspaceHeld == 0)
+                    {
+                        ChatTextBox.lastSentMessage = "";
+                        menuLabel.text = ChatTextBox.lastSentMessage;
+                        cursorPos = 0;
+                    }
+                    // activates on either the first frame the key is held, or every other frame after it's been held down for half a second
+                    else if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))))
+                    {
+                        if (cursorPos > 0)
+                        {
+                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                            int pos = (cursorPos > 0) ? cursorPos - 1 : 0;
+                            int space = msg.Substring(0, pos).LastIndexOf(' ') + 1;
+                            ChatTextBox.lastSentMessage = msg.Remove(space, cursorPos - space);
+                            menuLabel.text = ChatTextBox.lastSentMessage;
+                            if (space > msg.Length) space = msg.Length;
+                            cursorPos = space;
+                        }
+                    }
+                    backspaceHeld++;
+                }
+                else
+                {
+                    backspaceHeld = 0;
+                    if (Input.GetKey(KeyCode.LeftArrow) && cursorPos > 0)
+                    {
+                        if (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        {
+                            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                            {
+                                cursorPos = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
+                            }
+                            else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                            {
+                                cursorPos = 0;
+                            }
+                            else cursorPos--;
+                            if (cursorPos < len)
+                            {
+                                // sets cursor sprite to a one pixel wide vertical line to fit between characters
+                                _cursor.element = Futile.atlasManager.GetElementWithName("pixel");
+                                _cursor.height = 13f;
+                                float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, cursorPos), false);
+                                _cursorWidth = width;
+                                cursorWrap.sprite.x = width + 8f + pos.x;
+                            }
+                        }
+                        arrowHeld++;
+                    }
+                    else if (Input.GetKey(KeyCode.RightArrow) && cursorPos < len)
+                    {
+                        if (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        {
+                            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                            {
+                                int space = msg.Substring(cursorPos, len - cursorPos - 1).IndexOf(' ');
+                                if (space < 0 || space >= len) cursorPos = len;
+                                else cursorPos = space + cursorPos + 1;
+
+                            }
+                            else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                            {
+                                cursorPos = len;
+                            }
+                            else cursorPos++;
+                            if (cursorPos == len)
+                            {
+                                // resets cursor sprite
+                                _cursor.element = Futile.atlasManager.GetElementWithName("modInputCursor");
+                                _cursor.height = 6f;
+                                float width = LabelTest.GetWidth(menuLabel.label.text, false);
+                                _cursorWidth = width;
+                                cursorWrap.sprite.x = width + 15f + pos.x;
+                            }
+                        }
+                        arrowHeld++;
+                    }
+                    else arrowHeld = 0;
+                }
+                blockInput = true;
+            }
+            base.GrafUpdate(timeStacker);
+        }
+
+        public static void InvokeShutDownChat() => OnShutDownRequest.Invoke();
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 

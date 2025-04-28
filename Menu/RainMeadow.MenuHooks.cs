@@ -1,6 +1,8 @@
+using IL.RWCustom;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using RWCustom;
 using Steamworks;
 using System;
 using System.Globalization;
@@ -20,6 +22,7 @@ namespace RainMeadow
         {
             IntroRollReplacement.OnEnable();
             IL.Menu.Menu.Update += IL_Menu_Update;
+            On.Menu.Menu.SelectNewObject += On_Menu_SelectNewObject;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
@@ -53,6 +56,10 @@ namespace RainMeadow
             {
                 Error(ex);
             }
+        }
+        void On_Menu_SelectNewObject(On.Menu.Menu.orig_SelectNewObject orig, Menu.Menu self, RWCustom.IntVector2 direction)
+        {
+            if(!ChatTextBox.blockInput) orig(self, direction);
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {

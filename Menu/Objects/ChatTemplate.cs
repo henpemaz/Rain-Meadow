@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using Menu;
 using Menu.Remix.MixedUI;
+using Rewired.ControllerExtensions;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -9,6 +11,7 @@ namespace RainMeadow
         public HSLColor labelColor;
         public MenuLabel menuLabel;
         public RoundedRect roundedRect;
+        public bool inMenu = true;
 
         public FSprite _cursor;
         public float _cursorWidth;
@@ -34,8 +37,8 @@ namespace RainMeadow
 
         public override void Update()
         {
-            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text, false);
-            cursorWrap.sprite.x = _cursorWidth + 20f + this.pos.x;
+            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, ChatTextBox.cursorPos), false);
+            cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 8f : 15f) + this.pos.x;
             cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             base.Update();
             this.roundedRect.fillAlpha = 1.0f;
