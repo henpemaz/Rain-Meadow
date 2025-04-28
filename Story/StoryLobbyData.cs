@@ -27,7 +27,7 @@ namespace RainMeadow
             [OnlineField]
             public bool readyForWin;
             [OnlineField]
-            public byte readyForGate;
+            public byte readyForTransition;
             [OnlineField]
             public bool friendlyFire;
             [OnlineField]
@@ -76,7 +76,7 @@ namespace RainMeadow
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
-                readyForGate = (byte)storyGameMode.readyForGate;
+                readyForTransition = (byte)storyGameMode.readyForTransition;
                 saveStateString = storyGameMode.saveStateString;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
@@ -146,7 +146,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
-                (lobby.gameMode as StoryGameMode).readyForGate = (StoryGameMode.ReadyForGate)readyForGate;
+                (lobby.gameMode as StoryGameMode).readyForTransition = (StoryGameMode.ReadyForTransition)readyForTransition;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
 

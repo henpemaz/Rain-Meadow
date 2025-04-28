@@ -980,7 +980,7 @@ namespace RainMeadow
                 if (fromWarpPoint)
                 { // reset gate status
                     storyGameMode.changedRegions = false;
-                    storyGameMode.readyForGate = StoryGameMode.ReadyForGate.Closed;
+                    storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
                 }
             }
             orig(self, malnourished, fromWarpPoint);
@@ -1457,10 +1457,10 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForGate >= Opening)
+            // if (story.readyForTransition >= Opening)
             //     open gate
             // else
-            //     story.storyClientData.readyForGate = true
+            //     story.storyClientData.readyForTransition = true
             try
             {
                 var c = new ILCursor(il);
@@ -1476,8 +1476,8 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForGate >= StoryGameMode.ReadyForGate.Opening) return true;
-                        story.storyClientData.readyForGate = false;
+                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening) return true;
+                        story.storyClientData.readyForTransition = false;
                     }
                     return false;
                 });
@@ -1491,7 +1491,7 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        story.storyClientData.readyForGate = true;
+                        story.storyClientData.readyForTransition = true;
                         return true;
                     }
                     return false;
@@ -1542,8 +1542,8 @@ namespace RainMeadow
             var ret = orig(self);
             if (isStoryMode(out var storyGameMode))
             {
-                storyGameMode.storyClientData.readyForGate = !ret;
-                ret = storyGameMode.readyForGate == StoryGameMode.ReadyForGate.Closed;
+                storyGameMode.storyClientData.readyForTransition = !ret;
+                ret = storyGameMode.readyForTransition == StoryGameMode.ReadyForTransition.Closed;
             }
             return ret;
         }
@@ -1553,8 +1553,8 @@ namespace RainMeadow
             var ret = orig(self);
             if (isStoryMode(out var storyGameMode))
             {
-                if (ret) StoryRPCs.RegionGateMeetRequirement();
-                ret = storyGameMode.readyForGate >= StoryGameMode.ReadyForGate.MeetRequirement;
+                if (ret) StoryRPCs.RegionGateOrWarpMeetRequirement();
+                ret = storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
             }
             return ret;
         }
