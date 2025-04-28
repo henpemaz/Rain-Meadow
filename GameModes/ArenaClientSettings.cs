@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 
 namespace RainMeadow
 {
@@ -21,6 +22,7 @@ namespace RainMeadow
             public State(ArenaClientSettings onlineEntity) : base()
             {
                 playingAs = onlineEntity.playingAs;
+
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)

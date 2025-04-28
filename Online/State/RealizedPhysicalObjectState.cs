@@ -16,8 +16,31 @@ namespace RainMeadow
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
         {
-            chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            // LenientPos indictates that a physical object's position may cause graphical or errors due to latency.
+            // Sometimes, this isn't enough. 
+
+            // Here ShouldSyncChunks being false indicates that the creature's chunk state would not be valid, even if it arrived on time
+            if (ShouldSyncChunks(onlineEntity.apo.realizedObject)) {
+                chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
+            } else {
+                chunkStates = Array.Empty<ChunkState>();
+            }
+            
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+        }
+        virtual public bool ShouldSyncChunks(PhysicalObject po) {
+            return true;
+        }
+        
+        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
+            if (po.grabbedBy.Any((x) => {
+                if (x.grabber == null) return false;
+                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
+                if (onlinegrabber == null) return false;
+                return onlinegrabber.lenientPos;
+            })) return true;
+
+            return false;
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
@@ -25,6 +48,8 @@ namespace RainMeadow
             if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
+
+            opo.lenientPos = ShouldPosBeLenient(po);
             if (!opo.lenientPos)
             {
                 for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions

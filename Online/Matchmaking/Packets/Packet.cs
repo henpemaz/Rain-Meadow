@@ -9,11 +9,13 @@ namespace RainMeadow
         {
             None,
             RequestJoin,
-            RequestLeave,
             JoinLobby,
             ModifyPlayerList,
             Session,
-            SessionEnd
+            SessionEnd,
+            RequestLobby,
+            InformLobby,
+            ChatMessage,
         }
 
         public abstract Type type { get; }
@@ -45,6 +47,7 @@ namespace RainMeadow
             processingPlayer = fromPlayer;
 
             Type type = (Type)reader.ReadByte();
+            // RainMeadow.Debug($"Recieved {type}");
             //RainMeadow.Debug("Got packet type: " + type);
 
             Packet? packet = type switch
@@ -53,12 +56,19 @@ namespace RainMeadow
                 Type.ModifyPlayerList => new ModifyPlayerListPacket(),
                 Type.JoinLobby => new JoinLobbyPacket(),
                 Type.Session => new SessionPacket(),
-                Type.RequestLeave => new RequestLeavePacket(),
                 Type.SessionEnd => new SessionEndPacket(),
+                Type.RequestLobby => new RequestLobbyPacket(),
+                Type.InformLobby => new InformLobbyPacket(),
+                Type.ChatMessage => new ChatMessagePacket(),
+                
                 _ => null
             };
 
-            if (packet == null) throw new Exception($"Undetermined packet type ({type}) received");
+            if (packet == null) {
+                // throw new Exception($"Undetermined packet type ({type}) received");
+                RainMeadow.Error("Bad Packet Type Recieved");
+                return;
+            } 
 
             packet.size = reader.ReadUInt16();
 

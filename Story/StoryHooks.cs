@@ -44,11 +44,16 @@ namespace RainMeadow
 
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
-            On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
+            IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner; 
+            On.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyClient;
+            // On.SlugcatStats.SlugcatFoodMeter += SlugcatStats_SlugcatFoodMeter;
 
             IL.HardmodeStart.ctor += HardmodeStart_ctor;
             new Hook(typeof(HardmodeStart.HardmodePlayer).GetProperty("MainPlayer").GetGetMethod(), this.HardmodeStart_HardmodePlayer_MainPlayer);
             IL.HardmodeStart.SinglePlayerUpdate += HardmodeStart_SinglePlayerUpdate;
+
+            IL.Player.ctor += Player_ctor_NonHunterCampaignClientDisableRedsIllness;
+            On.Player.ctor += Player_ctor_SynchronizeFoodBarForActualPlayers;
 
             IL.MoreSlugcats.MSCRoomSpecificScript.DS_RIVSTARTcutscene.ctor += ClientDisableUAD;
             IL.MoreSlugcats.CutsceneArtificer.ctor += ClientDisableUAD;
@@ -102,15 +107,28 @@ namespace RainMeadow
             On.HUD.TextPrompt.Update += TextPrompt_Update;
             On.HUD.TextPrompt.UpdateGameOverString += TextPrompt_UpdateGameOverString;
 
-            On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Menu.SlugcatSelectMenu.CustomColorInterface.ctor += CustomColorInterface_ctor;
-            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
+            IL.Menu.SlugcatSelectMenu.UpdateSelectedSlugcatInMiscProg += SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg;
+
+            IL.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderFix;
+            IL.Menu.SlugcatSelectMenu.ValueOfSlider += SlugcatSelectMenu_SliderFix;
+            IL.Menu.SlugcatSelectMenu.Singal +=  IL_SlugcatSelectMenu_SingalFix;
+            IL.Menu.SlugcatSelectMenu.SetChecked += IL_SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.SetChecked += SlugcatSelectMenu_SetChecked;
             On.Menu.SlugcatSelectMenu.GetChecked += SlugcatSelectMenu_GetChecked;
+            On.Menu.SlugcatSelectMenu.SliderSetValue += SlugcatSelectMenu_SliderSetValue;
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons;
 
             On.VoidSea.PlayerGhosts.AddGhost += PlayerGhosts_AddGhost;
             On.VoidSea.VoidSeaScene.Update += VoidSeaScene_Update;
+        }
+
+        private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world) {
+            orig(self, creature, world);
+            if (isStoryMode(out var storyGameMode) && !self.isNPC) {
+                IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
+                self.slugcatStats.maxFood = intVector.x;
+                self.slugcatStats.foodToHibernate = intVector.y; 
+            }
         }
 
         private void PauseMenu_SpawnExitContinueButtons(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
@@ -134,144 +152,177 @@ namespace RainMeadow
             }
         }
 
+        private void SlugcatSelectMenu_UpdateSelectedSlugcatInMiscProg(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                //patch going next page transfers your prev page "custom color on?"
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                /*c.GotoNext(MoveType.AfterLabel,
+                    i => i.MatchLdsfld<ModManager>("MMF"),
+                    i => i.MatchBrfalse(out _)
+                );
+                c.Index++;
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((bool flag, Menu.SlugcatSelectMenu self) => flag || (isStoryMode(out _) && self is StoryOnlineMenu)); dont overload remix flag as makes slider ids null*/
+
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
         private bool SlugcatSelectMenu_GetChecked(On.Menu.SlugcatSelectMenu.orig_GetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box)
         {
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
-                if (box.IDString == "COLORS")
-                {
-                    return self.colorChecked;
-                }
-
-                if (box.IDString == "RESTART")
-                {
-                    return self.restartChecked;
-                }
-
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     return storyGameMode.saveToDisk;
                 }
-
-
-                if (box.IDString == "ONLINEFRIENDLYFIRE")
+                if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     return storyGameMode.friendlyFire;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     return storyGameMode.requireCampaignSlugcat;
-
                 }
-                return false;
             }
-            else
-            {
-                return orig(self, box);
-            }
+            return orig(self, box);
         }
-
         private void SlugcatSelectMenu_SetChecked(On.Menu.SlugcatSelectMenu.orig_SetChecked orig, Menu.SlugcatSelectMenu self, Menu.CheckBox box, bool c)
         {
-            if (isStoryMode(out var storyGameMode) && self is StoryOnlineMenu storyMenu)
+            if (isStoryMode(out StoryGameMode storyGameMode) && self is StoryOnlineMenu)
             {
-
-                if (box.IDString == "COLORS")
-                {
-                    self.colorChecked = c;
-                    if (self.colorChecked && !self.CheckJollyCoopAvailable(self.colorFromIndex(self.slugcatPageIndex)))
-                    {
-                        self.AddColorButtons();
-                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = true;
-                    }
-                    else
-                    {
-                        self.RemoveColorButtons();
-                        self.manager.rainWorld.progression.miscProgressionData.colorsEnabled[self.slugcatColorOrder[self.slugcatPageIndex].value] = false;
-                    }
-                }
-
-                if (box.IDString == "RESTART")
-                {
-                    self.restartChecked = c;
-                    self.UpdateStartButtonText();
-
-                }
                 if (box.IDString == "CLIENTSAVERESET")
                 {
                     storyGameMode.saveToDisk = c;
+                    return;
                 }
-
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
                     storyGameMode.friendlyFire = c;
-
+                    return;
                 }
-
                 if (box.IDString == "CAMPAIGNSLUGONLY")
                 {
                     storyGameMode.requireCampaignSlugcat = c;
-
+                    return;
                 }
             }
-            else
+            orig(self, box, c);
+        }
+        private void IL_SlugcatSelectMenu_SetChecked(ILContext il)
+        {
+            try
             {
-                orig(self, box, c);
+                ILCursor cursor = new(il);
+                /*cursor.GotoNext(MoveType.After, x => x.MatchCall<Menu.SlugcatSelectMenu>("colorFromIndex"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((SlugcatStats.Name slugcat, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat : slugcat;
+                }); not required now i suppose*/
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+                cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
+                {
+                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                });
+
             }
+            catch (Exception ex)
+            {
+                RainMeadow.Error(ex);
+            }
+        }
+        private void IL_SlugcatSelectMenu_SingalFix(ILContext il)
+        {
+            try
+            {
+                /*SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; <- patch this
+		  int index = this.activeColorChooser;
+		 this.manager.rainWorld.progression.miscProgressionData.colorChoices[name.value][index] = this.colorInterface.defaultColors[this.activeColorChooser];*/
+
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After, x => x.MatchStloc(0));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloca, 0);
+                cursor.EmitDelegate((Menu.SlugcatSelectMenu ssM, ref SlugcatStats.Name name) =>
+                {
+                    name = ssM is StoryOnlineMenu? ssM.colorInterface.slugcatID : name;
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+        }
+
+        private void SlugcatSelectMenu_SliderFix(ILContext context)
+        {
+            /*
+            0	0000	ldarg.0
+            1	0001	ldfld	class [mscorlib]System.Collections.Generic.List`1<class SlugcatStats/Name> Menu.SlugcatSelectMenu::slugcatColorOrder
+            2	0006	ldarg.0
+            3	0007	ldfld	int32 Menu.SlugcatSelectMenu::slugcatPageIndex
+            4	000C	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<class SlugcatStats/Name>::get_Item(int32)
+            5	0011	stloc.0
+            */
+            // SlugcatStats.Name name = this.slugcatColorOrder[this.slugcatPageIndex]; becomes 
+            try 
+            {
+                ILCursor c = new(context);
+                c.GotoNext(MoveType.After, x => x.MatchStloc(0));
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloca, 0);
+                c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => 
+                {
+                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
+
+                });
+
+            } catch(Exception except) {
+                Logger.LogError(except);
+            }
+            
+
         }
 
         private void SlugcatSelectMenu_SliderSetValue(On.Menu.SlugcatSelectMenu.orig_SliderSetValue orig, Menu.SlugcatSelectMenu self, Menu.Slider slider, float f)
         {
             orig(self, slider, f);
-            if (isStoryMode(out var story))
+            if (isStoryMode(out _) && self.colorInterface is not null)
             {
-
-                self.colorInterface.bodyColors[self.activeColorChooser].color = RWCustom.Custom.HSL2RGB(self.hueSlider.floatValue, self.satSlider.floatValue, self.litSlider.floatValue);
-                RainMeadow.Debug(self.colorInterface.bodyColors[self.activeColorChooser].color);
-                story.avatarSettings.bodyColor = self.colorInterface.bodyColors[0].color;
-                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors[0].color;
-
-                story.avatarSettings.eyeColor = self.colorInterface.bodyColors[1].color;
-                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors[1].color;
-
-
+                RainMeadow.rainMeadowOptions.BodyColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(0)?.color ?? rainMeadowOptions.BodyColor.Value; //safe check just in case!
+                RainMeadow.rainMeadowOptions.EyeColor.Value = self.colorInterface.bodyColors.GetValueOrDefault(1)?.color ?? rainMeadowOptions.EyeColor.Value;
             }
-        }
-
-        private void CustomColorInterface_ctor(On.Menu.SlugcatSelectMenu.CustomColorInterface.orig_ctor orig, Menu.SlugcatSelectMenu.CustomColorInterface self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors)
-        {
-            orig(self, menu, owner, pos, slugcatID, names, defaultColors);
-            if (isStoryMode(out var _))
-            {
-                self.bodyColors[0].color = RainMeadow.rainMeadowOptions.BodyColor.Value;
-                self.bodyColors[1].color = RainMeadow.rainMeadowOptions.EyeColor.Value;
-            }
-
-
-        }
-
-        private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
-        {
-            if (isStoryMode(out var story) && story.friendlyFire && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
-            {
-                return true;
-            }
-            return orig(self, obj);
         }
 
         private void TextPrompt_UpdateGameOverString(On.HUD.TextPrompt.orig_UpdateGameOverString orig, TextPrompt self, Options.ControlSetup.Preset controllerType)
         {
             if (isStoryMode(out _))
             {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to restart";
-                }
-                else
-                {
-                    self.gameOverString = $"Wait for others to shelter or rescue you, press {RainMeadow.rainMeadowOptions.SpectatorKey.Value} to spectate, or press PAUSE BUTTON to dismiss message";
-                }
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
             }
             else
             {
@@ -648,14 +699,15 @@ namespace RainMeadow
             }
         }
 
-        private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
-        {
-            if (isStoryMode(out var storyGameMode))
-            {
-                return orig(storyGameMode.currentCampaign);
-            }
-            return orig(slugcat);
-        }
+        // Doesn't consider slugNPC
+        // private RWCustom.IntVector2 SlugcatStats_SlugcatFoodMeter(On.SlugcatStats.orig_SlugcatFoodMeter orig, SlugcatStats.Name slugcat)
+        // {
+        //     if (isStoryMode(out var storyGameMode))
+        //     {
+        //         return orig(storyGameMode.currentCampaign);
+        //     }
+        //     return orig(slugcat);
+        // }
 
         private void HardmodeStart_ctor(ILContext il)
         {
@@ -720,6 +772,25 @@ namespace RainMeadow
                     i => i.MatchBrfalse(out _)
                     );
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void Player_ctor_NonHunterCampaignClientDisableRedsIllness(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchLdfld<SaveState>("redExtraCycles"),
+                        i => i.MatchCall<RedsIllness>("RedsCycles"),
+                        i => i.MatchBlt(out _),
+                        i => i.MatchLdsfld<ModManager>("CoopAvailable")
+                        );
+                c.EmitDelegate((bool coopAvailable) => coopAvailable || OnlineManager.lobby != null);
             }
             catch (Exception e)
             {
@@ -812,11 +883,75 @@ namespace RainMeadow
                 self.AddPart(new OnlineHUD(self, cam, gameMode));
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
-                self.AddPart(new ChatHud(self, cam));
+
+                if (MatchmakingManager.currentInstance.canSendChatMessages)
+                    self.AddPart(new ChatHud(self, cam));
+            }
+        }
+        private void FoodMeter_TrySpawnPupBars_LobbyClient(On.HUD.FoodMeter.orig_TrySpawnPupBars orig, FoodMeter self) {
+            if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                if (!OnlineManager.lobby.isOwner) {
+
+                    // base game checks copied over
+                    if (ModManager.MSC && 
+                        !self.IsPupFoodMeter && self.pupBars == null && 
+                        (self.hud.owner as Player).room != null && 
+                        (self.hud.owner as Player).room.game.spawnedPendingObjects)
+			        {
+                        self.pupBars = new();
+                        int num = 1;
+                        if (story.pups is not null)
+                        foreach (AbstractCreature pup in story.pups) {
+                            if (self.pupBars.FirstOrDefault(x => x.abstractPup == pup) is not null) {
+                                continue;
+                            }
+
+                            if (pup.realizedCreature is Player NPC) {
+                                FoodMeter foodMeter = new FoodMeter(self.hud, 0, 0, NPC, num);
+                                foodMeter.abstractPup = pup;
+                                self.hud.AddPart(foodMeter);
+                                self.pupBars.Add(foodMeter);
+                                num++;
+                            } else RainMeadow.Error("Pup wasn't a realized player");
+                        }
+                    }
+                    return;
+                }
+            }
+
+            orig(self);
+        }
+
+        private void FoodMeter_TrySpawnPupBars_LobbyOwner(ILContext context) {
+            try {
+                ILCursor cursor = new(context);
+                cursor.EmitDelegate(() => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+                        story.pups.Clear();
+                    }
+                });
+                cursor.GotoNext(x => x.MatchNewobj<FoodMeter>());
+                cursor.GotoPrev(MoveType.After, x => x.OpCode == OpCodes.Brfalse_S || x.OpCode == OpCodes.Brfalse);
+
+                // Add pups to gamemode list
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_1);
+                cursor.EmitDelegate((FoodMeter self, int i) => {
+                    if (OnlineManager.lobby != null && isStoryMode(out var story)) {
+                        if (!OnlineManager.lobby.isOwner) return;
+
+                        var pup = (self.hud.owner as Player)?.abstractCreature?.Room?.creatures[i];
+                        if (pup != null) story.pups.Add(pup);
+                    }
+                });
+
+            } catch (Exception except) {
+                Logger.LogError(except);
             }
         }
 
-        private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished)
+        private void RainWorldGame_Win(On.RainWorldGame.orig_Win orig, RainWorldGame self, bool malnourished, bool fromWarpPoint)
         {
             if (isStoryMode(out var storyGameMode))
             {
@@ -824,18 +959,18 @@ namespace RainMeadow
                 {
                     foreach (var player in OnlineManager.players)
                     {
-                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                        if (!player.isMe) player.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
                     }
                 }
                 else if (RPCEvent.currentRPCEvent is null)
                 {
                     // tell host to move everyone else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToWinScreen, malnourished, storyGameMode.myLastDenPos, fromWarpPoint);
                     return;
                 }
             }
 
-            orig(self, malnourished);
+            orig(self, malnourished, fromWarpPoint);
         }
 
         private void RainWorldGame_GoToStarveScreen(On.RainWorldGame.orig_GoToStarveScreen orig, RainWorldGame self)
@@ -1207,7 +1342,14 @@ namespace RainMeadow
         {
             if (isStoryMode(out _) && !game.manager.menuSetup.FastTravelInitCondition)
             {
-                game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                try
+                {
+                    game.FirstAlivePlayer.pos = new WorldCoordinate(game.world.GetAbstractRoom(self.denPosition).index, -1, -1, -1);
+                }
+                catch (System.NullReferenceException e) // happens in riv ending
+                {
+                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
+                }
             }
             orig(self, game);
         }
@@ -1334,8 +1476,10 @@ namespace RainMeadow
                 foreach (var ac in OnlineManager.lobby.playerAvatars.Where(kvp => !kvp.Key.isMe).Select(kvp => kvp.Value.FindEntity())
                     .Select(oe => (oe as OnlinePhysicalObject)?.apo).OfType<AbstractCreature>())
                 {
-                    if (ac.realizedCreature is Player p && p.touchedNoInputCounter < 20)
-                        return false;
+                    if (ac.realizedCreature is Player p) {
+                        if (p.touchedNoInputCounter < 20) return false;
+                        if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
+                    }
                 }
             }
             return orig(self);

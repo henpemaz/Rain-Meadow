@@ -101,7 +101,7 @@ namespace RainMeadow
             tintLabel.label.alignment = FLabelAlignment.Left;
             this.pages[0].subObjects.Add(tintLabel);
 
-            tintSlider = new SubtleSlider2(this, mainPage, "Tint amount", new Vector2(800, 30), new Vector2(100, 30));
+            tintSlider = new SubtleSlider2(this, mainPage, Utils.Translate("Tint amount"), new Vector2(800, 30), new Vector2(100, 30));
             this.pages[0].subObjects.Add(tintSlider);
 
             colorpicker.wrapper.nextSelectable[3] = tintSlider;
@@ -146,7 +146,7 @@ namespace RainMeadow
             for (int i = 0; i < skins.Count; i++)
             {
                 var skin = skins[i];
-                var btn = new EventfulSelectOneButton(this, mainPage, MeadowProgression.skinData[skin].displayName, "skinButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), skinButtons, i);
+                var btn = new EventfulSelectOneButton(this, mainPage, Utils.Translate(MeadowProgression.skinData[skin].displayName), "skinButtons", new Vector2(194, 515) - i * new Vector2(0, 38), new(110, 30), skinButtons, i);
                 mainPage.subObjects.Add(btn);
                 skinButtons[i] = btn;
             }
@@ -263,6 +263,20 @@ namespace RainMeadow
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.miscProgressionData.currentlySelectedSinglePlayerSlugcat = RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
             manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.RegionSelect;
+
+            var saveLocation = MeadowProgression.progressionData.currentCharacterProgress.saveLocation;
+            if (saveLocation.Valid && RainWorld.roomIndexToName.ContainsKey(saveLocation.room) // saved as valid and found
+                || !saveLocation.Valid && RainWorld.roomNameToIndex.ContainsKey(saveLocation.unknownName) // saved as invalid but found
+                )
+            {
+                manager.menuSetup.regionSelectRoom = saveLocation.ResolveRoomName();
+            }
+            else
+            {
+                manager.menuSetup.regionSelectRoom = MeadowProgression.defaultStartingRoom;
+            }
+
+
             manager.menuSetup.regionSelectRoom = MeadowProgression.progressionData.currentCharacterProgress.saveLocation.ResolveRoomName();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
@@ -310,6 +324,17 @@ namespace RainMeadow
 
         private void Colorpicker_OnValueChangedEvent()
         {
+            if (personaSettings.tint == Color.black)
+            {
+                // chaging from default tint, help noobs understand tint amount slider
+                if (tintAmount == 0f)
+                {
+                    RainMeadow.Debug("first-timer tint change");
+                    tintAmount = 1f;
+                    personaSettings.tintAmount = 1f;
+                    MeadowProgression.progressionData.currentCharacterProgress.tintAmount = 1f;
+                }
+            }
             personaSettings.tint = colorpicker.valuecolor;
             personaSettings.Updated();
             MeadowProgression.progressionData.currentCharacterProgress.tintColor = personaSettings.tint;

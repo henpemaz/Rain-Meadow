@@ -6,16 +6,16 @@ using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
+using Mono.Cecil.Cil;
 
 namespace RainMeadow
 {
     public class ChatTextBox : ChatTemplate, ICanBeTyped
     {
-        private SteamMatchmakingManager steamMatchmakingManager;
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
-        private static List<IDetour> inputBlockers;
+        private static List<IDetour>? inputBlockers;
         private static bool blockInput = false;
         public Action<char> OnKeyDown { get; set; }
         public static int textLimit = 75;
@@ -24,7 +24,6 @@ namespace RainMeadow
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
-            steamMatchmakingManager = MatchmakingManager.instance as SteamMatchmakingManager;
             lastSentMessage = "";
             this.menu = menu;
             gameObject ??= new GameObject();
@@ -68,11 +67,7 @@ namespace RainMeadow
             {
                 if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
                 {
-                    if (MatchmakingManager.instance is SteamMatchmakingManager)
-                    {
-                        steamMatchmakingManager.SendChatMessage((MatchmakingManager.instance as SteamMatchmakingManager).lobbyID, lastSentMessage);
-                    }
-
+                    MatchmakingManager.currentInstance.SendChatMessage(lastSentMessage);
                     foreach (var player in OnlineManager.players)
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);
@@ -136,17 +131,18 @@ namespace RainMeadow
                 blockInput = false;
             }
         }
-
         private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
+        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
+        {
+            if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
+
+            return blockInput? false : orig(code);
+        }
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
-            if (code == KeyCode.Return)
-            {
-                return orig(code);
-            }
-
+            if (code == KeyCode.Return) return orig(code);
+            
             return blockInput ? false : orig(code);
         }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);

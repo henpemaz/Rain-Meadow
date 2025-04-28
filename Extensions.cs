@@ -1,4 +1,5 @@
-﻿using RWCustom;
+﻿using Menu;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,39 +71,75 @@ namespace RainMeadow
             return true;
         }
 
-        public static bool RemoveFromShortcuts(this Creature creature)
+        public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
+            foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects()) {
+                if (obj.CanMove(newCoord, true)) {
+                    if (newCoord.CompareDisregardingTile(obj.pos)) return;
+
+                    obj.timeSpentHere = 0;
+                    if (newCoord.room != obj.pos.room)
+                    {
+                        obj.ChangeRooms(newCoord);
+                    }
+
+                    if (!newCoord.TileDefined && obj.pos.room == newCoord.room)
+                    {
+                        newCoord.Tile = obj.pos.Tile;
+                    }
+
+                    obj.pos = newCoord;
+                    obj.world.GetResource().ApoEnteringWorld(obj);
+                    obj.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(obj, newCoord);
+                } 
+            }
+        }
+
+        public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
+            if (apo.CanMove(newCoord)) {
+                if (newCoord.CompareDisregardingTile(apo.pos)) return;
+
+                apo.timeSpentHere = 0;
+                if (newCoord.room != apo.pos.room)
+                {
+                    apo.ChangeRooms(newCoord);
+                }
+
+                if (!newCoord.TileDefined && apo.pos.room == newCoord.room)
+                {
+                    newCoord.Tile = apo.pos.Tile;
+                }
+
+                apo.pos = newCoord;
+                apo.world.GetResource().ApoEnteringWorld(apo);
+                apo.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(apo, newCoord);
+            }
+        }
+
+        public static bool RemoveFromShortcuts<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel 
+        {
+            bool removefromallrooms = room is null;
+            for (int i = 0; i < vessels.Count; i++)
+            {
+                if (vessels[i].creature == creature && ((vessels[i].room == room) || removefromallrooms))
+                {
+                    vessels.RemoveAt(i);
+                    creature.inShortcut = false;
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool RemoveFromShortcuts(this Creature creature, AbstractRoom? room = null)
         {
             if (!creature.inShortcut) return true;
             var handler = creature.abstractCreature.world.game.shortcuts;
-            for (int i = 0; i < handler.transportVessels.Count; i++)
-            {
-                if (handler.transportVessels[i].creature == creature)
-                {
-                    handler.transportVessels.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            for (int i = 0; i < handler.borderTravelVessels.Count; i++)
-            {
-                if (handler.borderTravelVessels[i].creature == creature)
-                {
-                    handler.borderTravelVessels.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            for (int i = 0; i < handler.betweenRoomsWaitingLobby.Count; i++)
-            {
-                if (handler.betweenRoomsWaitingLobby[i].creature == creature)
-                {
-                    handler.betweenRoomsWaitingLobby.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            RainMeadow.Debug("not found");
-            return false;
+            bool found = false;
+            if (RemoveFromShortcuts(ref handler.transportVessels, creature, room)) found = true;
+            if (RemoveFromShortcuts(ref handler.borderTravelVessels, creature, room)) found = true;
+            if (RemoveFromShortcuts(ref handler.betweenRoomsWaitingLobby, creature, room)) found = true;
+            
+            if (!found) RainMeadow.Debug("not found");
+            return found;
         }
 
         // suck it, linq
@@ -168,6 +205,15 @@ namespace RainMeadow
 
             throw new ArgumentException("no elements in sequence");
         }
+        public static T? GetValueOrDefault<T>(this IList<T> iList, int index)
+        {
+            return iList.GetValueOrDefault(index, default);
+        }
+
+        public static T? GetValueOrDefault<T>(this IList<T> iList, int index, T? defaultVal)
+        {
+            return iList != null && index >= 0 && iList.Count > index? iList[index] : defaultVal;
+        }
 
         public static bool CloseEnoughZeroSnap(this Vector2 a, Vector2 b, float sqrltol)
         {
@@ -229,6 +275,56 @@ namespace RainMeadow
             catch (ReflectionTypeLoadException e) // happens often with soft-dependencies, did you know
             {
                 return e.Types.Where(x => x != null).ToArray();
+            }
+        }
+        //faster for adding menuobjects smth
+        public static void ClearMenuObjectIList<T>(this MenuObject owner, IEnumerable<T>? menuObjects) where T : MenuObject
+        {
+            if (menuObjects != null)
+            {
+                foreach (MenuObject menuObject in menuObjects)
+                {
+                    owner.ClearMenuObject(menuObject);
+                }
+            }
+        }
+        public static void ClearMenuObject<T>(this MenuObject owner, ref T? subObject) where T : MenuObject
+        {
+            owner.ClearMenuObject(subObject);
+            subObject = null;
+
+        }
+        public static void ClearMenuObject(this MenuObject owner, MenuObject? subObject)
+        {
+            if (subObject != null)
+            {
+                subObject.RemoveSprites();
+                owner.RemoveSubObject(subObject);
+            }
+
+        }
+        public static void TryBind(this MenuObject? menuObject, MenuObject? bindWith, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            if (menuObject != null && bindWith != null)
+            {
+                menuObject.nextSelectable[0] = (left ? bindWith : menuObject.nextSelectable[0]);
+                menuObject.nextSelectable[1] = (top ? bindWith : menuObject.nextSelectable[1]);
+                menuObject.nextSelectable[2] = (right ? bindWith : menuObject.nextSelectable[2]);
+                menuObject.nextSelectable[3] = (bottom ? bindWith : menuObject.nextSelectable[3]);
+            }
+        }
+        public static void TryMutualBind(this Menu.Menu? menu, MenuObject? first, MenuObject? second, bool leftRight = false, bool bottomTop = false)
+        {
+            if (menu != null && first != null && second != null)
+            {
+                if (leftRight)
+                {
+                    menu.MutualHorizontalButtonBind(first, second);
+                }
+                if (bottomTop)
+                {
+                    menu.MutualVerticalButtonBind(first, second);
+                }
             }
         }
     }

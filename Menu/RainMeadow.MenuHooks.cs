@@ -2,9 +2,14 @@ using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Steamworks;
+using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RainMeadow
@@ -14,7 +19,7 @@ namespace RainMeadow
         private void MenuHooks()
         {
             IntroRollReplacement.OnEnable();
-
+            IL.Menu.Menu.Update += IL_Menu_Update;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
@@ -28,6 +33,49 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
             On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
             On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
+
+            On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
+            On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
+        }
+        void IL_Menu_Update(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.TryGotoNext(MoveType.After, x => x.MatchStfld<Menu.Menu>(nameof(Menu.Menu.allowSelectMove)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Menu.Menu self) =>
+                {
+                    self.allowSelectMove = self.allowSelectMove && !(self is SpectatorOverlay { forceNonMouseSelectFreeze: true });
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
+        {
+            orig(self, timestacker);
+            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
+            {
+                buttonScroll.UpdateAlpha(buttonScroll.Alpha);
+            }
+        }
+        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self) 
+        {
+            if (self is StoryOnlineMenu sOM)
+            {
+                if (sOM.colorInterface == null)
+                {
+                    sOM.SetupSelectableSlugcats();
+                    Vector2 pos = new(1000f - (1366f - sOM.manager.rainWorld.options.ScreenSize.x) / 2f, sOM.manager.rainWorld.options.ScreenSize.y - 100f);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.CurrentSlugcat, pos);
+                    self.pages[0].subObjects.Add(self.colorInterface);
+                    //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
+                }
+            }       
+            orig(self);
         }
 
         private bool SlugcatSelectMenu_SlugcatUnlocked(On.Menu.SlugcatSelectMenu.orig_SlugcatUnlocked orig, SlugcatSelectMenu self, SlugcatStats.Name i)
@@ -322,30 +370,23 @@ namespace RainMeadow
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
 
-#if !LOCAL_P2P
             if (ID == ProcessManager.ProcessID.IntroRoll)
             {
-                var args = System.Environment.GetCommandLineArgs();
-                for (var i = 0; i < args.Length; i++)
+                try
                 {
-                    if (args[i] == "+connect_lobby")
-                    {
-                        if (args.Length > i + 1 && ulong.TryParse(args[i + 1], out var id))
-                        {
-                            Debug($"joining lobby with id {id} from the command line");
-                            MatchmakingManager.instance.RequestJoinLobby(new LobbyInfo(new CSteamID(id), "", "", 0, false, 4), null);
-                        }
-                        else
-                        {
-                            Error($"found +connect_lobby but no valid lobby id in the command line");
-                        }
-                        break;
-                    }
+                    var args = System.Environment.GetCommandLineArgs();
+                    
+                    MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
+                }
+                catch (Exception ex)
+                {
+                    RainMeadow.Debug(ex);
                 }
             }
-#endif
             orig(self, ID);
         }
+
+        private bool showed_no_steam_warning = false;
 
         private void MainMenu_ctor(On.Menu.MainMenu.orig_ctor orig, MainMenu self, ProcessManager manager, bool showRegionSpecificBkg)
         {
@@ -353,7 +394,7 @@ namespace RainMeadow
 
             if (!fullyInit)
             {
-                self.manager.ShowDialog(new DialogNotify("Rain Meadow failed to start", self.manager, null));
+                self.manager.ShowDialog(new DialogNotify(self.Translate("Rain Meadow failed to start"), self.manager, null));
                 return;
             }
 
@@ -363,13 +404,15 @@ namespace RainMeadow
             var meadowButton = new SimpleButton(self, self.pages[0], self.Translate("MEADOW"), "MEADOW", Vector2.zero, new Vector2(Menu.MainMenu.GetButtonWidth(self.CurrLang), 30f));
             self.AddMainMenuButton(meadowButton, () =>
             {
-#if !LOCAL_P2P
-                if (!SteamManager.Instance.m_bInitialized || !SteamUser.BLoggedOn())
+                if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
-                    self.manager.ShowDialog(new DialogNotify("You need Steam active to play Rain Meadow", self.manager, null));
+                    showed_no_steam_warning = true;
+                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager, 
+                        () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }
-#endif
+
+                OnlineManager.LeaveLobby();
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
             }, self.mainMenuButtons.Count - 2);
         }

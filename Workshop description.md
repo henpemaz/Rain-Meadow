@@ -1,37 +1,31 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
+The Watcher campaign is currently NOT supported.
+
 ## How it works
-- It uses Steam (**you must own the game on Steam**) to connect you with others players to play Rain World online! It uses peer-to-peer (P2P) networking topology.
-- For the best possible experience, **disable all non-essential content mods**
+- For the best possible experience, **disable all non-essential content mods**. If you're experiencing crashes, try with less mods on.
+- Click the Meadow button to get to the lobby list. Join a lobby or host your own!
+- By default Rain Meadow uses Steam to find and create lobbies. Lan matchmaking is also possible.
 
-## Mod support
-- Varies by gamemode
-- Story & Arena support MSC (Downpour) characters, some content is still work-in-progress
-- Story does not fully support all MSC campaigns (yet)
-- Content mods (regions, creatures, slugcats) MUST be the same as the host's and MUST be applied in the same order
-  - The mod-checker is not foolproof, you can require certain mods by adding them to the `meadow-highimpactmods` textfile in StreamingAssets
-The community-maintained mod compatibility spreadsheet can be found [here](https://docs.google.com/spreadsheets/d/1QG1xYPLECkVSMc2vopO-Rw2rSdnn7_fsdlMajhAUOW0/edit?gid=0#gid=0)
-
-## Game Mode Overview
+- 
+## Game Modes
 
 ### Meadow
-- Exploratory, peaceful gamemode focused on encountering other players and working together to find collectibles and unlock new skins & characters.
-- Hand-built creature navigations
-- Custom music by @Intikus!
+- Explore a peaceful version of Rain World, encounter other players, roam together gathering unlocks to unlock new emotes, skins and creatures.
 - Custom emoting to communicate by @Wolfycat!
 - Sound effects to communicate
+- Hour-long original soundtrack by @Intikus!
+- Hand-built creature navigation
 
 
 ### Story
 
-- Survivor campaign is available by default
+- Vanilla campaigns available by default
 - Access other campaigns through the "Experimental Features" remix option
-  - Host can only play as the campaign slugcat
-  - Clients can select slugcats other than the current campaign
 - Currently-supported campaigns: Survivor, Monk, Hunter, Artificer, Gourmand
-
-- Food requirement is determined by the current campaign
-- Food nourishment is determined by the player's slugcat regardless of current campaign
+- Campaigns not listed above are NOT supported and will likely desync or crash on any special events
+- Host can only play as the campaign slugcat, clients can select slugcats other than the current campaign
+- Food requirement is determined by the current campaign. Food nourishment is determined by the player's slugcat regardless of current campaign
   - e.g. Hunter in Survivor's campaign can eat meat
 - All ingame players, dead or alive, MUST be present at a karma gate to continue
   - Dead players can exit to lobby to allow others to continue
@@ -59,6 +53,13 @@ The community-maintained mod compatibility spreadsheet can be found [here](https
   - The ban does NOT carry between lobbies
 
 
+## Mod Compatibility
+- Mods that add regions/campaigns/creatures/items need to be synced between all players, including load-order.
+- There's a modsync tool that will prompt you to enable/disable/install missmatched mods, but it's not completely foolproof.
+- You can tweak what mods are subject to modsync as the host by adding them to the `meadow-highimpactmods` textfile in StreamingAssets.
+- The community-maintained mod compatibility spreadsheet can be found [here](https://docs.google.com/spreadsheets/d/1QG1xYPLECkVSMc2vopO-Rw2rSdnn7_fsdlMajhAUOW0/edit?gid=0#gid=0)
+
+
 ## Modding
 Some examples of custom gamemodes using Rain Meadow's multiplayer engine:
 - [Tag](https://github.com/henpemaz/RemixMods/tree/master/Tag)
@@ -72,5 +73,6 @@ FranklyGD - Programming, engine		MC41Games - Programming, menus		Silvyger - Prog
 Vigaro - Programming, menus		BitiLope - Programming, story		Pudgy Turtle - Programming, story
 ddemile - Programming, modsync		UO - Programming, story, arena		Saddest - Programming, UI, chat
 notchoc - Programming, story		phanie_ - Illustration			Timbits - Programming, UI, menus
-Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	
+Zedreus - Programming, UI, story	Persondotexe - Programming, modsync	 invalidunits - Programming, UI, LAN
+forthfora - Programming, modsync,	WillowWisp - Programming, story
 ```

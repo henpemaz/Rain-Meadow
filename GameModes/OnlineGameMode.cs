@@ -22,8 +22,8 @@ namespace RainMeadow
 
             public static Dictionary<OnlineGameModeType, string> descriptions = new()
             {
-                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on\nyour own." },
-                { Story, "Adventure together with friends in the world of Rain World, fight together and die\ntogether." },
+                { Meadow, "A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own." },
+                { Story, "Adventure together with friends in the world of Rain World, fight together and die<LINE>together." },
                 { ArenaCompetitive, "Fight against unforgiving creatues and foes where only the strong survive." },
             };
         }
@@ -69,6 +69,10 @@ namespace RainMeadow
 
             return (configurableBools, configurableFloats, configurableInts);
         }
+
+        public virtual bool PlayersCanStack => true;
+        public virtual bool PlayersCanHandhold => true;
+
         internal static void SetClientRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
             Type type = typeof(MoreSlugcats.MMF);
@@ -135,7 +139,7 @@ namespace RainMeadow
         {
             if (!typeof(OnlineGameMode).IsAssignableFrom(type) || type.GetConstructor(new[] { typeof(Lobby) }) == null) throw new ArgumentException("Needs to be OnlineGameMode with a (Lobby) ctor");
             gamemodes[onlineGameModeType] = type;
-            OnlineGameModeType.descriptions[onlineGameModeType] = description;
+            OnlineGameModeType.descriptions[onlineGameModeType] = Utils.Translate(description);
         }
 
         public static void InitializeBuiltinTypes()

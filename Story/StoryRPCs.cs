@@ -5,6 +5,7 @@ namespace RainMeadow
 {
     public static class StoryRPCs
     {
+
         [RPCMethod]
         public static void ChangeFood(short amt)
         {
@@ -38,7 +39,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void GoToWinScreen(bool malnourished, string? denPos)
+        public static void GoToWinScreen(bool malnourished, string? denPos, bool fromWarpPoint)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
@@ -47,7 +48,7 @@ namespace RainMeadow
                 storyGameMode.myLastDenPos = denPos;
             }
 
-            game.Win(malnourished);
+            game.Win(malnourished, fromWarpPoint);
         }
 
         [RPCMethod]
@@ -96,12 +97,43 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public static void GoToRivuletEnding(RPCEvent rpc)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            game.manager.pebblesHasHalcyon = true;
+            game.manager.desiredCreditsSong = "NA_19 - Halcyon Memories";
+            foreach (MoreSlugcats.PersistentObjectTracker persistentObjectTracker in game.GetStorySession.saveState.objectTrackers)
+            {
+                if (persistentObjectTracker.repType == MoreSlugcats.MoreSlugcatsEnums.AbstractObjectType.HalcyonPearl && persistentObjectTracker.lastSeenRoom != "RM_AI")
+                {
+                    game.manager.pebblesHasHalcyon = false;
+                    game.manager.desiredCreditsSong = "NA_43 - Isolation";
+                    break;
+                }
+            }
+            game.manager.nextSlideshow = MoreSlugcats.MoreSlugcatsEnums.SlideShowID.RivuletAltEnd;
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.SlideShow);
+        }
+        
+        [RPCMethod]
+        public static void GoToSpearmasterEnding(RPCEvent rpc)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            game.manager.statsAfterCredits = true;
+            game.manager.desiredCreditsSong = "NA_11 - Digital Sundown";
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
+        }
+
+        [RPCMethod]
         public static void TriggerGhostHunch(string ghostID)
         {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            
             ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
             if (rawEnumBase is not GhostWorldPresence.GhostID ghostNumber) return;
-            var ghostsTalkedTo = (game.session as StoryGameSession).saveState.deathPersistentSaveData.ghostsTalkedTo;
+            var ghostsTalkedTo = game.GetStorySession.saveState.deathPersistentSaveData.ghostsTalkedTo;
             if (!ghostsTalkedTo.ContainsKey(ghostNumber) || ghostsTalkedTo[ghostNumber] < 1)
                 ghostsTalkedTo[ghostNumber] = 1;
         }

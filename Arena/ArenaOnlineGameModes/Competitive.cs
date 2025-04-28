@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using RainMeadow;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 namespace RainMeadow
 {
     public class Competitive : ExternalArenaGameMode
@@ -9,7 +11,7 @@ namespace RainMeadow
 
         private int _timerDuration;  // Backing field for TimerDuration
 
-    
+
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
@@ -38,12 +40,15 @@ namespace RainMeadow
         }
         public override string TimerText()
         {
-            return $"Prepare for combat, {SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs)}";
+            if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            {
+                return Utils.Translate($"Prepare for combat,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
+            }
+            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
         }
-
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
-            return arena.setupTime =  RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
         public override int TimerDuration
         {
@@ -51,7 +56,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {
+        {            
             return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
@@ -72,5 +77,9 @@ namespace RainMeadow
 
         }
 
+        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        {
+            base.ArenaSessionCtor(arena, orig, self, game);
+        }
     }
 }

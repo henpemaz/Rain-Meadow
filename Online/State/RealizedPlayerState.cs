@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -6,18 +7,18 @@ namespace RainMeadow
     public class VinePositionState : OnlineState
     {
         [OnlineField]
-        int vine;
+        ushort index;
         [OnlineFieldHalf]
         float floatPos;
 
         public VinePositionState() { }
-        public VinePositionState(ClimbableVinesSystem.VinePosition vinePos)
+        public VinePositionState(ClimbableVinesSystem.VinePosition vinePos, int index)
         {
-            vine = vinePos.vine;
+            this.index = (ushort)index;
             floatPos = vinePos.floatPos;
         }
 
-        public ClimbableVinesSystem.VinePosition GetVinePosition() => new(vine, floatPos);
+        public ClimbableVinesSystem.VinePosition GetVinePosition(ClimbableVinesSystem system) => new(system.vines[index], floatPos);
     }
 
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
@@ -113,15 +114,21 @@ namespace RainMeadow
         private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
-        //[OnlineField(nullable = true)]
-        //private OnlineEntity.EntityId? slugOnBack;
+        [OnlineField(nullable = true)]
+        private OnlineEntity.EntityId? slugcatRidingOnBack;
+        private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
         private ushort inputs;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputX;
         [OnlineFieldHalf(group = "inputs")]
         private float analogInputY;
-
+        [OnlineFieldHalf(group = "saint")]
+        private float burstX;
+        [OnlineFieldHalf(group = "saint")]
+        private float burstY;
+        [OnlineField(group = "saint")]
+        public bool monkAscension;
         [OnlineField(group = "tongue")]
         public byte tongueMode;
         [OnlineField(group = "tongue")]
@@ -131,13 +138,16 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "tongue")]
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
-        public BodyChunkRef tongueAttachedChunk;
+        public BodyChunkRef? tongueAttachedChunk;
+        [OnlineFieldHalf(nullable = true)]
+        private Vector2? pointingDir;
 
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
             bodyModeIndex = (byte)p.bodyMode.Index;
@@ -145,10 +155,12 @@ namespace RainMeadow
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
             isPup = p.playerState.isPup;
+            burstX = p.burstX;
+            burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
-            //slugOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
-            //    && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
+            slugcatRidingOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
+                && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
             if (p.tongue is Player.Tongue tongue)
             {
                 tongueMode = (byte)tongue.mode;
@@ -157,6 +169,7 @@ namespace RainMeadow
                 tongueRequestedLength = tongue.requestedRopeLength;
                 tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
             }
+
             var i = p.input[0];
             inputs = (ushort)(
                   (i.x == 1 ? 1 << 0 : 0)
@@ -170,12 +183,20 @@ namespace RainMeadow
                 | (i.thrw ? 1 << 8 : 0)
                 | (i.mp ? 1 << 9 : 0));
 
-            vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null ? null : new VinePositionState(p.vinePos);
+            vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null || p.room is null ? null : new VinePositionState(p.vinePos, p.room.climbableVines.vines.IndexOf(p.vinePos.vine));
 
             playerInAntlersState = p.playerInAntlers is null ? null : new PlayerInAntlersState(p.playerInAntlers);
 
             analogInputX = i.analogueDir.x;
             analogInputY = i.analogueDir.y;
+
+            // Pointing
+            if (p.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
+                if (handIndex >= 0 && playerGraphics.hands[handIndex].reachingForObject)
+                    pointingDir = playerGraphics.hands[handIndex].absoluteHuntPos;
+            }
         }
 
         public Player.InputPackage GetInput()
@@ -197,25 +218,29 @@ namespace RainMeadow
             return i;
         }
 
-        private bool ShouldPosBeLenient(PhysicalObject po)
+        override public bool ShouldPosBeLenient(PhysicalObject po)
         {
             if (po is not Player p) { RainMeadow.Error("target is wrong type: " + po); return false; }
 
+            if (p.onBack != null) return true;
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
-
+            if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
             return false;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
+
             var oc = onlineEntity as OnlineCreature;
             var p = oc?.apo.realizedObject as Player;
-            if (p is not null) oc.lenientPos = ShouldPosBeLenient(p);
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            p.monkAscension = monkAscension;
+            p.burstY = burstY;
+            p.burstX = burstX;
             var wasAnimation = p.animation;
             p.animation = new Player.AnimationIndex(Player.AnimationIndex.values.GetEntry(animationIndex));
             if (wasAnimation != p.animation) p.animationFrame = animationFrame;
@@ -225,10 +250,30 @@ namespace RainMeadow
             p.glowing = glowing;
             if (p.playerState.isPup != isPup)
                 p.playerState.isPup = isPup;
+
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
-            //if (pl.slugOnBack != null)
-            //    pl.slugOnBack.slugcat = (slugOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+            if (p.slugOnBack != null)
+            {
+                if (p.slugOnBack.slugcat != null)
+                {
+                    slugcatOnBackTemp = p.slugOnBack.slugcat;
+                    p.slugOnBack.slugcat.onBack = p;
+                }
+
+                p.slugOnBack.slugcat = (slugcatRidingOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Player;
+
+                if (p.slugOnBack.slugcat == null && slugcatOnBackTemp != null)
+                {
+                    p.slugOnBack.slugcat = slugcatOnBackTemp;
+                    slugcatOnBackTemp.onBack = p;
+
+                    p.slugOnBack.DropSlug();
+                    slugcatOnBackTemp.onBack = null;
+                    slugcatOnBackTemp = null;
+                }
+            }
 
             if (p.tongue is Player.Tongue tongue)
             {
@@ -246,10 +291,13 @@ namespace RainMeadow
                 }
             }
 
-            p.vinePos = vinePosState?.GetVinePosition();
-            if (vinePosState is not null)
+            if (p.room?.climbableVines != null)
             {
-                p.room.climbableVines.ConnectChunkToVine(p.bodyChunks[0], p.vinePos, p.room.climbableVines.VineRad(p.vinePos));
+                p.vinePos = vinePosState?.GetVinePosition(p.room.climbableVines);
+                if (vinePosState is not null)
+                {
+                    p.room.climbableVines.ConnectChunkToVine(p.bodyChunks[0], p.vinePos, p.room.climbableVines.VineRad(p.vinePos));
+                }
             }
 
             if (playerInAntlersState is not null)
@@ -260,6 +308,20 @@ namespace RainMeadow
             {
                 p.playerInAntlers.playerDisconnected = true;
                 p.playerInAntlers = null;
+            }
+
+            // Pointing
+            if (p.graphicsModule is PlayerGraphics playerGraphics)
+            {
+                p.handPointing = -1;
+                int handIndex = Pointing.GetHandIndex(p); //I don't trust this check to be fast
+                if (handIndex >= 0 && pointingDir is not null)
+                {
+                    playerGraphics.LookAtPoint(pointingDir.Value, Pointing.LookInterest);
+                    playerGraphics.hands[handIndex].reachingForObject = true;
+                    playerGraphics.hands[handIndex].absoluteHuntPos = pointingDir.Value;
+                    p.handPointing = handIndex; //important! - check != -1 so we know we are in a "pointing state"
+                }
             }
         }
     }

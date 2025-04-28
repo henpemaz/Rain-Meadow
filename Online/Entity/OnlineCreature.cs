@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -143,7 +144,6 @@ namespace RainMeadow
 
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
             RainMeadow.Debug("serializedObject: " + serializedObject);
-
             var apo = AbstractCreatureFromString(world, serializedObject, initialState.pos);
             id.altSeed = apo.ID.RandomSeed;
             apo.ID = id;
@@ -187,25 +187,37 @@ namespace RainMeadow
                 RainMeadow.Error("realized creature not found for: " + this);
                 return;
             }
+            if ((OnlineManager.lobby != null) && this.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                OnlineManager.RunDeferred(() => this.didParry = false);
+                return;
+            }
             var victimAppendage = victimAppendageRef?.GetAppendagePos(creature);
 
             RainMeadow.Debug($"{this} hit for {damage}");
-            if(creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
+            if (creature.State is HealthState hs1) RainMeadow.Debug($"heath was {hs1.health}");
             BodyChunk? hitChunk = victimChunkIndex < 255 ? creature.bodyChunks[victimChunkIndex] : null;
             creature.Violence(onlineVillain?.apo.realizedObject.firstChunk, directionAndMomentum, hitChunk, victimAppendage, damageType, damage, stunBonus);
             if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
-        [RPCMethod]
-        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther)
+        [RPCMethod(runDeferred = true)] // deferred because NPCTransportationDestination needed
+        public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther, bool sucked_in_by_remote)
         {
             RainMeadow.Debug(this);
-            enteringShortCut = true;
+            enteringShortCut = !sucked_in_by_remote;
             var creature = (apo.realizedObject as Creature);
             if (creature != null && creature.room != null)
             {
                 try
                 {
+                    if (sucked_in_by_remote)
+                    {
+                        creature.SuckedIntoShortCut(entrancePos, carriedByOther);
+                        return;
+                    }
+
                     var room = creature.room;
                     creature.SuckedIntoShortCut(entrancePos, carriedByOther);
                     if (creature.graphicsModule != null)
@@ -240,6 +252,40 @@ namespace RainMeadow
             enteringShortCut = false;
         }
 
+        [RPCMethod(runDeferred = true)]
+        public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
+        {
+            RainMeadow.Debug(this);
+            if (this.roomSession.absroom.realizedRoom is null) {
+                RainMeadow.Error($"{this} is trying to enter abstracted room.");
+                apo.Abstractize(apo.pos);
+                return;
+            }
+
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
+                RainMeadow.Error($"{this} is to early to spit out of shortcut.");
+                return;
+            }
+            
+            if (this.realizedCreature is null) {
+                this.creature.Realize();
+            }
+
+            var realcreature = this.realizedCreature!;
+            if (abstractCreature.Room != newRoom.absroom) {
+                RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
+                if (realcreature.room != null) {
+                    realcreature.room.RemoveObject(realcreature);
+                }
+                AllMoving(true);
+                apo.Move(new WorldCoordinate(newRoom.absroom.index, pos.x, pos.y, -1));
+                AllMoving(false);
+            }
+
+            
+            realcreature.SpitOutOfShortCut(pos, roomSession.absroom.realizedRoom, spitOutAllSticks);
+        }
+
         [RPCMethod]
         public void TookFlight(AbstractRoomNode.Type type, WorldCoordinate start, WorldCoordinate dest)
         {
@@ -270,7 +316,6 @@ namespace RainMeadow
             }
             enteringShortCut = false;
         }
-
         public override string ToString()
         {
             return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";

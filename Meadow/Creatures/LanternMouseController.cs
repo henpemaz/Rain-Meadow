@@ -288,7 +288,7 @@ namespace RainMeadow
         protected override void LookImpl(Vector2 pos)
         {
             var dir = Custom.DirVec(mouse.mainBodyChunk.pos, pos);
-            (mouse.graphicsModule as MouseGraphics).lookDir = (mouse.mainBodyChunk.pos - pos) / 500f;
+            if (mouse.graphicsModule is MouseGraphics mouseGraphics) mouseGraphics.lookDir = (mouse.mainBodyChunk.pos - pos) / 500f;
             if (HasFooting)
             {
                 mouse.bodyChunks[0].vel += 0.5f * dir;
@@ -317,7 +317,7 @@ namespace RainMeadow
             mouse.runSpeed = Custom.LerpAndTick(mouse.runSpeed, 0, 0.4f, 0.1f);
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             if (mouse.specialMoveCounter > 0 && !mouse.room.aimap.TileAccessibleToCreature(mouse.mainBodyChunk.pos, mouse.Template) && !mouse.room.aimap.TileAccessibleToCreature(mouse.bodyChunks[1].pos, mouse.Template))

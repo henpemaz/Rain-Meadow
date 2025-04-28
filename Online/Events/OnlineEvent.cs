@@ -20,6 +20,8 @@ namespace RainMeadow
             serializer.Serialize(ref eventId);
         }
 
+        public virtual bool runDeferred => false;
+
         public abstract void Process(); // I've been received and I do something
 
         public virtual void Abort() // I was not acknowledged and the other guy left, what do, can be run on local or on remote
@@ -37,6 +39,7 @@ namespace RainMeadow
             GenericResultError,
             GenericResultFail,
             RPCEvent,
+            SoftRPCEvent,
         }
 
         // there used to be a lot more stuff in here until I made everything into RPCs and state
@@ -58,6 +61,9 @@ namespace RainMeadow
                     break;
                 case EventTypeId.RPCEvent:
                     e = new RPCEvent();
+                    break;
+                case EventTypeId.SoftRPCEvent:
+                    e = new SoftRPCEvent();
                     break;
             }
             if (e is null) throw new InvalidOperationException("invalid event type: " + eventTypeId);

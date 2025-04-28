@@ -9,43 +9,19 @@ namespace Menu
     public class ArenaOnlinePlayerJoinButton : ButtonTemplate
     {
         public MenuLabel menuLabel;
-
-        public RoundedRect roundedRect;
-
-        public RoundedRect selectRect;
-
-        public bool joystickAvailable;
-
-        public Joystick joystickPressed;
-
-        public int assignedJoystick;
-
-        public int index;
-
-        public MenuIllustration portrait;
-
-        public float labelFade;
-
-        public float lastLabelFade;
-
-        public int labelFadeCounter;
-
-        public float portraitBlack = 1f;
-
-        public float lastPortraitBlack = 1f;
-
-        public bool lastInput;
-
-        public bool readyForCombat;
-
-        public ArenaOnlineGameMode arena;
-
-        private ArenaLobbyMenu arenaMenu;
-
+        public MenuIllustration? portrait;
         public MenuIllustration joinButtonImage;
-
-        public SimplerSymbolButton kickButton;
-
+        public RoundedRect roundedRect, selectRect;
+        public Joystick joystickPressed;
+        public bool joystickAvailable;
+        public int assignedJoystick, labelFadeCounter, colorIndex;
+        public float labelFade, lastLabelFade, portraitBlack = 1, lastPortraitBlack = 1f;
+        public bool lastInput;
+        public bool readyForCombat;
+        public SimplerButton usernameButton;
+        public SimplerSymbolButton? kickButton;
+        public OnlinePlayer profileIdentifier;
+        public SlugcatStats.Name slugcat;
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
@@ -61,30 +37,38 @@ namespace Menu
             HSLColor from = HSLColor.Lerp(HSLColor.Lerp(Menu.MenuColor(Menu.MenuColors.MediumGrey), Menu.MenuColor(Menu.MenuColors.DarkGrey), Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker)), Menu.MenuColor(Menu.MenuColors.White), a);
             return HSLColor.Lerp(from, Menu.MenuColor(Menu.MenuColors.Black), black).rgb;
         }
-
-        public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index)
+        public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index, OnlinePlayer player, bool canKick)
             : base(menu, owner, pos, new Vector2(100f, 100f))
         {
-            this.index = index;
-            roundedRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: true);
-            subObjects.Add(roundedRect);
-            selectRect = new RoundedRect(menu, this, new Vector2(0f, 0f), size, filled: false);
-            subObjects.Add(selectRect);
-
-
-
-            portrait = new MenuIllustration(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
-          
-            subObjects.Add(portrait);
-            string text = menu.Translate("");
+            slugcat = SlugcatStats.Name.White;
+            colorIndex = index;
+            profileIdentifier = player;
+            roundedRect = new(menu, this, new Vector2(0f, 0f), size, filled: true);
+            selectRect = new(menu, this, new Vector2(0f, 0f), size, filled: false);
+            portrait = new(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
             readyForCombat = false;
-
+            string text = "";
             float num = 0f;
-            menuLabel = new MenuLabel(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
-            subObjects.Add(menuLabel);
-
+            menuLabel = new(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
+            usernameButton = new(menu, this, profileIdentifier.id.name, new(0, -40), new(100, 30));
+            usernameButton.OnClick += (_) =>
+            {
+                profileIdentifier.id.OpenProfileLink();
+            };
+            subObjects.AddRange([roundedRect, selectRect, portrait, menuLabel, usernameButton]);
+            menu.MutualVerticalButtonBind(usernameButton, this);
+            if (canKick)
+            {
+                kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(40, 110));
+                kickButton.OnClick += (_) =>
+                {
+                    RainMeadow.RainMeadow.Debug(string.Format("Kicked User: {0}", profileIdentifier), "/Arena/ArenaLobbyMenu.cs", "AddClassButtons");
+                    BanHammer.BanUser(profileIdentifier);
+                };
+                subObjects.Add(kickButton);
+                menu.MutualVerticalButtonBind(this, kickButton);
+            }
         }
-
         public override void Update()
         {
             base.Update();
@@ -97,12 +81,25 @@ namespace Menu
             labelFadeCounter = ((labelFade == 0f) ? 40 : 0);
             lastPortraitBlack = portraitBlack;
             portraitBlack = Custom.LerpAndTick(portraitBlack, readyForCombat ? 0 : 1, 0.06f, 0.05f); // Set to 1 to grey out
-
         }
-
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
+            var champBorderColor = Color.yellow;
+            if (RainMeadow.RainMeadow.isArenaMode(out var arena) && profileIdentifier != OnlineManager.mePlayer)
+            {
+                if (arena.playersReadiedUp != null &&
+                      arena.playersReadiedUp.list != null &&
+                      arena.playersReadiedUp.list.Contains(profileIdentifier.id))
+                {
+                    readyForCombat = true;
+                }
+                else
+                {
+                    readyForCombat = false;
+                }
+            }
+
             menuLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastLabelFade, labelFade, timeStacker), 0.3f);
             Color color = Color.Lerp(Menu.MenuRGB(Menu.MenuColors.Black), Menu.MenuRGB(Menu.MenuColors.White), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
             for (int i = 0; i < 9; i++)
@@ -119,9 +116,43 @@ namespace Menu
             }
 
             menuLabel.label.color = Color.Lerp(PlayerGraphics.DefaultSlugcatColor(SlugcatStats.Name.White), MyColor(timeStacker), num);
+            var ogColor = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
 
 
-            portrait.sprite.color = Color.Lerp(Color.white, Color.black, Custom.SCurve(Mathf.Lerp(lastPortraitBlack, portraitBlack, timeStacker), 0.5f) * 0.75f);
+            float alternationSpeed = 0.75f; // Adjust for alternation speed.
+            float lerpFactor = Mathf.PingPong(Time.time * alternationSpeed, 1f);
+
+
+            if (arena != null && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(profileIdentifier.id))
+            {
+                roundedRect.borderColor = HSLColor.Lerp(ogColor.ToHSL(), champBorderColor.ToHSL(), lerpFactor);
+                portrait.sprite.color = Color.Lerp(ogColor, champBorderColor, lerpFactor);
+            }
+            else
+            {
+                portrait.sprite.color = ogColor;
+                roundedRect.borderColor = ogColor.ToHSL();
+            }
         }
+        public void SetNewSlugcat(SlugcatStats.Name slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
+        {
+            if (this.slugcat != slugcat || colorIndex != currentColorIndex)
+            {
+                this.slugcat = slugcat;
+                colorIndex = currentColorIndex;
+                SetNewPortrait(arenaImage.Invoke(slugcat, currentColorIndex));
+            }
+        } //func for now ig
+        public void SetNewPortrait(string newFile)
+        {
+            if (portrait!.fileName != newFile)
+            {
+                RainMeadow.RainMeadow.Debug(newFile);
+                portrait.fileName = newFile;
+                portrait.LoadFile();
+                portrait.sprite.SetElementByName(portrait.fileName);
+            }
+        }
+
     }
 }

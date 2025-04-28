@@ -9,7 +9,8 @@ namespace RainMeadow
         // World/room load unload wait
         private void LoadingHooks()
         {
-            On.WorldLoader.ctor_RainWorldGame_Name_bool_string_Region_SetupValues += WorldLoader_ctor;
+            On.WorldLoader.ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues += WorldLoader_ctor;
+
             On.WorldLoader.Update += WorldLoader_Update;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
@@ -21,8 +22,8 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.ResetViolence();
-                arena.ResetGameTimer();
+                arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
@@ -54,9 +55,11 @@ namespace RainMeadow
                                 entities.Remove(oe.apo);
 
                                 absRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                room.RemoveObject(oe.apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                if (oe.apo.realizedObject != null)
+                                {
+                                    room.RemoveObject(oe.apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                }
                                 oe.beingMoved = false;
                             }
                             else // mine leave the old online world elegantly
@@ -227,7 +230,7 @@ namespace RainMeadow
         }
 
         // World request/release
-        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
+        private void WorldLoader_ctor(On.WorldLoader.orig_ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues orig, WorldLoader self, RainWorldGame game, SlugcatStats.Name playerCharacter, SlugcatStats.Timeline timeline, bool singleRoomWorld, string worldName, Region region, RainWorldGame.SetupValues setupValues)
         {
             if (OnlineManager.lobby != null)
             {
@@ -235,22 +238,29 @@ namespace RainMeadow
 
 
             }
-            orig(self, game, playerCharacter, singleRoomWorld, worldName, region, setupValues);
+            orig(self, game, playerCharacter, timeline, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
             {
-                WorldSession ws = null;
-                if (isArenaMode(out var _))
+                try
                 {
-                    RainMeadow.Debug("Arena: Setting up world session");
+                    WorldSession ws = null;
+                    if (isArenaMode(out var _))
+                    {
+                        RainMeadow.Debug("Arena: Setting up world session");
 
-                    ws = OnlineManager.lobby.worldSessions["arena"];
+                        ws = OnlineManager.lobby.worldSessions["arena"];
+                    }
+                    else
+                    {
+                        ws = OnlineManager.lobby.worldSessions[region.name];
+                    }
+                    ws.BindWorld(self.world);
+                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
                 }
-                else
+                catch (System.NullReferenceException e) // happens in riv ending
                 {
-                    ws = OnlineManager.lobby.worldSessions[region.name];
+                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
                 }
-                ws.BindWorld(self.world);
-                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
             }
         }
     }

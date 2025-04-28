@@ -1,11 +1,58 @@
-﻿using Menu;
-using Newtonsoft.Json.Linq;
-using System;
+using Menu;
+using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void Arena_ForceReadyUp()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                var stillInGame = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as MultiplayerResults);
+
+                if (stillInGame != null)
+                {
+                    arena.returnToLobby = true;
+                    stillInGame.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                    stillInGame.manager.rainWorld.options.DeleteArenaSitting();
+                    stillInGame.ArenaSitting.players.Clear();
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
+                    return;
+                }
+                if (lobby.manager.upcomingProcess != null)
+                {
+                    return;
+                }
+
+                if (lobby.playButton != null)
+                {
+                    lobby.playButton.Clicked();
+                }
+            }
+        }
+        [RPCMethod]
+        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                return;
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                string id = userChangingClass.GetUniqueID();
+                if (!arena.playersInLobbyChoosingSlugs.ContainsKey(id))
+                {
+                    arena.playersInLobbyChoosingSlugs.Add(id, currentColorIndex);
+                    return;
+                }
+                arena.playersInLobbyChoosingSlugs[id] = currentColorIndex;
+
+            }
+        }
 
         [RPCMethod]
         public static void Arena_UpdateSelectedChoice(string stringID, int value)
@@ -123,77 +170,69 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void Arena_NotifyClassChange(string userChangingClass, int currentColorIndex)
+        public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.playersInLobbyChoosingSlugs[userChangingClass] = currentColorIndex;
-
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)
                 {
                     return;
                 }
-                var Sluglist = ArenaHelpers.AllSlugcats();
-                try
+                var crit = (creatureKilled.apo.realizedObject as Creature) ?? null;
+                if (crit == null)
                 {
-                    for (int i = 1; i < game.usernameButtons.Length; i++)
+                    return;
+                }
+                IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
+                for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
+                {
+                    if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
                     {
-
-                        if (game.usernameButtons[i].menuLabel.text == userChangingClass) // TODO: Null referencing here
+                        if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
                         {
-                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
-                            game.classButtons[i].portrait.LoadFile();
-                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
+                            game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
+                            game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
+
                         }
 
                     }
+
                 }
-                catch
+            }
+        }
+        [RPCMethod]
+        public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (!arena.playersReadiedUp.list.Contains(userIsReady.id))
                 {
-                    RainMeadow.Debug("Could not find username button");
+                    arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
 
             }
 
         }
         [RPCMethod]
-        public static void Arena_NotifyLobbyReadyUp(string userIsReady, int currentColorIndex)
+        public static void Arena_NotifyStartGame()
         {
+            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
             if (RainMeadow.isArenaMode(out var arena))
             {
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
+                if (lobby == null)
                 {
+                    RainMeadow.Debug("Could not start player");
                     return;
                 }
-                arena.clientsAreReadiedUp++;
-                arena.playersReadiedUp[userIsReady] = true;
-
-                try
-                {
-                    for (int i = 1; i < game.usernameButtons.Length; i++)
-                    {
-
-                        if (game.usernameButtons[i].menuLabel.text == userIsReady)
-                        {
-
-                            game.classButtons[i].readyForCombat = true;
-
-                        }
-
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find username button");
-                }
-
-
-
+                RainMeadow.Debug("Starting game for player");
+                arena.isInGame = true; // state might be too late
+                lobby.StartGame();
             }
-
         }
+
+
+
 
         [RPCMethod]
         public static void Arena_NextLevelCall()
@@ -205,7 +244,7 @@ namespace RainMeadow
             {
                 return;
             }
-            
+
             if (game.manager.upcomingProcess != null)
             {
                 return;

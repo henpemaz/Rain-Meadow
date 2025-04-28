@@ -286,7 +286,7 @@ namespace RainMeadow
             eggbug.runSpeed = Custom.LerpAndTick(eggbug.runSpeed, 0, 0.4f, 0.1f);
         }
 
-        internal override void ConsciousUpdate()
+        public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
             if (eggbug.specialMoveCounter > 0 && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.mainBodyChunk.pos, eggbug.Template) && !eggbug.room.aimap.TileAccessibleToCreature(eggbug.bodyChunks[1].pos, eggbug.Template))

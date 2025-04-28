@@ -1,7 +1,81 @@
+raw
+
+many crashes still
+
+does self disconnecting detects?
+
+going to fresh lobby still the most efficient
+
+rot still stucks you (small creatures in GW drain entrance)
+
+walljump helpiness tents to fling you on accidental wjs
+
+whacamoles next to shortcuts are all over the place
+
+so many unlocks are out-of-bounds
+
+emote unlock has a lot of visibility, skin or creature don't
+
+"wish I could TP to people, or TP them to me"
+
+V wc tunnel times are too high
+	too little feedback that you're stuck there
+
+the jetfish still spawns
+
+the vibezones music doesnt account for music off - recheck
+
+V scav swing arm needs sync
+
+scav stretched arm animates unintentionally?
+
+echo + lightning palette (underhang) = flashing lights
+
+creatures don't make shortcut-pip noises
+
+scav hands "weight down" in zero g
+
+vine-grab-sync is very problematic in the room before GSB (5p)
+
+pebbles dialogue is default, and gravity keeps you trapped there
+
+    what'd the meadow-lore be?
+
+One laggy person can make things so problematic
+    if there was a metric like "average ping to others" to chose leasers
+
+I'm unhappy with the readme
+
+emote wishlist:
+    collision
+    sleep
+
+emotes display above map
+
+people can still force/trigger rain in meadow?
+
+hard to find people I played with
+
+hard to see nametags on most gray-ish blue-ish colors
+
+going down long poles as scav sucks
+
+using 2+ emotes at once (same frame) breaks something about their duration
+
+reds can't jump on false floors
+
+waterfall pushdown on scavs is a bit much
+
 HIGH-PRIO
 
-project
-	credits
+crashes
+
+bad ux
+
+to sort:
+esc on passage lobby
+see foos thread
+
 
 MEDIUM-PRIO
 
@@ -12,7 +86,7 @@ music
 	joining group in vibezone overrides vibe
 
 bugs
-	saving in missing region stays in missing region
+	saving in missing region stays in missing region - attempted fix
 
 LOW-PRIO
 

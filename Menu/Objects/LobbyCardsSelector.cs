@@ -45,7 +45,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             }
         }
 
-        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), $"Click to join {lobbyInfo.name}")
+        public LobbyCard(Menu.Menu menu, MenuObject owner, LobbyInfo lobbyInfo) : base(menu, owner, "", new Vector2(0, 0), new Vector2(300f, 60f), Utils.Translate("Click to join") + " " + lobbyInfo.name)
         {
             this.fade = 1f;
             this.lobbyInfo = lobbyInfo;
@@ -55,10 +55,12 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new Vector2(5f, 30f), new(10f, 50f), true);
             subObjects.Add(menuLabel);
 
-            if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, "Private", new(256, 20), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} max", new(256, 5), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.mode, new(5, 20), new(10, 50), false));
-            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " player" + (lobbyInfo.playerCount == 1 ? "" : "s"), new(5, 5), new(10, 50), false));
+            if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, Utils.Translate("Private"), new(256, 20), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} {Utils.Translate("max")}", new(256, 5), new(10, 50), false));
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, Utils.Translate(lobbyInfo.mode), new(5, 20), new(10, 50), false));
+
+            var playerWord = lobbyInfo.playerCount == 1 ? Utils.Translate("player") : Utils.Translate("players");
+            subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.playerCount + " " + playerWord, new(5, 5), new(10, 50), false));
 
             OnClick += (obj) => (menu as LobbySelectMenu).Play(lobbyInfo);
         }
@@ -94,6 +96,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         public string lobbyName;
         public string sortingOrder;
         public string gameMode;
+        public string requiredMods;
         public bool publicLobby;
 
         public enum SortingOrder
@@ -124,6 +127,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             lobbyName = "";
             sortingOrder = "Ping";
             gameMode = "All";
+            requiredMods = "Any";
             publicLobby = false;
         }
 
@@ -251,9 +255,25 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         return 1;
     }
 
+    public void ClearLobbies() {
+        foreach (var card in lobbyCards)
+        {
+            if (card == null) continue;
+            card.RemoveSprites();
+            owner.RemoveSubObject(card);
+        }
+
+        allLobbies.Clear();
+        filteredLobbies.Clear();
+        lobbyCards.Clear();
+    }
+
     public void FilterLobbies()
     {
         filteredLobbies = new List<LobbyInfo>();
+
+        string[] requiredMods = RainMeadowModManager.GetRequiredMods();
+        string requiredModsString = RainMeadowModManager.ModArrayToString(requiredMods); //used for unused "Exact" filter
 
         foreach (var lobby in allLobbies)
         {
@@ -262,6 +282,27 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             {
                 if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
                 if (filter.publicLobby && lobby.hasPassword) continue;
+                //filter for required mods
+                bool missingMod = false;
+                switch (filter.requiredMods)
+                {
+                    case "Any": break;
+                    case "Exact": //currently unused filter
+                        missingMod = lobby.requiredMods != requiredModsString;
+                        break;
+                    case "All":
+                        string[] lobbyMods = RainMeadowModManager.ModStringToArray(lobby.requiredMods);
+                        if (lobbyMods.Length != requiredMods.Length) { missingMod = true; break; }
+                        foreach (string m in lobbyMods)
+                        {
+                            if (!requiredMods.Contains(m)) { missingMod = true; break; }
+                        }
+                        break;
+                    default: //filter.requiredMods = single mod ID to check for
+                        missingMod = !lobby.requiredMods.Contains(filter.requiredMods);
+                        break;
+                }
+                if (missingMod) continue;
             }
 
             filteredLobbies.Add(lobby);
@@ -341,7 +382,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         filter = new LobbyCardsFilter();
 
         searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(pos.x + 15, pos.y + size.y), 300);
-        searchBar.label.text = "Search Lobbies";
+        searchBar.label.text = Utils.Translate("Search Lobbies");
         searchBar.accept = OpTextBox.Accept.StringASCII;
         searchBar.allowSpace = true;
         searchBar.OnChange += UpdateSearchFilter;
@@ -381,7 +422,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
         sideButtons[1].OnClick += CycleSortOrder;
         subObjects.Add(sideButtons[1]);
 
-        sideButtonLabels = new MenuLabel[1];
+        sideButtonLabels = new MenuLabel[2];
         sideButtonLabelsFade = new float[sideButtonLabels.Length, 2];
         for (int j = 0; j < sideButtonLabels.Length; j++)
         {
@@ -458,7 +499,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
                     //    sideButtons[1].UpdateSymbol(filter.enabled ? "Meadow_Menu_Cancel_Filter" : "Meadow_Menu_Filter");
                     //    break;
                     case 1:
-                        sideButtonLabels[2].text = filter.GetFormattedSortingOrderName();
+                        sideButtonLabels[1].text = menu.Translate(filter.GetFormattedSortingOrderName());
                         break;
                 }
             }

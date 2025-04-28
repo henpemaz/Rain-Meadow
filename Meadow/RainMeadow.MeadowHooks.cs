@@ -27,7 +27,7 @@ namespace RainMeadow
             On.RoomCamera.Update += RoomCamera_Update; // init meadow hud
 
             IL.HUD.Map.ctor += Map_OwnerFixup; // support non-slug owner
-            IL.HUD.Map.CreateDiscoveryTextureFromVisitedRooms += Map_OwnerFixup; // support non-slug owner
+            IL.HUD.Map.GetSaveState += Map_OwnerFixup; // support non-slug owner
 
             On.RegionGate.ctor += RegionGate_ctor;
             On.RegionGate.PlayersInZone += RegionGate_PlayersInZone1;
@@ -51,8 +51,6 @@ namespace RainMeadow
             new Hook(typeof(WaterGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
             new Hook(typeof(ElectricGate).GetProperty("EnergyEnoughToOpen").GetGetMethod(), this.RegionGate_EnergyEnoughToOpen);
 
-            On.Creature.Die += Creature_Die; // do not die!
-
             On.WormGrass.IsTileAccessible += WormGrass_IsTileAccessible; // always accessible
             On.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature;
             IL.WormGrass.WormGrassPatch.InteractWithCreature += WormGrassPatch_InteractWithCreature1;
@@ -66,6 +64,14 @@ namespace RainMeadow
             On.World.SpawnGhost += World_SpawnGhost;
 
             On.CreatureTemplate.CreatureRelationship_CreatureTemplate += CreatureTemplate_CreatureRelationship_CreatureTemplate;
+
+            On.ShortcutHandler.ShortCutVessel.ctor += ShortCutVessel_ctor; // faster vessels
+        }
+
+        private void ShortCutVessel_ctor(On.ShortcutHandler.ShortCutVessel.orig_ctor orig, ShortcutHandler.ShortCutVessel self, RWCustom.IntVector2 pos, Creature creature, AbstractRoom room, int wait)
+        {
+            orig(self, pos, creature, room, wait);
+            if (OnlineManager.lobby?.gameMode is MeadowGameMode && self.wait != 0) self.wait = Mathf.Min(100, Mathf.FloorToInt(self.wait * 0.4f + 5f));
         }
 
         private CreatureTemplate.Relationship CreatureTemplate_CreatureRelationship_CreatureTemplate(On.CreatureTemplate.orig_CreatureRelationship_CreatureTemplate orig, CreatureTemplate self, CreatureTemplate crit)
@@ -209,24 +215,15 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
-        private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly)
+        private void Worm_ctor(On.WormGrass.Worm.orig_ctor orig, WormGrass.Worm self, WormGrass wormGrass, WormGrass.WormGrassPatch patch, Vector2 basePos, float reachHeight, float iFac, float lengthFac, bool cosmeticOnly, System.Random rnd)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, true);
+                orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, true, rnd);
                 return;
             }
 
-            orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly);
-        }
-
-        private void Creature_Die(On.Creature.orig_Die orig, Creature self)
-        {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
-            {
-                return;
-            }
-            orig(self);
+            orig(self, wormGrass, patch, basePos, reachHeight, iFac, lengthFac, cosmeticOnly, rnd);
         }
 
         public delegate bool orig_RegionGateBool(RegionGate self);
@@ -425,11 +422,11 @@ namespace RainMeadow
                     {
                         self.ReturnFContainer("HUD"),
                         self.ReturnFContainer("HUD2")
-                    }, self.room.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
+                    }, self.game.rainWorld, CreatureController.creatureControllers.GetValue(owner, (c) => throw new InvalidProgrammerException("Not controlled creature: " + c)));
 
                     var mgm = OnlineManager.lobby.gameMode as MeadowGameMode;
                     self.hud.AddPart(new HUD.TextPrompt(self.hud)); // game assumes this never null
-                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.room.world, self.room.game.rainWorld))); // game assumes this too :/
+                    self.hud.AddPart(new HUD.Map(self.hud, new HUD.Map.MapData(self.game.world, self.game.rainWorld))); // game assumes this too :/
                     self.hud.AddPart(new MeadowProgressionHud(self.hud));
                     self.hud.AddPart(new MeadowEmoteHud(self.hud, self, owner));
                     self.hud.AddPart(new MeadowHud(self.hud, self, owner));

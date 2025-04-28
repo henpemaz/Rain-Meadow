@@ -50,7 +50,8 @@ namespace RainMeadow
             public string? saveStateString;
             [OnlineField]
             public bool requireCampaignSlugcat;
-
+            [OnlineField]
+            public List<OnlineEntity.EntityId> pups;
             public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
@@ -79,6 +80,13 @@ namespace RainMeadow
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
+
+                pups = new();
+                foreach (AbstractCreature apo in storyGameMode.pups) {
+                    if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) {
+                        pups.Add(oe.id);
+                    }
+                }
                 friendlyFire = storyGameMode.friendlyFire;
                 region = storyGameMode.region;
             }
@@ -127,6 +135,13 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).region = region;
 
                 (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
+
+
+                foreach (OnlineEntity.EntityId pupid in pups) {
+                    if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo) {
+                        (lobby.gameMode as StoryGameMode).pups.Add(apo);
+                    }
+                }
             }
         }
     }

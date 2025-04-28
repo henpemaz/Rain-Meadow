@@ -1,28 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <Version>2.0.8</Version>
-		<LangVersion>10.0</LangVersion>
+		<LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Configurations>Debug;Release;LocalP2P;ArenaP2P;StoryP2P;FreeRoamP2P</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <RootNamespace>RainMeadow</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalP2P|AnyCPU'">
-    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StoryP2P|AnyCPU'">
-    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FreeRoamP2P|AnyCPU'">
-    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ArenaP2P|AnyCPU'">
-    <DefineConstants>$(DefineConstants);TRACE;LOCAL_P2P</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>$(DefineConstants);TRACE</DefineConstants>

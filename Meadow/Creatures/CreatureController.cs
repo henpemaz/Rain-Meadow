@@ -293,7 +293,7 @@ namespace RainMeadow
             this.blink = Mathf.Max(this.blink, blink);
         }
 
-        internal virtual void Update(bool eu)
+        public virtual void Update(bool eu)
         {
             // Input
             this.CheckInput();
@@ -488,6 +488,7 @@ namespace RainMeadow
                     int length = creature.room.abstractRoom.connections.Length;
                     for (int i = 0; i < length; i++)
                     {
+                        if (creature.room.exitAndDenIndex.Length == i) return; // some MSC gates aren't properly set up? might also be loadworldas issues
                         var pos = creature.room.MiddleOfTile(creature.room.exitAndDenIndex[i]);
                         if (Custom.DistLess(pos, creature.mainBodyChunk.pos, 500f)) // close enough
                         {
@@ -823,7 +824,7 @@ namespace RainMeadow
             }
         }
 
-        internal virtual void ConsciousUpdate()
+        public virtual void ConsciousUpdate()
         {
             var room = creature.room;
             var chunks = creature.bodyChunks;
@@ -977,7 +978,7 @@ namespace RainMeadow
             this.OnCall();
         }
 
-        internal void AIUpdate(ArtificialIntelligence ai)
+        public void AIUpdate(ArtificialIntelligence ai)
         {
             if (creature.room?.Tiles != null && !ai.pathFinder.DoneMappingAccessibility)
                 ai.pathFinder.accessibilityStepsPerFrame = creature.room.Tiles.Length; // faster, damn it. on entering a new room this needs to complete before it can pathfind
@@ -1024,8 +1025,8 @@ namespace RainMeadow
                                     if (index > -1 && whackamoles.Count > 0)
                                     {
                                         var newindex = (index + 1) % whackamoles.Count;
-                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
                                         creature.NPCTransportationDestination = whackamoles[newindex].startCoord;
+                                        RainMeadow.Debug($"creature entered at {index} will exit at {newindex} mapped to {creature.NPCTransportationDestination}");
                                         // needs to be set as destination as well otherwise might be overriden
                                         toPos = creature.NPCTransportationDestination;
                                         return true;

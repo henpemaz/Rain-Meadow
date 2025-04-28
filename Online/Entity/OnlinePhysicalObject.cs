@@ -93,7 +93,7 @@ namespace RainMeadow
         public readonly AbstractPhysicalObject apo;
         public bool realized;
         public bool lenientPos;
-
+        public bool didParry;
         public bool beingMoved;
         public static ConditionalWeakTable<AbstractPhysicalObject, OnlinePhysicalObject> map = new();
 
@@ -109,6 +109,10 @@ namespace RainMeadow
         public static OnlinePhysicalObject NewFromApo(AbstractPhysicalObject apo)
         {
             bool transferable = !RainMeadow.sSpawningAvatar;
+            if (apo.realizedObject is Player player) {
+                transferable = transferable || player.isNPC;
+            }
+
             EntityId entityId = new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, EntityId.IdType.apo, apo.ID.number);
             if (OnlineManager.recentEntities.ContainsKey(entityId))
             {
@@ -178,7 +182,6 @@ namespace RainMeadow
 
             string serializedObject = newObjectEvent.MakeSerializedObject(initialState);
             RainMeadow.Debug("serializedObject: " + serializedObject);
-
             var apo = SaveState.AbstractPhysicalObjectFromString(world, serializedObject);
             apo.pos = initialState.pos; // game's really bad at parsing this huh specially arena or gates
             EntityID id = world.game.GetNewID();
@@ -227,7 +230,7 @@ namespace RainMeadow
             return new AbstractPhysicalObjectState(this, inResource, tick);
         }
 
-        protected void AllMoving(bool set)
+        public void AllMoving(bool set)
         {
             var all = apo.GetAllConnectedObjects();
             for (int i = 0; i < all.Count; i++)
@@ -273,7 +276,7 @@ namespace RainMeadow
                         if (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
                         {
                             RainMeadow.Debug($"early creature");
-                            apo.Move(topos);
+                            apo.MoveMovable(topos);
                             if (apo.realizedObject is PhysicalObject po)
                             {
                                 // this line might be problematic because room.cleanout calls apo.Destroy
@@ -291,12 +294,12 @@ namespace RainMeadow
                         {
                             if (topos.TileDefined)
                             {
-                                apo.Move(topos);
+                                apo.MoveMovable(topos);
 
 
-                                if (apo.realizedObject is Creature c)
+                                if (apo.realizedObject is Creature crit)
                                 {
-                                    c.RemoveFromShortcuts();
+                                    crit.RemoveFromShortcuts();
                                 }
                                 if (newRoom.absroom.realizedRoom.shortCutsReady)
                                 {
@@ -309,47 +312,45 @@ namespace RainMeadow
                                 }
 
                             }
-                            else
+
+                            RainMeadow.Debug("node defined");
+                            apo.MoveMovable(topos);
+                            bool inshortcuts = false;
+                            if (apo.realizedObject is Creature c)
                             {
-                                RainMeadow.Debug("node defined");
+                                inshortcuts = c.inShortcut;
+                            }
 
-                                apo.Move(topos);
-                                if (apo.realizedObject is Creature c)
+                            if (!inshortcuts && apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
+                            {
+                                RainMeadow.Debug("creature moved");
+                                ac2.realizedCreature?.RemoveFromShortcuts(); // just to make sure
+                                if (ac2.realizedCreature == null || !ac2.realizedCreature.inShortcut)
                                 {
-                                    c.RemoveFromShortcuts();
-                                }
-                                if (apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
-                                {
-                                    RainMeadow.Debug("creature moved");
-                                    if (ac2.realizedCreature == null || !ac2.realizedCreature.inShortcut)
+                                    RainMeadow.Debug($"spawning in shortcuts");
+                                    ac2.Realize();
+                                    if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
                                     {
-                                        RainMeadow.Debug($"spawning in shortcuts");
-                                        ac2.Realize();
-                                        ac2.realizedCreature.inShortcut = true;
-
-                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
-                                        {
-                                            ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
-                                        }
-                                        else
-                                        {
-
-                                            // noop, shortcut length / realized room is null
-                                        }
-
+                                        ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
                                     }
                                     else
                                     {
-                                        RainMeadow.Debug($"supposedly already spawning in shortcuts");
-                                        RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
+
+                                        // noop, shortcut length / realized room is null
                                     }
+
                                 }
                                 else
                                 {
-                                    RainMeadow.Debug($"regular item, spawning off-room");
-                                    apo.Realize();
-                                    // and lets leave it at that, some creechur will connect to it and drag it in-room
+                                    RainMeadow.Debug($"supposedly already spawning in shortcuts");
+                                    RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
                                 }
+                            }
+                            else
+                            {
+                                RainMeadow.Debug($"regular item, spawning off-room");
+                                apo.Realize();
+                                // and lets leave it at that, some creature will connect to it and drag it in-room
                             }
                         }
                     } // inDen
@@ -396,6 +397,16 @@ namespace RainMeadow
                     apo.Room?.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {
+                        if (po is Player player) {
+                            if (player.slugOnBack != null) {
+                                player.slugOnBack.DropSlug();
+                            }
+
+                            if (player.onBack != null) {
+                                player.onBack.slugOnBack.DropSlug();
+                            }
+                        }
+
                         if (apo.Room?.realizedRoom is Room room)
                         {
                             room.RemoveObject(po);
@@ -421,7 +432,7 @@ namespace RainMeadow
                         if (po is Creature c && c.inShortcut)
                         {
                             RainMeadow.Debug("removing from shortcuts");
-                            c.RemoveFromShortcuts();
+                            c.RemoveFromShortcuts(rs.absroom);
                         }
                     }
                     rs.absroom.RemoveEntity(apo);
@@ -483,6 +494,12 @@ namespace RainMeadow
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
+            if ((OnlineManager.lobby != null) && this.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                OnlineManager.RunDeferred(() => this.didParry = false);
+                return;
+            }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
         }
 

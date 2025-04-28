@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public class SlugcatCustomization : AvatarData
     {
-        public Color bodyColor;
-        public Color eyeColor;
+        // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
+        public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
+        public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
+
+        public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
+        public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
+
         public SlugcatStats.Name playingAs;
         public string nickname;
 
@@ -14,17 +21,28 @@ namespace RainMeadow
 
         internal override void ModifyBodyColor(ref Color originalBodyColor)
         {
-            originalBodyColor = new Color(Mathf.Clamp(bodyColor.r, 0.004f, 0.996f), Mathf.Clamp(bodyColor.g, 0.004f, 0.996f), Mathf.Clamp(bodyColor.b, 0.004f, 0.996f));
+            originalBodyColor = bodyColor.SafeColorRange();
         }
 
         internal override void ModifyEyeColor(ref Color originalEyeColor)
         {
-            originalEyeColor = new Color(Mathf.Clamp(eyeColor.r, 0.004f, 0.996f), Mathf.Clamp(eyeColor.g, 0.004f, 0.996f), Mathf.Clamp(eyeColor.b, 0.004f, 0.996f));
+            originalEyeColor = eyeColor.SafeColorRange();
         }
 
         internal Color SlugcatColor()
         {
             return bodyColor;
+        }
+
+        public Color GetColor(int staticColorIndex)
+        {
+            if (staticColorIndex >= 0 && staticColorIndex < currentColors.Count)
+            {
+                return currentColors[staticColorIndex];
+            }
+
+            // Indicates something's gone wrong (staticColorIndex is outside the range of available colors)
+            return Color.magenta;
         }
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
@@ -35,35 +53,31 @@ namespace RainMeadow
         public class State : EntityDataState
         {
             [OnlineFieldColorRgb]
-            public Color bodyColor;
-            [OnlineFieldColorRgb]
-            public Color eyeColor;
+            public Color[] customColors;
             [OnlineField(nullable = true)]
             public SlugcatStats.Name playingAs;
             [OnlineField]
             public string nickname;
 
+            [OnlineField]
+            public bool wearingCape;
+
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
-                bodyColor = slugcatCustomization.bodyColor;
-                eyeColor = slugcatCustomization.eyeColor;
+                customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
+                wearingCape = slugcatCustomization.wearingCape;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
                 var slugcatCustomization = (SlugcatCustomization)entityData;
-                slugcatCustomization.bodyColor = bodyColor;
-                slugcatCustomization.eyeColor = eyeColor;
+                slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
-
-                if (UnityEngine.Input.GetKey(KeyCode.L))
-                {
-                    RainMeadow.Debug("color? " + bodyColor);
-                }
+                slugcatCustomization.wearingCape = wearingCape;
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);

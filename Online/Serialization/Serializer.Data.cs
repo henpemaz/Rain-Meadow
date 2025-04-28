@@ -1125,6 +1125,38 @@ namespace RainMeadow
 #endif
         }
 
+        public void SerializeRGB(ref Color[] data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Length);
+                for (int i = 0; i < data.Length; i++)
+                {
+                    writer.Write((byte)(data[i].r * 255));
+                    writer.Write((byte)(data[i].g * 255));
+                    writer.Write((byte)(data[i].b * 255));
+                }
+            }
+            if (IsReading)
+            {
+                data = new Color[reader.ReadByte()];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i].r = reader.ReadByte() / 255f;
+                    data[i].g = reader.ReadByte() / 255f;
+                    data[i].b = reader.ReadByte() / 255f;
+                    data[i].a = 1f;
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+
         public void Serialize(ref WorldCoordinate pos)
         {
 #if TRACING
@@ -1363,6 +1395,43 @@ namespace RainMeadow
                     }
                     data.Add(key, value);
                 }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+        public void Serialize(ref Dictionary<ushort, int> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write(kvp.Value);
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new Dictionary<ushort, int>(count);
+                for (int i = 0; i < count; i++)
+                {
+                    var key = reader.ReadUInt16();
+                    var value = reader.ReadInt32();
+                    data.Add(key, value);
+                }
+
             }
 #if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);

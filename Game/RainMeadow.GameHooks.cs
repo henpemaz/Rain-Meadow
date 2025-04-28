@@ -16,6 +16,7 @@ namespace RainMeadow
         {
             On.Futile.OnApplicationQuit += Futile_OnApplicationQuit;
             On.RainWorldGame.ctor += RainWorldGame_ctor;
+            IL.RainWorldGame.ctor += RainWorldGame_ctor2;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
@@ -33,7 +34,7 @@ namespace RainMeadow
             On.Room.Loaded += Room_LoadedCheck;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
-            On.RoomSettings.ctor += RoomSettings_ctor;
+            On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
 
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
@@ -62,6 +63,42 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 OnlineManager.lobby.gameMode.PostGameStart(self);
+            }
+        }
+
+        private void RainWorldGame_ctor2(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                // pole mimics are the last AbstractCreature to be created, whereas pink lizards are the first
+                ILLabel pmLoop = null;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_setupValues"),
+                    i => i.MatchLdfld<RainWorldGame.SetupValues>("poleMimics"),
+                    i => i.MatchBlt(out pmLoop)
+                );
+                c.MoveAfterLabels();
+                c.MarkLabel(skip);
+                c.GotoPrev(moveType: MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_world"),
+                    i => i.MatchLdloc(0),
+                    i => i.MatchCallOrCallvirt<World>("GetAbstractRoom"),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCallOrCallvirt<RainWorldGame>("get_world"),
+                    i => i.MatchLdstr("Pink Lizard")
+                );
+                // eligibility criteria; if we are not eligibile to create objects, we skip over the entire AbstractCreature creation process
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((RainWorldGame self) => OnlineManager.lobby == null || (WorldSession.map.TryGetValue(self.world, out var ws) && ws.isOwner));
+                c.Emit(OpCodes.Brfalse, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
             }
         }
 
@@ -198,14 +235,14 @@ namespace RainMeadow
             }
         }
 
-        private void RoomSettings_ctor(On.RoomSettings.orig_ctor orig, RoomSettings self, string name, Region region, bool template, bool firstTemplate, SlugcatStats.Name playerChar)
+        private void RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame(On.RoomSettings.orig_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame orig, RoomSettings self, Room room, string name, Region region, bool template, bool firstTemplate, SlugcatStats.Timeline timelinePoint, RainWorldGame game)
         {
             if (isStoryMode(out var storyGameMode))
             {
-                playerChar = storyGameMode.currentCampaign;
+                timelinePoint = SlugcatStats.SlugcatToTimeline(storyGameMode.currentCampaign);
             }
 
-            orig(self, name, region, template, firstTemplate, playerChar);
+            orig(self, room, name, region, template, firstTemplate, timelinePoint, game);
         }
 
         private void RoomSpecificScript_AddRoomSpecificScript(On.RoomSpecificScript.orig_AddRoomSpecificScript orig, Room room)
@@ -350,9 +387,9 @@ namespace RainMeadow
         }
 
         // Prevent gameplay items
-        private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom)
+        private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom, bool devUI)
         {
-            orig(self, game, world, abstractRoom);
+            orig(self, game, world, abstractRoom, devUI);
             if (game != null && OnlineManager.lobby != null)
             {
                 OnlineManager.lobby.gameMode.FilterItems(self);

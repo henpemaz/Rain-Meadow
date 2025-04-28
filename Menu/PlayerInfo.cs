@@ -1,15 +1,14 @@
-﻿using Steamworks;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class PlayerInfo
     {
-        public CSteamID id;
+        public delegate void OpenProfileLinkDelegate();
+        public OpenProfileLinkDelegate openProfile;
         public string name;
 
-        public PlayerInfo(CSteamID id, string name)
+        public PlayerInfo(OpenProfileLinkDelegate openProfile, string name)
         {
-            this.id = id;
+            this.openProfile = openProfile;
             this.name = name;
         }
     }

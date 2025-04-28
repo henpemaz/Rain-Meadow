@@ -5,6 +5,7 @@ using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow;
@@ -25,8 +26,8 @@ public class LobbyCreateMenu : SmartMenu
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowShadow", new Vector2(-2.99f, 265.01f), true, false));
-        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "", "MeadowTitle", new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(true), new Vector2(-2.99f, 265.01f), true, false));
+        this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
         this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
         // creation button in bottom right
@@ -65,10 +66,10 @@ public class LobbyCreateMenu : SmartMenu
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
-            description = "Lobby Password"
+            description = Utils.Translate("Lobby Password"),
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
-        passwordInputBox.label.text = "Password";
+        passwordInputBox.label.text = Utils.Translate("Password");
         new UIelementWrapper(this.tabWrapper, passwordInputBox);
 
         // lobby limit setting in bottom center
@@ -82,17 +83,17 @@ public class LobbyCreateMenu : SmartMenu
         {
             accept = OpTextBox.Accept.Int,
             maxLength = 2,
-            description = "The Max of the Players for the Lobby (up to 32)"
+            description = Utils.Translate("Maximum number of players that can be in the lobby (up to 32)"),
         };
         new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
         where.y += 5;
 
         // display version
-        MenuLabel versionLabel = new MenuLabel(this, pages[0], $"Rain Meadow Version: {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
+        MenuLabel versionLabel = new MenuLabel(this, pages[0], $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
         versionLabel.size = new Vector2(versionLabel.label.textRect.width, versionLabel.size.y);
         mainPage.subObjects.Add(versionLabel);
 
-        if (backObject is SimplerButton backButton) backButton.menuLabel.text = "CANCEL";
+        if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
 
         UpdateModeDescription();
 
@@ -112,7 +113,7 @@ public class LobbyCreateMenu : SmartMenu
 
     private void UpdateModeDescription()
     {
-        modeDescriptionLabel.text = Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]);
+        modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
     }
 
     private void CreateLobby(SimplerButton obj)
@@ -140,12 +141,14 @@ public class LobbyCreateMenu : SmartMenu
     {
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-        MatchmakingManager.instance.CreateLobby(value, modeDropDown.value, enablePasswordCheckbox.GetValueBool() ? passwordInputBox.value : null, maxPlayerCount);
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, enablePasswordCheckbox.GetValueBool() ? passwordInputBox.value : null, maxPlayerCount);
     }
 
     private void ShowLoadingDialog(string text)
     {
         if (popupDialog != null) HideDialog();
+
+        text = Utils.Translate(text);
 
         popupDialog = new DialogBoxAsyncWait(this, mainPage, text, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         mainPage.subObjects.Add(popupDialog);
