@@ -56,7 +56,8 @@ namespace RainMeadow
             triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
             smoothsquareiwouldeatmyarmforthishoe,
             sawwaveiguesswhyareyouherewearenotevendubsteprndude,
-            BandNoiseOhhhhManYourTheBasicButTheBest
+            BandNoiseOhhhhManYourTheBasicButTheBest,
+            bellassthingyidontevenknowyoubutidobaby
         }
         public List<Plop> plops = new();
         //public List<SamplePlop> sampleplops = new();
@@ -218,7 +219,7 @@ namespace RainMeadow
                 AudioClip TrackClip = owner.audioSource.clip;
                 float[] TrackClipData = new float[samplestorender * 2];
                 TrackClip.GetData(TrackClipData, TrackSampleStartsAt + ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
-                float attenuation = (1f - (float)oct / 20);
+                float attenuation = 1f - (float)oct / 20;
                 float atan3 = Mathf.Atan(3);
                 Parallel.For(ploprendered * 2, ploprendered * 2 + TrackClipData.Length, i =>
                 {
@@ -243,6 +244,7 @@ namespace RainMeadow
                     TrackClipData[i - (ploprendered * 2)] += type switch
                     {
                         Wavetype.sineiloveyousineohmygodhavemybabies => Mathf.Sin(iPhase) * iValue,
+                        Wavetype.bellassthingyidontevenknowyoubutidobaby => Mathf.Sin(Mathf.Sin(iPhase*5)*4) * iValue,
                         Wavetype.smoothsquareiwouldeatmyarmforthishoe => Mathf.Atan(Mathf.Sin(iPhase) * 3) / atan3 * iValue,
                         Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck => Mathf.Asin(Mathf.Cos(iPhase)) * iValue,
                         Wavetype.square => ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue) * 0.75f,

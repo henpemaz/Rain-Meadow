@@ -85,9 +85,6 @@ namespace RainMeadow
         bool EntryRequest = true;
         bool playingchord = false;
 
-        string chordnotes = "yosup";
-        string chordleadups = "yosup";
-
         int chordtimer = 0;
 
         string NextChord = "Balaboo";         //important to set a first one
@@ -197,9 +194,9 @@ namespace RainMeadow
             int extratranspose = 0;
             if (!intiseasy)
             {
-                string appends = parts[2].Substring(1);
-                foreach (char letter in appends) { extratranspose = letter switch { 'b' => extratranspose--, '#' => extratranspose, _ => extratranspose }; }
                 ind = int.Parse(parts[2].Substring(0, 1));
+                string appends = parts[2].Substring(1);
+                foreach (char letter in appends) { extratranspose = letter switch { 'b' => extratranspose--, '#' => extratranspose++, _ => extratranspose }; }
             }
             int transposition = IndexTOCKInt(ind);
             
@@ -209,6 +206,13 @@ namespace RainMeadow
             float humanizingrandomnesspanlol = UnityEngine.Random.Range(-0.18f, 0.18f);
 
             WetLoop?.WetPlop(length, oct, transposition, humanizingrandomnessinvelocitylol, humanizingrandomnesspanlol);
+        }
+        private void Plop(Liaison input)
+        {
+            int transposition = IndexTOCKInt(input.index) + input.accidental;
+            float hvel = UnityEngine.Random.Range(0.3f, 1f);
+            float hpan = UnityEngine.Random.Range(-0.18f, 0.18f);
+            WetLoop?.WetPlop("M", input.octave, transposition, hvel, hpan);
         }
         private void InfluenceModulation(int Strength)
         {
@@ -223,11 +227,7 @@ namespace RainMeadow
 
             //RainMeadow.Debug($"The chance rolled {dicedint}, modified by {QueuedModulation}, it goes to {dicedsign}. So it was {deadint} and now is {CurrentKey}");
 
-            while (CurrentKey < -6 || CurrentKey > 6)
-            {
-                if (CurrentKey < 1) CurrentKey += 12;
-                else CurrentKey -= 12;
-            }
+            while (CurrentKey < -6 || CurrentKey > 6) CurrentKey -= 12 * Math.Sign(CurrentKey);
             ChitChat.Analyze(this); 
         }
         private void PlayEntry()
@@ -237,9 +237,9 @@ namespace RainMeadow
                 //RainMeadow.Debug("Playing New Chord");
                 EntryRequest = false;
                 string[] entry = ChordInfos.First(l => l[0] == NextChord);
-                chordnotes = entry[1];
-                chordleadups = entry[2];
-                ChitChat.Wipe(this);
+                string chordnotes = entry[1];
+                string chordleadups = entry[2];
+                ChitChat.Wipe();
                 InfluenceModulation(2); 
                 string[] inst = chordnotes.Split(',');
                 string[] notes = inst[0].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
@@ -247,11 +247,11 @@ namespace RainMeadow
 
                 for (int i = 0; i < notes.Length; i++)
                 {
-                    Plop(notes[i]);
-                    NoteMagazine.AddSeed(notes[i].Substring(2));
+                    Plop("L-" + notes[i]);
+                    NoteMagazine.AddSeed(notes[i]);
                 }
                 int sowhichoneisitboss = UnityEngine.Random.Range(0, bassnotes.Length);
-                Plop(bassnotes[sowhichoneisitboss]); 
+                Plop("L-" + bassnotes[sowhichoneisitboss]); 
 
                 //all notes have been played, moving onto leadup
                 string[] leadups = chordleadups.Split('|');
@@ -339,28 +339,46 @@ namespace RainMeadow
                 RainMeadow.Debug($"Log {e}");
             }
         }
-        struct Liaison
+        public struct Liaison
         {
-            public Liaison(string note, int stopwatch, bool[] pattern, int patternindex, string period)
-            {
-                this.note = note;
-                this.stopwatch = stopwatch;
-                this.pattern = pattern;
-                this.patternindex = patternindex;
-                this.period = period;
+            public Liaison(int octave, int index, int accidental)
+            { 
+                this.octave = octave;
+                this.index = index;
+                this.accidental = accidental;
             }
-            public string note;
-            public int stopwatch;
-            public bool[] pattern;
-            public int patternindex;
-            public string period;
+            public Liaison(string note)
+            {    
+                string[] Hahaha = note.Split('-');
+                bool intiseasy = int.TryParse(Hahaha[1], out int ind);
+                int extratranspose = 0;
+                if (!intiseasy)
+                {
+                    ind = int.Parse(Hahaha[1].Substring(0, 1));
+                    string accidentals = Hahaha[1].Substring(1);
+                    foreach (char accidental in accidentals) { extratranspose += accidental switch { 'b' => -1, '#' => 1, _ => 0 }; }
+                }
+                octave = int.Parse(Hahaha[0]);
+                index = ind;
+                accidental = extratranspose; 
+            }
+            public int octave;
+            public int index;
+            public int accidental;
+            public readonly string Note
+            {
+                get
+                {
+                    string danote = $"{octave}-{index}";
+                    for (int i = 0; i < Mathf.Abs(accidental); i++) { danote += (accidental < 0) ? 'b' : '#'; }
+                    return danote;
+                }
+            }
         }
         public static class ChitChat
         {
-            static List<Liaison> LiaisonList = new List<Liaison>(); //list of the Liaison(s) currently playing
+            static List<Liaison> LiaisonList = new(); //list of the Liaison(s) currently playing
             static int[] liaisonrace = new int[0]; //arp pitch sorted array that will be remade with the analyze function
-            static public bool isindividualistic = false; //setting for whether it'll treat things as individualistic
-            static bool upperswitch = true;
             public enum Arpmode
             {
                 upwards,
@@ -380,13 +398,13 @@ namespace RainMeadow
 
             static public double arpcounterstopwatch;
             static int arprate;
-            
-            static List<int> randomsetsacrificeboard = new List<int>();
-            static bool arpmiddlenoteistop;
+
+            static int halfway;
+            static List<int> randomsetsacrificeboard = new();
             
             static int TensionStopwatch; //this will be reset on wipe, and be the strain until a modulation or strum  //tension is chordstopwatch essentially 
-            static bool ismodulation; 
-            static bool hasbroken; 
+            static bool ismodulation;
+            static bool hasbroken;
             static int differencebuffer;
             static bool hasswitchedscales;
             static int BreakUndoStopwatch; //will start to be counted when tension has broken
@@ -406,13 +424,12 @@ namespace RainMeadow
                 else
                 {//transposition
                     do { differencebuffer = UnityEngine.Random.Range(-2, 3); } while (differencebuffer == 0);
-                    string appendedaccidentals = differencebuffer switch { 2 => "##", 1 => "#", -1 => "b", -2 => "bb", _ => "" };
 
                     for (int i = 0; i < LiaisonList.Count; i++)
                     {
-                        Liaison liaison = LiaisonList[i];
-                        string newnote = string.Concat(liaison.note, appendedaccidentals);
-                        LiaisonList[i] = new Liaison(newnote, liaison.stopwatch, liaison.pattern, liaison.patternindex, liaison.period);
+                        Liaison NewNote = LiaisonList[i];
+                        NewNote.accidental += differencebuffer;
+                        LiaisonList[i] = NewNote;
                     }
                 }
             }
@@ -420,7 +437,6 @@ namespace RainMeadow
             {
                 if (ismodulation)
                 {//modulation
-
                     plopMachine.CurrentKey -= differencebuffer;
                     while (Math.Abs(plopMachine.CurrentKey) < 6) plopMachine.CurrentKey += (plopMachine.CurrentKey < 1) ? 12 : -12;
                     if (hasswitchedscales) plopMachine.inmajorscale = !plopMachine.inmajorscale;
@@ -429,19 +445,21 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < LiaisonList.Count; i++)
                     {
-                        Liaison liaison = LiaisonList[i];
-                        string unduednote = liaison.note.Substring(0, 5);
-                        LiaisonList[i] = new Liaison(unduednote, liaison.stopwatch, liaison.pattern, liaison.patternindex, liaison.period);
+                        Liaison NewNote = LiaisonList[i];
+                        NewNote.accidental = 0;
+                        LiaisonList[i] = NewNote;
                     }
                 }
             }
             public static void Update(PlopMachine plopmachine)
             {
-                TensionStopwatch++;//if i add it here every time, well, then, reminder that the stopwatch starts on 1, since a wipe and the start of liaisoning for the next chord happens at the same time.... well... ig that's the nature of doing a ++; at the start of ever
-                                   //if (LiaisonList.Count == 1) isindividualistic = true; //until a thing can grow horns on its own, it should stay like this... but then what if it could? What if a note had a chance to spawn others that fitted to it? Check that
+                TensionStopwatch++;   //below might be outdated
+                                     //if i add it here every time, well, then, reminder that the stopwatch starts on 1, since a wipe and the start of liaisoning for the next chord happens at the same time.... well... ig that's the nature of doing a ++; at the start of ever
+                                    //if (LiaisonList.Count == 1) isindividualistic = true; //until a thing can grow horns on its own, it should stay like this... but then what if it could? What if a note had a chance to spawn others that fitted to it? Check that
                                    //this is also now also decided in Add function, instead of making it a wholey other thing, becaaaaause i'm lazy... why? because this doesn't hold the door open for ^^^this expansion
                 evolvestopwatch += plopmachine.fichtean*9 + 2.5f;
-                if (UnityEngine.Random.Range(0, 3000000) + TensionStopwatch*4 > 3000000 && !hasbroken) //RTYU                           //temporary, it's gonna be a chance activation later. olololooooooool lol ooooooo lo  lol   looo 
+                
+                if (UnityEngine.Random.Range(0f, 1f) + TensionStopwatch*0.00000125f > 1 && !hasbroken) 
                 {
                     TensionStopwatch = 0;
                     Break(plopmachine);
@@ -450,9 +468,9 @@ namespace RainMeadow
                 if (hasbroken)
                 {
                     BreakUndoStopwatch++;
-                    if (UnityEngine.Random.Range(0, 150001) + BreakUndoStopwatch*3 > 150000)//RTYU 120
+                    if (UnityEngine.Random.Range(0f, 1f) + BreakUndoStopwatch*0.00002f > 1)
                     {
-                        if (UnityEngine.Random.Range(0, 12) + (int)((1 - plopmachine.fichtean) * 4) <= 4)
+                        if ((UnityEngine.Random.Range(0, 12) + (int)((1 - plopmachine.fichtean) * 4)) <= 4)
                         {
                             //RainMeadow.Debug("UNDID A BREAK BUT GOOD");
                             UndoBreak(plopmachine);
@@ -461,166 +479,74 @@ namespace RainMeadow
                     }
                 }
 
-                if (isindividualistic) //upperswitch is true here
+                if (strumphase != 0)
                 {
-                    Anarchy(plopmachine);
-                    upperswitch = true;
+                    Strum(plopmachine);
                 }
-                else //shall be false here
+                else
                 {
-
-                    if (upperswitch)
+                    if (arptimer <= 0)
                     {
-                        Analyze(plopmachine);
-                        upperswitch = false;
-                    }
-
-                    if (strumphase != 0)
-                    {
-                        Strum(plopmachine);
-                    }
-                    else
-                    {
-                        if (arptimer <= 0)
+                        if (LiaisonList.Count != 0) 
                         {
-                            if (LiaisonList.Count != 0) 
-                            { 
-                                if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
-                                int waitnumber = arprate switch { 0 => 4, 1 => 6, 2 => 8, 3 => 12, 4 => 16, _ => 16, };
-                                arpcounterstopwatch += plopmachine.fichtean * (arprate + 4);
-                                int arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
-                                if (arprate != arpcurrentfreq && plopmachine.chordtimer < 96)
+                            if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine); 
+                            int waitnumber = arprate switch { 0 => 4, 1 => 6, 2 => 8, 3 => 12, 4 => 16, _ => 16, };
+                            arpcounterstopwatch += plopmachine.fichtean * (arprate + 4);
+                            int arpcurrentfreq = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
+                            if (arprate != arpcurrentfreq && plopmachine.chordtimer < 96)
+                            {
+                                if (arprate > arpcurrentfreq)
                                 {
-                                    if (arprate > arpcurrentfreq)
-                                    {
-                                        waitnumber /= 2;
-                                        if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
-                                    }
-                                    else
-                                    {
-                                        //if (plopmachine.chordtimer == 48-1) waitnumber /= 2; 
-                                        //so this shall be remade if (plopmachine.chordtimer < 48-1) waitnumber *= 2; //doesn't work artistically
-                                    }
+                                    waitnumber /= 2;
+                                    if (steppattern[steppatternindex]) CollectiveArpStep(plopmachine);
                                 }
-                                //(note from self i'm keeping btecause funny (it's about timer)PLUSS ONE because its' fucking... because this one plays it at the exact same time??? And goes downward for some reason??? Oh wait it's because it starts HERE. At THIS MOMENT, if it was a wait, there would be 24 until the next.
-                                arptimer = Wait.Until($"1/{waitnumber}", 1, plopmachine.debugstopwatch);
-
-                                if (UnityEngine.Random.Range(0, 150000) + TensionStopwatch*12 > 150000) //RTYU            this is strum activationcode  //temp, will share with other. I decide now that if it's strummed, it'll roll a chance to break, but reset the "stopwatch" both use, tension   
-                                {
-                                    strumphase = Strumphases.queued;
-                                    strumtimer = Wait.Untils("half", 1, 3, plopmachine.debugstopwatch);
-                                    if (UnityEngine.Random.Range(0, 1001) < 69) //good, the break will happen before the strum.
-                                    {
-                                        Break(plopmachine);
-                                    }
-                                    TensionStopwatch = 0;
-                                }
-                                steppatternindex = steppatternindex + 1 < steppattern.Length ? steppatternindex + 1 : 0;
                             }
+                            arptimer = Wait.Until($"1/{waitnumber}", 1, plopmachine.debugstopwatch);
+
+                            if (UnityEngine.Random.Range(0f, 1f) + TensionStopwatch*0.00008 > 1) //RTYU            this is strum activationcode  //temp, will share with other. I decide now that if it's strummed, it'll roll a chance to break, but reset the "stopwatch" both use, for tension   
+                            {
+                                strumphase = Strumphases.queued;
+                                strumtimer = Wait.Untils("half", 1, 3, plopmachine.debugstopwatch);
+                                if (UnityEngine.Random.Range(0, 1001) < 69) Break(plopmachine); 
+                                    //good, the break will happen before the strum.
+                                TensionStopwatch = 0;
+                            }
+                            steppatternindex = steppatternindex + 1 < steppattern.Length ? steppatternindex + 1 : 0;
                         }
-                        else
-                        {
-                            arptimer--;
-                        }
-                    }
-                }
-            }
-            private static void Anarchy(PlopMachine plopmachine)
-            {
-                for (int i = 0; i < LiaisonList.Count; i++)
-                {
-                    Liaison liaison = LiaisonList[i];
-                    if (liaison.stopwatch > 0)
-                    {
-                        liaison.stopwatch--;
-                        LiaisonList[i] = new Liaison(liaison.note, liaison.stopwatch, liaison.pattern, liaison.patternindex, liaison.period);
                     }
                     else
                     {
-                        //RainMeadow.Debug("Playing a note from Chitchat.Anarchy");
-                        if (liaison.pattern[liaison.patternindex])
-                        {
-                            bool nextnoteexists = liaison.patternindex + 1 < liaison.pattern.Length ? liaison.pattern[liaison.patternindex + 1] : liaison.pattern[0];
-                            if (nextnoteexists) plopmachine.Plop($"S-{liaison.note.Substring(2, 3)}");
-                            else plopmachine.Plop(liaison.note);
-                        }
-                        int liaisonwait = Wait.Until(liaison.period, 1, plopmachine.debugstopwatch);
-                        int lolol = liaison.patternindex + 1;
-                        if (lolol >= liaison.pattern.Length) lolol = 0; 
-                        LiaisonList[i] = new Liaison(liaison.note, liaisonwait, liaison.pattern, lolol, liaison.period);
-                        CheckThisLiaisonOutDude(i, plopmachine);
+                        arptimer--;
                     }
                 }
             }
             public static void Analyze(PlopMachine plopmachine)
             {
                 List<int> LiaisonsFreqNumbs = new();
-                int index = 0;
-                //List<string> CopyCheckerColonD = new();
-                foreach (Liaison heyo in LiaisonList)
+                foreach (Liaison Note in LiaisonList)
                 {
-                    string[] hey = heyo.note.Substring(2).Split('-');
-                    bool intiseasy = int.TryParse(hey[1], out int ind);
-                    int extratranspose = 0;
-                    if (!intiseasy)
-                    {
-                        string accidentals = hey[1].Substring(1);
-                        foreach (char accidental in accidentals)
-                        {
-                            extratranspose += accidental switch { 'b' => -1, '#' => 1, _ => 0 };
-                        }
-                        ind = int.Parse(hey[1].Substring(0, 1));
-                    }
-                    int transposition = plopmachine.IndexTOCKInt(ind);
-                        
-                    int freqnumb = int.Parse(hey[0]) * 12 + transposition + extratranspose;
+                    int freqnumb = Note.octave * 12 + plopmachine.IndexTOCKInt(Note.index) + Note.accidental;
                     LiaisonsFreqNumbs.Add(freqnumb);
-                    index++;
-                }//there's ceraintly a better and less costly ways of going about but :PPPPPP
-
-                int[] LiaisonIndexArrayThatllBeSwayed = new int[index];
-                for (int i = 0; i < index; i++) LiaisonIndexArrayThatllBeSwayed[i] = i;
-                int[] LiaisonsFreqNumbsArray = LiaisonsFreqNumbs.ToArray();
-                Array.Sort(LiaisonsFreqNumbsArray, LiaisonIndexArrayThatllBeSwayed);
-                liaisonrace = LiaisonIndexArrayThatllBeSwayed;
+                }
+                int[] Staircase = new int[LiaisonList.Count];
+                for (int i = 0; i < LiaisonList.Count; i++) Staircase[i] = i;
+                Array.Sort(LiaisonsFreqNumbs.ToArray(), Staircase);
+                liaisonrace = Staircase; //Fucked up staircase
             }
             public static void PrintRace()
             {
                 RainMeadow.Debug("Liaisonrace being printed individually from left to right. The number is the index, the latter is what it represents.");
                 RainMeadow.Debug("Remember that the sequence they're PRINTED in is the order of the liaisonrace, NOT the index shown(as that is just the pointer)");
-                foreach (int i in liaisonrace)
-                {
-                    RainMeadow.Debug(i + " " + LiaisonList[i].note);
-                }
+                foreach (int i in liaisonrace) RainMeadow.Debug(i + " " + LiaisonList[i].Note);
             }
             public static void Instantiate(PlopMachine plopMachine)
             {
-                if (LiaisonList.Count < 3) 
-                { 
-                    isindividualistic = true; 
-                    //If it's less than three, some arpegiation patterns will break, we therefore do anarchic.
-                }
-                else
-                {
-                    //RainMeadow.Debug("YO");
-                    /*
-                    if (!isindividualistic)
-                    {
-                        //isindividualistic = UnityEngine.Random.Range(0, 100) < 2+(int)(plopmachine.fichtean*6); 
-                        //i hate individualism now (for a moment)
-                    } 
-                    else { isindividualistic = UnityEngine.Random.Range(0, 100) > 34 + (int)(plopMachine.fichtean * 26); }
-                    */
-                    isindividualistic = false;
-                }
-
-                if (!isindividualistic) { Analyze(plopMachine); }
+                Analyze(plopMachine);
 
                 if (UnityEngine.Random.Range(0, 2) == 1) RandomMode();
-                //arpingmode = Arpmode.upwards; //FOR TESTING, REMOVE AFTERWARDS
                 steppatternindex = 0;
 
-                //bogus code to make a new step sequence sometimes
+                //bogus code to make a new step sequence sometimes    //good enough
                 if (UnityEngine.Random.Range(0, 100) < 10f + plopMachine.fichtean * 15f)
                 {
                     //RainMeadow.Debug("Time to change the stepsequence, yup");
@@ -629,16 +555,10 @@ namespace RainMeadow
 
                     while (!satisfied)
                     {
-                        if (steppatternlist.Count == 1)
+                        if (steppatternlist.Count == 1 && !steppattern.Contains(false) && UnityEngine.Random.Range(0, 3) != 0)
                         {
-                            if (!steppattern.Contains(false))
-                            {
-                                if (UnityEngine.Random.Range(0, 3) != 0)
-                                {
-                                    satisfied = true;
-                                    continue;
-                                }
-                            }
+                            satisfied = true;
+                            continue;
                         }
 
                         bool addnewone = UnityEngine.Random.Range(0, 100) > 5f * steppatternlist.Count * (plopMachine.fichtean+0.2) + 5f;
@@ -659,21 +579,20 @@ namespace RainMeadow
                     //RainMeadow.Debug("Yeah so the steppattern is apperantly" + Newtonsoft.Json.JsonConvert.SerializeObject(steppattern));
                 }
             }
-            public static void Add(string note, PlopMachine plopmachine)
+            public static void Add(Liaison NL)
             {
-                if (LiaisonList.Exists(L => L.note == note.Substring(2))) return;
-                string period = "1/" + arprate switch { 0 => "8", 1 => "12", 2 => "16", 3 => "24", 4 => "32", _ => "32" };
-                int liaisonwait = Wait.Until(period, 1, plopmachine.debugstopwatch);
-                int amountoftimes = Mathf.Clamp(UnityEngine.Random.Range(8 - (arprate / 5 * 3), 23 - (3 * (arprate / 2))), 0, 23);
-                
-                bool[] mama = new bool[amountoftimes];
-                for (int i = 0; i < amountoftimes; i++)
-                {
-                    mama[i] = UnityEngine.Random.Range(4, ((5-arprate)*2) + 72) > 66;
-                }
-
-                Liaison NewLiaison = new($"M-{note}", liaisonwait, mama, UnityEngine.Random.Range(0, amountoftimes), period);
-                LiaisonList.Add(NewLiaison);
+                if (LiaisonList.Exists(L => L.octave == NL.octave && L.index == NL.index)) return;
+                //string period = "1/" + arprate switch { 0 => "8", 1 => "12", 2 => "16", 3 => "24", 4 => "32", _ => "32" };
+                //int liaisonwait = Wait.Until(period, 1, plopmachine.debugstopwatch);
+                //int amountoftimes = Mathf.Clamp(UnityEngine.Random.Range(8 - (arprate / 5 * 3), 23 - (3 * (arprate / 2))), 0, 23);
+                //
+                //bool[] mama = new bool[amountoftimes];
+                //for (int i = 0; i < amountoftimes; i++)
+                //{
+                //    mama[i] = UnityEngine.Random.Range(4, ((5-arprate)*2) + 72) > 66;
+                //}
+                //Liaison NewLiaison = new Liaison($"M-{note}", liaisonwait, mama, UnityEngine.Random.Range(0, amountoftimes), period);
+                LiaisonList.Add(NL);
             }
             private static void CheckThisLiaisonOutDude(int indexofwhereitathomie, PlopMachine plopmachine)
             {
@@ -684,51 +603,28 @@ namespace RainMeadow
                 {
                     evolvestopwatch = 0;
                     //RainMeadow.Debug("Evolves " + liaison.note);
-
-                    string[] parts = liaison.note.Split('-');
-
-                    int oct = int.Parse(parts[1]);
-                    bool intiseasy = int.TryParse(parts[2], out int ind);
-                    string accidentals = "";
-                    if (!intiseasy)
+                    int oct = liaison.octave;
+                    int ind = liaison.index;
+                    for (int i = 0; i < 4; i++) 
                     {
-                        ind = int.Parse(parts[2].Substring(0, 1));
-                        accidentals = parts[2].Substring(1);
-                    }
-                    int attempts = 0;
-                    bool willmodify;
-                    do
-                    {
-                        willmodify = true; //copied straight from the best coder on earth, me, when wriding Add()  <<-- with all of it's wrongs apperantly
-                        int modifying = UnityEngine.Random.Range(-2, 1);
+                        int modifying = UnityEngine.Random.Range(-2, 2);
                         if (modifying > -1) modifying++;
                         if (modifying == -2 || modifying == 2) if (UnityEngine.Random.Range(0, 2) == 1) modifying /= 2;
 
-                        ind += modifying;
-
+                        ind += modifying; 
                         if (ind > 7) { ind -= 7; oct++; }
                         if (ind < 1) { ind += 7; oct--; }
-
-                        if (oct < 1) oct++;
-                        if (oct > 7) oct--;
-                        liaison.note = $"M-{oct}-{ind}{accidentals}"; // string construction = "M-" + Convert.ToString(oct) + "-" + Convert.ToString(ind) + accidentals;
-                        willmodify = LiaisonList.Exists(l => l.note == liaison.note);
-                        attempts++;
-                    } while (!willmodify && attempts < 4);
-
-                    if (attempts >= 4) 
-                    { 
-                        //RainMeadow.Debug("Oh no can't fuck with it"); 
-                    }
-                    else
-                    {
-                        LiaisonList[indexofwhereitathomie] = liaison;
-                        Analyze(plopmachine);
-                        //RainMeadow.Debug("To " + liaison.note);
+                        Mathf.Clamp(oct, 1, 7);
+                        if (LiaisonList.Exists(l => l.index != ind && l.octave != oct)) 
+                        {
+                            LiaisonList[indexofwhereitathomie] = new Liaison(oct, ind, liaison.accidental);
+                            Analyze(plopmachine);
+                            break;
+                        }
                     }
                 }
             }
-            public static void Wipe(PlopMachine plopmachine)
+            public static void Wipe()
             {
                 LiaisonList.Clear();
                 arpstep = 0;
@@ -738,15 +634,15 @@ namespace RainMeadow
                 BreakUndoStopwatch = 0;
                 randomsetsacrificeboard.Clear();
                 arprate = (int)(Mathf.PerlinNoise((float)arpcounterstopwatch / 1000f, (float)arpcounterstopwatch / 4000f) * 5);
-                if (!isindividualistic) { Analyze(plopmachine); }
+                liaisonrace = new int[0];
             }
             public static void RandomMode()
             {
                 //arpingmode to be: "upwards" "downwards" "switchwards" "randomwards" "inwards" "outwards"
                 int sowhichoneboss = UnityEngine.Random.Range(0, 6); 
                 arpingmode = (Arpmode)sowhichoneboss;
-                arpmiddlenoteistop = UnityEngine.Random.Range(0, 2) == 1;
-                //RainMeadow.Debug("We're now arping " + arpingmode);
+                bool arpmiddlenoteistop = UnityEngine.Random.Range(0, 2) == 1; //RainMeadow.Debug("We're now arping " + arpingmode);
+                halfway = (LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1);
                 //OKAY SO SIDE NOTE TO MYSELF, always call randommode AFTER you've found out how many liaisons are listed
                 arpgoingupwards = UnityEngine.Random.Range(0, 2) == 1;
                 arpstep = arpingmode switch
@@ -762,8 +658,8 @@ namespace RainMeadow
             }
             public static void CollectiveArpStep(PlopMachine plopmachine)
             {
-                //RainMeadow.Debug(arpstep + "    " + arpingmode + "   " + arpmiddlenoteistop + "   " + arpgoingupwards);
-                plopmachine.Plop(LiaisonList[liaisonrace[arpstep]].note); //so it plays the arp it *leaves*
+                //RainMeadow.Debug(LiaisonList.Count + "   " + arpstep + "    " + arpingmode + "   " + arpmiddlenoteistop + "   " + arpgoingupwards);
+                plopmachine.Plop(LiaisonList[liaisonrace[arpstep]]); //so it plays the arp it *leaves*
                 CheckThisLiaisonOutDude(liaisonrace[arpstep], plopmachine);
 
                 switch (arpingmode)
@@ -800,10 +696,7 @@ namespace RainMeadow
                     case Arpmode.randomwards:
                         if (randomsetsacrificeboard.Count == 0)
                         {
-                            foreach (int i in liaisonrace)
-                            {
-                                randomsetsacrificeboard.Add(i);
-                            }
+                            foreach (int i in liaisonrace) randomsetsacrificeboard.Add(i);
                         }
                         int thesacrifice = UnityEngine.Random.Range(0, randomsetsacrificeboard.Count);
                         arpstep = liaisonrace[randomsetsacrificeboard[thesacrifice]];
@@ -815,7 +708,7 @@ namespace RainMeadow
                         if (arpgoingupwards)
                         {
                             arpstep++;
-                            lookoutfor = (LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1)+1 ;
+                            lookoutfor = halfway + 1;
                             if (arpstep >= lookoutfor)
                             {
                                 arpgoingupwards = false;
@@ -825,7 +718,7 @@ namespace RainMeadow
                         else
                         {
                             arpstep--;
-                            lookoutfor = ((LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1));
+                            lookoutfor = halfway;
                             if (arpstep <= lookoutfor)
                             {
                                 arpgoingupwards = true;
@@ -840,7 +733,7 @@ namespace RainMeadow
                             arpstep++;
                             if (arpstep >= LiaisonList.Count)
                             { 
-                                arpstep = (LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1);
+                                arpstep = halfway;
                                 arpgoingupwards = false;
                             }
                         }
@@ -849,7 +742,7 @@ namespace RainMeadow
                             arpstep--;
                             if (arpstep < 0)
                             {
-                                arpstep = ((LiaisonList.Count / 2) - (arpmiddlenoteistop ? ((LiaisonList.Count + 1) % 2) : 1)) + 1;
+                                arpstep = halfway + 1;
                                 arpgoingupwards = true;
                             }
                         }
@@ -901,7 +794,7 @@ namespace RainMeadow
                         else
                         {
                             //RainMeadow.Debug("It's the funny it's so playing :))))" + strumindex +"   ummm"+ liaisonrace[strumindex] +"   ummmm"+ LiaisonList[liaisonrace[strumindex]]);
-                            plopmachine.Plop(LiaisonList[liaisonrace[strumindex]].note);
+                            plopmachine.Plop(LiaisonList[liaisonrace[strumindex]]);
                             strumtimer = (int)(plopmachine.fichtean * 4);  //which is essentially //perlinnoise(1, 4) (1, 2, 3)
                             if (strumdirectionupwards) { strumindex++; }
                             else { strumindex--; }
@@ -930,15 +823,51 @@ namespace RainMeadow
 
         public static class NoteMagazine
         {
-            static List<string> InNoteList = new(); 
-            static List<string> OutNoteList = new(); 
-            static bool hasdecidedamount = false;
-            static int decidedamount;
-            static int triedamounts;
-            static readonly Dictionary<string, string> SoloLineageDict = new(); //one at a time kid
-            static readonly Dictionary<string, string> DuoLineageDict = new(); //thanks dad it's time for duo
+            static List<Liaison> InNoteList = new(); 
+            static List<Liaison> OutNoteList = new(); 
+            static readonly Dictionary<int, string> SoloLineageDict = new()
+            {
+                //{"fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes"},
+                {1, "-5 =1 =3 =5|-6 =2 =4"},
+                {2, "-6 =2 =5 =6|-4 =1 =3 =4"},
+                {3, "-6 =2 =3 =6 +1|-7 =3 =4 =7"},
+                {4, "-5 =1 =4 =5 +3|-5 =2 =5 +2"},
+                {5, "=1 =5 +1 +3 +5|=2 =6 =7 +3 +6"},
+                {6, "=6 +1 +2 +3 +6 =2|=3 =5 +2 +4"},
+                {7, "-3 -7 =1 =5 =7|-6 =2 =4 =5" }
+            };
+            //one at a time kid
+            static readonly Dictionary<int, string> DuoLineageDict = new()
+            {
+                //{"timeforsecondof painyo", "yeah|yeah"},
+                {(6*1) + 2, "-5 =1 =2 =3 =6 +2|-7 =1 =2 =4 =6 +3"},
+                {(6*1) + 3, "-6 =1 =3 =5 +2|-6 =4 =5 =6"},
+                {(6*1) + 4, "-5 =1 =4 =6 +3|=2 =5 =6 +2"},
+                {(6*1) + 5, "-5 =1 =5 +1 +3|=2 =4 =5 =7 +2"},
+                {(6*1) + 6, "-5 =2 =5 +1 +5|-5 =2 =5 +1"},
+                {(6*1) + 7, "=1 =5 =7 +2|=2|=5 =7 +1 +2"},
+                {(6*2) + 3, "-6 =2 =3 =6 +2|-2 =2 =4 =5 +2"},
+                {(6*2) + 4, "-6 =2 =4 +4|-7 =3 =7 +1"},
+                {(6*2) + 5, "=2 =5 =7 +2|-7 =6 +3 +5"},
+                {(6*2) + 6, "-5 =2 =5 =6 +2|-6 =3 =7 +3"},
+                {(6*2) + 7, "-5 =2 =3 =7|=3 =5 +1 +5"},
+                {(6*3) + 4, "-6 =3 =4 =6 +3|-7 =5 +1 +4"},
+                {(6*3) + 5, "-5 =3 =5 +3 +7|=1 =2 =4 =6 +2"},
+                {(6*3) + 6, "=1 =3 =6 +5|-5 =1 =6 +1"},
+                {(6*3) + 7, "-6 =3 =7 +3|=4 =6 +1 +3 +5"},
+                {(6*4) + 5, "-5 =1 =4 =5 +6|=2 =6 +1 +2"},
+                {(6*4) + 6, "-5 =1 =4 =6 +3 +6|-6 =4 =6 +1 +4 +7"},
+                {(6*4) + 7, "-5 =4 =6 =7 +3|-7 =3 =5 +4"},
+                {(6*5) + 6, "-6 =5 =6 +2 +6|=1 =5 =7 +5"},
+                {(6*5) + 7, "-5 =1 =5 =7 +5|-4 -7 =4 =6 +4"},
+                {(6*6) + 7, "-5 =2 =6 =7 +3 +5|-4 -7 =3 =5 +1 +4"}
+            };
+            
+            //thanks dad it's time for duo
             public static void Fuckinginitthatdictlineagebitch()
             {
+                RainMeadow.Debug(DuoLineageDict[8]);
+                /*
                 SoloLineageDict.Add("fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes");
                 SoloLineageDict.Add("4-1", "3-5 4-1 4-3 4-5|3-6 4-2 4-4");
                 SoloLineageDict.Add("4-2", "3-6 4-2 4-5 4-6|3-4 4-1 4-3 4-4");
@@ -971,71 +900,49 @@ namespace RainMeadow
                 DuoLineageDict.Add("4-5 4-6", "3-6 4-5 4-6 5-2 5-6|4-1 4-5 4-7 5-5");
                 DuoLineageDict.Add("4-5 4-7", "3-5 4-1 4-5 4-7 5-5|3-4 3-7 4-4 4-6 5-4");
                 DuoLineageDict.Add("4-6 4-7", "3-5 4-2 4-6 4-7 5-3 5-5|3-4 3-7 4-3 4-5 5-1 5-4");
+                */
             }
 
-            public static void AddSeed(string Note) { InNoteList.Add(Note); }
+            public static void AddSeed(string Note) 
+            { 
+                InNoteList.Add(new Liaison(Note)); 
+            }
             public static void Fester(PlopMachine plopmachine)
             {
-                if (!hasdecidedamount) { decidedamount = (int)Mathf.Lerp(6.5f, 2f, plopmachine.fichtean); hasdecidedamount = true; }
-                decidedamount = 7;
-                while (OutNoteList.Count < decidedamount && triedamounts < 10)
+                int decidedamount = (int)Mathf.Lerp(6.5f, 2f, plopmachine.fichtean); 
+
+                for (int tries = 0; tries < 10; tries++)
                 {
                     Grows(plopmachine);
-                    triedamounts++;
-                    //RainMeadow.Debug("Attempt " + triedamounts);
+                    if (OutNoteList.Count < decidedamount) break;
                 }
-                triedamounts = 0;
-                Push(plopmachine);
+
+                foreach (Liaison bullet in OutNoteList)
+                {
+                    ChitChat.Add(bullet);
+                    //RainMeadow.Debug($"Pushed a {bullet}Thing");
+                }
+                ChitChat.Instantiate(plopmachine);
+                InNoteList.Clear();
+                OutNoteList.Clear();
             }
             private static void Grows(PlopMachine plopmachine)
             {
-                string Note1 = InNoteList[UnityEngine.Random.Range(0, InNoteList.Count)];
-                string Note2 = InNoteList[UnityEngine.Random.Range(0, InNoteList.Count)];
+                Liaison Note1 = InNoteList[UnityEngine.Random.Range(0, InNoteList.Count)];
+                Liaison Note2 = InNoteList[UnityEngine.Random.Range(0, InNoteList.Count)];
 
-                string[] Break1 = Note1.Split('-');
-                int Octave1 = int.Parse(Break1[0]);
-                bool HasNoExtras1 = int.TryParse(Break1[1], out int Index1);
-                string Extras1 = "";
-                if (!HasNoExtras1)
-                {
-                    Index1 = int.Parse(Break1[1].Substring(0, 1));
-                    Extras1 = Break1[1].Substring(1);
-                }
+                bool FirstUpper = Note1.index > Note2.index;
+                int LowNote = FirstUpper ? Note2.index : Note1.index;
+                int HighNote = FirstUpper ? Note1.index : Note2.index;
+                int HighExtras = FirstUpper ? Note1.accidental : Note2.accidental;
+                int HighOctave = FirstUpper ? Note1.octave : Note2.octave;
+                string NoteValue;
 
-                string[] Break2 = Note2.Split('-');
-                int Octave2 = int.Parse(Break2[0]);
-                bool HasNoExtras2 = int.TryParse(Break2[1], out int Index2);
-                string Extras2 = "";
-                if (!HasNoExtras2)
-                {
-                    Index2 = int.Parse(Break2[1].Substring(0, 1));
-                    Extras2 = Break2[1].Substring(1);
-                }
-
-                string LowNote;
-                string HighNote;
-                string HighExtras;
-                int HighFourDelta;
-                if (Index1 > Index2)
-                {
-                    HighNote = $"4-{Index1}";
-                    HighExtras = Extras1;
-                    LowNote = $"4-{Index2}";
-                    HighFourDelta = Octave1 - 4;
-                }
-                else
-                {
-                    HighNote = $"4-{Index2}";
-                    HighExtras = Extras2;
-                    LowNote = $"4-{Index1}";
-                    HighFourDelta = Octave2 - 4;
-                }
-                string NoteValue = "";
-                if (Index1 == Index2) {
-                    _ = SoloLineageDict.TryGetValue(((UnityEngine.Random.Range(0, 3) == 0) ? LowNote : HighNote), out NoteValue);
+                if (Note1.index == Note2.index) {
+                    _ = SoloLineageDict.TryGetValue((UnityEngine.Random.Range(0, 3) == 0) ? LowNote : HighNote, out NoteValue);
                 }
                 else {
-                    _ = DuoLineageDict.TryGetValue($"{LowNote} {HighNote}", out NoteValue);
+                    _ = DuoLineageDict.TryGetValue((6 * LowNote) + HighNote, out NoteValue);
                 }
                 float bias = Mathf.Pow(-Mathf.Cos(plopmachine.fichtean * Mathf.PI), 0.52f) / 2 + 0.5f;
                 float does_the_church_allow_it = UnityEngine.Random.Range(1f, 0f);
@@ -1043,29 +950,17 @@ namespace RainMeadow
                 string[] heaven_or_hell = NoteValue.Split('|');
                 string which_one_will_you_choose = heaven_or_hell[MartinLutherKing];
                 string[] the_begotten = which_one_will_you_choose.Split(' ');
-                string the_One = the_begotten[UnityEngine.Random.Range(0, the_begotten.Length)]; 
-                string[] FinalNoteParts = the_One.Split('-');
+                string the_One = the_begotten[UnityEngine.Random.Range(0, the_begotten.Length)];
+
                 //added "clarity"... god really was with me when i made this
 
-                int FinalOct = int.Parse(FinalNoteParts[0]) + HighFourDelta;
-                if (FinalOct > 7) { FinalOct = UnityEngine.Random.Range(3, 7); }
-                string FinalNote = $"{FinalOct}-{FinalNoteParts[1]}{HighExtras}";
+                int FinalOct = HighOctave + (the_One[0] switch { '-' => -1, '=' => 0, '+' => 1, _ => 0 });
+                if (FinalOct > 7) FinalOct = UnityEngine.Random.Range(3, 7);
+
+                Liaison FinalNote = new(FinalOct, the_One[1], HighExtras);
 
                 if (!InNoteList.Contains(FinalNote)) InNoteList.Add(FinalNote);
                 if (!OutNoteList.Contains(FinalNote)) OutNoteList.Add(FinalNote);
-            }
-            public static void Push(PlopMachine plopmachine)
-            {
-                //chitchat.add takes only in "3-2" thing, not "S-3-1"
-                foreach (string bullet in OutNoteList)
-                {
-                    ChitChat.Add(bullet, plopmachine);
-                    //RainMeadow.Debug($"Pushed a {bullet}Thing");
-                }
-                ChitChat.Instantiate(plopmachine);
-                InNoteList.Clear();
-                OutNoteList.Clear();
-                hasdecidedamount = false;
             }
         }
 
@@ -1073,7 +968,7 @@ namespace RainMeadow
         {
             private static float linearToDb(float linear) { return Mathf.Pow(linear / 20f, 10); }
             private static float dbToLinear(float db) { return Mathf.Log(db) * 20f; }
-            //private static float velocityToDb(float velocity) { return }
+            //private static float velocityToDb(float velocity) { return } 
             enum DrumGender
             {
                 None,
@@ -1164,7 +1059,7 @@ namespace RainMeadow
             static float? velOfLastOpenHat;
             private static void PlayDrum(DrumGender gender, float vel, VirtualMicrophone mic, PlopMachine plopMachine)
             {
-                SoundID sample = Perc1;
+                SoundID sample;
                 float trackvol = 0;
                 float speed = 1f;
 
@@ -1308,9 +1203,6 @@ namespace RainMeadow
         }
 
 
-        bool ol1;
-        bool ol2 = true;
-        bool ol3;
         private void RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             orig(self);
@@ -1331,16 +1223,16 @@ namespace RainMeadow
                 }
 
                 
-                if (Input.GetKey("e") && !ol1)
-                {
-                    agora++;
-                }
-                ol1 = Input.GetKey("e");
-                if (Input.GetKey("q") && !ol3)
-                {
-                    agora--;
-                }
-                ol3 = Input.GetKey("q");
+                //if (Input.GetKey("e") && !ol1)
+                //{
+                //    agora++;
+                //}
+                //ol1 = Input.GetKey("e");
+                //if (Input.GetKey("q") && !ol3)
+                //{
+                //    agora--;
+                //}
+                //ol3 = Input.GetKey("q");
             }
         }
 

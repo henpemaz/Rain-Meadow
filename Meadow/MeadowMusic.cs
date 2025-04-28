@@ -34,18 +34,21 @@ namespace RainMeadow
             On.ActiveTriggerChecker.FireEvent += ActiveTriggerChecker_FireEvent;
             On.SSOracleBehavior.TurnOffSSMusic += SSOracleBehavior_TurnOffSSMusic;
             On.Music.SSSong.Update += SSSong_Update;
-            On.Music.MusicPlayer.RainRequestStopSong += MusicPlayer_RainRequestStopSong;
+            On.Music.MusicPlayer.RainRequestStopSong += MusicPlayer_RainRequestStopSong; 
 
             On.ActiveTriggerChecker.Update += ActiveTriggerChecker_Update;
 
             On.Music.MusicPiece.StartPlaying += MusicPiece_StartPlaying;
 
             //On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
+
+            //note to self: apperantly you gotta remove the highpass from songs before they get removed??
+
         }
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
         //private static void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
         //{
-          //fuckoff
+        //fuckoff
         //}
 
         //Game music hooks 
@@ -442,7 +445,7 @@ namespace RainMeadow
                         int zoneindex = 0;
                         for (int i = 0; i < lines.Length; i++)
                         {
-                            if (lines[i].Contains(','))
+                            if (lines[i].Count(c => c == ',') == 3)
                             {
                                 RainMeadow.Debug("Meadow Music: Registered vibezone " + lines[i] + " in " + regName);
                                 string[] arr = lines[i].Split(',');
@@ -558,7 +561,7 @@ namespace RainMeadow
                         var who = playersWithMe[UnityEngine.Random.Range(0, playersWithMe.Count)];
                         RainMeadow.Debug("I will ask to join this player named " + who);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who); // the ordering
-                        self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another DJ group", 80);
+                        self.cameras[0].hud.textPrompt.AddMusicMessage("Joining another fellas DJ group", 80);
                         self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
                     }
                 }
@@ -568,7 +571,7 @@ namespace RainMeadow
             var RoomImIn = self.cameras[0].room;
             var MyGuyMic = self.cameras[0].virtualMicrophone;
 
-            if (RoomImIn != null && MyGuyMic != null && UpdateIntensity && regionVibeZonesDict != null && closestVibe != -1)
+            if (RoomImIn != null && MyGuyMic != null && UpdateIntensity && regionVibeZonesDict != null && closestVibe != -1 && self.world.GetAbstractRoom(closestVibe) != null)
             {
                 vibePan = Vector2.Dot((RoomImIn.world.RoomToWorldPos(Vector2.zero, closestVibe) - RoomImIn.world.RoomToWorldPos(Vector2.zero, RoomImIn.abstractRoom.index)).normalized, Vector2.right);
                 //RainMeadow.Debug("Has Calculated Pan");
@@ -620,7 +623,7 @@ namespace RainMeadow
                     // huh
                     RainMeadow.Debug("I'm the host");
                 }
-                else if (TryGetIfIShouldPlaySongNameThatThisIdProvides(hostId, out MeadowMusicData myDJsdata))
+                else if (TryGetMusicdata(hostId, out MeadowMusicData myDJsdata))
                 {
                     // found
                     RainMeadow.Debug($"So do me and my DJs songs match? {musicdata.providedSong} == {myDJsdata.providedSong}? And how far apart are we then? {musicdata.startedPlayingAt}, {myDJsdata.startedPlayingAt}");
@@ -646,7 +649,7 @@ namespace RainMeadow
                 {
                     if (ambienceSongArray != null)
                     {
-                        if (time > waitSecs) //&& musicdata.providedSong != songtoavoid no need for this really uh huh
+                        if (time > waitSecs) 
                         {
                             if (shuffleindex + 1 >= shufflequeue.Length) ShuffleSongs(); 
                             else shuffleindex++; 
@@ -656,7 +659,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                else if (TryGetIfIShouldPlaySongNameThatThisIdProvides(hostId, out MeadowMusicData hostMusicData)) //hmmm, maybe we don't wanna run this *every frame*. Optimise pls? Get some cache method thingy? which updates when dj updates or switches
+                else if (TryGetMusicdata(hostId, out MeadowMusicData hostMusicData)) 
                 {
                     RainMeadow.Debug("My host now has a song i care 'bout, gonna try playing it");
                     QueueSong(musicPlayer, hostMusicData.providedSong);
@@ -695,19 +698,17 @@ namespace RainMeadow
                 }
                 else
                 {
-                    /*
                     if (sosad == 5)
                     {
-                        if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
+                        //if (Input.GetKey(KeyCode.Insert)) QueueSong(musicPlayer, meadowsongnames[queuething = 0]);
                         if (Input.GetKey(KeyCode.Delete)) QueueSong(musicPlayer, "");
-                        if (Input.GetKey(KeyCode.PageUp)) QueueSong(musicPlayer, meadowsongnames[queuething = ((queuething + 1) >= meadowsongnames.Length) ? 0 : (queuething + 1)]);
+                        //if (Input.GetKey(KeyCode.PageUp)) QueueSong(musicPlayer, meadowsongnames[queuething = ((queuething + 1) >= meadowsongnames.Length) ? 0 : (queuething + 1)]);
                         if (musicPlayer != null && musicPlayer.song != null) {
                             if (Input.GetKey(KeyCode.PageDown)) musicPlayer.song.subTracks[0].source.time += 10;
                             if (Input.GetKey(KeyCode.End)) musicPlayer.song.subTracks[0].volume -= 0.25f; //starts at 1 
                             if (Input.GetKey(KeyCode.Home)) musicPlayer.song.subTracks[0].isSynced = true;
                         }
                     }
-                    */
                     thisis = 'a';
                     sosad = 0;
                 }
@@ -748,7 +749,8 @@ namespace RainMeadow
         }
         */
         static KeyValuePair<ushort, OnlineCreature> HostAvatar;
-        private static bool TryGetIfIShouldPlaySongNameThatThisIdProvides(ushort Id, out MeadowMusicData nameOfSong)
+        static bool HasDeclaredSongTaste = false;
+        private static bool TryGetMusicdata(ushort Id, out MeadowMusicData nameOfSong)
         {
             nameOfSong = null;
             if (Id == HostAvatar.Key)
@@ -768,18 +770,30 @@ namespace RainMeadow
                 return false;
             }
 
-            if (HostAvatar.Value.TryGetData(out MeadowMusicData myDJsdata)
-                && !(myDJsdata.providedSong == "" || myDJsdata.providedSong == null || myDJsdata.providedSong == songtoavoid))
+            if (HostAvatar.Value.TryGetData(out MeadowMusicData myDJsdata))
             {
-                songtoavoid = "";
-                nameOfSong = myDJsdata;
-                RainMeadow.Debug("Yarrrr: " + nameOfSong.providedSong);
-                return true;
+                if (!(myDJsdata.providedSong == "" || myDJsdata.providedSong == null || myDJsdata.providedSong == songtoavoid))
+                {
+                    songtoavoid = "";
+                    nameOfSong = myDJsdata;
+                    RainMeadow.Debug("Yarrrr: " + nameOfSong.providedSong);
+                    HasDeclaredSongTaste = false;
+                    return true;
+                }
+                else 
+                {
+                    if (!HasDeclaredSongTaste)
+                    {
+                        RainMeadow.Debug("Song is MID");
+                        if (myDJsdata.providedSong != null) RainMeadow.Debug("Stinks of " + myDJsdata.providedSong);
+                    }
+                    HasDeclaredSongTaste = true;
+                    return false; 
+                }
             }
             else
             {
-                //RainMeadow.Debug("Nah");
-                //if (myDJsdata.providedSong != null) RainMeadow.Debug("Stinks of " + myDJsdata.providedSong);
+                RainMeadow.Debug("Can't get data");
                 return false;
             }
         }
@@ -937,7 +951,7 @@ namespace RainMeadow
             }
             else if (song.name != latestrequest)
             {
-                RainMeadow.Debug("Song was fucking SUPID i DONT like this one i want the NEW one");
+                RainMeadow.Debug("Song was fucking SUPID i DONT like this one i want the NEW one: " + song.name + " " + latestrequest);
                 return;
             }
             else
