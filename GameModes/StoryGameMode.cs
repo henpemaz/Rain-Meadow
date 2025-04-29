@@ -24,7 +24,7 @@ namespace RainMeadow
         public bool readyForWin = false;
 
         public ReadyForGate readyForGate = ReadyForGate.Closed;
-        public DifficultyMode difficultyMode = DifficultyMode.Medium;
+        public DifficultyMode difficultyMode = DifficultyMode.Easy;
         public bool friendlyFire = false;
         public string? defaultDenPos;
         public string? region = null;

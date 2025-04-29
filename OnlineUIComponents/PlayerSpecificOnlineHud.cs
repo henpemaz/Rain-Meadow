@@ -139,7 +139,10 @@ namespace RainMeadow
             if (clientSettings.avatars[0]?.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
             {
                 abstractPlayer = oc.abstractCreature;
-                customization = oc.GetData<SlugcatCustomization>();
+                if (oc.TryGetData<SlugcatCustomization>(out var customization))
+                {
+                    this.customization = customization;
+                }
             }
             else
             {

@@ -16,7 +16,7 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature is Player player)
+            if (OnlineManager.lobby.gameMode.avatars != null && OnlineManager.lobby.gameMode.avatars.Count > 0 && OnlineManager.lobby.gameMode.avatars[0] != null && OnlineManager.lobby.gameMode.avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature != null && ac.realizedCreature is Player player)
             {
                 if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 {
