@@ -356,7 +356,14 @@ namespace RainMeadow
 
             this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
             var toggleChat = new SimplerSymbolButton(this, pages[0], "Kill_Slugcat", "", this.chatTextBoxPos);
-            toggleChat.OnClick += (_) => ToggleChat(!this.isChatToggled);
+            toggleChat.OnClick += (_) =>
+            {
+                ToggleChat(!this.isChatToggled);
+                if (input.controllerType == Options.ControlSetup.Preset.KeyboardSinglePlayer)
+                {
+                    selectedObject = null;
+                }
+            };
             pages[0].subObjects.Add(toggleChat);
 
             var sameSpotOtherSide = restartCheckboxPos.x - startButton.pos.x;

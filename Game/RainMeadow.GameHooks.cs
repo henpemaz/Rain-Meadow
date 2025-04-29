@@ -118,6 +118,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((bool lastPause, RainWorldGame self) =>
                 {
+                    if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is MeadowGameMode) return lastPause;
                     if (lastPause) return true;
                     if (ChatTextBox.blockInput)
                     {
