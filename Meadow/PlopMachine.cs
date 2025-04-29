@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
+using System.Drawing.Text;
 
 namespace RainMeadow
 {
@@ -125,10 +126,8 @@ namespace RainMeadow
                     RainMeadow.Debug("  ###    ###                  ");
                     RainMeadow.Debug("   ##      ####               ");
                     RainMeadow.Debug("   ###       ##               ");
-
-                    StartthefuckingWaitDict();
-                    NoteMagazine.Fuckinginitthatdictlineagebitch();
                     RainMeadow.Debug("Checking files");
+                    DrumMachine.StartthefuckingWaitDicthehe();
                     string[] mydirs = AssetManager.ListDirectory("soundeffects", false, true);
                     RainMeadow.Debug("Printing all directories in soundeffects");
                     foreach (string dir in mydirs)
@@ -182,11 +181,13 @@ namespace RainMeadow
         {
             int treatedkey = CurrentKey + 6;
             int[,] thescale = inmajorscale ? intsinkey : intsinmkey;
+            //RainMeadow.Debug(index + "   " + inmajorscale);
             int integer = thescale[treatedkey, index - 1];
             return integer;
         }
         private void Plop(string input)
         {
+            //RainMeadow.Debug("Input " + input);
             string[] parts = input.Split('-');
             string length = parts[0];
             int oct = int.Parse(parts[1]);
@@ -342,13 +343,13 @@ namespace RainMeadow
         public struct Liaison
         {
             public Liaison(int octave, int index, int accidental)
-            { 
+            {
                 this.octave = octave;
                 this.index = index;
                 this.accidental = accidental;
             }
             public Liaison(string note)
-            {    
+            {
                 string[] Hahaha = note.Split('-');
                 bool intiseasy = int.TryParse(Hahaha[1], out int ind);
                 int extratranspose = 0;
@@ -360,7 +361,7 @@ namespace RainMeadow
                 }
                 octave = int.Parse(Hahaha[0]);
                 index = ind;
-                accidental = extratranspose; 
+                accidental = extratranspose;
             }
             public int octave;
             public int index;
@@ -370,7 +371,10 @@ namespace RainMeadow
                 get
                 {
                     string danote = $"{octave}-{index}";
-                    for (int i = 0; i < Mathf.Abs(accidental); i++) { danote += (accidental < 0) ? 'b' : '#'; }
+                    for (int i = 0; i < Mathf.Abs(accidental); i++) 
+                    { 
+                        danote.Append((accidental < 0) ? 'b' : '#'); 
+                    }
                     return danote;
                 }
             }
@@ -393,7 +397,7 @@ namespace RainMeadow
             static public bool arpgoingupwards = false;
             static int arptimer = 20;
 
-            static public bool[] steppattern = new bool[4];
+            static public bool[] steppattern = new bool[4] { true, true, true, false };
             static int steppatternindex = 0;
 
             static public double arpcounterstopwatch;
@@ -525,7 +529,8 @@ namespace RainMeadow
                 List<int> LiaisonsFreqNumbs = new();
                 foreach (Liaison Note in LiaisonList)
                 {
-                    int freqnumb = Note.octave * 12 + plopmachine.IndexTOCKInt(Note.index) + Note.accidental;
+                    //RainMeadow.Debug("We testing " + Note);
+                    int freqnumb =  12 * Note.octave + plopmachine.IndexTOCKInt(Note.index) + Note.accidental;
                     LiaisonsFreqNumbs.Add(freqnumb);
                 }
                 int[] Staircase = new int[LiaisonList.Count];
@@ -602,7 +607,7 @@ namespace RainMeadow
                 if (itwillevolve)
                 {
                     evolvestopwatch = 0;
-                    //RainMeadow.Debug("Evolves " + liaison.note);
+                    //RainMeadow.Debug("Evolves " + liaison.Note);
                     int oct = liaison.octave;
                     int ind = liaison.index;
                     for (int i = 0; i < 4; i++) 
@@ -658,7 +663,7 @@ namespace RainMeadow
             }
             public static void CollectiveArpStep(PlopMachine plopmachine)
             {
-                //RainMeadow.Debug(LiaisonList.Count + "   " + arpstep + "    " + arpingmode + "   " + arpmiddlenoteistop + "   " + arpgoingupwards);
+                //RainMeadow.Debug(LiaisonList.Count + "   " + arpstep + "    " + arpingmode + "   " + halfway + "   " + arpgoingupwards);
                 plopmachine.Plop(LiaisonList[liaisonrace[arpstep]]); //so it plays the arp it *leaves*
                 CheckThisLiaisonOutDude(liaisonrace[arpstep], plopmachine);
 
@@ -825,96 +830,56 @@ namespace RainMeadow
         {
             static List<Liaison> InNoteList = new(); 
             static List<Liaison> OutNoteList = new(); 
+            //one at a time kid
             static readonly Dictionary<int, string> SoloLineageDict = new()
             {
-                //{"fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes"},
-                {1, "-5 =1 =3 =5|-6 =2 =4"},
-                {2, "-6 =2 =5 =6|-4 =1 =3 =4"},
-                {3, "-6 =2 =3 =6 +1|-7 =3 =4 =7"},
-                {4, "-5 =1 =4 =5 +3|-5 =2 =5 +2"},
-                {5, "=1 =5 +1 +3 +5|=2 =6 =7 +3 +6"},
-                {6, "=6 +1 +2 +3 +6 =2|=3 =5 +2 +4"},
-                {7, "-3 -7 =1 =5 =7|-6 =2 =4 =5" }
+                //{"fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes"},//SoloLineageDict.Add("fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes");
+                {1, "-5 =1 =3 =5|-6 =2 =4"},                            //SoloLineageDict.Add("4-1", "3-5 4-1 4-3 4-5|3-6 4-2 4-4");
+                {2, "-6 =2 =5 =6|-4 =1 =3 =4"},                         //SoloLineageDict.Add("4-2", "3-6 4-2 4-5 4-6|3-4 4-1 4-3 4-4");
+                {3, "-6 =2 =3 =6 +1|-7 =3 =4 =7"},                      //SoloLineageDict.Add("4-3", "3-6 4-2 4-3 4-6 5-1|3-7 4-3 4-4 4-7");
+                {4, "-5 =1 =4 =5 +3|-5 =2 =5 +2"},                      //SoloLineageDict.Add("4-4", "3-5 4-1 4-4 4-5 5-3|3-5 4-2 4-5 5-2");
+                {5, "=1 =5 +1 +3 +5|=2 =6 =7 +3 +6"},                   //SoloLineageDict.Add("4-5", "4-1 4-5 5-1 5-3 5-5|4-2 4-6 4-7 5-3 5-6");
+                {6, "=6 +1 +2 +3 +6 =2|=3 =5 +2 +4"},                   //SoloLineageDict.Add("4-6", "4-6 5-1 5-2 5-3 5-6 4-2|4-3 4-5 5-2 5-4");
+                {7, "-3 -7 =1 =5 =7|-6 =2 =4 =5" }                      //SoloLineageDict.Add("4-7", "3-3 3-7 4-1 4-5 4-7|3-6 4-2 4-4 4-5");
             };
-            //one at a time kid
+            //thanks dad it's time for duo
             static readonly Dictionary<int, string> DuoLineageDict = new()
             {
-                //{"timeforsecondof painyo", "yeah|yeah"},
-                {(6*1) + 2, "-5 =1 =2 =3 =6 +2|-7 =1 =2 =4 =6 +3"},
-                {(6*1) + 3, "-6 =1 =3 =5 +2|-6 =4 =5 =6"},
-                {(6*1) + 4, "-5 =1 =4 =6 +3|=2 =5 =6 +2"},
-                {(6*1) + 5, "-5 =1 =5 +1 +3|=2 =4 =5 =7 +2"},
-                {(6*1) + 6, "-5 =2 =5 +1 +5|-5 =2 =5 +1"},
-                {(6*1) + 7, "=1 =5 =7 +2|=2|=5 =7 +1 +2"},
-                {(6*2) + 3, "-6 =2 =3 =6 +2|-2 =2 =4 =5 +2"},
-                {(6*2) + 4, "-6 =2 =4 +4|-7 =3 =7 +1"},
-                {(6*2) + 5, "=2 =5 =7 +2|-7 =6 +3 +5"},
-                {(6*2) + 6, "-5 =2 =5 =6 +2|-6 =3 =7 +3"},
-                {(6*2) + 7, "-5 =2 =3 =7|=3 =5 +1 +5"},
-                {(6*3) + 4, "-6 =3 =4 =6 +3|-7 =5 +1 +4"},
-                {(6*3) + 5, "-5 =3 =5 +3 +7|=1 =2 =4 =6 +2"},
-                {(6*3) + 6, "=1 =3 =6 +5|-5 =1 =6 +1"},
-                {(6*3) + 7, "-6 =3 =7 +3|=4 =6 +1 +3 +5"},
-                {(6*4) + 5, "-5 =1 =4 =5 +6|=2 =6 +1 +2"},
-                {(6*4) + 6, "-5 =1 =4 =6 +3 +6|-6 =4 =6 +1 +4 +7"},
-                {(6*4) + 7, "-5 =4 =6 =7 +3|-7 =3 =5 +4"},
-                {(6*5) + 6, "-6 =5 =6 +2 +6|=1 =5 =7 +5"},
-                {(6*5) + 7, "-5 =1 =5 =7 +5|-4 -7 =4 =6 +4"},
-                {(6*6) + 7, "-5 =2 =6 =7 +3 +5|-4 -7 =3 =5 +1 +4"}
-            };
-            
-            //thanks dad it's time for duo
-            public static void Fuckinginitthatdictlineagebitch()
-            {
-                RainMeadow.Debug(DuoLineageDict[8]);
-                /*
-                SoloLineageDict.Add("fuckineedtofindouthowtowritethishere", "Ambientynote|Chordy Notes");
-                SoloLineageDict.Add("4-1", "3-5 4-1 4-3 4-5|3-6 4-2 4-4");
-                SoloLineageDict.Add("4-2", "3-6 4-2 4-5 4-6|3-4 4-1 4-3 4-4");
-                SoloLineageDict.Add("4-3", "3-6 4-2 4-3 4-6 5-1|3-7 4-3 4-4 4-7");
-                SoloLineageDict.Add("4-4", "3-5 4-1 4-4 4-5 5-3|3-5 4-2 4-5 5-2");
-                SoloLineageDict.Add("4-5", "4-1 4-5 5-1 5-3 5-5|4-2 4-6 4-7 5-3 5-6");
-                SoloLineageDict.Add("4-6", "4-6 5-1 5-2 5-3 5-6 4-2|4-3 4-5 5-2 5-4");
-                SoloLineageDict.Add("4-7", "3-3 3-7 4-1 4-5 4-7|3-6 4-2 4-4 4-5");
-
-                //yeahhh and then the second one !
-                DuoLineageDict.Add("timeforsecondof painyo", "yeah|yeah");
-                DuoLineageDict.Add("4-1 4-2", "3-5 4-1 4-2 4-3 4-6 5-2|3-7 4-1 4-2 4-4 4-6 5-3");
-                DuoLineageDict.Add("4-1 4-3", "3-6 4-1 4-3 4-5 5-2|3-6 4-4 4-5 4-6");
-                DuoLineageDict.Add("4-1 4-4", "3-5 4-1 4-4 4-6 5-3|4-2 4-5 4-6 5-2");
-                DuoLineageDict.Add("4-1 4-5", "3-5 4-1 4-5 5-1 5-3|4-2 4-4 4-5 4-7 5-2");
-                DuoLineageDict.Add("4-1 4-6", "3-5 4-2 4-5 5-1 5-5|3-5 4-2 4-5 5-1");
-                DuoLineageDict.Add("4-1 4-7", "4-1 4-5 4-7 5-2|4-2|4-5 4-7 5-1 5-2");
-                DuoLineageDict.Add("4-2 4-3", "3-6 4-2 4-3 4-6 5-2|3-2 4-2 4-4 4-5 5-2");
-                DuoLineageDict.Add("4-2 4-4", "3-6 4-2 4-4 5-4|3-7 4-3 4-7 5-1");
-                DuoLineageDict.Add("4-2 4-5", "4-2 4-5 4-7 5-2|3-7 4-6 5-3 5-5");
-                DuoLineageDict.Add("4-2 4-6", "3-5 4-2 4-5 4-6 5-2|3-6 4-3 4-7 5-3");
-                DuoLineageDict.Add("4-2 4-7", "3-5 4-2 4-3 4-7|4-3 4-5 5-1 5-5");
-                DuoLineageDict.Add("4-3 4-4", "3-6 4-3 4-4 4-6 5-3|3-7 4-5 5-1 5-4");
-                DuoLineageDict.Add("4-3 4-5", "3-5 4-3 4-5 5-3 5-7|4-1 4-2 4-4 4-6 5-2");
-                DuoLineageDict.Add("4-3 4-6", "4-1 4-3 4-6 5-5|3-5 4-1 4-6 5-1");
-                DuoLineageDict.Add("4-3 4-7", "3-6 4-3 4-7 5-3|4-4 4-6 5-1 5-3 5-5");
-                DuoLineageDict.Add("4-4 4-5", "3-5 4-1 4-4 4-5 5-6|4-2 4-6 5-1 5-2");
-                DuoLineageDict.Add("4-4 4-6", "3-5 4-1 4-4 4-6 5-3 5-6|3-6 4-4 4-6 5-1 5-4 5-7");
-                DuoLineageDict.Add("4-4 4-7", "3-5 4-4 4-6 4-7 5-3|3-7 4-3 4-5 5-4");
-                DuoLineageDict.Add("4-5 4-6", "3-6 4-5 4-6 5-2 5-6|4-1 4-5 4-7 5-5");
-                DuoLineageDict.Add("4-5 4-7", "3-5 4-1 4-5 4-7 5-5|3-4 3-7 4-4 4-6 5-4");
-                DuoLineageDict.Add("4-6 4-7", "3-5 4-2 4-6 4-7 5-3 5-5|3-4 3-7 4-3 4-5 5-1 5-4");
-                */
-            }
-
+                //{"timeforsecondof painyo", "yeah|yeah"},              //DuoLineageDict.Add("timeforsecondof painyo", "yeah|yeah");
+                {(6*1) + 2, "-5 =1 =2 =3 =6 +2|-7 =1 =2 =4 =6 +3"},     //DuoLineageDict.Add("4-1 4-2", "3-5 4-1 4-2 4-3 4-6 5-2|3-7 4-1 4-2 4-4 4-6 5-3");
+                {(6*1) + 3, "-6 =1 =3 =5 +2|-6 =4 =5 =6"},              //DuoLineageDict.Add("4-1 4-3", "3-6 4-1 4-3 4-5 5-2|3-6 4-4 4-5 4-6");
+                {(6*1) + 4, "-5 =1 =4 =6 +3|=2 =5 =6 +2"},              //DuoLineageDict.Add("4-1 4-4", "3-5 4-1 4-4 4-6 5-3|4-2 4-5 4-6 5-2");
+                {(6*1) + 5, "-5 =1 =5 +1 +3|=2 =4 =5 =7 +2"},           //DuoLineageDict.Add("4-1 4-5", "3-5 4-1 4-5 5-1 5-3|4-2 4-4 4-5 4-7 5-2");
+                {(6*1) + 6, "-5 =2 =5 +1 +5|-5 =2 =5 +1"},              //DuoLineageDict.Add("4-1 4-6", "3-5 4-2 4-5 5-1 5-5|3-5 4-2 4-5 5-1");
+                {(6*1) + 7, "=1 =5 =7 +2|=2|=5 =7 +1 +2"},              //DuoLineageDict.Add("4-1 4-7", "4-1 4-5 4-7 5-2|4-2|4-5 4-7 5-1 5-2");
+                {(6*2) + 3, "-6 =2 =3 =6 +2|-2 =2 =4 =5 +2"},           //DuoLineageDict.Add("4-2 4-3", "3-6 4-2 4-3 4-6 5-2|3-2 4-2 4-4 4-5 5-2");
+                {(6*2) + 4, "-6 =2 =4 +4|-7 =3 =7 +1"},                 //DuoLineageDict.Add("4-2 4-4", "3-6 4-2 4-4 5-4|3-7 4-3 4-7 5-1");
+                {(6*2) + 5, "=2 =5 =7 +2|-7 =6 +3 +5"},                 //DuoLineageDict.Add("4-2 4-5", "4-2 4-5 4-7 5-2|3-7 4-6 5-3 5-5");
+                {(6*2) + 6, "-5 =2 =5 =6 +2|-6 =3 =7 +3"},              //DuoLineageDict.Add("4-2 4-6", "3-5 4-2 4-5 4-6 5-2|3-6 4-3 4-7 5-3");
+                {(6*2) + 7, "-5 =2 =3 =7|=3 =5 +1 +5"},                 //DuoLineageDict.Add("4-2 4-7", "3-5 4-2 4-3 4-7|4-3 4-5 5-1 5-5");
+                {(6*3) + 4, "-6 =3 =4 =6 +3|-7 =5 +1 +4"},              //DuoLineageDict.Add("4-3 4-4", "3-6 4-3 4-4 4-6 5-3|3-7 4-5 5-1 5-4");
+                {(6*3) + 5, "-5 =3 =5 +3 +7|=1 =2 =4 =6 +2"},           //DuoLineageDict.Add("4-3 4-5", "3-5 4-3 4-5 5-3 5-7|4-1 4-2 4-4 4-6 5-2");
+                {(6*3) + 6, "=1 =3 =6 +5|-5 =1 =6 +1"},                 //DuoLineageDict.Add("4-3 4-6", "4-1 4-3 4-6 5-5|3-5 4-1 4-6 5-1");
+                {(6*3) + 7, "-6 =3 =7 +3|=4 =6 +1 +3 +5"},              //DuoLineageDict.Add("4-3 4-7", "3-6 4-3 4-7 5-3|4-4 4-6 5-1 5-3 5-5");
+                {(6*4) + 5, "-5 =1 =4 =5 +6|=2 =6 +1 +2"},              //DuoLineageDict.Add("4-4 4-5", "3-5 4-1 4-4 4-5 5-6|4-2 4-6 5-1 5-2");
+                {(6*4) + 6, "-5 =1 =4 =6 +3 +6|-6 =4 =6 +1 +4 +7"},     //DuoLineageDict.Add("4-4 4-6", "3-5 4-1 4-4 4-6 5-3 5-6|3-6 4-4 4-6 5-1 5-4 5-7");
+                {(6*4) + 7, "-5 =4 =6 =7 +3|-7 =3 =5 +4"},              //DuoLineageDict.Add("4-4 4-7", "3-5 4-4 4-6 4-7 5-3|3-7 4-3 4-5 5-4");
+                {(6*5) + 6, "-6 =5 =6 +2 +6|=1 =5 =7 +5"},              //DuoLineageDict.Add("4-5 4-6", "3-6 4-5 4-6 5-2 5-6|4-1 4-5 4-7 5-5");
+                {(6*5) + 7, "-5 =1 =5 =7 +5|-4 -7 =4 =6 +4"},           //DuoLineageDict.Add("4-5 4-7", "3-5 4-1 4-5 4-7 5-5|3-4 3-7 4-4 4-6 5-4");
+                {(6*6) + 7, "-5 =2 =6 =7 +3 +5|-4 -7 =3 =5 +1 +4"}      //DuoLineageDict.Add("4-6 4-7", "3-5 4-2 4-6 4-7 5-3 5-5|3-4 3-7 4-3 4-5 5-1 5-4");
+            };                                                          
             public static void AddSeed(string Note) 
             { 
                 InNoteList.Add(new Liaison(Note)); 
             }
             public static void Fester(PlopMachine plopmachine)
             {
-                int decidedamount = (int)Mathf.Lerp(6.5f, 2f, plopmachine.fichtean); 
+                int decidedamount = (int)Mathf.Lerp(7.25f, 2.75f, plopmachine.fichtean); 
 
                 for (int tries = 0; tries < 10; tries++)
                 {
                     Grows(plopmachine);
-                    if (OutNoteList.Count < decidedamount) break;
+                    if (OutNoteList.Count > decidedamount) break;
                 }
 
                 foreach (Liaison bullet in OutNoteList)
@@ -951,13 +916,11 @@ namespace RainMeadow
                 string which_one_will_you_choose = heaven_or_hell[MartinLutherKing];
                 string[] the_begotten = which_one_will_you_choose.Split(' ');
                 string the_One = the_begotten[UnityEngine.Random.Range(0, the_begotten.Length)];
-
                 //added "clarity"... god really was with me when i made this
 
-                int FinalOct = HighOctave + (the_One[0] switch { '-' => -1, '=' => 0, '+' => 1, _ => 0 });
+                int FinalOct = HighOctave + (int)(the_One[0] switch { '-' => -1, '=' => 0, '+' => 1, _ => 0 });
                 if (FinalOct > 7) FinalOct = UnityEngine.Random.Range(3, 7);
-
-                Liaison FinalNote = new(FinalOct, the_One[1], HighExtras);
+                Liaison FinalNote = new(FinalOct, the_One[1] - '0', HighExtras);
 
                 if (!InNoteList.Contains(FinalNote)) InNoteList.Add(FinalNote);
                 if (!OutNoteList.Contains(FinalNote)) OutNoteList.Add(FinalNote);
@@ -1139,44 +1102,15 @@ namespace RainMeadow
             }
         }
 
-        static Dictionary<string, int> WaitDict = new();
-        public void StartthefuckingWaitDict()
+        static Dictionary<string, int> WaitDict = new()
         {
-            DrumMachine.StartthefuckingWaitDicthehe();
-            ChitChat.steppattern = new bool[4] { true, true, true, false };
-
-            WaitDict.Add("bar", 96);
-            WaitDict.Add("half", 48);
-            WaitDict.Add("quarterT", 32);
-            WaitDict.Add("quarter", 24);
-            WaitDict.Add("eightT", 16);
-            WaitDict.Add("eight", 12);
-            WaitDict.Add("sixteenthT", 8);
-            WaitDict.Add("sixteenth", 6);
-            WaitDict.Add("thirtysecondT", 4);
-            WaitDict.Add("thirtysecond", 3);
-            WaitDict.Add("sixtyfourthT", 2);
-            WaitDict.Add("hundredandtwentyeightT", 1);
-
-            WaitDict.Add("1", 96);
-            WaitDict.Add("1/2", 48);
-            WaitDict.Add("1/3", 32);
-            WaitDict.Add("1/4T", 32);
-            WaitDict.Add("1/4", 24);
-            WaitDict.Add("1/6", 16);
-            WaitDict.Add("1/8T", 16);
-            WaitDict.Add("1/8", 12);
-            WaitDict.Add("1/12", 8);
-            WaitDict.Add("1/16", 6);
-            WaitDict.Add("1/24", 4);
-            WaitDict.Add("1/32", 3);
-            WaitDict.Add("1/64T", 2);
-            WaitDict.Add("1/48", 2);
-            WaitDict.Add("1/128T", 1);
-            WaitDict.Add("1/96", 1);
-
-            WaitDict.Add("defult", 24); //this is definetly not how to go about it but whatevs henp can correct me later lol
-        }
+            {"bar", 96}, {"half", 48},{"quarter", 24},{"eight", 12},{"sixteenth", 6},{"thirtysecond", 3},
+            {"quarterT", 32},{"eightT", 16}, {"sixteenthT", 8}, {"thirtysecondT", 4},{"sixtyfourthT", 2},
+            {"hundredandtwentyeightT", 1}, {"twobars", 192}, {"threebars", 288}, {"barbar", 384},
+ {"2", 192},{"1",    96}, {"1/2",  48},{"1/4",  24}, {"1/8",  12}, {"1/16",  6}, {"1/32",   3},
+ {"2/3",64},{"1/3",  32}, {"1/6",  16},{"1/12",  8}, {"1/24",  4}, {"1/48",  2}, {"1/96",   1},
+{"2/4T",64},{"1/4T", 32}, {"1/8T", 16},{"1/16T", 8}, {"1/32T", 4}, {"1/64T", 2}, {"1/128T", 1}, 
+        };
 
         public class Wait
         {
