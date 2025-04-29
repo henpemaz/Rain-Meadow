@@ -137,10 +137,8 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-            if (OnlineManager.mePlayer.isActuallySpectating)
-            {
-                return false;
-            }
+            if (!OnlineManager.lobby.isOwner)
+                return false; //only host may spawn
             return true;
         }
 
