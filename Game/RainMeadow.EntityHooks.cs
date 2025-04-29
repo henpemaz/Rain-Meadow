@@ -248,10 +248,27 @@ namespace RainMeadow
 
         public void Watcher_WarpPoint_Update(On.Watcher.WarpPoint.orig_Update orig, Watcher.WarpPoint self, bool eu)
         {
-            if (OnlineManager.lobby is not null && !OnlineManager.lobby.isOwner)
-            { // clients cant activate or update warp points unless it is an echo
-                self.triggerTime = 0;
-                self.lastTriggerTime = 0;
+            if (isStoryMode(out var storyGameMode))
+            {
+                bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
+                if (!readyForWarp && OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
+                {
+                    var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
+                    var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
+                    var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
+                    if (rooms.Distinct().Count() == 1)
+                    { // make sure they're at the same room
+                        RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
+                        RainMeadow.Debug($"ready for warp {gateRoom}!");
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
+                        readyForWarp = true;
+                    }
+                }
+                if (!OnlineManager.lobby.isOwner || !readyForWarp)
+                { // clients cant activate or update warp points unless it is an echo
+                    self.triggerTime = 0;
+                    self.lastTriggerTime = 0;
+                }
             }
             orig(self, eu); // either host or singleplayer
         }
@@ -363,35 +380,13 @@ namespace RainMeadow
 
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
         {
-            if (OnlineManager.lobby != null)
+            if (isStoryMode(out var storyGameMode))
             {
-                if (isStoryMode(out var storyGameMode))
-                {
-                    if (OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
-                    {
-                        var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
-                        var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
-                        if (inGameClientsData.All(scs => scs.readyForTransition))
-                        {
-                            // make sure they're at the same room
-                            var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                            if (rooms.Distinct().Count() == 1)
-                            {
-                                RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
-                                RainMeadow.Debug($"ready for warp {gateRoom}!");
-                                //storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
-                                orig(self);
-                                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
-                                var ws = world.GetResource() ?? throw new KeyNotFoundException();
-                                ws.Deactivate();
-                                ws.NotNeeded();
-                                return;
-                            }
-                        }
-                    }
-                    self.activationTime = (int)self.activateAnimationTime; //revert change in WarpPoint.Update()
-                    return;
-                }
+                orig(self);
+                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
+                var ws = world.GetResource() ?? throw new KeyNotFoundException();
+                ws.Deactivate();
+                ws.NotNeeded();
             }
             else
             {
@@ -545,7 +540,8 @@ namespace RainMeadow
                 { // once again, force camera
                     newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
                 }
-                if (OnlineManager.lobby.isOwner)
+                var isEchoWarp = newRoom.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
+                if (OnlineManager.lobby.isOwner && !isEchoWarp)
                 {
                     foreach (var player in OnlineManager.players)
                     { // do nat throw everyone into the same room?
