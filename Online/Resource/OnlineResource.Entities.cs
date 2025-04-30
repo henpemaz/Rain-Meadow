@@ -334,7 +334,7 @@ namespace RainMeadow
                 else
                 {
                     OnlineManager.RunDeferred(() =>
-                    { // deferred so we receive the incoming state first nope
+                    { // deferred so we receive the incoming state first
                         EntityTransfered(oe, newOwner);
                     });
                 }
