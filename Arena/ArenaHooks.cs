@@ -101,10 +101,20 @@ namespace RainMeadow
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
             new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.SetRippleLevel);
-
+            new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.SetLevitate);
             new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.SetCamoDuration);
         }
 
+
+        // This is funky. Can't seem to ever get it to only be true when airborne
+        private bool SetLevitate(Func<Player, bool> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return true;
+            }
+            return orig(self);
+        }
         private float SetRippleLevel(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var _))
@@ -448,7 +458,7 @@ namespace RainMeadow
                     Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-                if ( ArenaHelpers.vanillaSlugcats.Contains(classID))
+                if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
                     return $"MultiplayerPortrait{color}1";
                 }

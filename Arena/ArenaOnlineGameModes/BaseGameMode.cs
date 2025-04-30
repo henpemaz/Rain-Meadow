@@ -263,6 +263,11 @@ namespace RainMeadow
 
                     }
                 }
+
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                {
+                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+                }
             }
 
 
