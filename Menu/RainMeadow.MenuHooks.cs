@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using RainMeadow.UI;
+using MonoMod.RuntimeDetour;
 
 namespace RainMeadow
 {
@@ -37,7 +38,10 @@ namespace RainMeadow
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
+            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
+            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
         }
+
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
@@ -45,6 +49,10 @@ namespace RainMeadow
             {
                 buttonScroll.UpdateAlpha(buttonScroll.Alpha);
             }
+        }
+        bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
+        {
+            return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1); 
         }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
