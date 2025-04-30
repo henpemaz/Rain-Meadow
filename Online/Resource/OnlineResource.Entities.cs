@@ -326,9 +326,18 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this} : to {newOwner}");
             if (oe != null && entityTransferRequest.from == oe.owner && isOwner && isActive && !isReleasing)
             {
-                OnlineManager.RunDeferred(() => { // deferred so we receive the incoming state first
+                if ((oe as OnlinePhysicalObject).apo.realizedObject is Weapon)
+                {
+                    RainMeadow.Debug("Ignore last state, transfer weapon immediately!");
                     EntityTransfered(oe, newOwner);
-                });
+                }
+                else
+                {
+                    OnlineManager.RunDeferred(() =>
+                    { // deferred so we receive the incoming state first nope
+                        EntityTransfered(oe, newOwner);
+                    });
+                }
                 entityTransferRequest.from.QueueEvent(new GenericResult.Ok(entityTransferRequest));
             }
             else
