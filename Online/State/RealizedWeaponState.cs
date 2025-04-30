@@ -1,4 +1,5 @@
 using RWCustom;
+using System.Numerics;
 using UnityEngine;
 
 namespace RainMeadow
@@ -31,19 +32,30 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            var newMode = mode;
-            if (weapon.room != null && weapon.mode != newMode)
+            if (onlineEntity.isTransfering)
             {
-                RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
-                weapon.ChangeMode(newMode);
-                weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+                RainMeadow.Debug($"Transferring {onlineEntity}, not updating state!");
+                return;
             }
+
+            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            //RainMeadow.Debug(onlineEntity.isTransfering);
+            weapon.mode = mode;
+            //var newMode = mode;
+            RainMeadow.Debug(weapon.mode);
+            RainMeadow.Debug(mode);
+            //if (weapon.room != null && weapon.mode != newMode)
+            //{
+            //    RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
+            //    weapon.ChangeMode(newMode);
+            //    weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+            //}
+
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
             weapon.rotation = Custom.DegToVec(rotation);
             weapon.rotationSpeed = rotationSpeed;
-            weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
+            weapon.throwDir = new IntVector2((throwDir & 0b01) != 0 ? 0 : (throwDir & 0b10) != 0 ? -1 : 1, (throwDir & 0b01) == 0 ? 0 : (throwDir & 0b10) != 0 ? -1 : 1);
         }
     }
 }
