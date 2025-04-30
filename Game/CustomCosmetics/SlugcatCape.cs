@@ -196,12 +196,9 @@ namespace RainMeadow
                 ref SimpleSegment ptr = ref this.segments[i, 0];
                 ptr.pos = mainBodyChunk.pos + (a * d * 3f) + Vector2.right * -playerGFX.player.flipDirection * 0.5f;
                 ptr.vel = mainBodyChunk.vel;
-            }
-            for (int j = 0; j <= SlugcatCape.size; j++)
-            {
-                float d2 = (float)j / (float)SlugcatCape.size * 2f - 1f;
-                ref SimpleSegment ptr2 = ref this.segments[j, 1];
-                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d2 * 5f + Vector2.right * -playerGFX.player.flipDirection * 1.0f;
+
+                ref SimpleSegment ptr2 = ref this.segments[i, 1];
+                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d * 5f + Vector2.right*-playerGFX.player.flipDirection*1.0f;
                 ptr2.vel = mainBodyChunk.vel;
             }
         }
@@ -233,7 +230,7 @@ namespace RainMeadow
                 normalized.x = (float)playerGFX.player.flipDirection * 0.05f;
 
                 // simplification of sin(acos(x)) 
-                normalized.y = Mathf.Sqrt(1 - normalized.x * normalized.x) * Math.Sign(normalized.y);
+                normalized.y = Mathf.Sqrt(1 - (normalized.x*normalized.x))*Math.Sign(normalized.y); 
             }
 
             return normalized;
@@ -272,11 +269,27 @@ namespace RainMeadow
                 {
                     float num3 = (float)l / (float)SlugcatCape.size * 2f - 1f;
                     ref SimpleSegment ptr = ref this.segments[l, k];
-                    ptr.vel.y = ptr.vel.y - 0.4f;
+                    ptr.vel.y = ptr.vel.y - 0.4f*room.gravity;
                     float num4 = 1f - 2f * num2;
+
+                    if (room.waterObject is not null) {
+                        if (room.PointSubmerged(ptr.pos)) {
+                            ptr.vel.x = ptr.vel.x * (1f - 0.75f * room.waterObject.viscosity);
+                            if (ptr.vel.y > 0f)
+                            {
+                                ptr.vel.y = ptr.vel.y * (1f - 0.075f * room.waterObject.viscosity);
+                            }
+                            else
+                            {
+                                ptr.vel.y = ptr.vel.y * (1f - 0.15f * room.waterObject.viscosity);
+                            }
+
+                            ptr.vel.y += 0.45f + (0.2f*room.waterObject.viscosity);
+                        }
+                    }
                     if (num4 > 0f)
                     {
-                        ptr.vel.x = ptr.vel.x + num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
+                        ptr.vel +=  Custom.PerpendicularVector(normalized) * num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
                     }
                 }
             }
