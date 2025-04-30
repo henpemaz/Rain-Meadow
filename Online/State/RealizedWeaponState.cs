@@ -39,17 +39,17 @@ namespace RainMeadow
             }
 
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            //RainMeadow.Debug(onlineEntity.isTransfering);
+            
             weapon.mode = mode;
-            //var newMode = mode;
+            var newMode = mode;
             RainMeadow.Debug(weapon.mode);
             RainMeadow.Debug(mode);
-            //if (weapon.room != null && weapon.mode != newMode)
-            //{
-            //    RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
-            //    weapon.ChangeMode(newMode);
-            //    weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
-            //}
+            if (weapon.room != null && weapon.mode != newMode)
+            {
+                RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
+                weapon.ChangeMode(newMode);
+                weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
+            }
 
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
