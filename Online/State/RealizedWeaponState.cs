@@ -42,8 +42,7 @@ namespace RainMeadow
             
             weapon.mode = mode;
             var newMode = mode;
-            RainMeadow.Debug(weapon.mode);
-            RainMeadow.Debug(mode);
+            
             if (weapon.room != null && weapon.mode != newMode)
             {
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
