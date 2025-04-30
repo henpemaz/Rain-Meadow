@@ -62,6 +62,7 @@ namespace RainMeadow
             }
 
             base.ReadTo(onlineEntity);
+           
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
             {
                 RainMeadow.Error("Stuck in wall but has no value!");

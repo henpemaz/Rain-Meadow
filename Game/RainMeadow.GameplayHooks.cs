@@ -309,7 +309,11 @@ namespace RainMeadow
                                 RainMeadow.Debug("requesting all connected objects");
                                 foreach (var item in bentities)
                                 {
-                                    if (!item.isPending) item.Request();
+                                    if (!item.isPending)
+                                    {
+                                        item.Request();
+                                    }
+                                    
                                     else
                                     {
                                         RainMeadow.Debug($"can't request {item} because pending");
@@ -342,7 +346,11 @@ namespace RainMeadow
                                 RainMeadow.Debug("requesting all connected objects");
                                 foreach (var item in aentities)
                                 {
-                                    if (!item.isPending) item.Request();
+                                    if (!item.isPending)
+                                    {
+
+                                        item.Request();
+                                    }
                                     else
                                     {
                                         RainMeadow.Debug($"can't request {item} because pending");
