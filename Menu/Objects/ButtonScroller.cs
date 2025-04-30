@@ -34,6 +34,7 @@ namespace RainMeadow
         }
         public float LowerBound => 0;
         public float UpperBound => size.y;
+        public float ScrollingMultipler => buttonHeight / 30 * buttons.Count / 2;
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
         public bool CanScrollUp => scrollOffset > 0;
         public bool CanScrollDown => scrollOffset < MaxDownScroll;
@@ -61,19 +62,14 @@ namespace RainMeadow
             base.Update();
             if (MouseOver && menu.manager.menuesMouseMode)
             {
-                ScrollingUpdate(menu.mouseScrollWheelMovement * buttons.Count / 2f);
+                ScrollingUpdate(menu.mouseScrollWheelMovement * ScrollingMultipler);
             }
-        }
-        public override void GrafUpdate(float timeStacker)
-        {
-            base.GrafUpdate(timeStacker);
-            for (int i = 0; i < ItemCount; i++)
+            for (int i = 0; i < buttons.Count; i++)
             {
-                buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos);
                 buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
                 buttons[i].Pos = GetIdealPosWithScrollForButton(i);
+                buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos);
             }
-
         }
         public void SliderSetValue(Slider slider, float f)
         {
@@ -213,9 +209,11 @@ namespace RainMeadow
             public float Alpha { get => alpha; set => alpha = value; }
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
-
-            public override bool CurrentlySelectableNonMouse => alpha >= 1 && base.CurrentlySelectableNonMouse;
-            public override bool CurrentlySelectableMouse => alpha >= 1 && base.CurrentlySelectableMouse;
+            public override void Update()
+            {
+                base.Update();
+                buttonBehav.greyedOut = forceGreyedOut || Alpha < 1;
+            }
             public virtual void UpdateAlpha(float alpha) //should be for changing graphics, dependent on frame refresh rate
             {
                 menuLabel.label.alpha = alpha;
@@ -228,7 +226,6 @@ namespace RainMeadow
                 {
                     selectRect.sprites[i].alpha = alpha;
                 }
-                buttonBehav.greyedOut = forceGreyedOut || alpha < 1;
             }
             public bool forceGreyedOut;
             public float alpha = 1;

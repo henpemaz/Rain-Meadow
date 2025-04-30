@@ -6,15 +6,13 @@ using UnityEngine;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RainMeadow
+namespace RainMeadow.UI.Components
 {
     public class IllustrationButton : ButtonTemplate, ButtonScroller.IPartOfButtonScroller
     {
         public float Alpha { get => alpha; set => alpha = value; }
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
-        public override bool CurrentlySelectableNonMouse => alpha >= 1 && base.CurrentlySelectableNonMouse;
-        public override bool CurrentlySelectableMouse => alpha >= 1 && base.CurrentlySelectableMouse;
         public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName) : base(menu, owner, pos, Vector2.zero)
         {
             roundedRect = new(menu, this, Vector2.zero, size, true);
@@ -30,7 +28,7 @@ namespace RainMeadow
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
             selectRect.addSize = new Vector2(2f, -2f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
-            buttonBehav.greyedOut = forceGreyedOut || alpha < 1;
+            buttonBehav.greyedOut = forceGreyedOut || Alpha < 1;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -40,7 +38,7 @@ namespace RainMeadow
             portrait.pos = size / 2;
 
         }
-        public void UpdateAlpha(float alpha)
+        public virtual void UpdateAlpha(float alpha)
         {
             portrait.setAlpha = alpha * desiredOrigAlpha;
             for (int i = 0; i < roundedRect.sprites.Length; i++)
