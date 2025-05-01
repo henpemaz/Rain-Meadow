@@ -71,8 +71,7 @@ public class LobbyCreateMenu : SmartMenu
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
         passwordInputBox.label.text = Utils.Translate("Password");
-        var uiewp = new UIelementWrapper(this.tabWrapper, passwordInputBox);
-        uiewp.Update();
+        new UIelementWrapper(this.tabWrapper, passwordInputBox);
 
         // lobby limit setting in bottom center
         where.x -= 160;
