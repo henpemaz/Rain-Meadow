@@ -1,4 +1,4 @@
-using Mono.Cecil.Cil;
+﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
@@ -391,26 +391,36 @@ namespace RainMeadow
         private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
         {
             if (OnlineManager.lobby == null)
-            {
+            {    
                 orig(self, weapon);
                 return;
             }
 
-            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
-            {
-                if (!room.isOwner)
-                {
-                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                    OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                    if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
-                    {
-                        room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
-                        return;
-                    }
-                }
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+            OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var WeaponOnline);
+            if (objectHit == null) {
+                RainMeadow.Debug($"Object hit by weapon not found in online space. object: {objectHit}, weapon: {WeaponOnline}");
+                orig(self, weapon);
+                return;
             }
 
-            orig(self, weapon);
+            if (WeaponOnline == null) {
+                RainMeadow.Debug($"weapon that hit object not found in online space. object: {objectHit}, weapon: {WeaponOnline}");
+                orig(self, weapon);
+                return;
+            }
+
+            if (objectHit.WasHitRemotely) 
+            {
+                orig(self, weapon);
+                return;
+            } 
+            else if (WeaponOnline.owner.isMe) 
+            {
+                WeaponOnline.BroadcastRPCInRoom(objectHit.HitByWeapon, WeaponOnline);
+            }
+
+            return;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)

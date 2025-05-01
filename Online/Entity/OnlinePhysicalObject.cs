@@ -491,9 +491,11 @@ namespace RainMeadow
             return $"{apo?.type} {base.ToString()}";
         }
 
+        public bool WasHitRemotely { get; private set; }=  false;
         [RPCMethod]
         public void HitByWeapon(OnlinePhysicalObject weapon)
         {
+            WasHitRemotely = true;
             if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
@@ -501,6 +503,7 @@ namespace RainMeadow
                 return;
             }
             apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
+            WasHitRemotely = false;
         }
 
         [RPCMethod]
