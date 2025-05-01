@@ -17,7 +17,11 @@ namespace RainMeadow
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
             On.Lizard.Violence += Lizard_Violence; // todo there might be more like this one that do not call base()
-            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
+
+            On.Weapon.HitSomething += Weapon_HitSomething;
+            On.Spear.HitSomething += Spear_HitSomething;
+
+
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             IL.ScavengerBomb.Explode += PhysicalObject_Explode;
             IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
@@ -388,41 +392,86 @@ namespace RainMeadow
             orig(self, hitFac, explosion, hitChunk);
         }
 
-        private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
-        {
+        private bool Spear_HitSomething(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu) {
+
             if (OnlineManager.lobby == null)
             {    
-                orig(self, weapon);
-                return;
+                return orig(self, result, eu);
             }
 
-            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-            OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var WeaponOnline);
-            if (objectHit == null) {
-                RainMeadow.Debug($"Object hit by weapon not found in online space. object: {objectHit}, weapon: {WeaponOnline}");
-                orig(self, weapon);
-                return;
+            if (result.obj == null) 
+            {
+                return orig(self, result, eu);
+            }
+
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var WeaponOnline);
+            OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var onlineHit);
+            if (onlineHit == null) {
+                RainMeadow.Debug($"Object hit by weapon not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
             }
 
             if (WeaponOnline == null) {
-                RainMeadow.Debug($"weapon that hit object not found in online space. object: {objectHit}, weapon: {WeaponOnline}");
-                orig(self, weapon);
-                return;
+                RainMeadow.Debug($"weapon that hit object not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
             }
 
-            if (objectHit.WasHitRemotely) 
-            {
-                orig(self, weapon);
-                return;
+            if (WeaponOnline.HittingRemotely) {
+                return orig(self, result, eu);
+            }
+            else if (WeaponOnline.owner.isMe) {
+                RealizedPhysicalObjectState realizedstate = new RealizedSpearState(WeaponOnline);
+                BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
+
+                WeaponOnline.BroadcastRPCInRoomExceptOwners(WeaponOnline.SpearHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                    onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                ));
+                return orig(self, result, eu);
             } 
-            else if (WeaponOnline.owner.isMe) 
-            {
-                WeaponOnline.BroadcastRPCInRoom(objectHit.HitByWeapon, WeaponOnline);
-            }
-
-            return;
+            return false;
         }
 
+
+        private bool Weapon_HitSomething(On.Weapon.orig_HitSomething orig, Weapon self, SharedPhysics.CollisionResult result, bool eu) {
+
+            if (OnlineManager.lobby == null)
+            {    
+                return orig(self, result, eu);
+            }
+
+            if (result.obj == null) 
+            {
+                return orig(self, result, eu);
+            }
+
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var WeaponOnline);
+            OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var onlineHit);
+            if (onlineHit == null) {
+                RainMeadow.Debug($"Object hit by weapon not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
+            }
+
+            if (WeaponOnline == null) {
+                RainMeadow.Debug($"weapon that hit object not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
+            }
+
+            if (WeaponOnline.HittingRemotely) {
+                return orig(self, result, eu);
+            }
+            else if (WeaponOnline.owner.isMe) {
+                RealizedPhysicalObjectState realizedstate = new RealizedWeaponState(WeaponOnline);
+                BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
+
+                WeaponOnline.BroadcastRPCInRoomExceptOwners(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                    onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                ));
+                return orig(self, result, eu);
+            } 
+            return false;
+        }
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
         {
             if (OnlineManager.lobby == null)
