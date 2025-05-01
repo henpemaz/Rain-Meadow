@@ -93,6 +93,16 @@ public partial class RainMeadow
         On.Player.CamoUpdate += Player_CamoUpdate;
 
 
+
+        // get tired and slam other players if we have gourmand our back
+        IL.Player.SlugSlamConditions += GourmandOnBackMechanics;
+        IL.Player.ClassMechanicsGourmand += GourmandOnBackMechanics;
+
+        // use saints toungue if we have saint on our back.
+        On.Player.UpdateMSC += Player_UpdateMSC;
+        IL.Player.SlugOnBack.GraphicsModuleUpdated += SlugOnBack_GraphicsModuleUpdated;
+
+        
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
@@ -292,6 +302,156 @@ public partial class RainMeadow
                 self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
             }
         }
+    }
+    
+    private void SlugOnBack_GraphicsModuleUpdated(ILContext ctx)
+    {
+        try
+        {
+            ILCursor c = new(ctx);
+
+            c.GotoNext(MoveType.After,
+                //                 41	0078	ldarg.0
+                // 42	0079	ldc.i4.0
+                // 43	007A	call	instance void Player/SlugOnBack::ChangeOverlap(bool)
+                x => x.MatchLdarg(0),
+                x => x.MatchLdcI4(0),
+                x => x.MatchCall<Player.SlugOnBack>(nameof(Player.SlugOnBack.ChangeOverlap))
+            );
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldarg_2);
+            c.EmitDelegate((Player.SlugOnBack self, bool eu) =>
+            {
+                if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self.owner, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player))
+                {
+                    if (saint_player!.tongue.Attached)
+                    {
+                        Vector2 moveTo = Vector2.Lerp(self.owner.bodyChunks[0].pos, self.slugcat.bodyChunks[0].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
+                        Vector2 moveTo2 = Vector2.Lerp(self.owner.bodyChunks[1].pos, self.slugcat.bodyChunks[1].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
+                        self.owner.bodyChunks[0].MoveFromOutsideMyUpdate(eu, moveTo);
+                        self.owner.bodyChunks[1].MoveFromOutsideMyUpdate(eu, moveTo2);
+                        float mass_ratio = self.owner.bodyChunks[0].mass / self.slugcat.bodyChunks[1].mass;
+                        var offset = self.slugcat.bodyChunks[1].vel - self.owner.bodyChunks[0].vel;
+                        self.owner.bodyChunks[0].vel += offset;
+                        self.owner.bodyChunks[1].vel += offset;
+                        self.slugcat.bodyChunks[1].vel -= offset * mass_ratio;
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            c.Emit(OpCodes.Ret);
+            c.Index = c.Index - 1;
+            c.Emit(OpCodes.Brfalse, c.Next.Next);
+
+
+
+        }
+        catch (Exception except)
+        {
+            RainMeadow.Error(except);
+        }
+
+    }
+    private void Player_UpdateMSC(On.Player.orig_UpdateMSC orig, Player self) {
+        orig(self);
+
+        if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player)) {
+            if (saint_player!.IsLocal()) {
+                if (!MoreSlugcats.MMF.cfgOldTongue.Value && self.input[0].jmp && !self.input[1].jmp && !self.input[0].pckp && self.canJump <= 0 && self.bodyMode != Player.BodyModeIndex.Crawl && self.animation != Player.AnimationIndex.ClimbOnBeam && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.HangFromBeam 
+                        && saint_player!.SaintTongueCheck())
+                {
+                    Vector2 vector = new Vector2((float)self.flipDirection, 0.7f);
+                    Vector2 normalized = vector.normalized;
+                    if (self.input[0].y > 0)
+                    {
+                        normalized = new Vector2(0f, 1f);
+                    }
+                    normalized = (normalized + self.mainBodyChunk.vel.normalized * 0.2f).normalized;
+                    saint_player!.tongue.Shoot(normalized);
+                }
+
+                if (saint_player!.tongue.Attached) {
+                    if (self.input[0].jmp && !self.input[1].jmp && saint_player!.tongueAttachTime >= 2)
+					{
+						saint_player!.tongue.Release();
+                    }
+
+
+                    if (self.input[0].y > 0)
+                    {
+                        saint_player!.tongue.decreaseRopeLength(3f);
+                    }
+
+                    if (self.input[0].y < 0)
+                    {
+                        saint_player!.tongue.increaseRopeLength(3f);
+                    }
+                }
+            }
+        }
+    }
+
+    private void GourmandOnBackMechanics(ILContext ctx) {
+        // generic hook for when somebody has gourmand on there back
+        try {
+            ILCursor c = new(ctx);
+
+            // converts all 
+            // this.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+            // this.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand) || this.slugonback.slugcat.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+
+            Mono.Cecil.MethodReference comparison = null!;
+            int overriden_count = 0;
+            while (c.TryGotoNext(MoveType.After, 
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>(nameof(Player.SlugCatClass)),
+                x => x.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>(nameof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)),
+                x => x.MatchCall(out comparison)
+            )) {
+                overriden_count++;
+                if (comparison.Name == "op_Equality") {
+                    c.Emit(OpCodes.Ldarg, 0);
+                    c.EmitDelegate(static (bool result, Player p) => {
+                        return result || ((OnlineManager.lobby != null) && HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _));
+                    });
+                } else if (comparison.Name == "op_Inequality") {
+                    c.Emit(OpCodes.Ldarg, 0);
+                    c.EmitDelegate(static (bool result, Player p) => {
+                        return result && !((OnlineManager.lobby != null) && HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _));
+                    });
+                } else {
+                    RainMeadow.Error($"No comparison implementation for {comparison.Name}");
+                }
+            }
+
+            RainMeadow.Debug($"Overriden {overriden_count} comparisons in {ctx.Method.Name}");
+        } catch (Exception except) {
+            RainMeadow.Error(except);
+        }
+
+
+
+        
+    }
+
+    private static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
+        onback = null;
+
+        while (player != null) {
+            if (player.slugOnBack is null) break;
+            player = player.slugOnBack.slugcat;
+            if (player is null) break;
+
+            if (player.SlugCatClass == name) {
+                onback = player;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -510,6 +670,7 @@ public partial class RainMeadow
 
             self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
+            self.slugcat.immuneToFallDamage += 10;
             if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
         }
     }

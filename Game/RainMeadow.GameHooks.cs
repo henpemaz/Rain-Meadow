@@ -2,6 +2,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -184,6 +185,14 @@ namespace RainMeadow
             }
         }
 
+        private static List<Action> defferedActions = new();
+
+        // Run in game deffered.
+        public static void RunIGDeffered(Action action) {
+            RainMeadow.defferedActions.Add(action);
+        }
+
+
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             if (OnlineManager.lobby?.gameMode is MeadowGameMode)
@@ -196,8 +205,18 @@ namespace RainMeadow
                 }
             }
 
+            if (OnlineManager.lobby != null) {
+                RainMeadow.defferedActions.Clear();
+            }
+
             orig(self);
 
+            if (OnlineManager.lobby != null) {
+                foreach(Action action in RainMeadow.defferedActions) {
+                    action.Invoke();
+                }
+                RainMeadow.defferedActions.Clear();
+            }
             if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
             {
                 MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;

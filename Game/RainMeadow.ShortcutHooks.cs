@@ -315,7 +315,10 @@ namespace RainMeadow
         private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) 
         {
             if (OnlineManager.lobby != null) {
-                OnlineManager.RunDeferred(() => self.RemoveFromShortcuts());
+                RainMeadow.RunIGDeffered(() => {
+                    RainMeadow.Debug("deffered remove from shortcuts");
+                    self.RemoveFromShortcuts();  
+                });
             }
             
             orig(self, pos, newRoom, spitOutAllSticks);
