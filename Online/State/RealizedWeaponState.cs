@@ -1,5 +1,4 @@
 using RWCustom;
-using System.Numerics;
 using UnityEngine;
 
 namespace RainMeadow
@@ -39,7 +38,6 @@ namespace RainMeadow
             }
 
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            
             weapon.mode = mode;
             var newMode = mode;
             
