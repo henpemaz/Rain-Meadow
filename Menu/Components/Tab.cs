@@ -91,7 +91,6 @@ public class TabContainer : PositionedMenuObject
 
             if (obj is not IRestorableMenuObject)
                 throw new NotImplementedException("MenuObject added to tab did not implement IRestorableMenuObject");
-            if (obj is PositionedMenuObject posObj) posObj.pos += pos;
 
             obj.RemoveSprites();
             RecursiveRemoveSelectables(obj);
