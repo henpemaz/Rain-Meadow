@@ -33,14 +33,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ShowPing;
     public readonly Configurable<int> ShowPingLocation;
 
-
-
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<int> UdpTimeout;
     public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
-
+    public readonly Configurable<string> PrivateLobbyPassword;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -95,8 +93,8 @@ public class RainMeadowOptions : OptionInterface
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
-        
 
+        PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
     }
 
     public override void Initialize()

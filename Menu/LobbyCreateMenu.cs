@@ -66,11 +66,13 @@ public class LobbyCreateMenu : SmartMenu
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
+            defaultValue = RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value,
             description = Utils.Translate("Lobby Password"),
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
         passwordInputBox.label.text = Utils.Translate("Password");
-        new UIelementWrapper(this.tabWrapper, passwordInputBox);
+        var uiewp = new UIelementWrapper(this.tabWrapper, passwordInputBox);
+        uiewp.Update();
 
         // lobby limit setting in bottom center
         where.x -= 160;
@@ -141,6 +143,10 @@ public class LobbyCreateMenu : SmartMenu
     {
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
+        // store config global global global
+        RainMeadow.rainMeadowOptions._LoadConfigFile(); //shenanigans WILL happen -- avoid them
+        RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value = passwordInputBox.value;
+        RainMeadow.rainMeadowOptions._SaveConfigFile(); //this may just be evil
         MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, enablePasswordCheckbox.GetValueBool() ? passwordInputBox.value : null, maxPlayerCount);
     }
 
