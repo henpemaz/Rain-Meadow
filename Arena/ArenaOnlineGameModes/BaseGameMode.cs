@@ -82,7 +82,7 @@ namespace RainMeadow
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
             self.AddPart(new Pointing(self));
             self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
-            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            if (ModManager.Watcher && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
             {
                 RainMeadow.Debug("Adding Watcher Camo Meter");
                 self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
@@ -266,11 +266,11 @@ namespace RainMeadow
 
                     }
                 }
+            }
 
-                if ((abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-                {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
-                }
+            if (ModManager.Watcher && (abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
             }
 
 
