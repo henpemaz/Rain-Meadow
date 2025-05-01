@@ -18,8 +18,8 @@ public class ArenaLobbyMenu2 : SmartMenu
     // public TextBox countdownTimerTextBox, saintAscendDurationTimerTextBox;
     // public ComboBox arenaGameModeComboBox;
     public TabContainer tabContainer;
-    string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-    string? painCatName;
+    public string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
+    public string? painCatName;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
@@ -36,34 +36,34 @@ public class ArenaLobbyMenu2 : SmartMenu
         tabContainer = new TabContainer(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
         mainPage.subObjects.Add(tabContainer);
 
-        Vector2 where = new(120f, 205f);
+        Vector2 matchSettingsOffset = new(120f, 205f);
         float settingsElementWidth = 300f;
 
-        spearsHitCheckbox = new SimplerCheckbox(this, tabContainer, where + new Vector2(0f, 220f), 95f, Translate("Friendly Fire:"));
+        spearsHitCheckbox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(0f, 220f), 95f, Translate("Friendly Fire:"));
         spearsHitCheckbox.OnClick += c => RainMeadow.Debug($"friendly fire: {c}");
 
-        aggressiveAICheckBox = new SimplerCheckbox(this, tabContainer, where + new Vector2(settingsElementWidth - 24f, 220f), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 120f : 100f, Translate("Aggressive AI:"));
+        aggressiveAICheckBox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(settingsElementWidth - 24f, 220f), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 120f : 100f, Translate("Aggressive AI:"));
         aggressiveAICheckBox.OnClick += c => RainMeadow.Debug($"aggressive ai: {c}");
 
-        roomRepeatChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, where + new Vector2(0f, 150f), Translate("Repeat Rooms:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 115f : 95f, settingsElementWidth, 5, textInBoxes: true);
+        roomRepeatChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 150f), Translate("Repeat Rooms:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 115f : 95f, settingsElementWidth, 5, textInBoxes: true);
         roomRepeatChoiceArray.OnClick += i => RainMeadow.Debug($"room repeat: pressed {i}");
         for (int i = 0; i < roomRepeatChoiceArray.buttons.Length; i++)
             roomRepeatChoiceArray.buttons[i].label.text = $"{i + 1}x";
 
-        rainTimerChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, where + new Vector2(0f, 100f), Translate("Rain Timer:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 100f : 95f, settingsElementWidth, 6, splitText: CurrLang == InGameTranslator.LanguageID.French || CurrLang == InGameTranslator.LanguageID.Spanish || CurrLang == InGameTranslator.LanguageID.Portuguese);
+        rainTimerChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 100f), Translate("Rain Timer:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 100f : 95f, settingsElementWidth, 6, splitText: CurrLang == InGameTranslator.LanguageID.French || CurrLang == InGameTranslator.LanguageID.Spanish || CurrLang == InGameTranslator.LanguageID.Portuguese);
         rainTimerChoiceArray.OnClick += i => RainMeadow.Debug($"rain timer: pressed {i}");
 
-        wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, where + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4);
+        wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4);
         wildlifeChoiceArray.OnClick += i => RainMeadow.Debug($"wildlife: pressed {i}");
 
         countdownTimerLabel = new RestorableMenuLabel(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 160f), new Vector2(105f, 20f), false);
 
         // settingsMenuLabels = new MenuLabel[2];
-        // settingsMenuLabels[0] = new MenuLabel(this, mainPage, "Countdown Timer:", where + new Vector2(0f, -17f), new Vector2(0f, 30f), false);
-        // settingsMenuLabels[1] = new MenuLabel(this, mainPage, "Saint Ascend Time:", where + new Vector2(125f, -67f), new Vector2(0f, 30f), false);
+        // settingsMenuLabels[0] = new MenuLabel(this, mainPage, "Countdown Timer:", matchSettingsOffset + new Vector2(0f, -17f), new Vector2(0f, 30f), false);
+        // settingsMenuLabels[1] = new MenuLabel(this, mainPage, "Saint Ascend Time:", matchSettingsOffset + new Vector2(125f, -67f), new Vector2(0f, 30f), false);
         // mainPage.subObjects.AddRange(settingsMenuLabels);
 
-        // countdownTimerTextBox = new OpTextBox(new Configurable<int>(5), where + new Vector2(215f, -20f), 95f);
+        // countdownTimerTextBox = new OpTextBox(new Configurable<int>(5), matchSettingsOffset + new Vector2(215f, -20f), 95f);
         // countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
         // UIelementWrapper countdownTimerTextBoxWrapper = new(tabWrapper, countdownTimerTextBox);
         // mainPage.subObjects.Add(countdownTimerTextBoxWrapper);
@@ -82,6 +82,20 @@ public class ArenaLobbyMenu2 : SmartMenu
                 // arenaGameModeComboBox,
             ]
         );
+
+        settingsDivSprites = new FSprite[2];
+        settingsDivSpritesPos = new Vector2[2];
+        for (int i = 0; i < settingsDivSprites.Length; i++)
+        {
+            settingsDivSprites[i] = new FSprite("pixel")
+            {
+                anchorX = 0f,
+                scaleX = settingsElementWidth + 95f,
+                scaleY = 2f,
+                color = MenuRGB(MenuColors.VeryDarkGrey),
+            };
+            settingsDivSpritesPos[i] = tabContainer.pos + matchSettingsOffset + new Vector2(-95f, 197f - (171 * i));
+        }
 
         if (ModManager.MSC)
         {
@@ -122,20 +136,6 @@ public class ArenaLobbyMenu2 : SmartMenu
                     painCatThrowsCheckBox,
                 ]
             );
-        }
-
-        settingsDivSprites = new FSprite[2];
-        settingsDivSpritesPos = new Vector2[2];
-        for (int i = 0; i < settingsDivSprites.Length; i++)
-        {
-            settingsDivSprites[i] = new FSprite("pixel")
-            {
-                anchorX = 0f,
-                scaleX = settingsElementWidth + 95f,
-                scaleY = 2f,
-                color = MenuRGB(MenuColors.VeryDarkGrey),
-            };
-            settingsDivSpritesPos[i] = tabContainer.pos + where + new Vector2(-95f, 197f - (171 * i));
         }
     }
 
