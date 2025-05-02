@@ -38,7 +38,6 @@ namespace RainMeadow
             }
 
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            weapon.mode = mode;
             var newMode = mode;
             
             if (weapon.room != null && weapon.mode != newMode)
