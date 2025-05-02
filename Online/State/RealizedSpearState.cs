@@ -80,7 +80,6 @@ namespace RainMeadow
         {
             if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
             if (p.onPlayerBack) return true;
-            if (p.stuckInObject != null) return true;
             return false;        }
     }
 
