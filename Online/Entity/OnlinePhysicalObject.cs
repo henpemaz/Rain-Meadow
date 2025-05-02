@@ -555,36 +555,12 @@ namespace RainMeadow
 
             if (this.apo.realizedObject != null) {
                 statewhenhit.ReadTo(this);
-            }
-            SharedPhysics.CollisionResult? result = null;
-            hit.BuildCollisionResult(out result);
-            if (result.HasValue) {
-                (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
-            }
-            
-            HittingRemotely = false;
-        }
-
-        [RPCMethod]
-        public void SpearHitSomething(RealizedSpearState statewhenhit, OnlineCollisionResult hit)
-        {
-            RainMeadow.DebugMe();
-            HittingRemotely = true;
-            if ((OnlineManager.lobby != null) && this.didParry)
-            {
-                RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
-                return;
-            }
-
-            if (this.apo.realizedObject != null) {
-                statewhenhit.ReadTo(this);
-            }
-            
-            SharedPhysics.CollisionResult? result = null;
-            hit.BuildCollisionResult(out result);
-            if (result.HasValue) {
-                (this.apo.realizedObject as Spear)!.HitSomething(result.Value, true);
+                SharedPhysics.CollisionResult? result = null;
+                hit.BuildCollisionResult(out result);
+                if (result.HasValue) {
+                    (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
+                }
+                
             }
             
             HittingRemotely = false;
