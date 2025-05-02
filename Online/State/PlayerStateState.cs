@@ -8,7 +8,8 @@
         public int quarterFoodPoints;
         [OnlineField(nullable: true)]
         public OnlineEntity.EntityId? objectInStomach;
-
+        [OnlineFieldHalf]
+        public float permDmgTrack;
         public PlayerStateState() { }
 
         public PlayerStateState(OnlineCreature onlineEntity) : base(onlineEntity)
@@ -18,6 +19,7 @@
 
             foodInStomach = playerState.foodInStomach;
             quarterFoodPoints = playerState.quarterFoodPoints;
+            permDmgTrack = (float)playerState.permanentDamageTracking;
 
             if ((abstractCreature.realizedCreature as Player)?.objectInStomach is AbstractPhysicalObject apo)
             {
@@ -42,6 +44,7 @@
         {
             base.ReadTo(abstractCreature);
             var playerState = (PlayerState)abstractCreature.state;
+            playerState.permanentDamageTracking = (double)permDmgTrack;
 
             playerState.foodInStomach = this.foodInStomach;
             playerState.quarterFoodPoints = this.quarterFoodPoints;

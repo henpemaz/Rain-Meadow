@@ -5,6 +5,14 @@ namespace RainMeadow
 {
     public static class RPCs
     {
+
+
+        [RPCMethod] public static void ThrownSpear(RPCEvent rpcEvent, OnlinePhysicalObject player, OnlinePhysicalObject spear)
+        {
+
+            (player.apo.realizedObject as Player).ThrownSpear(spear.apo.realizedObject as Spear);
+        }
+
         [RPCMethod]
         public static void DeltaReset(RPCEvent rpcEvent, OnlineResource onlineResource, OnlineEntity.EntityId entity)
         {

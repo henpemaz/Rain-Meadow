@@ -141,8 +141,7 @@ namespace RainMeadow
         public BodyChunkRef? tongueAttachedChunk;
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
-        [OnlineFieldHalf]
-        public float permDmgTrack;
+
         public RealizedPlayerState() { }
         public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
@@ -158,7 +157,6 @@ namespace RainMeadow
             isPup = p.playerState.isPup;
             burstX = p.burstX;
             burstY = p.burstY;
-            permDmgTrack = (float)p.playerState.permanentDamageTracking;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
                 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) ? oe.id : null;
             slugcatRidingOnBack = (p.slugOnBack?.slugcat?.abstractPhysicalObject is AbstractPhysicalObject apo0
@@ -240,7 +238,6 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
-            p.playerState.permanentDamageTracking = permDmgTrack;
             p.monkAscension = monkAscension;
             p.burstY = burstY;
             p.burstX = burstX;

@@ -141,7 +141,7 @@ namespace RainMeadow
                 if (foundat == -1)
                 {
                     RainMeadow.Trace("incoming stick not found: " + stick);
-                    stick.MakeStick(onlineObject.apo);
+                    OnlineManager.RunDeferred(() => stick.MakeStick(onlineObject.apo));
                 }
                 else
                 {
