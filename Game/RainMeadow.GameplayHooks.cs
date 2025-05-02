@@ -85,6 +85,11 @@ namespace RainMeadow
             {
                 return false;
             }
+
+            if (!self.IsLocal()) {
+                return false;
+            }
+
             return orig(self, obj);
         }
 
@@ -419,14 +424,16 @@ namespace RainMeadow
             if (WeaponOnline.HittingRemotely) {
                 return orig(self, result, eu);
             }
-            else if (WeaponOnline.owner.isMe) {
+            else if (self.IsLocal()) {
                 RealizedPhysicalObjectState realizedstate = new RealizedSpearState(WeaponOnline);
                 BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
                 AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
 
-                WeaponOnline.BroadcastRPCInRoomExceptOwners(WeaponOnline.SpearHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
-                    onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                ));
+                 if (!onlineHit.owner.isMe) {
+                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                        onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                    ));
+                }
                 return orig(self, result, eu);
             } 
             return false;
@@ -460,14 +467,17 @@ namespace RainMeadow
             if (WeaponOnline.HittingRemotely) {
                 return orig(self, result, eu);
             }
-            else if (WeaponOnline.owner.isMe) {
+            else if (self.IsLocal()) {
                 RealizedPhysicalObjectState realizedstate = new RealizedWeaponState(WeaponOnline);
                 BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
                 AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
 
-                WeaponOnline.BroadcastRPCInRoomExceptOwners(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
-                    onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                ));
+                if (!onlineHit.owner.isMe) {
+                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                        onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                    ));
+                }
+
                 return orig(self, result, eu);
             } 
             return false;
