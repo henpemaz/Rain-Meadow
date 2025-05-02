@@ -62,11 +62,9 @@ namespace RainMeadow
                     if (objectHit != null && abstWeapon != null && (!objectHit.isMine && abstWeapon.isMine))
                     {
                         room.owner.InvokeOnceRPC(objectHit.HitBySpear, abstWeapon, objectHit, result.chunk.index, result.hitSomething, result.collisionPoint, eu);
-                        return true;
                     }
                 }
             }
-
             return orig(self, result, eu);
 
         }
