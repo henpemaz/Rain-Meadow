@@ -41,9 +41,11 @@ namespace RainMeadow
             }
             weapon.thrownBy = thrownBy?.realizedCreature;
             if (weapon.grabbedBy != null && weapon.grabbedBy.Count > 0) { RainMeadow.Trace($"Skipping state because grabbed"); return; }
-            weapon.rotation = Custom.DegToVec(rotation);
-            weapon.rotationSpeed = rotationSpeed;
-            weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
+            if (!ShouldPosBeLenient(weapon)) {
+                weapon.rotation = Custom.DegToVec(rotation);
+                weapon.rotationSpeed = rotationSpeed;
+                weapon.throwDir = new IntVector2((throwDir & 0b01)!=0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1, (throwDir & 0b01)==0 ? 0 : (throwDir & 0b10)!=0 ? -1 : 1);
+            }
         }
     }
 }

@@ -472,6 +472,7 @@ namespace RainMeadow
             } 
             return false;
         }
+
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
         {
             if (OnlineManager.lobby == null)

@@ -553,7 +553,9 @@ namespace RainMeadow
                 return;
             }
 
-            statewhenhit.ReadTo(this);
+            if (this.apo.realizedObject != null) {
+                statewhenhit.ReadTo(this);
+            }
             SharedPhysics.CollisionResult? result = null;
             hit.BuildCollisionResult(out result);
             if (result.HasValue) {
@@ -574,7 +576,10 @@ namespace RainMeadow
                 return;
             }
 
-            statewhenhit.ReadTo(this);
+            if (this.apo.realizedObject != null) {
+                statewhenhit.ReadTo(this);
+            }
+            
             SharedPhysics.CollisionResult? result = null;
             hit.BuildCollisionResult(out result);
             if (result.HasValue) {

@@ -226,7 +226,7 @@ namespace RainMeadow
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
             if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
-            return false;
+            return base.ShouldPosBeLenient(po);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
