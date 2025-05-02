@@ -535,8 +535,8 @@ namespace RainMeadow
                 }
 
                 result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
-                    chunk.ToBodyChunk(), 
-                    onAppendagePos.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
+                    chunk?.ToBodyChunk(), 
+                    onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
 
@@ -568,6 +568,7 @@ namespace RainMeadow
         [RPCMethod]
         public void SpearHitSomething(RealizedSpearState statewhenhit, OnlineCollisionResult hit)
         {
+            RainMeadow.DebugMe();
             HittingRemotely = true;
             if ((OnlineManager.lobby != null) && this.didParry)
             {
