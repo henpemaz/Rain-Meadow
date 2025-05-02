@@ -1,5 +1,4 @@
 using RWCustom;
-using Steamworks;
 using System;
 using UnityEngine;
 
@@ -82,8 +81,7 @@ namespace RainMeadow
             if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
             if (p.onPlayerBack) return true;
             if (p.stuckInObject != null) return true;
-            return base.ShouldPosBeLenient(po);
-        }
+            return false;        }
     }
 
     public class AppendageRef : Serializer.ICustomSerializable, IEquatable<AppendageRef>
