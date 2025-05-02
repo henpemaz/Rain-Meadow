@@ -42,22 +42,52 @@ namespace RainMeadow
             On.Weapon.HitThisObject += Weapon_HitThisObject;
             On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+            On.Spear.HitSomething += Spear_HitSomething;
         }
 
-        private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig, 
-            SocialEventRecognizer self, PhysicalObject item, Creature creature) {
+        private bool Spear_HitSomething(On.Spear.orig_HitSomething orig, Spear self, SharedPhysics.CollisionResult result, bool eu)
+        {
+
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, result, eu);
+            }
+
+            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
+            {
+                if (!room.isOwner)
+                {
+                    OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var objectHit);
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var abstWeapon);
+                    if (objectHit != null && abstWeapon != null && (!objectHit.isMine && abstWeapon.isMine))
+                    {
+                        room.owner.InvokeOnceRPC(objectHit.HitBySpear, abstWeapon, objectHit, result.chunk.index, result.hitSomething, result.collisionPoint, eu);
+                        return true;
+                    }
+                }
+            }
+
+            return orig(self, result, eu);
+
+        }
+
+        private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
+            SocialEventRecognizer self, PhysicalObject item, Creature creature)
+        {
 
             orig(self, item, creature);
             if (OnlineManager.lobby != null) return;
             if (!creature.IsLocal()) return;
 
-            if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession)) {
+            if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession))
+            {
                 if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature? oc) &&
-                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo)) {
-                    oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, 
+                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo))
+                {
+                    oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround,
                         opo.id, oc.id);
-                } 
-                
+                }
+
             }
         }
 
@@ -552,7 +582,10 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null)
             {
+                RainMeadow.Debug((self as Player).playerState.permanentDamageTracking + damage);
                 orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
+                RainMeadow.Debug((self as Player).playerState.permanentDamageTracking);
+
                 return;
             }
             if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineApo) || onlineApo is not OnlineCreature onlineCreature)

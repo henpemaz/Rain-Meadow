@@ -504,6 +504,27 @@ namespace RainMeadow
         }
 
         [RPCMethod]
+        public void HitBySpear(OnlinePhysicalObject weapon, OnlinePhysicalObject creatureHit, int chunkIndex, bool hitSomething, Vector2 collisionPoint, bool eu )
+        {
+            if ((OnlineManager.lobby != null) && this.didParry)
+            {
+                RainMeadow.Debug("Parried!");
+                OnlineManager.RunDeferred(() => this.didParry = false);
+                return;
+            }
+            SharedPhysics.CollisionResult result = new SharedPhysics.CollisionResult();
+            result.hitSomething = hitSomething;
+            result.obj = creatureHit.apo.realizedObject;
+            result.collisionPoint = collisionPoint;
+            result.chunk = (creatureHit.apo.realizedObject).bodyChunks[chunkIndex];
+            result.onAppendagePos = null;
+            //result.onAppendagePos = Vector2.zero; // not used in spear hit
+                                                  //weapon.apo.realizedObject as Spear, creatureHit.apo.realizedObject as Creature, chunkIndex, hitSomething, collisionPoint);
+            (weapon.apo.realizedObject as Spear)?.HitSomething(result, eu);
+        }
+
+
+        [RPCMethod]
         public void HitByExplosion(float hitfac)
         {
             apo.realizedObject?.HitByExplosion(hitfac, null, 0);
