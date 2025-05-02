@@ -512,6 +512,7 @@ namespace RainMeadow
                 OnlineManager.RunDeferred(() => this.didParry = false);
                 return;
             }
+            RainMeadow.Error($"{(weapon.apo.realizedObject as Spear).spearDamageBonus} spear damage bonus === {(creatureHit.apo.realizedObject as Player).playerState.permanentDamageTracking}");
             SharedPhysics.CollisionResult result = new SharedPhysics.CollisionResult();
             result.hitSomething = hitSomething;
             result.obj = creatureHit.apo.realizedObject;
