@@ -71,5 +71,10 @@ namespace RainMeadow
                 isInit = false;
             }
         }
+
+        public void SmartMenuUpdateNoEscapeCheck()
+        {
+            base.Update();
+        }
     }
 }
