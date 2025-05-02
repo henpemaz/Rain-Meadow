@@ -1,6 +1,7 @@
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI;
@@ -20,17 +21,27 @@ public class ArenaLobbyMenu2 : SmartMenu
     public TabContainer tabContainer;
     public string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public string? painCatName;
+    public Page slugcatSelectPage;
+    public bool pagesMoving = false;
+    public float pageMovementProgress = 0f;
+    public Vector2[] oldPagesPos = [];
+    public Vector2 newPagePos = Vector2.zero;
+    public bool pageFullyTransitioned = true;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
 
+        pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
+        slugcatSelectPage.pos.x += 1500f;
+
         scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
         scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
         scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
         playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
         mainPage.subObjects.Add(playButton);
 
         tabContainer = new TabContainer(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
@@ -137,11 +148,57 @@ public class ArenaLobbyMenu2 : SmartMenu
                 ]
             );
         }
+
+        SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
+        swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
+        slugcatSelectPage.subObjects.Add(swapBackButton);
+    }
+
+    public void MovePage(Vector2 direction, int index)
+    {
+        if (pagesMoving) return;
+
+        pagesMoving = true;
+        pageMovementProgress = 0f;
+        newPagePos = direction;
+        oldPagesPos = new Vector2[pages.Count];
+        for (int i = 0; i < oldPagesPos.Length; i++)
+            oldPagesPos[i] = pages[i].pos;
+
+        currentPage = index;
+        pageFullyTransitioned = false;
+
+        PlaySound(SoundID.MENU_Next_Slugcat);
     }
 
     public override void Update()
     {
-        base.Update();
+        if (currentPage == 1)
+        {
+            SmartMenuUpdateNoEscapeCheck();
+            if (RWInput.CheckPauseButton(0)) MovePage(new Vector2(1500f, 0f), 0);
+        }
+        else if (pageFullyTransitioned) base.Update();
+        else SmartMenuUpdateNoEscapeCheck();
+
+        if (!pagesMoving) return;
+
+        pageMovementProgress += 0.35f;
+        float baseMoveSpeed = Mathf.Lerp(8f, 125f, Custom.SCurve(pageMovementProgress, 0.85f));
+        for (int i = 0; i < pages.Count; i++)
+        {
+            float totalTravelDistance = Vector2.Distance(oldPagesPos[i], oldPagesPos[i] + newPagePos);
+            float distanceToTravel = Vector2.Distance(pages[i].pos, oldPagesPos[i] + newPagePos);
+            float easing = Mathf.Lerp(1f, 0.01f, Mathf.InverseLerp(totalTravelDistance, 0.1f, distanceToTravel));
+
+            pages[i].pos = Custom.MoveTowards(pages[i].pos, oldPagesPos[i] + newPagePos, baseMoveSpeed * easing);
+
+            if (pages[i].pos == oldPagesPos[i] + newPagePos)
+            {
+                pagesMoving = false;
+                pageFullyTransitioned = true;
+            }
+        }
     }
 
     public override void GrafUpdate(float timeStacker)
