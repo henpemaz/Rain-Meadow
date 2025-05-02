@@ -43,6 +43,8 @@ namespace RainMeadow
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             IL.ScavengerBomb.Explode += PhysicalObject_Explode;
+            IL.ExplosiveSpear.Explode += PhysicalObject_Explode;
+
             IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
             IL.FlareBomb.StartBurn += PhysicalObject_Explode;
             IL.FirecrackerPlant.Ignite += PhysicalObject_Trigger;

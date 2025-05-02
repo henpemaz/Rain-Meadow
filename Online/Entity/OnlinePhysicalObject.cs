@@ -600,6 +600,8 @@ namespace RainMeadow
                     bomb.Explode(null); return;
                 case MoreSlugcats.SingularityBomb bomb:
                     bomb.Explode(); return;
+                case ExplosiveSpear spear:
+                    spear.Explode(); return;
                 case FlareBomb bomb:
                     bomb.StartBurn(); return;
                 case FirecrackerPlant bomb:

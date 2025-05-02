@@ -23,6 +23,9 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "spear")]
         private float spearDamageBonus;
 
+        [OnlineFieldHalf]
+        private bool ignited;
+
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -31,6 +34,10 @@ namespace RainMeadow
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
             spearDamageBonus = spear.spearDamageBonus;
+            
+            if (spear is ExplosiveSpear explosive) {
+                ignited = explosive.Ignited;
+            }
 
             if (spear.stuckInObject != null)
             {
@@ -59,6 +66,12 @@ namespace RainMeadow
                 spear.stuckInAppendage = spear.stuckInObject != null ? stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
                 spear.stuckBodyPart = stuckBodyPart;
                 spear.stuckRotation = stuckRotation;
+            }
+
+            if (spear is ExplosiveSpear explosive) {
+                if (ignited && !explosive.Ignited) {
+                    explosive.Ignite();
+                }
             }
 
             base.ReadTo(onlineEntity);
