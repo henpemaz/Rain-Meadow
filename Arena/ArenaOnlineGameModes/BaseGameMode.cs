@@ -101,7 +101,7 @@ namespace RainMeadow
             }
             else
             {
-                return "Description Not Found"; // Or throw an exception, or return null
+                return "Description Not Found"; 
             }
         }
 
@@ -299,7 +299,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner) //&& !arena.initiatedStartGameForClient
+            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient) 
             {
                 arena.isInGame = true;
                 foreach (var p in arena.arenaSittingOnlineOrder)
