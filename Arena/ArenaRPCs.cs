@@ -7,6 +7,15 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_SendSittingData(int kills, int deaths)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var estmenu = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as PlayerResultMenu);
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_AddPlayerMidGame(OnlinePlayer newPlayer)
         {
             if (RainMeadow.isArenaMode(out var arena))

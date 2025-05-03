@@ -115,15 +115,8 @@ namespace RainMeadow
                     {
                         List<OnlinePlayer> pendingPlayers = new List<OnlinePlayer>();
 
-                        foreach (var player in OnlineManager.players)
-                        {
-                            if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId))
-                            {
-                                RainMeadow.Error($"Adding pending player: {player}");
-                                pendingPlayers.Add(player);
-                            }
-                        }
 
+                        // Clear missing players
                         for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                         {
                             var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
@@ -134,21 +127,34 @@ namespace RainMeadow
                             }
                         }
 
-                        // Add the new player to arenaSittingOnlineOrder and get their player number
-                        foreach (var newPlayer in pendingPlayers)
+                        // Find & Add waiting players
+                        foreach (var player in arena.playersReadiedUp.list)
                         {
-                            
-                            arena.arenaSittingOnlineOrder.Add(newPlayer.inLobbyId);
-                            RainMeadow.Debug("COUNT+++" + arena.arenaSittingOnlineOrder.Count);
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
+                            var waitingP = OnlineManager.lobby.PlayerFromMeadowID(player);
+                            if (!arena.arenaSittingOnlineOrder.Contains(waitingP.inLobbyId))
                             {
-                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                                playerClass = ((OnlineManager.lobby.clientSettings[newPlayer].GetData<ArenaClientSettings>()).playingAs),
-                                hasEnteredGameArea = true
-                            };
-                            self.players.Add(newArenaPlayer);
-                           
-                        }
+                                RainMeadow.Error($"Adding pending player: {waitingP}");
+                                arena.arenaSittingOnlineOrder.Add(waitingP.inLobbyId);
+
+                                // Need to send when sitting is created --> After STartGame
+                                //foreach (var arenaSittingP in self.players)
+                                //{
+                                //    var onlineSittingP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaSittingP.playerNumber);
+                                //    // send scores to new players
+                                //    waitingP.InvokeOnceRPC(ArenaRPCs.Arena_SendSittingData, player.allKills, player.deaths);
+
+                                //}
+                                ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
+                                {
+                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                    playerClass = ((OnlineManager.lobby.clientSettings[waitingP].GetData<ArenaClientSettings>()).playingAs),
+                                    hasEnteredGameArea = true
+                                };
+                                self.players.Add(newArenaPlayer);
+
+
+                            }
+                        }  
 
                     }
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
