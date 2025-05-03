@@ -119,12 +119,6 @@ public class LobbyCreateMenu : SmartMenu
 
     private void CreateLobby(SimplerButton obj)
     {
-        if (ModManager.JollyCoop)
-        {
-            ShowErrorDialog("Please disable JollyCoop before playing Online");
-            return;
-        }
-
         ShowLoadingDialog("Creating lobby...");
         ApplyLobbyLimit();
         RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");
