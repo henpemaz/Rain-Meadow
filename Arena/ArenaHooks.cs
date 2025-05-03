@@ -1569,17 +1569,18 @@ namespace RainMeadow
 
                 if (self.countdownToNextRound == 0 && !self.nextLevelCall)
                 {
-                    foreach (OnlinePlayer player in OnlineManager.players)
+                    foreach (var player in arena.arenaSittingOnlineOrder)
                     {
-                        if (player.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
+                        var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                        if (onlineP.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
                         {
                             ArenaRPCs.Arena_NextLevelCall();
                         }
 
                         else
                         {
-                            player.InvokeRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
-                            player.InvokeRPC(ArenaRPCs.Arena_NextLevelCall);
+                            onlineP.InvokeRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
+                            onlineP.InvokeRPC(ArenaRPCs.Arena_NextLevelCall);
 
 
                         }
@@ -1611,6 +1612,8 @@ namespace RainMeadow
             {
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
+                    RainMeadow.Error("DOES NOT EQUAL");
+
                     var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
                     self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
@@ -1623,7 +1626,8 @@ namespace RainMeadow
                         }
                     }
                 }
-
+                RainMeadow.Debug(self.Players.Count);
+                RainMeadow.Debug("ORDER" + arena.arenaSittingOnlineOrder.Count);
                 arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)

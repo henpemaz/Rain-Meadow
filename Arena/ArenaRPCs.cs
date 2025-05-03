@@ -7,6 +7,15 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_AddPlayerMidGame(OnlinePlayer newPlayer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                arena.arenaSittingOnlineOrder.Add(newPlayer.inLobbyId);
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_ForceReadyUp()
         {
             if (RainMeadow.isArenaMode(out var arena))

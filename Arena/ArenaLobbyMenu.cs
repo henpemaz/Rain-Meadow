@@ -429,6 +429,7 @@ namespace RainMeadow
             else
             {
                 manager.arenaSitting.levelPlaylist = arena.playList;
+                manager.arenaSitting.currentLevel = arena.currentLevel;
 
             }
 

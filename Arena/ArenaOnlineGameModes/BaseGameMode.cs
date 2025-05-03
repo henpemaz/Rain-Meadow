@@ -281,7 +281,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
+            if (OnlineManager.lobby.isOwner) //&& !arena.initiatedStartGameForClient
             {
                 arena.isInGame = true;
                 foreach (var p in arena.arenaSittingOnlineOrder)
