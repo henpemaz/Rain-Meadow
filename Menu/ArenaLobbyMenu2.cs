@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
@@ -6,8 +7,9 @@ using UnityEngine;
 
 namespace RainMeadow.UI;
 
-public class ArenaLobbyMenu2 : SmartMenu
+public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
+    public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.AllSlugcats();
     public SimplerButton playButton;
     public FSprite[] settingsDivSprites;
     public Vector2[] settingsDivSpritesPos;
@@ -18,9 +20,11 @@ public class ArenaLobbyMenu2 : SmartMenu
     public SimplerMultipleChoiceArray roomRepeatChoiceArray, rainTimerChoiceArray, wildlifeChoiceArray;
     // public TextBox countdownTimerTextBox, saintAscendDurationTimerTextBox;
     // public ComboBox arenaGameModeComboBox;
+    public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
     public string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public string? painCatName;
+    public int selectedSlugcatIndex = 0;
     public Page slugcatSelectPage;
     public bool pagesMoving = false;
     public float pageMovementProgress = 0f;
@@ -152,6 +156,26 @@ public class ArenaLobbyMenu2 : SmartMenu
         SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
         swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
         slugcatSelectPage.subObjects.Add(swapBackButton);
+
+        slugcatSelectButtons = new EventfulSelectOneButton[allSlugcats.Count];
+        int buttonsInTopRow = (int)Mathf.Floor(allSlugcats.Count / 2f);
+        int buttonsInBottomRow = allSlugcats.Count - buttonsInTopRow;
+        float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
+        float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
+        RainMeadow.Debug(bottomRowStartingXPos);
+
+        for (int i = 0; i < allSlugcats.Count; i++)
+        {
+            Vector2 pos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
+            EventfulSelectOneButton btn = new(this, slugcatSelectPage, "", "scug select", pos, new Vector2(100f, 100f), slugcatSelectButtons, i);
+
+            MenuIllustration portrait = new(this, btn, "", ArenaImage(allSlugcats[i], i), btn.size / 2, true, true);
+            // portrait.sprite.SetElementByName(portrait.fileName);
+            btn.subObjects.Add(portrait);
+
+            slugcatSelectPage.subObjects.Add(btn);
+            slugcatSelectButtons[i] = btn;
+        }
     }
 
     public void MovePage(Vector2 direction, int index)
@@ -169,6 +193,36 @@ public class ArenaLobbyMenu2 : SmartMenu
         pageFullyTransitioned = false;
 
         PlaySound(SoundID.MENU_Next_Slugcat);
+    }
+
+    public string ArenaImage(SlugcatStats.Name classID, int color)
+    {
+        if (classID == null) return $"MultiplayerPortrait{color}2";
+
+        List<SlugcatStats.Name> baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
+        List<SlugcatStats.Name> vanillaSlugs = ArenaHelpers.VanillaSlugs();
+        List<SlugcatStats.Name> mscSlugs = ArenaHelpers.MSCSlugs();
+
+        RainMeadow.Debug($"Player is playing as {classID} with color index {color}");
+
+        if (vanillaSlugs.Contains(classID)) return $"MultiplayerPortrait{color}1";
+
+        if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
+
+        if (ModManager.MSC && mscSlugs.Contains(classID))
+        {
+            if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            {
+                int randomChoice = Random.Range(0, 5);
+                return $"MultiplayerPortrait{randomChoice}1-{allSlugcats[color]}";
+            }
+            return $"MultiplayerPortrait41-{allSlugcats[color]}";
+        }
+
+        if (!baseGameSlugs.Contains(classID)) return $"MultiplayerPortrait01-{classID}";
+
+        return $"MultiplayerPortrait{color}1-{classID}";
     }
 
     public override void Update()
@@ -218,6 +272,16 @@ public class ArenaLobbyMenu2 : SmartMenu
         else
             for (int i = 0; i < settingsDivSprites.Length; i++)
                 container.RemoveChild(settingsDivSprites[i]);
+    }
+
+    public int GetCurrentlySelectedOfSeries(string series)
+    {
+        return selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
+    }
+
+    public void SetCurrentlySelectedOfSeries(string series, int to)
+    {
+        selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
 }
 
