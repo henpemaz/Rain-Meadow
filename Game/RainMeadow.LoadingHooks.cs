@@ -140,7 +140,7 @@ namespace RainMeadow
                             
                             arena.arenaSittingOnlineOrder.Add(newPlayer.inLobbyId);
                             RainMeadow.Debug("COUNT+++" + arena.arenaSittingOnlineOrder.Count);
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1) // invoke this to the HOST!
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
                             {
                                 playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
                                 playerClass = ((OnlineManager.lobby.clientSettings[newPlayer].GetData<ArenaClientSettings>()).playingAs),
