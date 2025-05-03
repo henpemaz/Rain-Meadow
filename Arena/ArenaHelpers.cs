@@ -5,12 +5,12 @@ namespace RainMeadow
 {
     public static class ArenaHelpers
     {
-        public static List<SlugcatStats.Name?> selectableSlugcats = new List<SlugcatStats.Name?>();
-        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name?>();
-        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name?>();
-        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name?>();
+        public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
-        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
+        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowRandom" };
 
         public static void RecreateSlugcatCache()
         {
@@ -41,8 +41,9 @@ namespace RainMeadow
             }
             if (ModManager.Watcher)
             {
+                int nightindex = baseGameSlugcats.IndexOf(SlugcatStats.Name.Night);
                 baseGameSlugcats.Remove(SlugcatStats.Name.Night);
-                baseGameSlugcats.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
+                baseGameSlugcats.Insert(nightindex, Watcher.WatcherEnums.SlugcatStatsName.Watcher);
             }
 
             allSlugcats.AddRange(baseGameSlugcats);
@@ -88,8 +89,8 @@ namespace RainMeadow
                 }
             }
 
+            selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
             selectableSlugcats.AddRange(allSlugcats);
-            selectableSlugcats.Add(null);
         }
 
         public static void SetProfileColor(ArenaOnlineGameMode arena)

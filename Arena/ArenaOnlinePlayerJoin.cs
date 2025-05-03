@@ -40,12 +40,13 @@ namespace Menu
         public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index, OnlinePlayer player, bool canKick)
             : base(menu, owner, pos, new Vector2(100f, 100f))
         {
+            
             slugcat = SlugcatStats.Name.White;
             colorIndex = index;
             profileIdentifier = player;
             roundedRect = new(menu, this, new Vector2(0f, 0f), size, filled: true);
             selectRect = new(menu, this, new Vector2(0f, 0f), size, filled: false);
-            portrait = new(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
+            portrait = new(menu, this, "", (menu as MultiplayerMenu)!.ArenaImage(ArenaHelpers.selectableSlugcats[index], index), size / 2f, crispPixels: true, anchorCenter: true);
             readyForCombat = false;
             string text = "";
             float num = 0f;
@@ -134,7 +135,7 @@ namespace Menu
                 roundedRect.borderColor = ogColor.ToHSL();
             }
         }
-        public void SetNewSlugcat(SlugcatStats.Name? slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
+        public void SetNewSlugcat(SlugcatStats.Name slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
         {
             if (this.slugcat != slugcat || colorIndex != currentColorIndex)
             {

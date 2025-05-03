@@ -18,7 +18,7 @@ namespace RainMeadow
         private ColorSlugcatDialog colorConfigDialog;
         private ArenaOnlineSlugcatButtons slugcatButtons;
         private Dictionary<string, bool> playersReadiedUp = [];
-        private int currentColorIndex = -1;
+        private int currentColorIndex = 0;
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
         private bool flushArenaSittingForWaitingClients = false;
 
@@ -39,7 +39,7 @@ namespace RainMeadow
                 }
             }
         }
-        private SlugcatStats.Name? SlugcatFromIndex => ArenaHelpers.selectableSlugcats[Mathf.Max(CurrentColorIndex, 0)];
+        private SlugcatStats.Name SlugcatFromIndex => ArenaHelpers.selectableSlugcats[CurrentColorIndex];
         private List<OnlinePlayer> OtherOnlinePlayers => [.. OnlineManager.players?.Where(x => !(x?.isMe ?? false)) ?? []];
         public ArenaLobbyMenu(ProcessManager manager) : base(manager)
         {
@@ -354,7 +354,7 @@ namespace RainMeadow
         {
             arena.avatarSettings.eyeColor = RainMeadow.rainMeadowOptions.EyeColor.Value;
             arena.avatarSettings.bodyColor = RainMeadow.rainMeadowOptions.BodyColor.Value;
-            arena.avatarSettings.playingAs = SlugcatStats.Name.White;
+            arena.avatarSettings.playingAs = RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat;
         }
         private SimplerButton CreateButton(string text, Vector2 pos, Vector2 size, Action<SimplerButton>? clicked = null, Page? page = null)
         {

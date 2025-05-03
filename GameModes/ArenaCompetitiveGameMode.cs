@@ -70,7 +70,7 @@ namespace RainMeadow
             ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
-            arenaClientSettings.playingAs = SlugcatStats.Name.White;
+            arenaClientSettings.playingAs = ArenaHelpers.selectableSlugcats[0];
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
             playerEnteredGame = 0;
@@ -149,7 +149,7 @@ namespace RainMeadow
             ResetChampAddition();
         }
         public void InitializeSlugcat() {
-            if (arenaClientSettings.playingAs == null) {
+            if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
                 System.Random random = new System.Random((int)DateTime.Now.Ticks);
                 avatarSettings.playingAs = ArenaHelpers.allSlugcats[random.Next(ArenaHelpers.allSlugcats.Count)]!;
                 arenaClientSettings.randomPlayingAs = avatarSettings.playingAs;

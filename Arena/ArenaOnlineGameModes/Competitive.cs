@@ -43,7 +43,7 @@ namespace RainMeadow
             var client_settings = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>();
             
             SlugcatStats.Name playingAs;
-            if (client_settings.playingAs != null) {
+            if (client_settings.playingAs != RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
                 playingAs = client_settings.playingAs;
             } else {
                 playingAs = client_settings.randomPlayingAs ?? SlugcatStats.Name.White;
