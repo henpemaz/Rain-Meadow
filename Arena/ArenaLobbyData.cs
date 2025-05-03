@@ -19,6 +19,7 @@ namespace RainMeadow
             // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
+            
             [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
             [OnlineField(group = "arenaLobby")]
@@ -56,7 +57,7 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
             [OnlineField(group = "arenaSetup")]
-            public byte currentGameMode;
+            public string currentGameMode; // maybe not use string
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]

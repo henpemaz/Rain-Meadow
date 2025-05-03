@@ -115,7 +115,7 @@ namespace RainMeadow
             }
             else
             {
-                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame)
+                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame && !arena.clientWantsToLeaveGame)
                 {
                     pushClientIntoGame = true;
                     this.StartGame();
@@ -459,14 +459,16 @@ namespace RainMeadow
         public void StartGame()
         {
             RainMeadow.DebugMe();
-            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
-            {
-                return;
-            }
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive)
             {
                 return;
             }
+            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
+            {
+                return;
+            }
+
+            
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
             {
                 return; // don't be foolish
@@ -498,10 +500,21 @@ namespace RainMeadow
                 return;
             }
 
-            if (!OnlineManager.lobby.isOwner && !arena.isInGame)
+            if (!OnlineManager.lobby.isOwner)
             {
-                RainMeadow.Debug("Host is not in game");
-                return;
+                if (!arena.isInGame)
+                {
+                    RainMeadow.Debug("Host is not in game");
+                    return;
+                }
+
+                if (!arena.hasPermissionToRejoin)
+                {
+                    return;
+                }
+
+                arena.clientWantsToLeaveGame = false;
+                
             }
             if (colorConfigDialog != null)
             {

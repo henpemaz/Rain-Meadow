@@ -133,15 +133,6 @@ namespace RainMeadow
                                 arena.playersLateWaitingInLobbyForNextRound.Add(waitingP);
                                 RainMeadow.Error($"Adding pending player: {waitingP}");
                                 arena.arenaSittingOnlineOrder.Add(waitingP.inLobbyId);
-
-                                // Need to send when sitting is created --> After STartGame
-                                //foreach (var arenaSittingP in self.players)
-                                //{
-                                //    var onlineSittingP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, arenaSittingP.playerNumber);
-                                //    // send scores to new players
-                                //    waitingP.InvokeOnceRPC(ArenaRPCs.Arena_SendSittingData, player.allKills, player.deaths);
-
-                                //}
                                 ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
                                 {
                                     playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
@@ -150,7 +141,8 @@ namespace RainMeadow
                                 };
                                 self.players.Add(newArenaPlayer);
                             }
-                        }  
+                            
+                        }
 
                     }
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);

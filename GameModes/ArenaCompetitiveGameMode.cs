@@ -49,8 +49,10 @@ namespace RainMeadow
 
 
         public int playerEnteredGame;
+        public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
         public bool addedChampstoList;
+        public bool hasPermissionToRejoin;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -90,6 +92,8 @@ namespace RainMeadow
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
+            clientWantsToLeaveGame = false;
+            hasPermissionToRejoin = false;
         }
 
         public void ResetInvDetails()

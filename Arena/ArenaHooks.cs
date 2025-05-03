@@ -425,6 +425,11 @@ namespace RainMeadow
             if (message == "EXIT" && isArenaMode(out var arena))
             {
                 arena.returnToLobby = true;
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    arena.clientWantsToLeaveGame = true;
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_AddPlayerQuitEarly, OnlineManager.mePlayer);
+                }
             }
             orig(self, sender, message);
         }
@@ -1215,6 +1220,12 @@ namespace RainMeadow
             }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
+                OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
+                if (currentName != null)
+                {
+                    player.playerClass = OnlineManager.lobby.clientSettings[currentName].GetData<ArenaClientSettings>().playingAs; // update for rejoins
+                }
+
                 if (OnlineManager.lobby.isOwner)
                 {
 
@@ -1231,7 +1242,6 @@ namespace RainMeadow
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
-                var currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 var userNameBackup = "Unknown user";
                 try
                 {

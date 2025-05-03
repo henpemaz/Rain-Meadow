@@ -286,7 +286,7 @@ namespace RainMeadow
                 arena.isInGame = true; // used for readied players at the beginning
                 foreach (var p in arena.playersLateWaitingInLobbyForNextRound) // used for late players, not synced to clients
                 {
-                    p.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); 
+                    p.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame, true); 
 
                 }
                 foreach (var arenaPlayer in self.arenaSitting.players)

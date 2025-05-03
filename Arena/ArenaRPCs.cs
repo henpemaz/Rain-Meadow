@@ -7,11 +7,11 @@ namespace RainMeadow
     {
 
         [RPCMethod]
-        public static void Arena_SendSittingData(int kills, int deaths)
+        public static void Arena_AddPlayerQuitEarly(OnlinePlayer earlyQuitter)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                var estmenu = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as PlayerResultMenu);
+                arena.playersLateWaitingInLobbyForNextRound.Add(earlyQuitter);
             }
         }
 
@@ -233,7 +233,7 @@ namespace RainMeadow
 
         }
         [RPCMethod]
-        public static void Arena_NotifyStartGame()
+        public static void Arena_NotifyStartGame(bool hasPermission)
         {
             var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
             if (RainMeadow.isArenaMode(out var arena))
@@ -245,6 +245,7 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug("Starting game for player");
                 arena.isInGame = true; // state might be too late
+                arena.hasPermissionToRejoin = hasPermission;
                 lobby.StartGame();
             }
         }
