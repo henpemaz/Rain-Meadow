@@ -281,21 +281,30 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner) //&& !arena.initiatedStartGameForClient
+            if (OnlineManager.lobby.isOwner)
             {
-                arena.isInGame = true;
-                foreach (var p in arena.arenaSittingOnlineOrder)
+                arena.isInGame = true; // used for readied players at the beginning
+                foreach (var p in arena.playersLateWaitingInLobbyForNextRound) // used for late players, not synced to clients
                 {
-                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (onlineP != null)
-                    {
-                        if (onlineP.isMe) continue;
-                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
-                    }
+                    p.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); 
 
                 }
-                arena.initiatedStartGameForClient = true; // set this so we don't notify again
+                foreach (var arenaPlayer in self.arenaSitting.players)
+                {
+                    if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
+                    {
+                        arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
+                        arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
+
+                    }
+                    arenaPlayer.score = arena.playerNumberWithKills[arenaPlayer.playerNumber];
+                    arenaPlayer.deaths = arena.playerNumberWithDeaths[arenaPlayer.playerNumber];
+                }
+
             }
+
+
+
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)

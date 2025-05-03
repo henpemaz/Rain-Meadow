@@ -118,6 +118,10 @@ namespace RainMeadow
             arena.currentLevel = 0;
             arena.playersReadiedUp.list.Clear();
 
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            
+
         }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
@@ -131,7 +135,6 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
-                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {

@@ -113,9 +113,6 @@ namespace RainMeadow
 
                     if (OnlineManager.lobby.isOwner)
                     {
-                        List<OnlinePlayer> pendingPlayers = new List<OnlinePlayer>();
-
-
                         // Clear missing players
                         for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                         {
@@ -133,6 +130,7 @@ namespace RainMeadow
                             var waitingP = OnlineManager.lobby.PlayerFromMeadowID(player);
                             if (!arena.arenaSittingOnlineOrder.Contains(waitingP.inLobbyId))
                             {
+                                arena.playersLateWaitingInLobbyForNextRound.Add(waitingP);
                                 RainMeadow.Error($"Adding pending player: {waitingP}");
                                 arena.arenaSittingOnlineOrder.Add(waitingP.inLobbyId);
 
@@ -151,8 +149,6 @@ namespace RainMeadow
                                     hasEnteredGameArea = true
                                 };
                                 self.players.Add(newArenaPlayer);
-
-
                             }
                         }  
 

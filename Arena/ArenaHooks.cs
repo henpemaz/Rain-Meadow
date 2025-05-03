@@ -1215,6 +1215,19 @@ namespace RainMeadow
             }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
+                if (OnlineManager.lobby.isOwner)
+                {
+
+                    // what host observed
+                    arena.playerNumberWithKills[player.playerNumber] = player.score;
+                    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
+                }
+                else
+                {
+                    player.score = arena.playerNumberWithKills[player.playerNumber];
+                    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
+                }
+
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
 
@@ -1626,8 +1639,6 @@ namespace RainMeadow
                         }
                     }
                 }
-                RainMeadow.Debug(self.Players.Count);
-                RainMeadow.Debug("ORDER" + arena.arenaSittingOnlineOrder.Count);
                 arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)

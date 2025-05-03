@@ -21,6 +21,7 @@ namespace RainMeadow
         private int currentColorIndex = -1;
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
         private bool flushArenaSittingForWaitingClients = false;
+        private bool pushClientIntoGame = false;
 
         private ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
         private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
@@ -110,6 +111,14 @@ namespace RainMeadow
                     {
                         forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
                     }
+                }
+            }
+            else
+            {
+                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame)
+                {
+                    pushClientIntoGame = true;
+                    this.StartGame();
                 }
             }
             UpdateSlugcatButtons();
@@ -303,7 +312,7 @@ namespace RainMeadow
                     (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs = SlugcatFromIndex;
                     RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
 
-                    
+
                 };
             }
         }
@@ -584,7 +593,7 @@ namespace RainMeadow
             {
                 if (arena.isInGame)
                 {
-                    playButton.inactive = true;
+
                     if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true)) // you're late
                     {
                         playButton.menuLabel.text = Translate("GAME IN SESSION");

@@ -23,7 +23,6 @@ namespace RainMeadow
         public bool returnToLobby;
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
-        public bool initiatedStartGameForClient;
 
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
@@ -44,6 +43,9 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+        public Dictionary<int ,int> playerNumberWithKills = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
+        public List<OnlinePlayer> playersLateWaitingInLobbyForNextRound = new(); // not synced, just for host to keep track
 
 
         public int playerEnteredGame;
@@ -88,7 +90,6 @@ namespace RainMeadow
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
-            initiatedStartGameForClient = false;
         }
 
         public void ResetInvDetails()
