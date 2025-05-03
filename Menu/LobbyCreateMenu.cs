@@ -112,6 +112,14 @@ public class LobbyCreateMenu : SmartMenu
         }
     }
 
+    /// Store and save password upon exiting
+    public override void OnBack(SimplerButton obj)
+    {
+        RainMeadow.rainMeadowOptions._LoadConfigFile(); //shenanigans WILL happen -- avoid them
+        RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value = passwordInputBox.value;
+        RainMeadow.rainMeadowOptions._SaveConfigFile(); //this may just be evil
+    }
+
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
