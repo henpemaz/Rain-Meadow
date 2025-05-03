@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using Menu;
-using MoreSlugcats;
-using RainMeadow;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using static RainMeadow.OnlineEntity;
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
+
+        public Dictionary<SlugcatStats.Name, string> slugcatArenaDescriptions = new Dictionary<SlugcatStats.Name, string>();    
 
         public abstract bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
@@ -85,6 +79,30 @@ namespace RainMeadow
         public virtual void ArenaCreatureSpawner_SpawnCreatures(ArenaOnlineGameMode arena, On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
         {
 
+        }
+
+        public virtual void SetArenaSlugcatDescription(SlugcatStats.Name slug, string description)
+        {
+            if (slugcatArenaDescriptions.ContainsKey(slug))
+            {
+                slugcatArenaDescriptions[slug] = description;
+            }
+            else
+            {
+                slugcatArenaDescriptions.Add(slug, description);
+            }
+        }
+
+        public virtual string GetArenaSlugcatDescription(SlugcatStats.Name slug)
+        {
+            if (slugcatArenaDescriptions.ContainsKey(slug))
+            {
+                return slugcatArenaDescriptions[slug];
+            }
+            else
+            {
+                return "Description Not Found"; // Or throw an exception, or return null
+            }
         }
 
         public virtual bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
@@ -281,7 +299,7 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
+            if (OnlineManager.lobby.isOwner) //&& !arena.initiatedStartGameForClient
             {
                 arena.isInGame = true;
                 foreach (var p in arena.arenaSittingOnlineOrder)
