@@ -1,4 +1,5 @@
 using HarmonyLib;
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
@@ -483,8 +484,7 @@ namespace RainMeadow
             {
                 if (classID == null)
                 {
-                    Debug("Is null!");
-                    return "MultiplayerPortrait" + color + "2";
+                    return "MultiplayerPortrait02";
                 }
                 if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
@@ -1205,6 +1205,23 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
+            bool playingAsRandom = false;
+            // for random class players.
+            if (isArenaMode(out var aren))
+            {
+                OnlinePlayer? on = ArenaHelpers.FindOnlinePlayerByLobbyId(aren.arenaSittingOnlineOrder[index]);
+                if (on is not null) {
+                    if (OnlineManager.lobby.clientSettings[on].TryGetData<ArenaClientSettings>(out var settings)) {
+                        player.playerClass = settings.playingAs ?? settings.randomPlayingAs;
+                        if (settings.playingAs == null) {
+                            playingAsRandom = true;
+                        }
+
+                    } else RainMeadow.Error("no client settings");
+                    
+                } else RainMeadow.Error("no online object");
+                if (player.playerClass == null) player.playerClass = SlugcatStats.Name.White; // prevent crash from null
+            }
 
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
             if (self.backgroundRect == null)
@@ -1259,14 +1276,19 @@ namespace RainMeadow
                     self.subObjects.Add(self.portrait);
 
                 }
-                if (ModManager.Watcher && player.playerClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                                
+                // if we're at the end screen. show the random slugcat image.
+                if (playingAsRandom && self is FinalResultbox)
+                {
+                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait02", new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                    self.subObjects.Add(self.portrait);
+                } 
+                else if (ModManager.Watcher && player.playerClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
                     self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                     self.subObjects.Add(self.portrait);
                 }
-
-
-                if (ModManager.MSC)
+                else if (ModManager.NewSlugcatsModule)
                 {
                     if (player.playerClass == SlugcatStats.Name.Night)
                     {

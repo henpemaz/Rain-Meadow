@@ -148,9 +148,21 @@ namespace RainMeadow
             ResetInvDetails();
             ResetChampAddition();
         }
+        public void InitializeSlugcat() {
+            if (arenaClientSettings.playingAs == null) {
+                System.Random random = new System.Random((int)DateTime.Now.Ticks);
+                avatarSettings.playingAs = ArenaHelpers.allSlugcats[random.Next(ArenaHelpers.allSlugcats.Count)]!;
+                arenaClientSettings.randomPlayingAs = avatarSettings.playingAs;
+            } else {
+                avatarSettings.playingAs = arenaClientSettings.playingAs;
+            }
+
+            avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
+        }
 
         public void ResetAtNextLevel()
         {
+            InitializeSlugcat();
             ResetScrollTimer();
             ResetGameTimer();
             ResetPlayersEntered();

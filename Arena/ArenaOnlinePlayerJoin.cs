@@ -21,7 +21,7 @@ namespace Menu
         public SimplerButton usernameButton;
         public SimplerSymbolButton? kickButton;
         public OnlinePlayer profileIdentifier;
-        public SlugcatStats.Name slugcat;
+        public SlugcatStats.Name? slugcat;
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
@@ -134,13 +134,13 @@ namespace Menu
                 roundedRect.borderColor = ogColor.ToHSL();
             }
         }
-        public void SetNewSlugcat(SlugcatStats.Name slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
+        public void SetNewSlugcat(SlugcatStats.Name? slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)
         {
             if (this.slugcat != slugcat || colorIndex != currentColorIndex)
             {
                 this.slugcat = slugcat;
                 colorIndex = currentColorIndex;
-                SetNewPortrait(arenaImage.Invoke(slugcat, currentColorIndex));
+                SetNewPortrait(arenaImage.Invoke(slugcat!, currentColorIndex));
             }
         } //func for now ig
         public void SetNewPortrait(string newFile)
