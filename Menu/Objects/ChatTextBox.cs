@@ -67,10 +67,17 @@ namespace RainMeadow
             {
                 if (lastSentMessage.Length > 0 && !string.IsNullOrWhiteSpace(lastSentMessage))
                 {
-                    MatchmakingManager.currentInstance.SendChatMessage(lastSentMessage);
-                    foreach (var player in OnlineManager.players)
+                    if (lastSentMessage.StartsWith("/"))
                     {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);
+                        CommandParser commandParser = new(lastSentMessage); // still trying figuring out that parser
+                    }
+                    else
+                    {
+                        MatchmakingManager.currentInstance.SendChatMessage(lastSentMessage);
+                        foreach (var player in OnlineManager.players)
+                        {
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, lastSentMessage);
+                        }
                     }
                 }
                 else
