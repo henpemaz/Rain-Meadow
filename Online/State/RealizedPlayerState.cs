@@ -279,7 +279,29 @@ namespace RainMeadow
 
             if (p.tongue is Player.Tongue tongue)
             {
-                tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+                var mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+
+                if (tongue.Attached && (mode == Player.Tongue.Mode.Retracting || mode == Player.Tongue.Mode.Retracted)) {
+                    Player applyvelplayer = p.onBack;
+                    while (applyvelplayer != null) {
+                        if (applyvelplayer.input[0].jmp) {
+                            float num = Mathf.Lerp(1f, 1.15f, applyvelplayer.Adrenaline);
+                            if (applyvelplayer.grasps[0] != null && applyvelplayer.HeavyCarry(applyvelplayer.grasps[0].grabbed) && !(applyvelplayer.grasps[0].grabbed is Cicada))
+                            {
+                                num += Mathf.Min(Mathf.Max(0f, applyvelplayer.grasps[0].grabbed.TotalMass - 0.2f) * 1.5f, 1.3f);
+                            }
+
+                            applyvelplayer.bodyChunks[0].vel.y = 8f * num;
+                            applyvelplayer.bodyChunks[1].vel.y = 7f * num;
+                            applyvelplayer.jumpBoost = 8f;
+                        }
+
+                        applyvelplayer = applyvelplayer.onBack;
+                    }
+                    tongue.Release();
+                }
+
+                tongue.mode = mode;
                 tongue.pos = tonguePos;
                 tongue.idealRopeLength = tongueIdealLength;
                 tongue.requestedRopeLength = tongueRequestedLength;

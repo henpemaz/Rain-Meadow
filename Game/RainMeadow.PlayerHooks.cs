@@ -6,6 +6,7 @@ using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 using RWCustom;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace RainMeadow;
 
@@ -19,6 +20,7 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
+        new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStatsGourmandBack);
         IL.Player.Update += Player_Update;
         On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
@@ -331,7 +333,7 @@ public partial class RainMeadow
                         Vector2 moveTo2 = Vector2.Lerp(self.owner.bodyChunks[1].pos, self.slugcat.bodyChunks[1].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
                         self.owner.bodyChunks[0].MoveFromOutsideMyUpdate(eu, moveTo);
                         self.owner.bodyChunks[1].MoveFromOutsideMyUpdate(eu, moveTo2);
-                        float mass_ratio = self.owner.bodyChunks[0].mass / self.slugcat.bodyChunks[1].mass;
+                        float mass_ratio = (self.owner.bodyChunks[0].mass/self.slugcat.bodyChunks[1].mass)/2f;
                         var offset = self.slugcat.bodyChunks[1].vel - self.owner.bodyChunks[0].vel;
                         self.owner.bodyChunks[0].vel += offset;
                         self.owner.bodyChunks[1].vel += offset;
@@ -360,18 +362,26 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player)) {
             if (saint_player!.IsLocal()) {
-                if (!MoreSlugcats.MMF.cfgOldTongue.Value && self.input[0].jmp && !self.input[1].jmp && !self.input[0].pckp && self.canJump <= 0 && self.bodyMode != Player.BodyModeIndex.Crawl && self.animation != Player.AnimationIndex.ClimbOnBeam && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.HangFromBeam 
-                        && saint_player!.SaintTongueCheck())
-                {
-                    Vector2 vector = new Vector2((float)self.flipDirection, 0.7f);
-                    Vector2 normalized = vector.normalized;
-                    if (self.input[0].y > 0)
+
+                if (!saint_player!.tongue.Attached) {
+                    if (!MoreSlugcats.MMF.cfgOldTongue.Value && self.input[0].jmp && !self.input[1].jmp && !self.input[0].pckp && self.canJump <= 0 && self.bodyMode != Player.BodyModeIndex.Crawl && self.animation != Player.AnimationIndex.ClimbOnBeam && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.HangFromBeam 
+                            && saint_player!.SaintTongueCheck() && 
+                            self.bodyMode != Player.BodyModeIndex.CorridorClimb && !self.corridorDrop && 
+                            self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.bodyMode != Player.BodyModeIndex.WallClimb && 
+                            self.bodyMode != Player.BodyModeIndex.Swimming && self.animation != Player.AnimationIndex.VineGrab &&
+                            self.animation != Player.AnimationIndex.ZeroGPoleGrab)
                     {
-                        normalized = new Vector2(0f, 1f);
+                        Vector2 vector = new Vector2((float)self.flipDirection, 0.7f);
+                        Vector2 normalized = vector.normalized;
+                        if (self.input[0].y > 0)
+                        {
+                            normalized = new Vector2(0f, 1f);
+                        }
+                        normalized = (normalized + self.mainBodyChunk.vel.normalized * 0.2f).normalized;
+                        saint_player!.tongue.Shoot(normalized);
                     }
-                    normalized = (normalized + self.mainBodyChunk.vel.normalized * 0.2f).normalized;
-                    saint_player!.tongue.Shoot(normalized);
                 }
+
 
                 if (saint_player!.tongue.Attached) {
                     if (self.input[0].jmp && !self.input[1].jmp && saint_player!.tongueAttachTime >= 2)
@@ -383,6 +393,10 @@ public partial class RainMeadow
                     if (self.input[0].y > 0)
                     {
                         saint_player!.tongue.decreaseRopeLength(3f);
+                    }
+
+                    if (saint_player!.input[0].x == 0) {
+                        saint_player!.input[0].x = self.input[0].x;
                     }
 
                     if (self.input[0].y < 0)
@@ -1288,6 +1302,47 @@ public partial class RainMeadow
         }
     }
 
+    private ConditionalWeakTable<SlugcatStats, GourmandDecorator> gourmand_decorators = new();
+    class GourmandDecorator : SlugcatStats {
+        SlugcatStats origin;
+        public GourmandDecorator(SlugcatStats slugcatStats) : base(slugcatStats.name, slugcatStats.malnourished) {
+            origin = slugcatStats;
+            Update();
+        }
+
+        public void Update() {
+            this.throwingSkill = origin.throwingSkill;
+            this.generalVisibilityBonus = origin.generalVisibilityBonus;
+            this.visualStealthInSneakMode = origin.visualStealthInSneakMode;
+            this.lungsFac = origin.lungsFac;
+            this.throwingSkill = origin.throwingSkill;
+            this.malnourished = origin.malnourished;
+            this.foodToHibernate = origin.foodToHibernate;
+            this.maxFood = origin.maxFood;
+            this.swimBoostCooldown = origin.swimBoostCooldown;
+            this.swimBoostCost = origin.swimBoostCost;
+            this.swimBoostForce = origin.swimBoostForce;
+            this.swimBoostMinAir = origin.swimBoostMinAir;
+            this.swimForceFac = origin.swimForceFac;
+
+            this.bodyWeightFac = origin.bodyWeightFac + 1.35f;
+            this.loudnessFac = origin.loudnessFac + 1.5f;
+            this.poleClimbSpeedFac = 0.8f;
+            this.corridorClimbSpeedFac = 0.86f;
+            this.runspeedFac = 0.9f;
+        }   
+    }
+
+
+    private SlugcatStats Player_slugcatStatsGourmandBack(Func<Player, SlugcatStats> orig, Player self) {
+        SlugcatStats stats =  orig(self);
+        if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _)) {
+            var gourmstats = gourmand_decorators.GetValue(stats, _stats => new GourmandDecorator(stats));
+            gourmstats.Update();
+            stats = gourmstats;
+        }
+        return stats;
+    }
     private SlugcatStats Player_slugcatStats(Func<Player, SlugcatStats> orig, Player self)
     {
         if (OnlineManager.lobby != null)
