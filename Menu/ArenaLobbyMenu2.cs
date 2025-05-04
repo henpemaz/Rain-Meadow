@@ -39,6 +39,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
+        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
         if (OnlineManager.lobby == null)
         {
             throw new InvalidOperationException("lobby is null");
@@ -162,7 +163,23 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 ]
             );
         }
+        tabContainer.AddTab(
+            "YES",
+               [
+                 painCatLizardCheckBox,
+               ]
+           );
+        tabContainer.AddTab(
+         "What",
+            [
 
+            ]
+        );
+        tabContainer.AddTab(
+         "Yolo",
+            [
+            ]
+        );
         SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
         swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
         slugcatSelectPage.subObjects.Add(swapBackButton);
