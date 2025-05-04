@@ -10,6 +10,15 @@ namespace RainMeadow.UI.Components
 {
     public class ArenaPlayerBox : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
     {
+        public static float GetLerpedRainbowHue(float alternatingSpeed = 0.167f) //3sf 1/6
+        {
+            return Mathf.PingPong(Time.time * alternatingSpeed, 1f);
+        }
+        public static Color MyRainbowColor(HSLColor rainbowColor, bool showRainbow, float alpha = 0.5f)
+        {
+            Color color = rainbowColor.rgb;
+            return new(color.r, color.g, color.b, showRainbow ? 0.5f : 0);
+        }
         public static Vector2 DefaultSize => new(290, 120);
         public float Alpha { get => alpha; set => alpha = value; }
         public Vector2 Pos { get => pos; set => pos = value; }
@@ -17,6 +26,7 @@ namespace RainMeadow.UI.Components
         public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
         {
             profileIdentifier = player;
+            rainbowColor = new(0, 1, 0.5f);
             sprites = [new("pixel"), new("pixel"), new("Meadow_Menu_Ping")];
             for (int i = 0; i < sprites.Length; i++)
             {
@@ -31,10 +41,8 @@ namespace RainMeadow.UI.Components
                 anchorY = 0,
             };
             Container.AddChild(pingLabel);
-
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), "", "MultiplayerPortrait01");
-            slugcatButton.size += new Vector2(16, 16);
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), SlugcatStats.Name.Red, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             InitButtons(canKick);
@@ -51,13 +59,13 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
+            rainbowColor.hue = GetLerpedRainbowHue();
+            slugcatButton.portraitSecondaryLerpFactor = GetLerpedRainbowHue(0.75f);
             realPing = Math.Max(1, profileIdentifier.ping - 16);
-          
         }
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            HSLColor basecolor = MyBaseColor();
             Vector2 size = DrawSize(timeStacker), pos = DrawPos(timeStacker);
             Color pingColor = GetPingColor(realPing);
             pingLabel.text = profileIdentifier.isMe ? "ME" : $"{realPing}ms";
@@ -78,9 +86,11 @@ namespace RainMeadow.UI.Components
                 sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
-            nameLabel.label.color = basecolor.rgb;
-            slugcatButton.rectColor = basecolor;
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
+            Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
+            HSLColor basecolor = MyBaseColor();
+            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
+            slugcatButton.secondaryColor = showRainbow ? rainbow : null;
         }
         public void UpdateAlpha(float alpha)
         {
@@ -145,27 +155,18 @@ namespace RainMeadow.UI.Components
             }
             return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
         }
-        public void SaveNewSlugcat(SlugcatStats.Name slugcat, int colorIndex)
-        {
-            if (this.slugcat == slugcat && this.colorIndex == colorIndex)
-            {
-                return;
-            }
-            this.slugcat = slugcat;
-            this.colorIndex = colorIndex;
-
-        }
         public float alpha;
-        public int colorIndex, realPing;
+        public int realPing;
+        public bool showRainbow;
         public HSLColor? baseColor;
+        public HSLColor rainbowColor;
         public FSprite[] sprites;
         public FLabel pingLabel;
         public List<UiLineConnector> lines;
         public ScrollSymbolButton? infoKickButton;
         public ScrollSymbolButton colorInfoButton;
         public ProperlyAlignedMenuLabel nameLabel;
-        public IllustrationButton slugcatButton;
-        public SlugcatStats.Name? slugcat;
+        public SlugcatColorableButton slugcatButton;
         public OnlinePlayer profileIdentifier;
     }
 }
