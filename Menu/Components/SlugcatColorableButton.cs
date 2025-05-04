@@ -55,9 +55,35 @@ namespace RainMeadow.UI.Components
             this.isColored = isColored;
             this.slugcat = slugcat;
         }
+        public override Color InterpColor(float timeStacker, HSLColor baseColor)
+        {
+            Color baseInterpCol = base.InterpColor(timeStacker, baseColor);
+            return keepSecondaryHueBase? LerpedSecondaryHSLColor(baseInterpCol.ToHSL()) : LerpedSecondaryColor(baseInterpCol);
+        }
+        public override Color MyPortraitColor(Color? portraitColor, float timeStacker)
+        {
+            Color basePortraitColor = base.MyPortraitColor(portraitColor, timeStacker);
+            return keepSecondaryHueBase ? LerpedSecondaryHSLColor(basePortraitColor.ToHSL(), portraitSecondaryLerpFactor) : LerpedSecondaryColor(basePortraitColor, portraitSecondaryLerpFactor);
+        }
+        public virtual Color LerpedSecondaryColor(Color color, float lerpFactor = 1)
+        {
+            Color lerpWith = secondaryColor.GetValueOrDefault(Color.clear);
+            return Color.Lerp(color, lerpWith, lerpWith.a * lerpFactor);
+        }
+        public virtual Color LerpedSecondaryHSLColor(HSLColor hslCol, float lerpFactor = 1) //this uses secondaryColHue then baseCol saturation and lightness with lerp
+        {
+            if (secondaryColor == null)
+            {
+                return hslCol.rgb;
+            }
+            float alpha = secondaryColor.Value.a;
+            float actualLerpFactor = lerpFactor * alpha;
+            HSLColor sec = secondaryColor.Value.ToHSL();
+            return new HSLColor(Mathf.Lerp(hslCol.hue, sec.hue, lerpFactor), Mathf.Lerp(hslCol.saturation, sec.saturation, actualLerpFactor), Mathf.Lerp(hslCol.lightness, sec.lightness, actualLerpFactor)).rgb;
+        }
         public void LoadNewSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead)
         {
-            if (this.slugcat != slugcat || this.isColored != isColored  || this.isDead != isDead)
+            if (this.slugcat != slugcat || this.isColored != isColored || this.isDead != isDead)
             {
                 this.slugcat = slugcat;
                 this.isColored = isColored;
@@ -65,7 +91,9 @@ namespace RainMeadow.UI.Components
                 SetNewImage("", GetFileForSlugcat(this.slugcat, this.isColored, this.isDead));
             }
         }
-        public bool isColored, isDead;
+        public float portraitSecondaryLerpFactor = 1;
+        public bool isColored, isDead, keepSecondaryHuePortrait = true, keepSecondaryHueBase;
+        public Color? secondaryColor;
         public SlugcatStats.Name? slugcat;
     }
 }
