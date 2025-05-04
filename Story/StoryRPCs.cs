@@ -53,6 +53,8 @@ namespace RainMeadow
                     var warpPointData = new Watcher.WarpPoint.WarpPointData(null);
                     warpPointData.FromString(warpPointTarget);
                     storyGameMode.myLastWarp = warpPointData;
+                    // override denpos with warp dest
+                    storyGameMode.myLastDenPos = warpPointData.destRoom;
                     game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpPointData;
                 }
             }
@@ -139,18 +141,25 @@ namespace RainMeadow
         [RPCMethod]
         public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
         {
+
+
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
+            if (storyGameSession.saveState.deathPersistentSaveData.rippleLevel == vector.y)
+            {
+                return;
+            }
             storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
             storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
             storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+
         }
 
         [RPCMethod]
         public static void PlayRaiseRippleLevelAnimation()
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
-			game.cameras[0].hud.karmaMeter.UpdateGraphic();
-			game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+            game.cameras[0].hud.karmaMeter.UpdateGraphic();
+            game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
         }
 
         internal static Watcher.WarpPoint PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader)
@@ -210,21 +219,24 @@ namespace RainMeadow
         [RPCMethod]
         public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData)
         {
-            Watcher.WarpPoint warpPoint = PerformWarpHelper(sourceRoomName, warpData, true);
-            if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+            if (RainMeadow.isStoryMode(out var story))
             {
-                RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
-                var newWarpData = (warpPoint.overrideData != null) ? warpPoint.overrideData : warpPoint.Data;
-                game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
-                if (RainMeadow.isStoryMode(out var storyGameMode))
+                Watcher.WarpPoint warpPoint = PerformWarpHelper(sourceRoomName, warpData, true);
+                if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
                 {
-                    storyGameMode.myLastWarp = newWarpData;
+                    RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
+                    var newWarpData = (warpPoint.overrideData != null) ? warpPoint.overrideData : warpPoint.Data;
+                    game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
+                    if (RainMeadow.isStoryMode(out var storyGameMode))
+                    {
+                        storyGameMode.myLastWarp = newWarpData;
+                    }
+                    game.Win(false, true);
                 }
-                game.Win(false, true);
-            }
-            else
-            {
-                RainMeadow.Error($"warp of kind echo FAILED because upcoming process exists");
+                else
+                {
+                    RainMeadow.Error($"warp of kind echo FAILED because upcoming process exists");
+                }
             }
         }
 
@@ -256,7 +268,7 @@ namespace RainMeadow
         public static void TriggerGhostHunch(string ghostID)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-            
+
             ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
             if (rawEnumBase is not GhostWorldPresence.GhostID ghostNumber) return;
             var ghostsTalkedTo = game.GetStorySession.saveState.deathPersistentSaveData.ghostsTalkedTo;

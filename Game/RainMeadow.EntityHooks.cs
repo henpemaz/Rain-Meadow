@@ -49,6 +49,7 @@ namespace RainMeadow
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
+
         private void MirosBirdAbstractAI_Raid(ILContext il)
         {
             try
@@ -361,13 +362,17 @@ namespace RainMeadow
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
             orig(room);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode)
+            if (RainMeadow.isStoryMode(out var story))
             {
                 var vector = new UnityEngine.Vector2(room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel, room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel);
+
+                // I'd rather clients not send an RPC if they can help it, but we're linking ripple level to savestae instead of a storygamemode property so that makes things tricky.
                 if (!OnlineManager.lobby.isOwner)
                 {
+
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
                 }
+
                 foreach (OnlinePlayer player in OnlineManager.players)
                 {
                     if (!player.isMe)
@@ -452,7 +457,8 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_2);
-                c.EmitDelegate((OverWorld self, Watcher.WarpPoint.WarpPointData warpData) => {
+                c.EmitDelegate((OverWorld self, Watcher.WarpPoint.WarpPointData warpData) =>
+                {
                     if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && storyGameMode.lastWarpIsEcho)
                     {
                         RainMeadow.Debug($"LAST WARP ECHO OK ACK");

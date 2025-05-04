@@ -1326,6 +1326,7 @@ namespace RainMeadow
                 if (storyGameMode.myLastWarp is not null)
                 {
                     self.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+                    storyGameMode.myLastDenPos = self.warpPointTargetAfterWarpPointSave.destRoom;
                 }
             }
             orig(self, game, survived, newMalnourished);
