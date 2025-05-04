@@ -33,6 +33,7 @@ public class TabContainer : RectangularMenuObject
 
         public override void Update()
         {
+            soundClick = Active? SoundID.MENU_Greyed_Out_Button_Clicked : SoundID.MENU_Button_Standard_Button_Pressed;
             base.Update();
         }
         public override void GrafUpdate(float timeStacker)
@@ -54,14 +55,14 @@ public class TabContainer : RectangularMenuObject
     public class TabButtonsContainer : PositionedMenuObject
     {
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, MaxOffset); }
-        public int MaxOffset => tabButtons.Count / PerPage;
+        public int MaxOffset => registeredTabButtons.Count / PerPage;
         public int PerPage => Mathf.Max((int)((container.size.y - 5) / (DefaultTabButtonYSize + 5)), 1);
-        public bool PagesOn => tabButtons.Count > PerPage;
+        public bool PagesOn => registeredTabButtons.Count > PerPage;
         public float DefaultTabButtonYSize { get => tabButtonYSize; set => tabButtonYSize = Mathf.Max(value, LabelTest.GetWidth(LongestName) + 20); }
-        public string LongestName => tabButtons.Find(x => x.Length == tabButtons.Max(str => str == null ? 0 : str.Length));
+        public string LongestName => registeredTabButtons.Find(x => x.Length == registeredTabButtons.Max(str => str == null ? 0 : str.Length));
         public TabButtonsContainer(Menu.Menu menu, TabContainer container) : base(menu, container, new(-23, 0))
         {
-            tabButtons = [];
+            registeredTabButtons = [];
             activeTabButtons = [];
             this.container = container;
             tabWrapper = new(menu, this);
@@ -85,10 +86,10 @@ public class TabContainer : RectangularMenuObject
         }
         public void AddNewTabButton(string name)
         {
-            tabButtons.Add(name);
+            registeredTabButtons.Add(name);
             if (PagesOn)
             {
-                DefaultTabButtonYSize = (container.size.y - 5) / tabButtons.Count;
+                DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
             }
             PopulatePages(CurrentOffset);
         }
@@ -115,10 +116,10 @@ public class TabContainer : RectangularMenuObject
             ClearVisibleTabButtons();
             CurrentOffset = offset;
             int num = CurrentOffset * PerPage;
-            while (num < tabButtons.Count && num < (CurrentOffset + 1) * PerPage)
+            while (num < registeredTabButtons.Count && num < (CurrentOffset + 1) * PerPage)
             {
                 float sizeY = DefaultTabButtonYSize, posY = container.size.y - (sizeY + 15) + (-(sizeY + 5) * (num % PerPage));
-                TabButton tabButton = new(tabButtons[num], container, tabWrapper, new(0, posY), num, DefaultTabButtonYSize);
+                TabButton tabButton = new(registeredTabButtons[num], container, tabWrapper, new(0, posY), num, DefaultTabButtonYSize);
                 activeTabButtons.Add(tabButton);
                 num++;
             }
@@ -172,7 +173,7 @@ public class TabContainer : RectangularMenuObject
         private float tabButtonYSize = 125;
         public MenuTabWrapper tabWrapper;
         public SimplerSymbolButton? topArrowButton, bottomArrowButton;
-        public List<string> tabButtons;
+        public List<string> registeredTabButtons;
         private List<TabButton> activeTabButtons;
         public TabContainer container;
     }
@@ -253,7 +254,8 @@ public class TabContainer : RectangularMenuObject
         subObjects.AddRange([background, tabWrapper, tabButtonContainer]);
     }
     /// <summary>
-    /// Elements added MUST implement IRestorableMenuObjects, else your menu object and it's subobjects that are not restorable will be invisible forever
+    /// Elements added MUST implement IRestorableMenuObjects, else your menu objects that are not restorable will be invisible forever.
+    /// Subobjects will be turned invisible as well, so make sure they are restorable or called explicitly
     /// </summary>
     public void AddTab(string name, List<MenuObject> objects)
     {
