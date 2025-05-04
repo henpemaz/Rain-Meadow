@@ -17,7 +17,9 @@ namespace RainMeadow
             if (currentGameState?.session is StoryGameSession storySession)
             {
                 storySession.saveState.theGlow = true;
-                (currentGameState.Players[0].realizedCreature as Player).glowing = true;
+                for (int i = 0; i < currentGameState.Players.Count; i++) {
+                    (currentGameState.Players[i].realizedCreature as Player).glowing = true;
+                }   
             }
         }
 

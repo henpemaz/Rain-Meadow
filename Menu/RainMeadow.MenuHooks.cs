@@ -82,7 +82,7 @@ namespace RainMeadow
                 {
                     sOM.SetupSelectableSlugcats();
                     Vector2 pos = new(1000f - (1366f - sOM.manager.rainWorld.options.ScreenSize.x) / 2f, sOM.manager.rainWorld.options.ScreenSize.y - 100f);
-                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.CurrentSlugcat, pos);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.PlayerSelectedSlugcat, pos);
                     self.pages[0].subObjects.Add(self.colorInterface);
                     //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
                 }

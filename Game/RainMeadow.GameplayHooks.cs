@@ -551,6 +551,7 @@ namespace RainMeadow
             }
             else
             {
+                // Since we're only supporting jolly in Story mode, I aint gonna mess with this.
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
