@@ -1,60 +1,82 @@
-﻿using Menu;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Menu;
+using RWCustom;
 using UnityEngine;
 using HarmonyLib;
+using System.Diagnostics;
 
 namespace RainMeadow.UI.Components
 {
     public class ArenaPlayerBox : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
     {
-        public static Vector2 DefaultSize => new(300, 120);
+        public static Vector2 DefaultSize => new(290, 120);
         public float Alpha { get => alpha; set => alpha = value; }
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
-        public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, string player, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
+        public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
         {
-            baseSprites = [];
+            profileIdentifier = player;
+            sprites = [new("pixel"), new("pixel"), new("Meadow_Menu_Ping")];
+            for (int i = 0; i < sprites.Length; i++)
+            {
+                sprites[i].anchorX = i < 2? 0 : 1;
+                sprites[i].anchorY = 0;
+                sprites[i].scaleY = i < 2 ? 2 : sprites[i].scaleY;
+                Container.AddChild(sprites[i]);
+            }
+            pingLabel = new(Custom.GetFont(), "")
+            {
+                anchorX = 1,
+                anchorY = 0,
+            };
+            Container.AddChild(pingLabel);
+
             lines = [];
-            InitBaseSprites();
             slugcatButton = new(menu, this, new(10, 10), "", "MultiplayerPortrait01");
             slugcatButton.size += new Vector2(16, 16);
-            nameLabel = new(menu, this, player, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
+            nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
-            Vector2 basePos = new(nameLabel.pos.x + 10, slugcatButton.pos.y + 10);
-            if (player == "test")
-            {
-                colorButton = new(menu, this, "Kill_Slugcat", "Color_Slugcat", basePos, new(45, 45));
-                subObjects.Add(colorButton); //will be seperated
-            }
-            infoButton = new(menu, this, "Menu_InfoI", "Info_Player", new(colorButton != null ? colorButton.pos.x + colorButton.size.x + 30 : basePos.x, basePos.y));
-            infoButton.pos += new Vector2(0, 45 - infoButton.size.y);
-            subObjects.AddRange([slugcatButton, nameLabel, infoButton]);
-            kickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", infoButton.pos + new Vector2(infoButton.size.x + 30, 0));
-            subObjects.Add(kickButton);
-            InitLines();
+            InitButtons(canKick);
+            this.SafeAddSubobjects(slugcatButton, nameLabel, colorInfoButton, infoKickButton);
             subObjects.AddRange(lines);
 
         }
         public override void RemoveSprites()
         {
             base.RemoveSprites();
-            baseSprites.Do(x => x.RemoveFromContainer());
+            sprites.Do(x => x.RemoveFromContainer());
+            pingLabel.RemoveFromContainer();
+        }
+        public override void Update()
+        {
+            base.Update();
+            realPing = Math.Max(1, profileIdentifier.ping - 16);
+          
         }
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
             HSLColor basecolor = MyBaseColor();
             Vector2 size = DrawSize(timeStacker), pos = DrawPos(timeStacker);
-            for (int i = 0; i < 2; i++)
+            Color pingColor = GetPingColor(realPing);
+            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{realPing}ms";
+            pingLabel.x = pos.x + size.x;
+            pingLabel.y = pos.y + 7;
+            pingLabel.color = pingColor;
+            for (int i = 0; i < 3; i++)
             {
-                baseSprites[i].scaleX = size.x;
-                baseSprites[i].x = pos.x;
-                baseSprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
-                baseSprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
+                if (i == 2)
+                {
+                    sprites[i].x = pingLabel.x - pingLabel.textRect.width;
+                    sprites[i].y = pingLabel.y - 2.5f;
+                    sprites[i].color = pingColor;
+                    continue;
+                }
+                sprites[i].scaleX = size.x;
+                sprites[i].x = pos.x;
+                sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
+                sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             nameLabel.label.color = basecolor.rgb;
             slugcatButton.rectColor = basecolor;
@@ -64,57 +86,68 @@ namespace RainMeadow.UI.Components
         {
             nameLabel.label.alpha = alpha;
             slugcatButton.Alpha = alpha;
-            infoButton.Alpha = alpha;
-            if (colorButton != null)
+            colorInfoButton.Alpha = alpha;
+            if (infoKickButton != null)
             {
-                colorButton.Alpha = alpha;
-            }
-           if (kickButton != null)
-            {
-                kickButton.Alpha = alpha;
+                infoKickButton.Alpha = alpha;
             }
             lines.Do(x => x.lineConnector.alpha = alpha / 2);
-            baseSprites.Do(x => x.alpha = alpha);
+            sprites.Do(x => x.alpha = alpha);
+            pingLabel.alpha = alpha;
         }
-        public void InitBaseSprites()
+        public void InitButtons(bool canKick)
         {
-            for (int i = 0; i < 2; i++)
+            Vector2 basePos = new(nameLabel.pos.x + 10, slugcatButton.pos.y + 10);
+            if (profileIdentifier.isMe)
             {
-                FSprite sprite = new("pixel")
+                colorInfoButton = new(menu, this, "Kill_Slugcat", "Color_Slugcat", basePos, new(45, 45));
+                infoKickButton = new(menu, this, "Menu_InfoI", "Info_Player", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, basePos.y + 21));
+                infoKickButton.OnClick += (_) =>
                 {
-                    anchorX = 0,
-                    anchorY = 0,
+                    profileIdentifier.id.OpenProfileLink();
                 };
-                sprite.scaleY = 2;
-                baseSprites.Add(sprite);
-                Container.AddChild(sprite);
-            }
-        }
-        public void InitLines()
-        {
-            if (colorButton != null)
-            {
-                UiLineConnector connector = new(menu, colorButton, infoButton, false)
+                UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false)
                 {
-                    posOffset = new(0, (45 - infoButton.size.y) / 2)
+                    posOffset = new(0, (45 - infoKickButton.size.y) / 2)
                 };
-                connector.MoveLineSpriteBeforeNode(colorButton.roundedRect.sprites[0]);
+                connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
                 lines.Add(connector);
             }
-            if (kickButton != null)
+            else
             {
-                UiLineConnector connector = new(menu, infoButton, kickButton, false);
-                connector.MoveLineSpriteBeforeNode(infoButton.roundedRect.sprites[0]);
-                lines.Add(connector);
+                colorInfoButton = new(menu, this, "Menu_InfoI", "Info_Player", new(basePos.x, basePos.y + 21));
+                colorInfoButton.OnClick += (_) =>
+                {
+                    profileIdentifier.id.OpenProfileLink();
+                };
+                if (canKick)
+                {
+                    infoKickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
+                    infoKickButton.OnClick += (_) =>
+                    {
+                        BanHammer.BanUser(profileIdentifier);
+                    };
+                    UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false);
+                    connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
+                    lines.Add(connector);
+                }
             }
         }
         public HSLColor MyBaseColor()
         {
             return baseColor.GetValueOrDefault(Menu.Menu.MenuColor(Menu.Menu.MenuColors.MediumGrey));
         }
+        public Color GetPingColor(int ping)
+        {
+            if (profileIdentifier.isMe)
+            {
+                return MenuColorEffect.rgbDarkGrey;
+            }
+            return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
+        }
         public void SaveNewSlugcat(SlugcatStats.Name slugcat, int colorIndex)
         {
-            if (this.slugcat == slugcat && this.colorIndex != colorIndex)
+            if (this.slugcat == slugcat && this.colorIndex == colorIndex)
             {
                 return;
             }
@@ -122,17 +155,17 @@ namespace RainMeadow.UI.Components
             this.colorIndex = colorIndex;
 
         }
-
         public float alpha;
-        public int colorIndex;
+        public int colorIndex, realPing;
         public HSLColor? baseColor;
-        public SlugcatStats.Name slugcat;
+        public FSprite[] sprites;
+        public FLabel pingLabel;
         public List<UiLineConnector> lines;
-        public List<FSprite> baseSprites;
-        public ScrollSymbolButton infoButton;
-        public ScrollSymbolButton? colorButton, kickButton;
+        public ScrollSymbolButton? infoKickButton;
+        public ScrollSymbolButton colorInfoButton;
         public ProperlyAlignedMenuLabel nameLabel;
         public IllustrationButton slugcatButton;
-        //public OnlinePlayer profileIdentifier;
+        public SlugcatStats.Name? slugcat;
+        public OnlinePlayer profileIdentifier;
     }
 }
