@@ -77,7 +77,7 @@ namespace RainMeadow.UI.Components
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 
-        public float alpha = 1, desiredOrigAlpha = 1, portraitBlack = 1, lastPortraitBlack = 1;
+        public float alpha = 1, desiredOrigAlpha = 1, portraitBlack = 0, lastPortraitBlack = 0;
         public bool forceGreyedOut, borderIgnorePortraitBlack;
         public Color? portraitColor;
         public MenuIllustration portrait;
