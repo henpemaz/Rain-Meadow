@@ -163,23 +163,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 ]
             );
         }
-        tabContainer.AddTab(
-            "YES",
-               [
-                 painCatLizardCheckBox,
-               ]
-           );
-        tabContainer.AddTab(
-         "What",
-            [
-
-            ]
-        );
-        tabContainer.AddTab(
-         "Yolo",
-            [
-            ]
-        );
         SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
         swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
         slugcatSelectPage.subObjects.Add(swapBackButton);
