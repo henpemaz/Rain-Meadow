@@ -227,10 +227,8 @@ namespace RainMeadow
                     RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                     var newWarpData = (warpPoint.overrideData != null) ? warpPoint.overrideData : warpPoint.Data;
                     game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
-                    if (RainMeadow.isStoryMode(out var storyGameMode))
-                    {
-                        storyGameMode.myLastWarp = newWarpData;
-                    }
+                    story.myLastWarp = newWarpData;
+                    
                     game.Win(false, true);
                 }
                 else
