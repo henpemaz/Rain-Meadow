@@ -43,50 +43,6 @@ namespace RainMeadow
             spectatorOverlay?.GrafUpdate(timeStacker);
         }
 
-        public void ClearSpectatee()
-        {
-            if (spectatee != null)
-            {
-                ReturnCameraToPlayer();
-            }
-            spectatee = null;
-            spectatorOverlay?.ShutDownProcess();
-            spectatorOverlay = null;
-            isActive = false;
-            
-        }
-
-        public void ReturnCameraToPlayer()
-        {
-            RainMeadow.DebugMe();
-            AbstractCreature? return_to_player = null;
-            for (int i = 0; i < camera.game.Players.Count; i++)
-            {
-                if (camera.game.Players[i].state.dead) continue;
-
-                return_to_player = camera.game.Players[i];
-                break;
-            }
-
-            
-            if (return_to_player?.Room == null)
-            {
-                RainMeadow.Debug($"spectatee {return_to_player} not in room!");
-            }
-            else
-            {
-                camera.followAbstractCreature = return_to_player;
-                if (return_to_player.Room.realizedRoom == null)
-                {
-                    this.game.world.ActivateRoom(return_to_player.Room);
-                }
-                if (return_to_player.Room.realizedRoom != null && camera.room.abstractRoom != return_to_player.Room)
-                {
-                    camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
-                }
-            }
-        }
-
         public override void Update()
         {
             base.Update();
@@ -113,12 +69,11 @@ namespace RainMeadow
                 }
                 spectatee = spectatorOverlay.spectatee;
             }
-
-            if (camera.InCutscene)
-            {
+            
+            if (camera.InCutscene) {
                 return;
             }
-
+            
             OnlineManager.mePlayer.isActuallySpectating = spectatee != null && !spectatee.IsLocal();
             if (spectatee != null)
             {

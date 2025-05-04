@@ -67,9 +67,6 @@ namespace RainMeadow
             [OnlineField]
             public int playerIndex;
 
-            [OnlineField]
-            public bool fakePup { get; set; }
-
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
@@ -78,7 +75,6 @@ namespace RainMeadow
                 nickname = slugcatCustomization.nickname;
                 wearingCape = slugcatCustomization.wearingCape;
                 playerIndex = slugcatCustomization.playerIndex;
-                fakePup = slugcatCustomization.fakePup;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -89,7 +85,6 @@ namespace RainMeadow
                 slugcatCustomization.nickname = nickname;
                 slugcatCustomization.wearingCape = wearingCape;
                 slugcatCustomization.playerIndex =  playerIndex;
-                slugcatCustomization.fakePup = fakePup;
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);

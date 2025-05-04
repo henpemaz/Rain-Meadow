@@ -22,7 +22,7 @@ namespace RainMeadow
         private StoryMenuSlugcatSelector? slugcatSelector;
         private SlugcatCustomization personaSettings;
         private SlugcatStats.Name[] selectableSlugcats;
-        public SlugcatStats.Name?[] playerSelectedSlugcats;
+        private SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
@@ -53,10 +53,6 @@ namespace RainMeadow
             }
             set
             {
-                if (ModManager.JollyCoop) {
-                    this.RefreshJollySummary();
-                }
-
                 playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
             }
         }
@@ -140,71 +136,15 @@ namespace RainMeadow
             {
                 storyGameMode.currentCampaign = storyGameCharacter;
             }
-
-            var jollyallowed = ModManager.JollyCoop && base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
-            storyGameMode.avatarCount = jollyallowed ? manager.rainWorld.options.JollyPlayerCount : 1;
-            if (jollyallowed) PlayerGraphics.PopulateJollyColorArray(PlayerSelectedSlugcat);
-            for (int i = 0; i < storyGameMode.avatarSettings.Length; i++)
-            {
+            
+            for (int i = 0; i < storyGameMode.avatarSettings.Length; i++) {
                 storyGameMode.avatarSettings[i].playingAs = storyGameMode.currentCampaign;
-                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name))
-                {
+                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name)) {
                     storyGameMode.avatarSettings[i].playingAs = name;
                 }
 
-
-
-
-                if ((storyGameMode.avatarCount > 1) && jollyallowed)
-                {
-                    storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
-                }
-
-
-
-                if (jollyallowed)
-                {
-                    if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM)
-                    {
-                        storyGameMode.avatarSettings[i].currentColors = new List<Color>
-                            {
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetBodyColor(),
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetFaceColor(),
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetUniqueColor()
-                            };
-
-                    }
-                    else if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.AUTO)
-                    {
-
-                        if (i == 0)
-                        {
-                            storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
-                        }
-                        else
-                        {
-                            storyGameMode.avatarSettings[i].currentColors = new List<Color>
-                            {
-                                PlayerGraphics.JollyColor(i, 0),
-                                PlayerGraphics.JollyColor(i, 1),
-                                PlayerGraphics.JollyColor(i, 2)
-                            };
-                        }
-
-                    }
-                    else
-                    {
-                        storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
-                    }
-                    storyGameMode.avatarSettings[i].fakePup = manager.rainWorld.options.jollyPlayerOptionsArray[i].isPup;
-                }
-                else
-                {
-                    // TODO: seperate custom colors for each avatar
-                    storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
-                    storyGameMode.avatarSettings[i].fakePup = false;
-                }
-
+                // TODO: seperate custom colors for each avatar
+                storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             }
             
 
