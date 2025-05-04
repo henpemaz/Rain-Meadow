@@ -55,7 +55,7 @@ public class TabContainer : RectangularMenuObject
     public class TabButtonsContainer : PositionedMenuObject
     {
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, MaxOffset); }
-        public int MaxOffset => registeredTabButtons.Count / PerPage;
+        public int MaxOffset => (registeredTabButtons.Count - 1) / PerPage;
         public int PerPage => Mathf.Max((int)((container.size.y - 5) / (DefaultTabButtonYSize + 5)), 1);
         public bool PagesOn => registeredTabButtons.Count > PerPage;
         public float DefaultTabButtonYSize { get => tabButtonYSize; set => tabButtonYSize = Mathf.Max(value, LabelTest.GetWidth(LongestName) + 20); }
