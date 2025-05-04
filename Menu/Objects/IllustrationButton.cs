@@ -56,6 +56,11 @@ namespace RainMeadow.UI.Components
             portrait.color = MyPortraitColor(portraitColor, timeStacker);
 
         }
+        public override void Clicked()
+        {
+            base.Clicked();
+            OnClick?.Invoke(this);
+        }
         public virtual void UpdateAlpha(float alpha)
         {
             portrait.setAlpha = alpha * desiredOrigAlpha;
@@ -77,6 +82,7 @@ namespace RainMeadow.UI.Components
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 
+        public event Action<IllustrationButton> OnClick;
         public float alpha = 1, desiredOrigAlpha = 1, portraitBlack = 0, lastPortraitBlack = 0;
         public bool forceGreyedOut, borderIgnorePortraitBlack;
         public Color? portraitColor;
