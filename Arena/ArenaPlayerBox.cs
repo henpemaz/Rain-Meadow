@@ -110,7 +110,7 @@ namespace RainMeadow.UI.Components
             Vector2 basePos = new(nameLabel.pos.x + 10, slugcatButton.pos.y + 10);
             if (profileIdentifier.isMe)
             {
-                colorInfoButton = new(menu, this, "Kill_Slugcat", "Color_Slugcat", basePos, new(45, 45));
+                colorInfoButton = new(menu, this, "Meadow_Menu_BigColorBucket", "Color_Slugcat", basePos, new(45, 45));
                 infoKickButton = new(menu, this, "Menu_InfoI", "Info_Player", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, basePos.y + 21));
                 infoKickButton.OnClick += (_) =>
                 {

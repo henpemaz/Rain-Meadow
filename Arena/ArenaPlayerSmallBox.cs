@@ -80,7 +80,7 @@ namespace RainMeadow.UI.Components
             float yPosDefaultSymbol = MiddleOfY(24);
             if (profileIdentifier.isMe)
             {
-                colorKickButton = new(menu, this, "Kill_Slugcat", "Color_Slugcat", new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
+                colorKickButton = new(menu, this, "Meadow_Menu_ColorBucket", "Color_Slugcat", new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
             }
             else if (canKick)
             {
