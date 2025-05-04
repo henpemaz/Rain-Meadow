@@ -162,13 +162,13 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 c.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 /*c.GotoNext(MoveType.AfterLabel,
                     i => i.MatchLdsfld<ModManager>("MMF"),
@@ -240,13 +240,13 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
                 cursor.GotoNext(MoveType.After, x => x.MatchLdfld<ExtEnumBase>(nameof(ExtEnumBase.value)));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((string value, Menu.SlugcatSelectMenu self) =>
                 {
-                    return self is StoryOnlineMenu sOM ? sOM.CurrentSlugcat.value : value;
+                    return self is StoryOnlineMenu sOM ? sOM.PlayerSelectedSlugcat.value : value;
                 });
 
             }
@@ -297,7 +297,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, 0);
                 c.EmitDelegate( (Menu.SlugcatSelectMenu menu, ref SlugcatStats.Name name) => 
                 {
-                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.CurrentSlugcat : name;
+                    name = menu is StoryOnlineMenu storyOnlineMenu ? storyOnlineMenu.PlayerSelectedSlugcat : name;
 
                 });
 

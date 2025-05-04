@@ -14,6 +14,7 @@ namespace RainMeadow
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
 
+        public int playerIndex = 0;
         public SlugcatStats.Name playingAs;
         public string nickname;
 
@@ -62,6 +63,9 @@ namespace RainMeadow
             [OnlineField]
             public bool wearingCape;
 
+            [OnlineField]
+            public int playerIndex;
+
             public State() { }
             public State(SlugcatCustomization slugcatCustomization) : base()
             {
@@ -69,6 +73,7 @@ namespace RainMeadow
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
                 wearingCape = slugcatCustomization.wearingCape;
+                playerIndex = slugcatCustomization.playerIndex;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -78,6 +83,7 @@ namespace RainMeadow
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
                 slugcatCustomization.wearingCape = wearingCape;
+                slugcatCustomization.playerIndex =  playerIndex;
             }
 
             public override Type GetDataType() => typeof(SlugcatCustomization);
