@@ -42,7 +42,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), SlugcatStats.Name.Red, false);
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             InitButtons(canKick);
