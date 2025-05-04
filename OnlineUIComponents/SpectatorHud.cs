@@ -27,7 +27,7 @@ namespace RainMeadow
                 if (spectatorOverlay == null)
                 {
                     RainMeadow.Debug("Creating spectator overlay");
-                    spectatorOverlay = new SpectatorOverlay(game.manager, game);
+                    spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
                     isActive = true;
                 }
                 else
@@ -61,7 +61,11 @@ namespace RainMeadow
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
             }
-
+            
+            if (camera.InCutscene) {
+                return;
+            }
+            
             OnlineManager.mePlayer.isActuallySpectating = spectatee != null && !spectatee.IsLocal();
             if (spectatee != null)
             {

@@ -22,7 +22,7 @@ namespace RainMeadow
         private StoryMenuSlugcatSelector? slugcatSelector;
         private SlugcatCustomization personaSettings;
         private SlugcatStats.Name[] selectableSlugcats;
-        private SlugcatStats.Name? currentSlugcat, playerSelectedSlugcat;
+        private SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
@@ -49,28 +49,11 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? storyGameMode.currentCampaign;
+                return playerSelectedSlugcats?[0] ?? slugcatColorOrder[slugcatPageIndex];
             }
             set
             {
-                playerSelectedSlugcat = value == storyGameMode.currentCampaign? null : value;
-                CurrentSlugcat = PlayerSelectedSlugcat;
-            }
-        }
-        public SlugcatStats.Name CurrentSlugcat
-        {
-            get
-            {
-                return currentSlugcat ?? slugcatColorOrder[slugcatPageIndex];
-            }
-            set
-            {
-                if (currentSlugcat != value)
-                {
-                    RemoveColorButtons();
-                    currentSlugcat = value;
-                    UpdateUponChangingSlugcat(currentSlugcat);
-                }
+                playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
             }
         }
         public static int MaxVisibleOnList => 8;
@@ -81,6 +64,7 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
+            playerSelectedSlugcats = new SlugcatStats.Name[4];
             SetupSelectableSlugcats();
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
@@ -133,13 +117,23 @@ namespace RainMeadow
             {
                 storyGameMode.currentCampaign = storyGameCharacter;
             }
-            personaSettings.playingAs = storyGameMode.requireCampaignSlugcat ? storyGameMode.currentCampaign : PlayerSelectedSlugcat; //double check just incase
+            
+            for (int i = 0; i < storyGameMode.avatarSettings.Length; i++) {
+                storyGameMode.avatarSettings[i].playingAs = storyGameMode.currentCampaign;
+                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name)) {
+                    storyGameMode.avatarSettings[i].playingAs = name;
+                }
+
+                // TODO: seperate custom colors for each avatar
+                storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+            }
+            
 
             // TODO: figure out how to reuse vanilla StartGame
             // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
-            personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+            
             manager.arenaSitting = null;
 
             if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
@@ -223,16 +217,17 @@ namespace RainMeadow
             if (storyGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
-                CurrentSlugcat = storyGameMode.currentCampaign;
+                for (int i = 0; i < playerSelectedSlugcats.Length; i++) {
+                    playerSelectedSlugcats[i] = storyGameMode.currentCampaign;
+                }
             }
             else
             {
                 SetupSlugcatList();
-                CurrentSlugcat = PlayerSelectedSlugcat;
             }
             if (slugcatSelector != null)
             {
-                slugcatSelector.Slug = CurrentSlugcat;
+                slugcatSelector.Slug = PlayerSelectedSlugcat;
             }
 
         }
@@ -320,7 +315,7 @@ namespace RainMeadow
             if (slugcatSelector == null)
             {
                 //first player button is 30 pos below size of list. and list top part is 30 below the title. Plus
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, CurrentSlugcat, GetSlugcatSelectionButtons);
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 
@@ -333,7 +328,7 @@ namespace RainMeadow
 
         private void SetupOnlineCustomization()
         {
-            personaSettings = storyGameMode.avatarSettings;
+            personaSettings = storyGameMode.avatarSettings[0];
         }
 
         private void RemoveExcessStoryObjects()

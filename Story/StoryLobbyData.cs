@@ -115,20 +115,26 @@ namespace RainMeadow
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
-                var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (resource as Lobby);
                 (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
 
-                (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
+                if (currentGameState is not null) {
+                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++) {
 
-                if (playerstate != null)
-                {
-                    playerstate.foodInStomach = food;
-                    playerstate.quarterFoodPoints = quarterfood;
-                }
-                if ((currentGameState?.Players[0].realizedCreature is Player player))
-                {
-                    player.mushroomCounter = mushroomCounter;
+                        var playerstate = (currentGameState?.Players[i].state as PlayerState);
+                        
+
+                        if (playerstate != null)
+                        {
+                            playerstate.foodInStomach = food;
+                            playerstate.quarterFoodPoints = quarterfood;
+                        }
+                                        
+                        if ((currentGameState?.Players[i].realizedCreature is Player player))
+                        {
+                            player.mushroomCounter = mushroomCounter;
+                        }
+                    }
                 }
 
                 if (currentGameState?.session is StoryGameSession storySession)
@@ -142,10 +148,10 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
-                    if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
+                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
                     {
-                        if (rainWorldGame.Players[0].realizedCreature != null)
-                            (rainWorldGame.Players[0].realizedCreature as Player).glowing = theGlow;
+                        if (currentGameState.Players[i].realizedCreature != null)
+                            (currentGameState.Players[i].realizedCreature as Player).glowing = theGlow;
                     }
                 }
                 (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
