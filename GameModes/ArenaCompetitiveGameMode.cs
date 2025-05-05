@@ -45,7 +45,6 @@ namespace RainMeadow
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
         public Dictionary<int ,int> playerNumberWithKills = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
-        public List<OnlinePlayer> playersLateWaitingInLobbyForNextRound = new(); // not synced, just for host to keep track
 
 
         public int playerEnteredGame;
@@ -68,6 +67,7 @@ namespace RainMeadow
 
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
+        public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -87,7 +87,6 @@ namespace RainMeadow
             paincatName = "";
             allPlayersReadyLockLobby = false;
             returnToLobby = false;
-            isInGame = false;
             playersReadiedUp.list = new List<MeadowPlayerId>();
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;

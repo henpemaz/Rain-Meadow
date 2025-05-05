@@ -62,6 +62,8 @@ namespace RainMeadow
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
+            [OnlineField(group = "arenaGameplay")]
+            public List<ushort> playersLateWaitingInLobby;
             [OnlineField(nullable = true, group = "arenaGameplay")]
             public Generics.DynamicOrderedPlayerIDs reigningChamps;
             [OnlineField(group = "arenaGameplay")]
@@ -79,9 +81,9 @@ namespace RainMeadow
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                isInGame = arena.isInGame;
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;             
                 playList = arena.playList;
-                arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
+                arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder.ToList();
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
@@ -90,6 +92,7 @@ namespace RainMeadow
                 reigningChamps = new(arena.reigningChamps.list.ToList());
                 playerNumberWithKills = arena.playerNumberWithKills;
                 playerNumberWithDeaths = arena.playerNumberWithDeaths;
+                playersLateWaitingInLobby = arena.playersLateWaitingInLobbyForNextRound.ToList();
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
@@ -124,6 +127,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
+                (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;

@@ -89,7 +89,6 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
             if (OnlineManager.lobby == null)
             {
                 return;
@@ -115,11 +114,17 @@ namespace RainMeadow
             }
             else
             {
-                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame && !arena.clientWantsToLeaveGame)
+                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame && !arena.clientWantsToLeaveGame && !arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
                 {
                     pushClientIntoGame = true;
                     this.StartGame();
                 }
+                if (arena.isInGame && !pushClientIntoGame && !arena.clientWantsToLeaveGame && arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
+                {
+                    pushClientIntoGame = true;
+                    this.StartGame();
+                }
+
             }
             UpdateSlugcatButtons();
             UpdateReadyUpLabel();
@@ -463,21 +468,14 @@ namespace RainMeadow
             {
                 return;
             }
-            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
-            {
-                return;
-            }
 
-            
+
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
             {
                 return; // don't be foolish
             }
-            if (arena.playersReadiedUp.list.Count != OnlineManager.players.Count && arena.isInGame)
-            {
-                return;
-            }
-            if (!arena.allPlayersReadyLockLobby)
+
+            if (!arena.allPlayersReadyLockLobby && !arena.isInGame)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -491,6 +489,8 @@ namespace RainMeadow
 
                     if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
+                        RainMeadow.Debug("Arena: Notifying host I'm ready to go");
+
                         OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
                         this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                         this.playButton.inactive = true;
@@ -507,14 +507,27 @@ namespace RainMeadow
                     RainMeadow.Debug("Host is not in game");
                     return;
                 }
-
-                if (!arena.hasPermissionToRejoin)
+                else
                 {
-                    return;
-                }
 
-                arena.clientWantsToLeaveGame = false;
-                
+                    if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
+                    {
+                        RainMeadow.Debug("Arena: Notifying host I'm late");
+                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerQuitEarlyOrJoinedLate, OnlineManager.mePlayer);
+                        this.playButton.inactive = true;
+                        this.playButton.buttonBehav.greyedOut = true;
+                        return;
+
+                    }
+                    if (arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.hasPermissionToRejoin)
+                    {
+                        RainMeadow.Debug("Arena: You've let the host know you're ready, but they're not ready for you");
+                        return;
+                    }
+
+
+                    arena.clientWantsToLeaveGame = false;
+                }
             }
             if (colorConfigDialog != null)
             {
@@ -606,28 +619,37 @@ namespace RainMeadow
             {
                 if (arena.isInGame)
                 {
-
-                    if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true)) // you're late
+                    RainMeadow.Debug(arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId));
+                    RainMeadow.Debug(OnlineManager.mePlayer.inLobbyId);
+                    if ((arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId)))
                     {
-                        playButton.menuLabel.text = Translate("GAME IN SESSION");
-
+                        playButton.menuLabel.text = Translate("QUEUED TO JOIN");
+                        playButton.inactive = true;
                     }
-                }
-                if (!arena.isInGame && !(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true))
-                {
-                    playButton.menuLabel.text = Translate("READY?");
-                    playButton.inactive = false;
-                }
-                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
-                {
-                    playButton.menuLabel.text = Translate("Waiting for others...");
-                    playButton.inactive = true;
-                }
+                    else
+                    {
+                        playButton.menuLabel.text = Translate("JOIN?");
+                    }
 
-                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                }
+                else
                 {
-                    playButton.menuLabel.text = Translate("Waiting for host...");
-                    playButton.inactive = true;
+                    if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true))
+                    {
+                        playButton.menuLabel.text = Translate("READY?");
+                        playButton.inactive = false;
+                    }
+                    if (arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
+                    {
+                        playButton.menuLabel.text = Translate("Waiting for others...");
+                        playButton.inactive = true;
+                    }
+
+                    if (arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                    {
+                        playButton.menuLabel.text = Translate("Waiting for host...");
+                        playButton.inactive = true;
+                    }
                 }
             }
             if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything

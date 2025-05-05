@@ -24,7 +24,6 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
-
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
@@ -111,39 +110,54 @@ namespace RainMeadow
                         return;
                     }
 
+
+
+
+
+                    // Add waiting players
                     if (OnlineManager.lobby.isOwner)
                     {
-                        // Clear missing players
-                        for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                        foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
                         {
-                            var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                            if (onlineP == null)
+                            if (!arena.arenaSittingOnlineOrder.Contains(player))
+                            {
+                                RainMeadow.Debug($"Arena: Adding pending player inLobbyId: {player}");
+                                arena.arenaSittingOnlineOrder.Add(player);
+                            }
+                        }
+
+                    }
+                    // Remove gone players
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    {
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        if (onlineP == null)
+                        {
+                            if (OnlineManager.lobby.isOwner)
                             {
                                 arena.arenaSittingOnlineOrder.Remove(arena.arenaSittingOnlineOrder[i]);
-                                self.players.RemoveAt(i);
                             }
+                            self.players.RemoveAt(i);
                         }
-
-                        // Find & Add waiting players
-                        foreach (var player in arena.playersReadiedUp.list)
+                    }
+                    if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                    {
+                        for (int y = 0; y < arena.playersLateWaitingInLobbyForNextRound.Count; y++)
                         {
-                            var waitingP = OnlineManager.lobby.PlayerFromMeadowID(player);
-                            if (!arena.arenaSittingOnlineOrder.Contains(waitingP.inLobbyId))
+                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[y]);
+                            if (onlineP == null)
                             {
-                                arena.playersLateWaitingInLobbyForNextRound.Add(waitingP);
-                                RainMeadow.Error($"Adding pending player: {waitingP}");
-                                arena.arenaSittingOnlineOrder.Add(waitingP.inLobbyId);
-                                ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
-                                {
-                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                                    playerClass = ((OnlineManager.lobby.clientSettings[waitingP].GetData<ArenaClientSettings>()).playingAs),
-                                    hasEnteredGameArea = true
-                                };
-                                self.players.Add(newArenaPlayer);
+                                continue;
                             }
-                            
-                        }
 
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
+                            {
+                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                playerClass = ((OnlineManager.lobby.clientSettings[onlineP].GetData<ArenaClientSettings>()).playingAs),
+                                hasEnteredGameArea = true
+                            };
+                            self.players.Add(newArenaPlayer);
+                        }
                     }
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
