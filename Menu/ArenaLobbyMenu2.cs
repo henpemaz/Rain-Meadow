@@ -45,12 +45,12 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-        if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
-            Arena.currentGameMode = Competitive.CompetitiveMode.value;
-
         Competitive competitive = new();
         if (!Arena.registeredGameModes.ContainsKey(competitive))
             Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+
+        if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
+            Arena.currentGameMode = Competitive.CompetitiveMode.value;
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;

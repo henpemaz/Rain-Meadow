@@ -34,10 +34,15 @@ namespace RainMeadow.UI.Components
             {
                 return $"Multiplayerportrait{colorIndex}2";
             }
-            int deadIndex = isDead? 0 : 1;
+            int deadIndex = isDead ? 0 : 1;
             if (slugcat == SlugcatStats.Name.Night || (ModManager.Watcher && slugcat == Watcher.WatcherEnums.SlugcatStatsName.Watcher))
             {
                 return $"Multiplayerportrait3{deadIndex}"; //no multi color support for night portrait yet
+            }
+            if (ModManager.MSC && slugcat == MSCScugs.Sofanthiel)
+            {
+                int randomChoice = UnityEngine.Random.Range(0, 5);
+                return $"Multiplayerportrait{randomChoice}{deadIndex}-{slugcat.value}";
             }
             return $"Multiplayerportrait{(ModManager.MSC && slugcat == MSCScugs.Slugpup ? 4 : colorIndex)}{deadIndex}-{slugcat.value}";
         }
@@ -58,7 +63,7 @@ namespace RainMeadow.UI.Components
         public override Color InterpColor(float timeStacker, HSLColor baseColor)
         {
             Color baseInterpCol = base.InterpColor(timeStacker, baseColor);
-            return keepSecondaryHueBase? LerpedSecondaryHSLColor(baseInterpCol.ToHSL()) : LerpedSecondaryColor(baseInterpCol);
+            return keepSecondaryHueBase ? LerpedSecondaryHSLColor(baseInterpCol.ToHSL()) : LerpedSecondaryColor(baseInterpCol);
         }
         public override Color MyPortraitColor(Color? portraitColor, float timeStacker)
         {
