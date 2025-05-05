@@ -10,6 +10,7 @@ namespace RainMeadow
         protected ProcessManager.ProcessID backTarget;
         protected Page mainPage;
         public MenuTabWrapper tabWrapper;
+        public MenuDarkSprite menuDarkSprite;
         private bool isExiting;
         private bool isInit = true;
 
@@ -20,7 +21,7 @@ namespace RainMeadow
             backTarget = manager.oldProcess.ID;
             this.pages.Add(this.mainPage = new Page(this, null, "main", 0));
             if (this.GetScene != null) mainPage.subObjects.Add(this.scene = new InteractiveMenuScene(this, mainPage, this.GetScene));
-            mainPage.subObjects.Add(new MenuDarkSprite(this, mainPage));
+            mainPage.subObjects.Add(menuDarkSprite = new MenuDarkSprite(this, mainPage));
             mainPage.subObjects.Add(this.tabWrapper = new MenuTabWrapper(this, mainPage));
             // what the fuck why the fuck are these added
             tabWrapper.myContainer._childNodes.ToList().ForEach(c => mainPage.Container.AddChild(c));
