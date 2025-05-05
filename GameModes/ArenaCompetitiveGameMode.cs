@@ -104,7 +104,7 @@ namespace RainMeadow
                 slugcatMenuScenes.Add("Spear", MoreSlugcatsEnums.MenuSceneID.Landscape_DM);
                 slugcatMenuScenes.Add("Rivulet", MoreSlugcatsEnums.MenuSceneID.Landscape_MS);
                 slugcatMenuScenes.Add("Saint", MoreSlugcatsEnums.MenuSceneID.Landscape_CL);
-                slugcatMenuScenes.Add("Slugpup", MoreSlugcatsEnums.MenuSceneID.Outro_Gourmand1);
+                slugcatMenuScenes.Add("Slugpup", MenuScene.SceneID.Intro_4_Walking);
                 slugcatMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
             }
 
