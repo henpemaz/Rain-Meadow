@@ -266,6 +266,9 @@ public static class DeathMessage
         if (player.dead) return;
         switch(source)
         {
+            case ARKillRect:
+                EnvironmentalRPC(player, DeathType.Invalid);
+                break;
             case ZapCoil:
                 EnvironmentalRPC(player, DeathType.Electric);
                 break;
