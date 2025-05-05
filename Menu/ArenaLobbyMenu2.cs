@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -22,6 +23,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     // public ComboBox arenaGameModeComboBox;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
+    public PlayerDisplayer playerDisplayer;
+    public ColorSlugcatDialog colorSlugcatDialog;
     public string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public string? painCatName;
     public int selectedSlugcatIndex = 0;
@@ -32,11 +35,19 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Vector2 newPagePos = Vector2.zero;
     public bool pageFullyTransitioned = true;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
-
+    public ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
-
+        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
+        if (OnlineManager.lobby == null)
+        {
+            throw new InvalidOperationException("lobby is null");
+        }
+        if (arena.currentGameMode == "" || arena.currentGameMode == null)
+        {
+            arena.currentGameMode = Competitive.CompetitiveMode.value;
+        }
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
 
@@ -116,7 +127,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         {
             Vector2 abilitySettingsOffset = new(360f, 380f);
             Vector2 abilitySettingsSpacing = new(0f, 50f);
-            painCatName = PainCatNames[Random.Range(0, PainCatNames.Length)];
+            painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];
 
             maulingCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset, 300f, Translate("Enable Mauling:"));
             maulingCheckBox.OnClick += i => RainMeadow.Debug($"mauling: {i}");
@@ -152,7 +163,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 ]
             );
         }
-
         SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
         swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
         slugcatSelectPage.subObjects.Add(swapBackButton);
@@ -163,19 +173,20 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
         RainMeadow.Debug(bottomRowStartingXPos);
-
         for (int i = 0; i < allSlugcats.Count; i++)
         {
             Vector2 pos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(this, slugcatSelectPage, "", "scug select", pos, new Vector2(100f, 100f), slugcatSelectButtons, i);
 
-            MenuIllustration portrait = new(this, btn, "", ArenaImage(allSlugcats[i], i), btn.size / 2, true, true);
+            MenuIllustration portrait = new(this, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
             // portrait.sprite.SetElementByName(portrait.fileName);
             btn.subObjects.Add(portrait);
 
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
+        BuildPlayerDisplay();
+        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
     }
 
     public void MovePage(Vector2 direction, int index)
@@ -194,46 +205,17 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
-
-    public string ArenaImage(SlugcatStats.Name classID, int color)
-    {
-        if (classID == null) return $"MultiplayerPortrait{color}2";
-
-        List<SlugcatStats.Name> baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
-        List<SlugcatStats.Name> vanillaSlugs = ArenaHelpers.VanillaSlugs();
-        List<SlugcatStats.Name> mscSlugs = ArenaHelpers.MSCSlugs();
-
-        RainMeadow.Debug($"Player is playing as {classID} with color index {color}");
-
-        if (vanillaSlugs.Contains(classID)) return $"MultiplayerPortrait{color}1";
-
-        if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-            return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
-
-        if (ModManager.MSC && mscSlugs.Contains(classID))
-        {
-            if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-                int randomChoice = Random.Range(0, 5);
-                return $"MultiplayerPortrait{randomChoice}1-{allSlugcats[color]}";
-            }
-            return $"MultiplayerPortrait41-{allSlugcats[color]}";
-        }
-
-        if (!baseGameSlugs.Contains(classID)) return $"MultiplayerPortrait01-{classID}";
-
-        return $"MultiplayerPortrait{color}1-{classID}";
-    }
-
     public override void Update()
     {
         if (currentPage == 1)
         {
-            SmartMenuUpdateNoEscapeCheck();
             if (RWInput.CheckPauseButton(0)) MovePage(new Vector2(1500f, 0f), 0);
         }
         else if (pageFullyTransitioned) base.Update();
-        else SmartMenuUpdateNoEscapeCheck();
+        else
+        {
+
+        }
 
         if (!pagesMoving) return;
 
@@ -273,12 +255,74 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             for (int i = 0; i < settingsDivSprites.Length; i++)
                 container.RemoveChild(settingsDivSprites[i]);
     }
+    public void BuildPlayerDisplay()
+    {
+        if (playerDisplayer == null)
+        {
+            playerDisplayer = new(this, mainPage, new(960, 130), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x + 30, ArenaPlayerBox.DefaultSize.y, 0, ArenaPlayerSmallBox.DefaultSize.y, 10);
+            mainPage.subObjects.Add(playerDisplayer);
+            playerDisplayer.CallForRefresh();
+        }
+    }
+    public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
+    {
+        if (!RainMeadow.isArenaMode(out _))
+        {
+            return;
+        }
+        RainMeadow.DebugMe();
+        BuildPlayerDisplay();
+        playerDisplayer.UpdatePlayerList(OnlineManager.players);
 
+    }
+    public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
+    {
+        if (isLargeDisplay)
+        {
+            ArenaPlayerBox playerBox = new(this, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
+            if (player.isMe)
+            {
+                playerBox.slugcatButton.OnClick += (_) =>
+                {
+                    MovePage(new Vector2(-1500f, 0f), 1);
+                };
+                playerBox.colorInfoButton.OnClick += (_) =>
+                {
+                    OpenColorConfig(playerBox.slugcatButton.slugcat);
+                };
+            }
+            playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
+            return playerBox;
+        }
+        ArenaPlayerSmallBox playerSmallBox = new(this, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
+        if (player.isMe)
+        {
+            playerSmallBox.slugcatButton.OnClick += (_) =>
+            {
+                MovePage(new Vector2(-1500f, 0f), 1);
+            };
+            playerSmallBox.colorKickButton!.OnClick += (_) =>
+            {
+                OpenColorConfig(playerSmallBox.slugcatButton.slug);
+            };
+        }
+        playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
+        return playerSmallBox;
+    }
+    public void OpenColorConfig(SlugcatStats.Name? slugcat)
+    {
+        if (slugcat == null)
+        {
+            return;
+        }
+        PlaySound(SoundID.MENU_Checkbox_Check);
+        colorSlugcatDialog = new(manager, slugcat, () => { });
+        manager.ShowDialog(colorSlugcatDialog);
+    }
     public int GetCurrentlySelectedOfSeries(string series)
     {
         return selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
-
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
         selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
