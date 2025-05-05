@@ -9,7 +9,7 @@ namespace RainMeadow.UI.Components
 {
     public class PlayerDisplayer : ButtonDisplayer
     {
-        public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton ,int numOfLargeButtonsToView, float xListSize, float largeButtonHeight, float largeButtonSpacing, float smallButtonHeight, float smallButtonSpacing, float sideButtonsListXSize = 30) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeight, largeButtonSpacing, sideButtonsListXSize)
+        public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton, int numOfLargeButtonsToView, float xListSize, float largeButtonHeight, float largeButtonSpacing, float smallButtonHeight, float smallButtonSpacing) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeight, largeButtonSpacing)
         {
             this.getPlayerButton = getPlayerButton;
             onlinePlayers = players;
