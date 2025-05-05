@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Menu;
+using MoreSlugcats;
 using static RainMeadow.ArenaPrepTimer;
 
 namespace RainMeadow
@@ -35,7 +37,7 @@ namespace RainMeadow
         public string paincatName;
         public int lizardEvent;
 
-
+        public Dictionary<string, MenuScene.SceneID> slugcatMenuScenes;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -89,6 +91,31 @@ namespace RainMeadow
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
             initiatedStartGameForClient = false;
+
+            slugcatMenuScenes = new Dictionary<string, MenuScene.SceneID>()
+            {
+                { "White", MenuScene.SceneID.Landscape_SU },
+                { "Yellow", MenuScene.SceneID.Yellow_Intro_B },
+                { "Red", MenuScene.SceneID.Landscape_LF },
+                { "Night", MenuScene.SceneID.Outro_2_Up_Swim },
+            };
+
+            if (ModManager.MSC)
+            {
+                slugcatMenuScenes.Add("Gourmand", MoreSlugcatsEnums.MenuSceneID.Landscape_OE);
+                slugcatMenuScenes.Add("Artificer", MoreSlugcatsEnums.MenuSceneID.Landscape_LC);
+                slugcatMenuScenes.Add("Spear", MoreSlugcatsEnums.MenuSceneID.Landscape_DM);
+                slugcatMenuScenes.Add("Rivulet", MoreSlugcatsEnums.MenuSceneID.Landscape_MS);
+                slugcatMenuScenes.Add("Saint", MoreSlugcatsEnums.MenuSceneID.Landscape_CL);
+                slugcatMenuScenes.Add("Slugpup", MoreSlugcatsEnums.MenuSceneID.Outro_Gourmand1);
+                slugcatMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
+            }
+
+            if (ModManager.Watcher)
+            {
+                slugcatMenuScenes.Add("Watcher", MenuScene.SceneID.Outro_2_Up_Swim);
+                slugcatMenuScenes.Remove("Night");
+            }
         }
 
         public void ResetInvDetails()

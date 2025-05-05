@@ -10,6 +10,7 @@ namespace RainMeadow.UI;
 
 public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
+    private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.AllSlugcats();
     public SimplerButton playButton;
     public FSprite[] settingsDivSprites;
@@ -35,25 +36,48 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Vector2 newPagePos = Vector2.zero;
     public bool pageFullyTransitioned = true;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
-    public ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
-        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
         if (OnlineManager.lobby == null)
-        {
             throw new InvalidOperationException("lobby is null");
-        }
-        if (arena.currentGameMode == "" || arena.currentGameMode == null)
-        {
-            arena.currentGameMode = Competitive.CompetitiveMode.value;
-        }
+
+        Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
+
+        if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
+            Arena.currentGameMode = Competitive.CompetitiveMode.value;
+
+        Competitive competitive = new();
+        if (!Arena.registeredGameModes.ContainsKey(competitive))
+            Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
 
-        scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
-        scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
-        scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
+        // TODO preload scenes somehow without causing shit tons of lag and delay (every time I try to do it in parallel with Task or Parallel.Invoke it just crashes)
+        // MenuScene.SceneID[] scenes = [.. Arena.slugcatMenuScenes.Values];
+        // Task[] preloadTasks = new Task[scenes.Length];
+
+        // for (int i = 0; i < preloadTasks.Length; i++)
+        // {
+        //     int index = i;
+        //     preloadTasks[i] = Task.Factory.StartNew(() =>
+        //         {
+        //             InteractiveMenuScene scene = new(this, null, scenes[index]);
+        //             RainMeadow.Debug($"Preloaded scene {scenes[index].value}");
+        //             scene.RemoveSprites();
+        //             scene.RemoveSubObject(scene);
+        //         }
+        //     );
+        // }
+
+        // Task.WaitAll(preloadTasks);
+
+        ChangeScene(Arena.slugcatMenuScenes[Arena.arenaClientSettings.playingAs.value]);
+
+        // scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+        // scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+        // scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
         playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
         playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
@@ -88,7 +112,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         // settingsMenuLabels[0] = new MenuLabel(this, mainPage, "Countdown Timer:", matchSettingsOffset + new Vector2(0f, -17f), new Vector2(0f, 30f), false);
         // settingsMenuLabels[1] = new MenuLabel(this, mainPage, "Saint Ascend Time:", matchSettingsOffset + new Vector2(125f, -67f), new Vector2(0f, 30f), false);
         // mainPage.subObjects.AddRange(settingsMenuLabels);
-
         // countdownTimerTextBox = new OpTextBox(new Configurable<int>(5), matchSettingsOffset + new Vector2(215f, -20f), 95f);
         // countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
         // UIelementWrapper countdownTimerTextBoxWrapper = new(tabWrapper, countdownTimerTextBox);
@@ -172,11 +195,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         int buttonsInBottomRow = allSlugcats.Count - buttonsInTopRow;
         float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
-        RainMeadow.Debug(bottomRowStartingXPos);
+
         for (int i = 0; i < allSlugcats.Count; i++)
         {
+            int index = i;
+
             Vector2 pos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(this, slugcatSelectPage, "", "scug select", pos, new Vector2(100f, 100f), slugcatSelectButtons, i);
+            btn.OnClick += _ => ChangeScene(Arena.slugcatMenuScenes[allSlugcats[index].value]);
 
             MenuIllustration portrait = new(this, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
             // portrait.sprite.SetElementByName(portrait.fileName);
@@ -185,8 +211,35 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
+
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+    }
+
+    public void ChangeScene(MenuScene.SceneID sceneID)
+    {
+        if (scene.sceneID == sceneID) return;
+
+        scene.RemoveSprites();
+        scene.RemoveSubObject(scene);
+        scene = new InteractiveMenuScene(this, pages[0], sceneID);
+        mainPage.subObjects.Add(scene);
+        if (scene.depthIllustrations != null && scene.depthIllustrations.Count > 0)
+        {
+            int count = scene.depthIllustrations.Count;
+            while (count-- > 0)
+                scene.depthIllustrations[count].sprite.MoveToBack();
+        }
+        else
+        {
+            int count2 = scene.flatIllustrations.Count;
+            while (count2-- > 0)
+                scene.flatIllustrations[count2].sprite.MoveToBack();
+        }
+
+        scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+        scene.AddIllustration(new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), crispPixels: true, anchorCenter: false));
+        scene.flatIllustrations[scene.flatIllustrations.Count - 1].sprite.shader = manager.rainWorld.Shaders["MenuText"];
     }
 
     public void MovePage(Vector2 direction, int index)
@@ -205,17 +258,16 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
+
     public override void Update()
     {
         if (currentPage == 1)
         {
+            SmartMenuUpdateNoEscapeCheck();
             if (RWInput.CheckPauseButton(0)) MovePage(new Vector2(1500f, 0f), 0);
         }
         else if (pageFullyTransitioned) base.Update();
-        else
-        {
-
-        }
+        else SmartMenuUpdateNoEscapeCheck();
 
         if (!pagesMoving) return;
 
@@ -255,26 +307,25 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             for (int i = 0; i < settingsDivSprites.Length; i++)
                 container.RemoveChild(settingsDivSprites[i]);
     }
+
     public void BuildPlayerDisplay()
     {
-        if (playerDisplayer == null)
-        {
-            playerDisplayer = new(this, mainPage, new(960, 130), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x + 30, ArenaPlayerBox.DefaultSize.y, 0, ArenaPlayerSmallBox.DefaultSize.y, 10);
-            mainPage.subObjects.Add(playerDisplayer);
-            playerDisplayer.CallForRefresh();
-        }
+        if (playerDisplayer != null) return;
+
+        playerDisplayer = new(this, mainPage, new(960, 130), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x + 30, ArenaPlayerBox.DefaultSize.y, 0, ArenaPlayerSmallBox.DefaultSize.y, 10);
+        mainPage.subObjects.Add(playerDisplayer);
+        playerDisplayer.CallForRefresh();
     }
+
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
-        if (!RainMeadow.isArenaMode(out _))
-        {
-            return;
-        }
+        if (!RainMeadow.isArenaMode(out _)) return;
+
         RainMeadow.DebugMe();
         BuildPlayerDisplay();
         playerDisplayer.UpdatePlayerList(OnlineManager.players);
-
     }
+
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
         if (isLargeDisplay)
@@ -294,35 +345,33 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
             return playerBox;
         }
+
         ArenaPlayerSmallBox playerSmallBox = new(this, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
+
         if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += (_) =>
-            {
-                MovePage(new Vector2(-1500f, 0f), 1);
-            };
-            playerSmallBox.colorKickButton!.OnClick += (_) =>
-            {
-                OpenColorConfig(playerSmallBox.slugcatButton.slug);
-            };
+            playerSmallBox.slugcatButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
+            playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
+
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
+
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
-        if (slugcat == null)
-        {
-            return;
-        }
+        if (slugcat == null) return;
+
         PlaySound(SoundID.MENU_Checkbox_Check);
-        colorSlugcatDialog = new(manager, slugcat, () => { });
+        colorSlugcatDialog = new ColorSlugcatDialog(manager, slugcat, () => { });
         manager.ShowDialog(colorSlugcatDialog);
     }
+
     public int GetCurrentlySelectedOfSeries(string series)
     {
         return selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
+
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
         selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
