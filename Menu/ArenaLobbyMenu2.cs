@@ -24,8 +24,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     // public ComboBox arenaGameModeComboBox;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
-    public PlayerDisplayer playerDisplayer;
-    public ColorSlugcatDialog colorSlugcatDialog;
+    public PlayerDisplayer? playerDisplayer;
+    public ColorSlugcatDialog? colorSlugcatDialog;
     public string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public string? painCatName;
     public int selectedSlugcatIndex = 0;
@@ -53,25 +53,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
-
-        // TODO preload scenes somehow without causing shit tons of lag and delay (every time I try to do it in parallel with Task or Parallel.Invoke it just crashes)
-        // MenuScene.SceneID[] scenes = [.. Arena.slugcatMenuScenes.Values];
-        // Task[] preloadTasks = new Task[scenes.Length];
-
-        // for (int i = 0; i < preloadTasks.Length; i++)
-        // {
-        //     int index = i;
-        //     preloadTasks[i] = Task.Factory.StartNew(() =>
-        //         {
-        //             InteractiveMenuScene scene = new(this, null, scenes[index]);
-        //             RainMeadow.Debug($"Preloaded scene {scenes[index].value}");
-        //             scene.RemoveSprites();
-        //             scene.RemoveSubObject(scene);
-        //         }
-        //     );
-        // }
-
-        // Task.WaitAll(preloadTasks);
 
         ChangeScene(Arena.slugcatMenuScenes[Arena.arenaClientSettings.playingAs.value]);
 
@@ -323,7 +304,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         RainMeadow.DebugMe();
         BuildPlayerDisplay();
-        playerDisplayer.UpdatePlayerList(OnlineManager.players);
+        playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
 
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
