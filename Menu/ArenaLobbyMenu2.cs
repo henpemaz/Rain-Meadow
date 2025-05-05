@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
@@ -27,7 +26,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     // public ComboBox arenaGameModeComboBox;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
-    public PlayerDisplayer playerDisplayer;
+    public PlayerDisplayer? playerDisplayer;
     public ColorSlugcatDialog? colorSlugcatDialog;
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
@@ -37,6 +36,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
+
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
@@ -55,12 +55,15 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
 
-        ChangeScene(Arena.slugcatMenuScenes[Arena.arenaClientSettings.playingAs.value]);
-        competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
-        competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
+        ChangeScene(slugcatScene = Arena.slugcatMenuScenes[Arena.arenaClientSettings.playingAs.value]);
+
+        competitiveShadow = new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveTitle = new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
+
         playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
         playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
+
         tabContainer = new TabContainer(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
 
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer);
@@ -190,33 +193,35 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
+
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
     }
 
     public void ChangeScene(MenuScene.SceneID sceneID)
     {
-        if (scene.sceneID != sceneID)
-        {
-            scene.ClearMenuObject(scene);
-            scene = new InteractiveMenuScene(this, pages[0], sceneID);
-            mainPage.subObjects.Add(scene);
-            if (scene.depthIllustrations != null && scene.depthIllustrations.Count > 0)
-            {
-                int count = scene.depthIllustrations.Count;
-                while (count-- > 0)
-                    scene.depthIllustrations[count].sprite.MoveToBack();
-            }
-            else
-            {
-                int count2 = scene.flatIllustrations.Count;
-                while (count2-- > 0)
-                    scene.flatIllustrations[count2].sprite.MoveToBack();
-            }
-        }
         slugcatScene = sceneID;
         pendingBgChange = false;
+
+        if (scene.sceneID == sceneID) return;
+
+        scene.ClearMenuObject(scene);
+        scene = new InteractiveMenuScene(this, pages[0], sceneID);
+        mainPage.subObjects.Add(scene);
+        if (scene.depthIllustrations != null && scene.depthIllustrations.Count > 0)
+        {
+            int count = scene.depthIllustrations.Count;
+            while (count-- > 0)
+                scene.depthIllustrations[count].sprite.MoveToBack();
+        }
+        else
+        {
+            int count2 = scene.flatIllustrations.Count;
+            while (count2-- > 0)
+                scene.flatIllustrations[count2].sprite.MoveToBack();
+        }
     }
+
     public void MovePage(Vector2 direction, int index)
     {
         if (pagesMoving) return;
@@ -233,6 +238,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
+
     public override void Update()
     {
         if (currentPage == 1)
@@ -242,16 +248,18 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         }
         else if (pageFullyTransitioned) base.Update();
         else SmartMenuUpdateNoEscapeCheck();
+
         foreach (SelectOneButton button in slugcatSelectButtons)
-        {
             button.buttonBehav.greyedOut = pendingBgChange;
-        }
+
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + (pendingBgChange ? 0.01f : -0.01f), 0.8f, 1.1f);
         pendingBgChange = pendingBgChange || slugcatScene != scene.sceneID;
+
         if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
         if (pagesMoving) UpdateMovingPage();
     }
+
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);
@@ -269,9 +277,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         else
             for (int i = 0; i < settingsDivSprites.Length; i++)
                 container.RemoveChild(settingsDivSprites[i]);
-        
-        
+
+
     }
+
     public void UpdateMovingPage()
     {
         pageMovementProgress += 0.35f;
@@ -291,6 +300,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             }
         }
     }
+
     public void BuildPlayerDisplay()
     {
         if (playerDisplayer != null) return;
@@ -299,14 +309,16 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         mainPage.subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
     }
+
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
         if (!RainMeadow.isArenaMode(out _)) return;
 
         RainMeadow.DebugMe();
         BuildPlayerDisplay();
-        playerDisplayer.UpdatePlayerList(OnlineManager.players);
+        playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
+
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
         if (isLargeDisplay)
@@ -338,6 +350,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
+
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (slugcat == null) return;
@@ -346,13 +359,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         colorSlugcatDialog = new ColorSlugcatDialog(manager, slugcat, () => { });
         manager.ShowDialog(colorSlugcatDialog);
     }
+
     public int GetCurrentlySelectedOfSeries(string series)
     {
         return selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
+
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
         selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
 }
-
