@@ -428,7 +428,7 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner)
                 {
                     arena.clientWantsToLeaveGame = true;
-                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_AddPlayerQuitEarlyOrJoinedLate, OnlineManager.mePlayer);
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_RemovePlayerWhoQuit, OnlineManager.mePlayer);
                 }
             }
             orig(self, sender, message);

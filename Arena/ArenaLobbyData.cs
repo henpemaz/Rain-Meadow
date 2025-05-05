@@ -83,7 +83,7 @@ namespace RainMeadow
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;             
                 playList = arena.playList;
-                arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder.ToList();
+                arenaSittingOnlineOrder = new(arena.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
@@ -92,7 +92,7 @@ namespace RainMeadow
                 reigningChamps = new(arena.reigningChamps.list.ToList());
                 playerNumberWithKills = arena.playerNumberWithKills;
                 playerNumberWithDeaths = arena.playerNumberWithDeaths;
-                playersLateWaitingInLobby = arena.playersLateWaitingInLobbyForNextRound.ToList();
+                playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;

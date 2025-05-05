@@ -7,12 +7,28 @@ namespace RainMeadow
     {
 
         [RPCMethod]
-        public static void Arena_AddPlayerQuitEarlyOrJoinedLate(OnlinePlayer earlyQuitterOrLatecomer)
+        public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
-                RainMeadow.Debug($"Adding player: {earlyQuitterOrLatecomer}");
-                arena.playersLateWaitingInLobbyForNextRound.Add(earlyQuitterOrLatecomer.inLobbyId);
+                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_AddPlayerWaiting(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (!arena.playersLateWaitingInLobbyForNextRound.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.playersLateWaitingInLobbyForNextRound.Add(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+
             }
         }
 

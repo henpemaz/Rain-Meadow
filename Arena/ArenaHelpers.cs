@@ -113,14 +113,14 @@ namespace RainMeadow
         }
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
-            arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
             arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
-
             arena.playerNumberWithDeaths.Clear();
             arena.playerNumberWithKills.Clear();
-            
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+
 
         }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
@@ -139,7 +139,6 @@ namespace RainMeadow
             if (arena.returnToLobby)
             {
                 arena.playersReadiedUp.list.Clear();
-
                 arena.returnToLobby = false;
             }
 

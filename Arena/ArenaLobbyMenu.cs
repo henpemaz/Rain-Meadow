@@ -89,6 +89,8 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            RainMeadow.Debug(arena.arenaSittingOnlineOrder.Count);
+
             if (OnlineManager.lobby == null)
             {
                 return;
@@ -513,7 +515,7 @@ namespace RainMeadow
                     if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
                     {
                         RainMeadow.Debug("Arena: Notifying host I'm late");
-                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerQuitEarlyOrJoinedLate, OnlineManager.mePlayer);
+                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerWaiting, OnlineManager.mePlayer);
                         this.playButton.inactive = true;
                         this.playButton.buttonBehav.greyedOut = true;
                         return;
