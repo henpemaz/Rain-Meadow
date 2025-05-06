@@ -1570,12 +1570,21 @@ namespace RainMeadow
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
                         OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        if (!onlineP.isMe)
+                        if (onlineP != null && !onlineP.isMe)
                         {
                             onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
                         }
-                        self.result[i].readyForNextRound = true;
 
+                        // Safely check if the index 'i' is within the bounds of self.result
+                        if (i >= 0 && i < self.result.Count)
+                        {
+                            self.result[i].readyForNextRound = true;
+                        }
+                        else
+                        {
+                            RainMeadow.Debug($"Warning: Index {i} is out of bounds for self.result (Count: {self.result.Count}).");
+
+                        }
                     }
                     orig(self);
                 }
