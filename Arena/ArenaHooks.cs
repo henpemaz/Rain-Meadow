@@ -1226,20 +1226,20 @@ namespace RainMeadow
                     player.playerClass = OnlineManager.lobby.clientSettings[currentName].GetData<ArenaClientSettings>().playingAs; // update for rejoins
                 }
 
-                if (OnlineManager.lobby.isOwner)
-                {
+                //if (OnlineManager.lobby.isOwner)
+                //{
 
-                    // what host observed
-                    arena.playerNumberWithKills[player.playerNumber] = player.score;
-                    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
-                    arena.playerNumberWithWins[player.playerNumber] = player.wins;
-                }
-                else
-                {
-                    player.score = arena.playerNumberWithKills[player.playerNumber];
-                    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
-                    player.wins = arena.playerNumberWithWins[player.playerNumber];
-                }
+                //    // what host observed
+                //    arena.playerNumberWithKills[player.playerNumber] = player.score;
+                //    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
+                //    arena.playerNumberWithWins[player.playerNumber] = player.wins;
+                //}
+                //else
+                //{
+                //    player.score = arena.playerNumberWithKills[player.playerNumber];
+                //    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
+                //    player.wins = arena.playerNumberWithWins[player.playerNumber];
+                //}
 
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
@@ -1567,25 +1567,19 @@ namespace RainMeadow
                 }
                 else
                 {
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    for (int i = 0; i < self.result.Count; i++)
                     {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        if (onlineP != null && !onlineP.isMe)
-                        {
-                            onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
-                        }
+                        //    OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        //    if (onlineP != null && !onlineP.isMe)
+                        //    {
+                        //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                        //    }
 
                         // Safely check if the index 'i' is within the bounds of self.result
-                        if (i >= 0 && i < self.result.Count)
-                        {
-                            self.result[i].readyForNextRound = true;
-                        }
-                        else
-                        {
-                            RainMeadow.Debug($"Warning: Index {i} is out of bounds for self.result (Count: {self.result.Count}).");
 
-                        }
+                        self.result[i].readyForNextRound = true;
                     }
+                    //}
                     orig(self);
                 }
 

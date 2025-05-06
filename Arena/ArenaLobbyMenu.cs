@@ -515,13 +515,20 @@ namespace RainMeadow
                 else
                 {
 
-                    if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
+                    if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
                     {
-                        RainMeadow.Debug("Arena: Notifying host I'm late");
-                        OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerWaiting, OnlineManager.mePlayer);
-                        this.playButton.inactive = true;
-                        this.playButton.buttonBehav.greyedOut = true;
-                        return;
+                        if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // normal. You should be removed when you quit back to lobby or on next level if you're missing
+                        {
+                            // noop
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("Arena: Notifying host I'm late");
+                            OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerWaiting, OnlineManager.mePlayer);
+                            this.playButton.inactive = true;
+                            this.playButton.buttonBehav.greyedOut = true;
+                            return;
+                        }
                     }
                     //if (arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
                     //{
@@ -529,7 +536,8 @@ namespace RainMeadow
                     //    return;
                     //}
 
-                    if (!arena.hasPermissionToRejoin && arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
+                    // there's still a chance someone is queued and they're not ready by host yet
+                    if (!arena.hasPermissionToRejoin && arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId))
                     {
                         RainMeadow.Debug("Arena: You've let the host know you're ready, they've acknowled the request, but the time is not right");
                         return;

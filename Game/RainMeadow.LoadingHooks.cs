@@ -26,6 +26,16 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+
+                for (int q = 0; q < arena.arenaSittingOnlineOrder.Count; q++)
+                {
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[q]);
+                    if (onlinePlayer != null)
+                    {
+                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                    }
+                }
+
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
@@ -211,6 +221,7 @@ namespace RainMeadow
                         }
 
                     }
+                   
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
                 }

@@ -272,7 +272,7 @@ namespace RainMeadow
             foreach (var player in arena.arenaSittingOnlineOrder)
             {
 
-                var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                OnlinePlayer getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
                 if (getPlayer != null)
                 {
                     if (!getPlayer.isMe)
@@ -288,9 +288,11 @@ namespace RainMeadow
                 {
                     foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
                     {
-                        var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
-
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                        if (onlineP != null)
+                        {
+                            onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
+                        }
                     }
                 }
                 foreach (var arenaPlayer in self.arenaSitting.players)
