@@ -13,10 +13,11 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.AllSlugcats();
-    public SimplerButton playButton;
-    public FSprite[] settingsDivSprites;
-    public Vector2[] settingsDivSpritesPos, oldPagesPos = [];
+    public SimplerButton playButton, slugcatSelectBackButton;
+    public FSprite[] settingsDivSprites, slugcatDescriptionGradients;
+    public Vector2[] settingsDivSpritesPos, slugcatDescriptionGradientsPos, oldPagesPos = [];
     public Vector2 newPagePos = Vector2.zero;
+    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
     public RestorableMenuLabel countdownTimerLabel;
     public RestorableMenuLabel? saintAscendanceTimerLabel;
     public SimplerCheckbox spearsHitCheckbox, aggressiveAICheckBox;
@@ -55,14 +56,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
 
-        ChangeScene(slugcatScene = Arena.slugcatMenuScenes[Arena.arenaClientSettings.playingAs.value]);
+        ChangeScene(slugcatScene = Arena.slugcatSelectMenuScenes[Arena.arenaClientSettings.playingAs.value]);
 
         competitiveShadow = new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle = new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-        playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-        playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
+        playButton = new SimplerButton(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        // playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
 
         tabContainer = new TabContainer(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
 
@@ -168,9 +169,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 ]
             );
         }
-        SimplerButton swapBackButton = new(this, slugcatSelectPage, "Change Page Back", new Vector2(600f, 300f), new Vector2(200f, 30f));
-        swapBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
-        slugcatSelectPage.subObjects.Add(swapBackButton);
+
+        slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f));
+        slugcatSelectBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
+        slugcatSelectPage.subObjects.Add(slugcatSelectBackButton);
 
         slugcatSelectButtons = new EventfulSelectOneButton[allSlugcats.Count];
         int buttonsInTopRow = (int)Mathf.Floor(allSlugcats.Count / 2f);
@@ -184,7 +186,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
             Vector2 pos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(this, slugcatSelectPage, "", "scug select", pos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            btn.OnClick += _ => slugcatScene = Arena.slugcatMenuScenes[allSlugcats[index].value];
+            btn.OnClick += _ => SwitchSelectedSlugcat(allSlugcats[index]);
 
             MenuIllustration portrait = new(this, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
             // portrait.sprite.SetElementByName(portrait.fileName);
@@ -192,6 +194,33 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
+        }
+
+        MenuLabel chooseYourSlugcatLabel = new(this, slugcatSelectPage, "Choose Your Slugcat", new Vector2(680f, 575f), default, true);
+        chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
+        slugcatSelectPage.subObjects.Add(chooseYourSlugcatLabel);
+
+        slugcatNameLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectTrueNames[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 310f), default, true);
+        slugcatSelectPage.subObjects.Add(slugcatNameLabel);
+
+        slugcatDescriptionLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectDescriptions[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 210f), default, bigText: true);
+        slugcatDescriptionLabel.label.color = new Color(0.8f, 0.8f, 0.8f);
+        slugcatSelectPage.subObjects.Add(slugcatDescriptionLabel);
+
+        slugcatDescriptionGradients = new FSprite[4];
+        slugcatDescriptionGradientsPos = new Vector2[4];
+
+        for (int i = 0; i < slugcatDescriptionGradients.Length; i++)
+        {
+            slugcatDescriptionGradients[i] = new FSprite("LinearGradient200")
+            {
+                rotation = i % 2 == 0 ? 270f : 90f,
+                scaleY = 2f,
+                anchorX = 0.6f,
+                anchorY = 0f,
+            };
+            slugcatDescriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
+            container.AddChild(slugcatDescriptionGradients[i]);
         }
 
         BuildPlayerDisplay();
@@ -239,6 +268,13 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
 
+    public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
+    {
+        slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
+        slugcatDescriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
+        slugcatNameLabel.text = Arena.slugcatSelectTrueNames[slugcat.value];
+    }
+
     public override void Update()
     {
         if (currentPage == 1)
@@ -278,7 +314,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             for (int i = 0; i < settingsDivSprites.Length; i++)
                 container.RemoveChild(settingsDivSprites[i]);
 
+        for (int i = 0; i < slugcatDescriptionGradients.Length; i++)
+        {
+            FSprite gradientSprite = slugcatDescriptionGradients[i];
+            Vector2 gradientSpritePos = slugcatDescriptionGradientsPos[i];
 
+            gradientSprite.x = slugcatSelectPage.DrawX(timeStacker) + gradientSpritePos.x;
+            gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
+        }
     }
 
     public void UpdateMovingPage()

@@ -196,33 +196,32 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> BaseGameSlugcats()
         {
-            var baseGameSlugs = new List<SlugcatStats.Name>();
-            baseGameSlugs.Add(SlugcatStats.Name.White);
-            baseGameSlugs.Add(SlugcatStats.Name.Yellow);
-            baseGameSlugs.Add(SlugcatStats.Name.Red);
-            baseGameSlugs.Add(SlugcatStats.Name.Night);
-
-            if (ModManager.MSC)
+            var baseGameSlugs = new List<SlugcatStats.Name>
             {
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+                SlugcatStats.Name.White,
+                SlugcatStats.Name.Yellow,
+                SlugcatStats.Name.Red,
+                SlugcatStats.Name.Night
+            };
 
-
-            }
             if (ModManager.Watcher)
             {
                 baseGameSlugs.Remove(SlugcatStats.Name.Night);
                 baseGameSlugs.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
+            }
 
+            if (ModManager.MSC)
+            {
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
             }
 
             return baseGameSlugs;
-
         }
 
         public static List<SlugcatStats.Name> VanillaSlugs()
@@ -238,14 +237,16 @@ namespace RainMeadow
 
         public static List<SlugcatStats.Name> MSCSlugs()
         {
-            var msc = new List<SlugcatStats.Name>();
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+            var msc = new List<SlugcatStats.Name>
+            {
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup,
+                MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel
+            };
 
             return msc;
         }

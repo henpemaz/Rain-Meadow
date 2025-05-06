@@ -36,7 +36,8 @@ namespace RainMeadow
         public string paincatName;
         public int lizardEvent;
 
-        public Dictionary<string, MenuScene.SceneID> slugcatMenuScenes;
+        public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
+        public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectTrueNames;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -89,29 +90,64 @@ namespace RainMeadow
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
 
-            slugcatMenuScenes = new Dictionary<string, MenuScene.SceneID>()
+            slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },
                 { "Yellow", MenuScene.SceneID.Yellow_Intro_B },
                 { "Red", MenuScene.SceneID.Landscape_LF },
                 { "Night", MenuScene.SceneID.Outro_2_Up_Swim },
             };
+            slugcatSelectDescriptions = new Dictionary<string, string>()
+            {
+                { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
+                { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
+                { "Red", "You have no time to waste. Grab your spears and get to work." },
+                { "Night", "Observe all weakness - then strike while cloaked in shadows." },
+            };
+            slugcatSelectTrueNames = new Dictionary<string, string>()
+            {
+                { "White", "The Survivor" },
+                { "Yellow", "The Monk" },
+                { "Red", "The Hunter" },
+                { "Night", "The Nightcat" },
+            };
 
             if (ModManager.MSC)
             {
-                slugcatMenuScenes.Add("Gourmand", MoreSlugcatsEnums.MenuSceneID.Landscape_OE);
-                slugcatMenuScenes.Add("Artificer", MoreSlugcatsEnums.MenuSceneID.Landscape_LC);
-                slugcatMenuScenes.Add("Spear", MoreSlugcatsEnums.MenuSceneID.Landscape_DM);
-                slugcatMenuScenes.Add("Rivulet", MoreSlugcatsEnums.MenuSceneID.Landscape_MS);
-                slugcatMenuScenes.Add("Saint", MoreSlugcatsEnums.MenuSceneID.Landscape_CL);
-                slugcatMenuScenes.Add("Slugpup", MenuScene.SceneID.Intro_4_Walking);
-                slugcatMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
+                slugcatSelectMenuScenes.Add("Gourmand", MoreSlugcatsEnums.MenuSceneID.Landscape_OE);
+                slugcatSelectMenuScenes.Add("Artificer", MoreSlugcatsEnums.MenuSceneID.Landscape_LC);
+                slugcatSelectMenuScenes.Add("Spear", MoreSlugcatsEnums.MenuSceneID.Landscape_DM);
+                slugcatSelectMenuScenes.Add("Rivulet", MoreSlugcatsEnums.MenuSceneID.Landscape_MS);
+                slugcatSelectMenuScenes.Add("Saint", MoreSlugcatsEnums.MenuSceneID.Landscape_CL);
+                slugcatSelectMenuScenes.Add("Slugpup", MenuScene.SceneID.Intro_4_Walking);
+                slugcatSelectMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
+
+                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.\nCrush this one last quest.");
+                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.\nMaul and detonate your way to vengeance.");
+                slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
+                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
+                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
+                slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
+                slugcatSelectDescriptions.Add("Inv", "...");
+
+                slugcatSelectTrueNames.Add("Gourmand", "The Gourmand");
+                slugcatSelectTrueNames.Add("Artificer", "The Artificer");
+                slugcatSelectTrueNames.Add("Spear", "The Spearmaster");
+                slugcatSelectTrueNames.Add("Rivulet", "The Rivulet");
+                slugcatSelectTrueNames.Add("Saint", "The Saint");
+                slugcatSelectTrueNames.Add("Slugpup", "The Slugpup");
+                slugcatSelectTrueNames.Add("Inv", "Sofanthiel");
             }
 
             if (ModManager.Watcher)
             {
-                slugcatMenuScenes.Add("Watcher", MenuScene.SceneID.Outro_2_Up_Swim);
-                slugcatMenuScenes.Remove("Night");
+                slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
+                slugcatSelectDescriptions.Add("Watcher", slugcatSelectDescriptions["Night"]);
+                slugcatSelectTrueNames.Add("Watcher", "The Watcher");
+
+                slugcatSelectMenuScenes.Remove("Night");
+                slugcatSelectDescriptions.Remove("Night");
+                slugcatSelectTrueNames.Remove("Night");
             }
         }
 
