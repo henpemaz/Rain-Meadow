@@ -37,7 +37,7 @@ namespace RainMeadow
         public int lizardEvent;
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
-        public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectTrueNames;
+        public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -104,7 +104,7 @@ namespace RainMeadow
                 { "Red", "You have no time to waste. Grab your spears and get to work." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
-            slugcatSelectTrueNames = new Dictionary<string, string>()
+            slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
                 { "White", "The Survivor" },
                 { "Yellow", "The Monk" },
@@ -128,26 +128,33 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
-                slugcatSelectDescriptions.Add("Inv", "...");
+                slugcatSelectDescriptions.Add("Inv-3", ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY");
+                slugcatSelectDescriptions.Add("Inv-2", "...why are you here");
+                slugcatSelectDescriptions.Add("Inv-1", "...");
+                slugcatSelectDescriptions.Add("Inv01", ":)");
+                slugcatSelectDescriptions.Add("Inv11", "uwu");
+                slugcatSelectDescriptions.Add("Inv21", "hiiii!");
+                slugcatSelectDescriptions.Add("Inv31", "i'm ded");
+                slugcatSelectDescriptions.Add("Inv41", "<ask UO for a cool description>");
 
-                slugcatSelectTrueNames.Add("Gourmand", "The Gourmand");
-                slugcatSelectTrueNames.Add("Artificer", "The Artificer");
-                slugcatSelectTrueNames.Add("Spear", "The Spearmaster");
-                slugcatSelectTrueNames.Add("Rivulet", "The Rivulet");
-                slugcatSelectTrueNames.Add("Saint", "The Saint");
-                slugcatSelectTrueNames.Add("Slugpup", "The Slugpup");
-                slugcatSelectTrueNames.Add("Inv", "Sofanthiel");
+                slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
+                slugcatSelectDisplayNames.Add("Artificer", "The Artificer");
+                slugcatSelectDisplayNames.Add("Spear", "The Spearmaster");
+                slugcatSelectDisplayNames.Add("Rivulet", "The Rivulet");
+                slugcatSelectDisplayNames.Add("Saint", "The Saint");
+                slugcatSelectDisplayNames.Add("Slugpup", "The Slugpup");
+                slugcatSelectDisplayNames.Add("Inv", "Inv");
             }
 
             if (ModManager.Watcher)
             {
                 slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
                 slugcatSelectDescriptions.Add("Watcher", slugcatSelectDescriptions["Night"]);
-                slugcatSelectTrueNames.Add("Watcher", "The Watcher");
+                slugcatSelectDisplayNames.Add("Watcher", "The Watcher");
 
                 slugcatSelectMenuScenes.Remove("Night");
                 slugcatSelectDescriptions.Remove("Night");
-                slugcatSelectTrueNames.Remove("Night");
+                slugcatSelectDisplayNames.Remove("Night");
             }
         }
 

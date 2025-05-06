@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
+using MoreSlugcats;
 using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
@@ -32,6 +34,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
     public string? painCatName;
+    public string? painCatDescription;
     public int selectedSlugcatIndex = 0;
     public Page slugcatSelectPage;
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
@@ -189,8 +192,13 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             btn.OnClick += _ => SwitchSelectedSlugcat(allSlugcats[index]);
 
             MenuIllustration portrait = new(this, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
-            // portrait.sprite.SetElementByName(portrait.fileName);
             btn.subObjects.Add(portrait);
+
+            if (allSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            {
+                string randomDescriptionIndex = UnityEngine.Random.Range(-3, 1).ToString();
+                painCatDescription = Arena.slugcatSelectDescriptions["Inv" + (randomDescriptionIndex != "0" ? randomDescriptionIndex : new string([.. portrait.fileName.Where(char.IsDigit)]))];
+            }
 
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
@@ -200,7 +208,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         slugcatSelectPage.subObjects.Add(chooseYourSlugcatLabel);
 
-        slugcatNameLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectTrueNames[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 310f), default, true);
+        slugcatNameLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectDisplayNames[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 310f), default, true);
         slugcatSelectPage.subObjects.Add(slugcatNameLabel);
 
         slugcatDescriptionLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectDescriptions[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 210f), default, bigText: true);
@@ -271,8 +279,16 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
+
+        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+        {
+            slugcatDescriptionLabel.text = painCatDescription;
+            slugcatNameLabel.text = painCatName;
+            return;
+        }
+
         slugcatDescriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
-        slugcatNameLabel.text = Arena.slugcatSelectTrueNames[slugcat.value];
+        slugcatNameLabel.text = Arena.slugcatSelectDisplayNames[slugcat.value];
     }
 
     public override void Update()
