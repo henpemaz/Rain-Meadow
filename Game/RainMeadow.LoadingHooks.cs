@@ -1,5 +1,7 @@
 using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 namespace RainMeadow
@@ -113,6 +115,7 @@ namespace RainMeadow
 
 
                     // Remove gone players
+
                     for (int i = self.players.Count - 1; i >= 0; i--)
                     {
                         OnlinePlayer? onlineArenaSittingPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber);
@@ -121,14 +124,21 @@ namespace RainMeadow
                             if (OnlineManager.lobby.isOwner)
                             {
                                 // Find the index of the missing player's inLobbyId in arenaSittingOnlineOrder
-
-                                if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                // Safely check if the index 'i' is within the bounds of arena.arenaSittingOnlineOrder
+                                if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
                                 {
-                                    RainMeadow.Debug("Arena: Removing missing player from sitting");
-                                    arena.arenaSittingOnlineOrder.RemoveAt(i);
-                                    RainMeadow.Debug("Arena: Removed missing player from sitting");
+                                    // Now it's safe to access arena.arenaSittingOnlineOrder[i]
+                                    if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                    {
+                                        RainMeadow.Debug("Arena: Removing missing player from sitting");
+                                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        RainMeadow.Debug("Arena: Removed missing player from sitting");
+                                    }
                                 }
-
+                                else
+                                {
+                                    RainMeadow.Debug($"Warning: Index {i} is out of bounds for arena.arenaSittingOnlineOrder.");
+                                }
                             }
                             RainMeadow.Debug("Arena: Removing missing player from local sitting");
                             self.players.RemoveAt(i);
@@ -153,7 +163,12 @@ namespace RainMeadow
 
                                         if (OnlineManager.lobby.isOwner)
                                         {
-                                            arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                            if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
+                                            {
+                                                RainMeadow.Debug("Arena: Removing late player from sitting");
+                                                arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                                RainMeadow.Debug("Arena: Removed late player from sitting");
+                                            }
                                         }
                                         RainMeadow.Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
                                         self.players.RemoveAt(i); // Remove from the outer loop's current index

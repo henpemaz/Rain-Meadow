@@ -92,9 +92,9 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
-                playerNumberWithKills = arena.playerNumberWithKills;
-                playerNumberWithDeaths = arena.playerNumberWithDeaths;
-                playerNumberWithWins = arena.playerNumberWithWins;
+                playerNumberWithKills = new(arena.playerNumberWithKills);
+                playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
+                playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());

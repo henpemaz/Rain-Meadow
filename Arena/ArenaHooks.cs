@@ -428,6 +428,7 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner)
                 {
                     arena.clientWantsToLeaveGame = true;
+                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_RemovePlayerWhoQuit, OnlineManager.mePlayer);
                 }
             }
             orig(self, sender, message);
@@ -1568,6 +1569,11 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        if (!onlineP.isMe)
+                        {
+                            onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                        }
                         self.result[i].readyForNextRound = true;
 
                     }
@@ -1593,23 +1599,23 @@ namespace RainMeadow
 
                 if (self.countdownToNextRound == 0 && !self.nextLevelCall)
                 {
-                    foreach (var player in arena.arenaSittingOnlineOrder)
-                    {
-                        var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                        if (onlineP.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
-                        {
-                            ArenaRPCs.Arena_NextLevelCall();
-                        }
+                    ArenaRPCs.Arena_NextLevelCall();
+                    //foreach (var player in arena.arenaSittingOnlineOrder)
+                    //{
+                    //    var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                    //    if (onlineP.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
+                    //    {
+                    //        ArenaRPCs.Arena_NextLevelCall();
+                    //    }
+                    //    else
+                    //    {
+                    //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
+                    //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
 
-                        else
-                        {
-                            onlineP.InvokeRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
-                            onlineP.InvokeRPC(ArenaRPCs.Arena_NextLevelCall);
 
+                    //    }
 
-                        }
-
-                    }
+                    //}
 
                 }
 

@@ -5,6 +5,19 @@ namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+            }
+        }
+
         [RPCMethod]
         public static void Arena_AddPlayerWaiting(OnlinePlayer earlyQuitterOrLatecomer)
         {
@@ -189,8 +202,9 @@ namespace RainMeadow
 
         }
 
+
         [RPCMethod]
-        public static void Arena_ReadyForNextLevel(string userIsReady)
+        public static void Arena_ReadyForNextLevel()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -202,11 +216,10 @@ namespace RainMeadow
                 }
                 for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
                 {
-                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
-                    {
-                        game.arenaOverlay.result[i].readyForNextRound = true;
-                    }
+                    game.arenaOverlay.result[i].readyForNextRound = true;
                 }
+                game.arenaOverlay.nextLevelCall = true;
+
             }
 
         }

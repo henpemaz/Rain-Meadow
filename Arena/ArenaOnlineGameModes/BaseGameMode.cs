@@ -284,11 +284,14 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.isInGame = true; // used for readied players at the beginning
-                foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
+                if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                 {
-                    var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true); 
+                    foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
+                    {
+                        var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
 
+                    }
                 }
                 foreach (var arenaPlayer in self.arenaSitting.players)
                 {
@@ -299,9 +302,6 @@ namespace RainMeadow
                         arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
 
                     }
-                    arenaPlayer.score = arena.playerNumberWithKills[arenaPlayer.playerNumber];
-                    arenaPlayer.deaths = arena.playerNumberWithDeaths[arenaPlayer.playerNumber];
-                    arenaPlayer.wins = arena.playerNumberWithWins[arenaPlayer.playerNumber];
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
 
