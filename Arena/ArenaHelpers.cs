@@ -119,6 +119,7 @@ namespace RainMeadow
             arena.playersReadiedUp.list.Clear();
             arena.playerNumberWithDeaths.Clear();
             arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
             arena.playersLateWaitingInLobbyForNextRound.Clear();
 
 

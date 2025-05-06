@@ -428,7 +428,6 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner)
                 {
                     arena.clientWantsToLeaveGame = true;
-                    OnlineManager.lobby.owner.InvokeOnceRPC(ArenaRPCs.Arena_RemovePlayerWhoQuit, OnlineManager.mePlayer);
                 }
             }
             orig(self, sender, message);
@@ -1232,11 +1231,13 @@ namespace RainMeadow
                     // what host observed
                     arena.playerNumberWithKills[player.playerNumber] = player.score;
                     arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
+                    arena.playerNumberWithWins[player.playerNumber] = player.wins;
                 }
                 else
                 {
                     player.score = arena.playerNumberWithKills[player.playerNumber];
                     player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
+                    player.wins = arena.playerNumberWithWins[player.playerNumber];
                 }
 
                 self.portrait.RemoveSprites();
@@ -1637,7 +1638,8 @@ namespace RainMeadow
                 {
                     RainMeadow.Error("Arena: Abstract Creature count does not equal registered players in the online Sitting!");
 
-                    var extraPlayers = self.Players.Skip(OnlineManager.players.Count).ToList();
+                    var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
+
                     self.Players.RemoveAll(p => extraPlayers.Contains(p));
 
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))

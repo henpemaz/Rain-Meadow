@@ -5,20 +5,6 @@ namespace RainMeadow
 {
     public static class ArenaRPCs
     {
-
-        [RPCMethod]
-        public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
-                {
-                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
-                }
-
-            }
-        }
-
         [RPCMethod]
         public static void Arena_AddPlayerWaiting(OnlinePlayer earlyQuitterOrLatecomer)
         {
@@ -208,6 +194,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
+                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)
                 {

@@ -296,12 +296,15 @@ namespace RainMeadow
                     {
                         arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
                         arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
+                        arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
 
                     }
                     arenaPlayer.score = arena.playerNumberWithKills[arenaPlayer.playerNumber];
                     arenaPlayer.deaths = arena.playerNumberWithDeaths[arenaPlayer.playerNumber];
+                    arenaPlayer.wins = arena.playerNumberWithWins[arenaPlayer.playerNumber];
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
+
 
             }
             arena.hasPermissionToRejoin = false;

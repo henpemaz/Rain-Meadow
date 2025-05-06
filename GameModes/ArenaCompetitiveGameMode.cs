@@ -45,6 +45,7 @@ namespace RainMeadow
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
         public Dictionary<int ,int> playerNumberWithKills = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
 
 
         public int playerEnteredGame;

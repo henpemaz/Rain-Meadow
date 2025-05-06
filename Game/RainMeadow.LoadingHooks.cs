@@ -112,38 +112,74 @@ namespace RainMeadow
 
 
 
-
-
-                    // Add waiting players
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
-                        {
-                            if (!arena.arenaSittingOnlineOrder.Contains(player))
-                            {
-                                RainMeadow.Debug($"Arena: Adding pending player inLobbyId: {player}");
-                                arena.arenaSittingOnlineOrder.Add(player);
-                            }
-                        }
-
-                    }
                     // Remove gone players
-                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    for (int i = self.players.Count - 1; i >= 0; i--)
                     {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        if (onlineP == null)
+                        OnlinePlayer? onlineArenaSittingPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber);
+                        if (onlineArenaSittingPlayer == null)
                         {
                             if (OnlineManager.lobby.isOwner)
                             {
-                                arena.arenaSittingOnlineOrder.Remove(arena.arenaSittingOnlineOrder[i]);
+                                // Find the index of the missing player's inLobbyId in arenaSittingOnlineOrder
+
+                                if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                {
+                                    RainMeadow.Debug("Arena: Removing missing player from sitting");
+                                    arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                    RainMeadow.Debug("Arena: Removed missing player from sitting");
+                                }
+
                             }
+                            RainMeadow.Debug("Arena: Removing missing player from local sitting");
                             self.players.RemoveAt(i);
+                            RainMeadow.Debug("Arena: Removed missing player from local sitting");
+                        }
+                        else
+                        {
+                            if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                            {
+                                RainMeadow.Debug("Found a late client");
+
+                                // Iterate backwards to safely remove from self.players
+                                for (int p = arena.playersLateWaitingInLobbyForNextRound.Count - 1; p >= 0; p--)
+                                {
+                                    OnlinePlayer? lateClient = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[p]);
+                                    RainMeadow.Debug($"Original client: {onlineArenaSittingPlayer}");
+                                    RainMeadow.Debug($"Late client: {lateClient}");
+
+                                    if (lateClient != null && lateClient == onlineArenaSittingPlayer)
+                                    {
+                                        RainMeadow.Debug("Found a late client who matches a sitting player in-game");
+
+                                        if (OnlineManager.lobby.isOwner)
+                                        {
+                                            arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        }
+                                        RainMeadow.Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
+                                        self.players.RemoveAt(i); // Remove from the outer loop's current index
+                                    }
+                                }
+                            }
                         }
                     }
+
                     if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                     {
+                        // Add waiting players
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
+                            {
+                                if (!arena.arenaSittingOnlineOrder.Contains(player))
+                                {
+                                    RainMeadow.Debug($"Arena: Adding pending player inLobbyId: {player}");
+                                    arena.arenaSittingOnlineOrder.Add(player);
+                                }
+                            }
+                        }
                         for (int y = 0; y < arena.playersLateWaitingInLobbyForNextRound.Count; y++)
                         {
+
                             OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[y]);
                             if (onlineP == null)
                             {
@@ -158,6 +194,7 @@ namespace RainMeadow
                             };
                             self.players.Add(newArenaPlayer);
                         }
+
                     }
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
