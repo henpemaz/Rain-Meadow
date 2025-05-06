@@ -17,6 +17,9 @@
             this.floaty = swarmer.affectedByGravity < 1f;
         }
 
+        //neurons are half as important, simply because there are SO MANY of them in iterators
+        public override float SendFrequency(Player? player) => base.SendFrequency(player) * 0.5f;
+
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
