@@ -1550,13 +1550,16 @@ namespace RainMeadow
 
         public bool RegionGate_MeetRequirement_StorySync(orig_RegionGateBool orig, RegionGate self)
         {
-            var ret = orig(self);
             if (isStoryMode(out var storyGameMode))
             {
+                // NOTE: Sometimes, just sometimes, an echo may raise watcher to >= 1 ripple level
+                // before metting the third echo; thus soft locking the game, this is a prevention
+                // for said case, it does not happen often, but it does happen.
+                var ret = (self.room.game.Players[0].realizedCreature is Player player && player.maxRippleLevel >= 1f) || orig(self);
                 if (ret) StoryRPCs.RegionGateOrWarpMeetRequirement();
-                ret = storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
+                return storyGameMode.readyForTransition >= StoryGameMode.ReadyForTransition.MeetRequirement;
             }
-            return ret;
+            return orig(self);
         }
 
         private void GhostHunch_Update(On.GhostHunch.orig_Update orig, GhostHunch self, bool eu)
