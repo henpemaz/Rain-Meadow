@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.Utils;
 using System;
@@ -371,15 +371,17 @@ namespace RainMeadow
             if (self.room == null && (self.room = explosion?.room) == null)
                 return;
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner)
+            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
-                if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                if (!room.isOwner)
                 {
-                    room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
-                    return;
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                    OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
+                    if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                    {
+                        room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
+                        return;
+                    }
                 }
             }
 
@@ -394,15 +396,17 @@ namespace RainMeadow
                 return;
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner)
+            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
+                if (!room.isOwner)
                 {
-                    room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
-                    return;
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                    OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
+                    if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
+                    {
+                        room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
+                        return;
+                    }
                 }
             }
 

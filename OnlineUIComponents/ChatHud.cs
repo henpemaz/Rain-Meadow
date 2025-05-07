@@ -16,7 +16,7 @@ namespace RainMeadow
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
         public bool chatInputActive => chatInputOverlay is not null;
-        private bool showChatLog = false;
+        public bool showChatLog = false;
 
         public List<(string, string)> chatLog = new();
 
@@ -166,7 +166,10 @@ namespace RainMeadow
                 if (chatInputOverlay != null) ShutDownChatInput();
                 if (chatLogOverlay != null) ShutDownChatLog();
             }
-
+            else if (showChatLog && chatLogOverlay == null)
+            {
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+            }
             chatLogOverlay?.Update();
             chatInputOverlay?.Update();
         }
