@@ -69,7 +69,6 @@ namespace RainMeadow
 
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
-            On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
@@ -1538,104 +1537,25 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-
-
                 if (!OnlineManager.lobby.isOwner)
                 {
-                    // self.playersContinueButtons = null;
                     self.PlaySound(SoundID.UI_Multiplayer_Player_Result_Box_Player_Ready);
                     return;
-
-                    //for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-                    //{
-                    //    if (self.resultBoxes[i].playerNameLabel.text == OnlineManager.mePlayer.id.name)
-                    //    {
-                    //        self.result[i].readyForNextRound = true;
-                    //    }
-                    //}
-
-                    //foreach (var player in OnlineManager.players)
-                    //{
-
-                    //    if (!player.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(RPCs.Arena_ReadyForNextLevel, player.id.name)))
-                    //    {
-                    //        player.InvokeRPC(RPCs.Arena_ReadyForNextLevel, OnlineManager.mePlayer.id.name);
-                    //    }
-
-                    //}
-
                 }
                 else
                 {
                     for (int i = 0; i < self.result.Count; i++)
                     {
-                        //    OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        //    if (onlineP != null && !onlineP.isMe)
-                        //    {
-                        //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
-                        //    }
-
-                        // Safely check if the index 'i' is within the bounds of self.result
 
                         self.result[i].readyForNextRound = true;
                     }
-                    //}
-                    orig(self);
                 }
 
             }
-            else
-            {
-                orig(self);
-            }
+
+            orig(self);
         }
 
-        private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)
-        {
-
-            if (isArenaMode(out var arena))
-            {
-                if (self.resultBoxes[0].backgroundRect == null)
-                {
-                    return;
-                }
-
-                if (self.countdownToNextRound == 0 && !self.nextLevelCall)
-                {
-                    ArenaRPCs.Arena_NextLevelCall();
-                    //foreach (var player in arena.arenaSittingOnlineOrder)
-                    //{
-                    //    var onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                    //    if (onlineP.id == OnlineManager.lobby.owner.id && arena.playerLeftGame == arena.arenaSittingOnlineOrder.Count - 1)
-                    //    {
-                    //        ArenaRPCs.Arena_NextLevelCall();
-                    //    }
-                    //    else
-                    //    {
-                    //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersLeftt);
-                    //        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
-
-
-                    //    }
-
-                    //}
-
-                }
-
-                if (self.nextLevelCall)
-                {
-                    return;
-                }
-
-                orig(self);
-            }
-            else
-            {
-                orig(self);
-            }
-
-
-        }
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
@@ -1645,7 +1565,7 @@ namespace RainMeadow
             {
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
-                    RainMeadow.Error("Arena: Abstract Creature count does not equal registered players in the online Sitting!");
+                    RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
 
                     var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
 
@@ -1654,7 +1574,7 @@ namespace RainMeadow
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     {
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac) && ac.state.alive)
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))//&& ac.state.alive
                         {
                             self.Players.Add(ac);
                         }

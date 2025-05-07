@@ -139,13 +139,13 @@ namespace RainMeadow
                                 // Safely check if the index 'i' is within the bounds of arena.arenaSittingOnlineOrder
                                 if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
                                 {
-                                    // Now it's safe to access arena.arenaSittingOnlineOrder[i]
-                                    if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
-                                    {
+                                    //// Now it's safe to access arena.arenaSittingOnlineOrder[i]
+                                    //if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                    //{
                                         RainMeadow.Debug("Arena: Removing missing player from sitting");
                                         arena.arenaSittingOnlineOrder.RemoveAt(i);
                                         RainMeadow.Debug("Arena: Removed missing player from sitting");
-                                    }
+                                    //}
                                 }
                                 else
                                 {
@@ -188,11 +188,10 @@ namespace RainMeadow
                             }
                         }
                     }
+                    // Add waiting players
 
                     if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                     {
-                        // Add waiting players
-
                         foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
                         {
                             if (!arena.arenaSittingOnlineOrder.Contains(player))
