@@ -38,6 +38,7 @@ namespace RainMeadow
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
+        public List<string> slugcatSelectPainCatDescriptions;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -128,14 +129,30 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
-                slugcatSelectDescriptions.Add("Inv-3", ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY");
-                slugcatSelectDescriptions.Add("Inv-2", "...why are you here");
-                slugcatSelectDescriptions.Add("Inv-1", "...");
-                slugcatSelectDescriptions.Add("Inv01", ":)");
-                slugcatSelectDescriptions.Add("Inv11", "uwu");
-                slugcatSelectDescriptions.Add("Inv21", "hiiii!");
-                slugcatSelectDescriptions.Add("Inv31", "i'm ded");
-                slugcatSelectDescriptions.Add("Inv41", "<ask UO for a cool description>");
+
+                slugcatSelectPainCatDescriptions = [
+                    /* portrait 0 */ ":)",
+                    /* portrait 1 */ "uwu",
+                    /* portrait 2 */ "hiiii!",
+                    /* portrait 3 */ "i'm ded",
+                    /* portrait 4 */ "You have been through hell and back, but now, it's\ntime to atone for your sins in your past cycles.",
+                    "...",
+                    "...why are you here",
+                    ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "\"<USERNAME>, youre gonna get us both killed\"",
+                    "Seeking love will lead you down the beautiful path of heartbreaking wrecks.",
+                    "\"i gotta throw 2 spears to kill, its just dumb. at least they re added me to arena mode i guess...\"",
+                    "\"u dont need 2 be alone, bby.\"",
+                    "WHY DID IT HAVE TO BE A VARIABLE\nnum2 IS LITERALLY 0",
+                    "Thanks, Andrew.",
+                    "Don't Care\nNuh\nYuh",
+                    "Welcome to tower of gains: where you'll be doing heavy lifting for the\nduration of your stay. I hope you've brought hydration, <USERNAME>!",
+                    "egg",
+                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"inv? like invalidunits?\"",
+                    "$5 to unlock this description.",
+                ];
 
                 slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
                 slugcatSelectDisplayNames.Add("Artificer", "The Artificer");

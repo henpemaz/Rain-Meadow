@@ -23,14 +23,14 @@ namespace RainMeadow.UI.Components
         public float Alpha { get => alpha; set => alpha = value; }
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
-        public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
+        public ArenaPlayerBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default ? DefaultSize : size)
         {
             profileIdentifier = player;
             rainbowColor = new(0, 1, 0.5f);
             sprites = [new("pixel"), new("pixel"), new("Meadow_Menu_Ping")];
             for (int i = 0; i < sprites.Length; i++)
             {
-                sprites[i].anchorX = i < 2? 0 : 1;
+                sprites[i].anchorX = i < 2 ? 0 : 1;
                 sprites[i].anchorY = 0;
                 sprites[i].scaleY = i < 2 ? 2 : sprites[i].scaleY;
                 Container.AddChild(sprites[i]);
@@ -42,7 +42,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), OnlineManager.lobby.clientSettings[player].GetData<ArenaClientSettings>().playingAs, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             InitButtons(canKick);

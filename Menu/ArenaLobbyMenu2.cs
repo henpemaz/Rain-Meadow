@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text.RegularExpressions;
 using Menu;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
@@ -183,6 +183,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
 
+        MenuIllustration painCatPortrait = null;
+        EventfulSelectOneButton painCatButton = null;
         for (int i = 0; i < allSlugcats.Count; i++)
         {
             int index = i;
@@ -196,13 +198,35 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
             if (allSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
-                string randomDescriptionIndex = UnityEngine.Random.Range(-3, 1).ToString();
-                painCatDescription = Arena.slugcatSelectDescriptions["Inv" + (randomDescriptionIndex != "0" ? randomDescriptionIndex : new string([.. portrait.fileName.Where(char.IsDigit)]))];
+                painCatButton = btn;
+                painCatPortrait = portrait;
+                painCatDescription = Arena.slugcatSelectPainCatDescriptions
+                [
+                    UnityEngine.Random.Range(0, 3) == 1 ? // 33% chance for portrait specific description, 66% for general quotes
+                    int.Parse(Regex.Match(painCatPortrait.fileName, @"\d+").Value[0].ToString()) :
+                    UnityEngine.Random.Range(5, Arena.slugcatSelectPainCatDescriptions.Count)
+                ].Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
             }
 
             slugcatSelectPage.subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
+
+        SimplerButton randomizePainCat = new(this, slugcatSelectPage, $"Randomize {painCatName} select data", new Vector2(1056, 50), new Vector2(300, 30));
+        randomizePainCat.OnClick += _ =>
+        {
+            painCatPortrait.RemoveSprites();
+            slugcatSelectPage.RemoveSubObject(painCatPortrait);
+            slugcatSelectPage.SafeAddSubobjects(painCatPortrait = new(this, painCatButton, "", SlugcatColorableButton.GetFileForSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel, false), painCatButton.size / 2, true, true));
+            bool usePortraitDescription = UnityEngine.Random.Range(0, 3) == 1;
+            int portraitIndex = int.Parse(Regex.Match(painCatPortrait.fileName, @"\d+").Value[0].ToString());
+            int descriptionIndex = usePortraitDescription ? UnityEngine.Random.Range(5, Arena.slugcatSelectPainCatDescriptions.Count) : portraitIndex;
+            RainMeadow.Debug($"description index: {descriptionIndex}; portrait index: {portraitIndex}; random: {usePortraitDescription}; portrait name: {painCatPortrait.fileName}");
+
+            painCatDescription = Arena.slugcatSelectPainCatDescriptions[descriptionIndex].Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+            SwitchSelectedSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+        };
+        slugcatSelectPage.subObjects.Add(randomizePainCat);
 
         MenuLabel chooseYourSlugcatLabel = new(this, slugcatSelectPage, "Choose Your Slugcat", new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
@@ -279,6 +303,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
+
+        // CurrentColorIndex = (CurrentColorIndex + 1) % ArenaHelpers.allSlugcats.Count;
+        // slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, CurrentColorIndex, ArenaImage);
+        // PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        // RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");
+        OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs = slugcat;
+        playerDisplayer?.CallForRefresh();
+        // RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
 
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
