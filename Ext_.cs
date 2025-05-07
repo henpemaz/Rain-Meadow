@@ -20,6 +20,7 @@ namespace RainMeadow
         public class Ext_SlugcatStatsName
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
+            public static SlugcatStats.Name OnlineRandomSlugcat = new("MeadowRandom", true);
             //public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
         }
 
