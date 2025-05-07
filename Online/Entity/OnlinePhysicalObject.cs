@@ -268,9 +268,7 @@ namespace RainMeadow
                     RainMeadow.Debug($"topos Tile defined? {topos.TileDefined}");
                     RainMeadow.Debug($"topos Node defined? {topos.NodeDefined}");
 
-                    newRoom.absroom.AddEntity(apo);
-                    apo.MoveMovable(topos);
-
+                    apo.MoveOnly(topos);
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
                     {

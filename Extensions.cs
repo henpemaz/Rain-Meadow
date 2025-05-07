@@ -93,7 +93,6 @@ namespace RainMeadow
                 } 
             }
         }
-
         public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
             if (apo.CanMove(newCoord)) {
                 if (newCoord.CompareDisregardingTile(apo.pos)) return;
@@ -101,7 +100,15 @@ namespace RainMeadow
                 apo.timeSpentHere = 0;
                 if (newCoord.room != apo.pos.room)
                 {
-                    apo.ChangeRooms(newCoord);
+                    try {
+                        apo.ChangeRooms(newCoord);
+                    } catch (Exception except) {
+                        RainMeadow.Error(except);
+                        RainMeadow.Debug("Manually setting room");
+                        apo.world?.GetAbstractRoom(apo.pos)?.RemoveEntity(apo);
+                        apo.world?.GetAbstractRoom(newCoord)?.AddEntity(apo);
+                    }
+                    
                 }
 
                 if (!newCoord.TileDefined && apo.pos.room == newCoord.room)
