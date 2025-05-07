@@ -300,9 +300,14 @@ namespace RainMeadow
                     if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
                     {
                         arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
+                    }
+                    if (!arena.playerNumberWithDeaths.ContainsKey(arenaPlayer.playerNumber))
+                    {
                         arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
+                    }
+                    if (!arena.playerNumberWithWins.ContainsKey(arenaPlayer.playerNumber))
+                    {
                         arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
-
                     }
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();

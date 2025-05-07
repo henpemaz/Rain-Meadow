@@ -1226,20 +1226,20 @@ namespace RainMeadow
                     player.playerClass = OnlineManager.lobby.clientSettings[currentName].GetData<ArenaClientSettings>().playingAs; // update for rejoins
                 }
 
-                //if (OnlineManager.lobby.isOwner)
-                //{
+                if (OnlineManager.lobby.isOwner)
+                {
 
-                //    // what host observed
-                //    arena.playerNumberWithKills[player.playerNumber] = player.score;
-                //    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
-                //    arena.playerNumberWithWins[player.playerNumber] = player.wins;
-                //}
-                //else
-                //{
-                //    player.score = arena.playerNumberWithKills[player.playerNumber];
-                //    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
-                //    player.wins = arena.playerNumberWithWins[player.playerNumber];
-                //}
+                    // what host observed
+                    arena.playerNumberWithKills[player.playerNumber] = player.score;
+                    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
+                    arena.playerNumberWithWins[player.playerNumber] = player.wins;
+                }
+                else
+                {
+                    player.score = arena.playerNumberWithKills[player.playerNumber];
+                    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
+                    player.wins = arena.playerNumberWithWins[player.playerNumber];
+                }
 
                 self.portrait.RemoveSprites();
                 menu.pages[0].RemoveSubObject(self.portrait);
