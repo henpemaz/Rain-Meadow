@@ -47,6 +47,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
 
+        backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
         Competitive competitive = new();
@@ -323,6 +325,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public override void ShutDownProcess()
     {
         manager.rainWorld.progression.SaveProgression(true, true);
+        if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+            OnlineManager.LeaveLobby();
         base.ShutDownProcess();
     }
     public override void Update()
@@ -380,7 +384,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
         {
-            if (button is ArenaPlayerBox playerBox) 
+            if (button is ArenaPlayerBox playerBox)
                 playerBox.slugcatButton.LoadNewSlugcat(GetArenaClientSettings(playerBox.profileIdentifier)?.playingAs, false, false);
 
             if (button is ArenaPlayerSmallBox smallPlayerBox)
