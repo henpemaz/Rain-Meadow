@@ -50,12 +50,13 @@ namespace RainMeadow
     }
     public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name slugcat, Action<SlugcatStats.Name> onReceieveSlugcat, Vector2 size = default) : base(menu, owner, "", Vector2.zero, size == default? new(110, 30) : size)
+        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name? slugcat, Action<SlugcatStats.Name?>? onReceieveSlugcat, Vector2 size = default, Vector2 pos = default) : base(menu, owner, "", pos == default? Vector2.zero : pos, size == default? new(110, 30) : size)
         {
             slug = slugcat;
+           onRecieveSlugcat = onReceieveSlugcat;
             OnClick += (_) =>
             {
-                onReceieveSlugcat?.Invoke(slug);
+                onRecieveSlugcat?.Invoke(slug);
             };
         }
         public override void GrafUpdate(float timeStacker)
@@ -66,7 +67,8 @@ namespace RainMeadow
                 menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
             }
         }
-        public SlugcatStats.Name slug;
+        public Action<SlugcatStats.Name?>? onRecieveSlugcat;
+        public SlugcatStats.Name? slug;
     }
     public class StoryMenuSlugcatSelector : ButtonSelector
     {

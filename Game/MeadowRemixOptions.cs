@@ -28,6 +28,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> SlugpupHellBackground;
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
@@ -80,6 +81,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
@@ -257,9 +259,11 @@ public class RainMeadowOptions : OptionInterface
            };
             storyTab.AddItems(OnlineStorySettings);
 
+            OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
+            OpHoldButton arenaSpoilerButton;
+            OpCheckBox slugpupHellBackgroundCheckbox;
 
-
-            OnlineArenaSettings = new UIelement[17]
+            OnlineArenaSettings = new UIelement[21]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -293,9 +297,25 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-
-        };
+                arenaSpoilerLabel = new OpLabel(10f, 50, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
+                {
+                    color = new Color(0.85f, 0.35f, 0.4f)
+                },
+                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 15f), new Vector2(110, 30), "OKIE DOKIE")
+                {
+                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
+                },
+                slugpupHellBackgroundLabel = new OpLabel(10f, 50, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
+                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 25)),
+            };
+            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
+            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
+            arenaSpoilerButton.OnPressDone += btn =>
+            {
+                OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
+                for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
+            };
 
             OnlineLANSettings = new UIelement[7]
             {

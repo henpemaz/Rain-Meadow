@@ -11,6 +11,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using RainMeadow.UI;
+using MonoMod.RuntimeDetour;
 
 namespace RainMeadow
 {
@@ -37,6 +39,8 @@ namespace RainMeadow
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
+            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
+            new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
         }
         void IL_Menu_Update(ILContext il)
         {
@@ -61,7 +65,8 @@ namespace RainMeadow
             {
                 // possibly might wanna make a remix option for disabling text navigation in story menu and enabling menu navigation?
                 if (!ChatTextBox.blockInput || self.input.controllerType != Options.ControlSetup.Preset.KeyboardSinglePlayer) orig(self, direction);
-            } else
+            }
+            else
             {
                 orig(self, direction);
             }
@@ -74,7 +79,11 @@ namespace RainMeadow
                 buttonScroll.UpdateAlpha(buttonScroll.Alpha);
             }
         }
-        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self) 
+        bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
+        {
+            return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1); 
+        }
+        void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
             if (self is StoryOnlineMenu sOM)
             {
@@ -86,7 +95,7 @@ namespace RainMeadow
                     self.pages[0].subObjects.Add(self.colorInterface);
                     //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
                 }
-            }       
+            }
             orig(self);
         }
 
@@ -377,7 +386,7 @@ namespace RainMeadow
         {
             if (ID == Ext_ProcessID.LobbySelectMenu) self.currentMainLoop = new LobbySelectMenu(self);
             if (ID == Ext_ProcessID.LobbyCreateMenu) self.currentMainLoop = new LobbyCreateMenu(self);
-            if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaLobbyMenu(self);
+            if (ID == Ext_ProcessID.ArenaLobbyMenu) self.currentMainLoop = new ArenaLobbyMenu2(self);
             if (ID == Ext_ProcessID.MeadowMenu) self.currentMainLoop = new MeadowMenu(self);
             if (ID == Ext_ProcessID.StoryMenu) self.currentMainLoop = new StoryOnlineMenu(self);
             if (ID == Ext_ProcessID.MeadowCredits) self.currentMainLoop = new MeadowCredits(self);
@@ -387,7 +396,7 @@ namespace RainMeadow
                 try
                 {
                     var args = System.Environment.GetCommandLineArgs();
-                    
+
                     MatchmakingManager.JoinLobbyUsingCode(string.Join(" ", args));
                 }
                 catch (Exception ex)
@@ -419,7 +428,7 @@ namespace RainMeadow
                 if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
-                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager, 
+                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager,
                         () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }

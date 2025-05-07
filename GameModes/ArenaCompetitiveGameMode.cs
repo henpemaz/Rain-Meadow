@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Menu;
+using MoreSlugcats;
 using static RainMeadow.ArenaPrepTimer;
 
 namespace RainMeadow
@@ -35,7 +37,9 @@ namespace RainMeadow
         public string paincatName;
         public int lizardEvent;
 
-
+        public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
+        public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
+        public List<string> slugcatSelectPainCatDescriptions;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -89,6 +93,89 @@ namespace RainMeadow
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
             initiatedStartGameForClient = false;
+
+            slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
+            {
+                { "White", MenuScene.SceneID.Landscape_SU },
+                { "Yellow", MenuScene.SceneID.Yellow_Intro_B },
+                { "Red", MenuScene.SceneID.Landscape_LF },
+                { "Night", MenuScene.SceneID.Outro_2_Up_Swim },
+            };
+            slugcatSelectDescriptions = new Dictionary<string, string>()
+            {
+                { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
+                { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
+                { "Red", "You have no time to waste. Grab your spears and get to work." },
+                { "Night", "Observe all weakness - then strike while cloaked in shadows." },
+            };
+            slugcatSelectDisplayNames = new Dictionary<string, string>()
+            {
+                { "White", "The Survivor" },
+                { "Yellow", "The Monk" },
+                { "Red", "The Hunter" },
+                { "Night", "The Nightcat" },
+            };
+
+            if (ModManager.MSC)
+            {
+                slugcatSelectMenuScenes.Add("Gourmand", MoreSlugcatsEnums.MenuSceneID.Landscape_OE);
+                slugcatSelectMenuScenes.Add("Artificer", MoreSlugcatsEnums.MenuSceneID.Landscape_LC);
+                slugcatSelectMenuScenes.Add("Spear", MoreSlugcatsEnums.MenuSceneID.Landscape_DM);
+                slugcatSelectMenuScenes.Add("Rivulet", MoreSlugcatsEnums.MenuSceneID.Landscape_MS);
+                slugcatSelectMenuScenes.Add("Saint", MoreSlugcatsEnums.MenuSceneID.Landscape_CL);
+                slugcatSelectMenuScenes.Add("Slugpup", RainMeadow.rainMeadowOptions.SlugpupHellBackground.Value ? MoreSlugcatsEnums.MenuSceneID.Landscape_HR : MenuScene.SceneID.Intro_4_Walking);
+                slugcatSelectMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
+
+                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.\nCrush this one last quest.");
+                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.\nMaul and detonate your way to vengeance.");
+                slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
+                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
+                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
+                slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
+
+                slugcatSelectPainCatDescriptions = [
+                    /* portrait 0 */ ":)",
+                    /* portrait 1 */ "uwu",
+                    /* portrait 2 */ "hiiii!",
+                    /* portrait 3 */ "i'm ded",
+                    /* portrait 4 */ "You have been through hell and back, but now, it's\ntime to atone for your sins in your past cycles.",
+                    "...",
+                    "...why are you here",
+                    ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "\"<USERNAME>, youre gonna get us both killed\"",
+                    "Seeking love will lead you down the beautiful path of heartbreaking wrecks.",
+                    "\"i gotta throw 2 spears to kill, its just dumb. at least they re added me to arena mode i guess...\"",
+                    "\"u dont need 2 be alone, bby.\"",
+                    "WHY DID IT HAVE TO BE A VARIABLE\nnum2 IS LITERALLY 0",
+                    "Thanks, Andrew.",
+                    "Don't Care\nNuh\nYuh",
+                    "Welcome to tower of gains: where you'll be doing heavy lifting for the\nduration of your stay. I hope you've brought hydration, <USERNAME>!",
+                    "egg",
+                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"inv? like invalidunits?\"",
+                    "$5 to unlock this description.",
+                ];
+
+                slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
+                slugcatSelectDisplayNames.Add("Artificer", "The Artificer");
+                slugcatSelectDisplayNames.Add("Spear", "The Spearmaster");
+                slugcatSelectDisplayNames.Add("Rivulet", "The Rivulet");
+                slugcatSelectDisplayNames.Add("Saint", "The Saint");
+                slugcatSelectDisplayNames.Add("Slugpup", "The Slugpup");
+                slugcatSelectDisplayNames.Add("Inv", "Inv");
+            }
+
+            if (ModManager.Watcher)
+            {
+                slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
+                slugcatSelectDescriptions.Add("Watcher", slugcatSelectDescriptions["Night"]);
+                slugcatSelectDisplayNames.Add("Watcher", "The Watcher");
+
+                slugcatSelectMenuScenes.Remove("Night");
+                slugcatSelectDescriptions.Remove("Night");
+                slugcatSelectDisplayNames.Remove("Night");
+            }
         }
 
         public void ResetInvDetails()
