@@ -302,16 +302,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
+        if (!RainMeadow.isArenaMode(out _))
+        {
+            RainMeadow.Error("arena is null, slugcat wont be changed!");
+            return;
+        }
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
-
-        // CurrentColorIndex = (CurrentColorIndex + 1) % ArenaHelpers.allSlugcats.Count;
-        // slugcatButtons.meButton!.SetNewSlugcat(SlugcatFromIndex, CurrentColorIndex, ArenaImage);
-        // PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        // RainMeadow.Debug($"My ID: {OnlineManager.mePlayer.GetUniqueID()}");
-        OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs = slugcat;
-        playerDisplayer?.CallForRefresh();
-        // RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
-
+        Arena.arenaClientSettings.playingAs = slugcat;
+        RainMeadow.Debug($"My Slugcat: {Arena.arenaClientSettings.playingAs}, in lobby list of client settings: {GetArenaClientSettings(OnlineManager.mePlayer)?.playingAs.value}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
             slugcatDescriptionLabel.text = painCatDescription;
@@ -322,7 +320,11 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         slugcatDescriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
         slugcatNameLabel.text = Arena.slugcatSelectDisplayNames[slugcat.value];
     }
-
+    public override void ShutDownProcess()
+    {
+        manager.rainWorld.progression.SaveProgression(true, true);
+        base.ShutDownProcess();
+    }
     public override void Update()
     {
         if (currentPage == 1)
@@ -342,8 +344,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
         if (pagesMoving) UpdateMovingPage();
+        UpdateOnlineUI();
     }
-
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);
@@ -371,7 +373,21 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
         }
     }
+    public void UpdateOnlineUI() //for future online ui stuff
+    {
+        if (!RainMeadow.isArenaMode(out _)) return;
+        if (playerDisplayer == null) return;
 
+        foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
+        {
+            if (button is ArenaPlayerBox playerBox) 
+                playerBox.slugcatButton.LoadNewSlugcat(GetArenaClientSettings(playerBox.profileIdentifier)?.playingAs, false, false);
+
+            if (button is ArenaPlayerSmallBox smallPlayerBox)
+                smallPlayerBox.slugcatButton.slug = GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
+        }
+
+    }
     public void UpdateMovingPage()
     {
         pageMovementProgress += 0.35f;
@@ -391,7 +407,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             }
         }
     }
-
     public void BuildPlayerDisplay()
     {
         if (playerDisplayer != null) return;
@@ -400,7 +415,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         mainPage.subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
     }
-
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
         if (!RainMeadow.isArenaMode(out _)) return;
@@ -409,7 +423,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         BuildPlayerDisplay();
         playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
-
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
         if (isLargeDisplay)
@@ -441,7 +454,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
-
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (slugcat == null) return;
@@ -459,5 +471,14 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
         selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
+    }
+    public ArenaClientSettings? GetArenaClientSettings(OnlinePlayer player)
+    {
+        if (OnlineManager.lobby == null)
+        {
+            RainMeadow.Error("Lobby is null!");
+            return null;
+        }
+        return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
     }
 }
