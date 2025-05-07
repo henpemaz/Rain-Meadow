@@ -185,12 +185,6 @@ namespace RainMeadow
             }
         }
 
-        private static List<Action> defferedActions = new();
-
-        // Run in game deffered.
-        public static void RunIGDeffered(Action action) {
-            RainMeadow.defferedActions.Add(action);
-        }
 
 
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
@@ -205,18 +199,9 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby != null) {
-                RainMeadow.defferedActions.Clear();
-            }
 
             orig(self);
 
-            if (OnlineManager.lobby != null) {
-                foreach(Action action in RainMeadow.defferedActions) {
-                    action.Invoke();
-                }
-                RainMeadow.defferedActions.Clear();
-            }
             if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
             {
                 MeadowProgression.progressionData.currentCharacterProgress.timePlayed += 1000 / self.framesPerSecond;

@@ -282,7 +282,7 @@ namespace RainMeadow
                 AllMoving(false);
             }
 
-            
+            realcreature.RemoveFromShortcuts();
             realcreature.SpitOutOfShortCut(pos, roomSession.absroom.realizedRoom, spitOutAllSticks);
         }
 
