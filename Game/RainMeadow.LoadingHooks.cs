@@ -28,7 +28,7 @@ namespace RainMeadow
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
                 if (OnlineManager.lobby.isOwner)
-                {
+                {                    
                     for (int q = 0; q < arena.arenaSittingOnlineOrder.Count; q++)
                     {
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[q]);
