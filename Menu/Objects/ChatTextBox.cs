@@ -21,6 +21,7 @@ namespace RainMeadow
         public static bool blockInput = false;
         public static int textLimit = 75;
         public static int cursorPos = 0;
+        public static int selectionPos = -1;
         public static string lastSentMessage = "";
 
         public static event Action? OnShutDownRequest;
@@ -28,6 +29,7 @@ namespace RainMeadow
         {
             lastSentMessage = "";
             cursorPos = 0;
+            selectionPos = -1;
             this.menu = menu;
             gameObject ??= new GameObject();
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
@@ -66,11 +68,22 @@ namespace RainMeadow
             blockInput = false;
             if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
             {
-                if (cursorPos > 0)
+                if (cursorPos > 0 || selectionPos != -1)
                 {
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    lastSentMessage = msg.Remove(cursorPos - 1, 1);
-                    cursorPos--;
+                    // selection position is -1 when nothing is selected
+                    if (selectionPos != -1)
+                    {
+                        // deletes the selected text
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        DeleteSelection();
+                        if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
+                    }
+                    else
+                    {
+                        lastSentMessage = msg.Remove(cursorPos - 1, 1);
+                        cursorPos--;
+                    }
                 }
             }
             else if (input == '\n' || input == '\r')
@@ -96,7 +109,18 @@ namespace RainMeadow
             }
             else
             {
-                if (msg.Length < textLimit)
+                if(selectionPos != -1)
+                {
+                    // replaces the selected text with the emitted character
+                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
+                    DeleteSelection();
+                    cursorPos++;
+                    if(cursorPos == lastSentMessage.Length)
+                    {
+                        SetCursorSprite(false);
+                    }
+                }
+                else if (msg.Length < textLimit)
                 {
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
                     lastSentMessage = msg.Insert(cursorPos, input.ToString());
@@ -109,88 +133,174 @@ namespace RainMeadow
 
         public override void GrafUpdate(float timeStacker)
         {
-            var msg = ChatTextBox.lastSentMessage;
+            var msg = lastSentMessage;
             var len = msg.Length;
             if (len > 0)
             {
                 blockInput = false;
                 // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
-                if (Input.GetKey(KeyCode.Backspace) && cursorPos > 0)
+                if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
                 {
                     if ((Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) && backspaceHeld == 0)
                     {
-                        ChatTextBox.lastSentMessage = "";
-                        menuLabel.text = ChatTextBox.lastSentMessage;
+                        lastSentMessage = "";
+                        menuLabel.text = lastSentMessage;
                         cursorPos = 0;
+                        selectionPos = -1;
                     }
                     // activates on either the first frame the key is held, or every other frame after it's been held down for half a second
                     else if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))))
                     {
-                        if (cursorPos > 0)
+                        if (selectionPos != -1)
                         {
                             menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                            int pos = (cursorPos > 0) ? cursorPos - 1 : 0;
-                            int space = msg.Substring(0, pos).LastIndexOf(' ') + 1;
-                            ChatTextBox.lastSentMessage = msg.Remove(space, cursorPos - space);
-                            menuLabel.text = ChatTextBox.lastSentMessage;
-                            if (space > msg.Length) space = msg.Length;
+                            DeleteSelection();
+                            if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
+                        }
+                        else if (cursorPos > 0)
+                        {
+                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                            int space = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
+                            lastSentMessage = msg.Remove(space, cursorPos - space);
+                            menuLabel.text = lastSentMessage;
                             cursorPos = space;
                         }
                     }
                     backspaceHeld++;
                 }
+
+                else if (Input.GetKey(KeyCode.Delete))
+                {
+                    if (selectionPos != -1)
+                    {
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        DeleteSelection();
+                    }
+                    else if ((backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))) && cursorPos < msg.Length)
+                    {
+                        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                        {
+                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                            int space = msg.Substring(cursorPos, len - cursorPos).IndexOf(' ');
+                            lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = len - cursorPos) : space + 1);
+                            menuLabel.text = lastSentMessage;
+                            
+                        }
+                        else
+                        {
+                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                            lastSentMessage = msg.Remove(cursorPos, 1);
+                            menuLabel.text = lastSentMessage;
+                        }
+                    }
+                    if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
+                    backspaceHeld++;
+                }
+
                 else
                 {
                     backspaceHeld = 0;
-                    if (Input.GetKey(KeyCode.LeftArrow) && cursorPos > 0)
+                    if (Input.GetKeyDown(KeyCode.Home))
                     {
-                        if (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        bool changeSprite = cursorPos == len;
+                        cursorPos = 0;
+                        selectionPos = -1;
+                        if (changeSprite) SetCursorSprite(true);
+                    }
+
+                    else if (Input.GetKeyDown(KeyCode.End) && cursorPos < len)
+                    {
+                        cursorPos = len;
+                        selectionPos = -1;
+                        SetCursorSprite(false);
+                    }
+
+                    else if (Input.GetKeyDown(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+                    {
+                        if (cursorPos == len)
                         {
-                            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                            SetCursorSprite(true);
+                        }
+                        cursorPos = 0;
+                        selectionPos = msg.Length;
+                    }
+
+                    else if (Input.GetKey(KeyCode.LeftArrow))
+                    {
+                        // cursor position is used as the anchor for selection
+                        if ((cursorPos > 0 || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0))))
+                        {
+                            var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                            var selectionActive = selectionPos != -1;
+                            if (selectionActive && !shiftHeld)
                             {
-                                cursorPos = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
+                                var changeSprite = cursorPos == len;
+                                if (selectionPos < cursorPos) cursorPos = selectionPos;
+                                selectionPos = -1;
+                                if (changeSprite) SetCursorSprite(true);
                             }
-                            else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                            else
                             {
-                                cursorPos = 0;
-                            }
-                            else cursorPos--;
-                            if (cursorPos < len)
-                            {
-                                // sets cursor sprite to a one pixel wide vertical line to fit between characters
-                                _cursor.element = Futile.atlasManager.GetElementWithName("pixel");
-                                _cursor.height = 13f;
-                                float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, cursorPos), false);
-                                _cursorWidth = width;
-                                cursorWrap.sprite.x = width + 8f + pos.x;
+                                var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
+                                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                                {
+                                    newPos = msg.Substring(0, newPos - 1).LastIndexOf(' ') + 1;
+                                    if (newPos < 0 || newPos > len) newPos = 0;
+                                }
+                                else newPos--;
+                                if(shiftHeld)
+                                {
+                                    // stops the selection if it's on the same index as the anchor
+                                    selectionPos = (newPos == cursorPos) ? -1 : newPos;
+                                }
+                                else
+                                {
+                                    cursorPos = newPos;
+                                    if (cursorPos < len) SetCursorSprite(true);
+                                }
                             }
                         }
                         arrowHeld++;
                     }
-                    else if (Input.GetKey(KeyCode.RightArrow) && cursorPos < len)
-                    {
-                        if (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0)))
-                        {
-                            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                            {
-                                int space = msg.Substring(cursorPos, len - cursorPos - 1).IndexOf(' ');
-                                if (space < 0 || space >= len) cursorPos = len;
-                                else cursorPos = space + cursorPos + 1;
 
-                            }
-                            else if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+                    else if (Input.GetKey(KeyCode.RightArrow))
+                    {
+                        if ((cursorPos < len || selectionPos != -1) && (arrowHeld == 0 || arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        {
+                            var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                            var selectionActive = selectionPos != -1;
+                            if (selectionActive && !shiftHeld)
                             {
-                                cursorPos = len;
+                                if (selectionPos > cursorPos) cursorPos = selectionPos;
+                                selectionPos = -1;
+                                if (cursorPos == len)
+                                {
+                                    SetCursorSprite(false);
+                                }
                             }
-                            else cursorPos++;
-                            if (cursorPos == len)
+                            else
                             {
-                                // resets cursor sprite
-                                _cursor.element = Futile.atlasManager.GetElementWithName("modInputCursor");
-                                _cursor.height = 6f;
-                                float width = LabelTest.GetWidth(menuLabel.label.text, false);
-                                _cursorWidth = width;
-                                cursorWrap.sprite.x = width + 15f + pos.x;
+                                // starts from the end of the selection if a selection exists
+                                if (!selectionActive || selectionPos < msg.Length)
+                                {
+                                    var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
+                                    if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                                    {
+                                        int space = msg.Substring(newPos, len - newPos - 1).IndexOf(' ');
+                                        if (space < 0 || space >= len) newPos = len;
+                                        else newPos = space + newPos + 1;
+                                    }
+                                    else newPos++;
+                                    if (shiftHeld)
+                                    {
+                                        selectionPos = (newPos == cursorPos) ? -1 : newPos;
+                                    }
+                                    else
+                                    {
+                                        cursorPos = newPos;
+                                        if(newPos == len) SetCursorSprite(false);
+                                    }
+                                }
                             }
                         }
                         arrowHeld++;
@@ -200,6 +310,34 @@ namespace RainMeadow
                 blockInput = true;
             }
             base.GrafUpdate(timeStacker);
+        }
+
+        private void DeleteSelection()
+        {
+            lastSentMessage = lastSentMessage.Remove(Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos), Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos));
+            menuLabel.text = lastSentMessage;
+            if (selectionPos < cursorPos) cursorPos = selectionPos;
+            selectionPos = -1;
+        }
+
+        private void SetCursorSprite(bool inMiddle)
+        {
+            if (inMiddle)
+            {
+                _cursor.element = Futile.atlasManager.GetElementWithName("pixel");
+                _cursor.height = 13f;
+                float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, cursorPos), false);
+                _cursorWidth = width;
+                cursorWrap.sprite.x = width + 8f + pos.x;
+            }
+            else
+            {
+                _cursor.element = Futile.atlasManager.GetElementWithName("modInputCursor");
+                _cursor.height = 6f;
+                float width = LabelTest.GetWidth(menuLabel.label.text, false);
+                _cursorWidth = width;
+                cursorWrap.sprite.x = width + 15f + pos.x;
+            }
         }
 
         public static void InvokeShutDownChat() => OnShutDownRequest.Invoke();

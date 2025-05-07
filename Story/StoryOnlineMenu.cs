@@ -156,9 +156,17 @@ namespace RainMeadow
 
         public override void Update()
         {
-            var pause = RWInput.CheckPauseButton(0);
-            if (pause && !lastPauseButton) ToggleChat(false);
-            lastPauseButton = true;
+            if (ChatTextBox.blockInput)
+            {
+                ChatTextBox.blockInput = false;
+                if ((RWInput.CheckPauseButton(0) || Input.GetKeyDown(KeyCode.Escape)) && !lastPauseButton)
+                {
+                    PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    ToggleChat(false);
+                    lastPauseButton = true;
+                }
+                ChatTextBox.blockInput = true;
+            }
             base.Update();
 
             if (this.isChatToggled)
