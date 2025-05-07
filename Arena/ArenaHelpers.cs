@@ -84,6 +84,7 @@ namespace RainMeadow
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+
                 if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
                     profileColor = Random.Range(0, 4);
@@ -93,6 +94,7 @@ namespace RainMeadow
                 {
                     arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
+
             }
         }
 
@@ -111,10 +113,15 @@ namespace RainMeadow
         }
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
-            arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
             arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+
 
         }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
@@ -129,12 +136,10 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
-                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {
                 arena.playersReadiedUp.list.Clear();
-
                 arena.returnToLobby = false;
             }
 

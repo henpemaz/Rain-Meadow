@@ -1,4 +1,7 @@
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 namespace RainMeadow
@@ -23,6 +26,18 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+
+                if (OnlineManager.lobby.isOwner)
+                {                    
+                    for (int q = 0; q < arena.arenaSittingOnlineOrder.Count; q++)
+                    {
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[q]);
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
+                        {
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                        }
+                    }
+                }
 
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
@@ -108,6 +123,127 @@ namespace RainMeadow
                         }
 
                         return;
+                    }
+
+
+
+                    // Remove gone players
+
+                    for (int i = self.players.Count - 1; i >= 0; i--)
+                    {
+                        RainMeadow.Debug($"Arena: Local Sitting Data: {self.players[i].playerNumber}: {self.players[i].playerClass}");
+
+                        OnlinePlayer? onlineArenaSittingPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber);
+                        if (onlineArenaSittingPlayer == null)
+                        {
+                            if (OnlineManager.lobby.isOwner)
+                            {
+                                // Find the index of the missing player's inLobbyId in arenaSittingOnlineOrder
+                                // Safely check if the index 'i' is within the bounds of arena.arenaSittingOnlineOrder
+                                if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
+                                {
+                                    //// Now it's safe to access arena.arenaSittingOnlineOrder[i]
+                                    //if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                    //{
+                                        RainMeadow.Debug("Arena: Removing missing player from sitting");
+                                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        RainMeadow.Debug("Arena: Removed missing player from sitting");
+                                    //}
+                                }
+                                else
+                                {
+                                    RainMeadow.Debug($"Warning: Index {i} is out of bounds for arena.arenaSittingOnlineOrder.");
+                                }
+                            }
+                            RainMeadow.Debug("Arena: Removing missing player from local sitting");
+                            self.players.RemoveAt(i);
+                            RainMeadow.Debug("Arena: Removed missing player from local sitting");
+                        }
+                        else
+                        {
+                            if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                            {
+                                RainMeadow.Debug("Found a late client");
+
+                                // Iterate backwards to safely remove from self.players
+                                for (int p = arena.playersLateWaitingInLobbyForNextRound.Count - 1; p >= 0; p--)
+                                {
+                                    OnlinePlayer? lateClient = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[p]);
+                                    RainMeadow.Debug($"Late client: {lateClient}");
+
+                                    if (lateClient != null && lateClient == onlineArenaSittingPlayer)
+                                    {
+                                        RainMeadow.Debug("Found a late client who matches a sitting player in-game");
+
+                                        if (OnlineManager.lobby.isOwner)
+                                        {
+                                            if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
+                                            {
+                                                RainMeadow.Debug("Arena: Removing late player from sitting");
+                                                arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                                RainMeadow.Debug("Arena: Removed late player from sitting");
+                                            }
+                                        }
+                                        RainMeadow.Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
+                                        self.players.RemoveAt(i); // Remove from the outer loop's current index
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Add waiting players
+
+                    if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                    {
+                        foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
+                        {
+                            if (!arena.arenaSittingOnlineOrder.Contains(player))
+                            {
+                                RainMeadow.Debug($"Arena: Adding pending player inLobbyId: {player}");
+                                // normally this is host only but we need this to happen fast
+                                arena.arenaSittingOnlineOrder.Add(player);
+                            }
+                        }
+
+                        for (int y = 0; y < arena.playersLateWaitingInLobbyForNextRound.Count; y++)
+                        {
+                            RainMeadow.Debug($"Arena: Looking thourgh latercomers");
+                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[y]);
+                            if (onlineP == null)
+                            {
+                                continue;
+                            }
+                            RainMeadow.Debug($"Arena: Found a latecomer to add: {onlineP}");
+
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
+                            {
+                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                playerClass = ((OnlineManager.lobby.clientSettings[onlineP].GetData<ArenaClientSettings>()).playingAs),
+                                hasEnteredGameArea = true
+                            };
+                            RainMeadow.Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+
+                            self.players.Add(newArenaPlayer);
+                        }
+
+                    }
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        foreach (var arenaPlayer in self.players)
+                        {
+                            if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
+                            {
+                                arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
+                            }
+                            if (!arena.playerNumberWithDeaths.ContainsKey(arenaPlayer.playerNumber))
+                            {
+                                arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
+                            }
+                            if (!arena.playerNumberWithWins.ContainsKey(arenaPlayer.playerNumber))
+                            {
+                                arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
+                            }
+                        }
                     }
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
