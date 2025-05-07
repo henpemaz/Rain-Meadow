@@ -27,12 +27,15 @@ namespace RainMeadow
             {
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
-                for (int q = 0; q < arena.arenaSittingOnlineOrder.Count; q++)
+                if (OnlineManager.lobby.isOwner)
                 {
-                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[q]);
-                    if (onlinePlayer != null)
+                    for (int q = 0; q < arena.arenaSittingOnlineOrder.Count; q++)
                     {
-                        onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[q]);
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
+                        {
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_NextLevelCall);
+                        }
                     }
                 }
 

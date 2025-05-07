@@ -1235,9 +1235,21 @@ namespace RainMeadow
                 }
                 else
                 {
-                    player.score = arena.playerNumberWithKills[player.playerNumber];
-                    player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
-                    player.wins = arena.playerNumberWithWins[player.playerNumber];
+
+                    if (arena.playerNumberWithKills.ContainsKey(player.playerNumber))
+                    {
+                        player.score = arena.playerNumberWithKills[player.playerNumber];
+                        // You should also check if the key exists in the other dictionaries
+                        if (arena.playerNumberWithDeaths.ContainsKey(player.playerNumber))
+                        {
+                            player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
+                        }
+
+                        if (arena.playerNumberWithWins.ContainsKey(player.playerNumber))
+                        {
+                            player.wins = arena.playerNumberWithWins[player.playerNumber];
+                        }
+                    }
                 }
 
                 self.portrait.RemoveSprites();
