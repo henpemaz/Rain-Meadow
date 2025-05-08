@@ -524,12 +524,6 @@ public partial class RainMeadow
                 }
             }
         }
-        if (RainMeadow.isStoryMode(out var story2))
-        {
-            RainMeadow.Debug(story2.rippleLevel + "sync");
-            RainMeadow.Debug(self.room.world.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel);
-
-        }
 
     }
 
