@@ -10,8 +10,8 @@ public class SimplerMultipleChoiceArray : MultipleChoiceArray, MultipleChoiceArr
     private int selectedButtonIndex;
     public event Action<int>? OnClick;
 
-    public SimplerMultipleChoiceArray(Menu.Menu menu, MenuObject owner, Vector2 pos, string text, float textWidth, float width, int buttonsCount, bool textInBoxes = false, bool splitText = false)
-        : base(menu, owner, null, pos, text, null, textWidth, width, buttonsCount, textInBoxes, splitText)
+    public SimplerMultipleChoiceArray(Menu.Menu menu, MenuObject owner, Vector2 pos, string text, float textWidth, float width, int buttonsCount, bool textInBoxes = false, bool splitText = false, string? IDString = null)
+        : base(menu, owner, null, pos, text, IDString, textWidth, width, buttonsCount, textInBoxes, splitText)
     {
         reportTo = this;
     }

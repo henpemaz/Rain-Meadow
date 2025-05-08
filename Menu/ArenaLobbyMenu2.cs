@@ -81,26 +81,30 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         Vector2 matchSettingsOffset = new(120f, 205f);
         float settingsElementWidth = 300f;
 
-        spearsHitCheckbox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(0f, 220f), 95f, Translate("Friendly Fire:"));
+        spearsHitCheckbox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(0f, 220f), 95f, Translate("Friendly Fire:"), description: "Allow player spears to hit other players");
         spearsHitCheckbox.OnClick += c => RainMeadow.Debug($"friendly fire: {c}");
 
-        aggressiveAICheckBox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(settingsElementWidth - 24f, 220f), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 120f : 100f, Translate("Aggressive AI:"));
+        aggressiveAICheckBox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(settingsElementWidth - 24f, 220f), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 120f : 100f, Translate("Aggressive AI:"), description: "Creatures are vicious and aggressive");
         aggressiveAICheckBox.OnClick += c => RainMeadow.Debug($"aggressive ai: {c}");
 
-        roomRepeatChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 150f), Translate("Repeat Rooms:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 115f : 95f, settingsElementWidth, 5, textInBoxes: true);
+        roomRepeatChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 150f), Translate("Repeat Rooms:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 115f : 95f, settingsElementWidth, 5, textInBoxes: true, IDString: "room repeat");
         roomRepeatChoiceArray.OnClick += i => RainMeadow.Debug($"room repeat: pressed {i}");
         for (int i = 0; i < roomRepeatChoiceArray.buttons.Length; i++)
             roomRepeatChoiceArray.buttons[i].label.text = $"{i + 1}x";
 
-        rainTimerChoiceArray = new(this, tabContainer, matchSettingsOffset + new Vector2(0f, 100f), Translate("Rain Timer:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 100f : 95f, settingsElementWidth, 6, splitText: CurrLang == InGameTranslator.LanguageID.French || CurrLang == InGameTranslator.LanguageID.Spanish || CurrLang == InGameTranslator.LanguageID.Portuguese);
+        rainTimerChoiceArray = new(this, tabContainer, matchSettingsOffset + new Vector2(0f, 100f), Translate("Rain Timer:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 100f : 95f, settingsElementWidth, 6, splitText: CurrLang == InGameTranslator.LanguageID.French || CurrLang == InGameTranslator.LanguageID.Spanish || CurrLang == InGameTranslator.LanguageID.Portuguese, IDString: "rain timer");
         rainTimerChoiceArray.OnClick += i => RainMeadow.Debug($"rain timer: pressed {i}");
 
-        wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4);
+        wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4, IDString: "wildlife");
         wildlifeChoiceArray.OnClick += i => RainMeadow.Debug($"wildlife: pressed {i}");
 
         countdownTimerLabel = new RestorableMenuLabel(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 152f), new Vector2(105f, 20f), false);
 
-        countdownTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f) { alignment = FLabelAlignment.Center };
+        countdownTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f)
+        {
+            alignment = FLabelAlignment.Center,
+            description = "How long the grace timer at the beginning of rounds lasts for. Default 5s."
+        };
         countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
         countdownTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox);
 
@@ -145,27 +149,31 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             Vector2 abilitySettingsSpacing = new(0f, 50f);
             painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];
 
-            maulingCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset, 300f, Translate("Enable Mauling:"));
+            maulingCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset, 300f, Translate("Enable Mauling:"), description: $"Allow Artificer and {painCatName} to maul held creatures");
             maulingCheckBox.OnClick += i => RainMeadow.Debug($"mauling: {i}");
 
-            artificerStunCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, Translate("Artificer Stuns Players:"));
+            artificerStunCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, Translate("Artificer Stuns Players:"), description: "Allow Artificer to stun players");
             artificerStunCheckBox.OnClick += i => RainMeadow.Debug($"artificer stuns: {i}");
 
-            sainotCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, "Sain't:");
+            sainotCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, "Sain't:", description: "Disable Saint ascendance ability");
             sainotCheckBox.OnClick += i => RainMeadow.Debug($"sain't: {i}");
 
             saintAscendanceTimerLabel = new RestorableMenuLabel(this, tabContainer, "Saint Ascendance Duration:", (abilitySettingsOffset -= abilitySettingsSpacing) - new Vector2(300f, -2f), new Vector2(151f, 20f), false);
 
-            saintAscendDurationTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer, tabContainer.pos + abilitySettingsOffset - new Vector2(13f, 0f), 50f) { alignment = FLabelAlignment.Center };
+            saintAscendDurationTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer, tabContainer.pos + abilitySettingsOffset - new Vector2(13f, 0f), 50f)
+            {
+                alignment = FLabelAlignment.Center,
+                description = "How long Saint's ascendance ability lasts for. Default 120."
+            };
             saintAscendDurationTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
 
-            painCatEggCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} gets egg at 0 throw skill:");
+            painCatEggCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} gets egg at 0 throw skill:", description: $"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0");
             painCatEggCheckBox.OnClick += c => RainMeadow.Debug($"paincat egg: {c}");
 
-            painCatThrowsCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} can always throw spears:");
+            painCatThrowsCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} can always throw spears:", description: $"Always allow {painCatName} to throw spears, even if throw skill is 0");
             painCatThrowsCheckBox.OnClick += c => RainMeadow.Debug($"paincat spear: {c}");
 
-            painCatLizardCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} sometimes gets a friend:");
+            painCatLizardCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} sometimes gets a friend:", description: $"Allow {painCatName} to rarely spawn with a little friend");
             painCatLizardCheckBox.OnClick += c => RainMeadow.Debug($"paincat friend: {c}");
 
             tabContainer.AddTab(
@@ -183,7 +191,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             );
         }
 
-        slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f));
+        slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), description: "Go back to main lobby");
         slugcatSelectBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
         slugcatSelectPage.subObjects.Add(slugcatSelectBackButton);
 
@@ -387,8 +395,53 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         countdownTimerLabel.label.color = countdownTimerTextBox.colorEdge;
         arenaGameModeLabel.label.color = arenaGameModeComboBox.colorEdge;
-        if (saintAscendanceTimerLabel != null)
+        if (saintAscendanceTimerLabel != null && saintAscendDurationTimerTextBox != null)
             saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.colorEdge;
+    }
+    public override string UpdateInfoText()
+    {
+        if (selectedObject?.owner is SimplerMultipleChoiceArray multipleChoiceArray)
+        {
+            int multipleChoiceButtonIndex = ((MultipleChoiceArray.MultipleChoiceButton)selectedObject).index;
+
+            switch (multipleChoiceArray.IDString)
+            {
+                case "room repeat":
+                    switch (multipleChoiceButtonIndex)
+                    {
+                        case 0:
+                            return Translate("Play each level once");
+                        case 1:
+                            return Translate("Play each level twice");
+                        case 2:
+                            return Translate("Play each level three times");
+                        case 3:
+                            return Translate("Play each level four times");
+                        case 4:
+                            return Translate("Play each level five times");
+                    }
+                    break;
+                case "rain timer":
+                    if (multipleChoiceButtonIndex < 0 || multipleChoiceButtonIndex >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length)
+                        return Translate("No rain");
+                    return Translate($"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[multipleChoiceButtonIndex]} minute{(multipleChoiceButtonIndex == 1 ? "" : "s")} until rain");
+                case "wildlife":
+                    switch (multipleChoiceButtonIndex)
+                    {
+                        case 0:
+                            return Translate("No wildlife");
+                        case 1:
+                            return Translate("Low wildlife");
+                        case 2:
+                            return Translate("Medium wildlife");
+                        case 3:
+                            return Translate("High wildlife");
+                    }
+                    break;
+            }
+        }
+
+        return base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
