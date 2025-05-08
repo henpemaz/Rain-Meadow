@@ -299,6 +299,7 @@ namespace RainMeadow
                     else
                     {
                         storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
+                        storyGameMode.changedRegions = false;
                         readyForWarp = false;
                     }
                 }
@@ -370,6 +371,12 @@ namespace RainMeadow
                         if (self.CanRaiseRippleLevel() || self.vanillaToRippleEncounter)
                         {
                             self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(warpPoint.MyIdentifyingString());
+                        }
+                        if (self.vanillaToRippleEncounter)
+                        {
+                            (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.minimumRippleLevel = 1f;
+                            (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.maximumRippleLevel = 1f;
+                            (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.rippleLevel = 1f;
                         }
                         warpPoint.WarpPrecast(); // force cast NOW
                         if (OnlineManager.lobby.isOwner)

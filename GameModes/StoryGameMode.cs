@@ -113,7 +113,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
-            Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //does not need to be kept track of
+            Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //Causes issues, plus its per player thing
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
