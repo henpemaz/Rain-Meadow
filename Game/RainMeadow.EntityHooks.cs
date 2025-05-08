@@ -289,10 +289,7 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (storyGameMode.readyForTransition == StoryGameMode.ReadyForTransition.MeetRequirement)
-                        {
-                            storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
-                        }
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
                         readyForWarp = false;
                     }
                 }
