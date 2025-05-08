@@ -91,18 +91,19 @@ namespace RainMeadow
 
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
         {
-            orig(game, roomName, saveWorldStates);
+            
             if (RainMeadow.isStoryMode(out var story))
             {
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
                 }
-                else
-                {
-                    story.myLastDenPos = roomName;
-                }
+                
+                
+                
             }
+           orig(game, roomName, saveWorldState);
+
         }
 
         public void Watcher_Barnacle_LoseShell(ILContext il)
