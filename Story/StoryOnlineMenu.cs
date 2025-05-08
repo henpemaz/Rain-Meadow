@@ -22,7 +22,7 @@ namespace RainMeadow
         private StoryMenuSlugcatSelector? slugcatSelector;
         private SlugcatCustomization personaSettings;
         private SlugcatStats.Name[] selectableSlugcats;
-        private SlugcatStats.Name?[] playerSelectedSlugcats;
+        public SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
@@ -75,16 +75,7 @@ namespace RainMeadow
             ModifyExistingMenuItems();
 
             if (ModManager.JollyCoop) {
-                if (base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]))
-                {
-                    AddJollyButtons();
-                }
-                else if (colorChecked)
-                {
-                    AddColorButtons();
-                }
-                
-                
+                AddJollyButtons();
             }
 
 
