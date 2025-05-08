@@ -36,6 +36,7 @@ namespace RainMeadow
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
+        //public float rippleLevel;
 
         public List<AbstractCreature> pups;
         public void Sanitize()
@@ -62,6 +63,7 @@ namespace RainMeadow
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            //rippleLevel = 0.0f;
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
