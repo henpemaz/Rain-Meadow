@@ -97,7 +97,9 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner)
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
-                }
+                } else {
+            story.myLastDenPos = roomName;
+            }
                 
                 
                 
