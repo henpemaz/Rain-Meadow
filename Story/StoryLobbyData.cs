@@ -72,7 +72,7 @@ namespace RainMeadow
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
-                //rippleLevel = storyGameMode.rippleLevel;
+                rippleLevel = storyGameMode.rippleLevel;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
@@ -84,7 +84,6 @@ namespace RainMeadow
                     cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
-                    rippleLevel = storySession.saveState.deathPersistentSaveData.rippleLevel;
                     minimumRippleLevel = storySession.saveState.deathPersistentSaveData.minimumRippleLevel;
                     maximumRippleLevel = storySession.saveState.deathPersistentSaveData.maximumRippleLevel;
                     theGlow = storySession.saveState.theGlow;
