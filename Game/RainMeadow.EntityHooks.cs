@@ -438,16 +438,13 @@ namespace RainMeadow
                     room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel,
                     room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel
                 );
-                if (story.rippleLevel < vector.y)
+                if (OnlineManager.lobby.isOwner)
                 {
-                    if (!OnlineManager.lobby.isOwner) // host needs notification that we get new rippleLevel
-                    {
-                        OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
-                    }
-                    else
-                    {
-                        story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
-                    }
+                    story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
+                }
+                if (!OnlineManager.lobby.isOwner && story.rippleLevel < vector.y)
+                {
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
                     foreach (OnlinePlayer player in OnlineManager.players)
                     {
                         if (!player.isMe)
