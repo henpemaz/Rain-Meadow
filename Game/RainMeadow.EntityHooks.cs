@@ -43,19 +43,27 @@ namespace RainMeadow
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
 
-            On.HUD.FoodMeter.GameUpdate += (On.HUD.FoodMeter.orig_GameUpdate orig, HUD.FoodMeter self) => {
-                try {
+            On.HUD.FoodMeter.GameUpdate += (On.HUD.FoodMeter.orig_GameUpdate orig, HUD.FoodMeter self) =>
+            {
+                try
+                {
                     orig(self);
-                } catch (System.NullReferenceException e) {
+                }
+                catch (System.NullReferenceException e)
+                {
                     // TODO: this happens because watcher is evil
                     // and we are evil too
                     //RainMeadow.Debug($"bad thing with hud {e}");
                 }
             };
-            On.Watcher.CamoMeter.Update += (On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self) => {
-                try {
+            On.Watcher.CamoMeter.Update += (On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self) =>
+            {
+                try
+                {
                     orig(self);
-                } catch (System.NullReferenceException e) {
+                }
+                catch (System.NullReferenceException e)
+                {
                     // TODO: this happens because watcher is evil
                     // and we are evil too
                     //RainMeadow.Debug($"bad thing with hud {e}");
@@ -363,7 +371,14 @@ namespace RainMeadow
                             self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(warpPoint.MyIdentifyingString());
                         }
                         warpPoint.WarpPrecast(); // force cast NOW
-                        OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform rift for everyone, only IF its an echo
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString()); // maybe just call orig here instead
+                        }
+                        else
+                        {
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform rift for everyone, only IF its an echo
+                        }
                         if (!specialData.rippleWarp)
                         {
                             warpPoint.triggerTime = (int)(warpPoint.triggerActivationTime - 1f);
@@ -386,7 +401,8 @@ namespace RainMeadow
             }
         }
 
-        public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu) {
+        public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu)
+        {
             orig(self, eu);
             if (OnlineManager.lobby != null)
             {
@@ -416,27 +432,29 @@ namespace RainMeadow
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
             orig(room);
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
+            if (RainMeadow.isStoryMode(out var story))
             {
                 var vector = new UnityEngine.Vector2(
                     room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel,
                     room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel
                 );
-                if (OnlineManager.lobby.isOwner /*&& storyGameMode.rippleLevel < vector.y*/)
+                if (OnlineManager.lobby.isOwner)
                 {
-                    foreach (OnlinePlayer player in OnlineManager.players)
+                    story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
+                }
+                if (!OnlineManager.lobby.isOwner && story.rippleLevel < vector.y)
+                {
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
+                }
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe)
                     {
-                        if (!player.isMe)
-                        {
-                            player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
-                        }
+                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
                     }
                 }
-                else
-                {
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
-                }
             }
+
         }
 
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
@@ -513,7 +531,8 @@ namespace RainMeadow
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_2);
-                c.EmitDelegate((OverWorld self, Watcher.WarpPoint.WarpPointData warpData) => {
+                c.EmitDelegate((OverWorld self, Watcher.WarpPoint.WarpPointData warpData) =>
+                {
                     if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && storyGameMode.lastWarpIsEcho)
                     {
                         RainMeadow.Debug($"LAST WARP ECHO OK ACK");
