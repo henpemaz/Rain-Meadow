@@ -829,6 +829,13 @@ public partial class RainMeadow
                 slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
                 RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
+
+            // Allow glow for any non-watcher in watcher campaign
+            if (ModManager.Watcher && self.room.game.session is StoryGameSession storyGameSession && self.rippleLevel > 0f && self.room != null && self.AI == null)
+            {
+                storyGameSession.saveState.theGlow = true;
+                self.glowing = storyGameSession.saveState.theGlow || self.room.game.setupValues.playerGlowing;
+            }
         }
     }
 
