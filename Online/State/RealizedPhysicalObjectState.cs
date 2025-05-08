@@ -20,20 +20,26 @@ namespace RainMeadow
             // Sometimes, this isn't enough. 
 
             // Here ShouldSyncChunks being false indicates that the creature's chunk state would not be valid, even if it arrived on time
-            if (ShouldSyncChunks(onlineEntity.apo.realizedObject)) {
+            if (ShouldSyncChunks(onlineEntity.apo.realizedObject))
+            {
                 chunkStates = onlineEntity.apo.realizedObject.bodyChunks.Select(c => new ChunkState(c)).ToArray();
-            } else {
+            }
+            else
+            {
                 chunkStates = Array.Empty<ChunkState>();
             }
-            
+
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
-        virtual public bool ShouldSyncChunks(PhysicalObject po) {
+        virtual public bool ShouldSyncChunks(PhysicalObject po)
+        {
             return true;
         }
-        
-        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
-            if (po.grabbedBy.Any((x) => {
+
+        virtual public bool ShouldPosBeLenient(PhysicalObject po)
+        {
+            if (po.grabbedBy.Any((x) =>
+            {
                 if (x.grabber == null) return false;
                 var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
                 if (onlinegrabber == null) return false;
@@ -54,7 +60,14 @@ namespace RainMeadow
             {
                 for (int i = 0; i < chunkStates.Length; i++) //sync bodychunk positions
                 {
-                    chunkStates[i].ReadTo(po.bodyChunks[i]);
+                    // Out-of-bounds check for po.bodyChunks
+                    if (i < po.bodyChunks.Length)
+                    {
+
+                        chunkStates[i].ReadTo(po.bodyChunks[i]);
+
+                    }
+
                 }
             }
             if (po.collisionLayer != collisionLayer)
