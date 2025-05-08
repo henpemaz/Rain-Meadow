@@ -139,10 +139,14 @@ namespace RainMeadow
         [RPCMethod]
         public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
         {
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-            storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-            storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-            storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+            if (RainMeadow.isStoryMode(out var story))
+            {
+                if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
+                storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
+                storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
+                storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+                story.rippleLevel = storyGameSession.saveState.deathPersistentSaveData.rippleLevel;
+            }
         }
 
         [RPCMethod]
@@ -152,8 +156,8 @@ namespace RainMeadow
             storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
             storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
             storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
-			game.cameras[0].hud.karmaMeter.UpdateGraphic();
-			game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
+            game.cameras[0].hud.karmaMeter.UpdateGraphic();
+            game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
         }
 
         internal static Watcher.WarpPoint? PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader, bool hackFixRoom)
@@ -181,7 +185,9 @@ namespace RainMeadow
                         warpPoint.room = ac.Room.realizedRoom;
                     }
                 }
-            } else {
+            }
+            else
+            {
                 if (sourceRoomName is not null)
                 {
                     var abstractRoom2 = game.overWorld.activeWorld.GetAbstractRoom(sourceRoomName);
@@ -277,7 +283,7 @@ namespace RainMeadow
         public static void TriggerGhostHunch(string ghostID)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
-            
+
             ExtEnumBase.TryParse(typeof(GhostWorldPresence.GhostID), ghostID, false, out var rawEnumBase);
             if (rawEnumBase is not GhostWorldPresence.GhostID ghostNumber) return;
             var ghostsTalkedTo = game.GetStorySession.saveState.deathPersistentSaveData.ghostsTalkedTo;
