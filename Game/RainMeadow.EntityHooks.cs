@@ -445,15 +445,16 @@ namespace RainMeadow
                 if (!OnlineManager.lobby.isOwner && story.rippleLevel < vector.y)
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
-                    foreach (OnlinePlayer player in OnlineManager.players)
+                }
+                foreach (OnlinePlayer player in OnlineManager.players)
+                {
+                    if (!player.isMe)
                     {
-                        if (!player.isMe)
-                        {
-                            player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
-                        }
+                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
                     }
                 }
             }
+
         }
 
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
