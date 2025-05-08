@@ -444,6 +444,10 @@ namespace RainMeadow
                     {
                         OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
                     }
+                    else
+                    {
+                        story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
+                    }
                     foreach (OnlinePlayer player in OnlineManager.players)
                     {
                         if (!player.isMe)
