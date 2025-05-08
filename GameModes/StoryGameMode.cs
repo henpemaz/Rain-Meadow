@@ -33,7 +33,7 @@ namespace RainMeadow
         public Dictionary<string, int> storyIntRemixSettings;
 
         public SlugcatCustomization[] avatarSettings;
-        public int avatarCount { get; private set; } = 2;
+        public int avatarCount { get; set; } = 1;
 
         public StoryClientSettingsData storyClientData;
 

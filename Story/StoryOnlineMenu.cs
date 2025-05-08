@@ -22,7 +22,7 @@ namespace RainMeadow
         private StoryMenuSlugcatSelector? slugcatSelector;
         private SlugcatCustomization personaSettings;
         private SlugcatStats.Name[] selectableSlugcats;
-        private SlugcatStats.Name?[] playerSelectedSlugcats;
+        public SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
@@ -74,6 +74,12 @@ namespace RainMeadow
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
 
+            if (ModManager.JollyCoop) {
+                AddJollyButtons();
+            }
+
+
+            
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.requireCampaignSlugcat = false; // Default option is in remix menu.
@@ -113,6 +119,10 @@ namespace RainMeadow
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
+    
+            for (int i = 1; i < storyGameMode.avatarCount; i++)
+                this.manager.rainWorld.RequestPlayerSignIn(i, null);
+
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.currentCampaign = storyGameCharacter;
