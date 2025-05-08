@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -20,13 +21,16 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Vector2[] settingsDivSpritesPos, slugcatDescriptionGradientsPos, oldPagesPos = [];
     public Vector2 newPagePos = Vector2.zero;
     public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
-    public RestorableMenuLabel countdownTimerLabel;
+    public RestorableMenuLabel countdownTimerLabel, arenaGameModeLabel;
     public RestorableMenuLabel? saintAscendanceTimerLabel;
     public SimplerCheckbox spearsHitCheckbox, aggressiveAICheckBox;
     public SimplerCheckbox? maulingCheckBox, artificerStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
     public SimplerMultipleChoiceArray roomRepeatChoiceArray, rainTimerChoiceArray, wildlifeChoiceArray;
-    // public TextBox countdownTimerTextBox, saintAscendDurationTimerTextBox;
-    // public ComboBox arenaGameModeComboBox;
+    public OpTextBox countdownTimerTextBox;
+    public OpTextBox? saintAscendDurationTimerTextBox;
+    public OpComboBox2 arenaGameModeComboBox;
+    public RestorableUIelementWrapper countdownTimerTextBoxWrapper, arenaGameModeComboBoxWrapper;
+    public RestorableUIelementWrapper? saintAscendDurationTimerTextBoxWrapper;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
     public PlayerDisplayer? playerDisplayer;
@@ -94,16 +98,16 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4);
         wildlifeChoiceArray.OnClick += i => RainMeadow.Debug($"wildlife: pressed {i}");
 
-        countdownTimerLabel = new RestorableMenuLabel(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 160f), new Vector2(105f, 20f), false);
+        countdownTimerLabel = new RestorableMenuLabel(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 152f), new Vector2(105f, 20f), false);
 
-        // settingsMenuLabels = new MenuLabel[2];
-        // settingsMenuLabels[0] = new MenuLabel(this, mainPage, "Countdown Timer:", matchSettingsOffset + new Vector2(0f, -17f), new Vector2(0f, 30f), false);
-        // settingsMenuLabels[1] = new MenuLabel(this, mainPage, "Saint Ascend Time:", matchSettingsOffset + new Vector2(125f, -67f), new Vector2(0f, 30f), false);
-        // mainPage.subObjects.AddRange(settingsMenuLabels);
-        // countdownTimerTextBox = new OpTextBox(new Configurable<int>(5), matchSettingsOffset + new Vector2(215f, -20f), 95f);
-        // countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
-        // UIelementWrapper countdownTimerTextBoxWrapper = new(tabWrapper, countdownTimerTextBox);
-        // mainPage.subObjects.Add(countdownTimerTextBoxWrapper);
+        countdownTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f) { alignment = FLabelAlignment.Center };
+        countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
+        countdownTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox);
+
+        arenaGameModeLabel = new RestorableMenuLabel(this, tabContainer, "Arena Game Mode:", new Vector2(25f, 102f), new Vector2(105f, 20f), false);
+
+        arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(Arena.currentGameMode), tabContainer.pos + new Vector2(240f, 100), 175f, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaGameModeComboBoxWrapper = new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
         tabContainer.AddTab("Arena Playlist", []);
         tabContainer.AddTab(
@@ -115,8 +119,9 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 rainTimerChoiceArray,
                 wildlifeChoiceArray,
                 countdownTimerLabel,
-                // countdownTimerTextBox,
-                // arenaGameModeComboBox,
+                countdownTimerTextBoxWrapper,
+                arenaGameModeLabel,
+                arenaGameModeComboBoxWrapper,
             ]
         );
 
@@ -149,7 +154,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             sainotCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, "Sain't:");
             sainotCheckBox.OnClick += i => RainMeadow.Debug($"sain't: {i}");
 
-            saintAscendanceTimerLabel = new RestorableMenuLabel(this, tabContainer, "Saint Ascendance Duration:", (abilitySettingsOffset -= abilitySettingsSpacing) - new Vector2(300f, 0f), new Vector2(151f, 20f), false);
+            saintAscendanceTimerLabel = new RestorableMenuLabel(this, tabContainer, "Saint Ascendance Duration:", (abilitySettingsOffset -= abilitySettingsSpacing) - new Vector2(300f, -2f), new Vector2(151f, 20f), false);
+
+            saintAscendDurationTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer, tabContainer.pos + abilitySettingsOffset - new Vector2(13f, 0f), 50f) { alignment = FLabelAlignment.Center };
+            saintAscendDurationTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
 
             painCatEggCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} gets egg at 0 throw skill:");
             painCatEggCheckBox.OnClick += c => RainMeadow.Debug($"paincat egg: {c}");
@@ -167,7 +175,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                     artificerStunCheckBox,
                     sainotCheckBox,
                     saintAscendanceTimerLabel,
-                    // saintAscendDurationTimerTextBox,
+                    saintAscendDurationTimerTextBoxWrapper,
                     painCatLizardCheckBox,
                     painCatEggCheckBox,
                     painCatThrowsCheckBox,
@@ -376,6 +384,11 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             gradientSprite.x = slugcatSelectPage.DrawX(timeStacker) + gradientSpritePos.x;
             gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
         }
+
+        countdownTimerLabel.label.color = countdownTimerTextBox.colorEdge;
+        arenaGameModeLabel.label.color = arenaGameModeComboBox.colorEdge;
+        if (saintAscendanceTimerLabel != null)
+            saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.colorEdge;
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
