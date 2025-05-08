@@ -249,10 +249,6 @@ namespace RainMeadow
                 if (RainMeadow.isStoryMode(out var storyGameMode))
                 {
                     storyGameMode.myLastWarp = newWarpData;
-                    if (storyGameMode.rippleLevel < 1.0f)
-                    {
-                        storyGameMode.myLastDenPos = newWarpData.destRoom;
-                    }
                 }
                 game.Win(false, true);
             }

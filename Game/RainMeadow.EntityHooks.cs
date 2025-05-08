@@ -26,6 +26,7 @@ namespace RainMeadow
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
             On.Watcher.SpinningTop.Update += SpinningTop_Update;
+            On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += SpinningTop_VanillaRegionSpinningTopEncounter;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -426,6 +427,17 @@ namespace RainMeadow
                 }
                 self.vanillaEncounterNumber = num;
             }
+        }
+
+        public void SpinningTop_VanillaRegionSpinningTopEncounter(On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self)
+        {
+            orig(self);
+            // HACK: Yep, hydrophonics doesnt get updated? WELL FORCE IT TO UPDATE
+            // WE WILL GO TO HYDROPHONICS NO MATTER THE COST
+            self.hasRequestedShutDown = true;
+            self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
+            self.room.game.Win(false, false);
+            RainWorldGame.ForceSaveNewDenLocation(self.room.game, "HI_W05", true);
         }
 
         // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
