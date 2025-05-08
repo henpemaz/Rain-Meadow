@@ -1323,7 +1323,7 @@ namespace RainMeadow
 
                 RainMeadow.Debug($"FINAL DENPOS save:{currentSaveState.denPosition}");
                 RainMeadow.Debug($"FINAL WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
-                if (RainMeadow.isStoryMode(out var story))
+                if (RainMeadow.isStoryMode(out var story) && OnlineManager.lobby.isOwner)
                 {
                     story.rippleLevel = game.rainWorld.progression.currentSaveState.deathPersistentSaveData.rippleLevel;
                 }
