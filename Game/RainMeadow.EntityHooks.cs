@@ -25,7 +25,7 @@ namespace RainMeadow
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
-
+            On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
@@ -270,17 +270,27 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
-                if (!readyForWarp && OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
+                if (OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
                 {
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                    if (rooms.Distinct().Count() == 1)
+                    var wasOneWay = (self.overrideData != null) ? self.overrideData.wasOneWay : self.Data.wasOneWay;
+                    // Can't warp to warp points with null rooms (echo warps)
+                    // remember that echo warps are one way only, so we will NOT gate thru them
+                    // so please do not pretend it's a gate, and no requirements can be met, thanks :)
+                    // and ensure theyre in the same room as the warp point itself :)
+                    if (rooms.Distinct().Count() == 1 && !wasOneWay && self.room != null && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom)
                     { // make sure they're at the same room
                         RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
                         RainMeadow.Debug($"ready for warp {gateRoom}!");
                         storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
                         readyForWarp = true;
+                    }
+                    else
+                    {
+                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
+                        readyForWarp = false;
                     }
                 }
                 if (!OnlineManager.lobby.isOwner || !readyForWarp)
@@ -376,23 +386,55 @@ namespace RainMeadow
             }
         }
 
+        public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu) {
+            orig(self, eu);
+            if (OnlineManager.lobby != null)
+            {
+                var maximumRippleLevel = self.room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel;
+                int num = 3;
+                if (maximumRippleLevel != 0f)
+                {
+                    if (maximumRippleLevel != 0.25f)
+                    {
+                        if (maximumRippleLevel != 0.5f)
+                        { num = -1; }
+                        else
+                        { num = 3; }
+                    }
+                    else
+                    { num = 2; }
+                }
+                else
+                {
+                    num = 1;
+                }
+                self.vanillaEncounterNumber = num;
+            }
+        }
+
         // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
             orig(room);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
             {
-                var vector = new UnityEngine.Vector2(room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel, room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel);
-                if (!OnlineManager.lobby.isOwner /*&& storyGameMode.rippleLevel < vector.y*/)
+                var vector = new UnityEngine.Vector2(
+                    room.game.GetStorySession.saveState.deathPersistentSaveData.minimumRippleLevel,
+                    room.game.GetStorySession.saveState.deathPersistentSaveData.maximumRippleLevel
+                );
+                if (OnlineManager.lobby.isOwner /*&& storyGameMode.rippleLevel < vector.y*/)
+                {
+                    foreach (OnlinePlayer player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation, vector);
+                        }
+                    }
+                }
+                else
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector);
-                }
-                foreach (OnlinePlayer player in OnlineManager.players)
-                {
-                    if (!player.isMe)
-                    {
-                        player.InvokeOnceRPC(StoryRPCs.PlayRaiseRippleLevelAnimation);
-                    }
                 }
             }
         }
@@ -639,7 +681,7 @@ namespace RainMeadow
                 {
                     Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading");
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
-                    isFirstWarpWorld = (room == null); //do not update gate status afterwards :)
+                    isFirstWarpWorld = (room == null) || (warpPoint.overrideData != null ? warpPoint.overrideData.rippleWarp : warpPoint.Data.rippleWarp); //do not update gate status afterwards :)
                     if (isEchoWarp || isFirstWarpWorld)
                     { //echo activation is special edge case
                         if (room == null) RainMeadow.Error("warp point with a null room");

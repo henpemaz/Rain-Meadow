@@ -146,9 +146,12 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void PlayRaiseRippleLevelAnimation()
+        public static void PlayRaiseRippleLevelAnimation(UnityEngine.Vector2 vector)
         {
-            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
+            storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
+            storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
+            storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
 			game.cameras[0].hud.karmaMeter.UpdateGraphic();
 			game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
         }
