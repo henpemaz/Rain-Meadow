@@ -154,9 +154,7 @@ namespace RainMeadow
         {
             if (RainMeadow.isStoryMode(out var story))
             {
-
                 RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
-
                 if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
                 story.rippleLevel = vector.y;
                 storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;

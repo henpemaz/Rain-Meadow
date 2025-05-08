@@ -268,8 +268,6 @@ namespace RainMeadow
             }
         }
 
-        
-
         public void OverWorld_InitiateSpecialWarp_WarpPoint2(ILContext il)
         {
             try
