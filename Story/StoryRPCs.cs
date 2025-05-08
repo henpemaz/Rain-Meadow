@@ -8,6 +8,18 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void ForceSaveNewDenLocation(string shelter, bool saveWorldStates)
+        {
+            if (RainMeadow.isStoryMode(out var story))
+            {
+                if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+                RainWorldGame.ForceSaveNewDenLocation(game, shelter, saveWorldStates);
+                story.myLastDenPos = shelter;
+            }
+
+        }
+
+        [RPCMethod]
         public static void ChangeFood(short amt)
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.Players[0]?.state is PlayerState state)
