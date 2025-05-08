@@ -109,8 +109,10 @@ namespace RainMeadow
             public override void ReadTo(ResourceData data, OnlineResource resource)
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (resource as Lobby);
+                (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
 
@@ -130,6 +132,7 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.rippleLevel = rippleLevel;
+                    
                     storySession.saveState.deathPersistentSaveData.minimumRippleLevel = minimumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
