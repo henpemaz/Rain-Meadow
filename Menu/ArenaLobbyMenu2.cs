@@ -34,7 +34,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
     public PlayerDisplayer? playerDisplayer;
-    public ColorSlugcatDialog? colorSlugcatDialog;
+    public ColorMultipleSlugcatsDialog? colorSlugcatDialog;
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
     public string? painCatName;
@@ -526,10 +526,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
-        if (slugcat == null) return;
-
         PlaySound(SoundID.MENU_Checkbox_Check);
-        colorSlugcatDialog = new ColorSlugcatDialog(manager, slugcat, () => { });
+        colorSlugcatDialog = new(manager, () => { }, allSlugcats, slugcat);
         manager.ShowDialog(colorSlugcatDialog);
     }
 
