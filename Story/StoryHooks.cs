@@ -1731,9 +1731,16 @@ namespace RainMeadow
         // we should probably synch them -- but at the moment this helps avoid black screens of death
         private string HUD_KarmaMeter_RippleSymbolSprite(On.HUD.KarmaMeter.orig_RippleSymbolSprite orig, bool small, float rippleLevel)
         {
-            double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
-            num = Math.Max(num, 1.0);
-            return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
+            if (OnlineManager.lobby != null)
+            {
+                double num = Math.Round((double)(rippleLevel * 2f), MidpointRounding.AwayFromZero) / 2.0;
+                num = Math.Max(num, 1.0);
+                return (small ? "smallRipple" : "ripple") + num.ToString("#.0", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                return orig(small, rippleLevel);
+            }
         }
 
         private void KarmaLadderScreen_Update(On.Menu.KarmaLadderScreen.orig_Update orig, Menu.KarmaLadderScreen self)
@@ -1762,10 +1769,6 @@ namespace RainMeadow
 
         private void RegionGate_Update(ILContext il)
         {
-            // if (story.readyForTransition >= Opening)
-            //     open gate
-            // else
-            //     story.storyClientData.readyForTransition = true
             try
             {
                 var c = new ILCursor(il);
