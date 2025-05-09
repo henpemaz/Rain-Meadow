@@ -312,17 +312,6 @@ namespace RainMeadow
             }
         }
 
-        public void SpinningTop_VanillaRegionSpinningTopEncounter(On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self)
-        {
-            orig(self);
-            // HACK: Yep, hydrophonics doesnt get updated? WELL FORCE IT TO UPDATE
-            // WE WILL GO TO HYDROPHONICS NO MATTER THE COST
-            self.hasRequestedShutDown = true;
-            self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
-            self.room.game.Win(false, false);
-            RainWorldGame.ForceSaveNewDenLocation(self.room.game, "HI_W05", true);
-        }
-
         // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
