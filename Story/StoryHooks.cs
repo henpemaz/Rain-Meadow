@@ -136,7 +136,8 @@ namespace RainMeadow
                 if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
                 {
                     RainMeadow.Debug($"encounter of vanilla echo st. {self.vanillaToRippleEncounter}");
-                    if (!self.vanillaToRippleEncounter)
+                    // Only for echo 2!
+                    if (!self.vanillaToRippleEncounter && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.rippleLevel == 0.5f)
                     {
                         self.hasRequestedShutDown = true;
                         self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
