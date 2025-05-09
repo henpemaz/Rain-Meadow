@@ -55,6 +55,8 @@ namespace RainMeadow
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
             //watcher stuff
+            // TODO: Food for tought, what if we use a LUT and encode these in bytes? afterall
+            // we know they can only go from 1-10 (integer) and 0, 0.25 and 0.5
             [OnlineFieldHalf]
             public float rippleLevel;
             [OnlineFieldHalf]

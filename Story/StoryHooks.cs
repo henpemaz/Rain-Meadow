@@ -131,8 +131,31 @@ namespace RainMeadow
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
             On.Watcher.SpinningTop.Update += SpinningTop_Update;
-            On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += SpinningTop_VanillaRegionSpinningTopEncounter;
-            On.RainWorldGame.ForceSaveNewDenLocation += RainWorldGame_ForceSaveNewDenLocation; ;
+            On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) => {
+                orig(self);
+                if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+                {
+                    RainMeadow.Debug($"encounter of vanilla echo st. {self.vanillaToRippleEncounter}");
+                    if (!self.vanillaToRippleEncounter)
+                    {
+                        self.hasRequestedShutDown = true;
+                        self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
+                        self.room.game.Win(false, false);
+                        RainWorldGame.ForceSaveNewDenLocation(self.room.game, "HI_W05", true);
+                        self.DespawnEcho();
+                    }
+                }
+            };
+            On.RainWorldGame.ForceSaveNewDenLocation += RainWorldGame_ForceSaveNewDenLocation;
+            
+            On.Conversation.InitalizePrefixColor += (On.Conversation.orig_InitalizePrefixColor orig) => {
+                try {
+                    orig();
+                } catch(System.IndexOutOfRangeException e) {
+                    RainMeadow.Error($"conversation error (watcher echo likely) {e}");
+                    //throw; nonfatal
+                }
+            };
         }
 
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
@@ -338,7 +361,6 @@ namespace RainMeadow
                     }
                 }
             }
-
         }
 
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)

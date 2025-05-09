@@ -1,6 +1,7 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -9,6 +10,13 @@ namespace RainMeadow
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+            On.AbstractPhysicalObject.GetAllConnectedObjects += (On.AbstractPhysicalObject.orig_GetAllConnectedObjects orig, AbstractPhysicalObject self) => {
+                var result = orig(self);
+                var head = result.Where(e => e is not AbstractCreature).ToList();
+                var tail = result.Where(e => e is AbstractCreature).ToList();
+                head.AddRange(tail);
+                return head;
+            };
         }
 
         private void Room_Update(ILContext il)
