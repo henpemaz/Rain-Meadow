@@ -32,12 +32,12 @@ namespace RainMeadow
                 for (int i = 0; i < 2; i++)
                 {
                     c.GotoNext(MoveType.After,
-                        i => i.MatchLdarg(0),
-                        i => i.MatchCall<ScavengerGraphics.ScavengerHand>("get_scavenger"),
-                        i => i.MatchLdfld<UpdatableAndDeletable>("room"),
-                        i => i.MatchLdloc(out _),
+                        i => i.MatchCallvirt<Creature>("get_mainBodyChunk"),
+                        i => i.MatchLdflda<BodyChunk>("pos"),
+                        i => i.MatchLdfld<UnityEngine.Vector2>("y"),
+                        i => i.MatchNewobj<UnityEngine.Vector2>(),
                         i => i.MatchCallOrCallvirt<Room>("FloatWaterLevel")
-                        );
+                    );
                     c.Emit(OpCodes.Ldarg_0);
                     c.EmitDelegate((float val, ScavengerGraphics.ScavengerHand self) =>
                     {
