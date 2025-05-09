@@ -290,7 +290,16 @@ namespace RainMeadow
                 var shelterName = saveGameData[storyGameMode.currentCampaign]?.shelterName;
                 if (shelterName != null && shelterName.Length > 2)
                 {
-                    return Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    var s = Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    if (s == "Unknown Region")
+                    {
+                        // watcher regions
+                        if (shelterName.Length > 4)
+                        {
+                            return Region.GetRegionFullName(shelterName.Substring(0, 4), storyGameMode.currentCampaign);
+                        }
+                        return s;
+                    }
                 }
             }
             catch (Exception e)
