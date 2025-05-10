@@ -74,11 +74,11 @@ namespace RainMeadow.UI.Components
         {
             if (box.IDString == "SPEARSHIT")
             {
-                return GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
+                return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
             }
             if (box.IDString == "EVILAI")
             {
-                return GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
+                return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
             }
             return false;
         }
@@ -92,21 +92,21 @@ namespace RainMeadow.UI.Components
             {
                 GetGameTypeSetup.evilAI = c;
             }
-            SaveOptionToArena(box.IDString, c);
+            ArenaHelpers.SaveOptionToArena(box.IDString, c);
         }
         public int GetSelected(MultipleChoiceArray array)
         {
             if (array.IDString == "ROOMREPEAT")
             {
-                return GetOptionFromArena(array.IDString, GetGameTypeSetup.levelRepeats - 1);
+                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.levelRepeats - 1);
             }
             if (array.IDString == "SESSIONLENGTH")
             {
-                return GetOptionFromArena(array.IDString, GetGameTypeSetup.sessionTimeLengthIndex);
+                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.sessionTimeLengthIndex);
             }
             if (array.IDString == "WILDLIFE" && GetGameTypeSetup.wildLifeSetting.Index != -1)
             {
-                return GetOptionFromArena(array.IDString, GetGameTypeSetup.wildLifeSetting.Index);
+                return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.wildLifeSetting.Index);
             }
             return 0;
         }
@@ -124,7 +124,7 @@ namespace RainMeadow.UI.Components
             {
                 GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i), false);
             }
-            SaveOptionToArena(array.IDString, i);
+            ArenaHelpers.SaveOptionToArena(array.IDString, i);
         }
         public void RestoreSprites()
         {
@@ -147,50 +147,6 @@ namespace RainMeadow.UI.Components
                 {
                     array.CheckedButton = array.CheckedButton;
                 }
-            }
-        }
-        public T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
-        {
-            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
-            {
-                if (typeof(T) == typeof(bool) && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
-                {
-                    return (T)(object)arena.onlineArenaSettingsInterfaceeBool[ID]; 
-                }
-                if (typeof(T) == typeof(int) && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
-                {
-                    return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
-                }
-            }
-            return defaultIfNonExistant;
-        }
-        public void SaveOptionToArena(string ID, object obj)
-        {
-            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
-            {
-                RainMeadow.Debug("Not the arena mode, not saving!");
-                return;
-            }
-            if (!OnlineManager.lobby.isOwner)
-            {
-                RainMeadow.Debug("Not the owner, not saving!");
-                return;
-            }
-            if (obj is bool c)
-            {
-                RainMeadow.Debug("is bool!");
-                if (!arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
-                    arena.onlineArenaSettingsInterfaceeBool.Add(ID, c);
-                else 
-                    arena.onlineArenaSettingsInterfaceeBool[ID] = c;
-            }
-            if (obj is int i)
-            {
-                RainMeadow.Debug("is int!");
-                if (!arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
-                    arena.onlineArenaSettingsInterfaceMultiChoice.Add(ID, i);
-                else
-                    arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
             }
         }
         public Vector2[] divSpritePos;

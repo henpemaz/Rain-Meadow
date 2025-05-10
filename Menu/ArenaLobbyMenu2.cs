@@ -17,41 +17,45 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.AllSlugcats();
     public SimplerButton playButton, slugcatSelectBackButton;
-    public FSprite[] settingsDivSprites, slugcatDescriptionGradients;
-    public Vector2[] settingsDivSpritesPos, slugcatDescriptionGradientsPos, oldPagesPos = [];
+    public FSprite[] slugcatDescriptionGradients;
+    public Vector2[] slugcatDescriptionGradientsPos, oldPagesPos = [];
     public Vector2 newPagePos = Vector2.zero;
     public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
     public RestorableMenuLabel countdownTimerLabel, arenaGameModeLabel;
     public RestorableMenuLabel? saintAscendanceTimerLabel;
-    public SimplerCheckbox spearsHitCheckbox, aggressiveAICheckBox;
+    public OnlineArenaSettingsInferface arenaSettingsInterface;
     public SimplerCheckbox? maulingCheckBox, artificerStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
-    public SimplerMultipleChoiceArray roomRepeatChoiceArray, rainTimerChoiceArray, wildlifeChoiceArray;
     public OpTextBox countdownTimerTextBox;
     public OpTextBox? saintAscendDurationTimerTextBox;
     public OpComboBox2 arenaGameModeComboBox;
-    public RestorableUIelementWrapper countdownTimerTextBoxWrapper, arenaGameModeComboBoxWrapper;
-    public RestorableUIelementWrapper? saintAscendDurationTimerTextBoxWrapper;
+    //public RestorableUIelementWrapper countdownTimerTextBoxWrapper, arenaGameModeComboBoxWrapper; technically not neccessary to store them currently
+    //public RestorableUIelementWrapper? saintAscendDurationTimerTextBoxWrapper;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
     public PlayerDisplayer? playerDisplayer;
     public ColorMultipleSlugcatsDialog? colorSlugcatDialog;
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
-    public string? painCatName;
-    public string? painCatDescription;
-    public int selectedSlugcatIndex = 0;
     public Page slugcatSelectPage;
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
+    public string? painCatName;
+    public string? painCatDescription;
+    public int selectedSlugcatIndex = 0;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
-
+    public ArenaSetup GetArenaSetup => manager.arenaSetup;
+    public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType;  set => GetArenaSetup.currentGameType = value; }
+    public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
+
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
 
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+
+        manager.arenaSetup ??= new(manager);
 
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
@@ -78,70 +82,31 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer);
 
-        Vector2 matchSettingsOffset = new(120f, 205f);
-        float settingsElementWidth = 300f;
+        arenaSettingsInterface = new(this, tabContainer, new(120f, 205f));
+        arenaSettingsInterface.CallForSync();
 
-        spearsHitCheckbox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(0f, 220f), 95f, Translate("Friendly Fire:"), description: "Allow player spears to hit other players");
-        spearsHitCheckbox.OnClick += c => RainMeadow.Debug($"friendly fire: {c}");
-
-        aggressiveAICheckBox = new SimplerCheckbox(this, tabContainer, matchSettingsOffset + new Vector2(settingsElementWidth - 24f, 220f), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 120f : 100f, Translate("Aggressive AI:"), description: "Creatures are vicious and aggressive");
-        aggressiveAICheckBox.OnClick += c => RainMeadow.Debug($"aggressive ai: {c}");
-
-        roomRepeatChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 150f), Translate("Repeat Rooms:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 115f : 95f, settingsElementWidth, 5, textInBoxes: true, IDString: "room repeat");
-        roomRepeatChoiceArray.OnClick += i => RainMeadow.Debug($"room repeat: pressed {i}");
-        for (int i = 0; i < roomRepeatChoiceArray.buttons.Length; i++)
-            roomRepeatChoiceArray.buttons[i].label.text = $"{i + 1}x";
-
-        rainTimerChoiceArray = new(this, tabContainer, matchSettingsOffset + new Vector2(0f, 100f), Translate("Rain Timer:"), InGameTranslator.LanguageID.UsesLargeFont(CurrLang) ? 100f : 95f, settingsElementWidth, 6, splitText: CurrLang == InGameTranslator.LanguageID.French || CurrLang == InGameTranslator.LanguageID.Spanish || CurrLang == InGameTranslator.LanguageID.Portuguese, IDString: "rain timer");
-        rainTimerChoiceArray.OnClick += i => RainMeadow.Debug($"rain timer: pressed {i}");
-
-        wildlifeChoiceArray = new SimplerMultipleChoiceArray(this, tabContainer, matchSettingsOffset + new Vector2(0f, 50f), Translate("Wildlife:"), 95f, settingsElementWidth, 4, IDString: "wildlife");
-        wildlifeChoiceArray.OnClick += i => RainMeadow.Debug($"wildlife: pressed {i}");
-
-        countdownTimerLabel = new RestorableMenuLabel(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 152f), new Vector2(105f, 20f), false);
-
-        countdownTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f)
+        countdownTimerLabel = new(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 152f), new Vector2(105f, 20f), false);
+        countdownTimerTextBox = new(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f)
         {
             alignment = FLabelAlignment.Center,
             description = "How long the grace timer at the beginning of rounds lasts for. Default 5s."
         };
         countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
-        countdownTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox);
 
-        arenaGameModeLabel = new RestorableMenuLabel(this, tabContainer, "Arena Game Mode:", new Vector2(25f, 102f), new Vector2(105f, 20f), false);
-
+        arenaGameModeLabel = new(this, tabContainer, "Arena Game Mode:", new Vector2(25f, 102f), new Vector2(105f, 20f), false);
         arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(Arena.currentGameMode), tabContainer.pos + new Vector2(240f, 100), 175f, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
-        arenaGameModeComboBoxWrapper = new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
         tabContainer.AddTab("Arena Playlist", []);
         tabContainer.AddTab(
             "Match Settings",
             [
-                spearsHitCheckbox,
-                aggressiveAICheckBox,
-                roomRepeatChoiceArray,
-                rainTimerChoiceArray,
-                wildlifeChoiceArray,
+                arenaSettingsInterface,
                 countdownTimerLabel,
-                countdownTimerTextBoxWrapper,
+                new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox),
                 arenaGameModeLabel,
-                arenaGameModeComboBoxWrapper,
+                new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox),
             ]
         );
-
-        settingsDivSprites = new FSprite[2];
-        settingsDivSpritesPos = new Vector2[2];
-        for (int i = 0; i < settingsDivSprites.Length; i++)
-        {
-            settingsDivSprites[i] = new FSprite("pixel")
-            {
-                anchorX = 0f,
-                scaleX = settingsElementWidth + 95f,
-                scaleY = 2f,
-                color = MenuRGB(MenuColors.VeryDarkGrey),
-            };
-            settingsDivSpritesPos[i] = tabContainer.pos + matchSettingsOffset + new Vector2(-95f, 197f - (171 * i));
-        }
 
         if (ModManager.MSC)
         {
@@ -165,7 +130,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 alignment = FLabelAlignment.Center,
                 description = "How long Saint's ascendance ability lasts for. Default 120."
             };
-            saintAscendDurationTimerTextBoxWrapper = new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
 
             painCatEggCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} gets egg at 0 throw skill:", description: $"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0");
             painCatEggCheckBox.OnClick += c => RainMeadow.Debug($"paincat egg: {c}");
@@ -183,7 +147,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                     artificerStunCheckBox,
                     sainotCheckBox,
                     saintAscendanceTimerLabel,
-                    saintAscendDurationTimerTextBoxWrapper,
+                    new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox),
                     painCatLizardCheckBox,
                     painCatEggCheckBox,
                     painCatThrowsCheckBox,
@@ -341,8 +305,15 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public override void ShutDownProcess()
     {
         manager.rainWorld.progression.SaveProgression(true, true);
+        if (OnlineManager.lobby?.isOwner == true)
+        {
+            GetArenaSetup.SaveToFile();
+            RainMeadow.rainMeadowOptions._SaveConfigFile();
+        }
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
+        {
             OnlineManager.LeaveLobby();
+        }
         base.ShutDownProcess();
     }
     public override void Update()
@@ -370,20 +341,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     {
         base.GrafUpdate(timeStacker);
         menuDarkSprite.darkSprite.alpha = Mathf.Clamp(Mathf.Lerp(lastDesiredBgCoverAlpha, desiredBgCoverAlpha, timeStacker), 0.8f, 1.1f);
-        if (tabContainer.activeIndex == 1)
-            for (int i = 0; i < settingsDivSprites.Length; i++)
-            {
-                container.AddChild(settingsDivSprites[i]);
-                var divSprite = settingsDivSprites[i];
-                var divSpritePos = settingsDivSpritesPos[i];
-
-                divSprite.x = mainPage.DrawX(timeStacker) + divSpritePos.x;
-                divSprite.y = mainPage.DrawY(timeStacker) + divSpritePos.y;
-            }
-        else
-            for (int i = 0; i < settingsDivSprites.Length; i++)
-                container.RemoveChild(settingsDivSprites[i]);
-
         for (int i = 0; i < slugcatDescriptionGradients.Length; i++)
         {
             FSprite gradientSprite = slugcatDescriptionGradients[i];
@@ -392,7 +349,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             gradientSprite.x = slugcatSelectPage.DrawX(timeStacker) + gradientSpritePos.x;
             gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
         }
-
         countdownTimerLabel.label.color = countdownTimerTextBox.colorEdge;
         arenaGameModeLabel.label.color = arenaGameModeComboBox.colorEdge;
         if (saintAscendanceTimerLabel != null && saintAscendDurationTimerTextBox != null)
@@ -400,63 +356,50 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
     public override string UpdateInfoText()
     {
-        if (selectedObject?.owner is SimplerMultipleChoiceArray multipleChoiceArray)
+        if (selectedObject is CheckBox checkBox)
         {
-            int multipleChoiceButtonIndex = ((MultipleChoiceArray.MultipleChoiceButton)selectedObject).index;
-
-            switch (multipleChoiceArray.IDString)
+            string idString = checkBox.IDString;
+            if (idString == "SPEARSHIT")
+                return arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
+            if (idString == "EVILAI")
+                return arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
+        }
+        if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
+        {
+            string idString = arrayBtn.multipleChoiceArray.IDString;
+            int index = arrayBtn.index;
+            if (idString == "ROOMREPEAT")
             {
-                case "room repeat":
-                    switch (multipleChoiceButtonIndex)
-                    {
-                        case 0:
-                            return Translate("Play each level once");
-                        case 1:
-                            return Translate("Play each level twice");
-                        case 2:
-                            return Translate("Play each level three times");
-                        case 3:
-                            return Translate("Play each level four times");
-                        case 4:
-                            return Translate("Play each level five times");
-                    }
-                    break;
-                case "rain timer":
-                    if (multipleChoiceButtonIndex < 0 || multipleChoiceButtonIndex >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length)
-                        return Translate("No rain");
-                    return Translate($"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[multipleChoiceButtonIndex]} minute{(multipleChoiceButtonIndex == 1 ? "" : "s")} until rain");
-                case "wildlife":
-                    switch (multipleChoiceButtonIndex)
-                    {
-                        case 0:
-                            return Translate("No wildlife");
-                        case 1:
-                            return Translate("Low wildlife");
-                        case 2:
-                            return Translate("Medium wildlife");
-                        case 3:
-                            return Translate("High wildlife");
-                    }
-                    break;
+                string numberText = index == 0 ? "once" : index == 1 ? "twice" : index == 2 ? "three times" : index == 3 ? "four times" : "five times";
+                return Translate($"Play each level {numberText}");
+            }
+            if (idString == "SESSIONLENGTH")
+            {
+                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+            }
+            if (idString == "WILDLIFE")
+            {
+                ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);
+                string value = settingFromBtn == ArenaSetup.GameTypeSetup.WildLifeSetting.Off ? "No" : settingFromBtn.value;
+                return Translate($"{value} wildlife");
             }
         }
-
         return base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
         if (!RainMeadow.isArenaMode(out _)) return;
-        if (playerDisplayer == null) return;
-
-        foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
+        if (playerDisplayer != null)
         {
-            if (button is ArenaPlayerBox playerBox)
-                playerBox.slugcatButton.LoadNewSlugcat(GetArenaClientSettings(playerBox.profileIdentifier)?.playingAs, false, false);
+            foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
+            {
+                if (button is ArenaPlayerBox playerBox)
+                    playerBox.slugcatButton.LoadNewSlugcat(GetArenaClientSettings(playerBox.profileIdentifier)?.playingAs, false, false);
 
-            if (button is ArenaPlayerSmallBox smallPlayerBox)
-                smallPlayerBox.slugcatButton.slug = GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
+                if (button is ArenaPlayerSmallBox smallPlayerBox)
+                    smallPlayerBox.slugcatButton.slug = GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
+            }
         }
-
     }
     public void UpdateMovingPage()
     {
