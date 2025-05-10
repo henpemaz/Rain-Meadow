@@ -522,7 +522,21 @@ namespace RainMeadow
         {
             if (message == "EXIT" && isArenaMode(out var arena))
             {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    {
+                        var onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        if (!onlinePlayer.isMe)
+                        {
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
+                        }
+                    }
+                    self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
+                }
                 arena.returnToLobby = true;
+
             }
             orig(self, sender, message);
         }
