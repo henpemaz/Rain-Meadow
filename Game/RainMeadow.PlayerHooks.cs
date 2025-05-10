@@ -64,10 +64,82 @@ public partial class RainMeadow
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
+
+        new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.Player_SetRippleLevel);
+        new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.Player_SetLevitate);
+        new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.Player_SetCamoDuration);
+        new Hook(typeof(Player).GetProperty("maxRippleLevel").GetGetMethod(), this.Player_SetRippleLevel);
+        new Hook(typeof(Watcher.CamoMeter).GetProperty("Unlocked").GetGetMethod(), this.CamoMeter_SetCamoMeter);
+        new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.CamoMeter_SetCamoMeter);
+        new Hook(typeof(Player).GetProperty("CanSpawnDynamicWarpPoints").GetGetMethod(), this.Player_CanSpawnDynamicWarpPoints);
         
+        On.Player.TickLevitation += (On.Player.orig_TickLevitation orig, Player self, bool levitateUp) => {
+            WatcherOverrideForLevitation = true;
+            orig(self, levitateUp);
+            WatcherOverrideForLevitation = false;
+        };
+        On.Player.MovementUpdate += (On.Player.orig_MovementUpdate orig, Player self, bool eu) => {
+            WatcherOverrideRippleLevel = true;
+            orig(self, eu);
+            WatcherOverrideRippleLevel = false;
+        };
+        On.Player.WatcherUpdate += (On.Player.orig_WatcherUpdate orig, Player self) => {
+            WatcherOverrideRippleLevel = true;
+            orig(self);
+            WatcherOverrideRippleLevel = false;
+        };
+
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    // Used to override normal ripple level
+    public static bool WatcherOverrideRippleLevel = false;
+    // And for the "levitation calculation" ticks so we levitate like we had ripple lvl. 10
+    public static bool WatcherOverrideForLevitation = false;
+    
+    private float Player_SetRippleLevel(Func<Player, float> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            if (WatcherOverrideForLevitation) return 10f;
+            if (WatcherOverrideRippleLevel) return 4f;
+        }
+        return orig(self);
+    }
+    private bool CamoMeter_SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return true;
+        }
+        return orig(self);
+    }
+    // This is funky. Can't seem to ever get it to only be true when airborne
+    private bool Player_SetLevitate(Func<Player, bool> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return true;
+        }
+        return orig(self);
+    }
+    private float Player_SetCamoDuration(Func<Player, float> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return 1500f;
+        }
+        return orig(self);
+    }
+    private bool Player_CanSpawnDynamicWarpPoints(Func<Player, bool> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return false;
+        }
+        return orig(self);
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
