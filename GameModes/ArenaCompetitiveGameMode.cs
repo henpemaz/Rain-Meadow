@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -26,6 +26,7 @@ namespace RainMeadow
         public bool returnToLobby;
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
+        public bool initiatedStartGameForClient;
 
         public bool sainot { get => ArenaHelpers.GetOptionFromArena(SAINOT, RainMeadow.rainMeadowOptions.ArenaSAINOT.Value); }
         public bool painCatThrows { get => ArenaHelpers.GetOptionFromArena(PAINCATTHROWS, RainMeadow.rainMeadowOptions.PainCatThrows.Value); }
@@ -71,6 +72,7 @@ namespace RainMeadow
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
+            ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaClientSettings.playingAs = SlugcatStats.Name.White;
@@ -91,6 +93,7 @@ namespace RainMeadow
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
+            initiatedStartGameForClient = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {

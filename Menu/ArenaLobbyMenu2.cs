@@ -15,7 +15,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
-    public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.AllSlugcats();
+    public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
     public SimplerButton playButton, slugcatSelectBackButton;
     public FSprite[] slugcatDescriptionGradients;
     public Vector2[] slugcatDescriptionGradientsPos, oldPagesPos = [];

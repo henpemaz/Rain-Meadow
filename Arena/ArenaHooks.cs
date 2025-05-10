@@ -1,3 +1,4 @@
+using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MoreSlugcats;
@@ -5,7 +6,9 @@ using Rewired;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
+
 
 namespace RainMeadow
 {
@@ -99,6 +102,63 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
+            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+        }
+
+        private static void Player_Collide2(ILContext il, MethodBase original)
+        {
+            // Find Violence, Inject our RPC call, then run it locally
+            var c = new ILCursor(il);
+
+            try
+            {
+                while (c.TryGotoNext(MoveType.Before,
+                    i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))))
+                {
+                    // Make a skip label
+                    var skip = il.DefineLabel();
+
+                    // Get caller type
+                    c.Emit(OpCodes.Ldtoken, original.DeclaringType);
+                    c.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+
+                    // Load null onto stack if method is static, otherwise load the type
+                    if (original.IsStatic)
+                    {
+                        c.Emit(OpCodes.Ldnull);
+                    }
+                    else
+                    {
+                        c.Emit(OpCodes.Ldarg_0);
+                    }
+
+                    // Replace creature.Violence with a delegate that calls our event first.
+                    c.EmitDelegate((Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus, Type callerType, object caller) =>
+                    {
+                        if (OnlineManager.lobby != null)
+                        {
+                            var onlineCreature = self.abstractPhysicalObject.GetOnlineObject();
+                            if (onlineCreature != null && !onlineCreature.isMine)
+                            {
+                                (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                            }
+                        }
+                    });
+                    c.Emit(OpCodes.Br, skip);
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))
+                    );
+                    c.MarkLabel(skip);
+
+                    RainMeadow.Debug("Gourm Stomp RPC set with " + original.DeclaringType);
+                }
+
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Debug("Gourm Stomp RPC with errors. - Type: " + original.DeclaringType + " - " + e);
+            }
+
         }
 
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
@@ -336,9 +396,11 @@ namespace RainMeadow
                                         entities.Remove(oe.apo);
 
                                         self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                        self.room.RemoveObject(oe.apo.realizedObject);
-                                        self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        if (oe.apo.realizedObject != null)
+                                        {
+                                            self.room.RemoveObject(oe.apo.realizedObject);
+                                            self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                        }
                                         oe.beingMoved = false;
                                     }
                                     else // mine leave the old online world elegantly
@@ -419,52 +481,30 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-
                 if (classID == null)
                 {
+                    Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-
-                var slugList = ArenaHelpers.AllSlugcats();
-                var baseGameSlugs = ArenaHelpers.BaseGameSlugcats();
-                var vanillaSlugs = ArenaHelpers.VanillaSlugs();
-                var mscSlugs = ArenaHelpers.MSCSlugs();
-
-                RainMeadow.Debug("Player is playing as " + classID + "with color index " + color);
-
-                if (vanillaSlugs.Contains(classID))
+                if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
-                    return "MultiplayerPortrait" + color + "1";
+                    return $"MultiplayerPortrait{color}1";
                 }
-
                 if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
-                    return "MultiplayerPortrait" + 3 + "1"; // take advantage of nightcat profile pic
+                    return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
                 }
-
-                if (ModManager.MSC && mscSlugs.Contains(classID))
+                if (ModManager.MSC && ArenaHelpers.mscSlugcats.Contains(classID))
                 {
-                    if (classID == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-                    {
-                        int randomChoice = UnityEngine.Random.Range(0, 5);
-                        return "MultiplayerPortrait" + $"{randomChoice}1-" + slugList[color];
-                    }
-                    return "MultiplayerPortrait" + "41-" + slugList[color];
+                    return $"MultiplayerPortrait{(classID == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? UnityEngine.Random.Range(0, 5) : 4)}1-{classID}";
 
                 }
-
-                if (!baseGameSlugs.Contains(classID))
+                if (!ArenaHelpers.baseGameSlugcats.Contains(classID))
                 {
-
-                    color = 0;
-                    return "MultiplayerPortrait" + color + "1-" + classID.ToString();
+                    return $"MultiplayerPortrait{0}{1}-{classID}";
                 }
-                return orig(self, classID, color);
             }
-            else
-            {
-                return orig(self, classID, color);
-            }
+            return orig(self, classID, color);
         }
 
         private void ArenaGameSession_PlayerLandSpear(On.ArenaGameSession.orig_PlayerLandSpear orig, ArenaGameSession self, Player player, Creature target)
@@ -1193,7 +1233,7 @@ namespace RainMeadow
 
                 if (!ModManager.MSC)
                 {
-                    if (ArenaHelpers.BaseGameSlugcats().Contains(player.playerClass))
+                    if (ArenaHelpers.baseGameSlugcats.Contains(player.playerClass))
                     {
                         var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
                               (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
@@ -1205,9 +1245,9 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
                         {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[userNameBackup] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                         }
                         else
                         {
@@ -1239,10 +1279,10 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (arena.playerResultColors.ContainsKey(userNameBackup))
+                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
                         {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.id.name] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
+                            RainMeadow.Debug("FOUND" + currentName.GetUniqueID() + currentName.id.name);
+                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
                         }
                         else
                         {
