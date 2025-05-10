@@ -51,18 +51,6 @@ namespace RainMeadow
             [OnlineField]
             public int saintAscendanceTimer;
             [OnlineField]
-            public bool sainot;
-            [OnlineField]
-            public bool painCatEgg;
-            [OnlineField]
-            public bool painCatThrows;
-            [OnlineField]
-            public bool painCatLizard;
-            [OnlineField]
-            public bool disableMaul;
-            [OnlineField]
-            public bool disableArtiStun;
-            [OnlineField]
             public string currentGameMode;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -83,16 +71,10 @@ namespace RainMeadow
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
                 arenaSetupTime = arena.setupTime;
-                sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
-                painCatEgg = arena.painCatEgg;
-                painCatThrows = arena.painCatThrows;
-                painCatLizard = arena.painCatLizard;
-                disableMaul = arena.disableMaul;
-                disableArtiStun = arena.disableArtiStun;
 
             }
 
@@ -114,16 +96,10 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
-                (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatEgg = painCatEgg;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatThrows = painCatThrows;
-                (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
-                (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
-                (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
 
             }
 
