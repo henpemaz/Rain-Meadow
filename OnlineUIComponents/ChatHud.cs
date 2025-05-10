@@ -21,6 +21,7 @@ namespace RainMeadow
         public List<(string, string)> chatLog = new();
 
         public bool Active => game.processActive;
+        public string PlayerName => OnlineManager.mePlayer.id.name;
 
         public static bool isLogToggled
         {
