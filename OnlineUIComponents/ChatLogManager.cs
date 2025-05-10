@@ -22,10 +22,20 @@ namespace RainMeadow
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(e => e.AddMessage(user, message));
         }
-        public static void LogSystemMessage(string message)
+        public static void LogSystem(string message)
         {
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(e => e.AddMessage("", message));
+        }
+        public static void LogClientMessage(string user, string message, string sendTo) // this thing is gonna be unused for now, i'll try to incorporate it better for the /msg
+        {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
+            subscribers.Where(s => s.PlayerName == sendTo).ToList().ForEach(e => e.AddMessage(user, message));
+        }
+        public static void LogClientSystem(string message, string sendTo)
+        {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
+            subscribers.Where(s => s.PlayerName == sendTo).ToList().ForEach(e => e.AddMessage("", message));
         }
 
         /// <summary>
@@ -71,6 +81,7 @@ namespace RainMeadow
     public interface IChatSubscriber
     {
         public bool Active{ get; }
+        public string PlayerName { get; }
         public void AddMessage(string user, string text);
     }
 }

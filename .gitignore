@@ -404,3 +404,4 @@ Properties/Settings.Designer.cs
 
 # Mod folder
 [Mm]od/plugins/*
+/Mod/illustrations
