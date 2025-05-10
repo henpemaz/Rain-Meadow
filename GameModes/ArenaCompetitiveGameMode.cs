@@ -10,7 +10,8 @@ namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
-
+        //these are id strings
+        public const string SAINOT = "SAINOT", PAINCATTHROWS = "PAINCATTHROWS", PAINCATEGG = "PAINCATEGG", DISABLEARTISTUN = "DISABLEARTISTUN", DISABLEMAUL = "DISABLEMAUL", PAINCATLIZARD = "PAINCATLIZARD";
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
@@ -26,12 +27,12 @@ namespace RainMeadow
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
 
-        public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
-        public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
-        public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
-        public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
-        public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
-        public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
+        public bool sainot { get => ArenaHelpers.GetOptionFromArena(SAINOT, RainMeadow.rainMeadowOptions.ArenaSAINOT.Value); }
+        public bool painCatThrows { get => ArenaHelpers.GetOptionFromArena(PAINCATTHROWS, RainMeadow.rainMeadowOptions.PainCatThrows.Value); }
+        public bool painCatEgg { get => ArenaHelpers.GetOptionFromArena(PAINCATEGG, RainMeadow.rainMeadowOptions.PainCatEgg.Value); }
+        public bool painCatLizard { get => ArenaHelpers.GetOptionFromArena(PAINCATLIZARD, RainMeadow.rainMeadowOptions.PainCatLizard.Value); }
+        public bool disableMaul { get => ArenaHelpers.GetOptionFromArena(DISABLEMAUL, RainMeadow.rainMeadowOptions.BlockMaul.Value); }
+        public bool disableArtiStun { get => ArenaHelpers.GetOptionFromArena(DISABLEARTISTUN, RainMeadow.rainMeadowOptions.BlockArtiStun.Value); }
 
         public string paincatName;
         public int lizardEvent;
