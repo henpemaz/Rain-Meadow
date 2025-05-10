@@ -1,7 +1,4 @@
-﻿using JetBrains.Annotations;
-using UnityEngine;
-
-namespace RainMeadow
+﻿namespace RainMeadow
 {
     public class CommandExecute
     {
@@ -66,7 +63,7 @@ namespace RainMeadow
                     {
                         if (commandSplit[1] == player.id.name)
                         {
-                            ChatLogManager.LogClientSystem($"{OnlineManager.mePlayer.id.name} sent you a private message: {commandSplit[2]}", player.id.name);
+                            ChatLogManager.LogClientSystem($"{OnlineManager.mePlayer.id.name} privately message: {commandSplit[2]}", player.id.name);
                             return;
                         }
                         else
