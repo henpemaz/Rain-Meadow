@@ -37,8 +37,12 @@ namespace RainMeadow
             isExiting = RWInput.CheckPauseButton(0);
         }
 
+        /// Do override this (if you need it)
+        public virtual void OnBack(SimplerButton obj) { }
+        /// Do not override this
         private void Back(SimplerButton obj)
         {
+            OnBack(obj);
             manager.RequestMainProcessSwitch(this.backTarget);
             base.PlaySound(SoundID.MENU_Switch_Page_Out);
         }
