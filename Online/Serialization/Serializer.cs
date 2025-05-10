@@ -18,7 +18,7 @@ namespace RainMeadow
         public MemoryStream stream;
         public BinaryWriter writer;
         public BinaryReader reader;
-        public OnlinePlayer currPlayer;
+        public OnlinePlayer? currPlayer;
         private uint eventCount;
         private long eventHeader;
         private uint stateCount;
@@ -125,8 +125,15 @@ namespace RainMeadow
         {
             var pos = (int)scratchpad.Position;
             scratchpad.stream.Seek(0, SeekOrigin.Begin);
-            var zippedState = new DeflateState(scratchpad.stream, pos);
-            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedState.bytes.Length}");
+            var zippedState = new Lz4CompressedState(scratchpad.stream, pos);
+            var zippedSize = zippedState.bytes.Length;
+            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedSize}");
+            if (zippedSize >= pos)
+            {
+                RainMeadow.Debug($"cancelling zipping of {state}");
+                scratchpad.stream.Seek(pos, SeekOrigin.Begin); //restore position
+                return false;
+            }
             return WriteState(zippedState);
         }
 
@@ -136,11 +143,14 @@ namespace RainMeadow
             state.WritePolymorph(scratchpad);
             scratchpad.WrappedSerialize(state);
             bool fits = scratchpad.Position < (capacity - Position - margin);
-            if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
+            if ((scratchpad.Position > zipTreshold || !fits) && state is not Lz4CompressedState)
             {
-                return WriteZippedState(state);
+                if (WriteZippedState(state))
+                {
+                    return true;
+                }
             }
-            else if (fits)
+            if (fits)
             {
                 writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
                 stateCount++;
@@ -208,7 +218,7 @@ namespace RainMeadow
 
             WrappedSerialize(s);
 
-            if (s is DeflateState ds)
+            if (s is Lz4CompressedState ds)
             {
                 scratchpad.stream.Seek(0, SeekOrigin.Begin);
                 ds.Decompress(scratchpad.stream);
