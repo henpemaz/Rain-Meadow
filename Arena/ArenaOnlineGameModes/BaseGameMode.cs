@@ -80,7 +80,7 @@ namespace RainMeadow
             self.AddPart(new ArenaPrepTimer(self, self.fContainers[0], arena, session));
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
             self.AddPart(new Pointing(self));
-
+            self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
         }
         public virtual void ArenaCreatureSpawner_SpawnCreatures(ArenaOnlineGameMode arena, On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
         {
