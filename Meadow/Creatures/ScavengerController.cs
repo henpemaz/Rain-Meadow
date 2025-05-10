@@ -32,7 +32,7 @@ namespace RainMeadow
                 for (int i = 0; i < 2; i++)
                 {
                     c.GotoNext(MoveType.After,
-                        i => i.MatchCallvirt<Creature>(typeof(Creature).GetProperty(nameof(Creature.mainBodyChunk)).GetGetMethod().Name),
+i => i.MatchCallvirt(typeof(Creature).GetProperty(nameof(Creature.mainBodyChunk)).GetGetMethod()),
                         i => i.MatchLdflda<BodyChunk>(nameof(BodyChunk.pos)),
                         i => i.MatchLdfld<UnityEngine.Vector2>(nameof(Vector2.y)),
                         i => i.MatchNewobj<UnityEngine.Vector2>(),
