@@ -292,6 +292,34 @@ namespace RainMeadow
             //}
 
         }
+        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
+        {
+            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                if (typeof(T) == typeof(bool) && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceeBool[ID];
+                }
+                if (typeof(T) == typeof(int) && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
+                }
+            }
+            return defaultIfNonExistant;
+        }
+        public static void SaveOptionToArena(string ID, object obj)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
+            if (!OnlineManager.lobby.isOwner) return;
+            if (obj is bool c)
+            {
+                arena.onlineArenaSettingsInterfaceeBool.SafeSaveToDictionary(ID, c);
+            }
+            if (obj is int i)
+            {
+                arena.onlineArenaSettingsInterfaceMultiChoice.SafeSaveToDictionary(ID, i);
+            }
+        }
     }
 
 }
