@@ -49,7 +49,7 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? slugcatColorOrder[slugcatPageIndex];
+                return playerSelectedSlugcat ?? storyGameMode.currentCampaign;
             }
             set
             {
@@ -141,11 +141,13 @@ namespace RainMeadow
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
             personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             manager.arenaSitting = null;
-            if (restartChecked)
+
+            if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
             }
+
             else
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
