@@ -17,7 +17,7 @@
                 switch (commandSplit[0].ToLower())
                 {
                     case "/ban":
-                        RainMeadow.Debug("kicking via chat command");
+                        RainMeadow.Debug("banning via chat command");
                         if (commandSplit.Length < 2)
                         {
                             RainMeadow.Debug("Did not execute command since it didn't fill the params");

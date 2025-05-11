@@ -77,9 +77,8 @@ namespace RainMeadow
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSizeWithSpacing => ButtonSize + ButtonSpacingOffset;
         public static float ButtonSize => 30;
-        private List<string> _playerNames = new();
 
-        public List<string> PlayerNames => _playerNames;
+        public List<string> PlayerNames => ChatLogManager.GetPlayerNames();
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -115,8 +114,6 @@ namespace RainMeadow
 
             ChatTextBox.OnShutDownRequest += ResetChatInput;
             ChatLogManager.Subscribe(this);
-
-            if (!_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Add(OnlineManager.mePlayer.id.name);
         }
 
         public void SetupSelectableSlugcats() {
@@ -245,7 +242,6 @@ namespace RainMeadow
             ResetChatInput(); //ensure chat input is properly shutdown
             ChatTextBox.OnShutDownRequest -= ResetChatInput;
             ChatLogManager.Unsubscribe(this);
-            if (_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Remove(OnlineManager.mePlayer.id.name);
 
             RainMeadow.DebugMe();
             if (manager.upcomingProcess != ProcessManager.ProcessID.Game) // if join on sleep/deathscreen this needs to be added here as well

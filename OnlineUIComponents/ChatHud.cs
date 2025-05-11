@@ -27,9 +27,7 @@ namespace RainMeadow
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
             set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
         }
-        private List<string> _playerNames = new();
-
-        public List<string> PlayerNames => _playerNames;
+        public List<string> PlayerNames => ChatLogManager.GetPlayerNames();
 
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
@@ -52,7 +50,6 @@ namespace RainMeadow
             }
 
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
-            if (!_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Add(OnlineManager.mePlayer.id.name);
         }
 
         public void AddMessage(string user, string message)
@@ -155,7 +152,6 @@ namespace RainMeadow
         public void Destroy()
         {
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
-            if (_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Remove(OnlineManager.mePlayer.id.name);
             ChatLogManager.Unsubscribe(this);
         }
 

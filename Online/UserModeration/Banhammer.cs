@@ -44,6 +44,13 @@ namespace RainMeadow
             }
 
         }
+        public static void PardonUser(OnlinePlayer steamUser)
+        {
+            if (!OnlineManager.lobby.bannedUsers.list.Contains(steamUser.id))
+            {
+                OnlineManager.lobby.bannedUsers.list.Remove(steamUser.id);
+            }
+        }
 
         public static void KickUser(OnlinePlayer steamUser) => steamUser.InvokeRPC(RPCs.KickToLobby);
     }
