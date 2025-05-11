@@ -41,6 +41,13 @@ namespace RainMeadow
             spectatorOverlay?.GrafUpdate(timeStacker);
         }
 
+        public void ClearSpectatee() {
+            spectatee = null;
+            spectatorOverlay?.ShutDownProcess();
+            spectatorOverlay = null;
+            isActive = false;
+        }
+
         public override void Update()
         {
             base.Update();
