@@ -435,6 +435,7 @@ namespace RainMeadow
 
                 OnlineManager.LeaveLobby();
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
             }, self.mainMenuButtons.Count - 2);
         }
     }

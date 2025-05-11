@@ -25,7 +25,6 @@ namespace RainMeadow
         public bool returnToLobby;
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
-        public bool initiatedStartGameForClient;
 
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
@@ -48,11 +47,16 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
+        public Dictionary<int ,int> playerNumberWithKills = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
 
 
         public int playerEnteredGame;
+        public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
         public bool addedChampstoList;
+        public bool hasPermissionToRejoin;
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -68,6 +72,7 @@ namespace RainMeadow
 
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
+        public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -87,12 +92,12 @@ namespace RainMeadow
             paincatName = "";
             allPlayersReadyLockLobby = false;
             returnToLobby = false;
-            isInGame = false;
             playersReadiedUp.list = new List<MeadowPlayerId>();
             reigningChamps.list = new List<MeadowPlayerId>();
             addedChampstoList = false;
             forceReadyCountdownTimer = 15;
-            initiatedStartGameForClient = false;
+            clientWantsToLeaveGame = false;
+            hasPermissionToRejoin = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
