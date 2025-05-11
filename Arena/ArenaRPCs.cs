@@ -50,14 +50,6 @@ namespace RainMeadow
             }
         }
 
-
-        [RPCMethod]
-        public static void Arena_AddPlayerMidGame(OnlinePlayer newPlayer)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.arenaSittingOnlineOrder.Add(newPlayer.inLobbyId);
-
         public static void Arena_EndSessionEarly()
         {
             if (RainMeadow.isArenaMode(out var arena))
