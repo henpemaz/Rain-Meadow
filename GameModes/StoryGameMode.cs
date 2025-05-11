@@ -256,7 +256,7 @@ namespace RainMeadow
             
             for (int i = 0; i < self.StoryPlayerCount; i++) {
                 abstractCreature = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, i));
-                abstractCreature.state = new PlayerState(abstractCreature, i, avatarSettings[i].playingAs, false);
+                abstractCreature.state = new PlayerState(abstractCreature, i, avatarSettings[i].playingAs, false) { isPup = avatarSettings[i].fakePup };
                 self.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
                 self.session.AddPlayer(abstractCreature);
 
