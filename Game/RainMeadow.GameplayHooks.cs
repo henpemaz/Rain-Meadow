@@ -574,7 +574,7 @@ namespace RainMeadow
 
                     if (player.realizedCreature is Player p) {
                         if (p.forceSleepCounter <= 0) {
-                            if (p.timeSinceInCorridorMode <= 10) {
+                            if (p.timeSinceInCorridorMode < 10) {
                                 ready_for_win = false;
                                 break;
                             }
