@@ -30,6 +30,8 @@ namespace RainMeadow
             On.RoomCamera.ChangeCameraToPlayer += RoomCamera_ChangeCameraToPlayer;
             On.JollyCoop.JollyMenu.JollyPlayerSelector.Update +=JollyPlayerSelector_Update;
 
+            On.JollyCoop.JollyMenu.JollyPlayerSelector.GetPupButtonOffName += GetPupButtonOffName;
+
 
             // disabling jolly co-op code.
             IL.Menu.CharacterSelectPage.ctor += SoftDisableJollyCoOP; 
@@ -148,7 +150,7 @@ namespace RainMeadow
             new ILHook(typeof(PlayerGraphics).GetProperty(nameof(PlayerGraphics.useJollyColor)).GetGetMethod(), SoftDisableJollyCoOP);
             IL.PlayerGraphics.MSCUpdate += SoftDisableJollyCoOP; 
             IL.PlayerGraphics.ctor += SoftDisableJollyCoOP; 
-            IL.PlayerGraphics.SlugcatColor += SoftDisableJollyCoOP; 
+            // IL.PlayerGraphics.SlugcatColor += SoftDisableJollyCoOP; 
             IL.PlayerGraphics.TailSpeckles.DrawSprites += SoftDisableJollyCoOP; 
             IL.ProcessManager.IsGameInMultiplayerContext += SoftDisableJollyCoOP; 
             IL.RainWorld.Update += SoftDisableJollyCoOP; 
@@ -223,10 +225,8 @@ namespace RainMeadow
 
         void SymbolButtonToggle_Update(On.JollyCoop.JollyMenu.SymbolButtonToggle.orig_Update orig, JollyCoop.JollyMenu.SymbolButtonToggle self) {
             orig(self);
-            if (self.buttonBehav.greyedOut) {
+            if (self.buttonBehav.greyedOut && self is not JollyCoop.JollyMenu.SymbolButtonTogglePupButton) {
                 self.symbol.color = Menu.Menu.MenuColor(Menu.Menu.MenuColors.DarkGrey).rgb;
-            } else {
-                self.symbol.color = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White).rgb;
             }
         }
 
@@ -250,7 +250,6 @@ namespace RainMeadow
                                 int newcharacterindex = (current_index + 1) % story_menu.SelectableSlugcats.Length;
                                 story_menu.playerSelectedSlugcats[i] = story_menu.SelectableSlugcats[newcharacterindex];
                                 
-                                self.playerSelector[i].portrait.color = Color.white;
                                 self.JollyOptions(i).playerClass = story_menu.SelectableSlugcats[newcharacterindex];
                                 self.menu.PlaySound(SoundID.MENU_Error_Ping);
                                 self.SetPortraitsDirty();
@@ -264,6 +263,16 @@ namespace RainMeadow
             orig(self, sender, message);
         }
 
+        private string GetPupButtonOffName(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GetPupButtonOffName orig, JollyCoop.JollyMenu.JollyPlayerSelector self) {
+            if (OnlineManager.lobby != null) {
+                SlugcatStats.Name playerClass = self.JollyOptions(self.index).playerClass;
+                if (ModManager.MSC && playerClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+                    return "pup_on";
+                }
+            }
+
+            return orig(self);
+        }
 
 
         private void JollySetupDialog_Update(On.JollyCoop.JollyMenu.JollySetupDialog.orig_Update orig, JollyCoop.JollyMenu.JollySetupDialog self) {
@@ -283,7 +292,15 @@ namespace RainMeadow
                             if (self.slidingMenu.playerSelector[i].pupButton.isToggled) {
                                 self.slidingMenu.playerSelector[i].pupButton.Toggle();
                             }
+                        } else {
+                            if (currentslugcat == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+                                self.slidingMenu.playerSelector[i].pupButton.buttonBehav.greyedOut = true;
+                            }
                         }
+
+                        
+
+
 
                         if (currentslugcat != self.slidingMenu.playerSelector[i].slugName) 
                             self.slidingMenu.playerSelector[i].dirty = true;

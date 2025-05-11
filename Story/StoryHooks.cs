@@ -490,6 +490,14 @@ namespace RainMeadow
                 {
                     return storyGameMode.requireCampaignSlugcat;
                 }
+
+                if (ModManager.JollyCoop) 
+                {
+                    if (box.IDString == "COLORS") {
+                        return self.manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM;
+                    }
+
+                }
             }
             return orig(self, box);
         }
@@ -512,6 +520,15 @@ namespace RainMeadow
                 {
                     storyGameMode.requireCampaignSlugcat = c;
                     return;
+                }
+
+                if (ModManager.JollyCoop) 
+                {
+                    if (box.IDString == "COLORS") {
+                        self.manager.rainWorld.options.jollyColorMode = c? Options.JollyColorMode.CUSTOM : Options.JollyColorMode.DEFAULT;
+                        return;
+                    }
+
                 }
             }
             orig(self, box, c);

@@ -143,8 +143,22 @@ namespace RainMeadow
                     storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
                 }
 
-                // TODO: seperate custom colors for each avatar
-                storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+                if (ModManager.JollyCoop) {
+                    if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM) {
+                        storyGameMode.avatarSettings[i].currentColors = new List<Color>{
+                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetBodyColor(), 
+                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetFaceColor(),
+                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetUniqueColor()
+                        };
+                    } else {
+                        storyGameMode.avatarSettings[i].currentColors = [..PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
+                    }
+                    storyGameMode.avatarSettings[i].fakePup = manager.rainWorld.options.jollyPlayerOptionsArray[i].isPup;
+                } else {
+                    // TODO: seperate custom colors for each avatar
+                    storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+                }
+
             }
             
 
