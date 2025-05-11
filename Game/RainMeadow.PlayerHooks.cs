@@ -814,7 +814,7 @@ public partial class RainMeadow
             }
         }
 
-        if (OnlineManager.lobby != null && ModManager.JollyCoop) {
+        if (OnlineManager.lobby != null && self.IsLocal() && ModManager.JollyCoop) {
             if (self.cameraSwitchDelay > 0) self.cameraSwitchDelay--;
 
             if (self.input[0].mp)
