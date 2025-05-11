@@ -21,13 +21,16 @@ namespace RainMeadow
         public List<(string, string)> chatLog = new();
 
         public bool Active => game.processActive;
-        public string PlayerName => OnlineManager.mePlayer.id.name;
 
         public static bool isLogToggled
         {
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
             set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
         }
+        private List<string> _playerNames = new();
+
+        public List<string> PlayerNames => _playerNames;
+
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;
@@ -49,6 +52,7 @@ namespace RainMeadow
             }
 
             ChatTextBox.OnShutDownRequest += ShutDownChatInput;
+            if (!_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Add(OnlineManager.mePlayer.id.name);
         }
 
         public void AddMessage(string user, string message)
@@ -151,6 +155,7 @@ namespace RainMeadow
         public void Destroy()
         {
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
+            if (_playerNames.Contains(OnlineManager.mePlayer.id.name)) _playerNames.Remove(OnlineManager.mePlayer.id.name);
             ChatLogManager.Unsubscribe(this);
         }
 

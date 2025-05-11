@@ -45,5 +45,6 @@ namespace RainMeadow
 
         }
 
+        public static void KickUser(OnlinePlayer steamUser) => steamUser.InvokeRPC(RPCs.KickToLobby);
     }
 }

@@ -16,6 +16,36 @@
             {
                 switch (commandSplit[0].ToLower())
                 {
+                    case "/ban":
+                        RainMeadow.Debug("kicking via chat command");
+                        if (commandSplit.Length < 2)
+                        {
+                            RainMeadow.Debug("Did not execute command since it didn't fill the params");
+                            ChatLogManager.LogClientSystem(incompleteCmdStr, OnlineManager.mePlayer.id.name);
+                            return;
+                        }
+
+                        foreach (var player in OnlineManager.players)
+                        {
+                            if (commandSplit[1] == player.id.name)
+                            {
+                                if (player.isMe)
+                                {
+                                    ChatLogManager.LogClientSystem("The lobby would die if you ban yourself, we can't afford that", OnlineManager.mePlayer.id.name);
+                                    return;
+                                }
+                                BanHammer.BanUser(player);
+                                ChatLogManager.LogClientSystem($"{player.id.name} Has been banned from the current lobby.", OnlineManager.mePlayer.id.name);
+                                return;
+                            }
+                            else
+                            {
+                                ChatLogManager.LogClientSystem("User is invalid.", OnlineManager.mePlayer.id.name);
+                                return;
+                            }
+                        }
+                        break;
+
                     case "/kick":
                         RainMeadow.Debug("kicking via chat command");
                         if (commandSplit.Length < 2) 
@@ -34,7 +64,7 @@
                                     ChatLogManager.LogClientSystem("You can't kick yourself, doofus!", OnlineManager.mePlayer.id.name);
                                     return;
                                 }
-                                BanHammer.BanUser(player);
+                                BanHammer.KickUser(player);
                                 ChatLogManager.LogClientSystem($"{player.id.name} Has been kicked.", OnlineManager.mePlayer.id.name);
                                 return;
                             }
@@ -63,7 +93,7 @@
                     {
                         if (commandSplit[1] == player.id.name)
                         {
-                            ChatLogManager.LogClientSystem($"{OnlineManager.mePlayer.id.name} privately message: {commandSplit[2]}", player.id.name);
+                            ChatLogManager.LogClientSystem($"{OnlineManager.mePlayer.id.name} privately messaged: {commandSplit[2]}", player.id.name);
                             return;
                         }
                         else
