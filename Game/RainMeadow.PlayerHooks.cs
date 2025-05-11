@@ -814,6 +814,51 @@ public partial class RainMeadow
             }
         }
 
+        if (OnlineManager.lobby != null && ModManager.JollyCoop) {
+            if (self.cameraSwitchDelay > 0) self.cameraSwitchDelay--;
+
+            if (self.input[0].mp)
+            {
+                if (!self.input[1].mp)
+                {
+                    self.jollyButtonDown = false;
+                    for (int i = 2; i < self.input.Length - 1; i++)
+                    {
+                        if (self.input[i].mp && !self.input[i + 1].mp)
+                        {
+                            self.jollyButtonDown = true;
+                            self.cameraSwitchDelay = -1;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                self.jollyButtonDown = false;
+            }
+
+            if (!self.input[0].mp && self.input[1].mp && self.cameraSwitchDelay == -1)
+            {
+                int num = 0;
+                self.jollyButtonDown = false;
+                for (int j = 2; j < self.input.Length && self.input[j].mp; j++)
+                {
+                    num++;
+                }
+
+                if (num <= self.CameraInputDelay)
+                {
+                    self.cameraSwitchDelay = 5;
+                }
+            }
+
+            if (self.cameraSwitchDelay == 0)
+            {
+                self.TriggerCameraSwitch();
+                self.cameraSwitchDelay = -1;
+            }
+        }   
+
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
