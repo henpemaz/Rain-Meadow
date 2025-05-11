@@ -11,6 +11,8 @@ namespace RainMeadow
         public OnlineGameMode onlineGameMode;
         public ClientSettings clientSettings;
 
+
+        public OnlineEntity.EntityId playerId;
         public AbstractCreature abstractPlayer;
         private SlugcatCustomization customization;
         public OnlinePlayerDisplay playerDisplay;
@@ -55,7 +57,7 @@ namespace RainMeadow
         //    }
         //}
 
-        public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings) : base(owner.hud)
+        public PlayerSpecificOnlineHud(OnlineHUD owner, RoomCamera camera, OnlineGameMode onlineGameMode, ClientSettings clientSettings, OnlineEntity.EntityId playerId) : base(owner.hud)
         {
             RainMeadow.Debug("Adding PlayerSpecificOnlineHud for " + clientSettings.owner);
             this.owner = owner;
@@ -63,6 +65,7 @@ namespace RainMeadow
             camrect = new Rect(Vector2.zero, this.camera.sSize).CloneWithExpansion(-30f);
             this.onlineGameMode = onlineGameMode;
             this.clientSettings = clientSettings;
+            this.playerId = playerId;
 
             needed = true;
         }
@@ -135,8 +138,7 @@ namespace RainMeadow
             this.found = false;
             if (camera.room == null || !camera.room.shortCutsReady) return;
             if (!clientSettings.inGame) return;
-            if (clientSettings.avatars.Count == 0) return;
-            if (clientSettings.avatars[0]?.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
+            if (playerId.FindEntity(true) is OnlineCreature oc) // TODO: support multiple avatars
             {
                 abstractPlayer = oc.abstractCreature;
                 oc.TryGetData<SlugcatCustomization>(out customization);

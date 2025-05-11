@@ -35,25 +35,37 @@ namespace RainMeadow
 
         public void UpdatePlayers()
         {
-            var clientSettings = OnlineManager.lobby.clientSettings.Values.OfType<ClientSettings>();
-            var currentSettings = indicators.Select(i => i.clientSettings).ToList();
+            var playerAvatars = OnlineManager.lobby.playerAvatars.Select(x => x.Value).ToList();
+            var currentAvatars = indicators.Select(i => i.playerId).ToList();
 
-            clientSettings.Except(currentSettings).Do(PlayerAdded);
-            currentSettings.Except(clientSettings).Do(PlayerRemoved);
+            playerAvatars.Except(currentAvatars).Do(AvatarAdded);
+            currentAvatars.Except(playerAvatars).Do(AvatarRemoved);
         }
 
-        public void PlayerAdded(ClientSettings clientSettings)
+        public void AvatarAdded(OnlineEntity.EntityId avatar)
         {
             RainMeadow.DebugMe();
-            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, clientSettings);
+            if (avatar.FindEntity() is not OnlineEntity entity) {
+                RainMeadow.Error("Couldn't find online entity");
+                return;
+            }
+
+            if (entity.owner is null) {
+                RainMeadow.Error("Online Entity has no owner");
+                return;
+            }
+
+
+            
+            PlayerSpecificOnlineHud indicator = new(this, camera, onlineGameMode, OnlineManager.lobby.clientSettings[entity.owner], avatar);
             this.indicators.Add(indicator);
             hud.AddPart(indicator);
         }
 
-        public void PlayerRemoved(ClientSettings clientSettings)
+        public void AvatarRemoved(OnlineEntity.EntityId avatar)
         {
             RainMeadow.DebugMe();
-            var indicator = this.indicators.First(i => i.clientSettings == clientSettings);
+            var indicator = this.indicators.First(i => i.playerId == avatar);
             this.indicators.Remove(indicator);
             indicator.slatedForDeletion = true;
         }

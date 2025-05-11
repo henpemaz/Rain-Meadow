@@ -139,6 +139,10 @@ namespace RainMeadow
                     storyGameMode.avatarSettings[i].playingAs = name;
                 }
 
+                if ((storyGameMode.avatarCount > 1) && ModManager.JollyCoop) {
+                    storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
+                }
+
                 // TODO: seperate custom colors for each avatar
                 storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             }

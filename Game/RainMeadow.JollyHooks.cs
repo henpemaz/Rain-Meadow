@@ -26,6 +26,9 @@ namespace RainMeadow
             On.ProcessManager.IsGameInMultiplayerContext += ProcessManager_IsGameInMultiplayerContext;
             On.RoomRealizer.CanAbstractizeRoom += RoomRealizer_CanAbstractizeRoom;
             On.JollyCoop.JollyCustom.SlugClassMenu += JollyCoop_JollyCustom_SlugClassMenu;
+            On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud1;
+            On.RoomCamera.ChangeCameraToPlayer += RoomCamera_ChangeCameraToPlayer;
+            On.JollyCoop.JollyMenu.JollyPlayerSelector.Update +=JollyPlayerSelector_Update;
 
 
             // disabling jolly co-op code.
@@ -292,18 +295,18 @@ namespace RainMeadow
 
 
                 // self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
-                self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
+                // self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.smartShortcutToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.friendlyLizardsToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.friendlySteal.buttonBehav.greyedOut = true;
-                self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
+                // self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
                 
                 // if ((!self.slidingMenu.friendlyToggle.isToggled) != story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
                 if (self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
-                if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
+                // if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
                 if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
                 if (self.slidingMenu.friendlySteal.isToggled) self.slidingMenu.friendlySteal.Toggle();
-                if (self.slidingMenu.hudToggle.isToggled) self.slidingMenu.hudToggle.Toggle();
+                // if (self.slidingMenu.hudToggle.isToggled) self.slidingMenu.hudToggle.Toggle();
             }
 
         }
@@ -372,6 +375,37 @@ namespace RainMeadow
 					
             }
             return orig(playerNumber, fallBack);
+        }
+        
+        private void HUD_InitSinglePlayerHud1(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam) {
+            orig(self, cam);
+
+            if (OnlineManager.lobby != null && ModManager.JollyCoop && self.rainWorld.options.jollyHud) {
+                self.AddPart(new JollyCoop.JollyHUD.JollyMeter(self, self.fContainers[1]));
+            }
+        }
+
+        private void RoomCamera_ChangeCameraToPlayer(On.RoomCamera.orig_ChangeCameraToPlayer orig, RoomCamera self, AbstractCreature cameraTarget) {
+            orig(self, cameraTarget);
+            if (OnlineManager.lobby != null) {
+                var spectator = self.hud.parts.OfType<SpectatorHud>().FirstOrDefault();
+                if (spectator is not null) {
+                    spectator.ClearSpectatee();
+                }
+
+                if (self.room?.abstractRoom != cameraTarget.Room && cameraTarget.Room.realizedRoom is not null) {
+                    
+                    self.MoveCamera(cameraTarget.Room.realizedRoom, -1);
+                }
+            }
+
+        }
+
+        private void JollyPlayerSelector_Update(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_Update orig, JollyCoop.JollyMenu.JollyPlayerSelector self) {
+            orig(self);
+            if (isStoryMode(out var story)) {
+                self.playerLabelSelector.greyedOut = !self.Joined || (story.avatarCount <= 1);
+            }
         }
     }
 }
