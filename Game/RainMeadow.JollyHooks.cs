@@ -25,6 +25,7 @@ namespace RainMeadow
             On.JollyCoop.JollyMenu.JollySlidingMenu.Singal += JollySlidingMenu_Singal;
             On.ProcessManager.IsGameInMultiplayerContext += ProcessManager_IsGameInMultiplayerContext;
             On.RoomRealizer.CanAbstractizeRoom += RoomRealizer_CanAbstractizeRoom;
+            On.JollyCoop.JollyCustom.SlugClassMenu += JollyCoop_JollyCustom_SlugClassMenu;
 
 
             // disabling jolly co-op code.
@@ -140,7 +141,7 @@ namespace RainMeadow
             IL.PlayerGraphics.CosmeticPearl.DrawSprites += SoftDisableJollyCoOP; 
             IL.PlayerGraphics.CustomColorsEnabled += SoftDisableJollyCoOP; 
             IL.PlayerGraphics.DrawSprites += SoftDisableJollyCoOP; 
-            new ILHook(typeof(PlayerGraphics).GetProperty(nameof(PlayerGraphics.RenderAsPup)).GetGetMethod(), SoftDisableJollyCoOP);  
+            // new ILHook(typeof(PlayerGraphics).GetProperty(nameof(PlayerGraphics.RenderAsPup)).GetGetMethod(), SoftDisableJollyCoOP);  
             new ILHook(typeof(PlayerGraphics).GetProperty(nameof(PlayerGraphics.useJollyColor)).GetGetMethod(), SoftDisableJollyCoOP);
             IL.PlayerGraphics.MSCUpdate += SoftDisableJollyCoOP; 
             IL.PlayerGraphics.ctor += SoftDisableJollyCoOP; 
@@ -218,6 +219,7 @@ namespace RainMeadow
         }
 
         void SymbolButtonToggle_Update(On.JollyCoop.JollyMenu.SymbolButtonToggle.orig_Update orig, JollyCoop.JollyMenu.SymbolButtonToggle self) {
+            orig(self);
             if (self.buttonBehav.greyedOut) {
                 self.symbol.color = Menu.Menu.MenuColor(Menu.Menu.MenuColors.DarkGrey).rgb;
             } else {
@@ -244,9 +246,11 @@ namespace RainMeadow
                                 int current_index = story_menu.SelectableSlugcats.IndexOf(currentslugcat);
                                 int newcharacterindex = (current_index + 1) % story_menu.SelectableSlugcats.Length;
                                 story_menu.playerSelectedSlugcats[i] = story_menu.SelectableSlugcats[newcharacterindex];
-                                self.Options.jollyPlayerOptionsArray[i].playerClass = story_menu.playerSelectedSlugcats[i];
-                                self.playerSelector[i].SetPortraitImage(story_menu.playerSelectedSlugcats[i]);
+                                
                                 self.playerSelector[i].portrait.color = Color.white;
+                                self.JollyOptions(i).playerClass = story_menu.SelectableSlugcats[newcharacterindex];
+                                self.menu.PlaySound(SoundID.MENU_Error_Ping);
+                                self.SetPortraitsDirty();
                                 return;
                             }
                         }
@@ -271,50 +275,35 @@ namespace RainMeadow
                             currentslugcat = story.currentCampaign;
                         }
 
+                        if (!ModManager.MSC) {
+                            self.slidingMenu.playerSelector[i].pupButton.buttonBehav.greyedOut = true;
+                            if (self.slidingMenu.playerSelector[i].pupButton.isToggled) {
+                                self.slidingMenu.playerSelector[i].pupButton.Toggle();
+                            }
+                        }
+
                         if (currentslugcat != self.slidingMenu.playerSelector[i].slugName) 
-                            self.slidingMenu.playerSelector[i].SetPortraitImage(currentslugcat);
-                        self.slidingMenu.playerSelector[i].portrait.color = Color.white;
-                        self.slidingMenu.Options.jollyPlayerOptionsArray[i].playerClass = currentslugcat;
-
-                        if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), self.slidingMenu.playerSelector[i].playerLabelSelector.value, true, out _))
-                            self.slidingMenu.playerSelector[i].playerLabelSelector.value = currentslugcat.value;
+                            self.slidingMenu.playerSelector[i].dirty = true;
+                        
                     }
-
                 }
 
                 
 
 
-                self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
+                // self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.smartShortcutToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.friendlyLizardsToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.friendlySteal.buttonBehav.greyedOut = true;
                 self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
                 
-                if ((!self.slidingMenu.friendlyToggle.isToggled) != story.friendlyFire) {
-                    self.slidingMenu.friendlyToggle.Toggle();
-                }
-
-                if ((!self.slidingMenu.friendlyLizardsToggle.isToggled) != false) {
-                    self.slidingMenu.friendlyToggle.Toggle();
-                }
-
-                if ((!self.slidingMenu.cameraCyclesToggle.isToggled) != false) {
-                    self.slidingMenu.cameraCyclesToggle.Toggle();
-                }
-
-                if ((!self.slidingMenu.smartShortcutToggle.isToggled) != false) {
-                    self.slidingMenu.smartShortcutToggle.Toggle();
-                }
-
-                if ((!self.slidingMenu.friendlySteal.isToggled) != false) {
-                    self.slidingMenu.friendlySteal.Toggle();
-                }
-
-                if ((!self.slidingMenu.hudToggle.isToggled) != false) {
-                    self.slidingMenu.hudToggle.Toggle();
-                }
+                // if ((!self.slidingMenu.friendlyToggle.isToggled) != story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
+                if (self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
+                if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
+                if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
+                if (self.slidingMenu.friendlySteal.isToggled) self.slidingMenu.friendlySteal.Toggle();
+                if (self.slidingMenu.hudToggle.isToggled) self.slidingMenu.hudToggle.Toggle();
             }
 
         }
@@ -373,6 +362,16 @@ namespace RainMeadow
             }
 
             return orig(self, tracker);
+        }
+
+        private SlugcatStats.Name JollyCoop_JollyCustom_SlugClassMenu(On.JollyCoop.JollyCustom.orig_SlugClassMenu orig, int playerNumber, SlugcatStats.Name fallBack) {
+            if (isStoryMode(out var story)) {
+                if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is StoryOnlineMenu menu) {
+                    return menu.playerSelectedSlugcats?[playerNumber] ?? menu.slugcatColorOrder[menu.slugcatPageIndex];
+                }
+					
+            }
+            return orig(playerNumber, fallBack);
         }
     }
 }

@@ -30,6 +30,11 @@ namespace RainMeadow
                         state.foodInStomach = newFood / 4;
                         state.quarterFoodPoints = newFood % 4;
                     }
+
+                    if (game.Players[i].realizedCreature is Player p) {
+                        // refreshes malnourished and red's illness state.
+                        p.AddFood(0);
+                    }
                 }
             }
         }

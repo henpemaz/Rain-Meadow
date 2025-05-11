@@ -412,7 +412,12 @@ namespace RainMeadow
             {
                 IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
                 self.slugcatStats.maxFood = intVector.x;
-                self.slugcatStats.foodToHibernate = intVector.y;
+                if (self.abstractCreature.world.game.GetStorySession.saveState.malnourished) {
+                    self.slugcatStats.foodToHibernate = intVector.x;
+                } else {
+                    self.slugcatStats.foodToHibernate = intVector.y; 
+                }
+                
             }
         }
 
@@ -499,6 +504,7 @@ namespace RainMeadow
                 }
                 if (box.IDString == "ONLINEFRIENDLYFIRE") // online dictionaries do not like updating over the wire and I dont have the energy to deal with that right now
                 {
+                    if (ModManager.JollyCoop) self.manager.rainWorld.options.friendlyFire = c;
                     storyGameMode.friendlyFire = c;
                     return;
                 }

@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -546,12 +547,63 @@ namespace RainMeadow
 
             if (RainMeadow.isStoryMode(out var storyGameMode) && !self.Broken)
             {
-                storyGameMode.storyClientData.readyForWin = true;
-                if (!storyGameMode.readyForWin) return;
+                bool ready_for_win = true;
+                bool starving = false;
+                for (int i = 0; i < self.room.game.Players.Count; i++) {
+                    AbstractCreature player = self.room.game.Players[i];
+                    if (player.state.dead) continue;    
+
+                    if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6) {
+                        ready_for_win = false;
+                        RainMeadow.Debug("not sheltering due to proximity to exit");
+                        break;
+                    }
+
+                    if (!ShelterDoor.IsTileInsideShelterRange(self.room.abstractRoom, player.pos.Tile)) {
+                        ready_for_win = false;
+                        RainMeadow.Debug("not sheltering because we are not in range");
+                        break;
+                    }
+
+
+                    if (player.Room != self.room.abstractRoom)  {
+                        ready_for_win = false;
+                        RainMeadow.Debug("not sheltering because some local player is not in the room");
+                        continue;
+                    }
+
+                    if (player.realizedCreature is Player p) {
+                        if (p.forceSleepCounter <= 0) {
+                            if (p.timeSinceInCorridorMode <= 10) {
+                                ready_for_win = false;
+                                break;
+                            }
+                            
+                            if (p.touchedNoInputCounter < 40) {
+                                ready_for_win = false;
+                                break;
+                            }
+                        }
+
+
+                        if (p.forceSleepCounter > 0) {
+                            starving = true;
+                        } 
+                    }
+                }
+
+                if (ready_for_win) {
+                    storyGameMode.storyClientData.readyForWin = true;
+                }
+
+                if (!(ready_for_win && starving && OnlineManager.lobby.isOwner)) {
+                    if (!storyGameMode.readyForWin) return;
+                }
+                
             }
             else
             {
-                // Since we're only supporting jolly in Story mode, I aint gonna mess with this.
+                // invalidunits: Since we're only supporting jolly in Story mode, I aint gonna mess with this.
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
