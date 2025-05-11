@@ -53,6 +53,10 @@ namespace RainMeadow
             }
             set
             {
+                if (ModManager.JollyCoop) {
+                    this.RefreshJollySummary();
+                }
+
                 playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
             }
         }
@@ -76,6 +80,7 @@ namespace RainMeadow
 
             if (ModManager.JollyCoop) {
                 AddJollyButtons();
+                storyGameMode.avatarCount = manager.rainWorld.options.JollyPlayerCount;
             }
 
 
@@ -203,12 +208,8 @@ namespace RainMeadow
 
             if (ModManager.JollyCoop) {
                 this.storyGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
-                if (jollyallowed)
-                {
-                    this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
-                    this.RefreshJollySummary();
-                }
-                
+                this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
+                this.RefreshJollySummary();
             }
             
 

@@ -140,6 +140,7 @@ namespace RainMeadow
                         if ((currentGameState?.Players[i].realizedCreature is Player player))
                         {
                             player.mushroomCounter = mushroomCounter;
+                            player.AddFood(0); // refreshes malnourished and reds illness state
                         }
                     }
                 }
@@ -155,6 +156,8 @@ namespace RainMeadow
                     storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
+                    storySession.saveState.lastMalnourished = lastMalnourished;
+                    storySession.saveState.malnourished = malnourished;
                     for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
                     {
                         if (currentGameState.Players[i].realizedCreature != null)
