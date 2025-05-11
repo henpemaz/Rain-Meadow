@@ -18,8 +18,8 @@ namespace RainMeadow.UI.Components
         public string Description { get => description; set => description = value; }
         public void RestoreSprites()
         {
-            for (int i = 0; i < roundedRect.sprites.Length; i++) Container.AddChild(roundedRect.sprites[i]);
-            Container.AddChild(label.label);
+            for (int i = 0; i < roundedRect.sprites.Length; i++) roundedRect.Container.AddChild(roundedRect.sprites[i]);
+            label.Container.AddChild(label.label);
             Container.AddChild(symbolSprite);
         }
         public void RestoreSelectables()

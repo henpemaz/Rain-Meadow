@@ -128,9 +128,9 @@ namespace RainMeadow.UI.Components
         }
         public void RestoreSprites()
         {
-            for (int i = 0; i < divSprites.Length; i++)
+            foreach (FSprite sprite in divSprites)
             {
-                Container.AddChild(divSprites[i]);
+                Container.AddChild(sprite);
             }
         }
         public void RestoreSelectables()
@@ -149,9 +149,11 @@ namespace RainMeadow.UI.Components
                 }
             }
         }
+
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
         public RestorableCheckbox spearsHitCheckbox, evilAICheckBox;
         public RestorableMultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
+        public RestorableMenuTabWrapper tabWrapper;
     }
 }

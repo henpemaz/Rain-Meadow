@@ -17,15 +17,15 @@ namespace RainMeadow.UI.Components
             {
                 MultipleChoiceButton btn = buttons[i];
 
-                if (textInBoxes) Container.AddChild(btn.label.label);
-                else Container.AddChild(btn.symbolSprite);
+                if (textInBoxes) btn.label.Container.AddChild(btn.label.label);
+                else btn.Container.AddChild(btn.symbolSprite);
 
                 for (int j = 0; j < btn.roundedRect.sprites.Length; j++)
-                    Container.AddChild(btn.roundedRect.sprites[j]);
+                    btn.roundedRect.Container.AddChild(btn.roundedRect.sprites[j]);
             }
 
             for (int k = 0; k < lines.Length; k++) Container.AddChild(lines[k]);
-            Container.AddChild(label.label);
+            label.Container.AddChild(label.label);
         }
 
         public void RestoreSelectables()
