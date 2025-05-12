@@ -177,8 +177,15 @@ public class TabContainer : RectangularMenuObject
         private List<TabButton> activeTabButtons;
         public TabContainer container;
     }
-    public class Tab(Menu.Menu menu, MenuObject owner) : PositionedMenuObject(menu, owner, Vector2.zero)
+    public class Tab : PositionedMenuObject
     {
+        public Tab(Menu.Menu menu, MenuObject owner) : base(menu, owner, Vector2.zero)
+        {
+            myContainer = new();
+            (owner?.Container ?? menu.container).AddChild(myContainer);
+            myTabWrapper = new(menu, this);
+            subObjects.Add(myTabWrapper);
+        }
         public bool IsHidden { get; private set; }
         public override void Update()
         {
@@ -198,6 +205,7 @@ public class TabContainer : RectangularMenuObject
         }
         public void Show()
         {
+            myContainer.isVisible = true;
             IsHidden = false;
             for (int i = 0; i < subObjects.Count; i++)
             {
@@ -206,6 +214,7 @@ public class TabContainer : RectangularMenuObject
         }
         public void Hide()
         {
+            myContainer.isVisible = false;
             IsHidden = true;
             for (int i = 0; i < subObjects.Count; i++)
             {
@@ -214,11 +223,7 @@ public class TabContainer : RectangularMenuObject
         }
         public void ShowObject(MenuObject? obj)
         {
-            if (obj is IRestorableMenuObject restorableObj)
-            {
-                restorableObj.RestoreSprites();
-                restorableObj.RestoreSelectables();
-            }
+            if (obj is SelectableMenuObject selectableObj && !obj.page.selectables.Contains(selectableObj)) obj.page.selectables.Add(selectableObj);
             for (int i = 0; i < obj?.subObjects?.Count; i++)
             {
                 ShowObject(obj.subObjects[i]);
@@ -226,12 +231,15 @@ public class TabContainer : RectangularMenuObject
         }
         public void HideObject(MenuObject? obj)
         {
-            if (obj != null)
-            {
-                obj.RemoveSprites();
-                RecursiveRemoveSelectables(obj);
-            }
+            if (obj != null) RecursiveRemoveSelectables(obj);
         }
+        public void AddObjects(params MenuObject[] objects)
+        {
+            this.SafeAddSubobjects(objects);
+            if (IsHidden) Hide();
+            else Show();
+        }
+        public MenuTabWrapper myTabWrapper;
     }
 
     public int activeIndex = 0;
@@ -257,13 +265,12 @@ public class TabContainer : RectangularMenuObject
     /// Elements added MUST implement IRestorableMenuObjects, else your menu objects that are not restorable will be invisible forever.
     /// Subobjects will be turned invisible as well, so make sure they are restorable or called explicitly
     /// </summary>
-    public void AddTab(string name, List<MenuObject> objects)
+    public Tab AddTab(string name)
     {
         int index = tabs.Count;
         tabButtonContainer.AddNewTabButton(name);
         Tab tab = new(menu, this);
         subObjects.Add(tab);
-        tab.subObjects.AddRange(objects);
         tabs.Add(tab);
 
         tabs[index].Hide();
@@ -272,6 +279,7 @@ public class TabContainer : RectangularMenuObject
         {
             SwitchTab(0);
         }
+        return tab;
     }
     public void SwitchTab(int tabIndex)
     {
