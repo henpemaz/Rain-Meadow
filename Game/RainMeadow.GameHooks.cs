@@ -52,26 +52,6 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
-            On.Room.NowViewed += Room_NowViewed;
-
-        }
-
-        private void Room_NowViewed(On.Room.orig_NowViewed orig, Room self)
-        {
-            if (OnlineManager.lobby != null && ModManager.Watcher)
-            {
-                if (self.game.cameras[0].rippleData != null && self.game.cameras[0].lastRippleState == false && self.game.cameras[0].followAbstractCreature.GetOnlineCreature().isMine && self.game.cameras[0].followAbstractCreature.realizedCreature != null && self.game.cameras[0].followAbstractCreature.realizedCreature is Player pl && !pl.isCamo)
-                {
-                    self.game.cameras[0].rippleData.RemoveCommandBuffer();
-                    self.game.cameras[0].rippleData = null;
-                    if (self.fsRipple != null)
-                    {
-                        self.fsRipple.Destroy();
-                        self.fsRipple = null;
-                    }
-                }
-            }
-            orig(self);
         }
 
 
