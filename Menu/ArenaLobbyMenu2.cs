@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Menu;
+using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
@@ -21,12 +22,9 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Vector2[] slugcatDescriptionGradientsPos, oldPagesPos = [];
     public Vector2 newPagePos = Vector2.zero;
     public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
-    public RestorableMenuLabel countdownTimerLabel, arenaGameModeLabel;
-    public RestorableMenuLabel? saintAscendanceTimerLabel;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
-    public SimplerCheckbox? maulingCheckBox, artificerStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
     public OpTextBox countdownTimerTextBox;
-    public OpTextBox? saintAscendDurationTimerTextBox;
+    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public OpComboBox2 arenaGameModeComboBox;
     //public RestorableUIelementWrapper countdownTimerTextBoxWrapper, arenaGameModeComboBoxWrapper; technically not neccessary to store them currently
     //public RestorableUIelementWrapper? saintAscendDurationTimerTextBoxWrapper;
@@ -71,88 +69,28 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         ChangeScene(slugcatScene = Arena.slugcatSelectMenuScenes[Arena.arenaClientSettings.playingAs.value]);
 
-        competitiveShadow = new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
-        competitiveTitle = new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-        playButton = new SimplerButton(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-        // playButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
+        playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
 
-        tabContainer = new TabContainer(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
+        tabContainer = new(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
 
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer);
 
-        arenaSettingsInterface = new(this, tabContainer, new(120f, 205f));
+        tabContainer.AddTab("Arena Playlist", []);
+
+        arenaSettingsInterface = new(this, tabContainer, new(120, 205), Arena.currentGameMode, [..Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
 
-        countdownTimerLabel = new(this, tabContainer, Translate("Countdown Timer:"), new Vector2(25f, 152f), new Vector2(105f, 20f), false);
-        countdownTimerTextBox = new(RainMeadow.rainMeadowOptions.ArenaCountDownTimer, tabContainer.pos + new Vector2(240f, 150f), 50f)
-        {
-            alignment = FLabelAlignment.Center,
-            description = "How long the grace timer at the beginning of rounds lasts for. Default 5s."
-        };
-        countdownTimerTextBox.OnChange += () => { RainMeadow.Debug($"countdown timer textbox: {countdownTimerTextBox.value}"); };
-
-        arenaGameModeLabel = new(this, tabContainer, "Arena Game Mode:", new Vector2(25f, 102f), new Vector2(105f, 20f), false);
-        arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(Arena.currentGameMode), tabContainer.pos + new Vector2(240f, 100), 175f, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
-
-        tabContainer.AddTab("Arena Playlist", []);
-        tabContainer.AddTab(
-            "Match Settings",
-            [
-                arenaSettingsInterface,
-                countdownTimerLabel,
-                new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox),
-                arenaGameModeLabel,
-                new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox),
-            ]
-        );
-
+        tabContainer.AddTab("Match Settings", [arenaSettingsInterface]);
         if (ModManager.MSC)
         {
-            Vector2 abilitySettingsOffset = new(360f, 380f);
-            Vector2 abilitySettingsSpacing = new(0f, 50f);
             painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];
-
-            maulingCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset, 300f, Translate("Enable Mauling:"), description: $"Allow Artificer and {painCatName} to maul held creatures");
-            maulingCheckBox.OnClick += i => RainMeadow.Debug($"mauling: {i}");
-
-            artificerStunCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, Translate("Artificer Stuns Players:"), description: "Allow Artificer to stun players");
-            artificerStunCheckBox.OnClick += i => RainMeadow.Debug($"artificer stuns: {i}");
-
-            sainotCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, "Sain't:", description: "Disable Saint ascendance ability");
-            sainotCheckBox.OnClick += i => RainMeadow.Debug($"sain't: {i}");
-
-            saintAscendanceTimerLabel = new RestorableMenuLabel(this, tabContainer, "Saint Ascendance Duration:", (abilitySettingsOffset -= abilitySettingsSpacing) - new Vector2(300f, -2f), new Vector2(151f, 20f), false);
-
-            saintAscendDurationTimerTextBox = new OpTextBox(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer, tabContainer.pos + abilitySettingsOffset - new Vector2(13f, 0f), 50f)
-            {
-                alignment = FLabelAlignment.Center,
-                description = "How long Saint's ascendance ability lasts for. Default 120."
-            };
-
-            painCatEggCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} gets egg at 0 throw skill:", description: $"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0");
-            painCatEggCheckBox.OnClick += c => RainMeadow.Debug($"paincat egg: {c}");
-
-            painCatThrowsCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} can always throw spears:", description: $"Always allow {painCatName} to throw spears, even if throw skill is 0");
-            painCatThrowsCheckBox.OnClick += c => RainMeadow.Debug($"paincat spear: {c}");
-
-            painCatLizardCheckBox = new SimplerCheckbox(this, tabContainer, abilitySettingsOffset -= abilitySettingsSpacing, 300f, $"{painCatName} sometimes gets a friend:", description: $"Allow {painCatName} to rarely spawn with a little friend");
-            painCatLizardCheckBox.OnClick += c => RainMeadow.Debug($"paincat friend: {c}");
-
-            tabContainer.AddTab(
-             "Slugcat Abilities",
-                [
-                    maulingCheckBox,
-                    artificerStunCheckBox,
-                    sainotCheckBox,
-                    saintAscendanceTimerLabel,
-                    new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox),
-                    painCatLizardCheckBox,
-                    painCatEggCheckBox,
-                    painCatThrowsCheckBox,
-                ]
-            );
+            slugcatAbilitiesInterface = new(this, tabContainer, new(360, 380), new(0, 50), painCatName);
+            slugcatAbilitiesInterface.CallForSync();
+            tabContainer.AddTab("Slugcat Abilities", [slugcatAbilitiesInterface]);
         }
 
         slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), description: "Go back to main lobby");
@@ -304,12 +242,13 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
     public override void ShutDownProcess()
     {
-        manager.rainWorld.progression.SaveProgression(true, true);
         if (OnlineManager.lobby?.isOwner == true)
         {
+            SaveInterfaceOptions();
             GetArenaSetup.SaveToFile();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
+        manager.rainWorld.progression.SaveProgression(true, true);
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
             OnlineManager.LeaveLobby();
@@ -349,10 +288,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             gradientSprite.x = slugcatSelectPage.DrawX(timeStacker) + gradientSpritePos.x;
             gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
         }
-        countdownTimerLabel.label.color = countdownTimerTextBox.colorEdge;
-        arenaGameModeLabel.label.color = arenaGameModeComboBox.colorEdge;
-        if (saintAscendanceTimerLabel != null && saintAscendDurationTimerTextBox != null)
-            saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.colorEdge;
     }
     public override string UpdateInfoText()
     {
@@ -400,6 +335,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                     smallPlayerBox.slugcatButton.slug = GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
+
     }
     public void UpdateMovingPage()
     {
@@ -418,6 +354,20 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
                 pagesMoving = false;
                 pageFullyTransitioned = true;
             }
+        }
+    }
+    public void SaveInterfaceOptions()
+    {
+        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
+        if (slugcatAbilitiesInterface != null)
+        {
+            RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.BlockArtiStun.Value = slugcatAbilitiesInterface.blockArtiStunCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.ArenaSAINOT.Value = slugcatAbilitiesInterface.sainotCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.PainCatEgg.Value = slugcatAbilitiesInterface.painCatEggCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.PainCatThrows.Value = slugcatAbilitiesInterface.painCatThrowsCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.PainCatLizard.Value = slugcatAbilitiesInterface.painCatLizardCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
     public void BuildPlayerDisplay()
