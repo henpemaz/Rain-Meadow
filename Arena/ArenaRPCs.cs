@@ -7,6 +7,67 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_AddPlayerWaiting(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (!arena.playersLateWaitingInLobbyForNextRound.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.playersLateWaitingInLobbyForNextRound.Add(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_NotifyRejoinAllowed(bool hasPermission)
+        {
+            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (lobby == null)
+                {
+                    RainMeadow.Debug("Could not start player");
+                    return;
+                }
+                RainMeadow.Debug("Starting game for player");
+                arena.isInGame = true; // state might be too late
+                arena.hasPermissionToRejoin = hasPermission;
+                RainMeadow.Debug("Start game immediately");
+                lobby.StartGame();
+            }
+        }
+
+        public static void Arena_EndSessionEarly()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null)
+                {
+                    RainMeadow.Error("Arena: RainWorldGame is null!");
+                    return;
+                }
+                game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
+
+
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_ForceReadyUp()
         {
             if (RainMeadow.isArenaMode(out var arena))
@@ -148,11 +209,13 @@ namespace RainMeadow
 
         }
 
+
         [RPCMethod]
-        public static void Arena_ReadyForNextLevel(string userIsReady)
+        public static void Arena_ReadyForNextLevel()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
+                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)
                 {
@@ -160,11 +223,10 @@ namespace RainMeadow
                 }
                 for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
                 {
-                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
-                    {
-                        game.arenaOverlay.result[i].readyForNextRound = true;
-                    }
+                    game.arenaOverlay.result[i].readyForNextRound = true;
                 }
+                game.arenaOverlay.nextLevelCall = true;
+
             }
 
         }
@@ -211,23 +273,6 @@ namespace RainMeadow
                     arena.playersReadiedUp.list.Add(userIsReady.id);
                 }
 
-            }
-
-        }
-        [RPCMethod]
-        public static void Arena_NotifyStartGame()
-        {
-            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (lobby == null)
-                {
-                    RainMeadow.Debug("Could not start player");
-                    return;
-                }
-                RainMeadow.Debug("Starting game for player");
-                arena.isInGame = true; // state might be too late
-                lobby.StartGame();
             }
         }
 
