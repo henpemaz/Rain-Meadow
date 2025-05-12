@@ -68,78 +68,78 @@ public static class DeathMessage
             switch (cause)
             {
                 default:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("died."));
                     break;
                 case DeathType.Rain:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was crushed by the rain."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was crushed by the rain."));
                     break;
                 case DeathType.Abyss:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("fell into the abyss."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("fell into the abyss."));
                     break;
                 case DeathType.Drown:
                     if ((opo.apo as AbstractCreature).realizedCreature != null && (opo.apo as AbstractCreature).realizedCreature.grabbedBy.Count > 0)
                     {
-                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
+                        ChatLogManager.LogSystem(t + " " + Utils.Translate("was drowned by") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
                         break;
                     }
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("drowned."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("drowned."));
                     break;
                 case DeathType.FallDamage:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("hit the ground too hard."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("hit the ground too hard."));
                     break;
                 case DeathType.Oracle:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was killed through unknown means."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was killed through unknown means."));
                     break;
                 case DeathType.Burn:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("tried to swim in burning liquid."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("tried to swim in burning liquid."));
                     break;
                 case DeathType.PyroDeath:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("spontaneously combusted."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("spontaneously combusted."));
                     break;
                 case DeathType.Freeze:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("froze to death."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("froze to death."));
                     break;
                 case DeathType.WormGrass:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the grass."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was swallowed by the grass."));
                     break;
                 case DeathType.WallRot:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the walls."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was swallowed by the walls."));
                     break;
                 case DeathType.Electric:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was electrocuted."));
                     break;
                 case DeathType.DeadlyLick:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("licked the power."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("licked the power."));
                     break;
                 case DeathType.Coalescipede:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consummed by the swarm."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was consummed by the swarm."));
                     break;
                 case DeathType.UnderwaterShock:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted in the water."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was electrocuted in the water."));
                     break;
 
                 // WATCHER
 
                 case DeathType.Sandstorm:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was obliterated by the sandstorm."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was obliterated by the sandstorm."));
                     break;
                 case DeathType.Poison:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died from poison."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("died from poison."));
                     break;
                 case DeathType.Lightning:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was struck by lightning."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was struck by lightning."));
                     break;
                 case DeathType.Locust:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consumed by locusts."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was consumed by locusts."));
                     break;
                 case DeathType.Ripple:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("swam with the ripples."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("swam with the ripples."));
                     break;
                 case DeathType.Pomegranate:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("experienced the force of fresh fruit."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("experienced the force of fresh fruit."));
                     break;
                 case DeathType.Fire:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was burnt to a crisp."));
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was burnt to a crisp."));
                     break;
             }
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
@@ -168,10 +168,10 @@ public static class DeathMessage
             switch(context)
             {
                 default:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by") + $" {k}.");
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was slain by") + $" {k}.");
                     break;
                 case 1:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was ascended by") + $" {k}.");
+                    ChatLogManager.LogSystem(t + " " + Utils.Translate("was ascended by") + $" {k}.");
                     break;
             }
             
@@ -198,11 +198,11 @@ public static class DeathMessage
             if (!ShouldShowDeath(target)) return;
             if ((killer.apo as AbstractCreature).creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Centipede)
             {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was zapped by a") + " " + Utils.Translate(k) + ".");
+                ChatLogManager.LogSystem(t + " " + Utils.Translate("was zapped by a") + " " + Utils.Translate(k) + ".");
             } 
             else
             {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by a") + " " + Utils.Translate(k) + ".");
+                ChatLogManager.LogSystem(t + " " + Utils.Translate("was slain by a") + " " + Utils.Translate(k) + ".");
             }
 
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
@@ -237,10 +237,10 @@ public static class DeathMessage
             switch (context)
             {
                 default:
-                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
+                    ChatLogManager.LogSystem(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
                     break;
                 case 1:
-                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was ascended by") + $" {k}.");
+                    ChatLogManager.LogSystem(Utils.Translate(t) + " " + Utils.Translate("was ascended by") + $" {k}.");
                     break;
             }
 

@@ -13,19 +13,56 @@ namespace RainMeadow
         // UI, colour of system messages
         public static UnityEngine.Color defaultSystemColor = new(1f, 1f, 0.3333333f);
         private static List<IChatSubscriber> subscribers = new();
+        public static List<string> playerNamesInLobby = new();
 
-        public static void Subscribe(IChatSubscriber e) => subscribers.Add(e);
-        public static void Unsubscribe(IChatSubscriber e) => subscribers.Remove(e);
+        public static void Subscribe(IChatSubscriber e)
+        {
+            subscribers.Add(e);
+            UpdatePlayerNames();
+        }
+        public static void Unsubscribe(IChatSubscriber e)
+        {
+            subscribers.Remove(e);
+            UpdatePlayerNames();
+        }
+
+        public static void UpdatePlayerNames()
+        {
+            if (OnlineManager.lobby != null) 
+            {
+                playerNamesInLobby = OnlineManager.players.Select(p => p.id.name).Distinct().ToList();
+            }
+            else
+            {
+                playerNamesInLobby.Clear();
+            }
+        }
+
+        public static List<string> GetPlayerNames()
+        {
+            UpdatePlayerNames();
+            return playerNamesInLobby;
+        }
 
         public static void LogMessage(string user, string message)
         {
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(e => e.AddMessage(user, message));
         }
-        public static void LogSystemMessage(string message)
+        public static void LogSystem(string message)
         {
             if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
             subscribers.ForEach(e => e.AddMessage("", message));
+        }
+        public static void LogClientMessage(string user, string message, string sendTo) // this thing is gonna be unused for now, i'll try to incorporate it better for the /msg
+        {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
+            subscribers.Where(s => s.PlayerNames.Contains(sendTo)).ToList().ForEach(e => e.AddMessage(user, message));
+        }
+        public static void LogClientSystem(string message, string sendTo)
+        {
+            if (subscribers.Any(s => !s.Active)) subscribers = subscribers.Where(s => s.Active).ToList();
+            subscribers.Where(s => s.PlayerNames.Contains(sendTo)).ToList().ForEach(e => e.AddMessage("", message));
         }
 
         /// <summary>
@@ -71,6 +108,7 @@ namespace RainMeadow
     public interface IChatSubscriber
     {
         public bool Active{ get; }
+        public List<string> PlayerNames { get; }
         public void AddMessage(string user, string text);
     }
 }

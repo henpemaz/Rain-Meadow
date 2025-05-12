@@ -78,6 +78,7 @@ namespace RainMeadow
         public static float ButtonSizeWithSpacing => ButtonSize + ButtonSpacingOffset;
         public static float ButtonSize => 30;
 
+        public List<string> PlayerNames => ChatLogManager.GetPlayerNames();
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {

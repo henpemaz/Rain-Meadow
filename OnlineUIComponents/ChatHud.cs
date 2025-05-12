@@ -27,6 +27,8 @@ namespace RainMeadow
             get => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value;
             set => RainMeadow.rainMeadowOptions.ChatLogOnOff.Value = value;
         }
+        public List<string> PlayerNames => ChatLogManager.GetPlayerNames();
+
         public ChatHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
             textPrompt = hud.textPrompt;

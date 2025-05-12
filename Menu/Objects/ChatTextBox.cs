@@ -90,10 +90,17 @@ namespace RainMeadow
             {
                 if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                 {
-                    MatchmakingManager.currentInstance.SendChatMessage(msg);
-                    foreach (var player in OnlineManager.players)
+                    if (msg.StartsWith("/"))
                     {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
+                        CommandExecute commandExecute = new(msg);
+                    }
+                    else
+                    {
+                        MatchmakingManager.currentInstance.SendChatMessage(msg);
+                        foreach (var player in OnlineManager.players)
+                        {
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
+                        }
                     }
                 }
                 else
