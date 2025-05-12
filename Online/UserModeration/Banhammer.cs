@@ -46,7 +46,8 @@ namespace RainMeadow
         }
         public static void PardonUser(OnlinePlayer steamUser)
         {
-            if (!OnlineManager.lobby.bannedUsers.list.Contains(steamUser.id))
+            if (OnlineManager.lobby.bannedUsers == null) return;
+            if (OnlineManager.lobby.bannedUsers.list.Contains(steamUser.id))
             {
                 OnlineManager.lobby.bannedUsers.list.Remove(steamUser.id);
             }

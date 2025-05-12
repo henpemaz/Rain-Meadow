@@ -13,7 +13,7 @@ namespace RainMeadow
         // UI, colour of system messages
         public static UnityEngine.Color defaultSystemColor = new(1f, 1f, 0.3333333f);
         private static List<IChatSubscriber> subscribers = new();
-        private static List<string> playerNamesInLobby = new();
+        public static List<string> playerNamesInLobby = new();
 
         public static void Subscribe(IChatSubscriber e)
         {
