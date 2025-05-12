@@ -74,18 +74,19 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer);
 
-        tabContainer.AddTab("Arena Playlist", []);
+        TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
+            matchSettingsTab = tabContainer.AddTab("Match Settings");
 
-        arenaSettingsInterface = new(this, tabContainer, new(120, 205), Arena.currentGameMode, [..Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new(this, matchSettingsTab , new(120, 205), Arena.currentGameMode, [..Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
-
-        tabContainer.AddTab("Match Settings", [arenaSettingsInterface]);
+        matchSettingsTab.AddObjects(arenaSettingsInterface);
         if (ModManager.MSC)
         {
             painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];
-            slugcatAbilitiesInterface = new(this, tabContainer, new(360, 380), new(0, 50), painCatName);
+            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab("Slugcat Abilities");
+            slugcatAbilitiesInterface = new(this, slugabilitiesTab, new(360, 380), new(0, 50), painCatName);
             slugcatAbilitiesInterface.CallForSync();
-            tabContainer.AddTab("Slugcat Abilities", [slugcatAbilitiesInterface]);
+            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
 
         slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), description: "Go back to main lobby");
