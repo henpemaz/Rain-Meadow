@@ -10,7 +10,6 @@ namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
-
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;

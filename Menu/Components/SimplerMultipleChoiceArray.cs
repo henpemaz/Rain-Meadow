@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class SimplerMultipleChoiceArray : MultipleChoiceArray, MultipleChoiceArray.IOwnMultipleChoiceArray, IRestorableMenuObject
+public class SimplerMultipleChoiceArray : RestorableMultipleChoiceArray, MultipleChoiceArray.IOwnMultipleChoiceArray, IRestorableMenuObject
 {
     private int selectedButtonIndex;
     public event Action<int>? OnClick;
@@ -27,27 +27,5 @@ public class SimplerMultipleChoiceArray : MultipleChoiceArray, MultipleChoiceArr
         if (array != this) throw new Exception("Another MultipleChoiceArray is using a SimplerMultipleChoiceArray as a MultipleChoiceArray handler");
         selectedButtonIndex = i;
         OnClick?.Invoke(i);
-    }
-
-    public void RestoreSprites()
-    {
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            MultipleChoiceButton btn = buttons[i];
-
-            if (textInBoxes) Container.AddChild(btn.label.label);
-            else Container.AddChild(btn.symbolSprite);
-
-            for (int j = 0; j < btn.roundedRect.sprites.Length; j++)
-                Container.AddChild(btn.roundedRect.sprites[j]);
-        }
-
-        for (int k = 0; k < lines.Length; k++) Container.AddChild(lines[k]);
-        Container.AddChild(label.label);
-    }
-
-    public void RestoreSelectables()
-    {
-        for (int i = 0; i < buttons.Length; i++) page.selectables.Add(buttons[i]);
     }
 }
