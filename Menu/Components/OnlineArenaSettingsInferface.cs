@@ -77,8 +77,8 @@ namespace RainMeadow.UI.Components
                 divSprites[i].x = pos.x + divSpritePos[i].x;
                 divSprites[i].y = pos.y + divSpritePos[i].y;
             }
-            countdownTimerLabel.label.color = countdownTimerTextBox.colorEdge;
-            arenaGameModeLabel.label.color = arenaGameModeComboBox.colorEdge;
+            countdownTimerLabel.label.color = countdownTimerTextBox.rect.colorEdge;
+            arenaGameModeLabel.label.color = arenaGameModeComboBox._rect.colorEdge;
         }
         public override void Update()
         {

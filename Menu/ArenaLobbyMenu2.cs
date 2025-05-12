@@ -15,20 +15,15 @@ namespace RainMeadow.UI;
 public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-    private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
     public SimplerButton playButton, slugcatSelectBackButton;
+    public OnlineArenaSettingsInferface arenaSettingsInterface;
+    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
+    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
+    public Vector2 newPagePos = Vector2.zero;
+    public EventfulSelectOneButton[] slugcatSelectButtons;
     public FSprite[] slugcatDescriptionGradients;
     public Vector2[] slugcatDescriptionGradientsPos, oldPagesPos = [];
-    public Vector2 newPagePos = Vector2.zero;
-    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
-    public OnlineArenaSettingsInferface arenaSettingsInterface;
-    public OpTextBox countdownTimerTextBox;
-    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
-    public OpComboBox2 arenaGameModeComboBox;
-    //public RestorableUIelementWrapper countdownTimerTextBoxWrapper, arenaGameModeComboBoxWrapper; technically not neccessary to store them currently
-    //public RestorableUIelementWrapper? saintAscendDurationTimerTextBoxWrapper;
-    public EventfulSelectOneButton[] slugcatSelectButtons;
     public TabContainer tabContainer;
     public PlayerDisplayer? playerDisplayer;
     public ColorMultipleSlugcatsDialog? colorSlugcatDialog;
@@ -37,13 +32,13 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Page slugcatSelectPage;
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
-    public string? painCatName;
-    public string? painCatDescription;
+    public string? painCatName, painCatDescription;
     public int selectedSlugcatIndex = 0;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType;  set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
+    private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();

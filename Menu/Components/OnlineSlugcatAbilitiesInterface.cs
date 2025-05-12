@@ -57,7 +57,7 @@ namespace RainMeadow.UI.Components
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.colorEdge;
+            saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.rect.colorEdge;
         }
         public bool GetChecked(CheckBox box)
         {
@@ -77,18 +77,12 @@ namespace RainMeadow.UI.Components
         {
             if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
             string id = box.IDString;
-            if (id == DISABLEMAUL)
-                arena.disableMaul = c; //owner can only edit it, its fine
-            if (id == DISABLEARTISTUN)
-                arena.disableArtiStun = c;
-            if (id == SAINOT)
-                arena.sainot = c;
-            if (id == PAINCATEGG)
-                arena.painCatEgg = c;
-            if (id == PAINCATTHROWS)
-                arena.painCatThrows = c;
-            if (id == PAINCATLIZARD)
-                arena.painCatLizard = c;
+            if (id == DISABLEMAUL) arena.disableMaul = c; //owner can only edit it, its fine
+            if (id == DISABLEARTISTUN)  arena.disableArtiStun = c;
+            if (id == SAINOT) arena.sainot = c;
+            if (id == PAINCATEGG) arena.painCatEgg = c;
+            if (id == PAINCATTHROWS) arena.painCatThrows = c;
+            if (id == PAINCATLIZARD) arena.painCatLizard = c;
         }
         public void RestoreSprites() 
         {
