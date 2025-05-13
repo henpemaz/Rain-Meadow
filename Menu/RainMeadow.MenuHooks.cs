@@ -78,6 +78,7 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu sOM)
             {
+                if (ModManager.JollyCoop) return; // jolly has it's own coloring system. 
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
