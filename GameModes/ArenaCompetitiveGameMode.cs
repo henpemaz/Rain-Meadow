@@ -106,9 +106,9 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
-                { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "You have no time to waste. Grab your spears and get to work." },
+                { "White", "Your enemies close in around you, but it's not like the first time.\nGood thing you kept that spear." },
+                { "Yellow", "Your hands were never meant for war. \nThey were meant for peace -- by any means necessary." },
+                { "Red", "You've always been a fighter, even in your afflictions. \n Don't let this be your end." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
@@ -143,12 +143,12 @@ namespace RainMeadow
                     /* portrait 3 */ "i'm ded",
                     /* portrait 4 */ "You have been through hell and back, but now, it's\ntime to atone for your sins in your past cycles.",
                     "...",
-                    "...why are you here",
+                    "...why are you here?",
                     ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.\nI thought that glitch was fixed a while ago...",
                     "\"<USERNAME>, youre gonna get us both killed\"",
                     "Seeking love will lead you down the beautiful path of heartbreaking wrecks.",
-                    "\"i gotta throw 2 spears to kill, its just dumb. at least they re added me to arena mode i guess...\"",
+                    "\"i gotta throw 2 spears to kill, its just dumb. at least they added me to arena mode i guess...\"",
                     "\"u dont need 2 be alone, bby.\"",
                     "WHY DID IT HAVE TO BE A VARIABLE\nnum2 IS LITERALLY 0",
                     "Thanks, Andrew.",
@@ -158,6 +158,7 @@ namespace RainMeadow
                     "\"sometimes i wake up with a friend ive never met b4\"",
                     "\"inv? like invalidunits?\"",
                     "$5 to unlock this description.",
+                    
                 ];
 
                 slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
