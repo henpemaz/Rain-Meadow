@@ -29,8 +29,8 @@ Lobbies:|Лобби:
 Rain Meadow Version:|Версия Rain Meadow:
 Credits|Титры
 Search Lobbies|Поиск лобби
-Click to join|Нажмите, чтобы присоединиться к лобби
-<USERNAME>'s Lobby|<USERNAME>
+Click to join|Нажмите, чтобы присоединиться к
+<USERNAME>'s Lobby|Лобби <USERNAME>
 Private|Част.
 max|макс
 player|игрок
@@ -132,9 +132,9 @@ UDP timeout (ms)|Тайм-аут UDP (ms)
 UDP heartbeat (ms)|Частота UDP (ms)
 ///Игра
 ///Чат
-Press '|Нажмите «
-' to chat, press '|», чтобы пообщаться, нажмите «
-' to toggle the chat log|», чтобы переключить журнал чатов.
+Press '|Нажми «
+' to chat, press '|», чтобы пообщаться, нажми «
+' to toggle the chat log|», чтобы переключить журнал чата.
 ///Присоединение/Отключение
 joined the game.|присоединился к игре.
 tried to join the game but was kicked.|попытался присоединиться к игре, но был выгнан.
