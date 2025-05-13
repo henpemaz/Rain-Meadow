@@ -5,7 +5,8 @@ namespace RainMeadow
 {
     public class ArenaClientSettings : OnlineEntity.EntityData
     {
-        public SlugcatStats.Name playingAs;
+        public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
+        public bool selectingSlugcat;
 
         public ArenaClientSettings() { }
 
@@ -16,19 +17,24 @@ namespace RainMeadow
 
         public class State : EntityDataState
         {
-            [OnlineField(nullable = true)]
-            public SlugcatStats.Name playingAs;
+            [OnlineField(group = "arenaClientData")]
+            public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
+            [OnlineField(group = "arenaClientData")]
+            public bool selectingSlugcat;
+
             public State() { }
+
             public State(ArenaClientSettings onlineEntity) : base()
             {
                 playingAs = onlineEntity.playingAs;
-
+                selectingSlugcat = onlineEntity.selectingSlugcat;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
-                var avatarSettings = (ArenaClientSettings)entityData;
-                avatarSettings.playingAs = playingAs;
+                var clientSettings = (ArenaClientSettings)entityData;
+                clientSettings.playingAs = playingAs;
+                clientSettings.selectingSlugcat = selectingSlugcat;
             }
 
             public override Type GetDataType() => typeof(ArenaClientSettings);

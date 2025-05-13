@@ -48,6 +48,8 @@ namespace RainMeadow.UI.Components
             InitButtons(canKick);
             this.SafeAddSubobjects(slugcatButton, nameLabel, colorInfoButton, infoKickButton);
             subObjects.AddRange(lines);
+            selectingStatusLabel = new FLabel(Custom.GetFont(), "Selecting\nSlugcat");
+            Container.AddChild(selectingStatusLabel);
 
         }
         public override void RemoveSprites()
@@ -55,6 +57,7 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             sprites.Do(x => x.RemoveFromContainer());
             pingLabel.RemoveFromContainer();
+            selectingStatusLabel.RemoveFromContainer();
         }
         public override void Update()
         {
@@ -62,6 +65,9 @@ namespace RainMeadow.UI.Components
             rainbowColor.hue = GetLerpedRainbowHue();
             slugcatButton.portraitSecondaryLerpFactor = GetLerpedRainbowHue(0.75f);
             realPing = Math.Max(1, profileIdentifier.ping - 16);
+            lastSelectingStatusLabelFade = selectingStatusLabelFade;
+            selectingStatusLabelFade = isSelectingSlugcat ? Custom.LerpAndTick(selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(selectingStatusLabelFade, 0f, 0.12f, 0.1f);
+            slugcatButton.isBlackPortrait = isSelectingSlugcat;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -86,6 +92,11 @@ namespace RainMeadow.UI.Components
                 sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
+
+            selectingStatusLabel.x = slugcatButton.pos.x + (slugcatButton.size.x / 2) + pos.x;
+            selectingStatusLabel.y = slugcatButton.pos.y + (slugcatButton.size.y / 2) + pos.y;
+            selectingStatusLabel.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f) * alphaValue;
+
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
             HSLColor basecolor = MyBaseColor();
@@ -104,6 +115,9 @@ namespace RainMeadow.UI.Components
             lines.Do(x => x.lineConnector.alpha = alpha / 2);
             sprites.Do(x => x.alpha = alpha);
             pingLabel.alpha = alpha;
+            selectingStatusLabel.alpha = alpha * selectingStatusLabelFade;
+
+            alphaValue = alpha;
         }
         public void InitButtons(bool canKick)
         {
@@ -155,13 +169,13 @@ namespace RainMeadow.UI.Components
             }
             return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
         }
-        public float alpha;
+        public float alpha, selectingStatusLabelFade = 0, lastSelectingStatusLabelFade = 0, alphaValue = 1;
         public int realPing;
-        public bool showRainbow;
+        public bool showRainbow, isSelectingSlugcat;
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
         public FSprite[] sprites;
-        public FLabel pingLabel;
+        public FLabel pingLabel, selectingStatusLabel;
         public List<UiLineConnector> lines;
         public ScrollSymbolButton? infoKickButton;
         public ScrollSymbolButton colorInfoButton;

@@ -46,7 +46,7 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public Dictionary<int ,int> playerNumberWithKills = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithKills = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
 
@@ -78,7 +78,6 @@ namespace RainMeadow
             ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
-            arenaClientSettings.playingAs = SlugcatStats.Name.White;
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
             playerEnteredGame = 0;

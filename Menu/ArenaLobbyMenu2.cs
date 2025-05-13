@@ -36,7 +36,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public int selectedSlugcatIndex = 0;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
-    public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType;  set => GetArenaSetup.currentGameType = value; }
+    public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
@@ -77,7 +77,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
-        arenaSettingsInterface = new(this, matchSettingsTab , new(120, 205), Arena.currentGameMode, [..Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
         if (ModManager.MSC)
@@ -261,6 +261,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         else if (pageFullyTransitioned) base.Update();
         else SmartMenuUpdateNoEscapeCheck();
 
+        Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
+
         foreach (SelectOneButton button in slugcatSelectButtons)
             button.buttonBehav.greyedOut = pendingBgChange;
 
@@ -306,7 +308,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             }
             if (idString == "SESSIONLENGTH")
             {
-                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
             }
             if (idString == "WILDLIFE")
             {
@@ -325,7 +327,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
             {
                 if (button is ArenaPlayerBox playerBox)
+                {
                     playerBox.slugcatButton.LoadNewSlugcat(GetArenaClientSettings(playerBox.profileIdentifier)?.playingAs, false, false);
+                    playerBox.isSelectingSlugcat = GetArenaClientSettings(playerBox.profileIdentifier)?.selectingSlugcat ?? false;
+                }
 
                 if (button is ArenaPlayerSmallBox smallPlayerBox)
                     smallPlayerBox.slugcatButton.slug = GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
