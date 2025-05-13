@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using Menu;
 using Menu.Remix.MixedUI;
-using System.Text.RegularExpressions;
-using System.Globalization;
-using Rewired;
 
 namespace RainMeadow
 {
