@@ -19,7 +19,7 @@ namespace RainMeadow
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
-        public static int textLimit = 75;
+        public int textLimit = 75;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
 
@@ -61,7 +61,7 @@ namespace RainMeadow
         }
         private void CaptureInputs(char input)
         {
-            //if (!focused) return;
+            if (!focused) return;
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = lastSentMessage;
