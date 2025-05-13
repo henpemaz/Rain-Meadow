@@ -4,6 +4,7 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -28,9 +29,11 @@ namespace RainMeadow
             On.JollyCoop.JollyCustom.SlugClassMenu += JollyCoop_JollyCustom_SlugClassMenu;
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud1;
             On.RoomCamera.ChangeCameraToPlayer += RoomCamera_ChangeCameraToPlayer;
-            On.JollyCoop.JollyMenu.JollyPlayerSelector.Update +=JollyPlayerSelector_Update;
-
+            On.JollyCoop.JollyMenu.JollyPlayerSelector.Update += JollyPlayerSelector_Update;
             On.JollyCoop.JollyMenu.JollyPlayerSelector.GetPupButtonOffName += GetPupButtonOffName;
+            IL.JollyCoop.JollyHUD.JollyMeter.ctor += JollyMeter_ctor;
+            IL.JollyCoop.JollyHUD.JollyMeter.Draw += JollyMeter_Draw;
+            IL.JollyCoop.JollyHUD.JollyMeter.Update += JollyMeter_PlayerIcon_Draw;
 
 
             // disabling jolly co-op code.
@@ -258,6 +261,10 @@ namespace RainMeadow
                         }
                     }
                 }
+
+                if (message.Equals("friendly_fire")) {
+                    story.friendlyFire = message.Contains("on");
+                }
             }
 
             orig(self, sender, message);
@@ -318,7 +325,7 @@ namespace RainMeadow
                 self.slidingMenu.friendlySteal.buttonBehav.greyedOut = true;
                 // self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
                 
-                // if ((!self.slidingMenu.friendlyToggle.isToggled) != story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
+                if (self.slidingMenu.friendlyToggle.isToggled == story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
                 if (self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
                 // if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
                 if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
@@ -405,13 +412,19 @@ namespace RainMeadow
         private void RoomCamera_ChangeCameraToPlayer(On.RoomCamera.orig_ChangeCameraToPlayer orig, RoomCamera self, AbstractCreature cameraTarget) {
             orig(self, cameraTarget);
             if (OnlineManager.lobby != null) {
+                RainMeadow.DebugMe();
                 var spectator = self.hud.parts.OfType<SpectatorHud>().FirstOrDefault();
                 if (spectator is not null) {
                     spectator.ClearSpectatee();
                 }
 
-                if (self.room?.abstractRoom != cameraTarget.Room && cameraTarget.Room.realizedRoom is not null) {
-                    
+                if (cameraTarget.Room.realizedRoom is null) 
+                {
+                    cameraTarget.Room.world.ActivateRoom(cameraTarget.Room);
+                }
+                
+                if (self.room?.abstractRoom != cameraTarget.Room && cameraTarget.Room.realizedRoom is not null)
+                {    
                     self.MoveCamera(cameraTarget.Room.realizedRoom, -1);
                 }
             }
@@ -422,6 +435,80 @@ namespace RainMeadow
             orig(self);
             if (isStoryMode(out var story)) {
                 self.playerLabelSelector.greyedOut = !self.Joined || (story.avatarCount <= 1);
+            }
+        }
+
+        private void JollyMeter_ctor(ILContext ctx) {
+            try {
+                ILCursor cursor = new(ctx);
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<PlayerGraphics>(nameof(PlayerGraphics.SlugcatColor)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloc_0);
+                cursor.Emit(OpCodes.Ldloc_1);
+                cursor.EmitDelegate((Color orig_color, JollyCoop.JollyHUD.JollyMeter self, List<AbstractCreature> players, int index) => {
+                    try {
+                        if (isStoryMode(out var story)) {
+                            RainMeadow.Debug(story.avatarSettings[index].bodyColor);
+                            return story.avatarSettings[index].bodyColor;
+                        }
+                        
+                    } catch (Exception except) {
+                        RainMeadow.Error(except);
+                    } 
+                    return orig_color;
+                });
+
+
+            } catch (Exception except) {
+                RainMeadow.Error(except);
+            }
+        }
+
+
+        private void JollyMeter_Draw(ILContext ctx) {
+            try {
+                ILCursor cursor = new(ctx);
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<PlayerGraphics>(nameof(PlayerGraphics.SlugcatColor)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Color orig_color, JollyCoop.JollyHUD.JollyMeter self) => {
+                    try {
+                        if (isStoryMode(out var story)) {
+                            return story.avatarSettings[self.playerStateFocusedByCamera.playerNumber].bodyColor;
+                        }
+                        
+                    } catch (Exception except) {
+                        RainMeadow.Error(except);
+                    } 
+                    return orig_color;
+                });
+
+
+            } catch (Exception except) {
+                RainMeadow.Error(except);
+            }
+        }
+
+
+        private void JollyMeter_PlayerIcon_Draw(ILContext ctx) {
+            try {
+                ILCursor cursor = new(ctx);
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<PlayerGraphics>(nameof(PlayerGraphics.SlugcatColor)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((Color orig_color, JollyCoop.JollyHUD.JollyMeter.PlayerIcon self) => {
+                    try {
+                        if (isStoryMode(out var story)) {
+                            return story.avatarSettings[self.playerState.playerNumber].bodyColor;
+                        }
+                        
+                    } catch (Exception except) {
+                        RainMeadow.Error(except);
+                    } 
+                    return orig_color;
+                });
+
+
+            } catch (Exception except) {
+                RainMeadow.Error(except);
             }
         }
     }
