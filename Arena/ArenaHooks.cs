@@ -428,8 +428,8 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        var onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        if (!onlinePlayer.isMe)
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
                             onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                         }
