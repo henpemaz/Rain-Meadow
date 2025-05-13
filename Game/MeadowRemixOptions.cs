@@ -28,6 +28,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> StorySpearSteal;
+    public readonly Configurable<bool> ArenaSpearSteal;
+
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
@@ -84,6 +87,9 @@ public class RainMeadowOptions : OptionInterface
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
         WearingCape = config.Bind("WearingCape", true);
+
+        StorySpearSteal = config.Bind("StorySpearSteal", false);
+        ArenaSpearSteal = config.Bind("ArenaSpearSteal", false);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
@@ -232,7 +238,7 @@ public class RainMeadowOptions : OptionInterface
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            OnlineStorySettings = new UIelement[9]
+            OnlineStorySettings = new UIelement[11]
            {    new OpLabel(10f, 550f, Translate("Story"), bigText: true),
 
                 new OpLabel(10f, 500, Translate("Ready to shelter/gate"), bigText: false),
@@ -253,13 +259,20 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 320, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, hosts can choose slugcat campaigns that are unstable.")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+
+                new OpCheckBox(StorySpearSteal, new Vector2(10, 260)),
+
+                new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal spears from other players in Story mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
                 }
            };
             storyTab.AddItems(OnlineStorySettings);
 
 
 
-            OnlineArenaSettings = new UIelement[17]
+            OnlineArenaSettings = new UIelement[19]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -292,6 +305,13 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
+
+                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal spears from other players in Arena mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+                new OpCheckBox(ArenaSpearSteal, new Vector2(10, 25))
+
 
 
         };

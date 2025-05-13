@@ -64,7 +64,7 @@ public partial class RainMeadow
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
-        
+
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
@@ -100,9 +100,12 @@ public partial class RainMeadow
         }
     }
 
-    public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self) {
-        if (OnlineManager.lobby != null) {
-            if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null) {
+    public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null)
+            {
                 (self.owner as PlayerGraphics)!.airborneCounter = 0; // fix for weird hand movement when on back.
             }
         }
@@ -110,10 +113,14 @@ public partial class RainMeadow
         return orig(self);
     }
 
-    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit) {
-        if (OnlineManager.lobby != null) {
-            if (self.standing && self.CanPutSlugToBack) {
-                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p)) {
+    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (self.standing && self.CanPutSlugToBack)
+            {
+                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p))
+                {
                     return false;
                 }
             }
@@ -121,19 +128,29 @@ public partial class RainMeadow
         return orig(self, crit);
     }
 
-    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate) {
-        if (OnlineManager.lobby != null) {
+    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
+    {
+        if (OnlineManager.lobby != null)
+        {
             if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                return pickUpCandidate.dead;
+
+            }
             return true;
         }
 
         return orig(self, pickUpCandidate);
     }
 
-    Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
+    Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name)
+    {
         Color orig_color = orig(name);
-        if (OnlineManager.lobby != null) {
-            if (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+        if (OnlineManager.lobby != null)
+        {
+            if (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+            {
                 return new Color(0.467f, 0.867f, 0.812f);
             }
         }
@@ -141,15 +158,18 @@ public partial class RainMeadow
         return orig_color;
     }
 
-    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self) {
+    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self)
+    {
         var slugcat = self.slugcat;
         orig(self);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat == null) return;
 
-        if (slugcat.IsLocal()) {
-            if (!slugcat.isNPC && slugcat.input[0].jmp) {
+        if (slugcat.IsLocal())
+        {
+            if (!slugcat.isNPC && slugcat.input[0].jmp)
+            {
                 slugcat.jumpChunk = self.owner.mainBodyChunk;
                 slugcat.JumpOnChunk();
             }
@@ -158,10 +178,12 @@ public partial class RainMeadow
     }
 
     // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
-    private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu) {
+    private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+    {
         orig(self, eu);
         if (OnlineManager.lobby == null) return;
-        if (!OnlineManager.lobby.gameMode.PlayersCanStack) {
+        if (!OnlineManager.lobby.gameMode.PlayersCanStack)
+        {
             return;
         }
         if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
@@ -170,28 +192,31 @@ public partial class RainMeadow
         }
 
         float range = 26 + self.bodyChunks[1].rad;
-        if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 
-            !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0) {
-                foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer]) {
-                    if (obj is Player other && other.IsLocal()) {
-                        if (other == self) continue;
-                        if (other.slugOnBack == null) continue;
-                        if (other.abstractCreature.GetAllConnectedObjects().Contains(self.abstractCreature)) continue;
-                        if (other.isNPC) continue;
-                        if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
-                        if (!other.Consious) continue;
-                        // if (other.onBack != null) continue; // this is pretty funny
+        if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null &&
+            !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0)
+        {
+            foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer])
+            {
+                if (obj is Player other && other.IsLocal())
+                {
+                    if (other == self) continue;
+                    if (other.slugOnBack == null) continue;
+                    if (other.abstractCreature.GetAllConnectedObjects().Contains(self.abstractCreature)) continue;
+                    if (other.isNPC) continue;
+                    if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
+                    if (!other.Consious) continue;
+                    // if (other.onBack != null) continue; // this is pretty funny
 
 
-                        var viable = false;
-                        viable = viable || other.standing;
-                        viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
-                        viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
-                        if (!viable) continue;
-                        
-                        other.slugOnBack?.SlugToBack(self);
-                    }
+                    var viable = false;
+                    viable = viable || other.standing;
+                    viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
+                    viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
+                    if (!viable) continue;
+
+                    other.slugOnBack?.SlugToBack(self);
                 }
+            }
         }
     }
 
@@ -199,7 +224,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-           upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
+            upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
         }
         orig(self, upPicker);
     }
@@ -270,26 +295,30 @@ public partial class RainMeadow
         }
     }
 
-    private void Player_checkInput_IgnoreIfCarryingSlugNPC(ILContext context) {
+    private void Player_checkInput_IgnoreIfCarryingSlugNPC(ILContext context)
+    {
         try
         {
             var cursor = new ILCursor(context);
             // if (this.controller != null)
-            cursor.GotoNext( MoveType.After,
-                x => x.MatchLdarg(0), 
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
                 x => x.MatchLdfld<Player>(nameof(Player.controller))
                 // x => x.MatchBrfalse
             );
-            
+
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate((Player.PlayerController controller, Player self) => {
-                if (OnlineManager.lobby != null && isStoryMode(out var _)) {
-                    if (controller is OnlineController && self.isNPC) {
+            cursor.EmitDelegate((Player.PlayerController controller, Player self) =>
+            {
+                if (OnlineManager.lobby != null && isStoryMode(out var _))
+                {
+                    if (controller is OnlineController && self.isNPC)
+                    {
                         if (self.grabbedBy.FirstOrDefault(x => x.grabber is Player) is not null) return null;
                         if (self.onBack is not null) return null;
                     }
-                } 
-                
+                }
+
                 return controller;
             });
 
@@ -356,26 +385,39 @@ public partial class RainMeadow
 
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
     {
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null)
+        {
             var onlineEntity = self.abstractCreature?.GetOnlineObject();
-            if (onlineEntity is not null) {
-                if (onlineEntity.isMine) { // If we own the player we don't need a controller
-                    if (self.controller is OnlineController) {
+            if (onlineEntity is not null)
+            {
+                if (onlineEntity.isMine)
+                { // If we own the player we don't need a controller
+                    if (self.controller is OnlineController)
+                    {
                         self.controller = null;
                     }
 
-                } else { 
-                    if (self.controller is null) { // If we don't own the player we need a controller
+                }
+                else
+                {
+                    if (self.controller is null)
+                    { // If we don't own the player we need a controller
                         self.controller = new OnlineController(onlineEntity, self);
                     }
 
                     // If we're being held by a local player. they should request ownership of us
-                    if (self.isNPC) {
-                        if (self.onBack is not null) {
-                            if (self.onBack.IsLocal() &&  onlineEntity.isTransferable && !onlineEntity.isPending) {
-                                try {
+                    if (self.isNPC)
+                    {
+                        if (self.onBack is not null)
+                        {
+                            if (self.onBack.IsLocal() && onlineEntity.isTransferable && !onlineEntity.isPending)
+                            {
+                                try
+                                {
                                     onlineEntity.Request();
-                                } catch (Exception except) {
+                                }
+                                catch (Exception except)
+                                {
                                     RainMeadow.Debug(except);
                                 }
                             }
@@ -404,10 +446,12 @@ public partial class RainMeadow
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
             }
 
-            if (!self.isNPC) {
+            if (!self.isNPC)
+            {
                 Player? grabbingplayer = self.grabbedBy.FirstOrDefault(x => x.grabber is Player)?.grabber as Player;
-                if (grabbingplayer != null) {
-                    if (!self.input[0].AnyDirectionalInput && !self.input[0].jmp) 
+                if (grabbingplayer != null)
+                {
+                    if (!self.input[0].AnyDirectionalInput && !self.input[0].jmp)
                     {
                         self.input[0].x = grabbingplayer.input[0].x;
                         self.input[0].y = grabbingplayer.input[0].y;
@@ -422,7 +466,7 @@ public partial class RainMeadow
 
                         self.input[0].jmp = grabbingplayer.input[0].jmp;
                     }
-                } 
+                }
 
             }
         }
@@ -862,7 +906,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (!self.isNPC) 
+            if (!self.isNPC)
             {
                 if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
                 {
@@ -908,7 +952,8 @@ public partial class RainMeadow
             return;
         }
 
-        if (self.slugOnBack is not null) {
+        if (self.slugOnBack is not null)
+        {
             self.slugOnBack.DropSlug();
         }
 
@@ -1010,23 +1055,27 @@ public partial class RainMeadow
         orig(self, grasp, eu);
     }
 
-    // TODO: toggleable friendly steal
     private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        if (!self.isNPC) {
-            if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return false;
+        if (!self.isNPC)
+        {
+            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return story.spearSteal;
+            if (isArenaMode(out var arena) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player)) return arena.spearSteal;
         }
 
-        if (OnlineManager.lobby != null) {
-            if (obj is Player p) {
-                if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC) {
+        if (OnlineManager.lobby != null)
+        {
+            if (obj is Player p)
+            {
+                if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC)
+                {
                     return false;
                 }
             }
 
         }
 
-        
+
         return orig(self, obj);
     }
 

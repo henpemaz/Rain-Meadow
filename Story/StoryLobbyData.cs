@@ -52,6 +52,8 @@ namespace RainMeadow
             public bool requireCampaignSlugcat;
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
+            [OnlineField]
+            public bool storySpearSteal;
             public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
@@ -68,6 +70,7 @@ namespace RainMeadow
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = (byte)storyGameMode.readyForGate;
                 saveStateString = storyGameMode.saveStateString;
+                storySpearSteal = storyGameMode.spearSteal;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -135,6 +138,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).region = region;
 
                 (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
+                (lobby.gameMode as StoryGameMode).spearSteal = storySpearSteal;
 
 
                 foreach (OnlineEntity.EntityId pupid in pups) {

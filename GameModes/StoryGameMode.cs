@@ -36,6 +36,9 @@ namespace RainMeadow
         public bool hasSheltered = false;
 
         public List<AbstractCreature> pups;
+
+        public bool spearSteal = RainMeadow.rainMeadowOptions.StorySpearSteal.Value;
+
         public void Sanitize()
         {
             hasSheltered = false;

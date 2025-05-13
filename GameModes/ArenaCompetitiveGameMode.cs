@@ -31,9 +31,12 @@ namespace RainMeadow
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
+        public bool spearSteal = RainMeadow.rainMeadowOptions.ArenaSpearSteal.Value;
 
         public string paincatName;
         public int lizardEvent;
+
+        public override bool PlayersCanHandhold => false;
 
 
 
