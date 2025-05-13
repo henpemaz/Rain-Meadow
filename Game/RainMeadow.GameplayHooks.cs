@@ -556,20 +556,17 @@ namespace RainMeadow
 
                     if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6) {
                         ready_for_win = false;
-                        RainMeadow.Debug("not sheltering due to proximity to exit");
                         break;
                     }
 
                     if (!ShelterDoor.IsTileInsideShelterRange(self.room.abstractRoom, player.pos.Tile)) {
                         ready_for_win = false;
-                        RainMeadow.Debug("not sheltering because we are not in range");
                         break;
                     }
 
 
                     if (player.Room != self.room.abstractRoom)  {
                         ready_for_win = false;
-                        RainMeadow.Debug("not sheltering because some local player is not in the room");
                         continue;
                     }
 
@@ -580,7 +577,7 @@ namespace RainMeadow
                                 break;
                             }
                             
-                            if (p.touchedNoInputCounter < 40) {
+                            if (p.touchedNoInputCounter < 80) {
                                 ready_for_win = false;
                                 break;
                             }
