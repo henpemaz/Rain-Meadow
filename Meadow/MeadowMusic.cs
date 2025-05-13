@@ -26,7 +26,7 @@ namespace RainMeadow
             
             On.Music.PlayerThreatTracker.Update += PlayerThreatTracker_Update; // joke of how hooks get grouped, so, oooo what about them below vvvvvv??  --> yo which hook is this one go to? oooOOOoooooo
 
-            On.Music.MusicPlayer.UpdateMusicContext += MusicPlayer_UpdateMusicContext;
+            On.Music.MusicPiece.ctor += MusicPiece_ctor;
             On.Music.MusicPiece.StopAndDestroy += MusicPiece_StopAndDestroy;
 
             //In game music requests we want to hook for treatment if we're in a group (to broadcast/not play)
@@ -42,9 +42,8 @@ namespace RainMeadow
 
             //On.AmbientSoundPlayer.TryInitiation += AmbientSoundPlayer_TryInitiation;
 
-            //note to self: apperantly you gotta remove the highpass from songs before they get removed??
-
         }
+
         //SoundId to self if you ever need it, i have gathered wisdom throughout this journey: Processmanager.Preswitchmainprocess calls soundloader.releaseallunityaudio
         //private static void AmbientSoundPlayer_TryInitiation(On.AmbientSoundPlayer.orig_TryInitiation orig, AmbientSoundPlayer self)
         //{
@@ -52,7 +51,6 @@ namespace RainMeadow
         //}
 
         //Game music hooks 
-
         private static void SSSong_Update(On.Music.SSSong.orig_Update orig, SSSong self)
         {
             if (self.setVolume == null && self.destroyCounter > 150)
@@ -225,15 +223,16 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
                 // haha fixed   shoddily bumbo --> is only called when you're a slugcat apperantly, fuck.
-                //RainMeadow.Debug("Game requesting a song");
-                if (self == null || queueingSong ||
-                   (self.song != null && self.song.name == musicEvent.songName) ||
-                   (self.song == null && self.nextSong != null && self.nextSong.name == musicEvent.songName) || 
-                   songHistory.Contains(musicEvent.songName) ||
-                   self.song != null && self.song.subTracks[0].source.time > 20)
+                if (self == null
+                    || (queueingSong)
+                    || (latestrequest == musicEvent.songName)
+                    || (self.song != null && self.song.name == musicEvent.songName)
+                    || (self.nextSong != null && self.nextSong.name == musicEvent.songName)
+                    || (songHistory.Contains(musicEvent.songName))
+                    || (self.song != null && self.song.subTracks[0].source.time > 80))
                    return;
                 //NO NEED TO REQUEST THE SONG IF YOU CAN'T/COULD PLAY IT OR ALREADY ARE, WILL, OR HAVE
-                RainMeadow.Debug("Checking if i'm in a group");
+                RainMeadow.Debug("Game successfully requested a song: " + musicEvent.songName + ". Checking if i'm in a group");
                 var smg = OnlineManager.lobby.GetData<LobbyMusicData>();
                 var groupImIn = smg.playerGroups[OnlineManager.mePlayer.inLobbyId];
                 ushort hostId = groupImIn == 0 ? (ushort)0U : smg.groupHosts[groupImIn];
@@ -252,41 +251,20 @@ namespace RainMeadow
         }
 
 
-        //musiccode
-        private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
+        // Music code
+        private static void MusicPiece_ctor(On.Music.MusicPiece.orig_ctor orig, MusicPiece self, MusicPlayer musicPlayer, string name, MusicPlayer.MusicContext context)
         {
-            if (self.musicContext != null)
+            orig.Invoke(self, musicPlayer, name, context);
+
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (currentProcess.ID == ProcessManager.ProcessID.Game)
+                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
                 {
-                    if (((RainWorldGame)currentProcess).IsStorySession && OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
-                    {
-                        if (self.song != null)
-                        {
-                            if (self.gameObj.GetComponent<AudioHighPassFilter>() == null)
-                            {
-                                self.gameObj.AddComponent<AudioHighPassFilter>();
-                                self.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
-                                self.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
-                    }
-                }
-                else
-                {
-                    if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
                 }
             }
-            else
-            {
-                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
-                
-            }
-            orig.Invoke(self, currentProcess);
         }
         private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
         {
@@ -310,12 +288,7 @@ namespace RainMeadow
                 self.ghostMode = ghostiness > 0.1f ? ghostiness : 0f;
                 
                 var Components = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>;
-                if (Components() == null)
-                {
-                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
-                    Components().enabled = true;
-                    Components().cutoffFrequency = 10f;
-                }
+                
 
                 if (self.ghostMode == 0f && Components().enabled)
                 {
@@ -349,17 +322,17 @@ namespace RainMeadow
         private static void MusicPiece_StopAndDestroy(On.Music.MusicPiece.orig_StopAndDestroy orig, MusicPiece self)
         {
             //RainMeadow.Debug("DESTROYED SONG");
-            orig.Invoke(self);
-
-            if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm)
+            //if (OnlineManager.lobby == null || OnlineManager.lobby.gameMode is not MeadowGameMode mgm)
+            //{ 
+            if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
             {
-                if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() != null)
-                {
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
-                    UnityEngine.Object.Destroy(self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>());
-                }
+                self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
+                UnityEngine.Object.Destroy(self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>());
             }
+            //} No big deal to add another nullcheck generally, right?
+
+            orig.Invoke(self);
         }
         private static void SubTrack_StopAndDestroy(On.Music.MusicPiece.SubTrack.orig_StopAndDestroy orig, MusicPiece.SubTrack self)
         {
@@ -635,7 +608,7 @@ namespace RainMeadow
                 }
                 else
                 {
-                    RainMeadow.Debug($"host avatar for {hostId} for group {groupImIn} not found. or that their song is just not wanted");
+                    RainMeadow.Debug($"host avatar of Id: {hostId} for group: {groupImIn} not found. or that their song is just not wanted");
                 }
             }
             inGroupbuffer = groupImIn;
@@ -716,38 +689,6 @@ namespace RainMeadow
             gamedontload = Input.anyKey;
         }
 
-        /*
-        //static KeyValuePair<ushort, OnlineCreature> HostAvatar;
-        //private static string lastsongplayed;
-        private static bool TryGetIfIShouldPlaySongNameThatThisIdProvides(ushort Id, out MeadowMusicData nameOfSong)
-        {
-            nameOfSong = null;
-            if (OnlineManager.lobby.PlayerFromId(Id) is OnlinePlayer other
-            && OnlineManager.lobby.playerAvatars.FirstOrDefault(kvp => kvp.Key == other).Value is OnlineEntity.EntityId otherOcId
-            && otherOcId.FindEntity() is OnlineCreature oc)
-            {
-                if (oc.GetData<MeadowMusicData>() is MeadowMusicData myDJsdata
-                    && !(myDJsdata.providedSong == "" || myDJsdata.providedSong == null || myDJsdata.providedSong == songtoavoid))
-                {
-                    //if (myDJsdata.providedSong == lastsongplayed)
-                    //{
-                    //    RainMeadow.Debug("Fake, " + myDJsdata.providedSong);
-                    //    return false;
-                    //}
-                    //lastsongplayed = myDJsdata.providedSong;
-                    songtoavoid = "";
-                    nameOfSong = myDJsdata;
-                    return true;
-                }
-                return false;
-            }
-            else
-            {
-                RainMeadow.Debug($"{Id} does not link to a creature"); //Maybe I should make it null
-                return false;
-            }
-        }
-        */
         static KeyValuePair<ushort, OnlineCreature> HostAvatar;
         static bool HasDeclaredSongTaste = false;
         private static bool TryGetMusicdata(ushort Id, out MeadowMusicData nameOfSong)
@@ -784,7 +725,7 @@ namespace RainMeadow
                 {
                     if (!HasDeclaredSongTaste)
                     {
-                        RainMeadow.Debug("Song is MID");
+                        RainMeadow.Debug(Id.ToString() + "'s Song is MID");
                         if (myDJsdata.providedSong != null) RainMeadow.Debug("Stinks of " + myDJsdata.providedSong);
                     }
                     HasDeclaredSongTaste = true;
@@ -824,6 +765,7 @@ namespace RainMeadow
             float timmmetaken = Time.time;
             if (UnityEngine.Debug.isDebugBuild) // debug build can't do certain things outside of main thread, go figure
             {
+                RainMeadow.Debug("Is debug build");
                 RainMeadow.Debug("Loading song " + songtobesang);
                 Song? song = LoadSong(musicPlayer, songtobesang, timetobestarted);
                 RainMeadow.Debug(((musicPlayer != null) ? "Playing song: " : "Not playing song: ") + songtobesang);
@@ -832,6 +774,7 @@ namespace RainMeadow
             }
             else
             {
+                RainMeadow.Debug("Is not a debug build");
                 Task.Run(() =>
                 {
                     try
@@ -976,7 +919,7 @@ namespace RainMeadow
                 {
                     if (musicPlayer.nextSong != null && (musicPlayer.nextSong.priority >= song.priority || musicPlayer.nextSong.name == song.name))
                     {
-                        RainMeadow.Debug("song collision happened!" + musicPlayer.nextSong.name);
+                        RainMeadow.Debug("song collision happened! " + musicPlayer.nextSong.name);
                         return;
                     }
                     ((RainWorldGame)musicPlayer.manager.currentMainLoop).cameras[0].hud.textPrompt.AddMusicMessage(song.name, 180); //this is shoddy and bad, i just want to push my branch

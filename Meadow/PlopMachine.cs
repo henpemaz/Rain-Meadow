@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
-using System.Drawing.Text;
 
 namespace RainMeadow
 {
@@ -1107,9 +1106,9 @@ namespace RainMeadow
             {"bar", 96}, {"half", 48},{"quarter", 24},{"eight", 12},{"sixteenth", 6},{"thirtysecond", 3},
             {"quarterT", 32},{"eightT", 16}, {"sixteenthT", 8}, {"thirtysecondT", 4},{"sixtyfourthT", 2},
             {"hundredandtwentyeightT", 1}, {"twobars", 192}, {"threebars", 288}, {"barbar", 384},
- {"2", 192},{"1",    96}, {"1/2",  48},{"1/4",  24}, {"1/8",  12}, {"1/16",  6}, {"1/32",   3},
- {"2/3",64},{"1/3",  32}, {"1/6",  16},{"1/12",  8}, {"1/24",  4}, {"1/48",  2}, {"1/96",   1},
-{"2/4T",64},{"1/4T", 32}, {"1/8T", 16},{"1/16T", 8}, {"1/32T", 4}, {"1/64T", 2}, {"1/128T", 1}, 
+             {"2", 192},{"1",   96}, {"1/2",  48},{"1/4",  24}, {"1/8",  12}, {"1/16", 6}, {"1/32",   3},
+             {"2/3",64},{"1/3", 32}, {"1/6",  16},{"1/12",  8}, {"1/24",  4}, {"1/48", 2}, {"1/96",   1},
+            {"2/4T",64},{"1/4T",32}, {"1/8T", 16},{"1/16T", 8}, {"1/32T", 4}, {"1/64T",2}, {"1/128T", 1}, 
         };
 
         public class Wait
