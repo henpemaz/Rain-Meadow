@@ -203,7 +203,7 @@ namespace RainMeadow
                         {
                             if (self.result[i] != null && self.result[i].winner)
                             {
-                                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber);
+                                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber);
 
                                 if (onlinePlayer != null)
                                 {
@@ -854,7 +854,12 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+                if (onlinePlayer == null)
+                {
+                    RainMeadow.Error("Error getting online player from fake player number!");
+                    return false;
+                }
                 for (int i = 0; i < self.exitManager.playersInDens.Count; i++)
                 {
 
