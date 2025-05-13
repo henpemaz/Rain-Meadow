@@ -22,7 +22,6 @@ namespace RainMeadow
         public static int textLimit = 75;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
-        public static string lastSentMessage = "";
 
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
@@ -62,6 +61,7 @@ namespace RainMeadow
         }
         private void CaptureInputs(char input)
         {
+            //if (!focused) return;
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = lastSentMessage;
