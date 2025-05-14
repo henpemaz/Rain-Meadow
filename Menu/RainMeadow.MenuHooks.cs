@@ -20,6 +20,7 @@ namespace RainMeadow
         {
             IntroRollReplacement.OnEnable();
             IL.Menu.Menu.Update += IL_Menu_Update;
+            On.Menu.Menu.SelectNewObject += On_Menu_SelectNewObject;
             On.Menu.MainMenu.ctor += MainMenu_ctor;
             //On.Menu.InputOptionsMenu.ctor += InputOptionsMenu_ctor;
 
@@ -52,6 +53,17 @@ namespace RainMeadow
             catch (Exception ex)
             {
                 Error(ex);
+            }
+        }
+        void On_Menu_SelectNewObject(On.Menu.Menu.orig_SelectNewObject orig, Menu.Menu self, RWCustom.IntVector2 direction)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
+            {
+                // possibly might wanna make a remix option for disabling text navigation in story menu and enabling menu navigation?
+                if (!ChatTextBox.blockInput || self.input.controllerType != Options.ControlSetup.Preset.KeyboardSinglePlayer) orig(self, direction);
+            } else
+            {
+                orig(self, direction);
             }
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
@@ -414,6 +426,7 @@ namespace RainMeadow
 
                 OnlineManager.LeaveLobby();
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
+                self.PlaySound(SoundID.MENU_Switch_Page_In);
             }, self.mainMenuButtons.Count - 2);
         }
     }
