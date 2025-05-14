@@ -54,6 +54,7 @@ namespace RainMeadow
                 }
                 subresources.Add(rs);
             }
+            RainMeadow.Debug("creating early APOs");
             foreach (var item in earlyApos)
             {
                 ApoEnteringWorld(item);

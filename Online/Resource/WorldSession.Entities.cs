@@ -5,7 +5,7 @@ namespace RainMeadow
 {
     public partial class WorldSession
     {
-        private List<AbstractPhysicalObject> earlyApos = new(); // stuff that gets added during world loading
+        private List<AbstractPhysicalObject> earlyApos = []; // stuff that gets added during world loading
 
         // Something entered this resource, check if it needs registering
         public void ApoEnteringWorld(AbstractPhysicalObject apo)

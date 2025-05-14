@@ -13,6 +13,8 @@
 
         public override Player.InputPackage GetInput()
         {
+            if (ent == null) return new Player.InputPackage();
+
             if (ent.isMine) {
                 if (self.controller == this) self.controller = null;
                 return self.input[0];
