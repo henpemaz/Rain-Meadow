@@ -263,7 +263,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpCheckBox(StoryItemSteal, new Vector2(10, 260)),
 
-                new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal spears from other players in Story mode")))
+                new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Story mode")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 }
@@ -306,7 +306,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal spears from other players in Arena mode")))
+                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
