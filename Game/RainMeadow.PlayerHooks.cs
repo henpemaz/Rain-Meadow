@@ -88,6 +88,7 @@ public partial class RainMeadow
             orig(self);
             WatcherOverrideRippleLevel = false;
         };
+        On.Player.CamoUpdate += Player_CamoUpdate;
 
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
@@ -140,6 +141,154 @@ public partial class RainMeadow
             return false;
         }
         return orig(self);
+    }
+
+    private void Player_CamoUpdate(On.Player.orig_CamoUpdate orig, Player self)
+    {
+        if (self.isCamo && (!self.Consious || self.warpExhausionTime > 0))
+        {
+            self.ToggleCamo();
+        }
+
+        if (self.camoProgress < 1f && self.transitionRipple != null && self.room.fsRipple != null)
+        {
+            self.room.fsRipple.Destroy();
+            self.room.fsRipple = null;
+        }
+
+        if (self.isCamo)
+        {
+            self.camoCharge = Mathf.Min(self.camoCharge + 1f, self.usableCamoLimit);
+            self.inCamoTime++;
+            self.outOfCamoTime = 0;
+            if (self.room.game.IsStorySession && self.room.game.GetStorySession.saveState.miscWorldSaveData.usedCamoAbility == 0)
+            {
+                self.room.game.GetStorySession.saveState.miscWorldSaveData.usedCamoAbility = 1;
+            }
+
+            if (self.camoCharge >= self.usableCamoLimit)
+            {
+                self.camoRechargePenalty = 400;
+                self.Stun(80);
+            }
+        }
+        else
+        {
+            self.inCamoTime = 0;
+            self.outOfCamoTime++;
+            if (self.camoRechargePenalty <= 0)
+            {
+                self.camoCharge = Mathf.Max(self.camoCharge - 1f, 0f);
+            }
+        }
+
+        if (self.consumedRippleFood > 0)
+        {
+            self.consumedRippleFood--;
+            self.camoCharge = Mathf.Max(self.camoCharge - 2f, 0f);
+        }
+
+        if (self.camoRechargePenalty > 0)
+        {
+            self.camoRechargePenalty--;
+        }
+
+        Watcher.WarpSpawningRipple obj = self.warpSpawningRipple;
+        if (obj != null && obj.slatedForDeletetion)
+        {
+            self.warpSpawningRipple = null;
+        }
+
+        if (self.activateCamoTimer == 0 && self.watcherDynamicWarpInput && self.dynamicWarpCooldown <= 0)
+        {
+            self.activateDynamicWarpTimer++;
+            Watcher.WarpSpawningRipple obj2 = self.warpSpawningRipple;
+            if (obj2 == null || obj2.isFinished)
+            {
+                self.room.AddObject(self.warpSpawningRipple = new Watcher.WarpSpawningRipple(self.room, self.mainBodyChunk.pos, self.camoProgress, !self.KarmaIsReinforced));
+            }
+
+            if (self.activateDynamicWarpTimer >= self.activateDynamicWarpDuration)
+            {
+                self.SpawnDynamicWarpPoint();
+                self.dynamicWarpCooldown = 200;
+                self.activateDynamicWarpTimer = 0;
+            }
+        }
+        else if (self.activateDynamicWarpTimer > 0)
+        {
+            self.activateDynamicWarpTimer = 0;
+        }
+
+        if (self.dynamicWarpCooldown > 0)
+        {
+            self.dynamicWarpCooldown--;
+        }
+
+        if (self.isCamo && self.camoProgress < 1f)
+        {
+            self.camoProgress += 0.01f;
+        }
+        else if (!self.isCamo && self.camoProgress > 0f)
+        {
+            self.camoProgress -= 0.01f;
+        }
+
+        if (self.rippleLevel >= 5f && self.rippleData != null)
+        {
+            self.rippleData.gameplayRippleAnimation = self.camoProgress;
+        }
+
+        self.TrySpawnTrailRipple();
+
+        if (self.rippleLevel >= 5f && ((self.abstractCreature.rippleLayer == 0 && self.isCamo) || (self.abstractCreature.rippleLayer == 1 && !self.isCamo)))
+        {
+            self.ChangeRippleLayer(self.isCamo ? 1 : 0);
+            if (self.rippleData != null && self.IsLocal())
+            {
+                self.rippleData.gameplayRippleActive = self.isCamo;
+            }
+
+            if (self.isCamo)
+            {
+                for (int i = 0; i < 5 * self.room.cameraPositions.Length; i++)
+                {
+                    self.room.MaterializeRippleSpawn(self.room.RandomPos(), Room.RippleSpawnSource.Dimension);
+                }
+            }
+        }
+
+        if (self.rippleData != null && self.IsLocal())
+        {
+            if (self.rippleLevel < 3f || !self.isCamo)
+            {
+                self.rippleData.TrailAmount = Mathf.Lerp(self.rippleData.TrailAmount, (self.rippleLevel < 2f) ? 0f : 0.01f, 0.01f);
+            }
+            else
+            {
+                self.rippleData.TrailAmount = Mathf.Lerp(self.rippleData.TrailAmount, (self.rippleLevel < 5f) ? 0.35f : 1f, 0.01f);
+            }
+
+            if (self.isCamo)
+            {
+                self.rippleData.trailPaletteAmount = Mathf.Lerp(self.rippleData.trailPaletteAmount, 0f, 0.09f);
+            }
+            else
+            {
+                self.rippleData.trailPaletteAmount = Mathf.Lerp(self.rippleData.trailPaletteAmount, 1f, 0.003f);
+            }
+        }
+
+        if (self.isCamo && self.rippleLevel >= 3f && self.rippleLevel < 5f)
+        {
+            int num = Mathf.Min(80, self.lastPositions.Length - 1);
+            int maxExclusive = Mathf.Min(40, self.lastPositions.Length - 1);
+            if (Vector2.Distance(self.mainBodyChunk.pos, self.lastPositions[num]) > 50f && UnityEngine.Random.value < 0.002f)
+            {
+                int num2 = UnityEngine.Random.Range(0, maxExclusive);
+                self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
+            }
+        }
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)

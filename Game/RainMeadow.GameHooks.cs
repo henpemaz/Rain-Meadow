@@ -54,6 +54,7 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
 
+
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             if (OnlineManager.lobby != null)

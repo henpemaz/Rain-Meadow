@@ -32,34 +32,6 @@ namespace RainMeadow
 
             On.AbstractCreature.Move += AbstractCreature_Move; // I'm watching your every step
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
-
-            On.HUD.FoodMeter.GameUpdate += (On.HUD.FoodMeter.orig_GameUpdate orig, HUD.FoodMeter self) =>
-            {
-                try
-                {
-                    orig(self);
-                }
-                catch (System.NullReferenceException e)
-                {
-                    // TODO: this happens because watcher is evil
-                    // and we are evil too
-                    //RainMeadow.Debug($"bad thing with hud {e}");
-                }
-            };
-            On.Watcher.CamoMeter.Update += (On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self) =>
-            {
-                try
-                {
-                    orig(self);
-                }
-                catch (System.NullReferenceException e)
-                {
-                    // TODO: this happens because watcher is evil
-                    // and we are evil too
-                    //RainMeadow.Debug($"bad thing with hud {e}");
-                }
-            };
-
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
             IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
 
