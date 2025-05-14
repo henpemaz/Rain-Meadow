@@ -28,8 +28,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
-    public readonly Configurable<bool> StorySpearSteal;
-    public readonly Configurable<bool> ArenaSpearSteal;
+    public readonly Configurable<bool> StoryItemSteal;
+    public readonly Configurable<bool> ArenaItemSteal;
 
 
     public readonly Configurable<float> ScrollSpeed;
@@ -88,8 +88,8 @@ public class RainMeadowOptions : OptionInterface
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
         WearingCape = config.Bind("WearingCape", true);
 
-        StorySpearSteal = config.Bind("StorySpearSteal", false);
-        ArenaSpearSteal = config.Bind("ArenaSpearSteal", false);
+        StoryItemSteal = config.Bind("StoryItemSteal", false);
+        ArenaItemSteal = config.Bind("ArenaItemSteal", false);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
@@ -261,7 +261,7 @@ public class RainMeadowOptions : OptionInterface
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
 
-                new OpCheckBox(StorySpearSteal, new Vector2(10, 260)),
+                new OpCheckBox(StoryItemSteal, new Vector2(10, 260)),
 
                 new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal spears from other players in Story mode")))
                 {
@@ -310,7 +310,7 @@ public class RainMeadowOptions : OptionInterface
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
-                new OpCheckBox(ArenaSpearSteal, new Vector2(10, 25))
+                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
 
 
 

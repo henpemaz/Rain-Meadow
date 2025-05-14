@@ -53,7 +53,7 @@ namespace RainMeadow
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
             [OnlineField]
-            public bool storySpearSteal;
+            public bool storyItemSteal;
             public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
@@ -70,7 +70,7 @@ namespace RainMeadow
                 readyForWin = storyGameMode.readyForWin;
                 readyForGate = (byte)storyGameMode.readyForGate;
                 saveStateString = storyGameMode.saveStateString;
-                storySpearSteal = storyGameMode.spearSteal;
+                storyItemSteal = storyGameMode.itemSteal;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -138,7 +138,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).region = region;
 
                 (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
-                (lobby.gameMode as StoryGameMode).spearSteal = storySpearSteal;
+                (lobby.gameMode as StoryGameMode).itemSteal = storyItemSteal;
 
 
                 foreach (OnlineEntity.EntityId pupid in pups) {

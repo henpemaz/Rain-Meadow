@@ -1,6 +1,7 @@
 using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using Rewired;
 using System;
@@ -103,8 +104,22 @@ namespace RainMeadow
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
             IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
         }
-
+        private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                foreach (var grasp in self.grasps)
+                {
+                    if (grasp?.grabbed is Player pl && pl.Stunned)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return orig(self);
+        }
         private static void Player_Collide2(ILContext il, MethodBase original)
         {
             // Find Violence, Inject our RPC call, then run it locally

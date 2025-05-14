@@ -133,11 +133,6 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
-            if (RainMeadow.isArenaMode(out var _))
-            {
-                return pickUpCandidate.dead;
-
-            }
             return true;
         }
 
@@ -1059,8 +1054,19 @@ public partial class RainMeadow
     {
         if (!self.isNPC)
         {
-            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return story.spearSteal;
-            if (isArenaMode(out var arena) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player)) return arena.spearSteal;
+            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return story.itemSteal;
+            if (isArenaMode(out var arena))
+            {
+                if (obj.grabbedBy.Any(x => x.grabber is Player grabbing_player)) return arena.itemSteal;
+                if (obj is Player pl)
+                {
+                    if (pl.Stunned || pl.dead)
+                    {
+                        return true;
+                    };
+                }
+
+            }
         }
 
         if (OnlineManager.lobby != null)

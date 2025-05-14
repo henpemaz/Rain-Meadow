@@ -37,7 +37,7 @@ namespace RainMeadow
 
         public List<AbstractCreature> pups;
 
-        public bool spearSteal = RainMeadow.rainMeadowOptions.StorySpearSteal.Value;
+        public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
 
         public void Sanitize()
         {
