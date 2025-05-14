@@ -10,12 +10,23 @@ namespace RainMeadow
         private void LoadingHooks()
         {
             On.WorldLoader.ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues += WorldLoader_ctor;
-
             On.WorldLoader.Update += WorldLoader_Update;
+            On.WorldLoader.UpdateThread += WorldLoader_UpdateThread2;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+        }
+
+        public void WorldLoader_UpdateThread2(On.WorldLoader.orig_UpdateThread orig, WorldLoader self) {
+            // TODO: Race condition (possible), for example meadow mode may not unset the worldCreatureSpawn on time, so let's do it at the init
+            // to ensure NOTHING is even possible
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
+            {
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
+                RainMeadow.Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
+            }
+            orig(self);
         }
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
@@ -188,15 +199,11 @@ namespace RainMeadow
                 ws0.Needed();
                 if (!ws0.isAvailable || ws0.isPending)
                 {
-                    lock (self)
-                    {
-                        self.requestCreateWorld = false;
-                        orig(self);
-                    }
-                    if (self.game.overWorld == null)
-                    {
-                        OnlineManager.ForceLoadUpdate();
-                    }
+                    RainMeadow.Debug($"Finished loading the world! {self.activity}");
+                    // TODO: With the new 1.10.4 patch, overworld is never null (ctor of any given overworld sets it
+                    // as the current overworld), such that, does this mean we can still force load update? Or is
+                    // this unescesary?
+                    OnlineManager.ForceLoadUpdate();
                     return;
                 }
                 else if (self.requestCreateWorld)
