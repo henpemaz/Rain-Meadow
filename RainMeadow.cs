@@ -15,7 +15,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.3.0";
+        public const string MeadowVersionStr = "0.1.4.0";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -208,6 +208,8 @@ namespace RainMeadow
                 ArenaHooks();
                 ItemHooks();
                 ObjectHooks();
+
+                CapeManager.FetchCapes();
 
                 MeadowMusic.EnableMusic();
                 this.PlopMachine = new PlopMachine();

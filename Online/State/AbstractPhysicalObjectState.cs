@@ -105,7 +105,16 @@ namespace RainMeadow
                         apo.IsExitingDen();
                     }
                 }
-                apo.Move(pos);
+                bool wasbeingmoved = onlineObject.beingMoved;
+                onlineObject.beingMoved = true;
+                if (wasPos.room != apo.pos.room) {
+                    if (apo.realizedObject != null && apo.realizedObject.room != null) {
+                        apo.realizedObject.room.RemoveObject(apo.realizedObject);
+                    }
+                }
+                if (apo.world.IsRoomInRegion(apo.pos.room)) apo.MoveOnly(pos);
+                onlineObject.beingMoved = false;
+                onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
             }
             catch (Exception e)
             {
@@ -116,7 +125,6 @@ namespace RainMeadow
                 //throw;
             }
 
-            onlineObject.apo.pos = pos; // pos isn't updated if compareDisregardingTile, but please, do
 
             // sticks
             bool[] found = new bool[apo.stuckObjects.Count];

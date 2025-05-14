@@ -39,22 +39,17 @@ namespace RainMeadow
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
-
-            var game = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
-
-            if (game == null) return;
-
-            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
-
-            foreach (var onlineHud in onlineHuds)
+            if(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
-                foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
+                foreach (var onlineHud in game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>())
                 {
-                    if (part.player == rpc.from)
+                    foreach (var part in onlineHud.parts.OfType<OnlinePlayerDisplay>())
                     {
-                        part.messageQueue.Enqueue(new OnlinePlayerDisplay.Message(lastSentMessage));
-
-                        return;
+                        if (part.player == rpc.from)
+                        {
+                            part.messageQueue.Enqueue(new OnlinePlayerDisplay.Message(lastSentMessage));
+                            return;
+                        }
                     }
                 }
             }
