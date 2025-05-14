@@ -359,10 +359,13 @@ public partial class RainMeadow
     }
     private void Player_UpdateMSC(On.Player.orig_UpdateMSC orig, Player self) {
         orig(self);
-
         if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player)) {
-            if (saint_player!.IsLocal()) {
+            if (self.tongue is not null && self.tongue.Attached) {
+                self.tongue.Release();
+            }
 
+
+            if (self.IsLocal() && self.onBack == null) {
                 if (!saint_player!.tongue.Attached) {
                     if (!MoreSlugcats.MMF.cfgOldTongue.Value && self.input[0].jmp && !self.input[1].jmp && !self.input[0].pckp && self.canJump <= 0 && self.bodyMode != Player.BodyModeIndex.Crawl && self.animation != Player.AnimationIndex.ClimbOnBeam && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.HangFromBeam 
                             && saint_player!.SaintTongueCheck() && 
@@ -386,6 +389,15 @@ public partial class RainMeadow
                 if (saint_player!.tongue.Attached) {
                     if (self.input[0].jmp && !self.input[1].jmp && saint_player!.tongueAttachTime >= 2)
 					{
+                        float num = Mathf.Lerp(1f, 1.15f, self.Adrenaline);
+                        if (self.grasps[0] != null && self.HeavyCarry(self.grasps[0].grabbed) && !(self.grasps[0].grabbed is Cicada))
+                        {
+                            num += Mathf.Min(Mathf.Max(0f, self.grasps[0].grabbed.TotalMass - 0.2f) * 1.5f, 1.3f);
+                        }
+
+                        self.bodyChunks[0].vel.y = 8f * num;
+                        self.bodyChunks[1].vel.y = 7f * num;
+                        self.jumpBoost = 8f;
 						saint_player!.tongue.Release();
                     }
 
@@ -451,7 +463,7 @@ public partial class RainMeadow
         
     }
 
-    private static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
+    public static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
         onback = null;
 
         while (player != null) {
@@ -461,11 +473,10 @@ public partial class RainMeadow
 
             if (player.SlugCatClass == name) {
                 onback = player;
-                return true;
             }
         }
 
-        return false;
+        return onback != null;
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
