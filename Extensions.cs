@@ -71,39 +71,75 @@ namespace RainMeadow
             return true;
         }
 
-        public static bool RemoveFromShortcuts(this Creature creature)
+        public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
+            foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects()) {
+                if (obj.CanMove(newCoord, true)) {
+                    if (newCoord.CompareDisregardingTile(obj.pos)) return;
+
+                    obj.timeSpentHere = 0;
+                    if (newCoord.room != obj.pos.room)
+                    {
+                        obj.ChangeRooms(newCoord);
+                    }
+
+                    if (!newCoord.TileDefined && obj.pos.room == newCoord.room)
+                    {
+                        newCoord.Tile = obj.pos.Tile;
+                    }
+
+                    obj.pos = newCoord;
+                    obj.world.GetResource().ApoEnteringWorld(obj);
+                    obj.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(obj, newCoord);
+                } 
+            }
+        }
+
+        public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
+            if (apo.CanMove(newCoord)) {
+                if (newCoord.CompareDisregardingTile(apo.pos)) return;
+
+                apo.timeSpentHere = 0;
+                if (newCoord.room != apo.pos.room)
+                {
+                    apo.ChangeRooms(newCoord);
+                }
+
+                if (!newCoord.TileDefined && apo.pos.room == newCoord.room)
+                {
+                    newCoord.Tile = apo.pos.Tile;
+                }
+
+                apo.pos = newCoord;
+                apo.world.GetResource().ApoEnteringWorld(apo);
+                apo.world.GetAbstractRoom(newCoord.room).GetResource()?.ApoEnteringRoom(apo, newCoord);
+            }
+        }
+
+        public static bool RemoveFromShortcuts<T>(ref List<T> vessels, Creature creature, AbstractRoom? room = null) where T : ShortcutHandler.Vessel 
+        {
+            bool removefromallrooms = room is null;
+            for (int i = 0; i < vessels.Count; i++)
+            {
+                if (vessels[i].creature == creature && ((vessels[i].room == room) || removefromallrooms))
+                {
+                    vessels.RemoveAt(i);
+                    creature.inShortcut = false;
+                    return true;
+                }
+            }
+            return false;
+        }
+        public static bool RemoveFromShortcuts(this Creature creature, AbstractRoom? room = null)
         {
             if (!creature.inShortcut) return true;
             var handler = creature.abstractCreature.world.game.shortcuts;
-            for (int i = 0; i < handler.transportVessels.Count; i++)
-            {
-                if (handler.transportVessels[i].creature == creature)
-                {
-                    handler.transportVessels.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            for (int i = 0; i < handler.borderTravelVessels.Count; i++)
-            {
-                if (handler.borderTravelVessels[i].creature == creature)
-                {
-                    handler.borderTravelVessels.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            for (int i = 0; i < handler.betweenRoomsWaitingLobby.Count; i++)
-            {
-                if (handler.betweenRoomsWaitingLobby[i].creature == creature)
-                {
-                    handler.betweenRoomsWaitingLobby.RemoveAt(i);
-                    creature.inShortcut = false;
-                    return true;
-                }
-            }
-            RainMeadow.Debug("not found");
-            return false;
+            bool found = false;
+            if (RemoveFromShortcuts(ref handler.transportVessels, creature, room)) found = true;
+            if (RemoveFromShortcuts(ref handler.borderTravelVessels, creature, room)) found = true;
+            if (RemoveFromShortcuts(ref handler.betweenRoomsWaitingLobby, creature, room)) found = true;
+            
+            if (!found) RainMeadow.Debug("not found");
+            return found;
         }
 
         // suck it, linq

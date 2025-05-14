@@ -9,6 +9,7 @@
 /Utils/		
 /Online/RPCs.cs	
 /Online/ConsumableRPCs.cs	
+/Mod/Text/	
 
 # team specific
 /Arena/		@6fears7

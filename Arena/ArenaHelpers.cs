@@ -5,10 +5,78 @@ namespace RainMeadow
 {
     public static class ArenaHelpers
     {
-
-
-
+        public static List<SlugcatStats.Name> allSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
+        public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
         public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
+
+        public static void RecreateSlugcatCache()
+        {
+            // reinitialize
+            vanillaSlugcats.Clear();
+            baseGameSlugcats.Clear();
+            mscSlugcats.Clear();
+            allSlugcats.Clear();
+            //
+            vanillaSlugcats.Add(SlugcatStats.Name.White);
+            vanillaSlugcats.Add(SlugcatStats.Name.Yellow);
+            vanillaSlugcats.Add(SlugcatStats.Name.Red);
+            vanillaSlugcats.Add(SlugcatStats.Name.Night);
+            // basegame
+            baseGameSlugcats.AddRange(vanillaSlugcats);
+            if (ModManager.MSC)
+            {
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+                baseGameSlugcats.AddRange(mscSlugcats);
+            }
+            if (ModManager.Watcher)
+            {
+                baseGameSlugcats.Remove(SlugcatStats.Name.Night);
+                baseGameSlugcats.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
+            }
+            // all slugcats
+            for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
+            {
+                var slugcatName = SlugcatStats.Name.values.entries[i];
+                if (slugcatName.Contains(":"))
+                {
+                    continue;
+                }
+                if (ArenaHelpers.nonArenaSlugs.Contains(slugcatName))
+                {
+                    continue;
+                }
+                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
+                {
+                    RainMeadow.Debug("Filtered list:" + slugcatName);
+                    SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
+                    if (ModManager.Watcher && slugcatStatSlug == SlugcatStats.Name.Night)
+                    {
+                        RainMeadow.Debug("Filtered out Night slugcat");
+                        continue; // Skip the Night slugcat if Watcher mod is active
+                    }
+                    allSlugcats.Add(slugcatStatSlug);
+                    if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
+                    {
+                        if (baseGameSlugcats.Contains(slugcatStatSlug))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            allSlugcats.Remove(slugcatStatSlug);
+                        }
+                    }
+                }
+            }
+        }
 
         public static void SetProfileColor(ArenaOnlineGameMode arena)
         {
@@ -16,14 +84,14 @@ namespace RainMeadow
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
-                if (ArenaHelpers.BaseGameSlugcats().Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
+                if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
                     profileColor = Random.Range(0, 4);
-                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
                 else
                 {
-                    arena.playerResultColors[currentPlayer.id.name] = profileColor;
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
             }
         }
@@ -41,7 +109,6 @@ namespace RainMeadow
 
             return null;
         }
-
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             arena.arenaSittingOnlineOrder = new List<ushort>();
@@ -50,7 +117,6 @@ namespace RainMeadow
             arena.playersReadiedUp.list.Clear();
 
         }
-
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
@@ -63,11 +129,10 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
+                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {
-                lobby.clientReadiedUp = false;
-
                 arena.playersReadiedUp.list.Clear();
 
                 arena.returnToLobby = false;
@@ -91,8 +156,6 @@ namespace RainMeadow
 
             return OnlineManager.mePlayer;
         }
-
-
         public static OnlinePlayer? FindOnlinePlayerByFakePlayerNumber(ArenaOnlineGameMode arena, int playerNumber)
         {
             try
@@ -113,7 +176,6 @@ namespace RainMeadow
             return null;
 
         }
-
         public static int FindOnlinePlayerNumber(ArenaOnlineGameMode arena, OnlinePlayer player)
         {
 
@@ -141,115 +203,9 @@ namespace RainMeadow
 
             }
         }
-
-        public static List<SlugcatStats.Name> AllSlugcats()
-        {
-            var filteredList = new List<SlugcatStats.Name>();
-            for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
-            {
-                var slugcatName = SlugcatStats.Name.values.entries[i];
-
-                if (slugcatName.Contains(":"))
-                {
-                    continue;
-                }
-
-
-                if (ArenaHelpers.nonArenaSlugs.Contains(slugcatName))
-                {
-                    continue;
-                }
-
-
-
-                if (ExtEnumBase.TryParse(typeof(SlugcatStats.Name), slugcatName, false, out var enumBase))
-                {
-
-                    RainMeadow.Debug("Filtered list:" + slugcatName);
-                    SlugcatStats.Name slugcatStatSlug = (SlugcatStats.Name)enumBase;
-                    if (ModManager.Watcher && slugcatStatSlug == SlugcatStats.Name.Night)
-                    {
-                        RainMeadow.Debug("Filtered out Night slugcat");
-                        continue; // Skip the Night slugcat if Watcher mod is active
-                    }
-                    filteredList.Add(slugcatStatSlug);
-                    if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
-                    {
-                        if (BaseGameSlugcats().Contains(slugcatStatSlug))
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            filteredList.Remove(slugcatStatSlug);
-                        }
-                    }
-                }
-            }
-            return filteredList;
-        }
-
         public static void SetHandler(SimplerButton[] classButtons, int localIndex)
         {
             var button = classButtons[localIndex]; // Get the button you want to pass
-
-
-        }
-
-        public static List<SlugcatStats.Name> BaseGameSlugcats()
-        {
-            var baseGameSlugs = new List<SlugcatStats.Name>();
-            baseGameSlugs.Add(SlugcatStats.Name.White);
-            baseGameSlugs.Add(SlugcatStats.Name.Yellow);
-            baseGameSlugs.Add(SlugcatStats.Name.Red);
-            baseGameSlugs.Add(SlugcatStats.Name.Night);
-
-            if (ModManager.MSC)
-            {
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
-                baseGameSlugs.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
-
-
-            }
-            if (ModManager.Watcher)
-            {
-                baseGameSlugs.Remove(SlugcatStats.Name.Night);
-                baseGameSlugs.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
-
-            }
-
-            return baseGameSlugs;
-
-        }
-
-        public static List<SlugcatStats.Name> VanillaSlugs()
-        {
-            var vanilla = new List<SlugcatStats.Name>();
-            vanilla.Add(SlugcatStats.Name.White);
-            vanilla.Add(SlugcatStats.Name.Yellow);
-            vanilla.Add(SlugcatStats.Name.Red);
-            vanilla.Add(SlugcatStats.Name.Night);
-
-            return vanilla;
-        }
-
-        public static List<SlugcatStats.Name> MSCSlugs()
-        {
-            var msc = new List<SlugcatStats.Name>();
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
-            msc.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
-
-            return msc;
         }
         public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
         {
@@ -293,6 +249,7 @@ namespace RainMeadow
             //}
 
         }
+
     }
 
 }

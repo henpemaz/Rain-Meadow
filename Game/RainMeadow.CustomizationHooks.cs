@@ -24,6 +24,9 @@ namespace RainMeadow
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites_SlugcatCustomization;
             On.PlayerGraphics.CustomColorSafety += PlayerGraphics_CustomColorSafety_SlugcatCustomization;
             On.PlayerGraphics.CustomColorsEnabled += PlayerGraphics_CustomColorsEnabled_SlugcatCustomization;
+
+            // for cosmetics such as the capes.
+            CosmeticHooks();
         }
 
         // eyecolor is overwritten every frame for some stupid reason

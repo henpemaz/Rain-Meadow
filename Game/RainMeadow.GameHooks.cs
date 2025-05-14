@@ -72,6 +72,7 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                // pole mimics are the last AbstractCreature to be created, whereas pink lizards are the first
                 ILLabel pmLoop = null;
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(0),
@@ -90,6 +91,7 @@ namespace RainMeadow
                     i => i.MatchCallOrCallvirt<RainWorldGame>("get_world"),
                     i => i.MatchLdstr("Pink Lizard")
                 );
+                // eligibility criteria; if we are not eligibile to create objects, we skip over the entire AbstractCreature creation process
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((RainWorldGame self) => OnlineManager.lobby == null || (WorldSession.map.TryGetValue(self.world, out var ws) && ws.isOwner));
                 c.Emit(OpCodes.Brfalse, skip);
@@ -104,9 +106,23 @@ namespace RainMeadow
         {
             try
             {
-                // no construct pause menu if pause menu already there!
+                // if chat is open, moves pausing logic to RawUpdate for consistent input detection
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                c.GotoNext(
+                    i => i.MatchLdloc(0),
+                    i => i.MatchBrfalse(out var _),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<RainWorldGame>("lastPauseButton"),
+                    i => i.MatchBrfalse(out var _),
+                    i => i.MatchCall<Kittehface.Framework20.Platform>("get_systemMenuShowing"),
+                    i => i.MatchBrfalse(out skip)
+                );
+                c.MoveAfterLabels();
+                c.EmitDelegate(() => OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && ChatTextBox.blockInput);
+                c.Emit(OpCodes.Brtrue_S, skip);
+
+                // no construct pause menu if pause menu already there!
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchStfld<RainWorldGame>("pauseMenu")
                     );
@@ -306,7 +322,28 @@ namespace RainMeadow
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
+            var closeChat = false;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && !self.lastPauseButton && ChatTextBox.blockInput)
+            {
+                ChatTextBox.blockInput = false;
+                if (RWInput.CheckPauseButton(0) || UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
+                {
+                    closeChat = true;
+                    self.lastPauseButton = true;
+                }
+                ChatTextBox.blockInput = true;
+            }
             orig(self, dt);
+            // riskier chat stuff is run after orig, to minimize chances of orig not being run if things go wrong
+            if(closeChat)
+            {
+                self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                ChatTextBox.InvokeShutDownChat();
+                if ((self.cameras[0].hud.parts.Find(x => x is ChatHud) is ChatHud hud) && !hud.showChatLog)
+                {
+                    hud.ShutDownChatLog();
+                }
+            }
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
