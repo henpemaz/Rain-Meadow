@@ -195,7 +195,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
             {
-                RainMeadow.Debug($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
+                RainMeadow.Trace($"{ws0} : {ws0.isPending} {ws0.isAvailable} {ws0.isActive}");
                 ws0.Needed();
                 if (!ws0.isAvailable || ws0.isPending)
                 {
