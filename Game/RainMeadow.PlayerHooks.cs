@@ -6,6 +6,7 @@ using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
 using RWCustom;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 namespace RainMeadow;
 
@@ -19,6 +20,7 @@ public partial class RainMeadow
         On.Player.ctor += Player_ctor;
         On.Player.GetInitialSlugcatClass += Player_GetInitialSlugcatClass;
         new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStats);
+        new Hook(typeof(Player).GetProperty("slugcatStats").GetGetMethod(), this.Player_slugcatStatsGourmandBack);
         IL.Player.Update += Player_Update;
         On.Player.Update += Player_Update1;
         On.Player.Die += PlayerOnDie;
@@ -64,10 +66,185 @@ public partial class RainMeadow
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
+
+        // get tired and slam other players if we have gourmand our back
+        IL.Player.SlugSlamConditions += GourmandOnBackMechanics;
+        IL.Player.ClassMechanicsGourmand += GourmandOnBackMechanics;
+
+        // use saints toungue if we have saint on our back.
+        On.Player.UpdateMSC += Player_UpdateMSC;
+        IL.Player.SlugOnBack.GraphicsModuleUpdated += SlugOnBack_GraphicsModuleUpdated;
+
         
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    private void SlugOnBack_GraphicsModuleUpdated(ILContext ctx) {
+        try {
+            ILCursor c = new(ctx);
+
+            c.GotoNext(MoveType.After,
+//                 41	0078	ldarg.0
+// 42	0079	ldc.i4.0
+// 43	007A	call	instance void Player/SlugOnBack::ChangeOverlap(bool)
+                x => x.MatchLdarg(0),
+                x => x.MatchLdcI4(0),
+                x => x.MatchCall<Player.SlugOnBack>(nameof(Player.SlugOnBack.ChangeOverlap))
+            );
+            
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldarg_2);
+            c.EmitDelegate((Player.SlugOnBack self, bool eu) => {
+                if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self.owner, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player)) {
+                    if (saint_player!.tongue.Attached) {
+                        Vector2 moveTo = Vector2.Lerp(self.owner.bodyChunks[0].pos, self.slugcat.bodyChunks[0].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
+                        Vector2 moveTo2 = Vector2.Lerp(self.owner.bodyChunks[1].pos, self.slugcat.bodyChunks[1].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
+                        self.owner.bodyChunks[0].MoveFromOutsideMyUpdate(eu, moveTo);
+                        self.owner.bodyChunks[1].MoveFromOutsideMyUpdate(eu, moveTo2);
+                        float mass_ratio = (self.owner.bodyChunks[0].mass/self.slugcat.bodyChunks[1].mass)/2f;
+                        var offset = self.slugcat.bodyChunks[1].vel - self.owner.bodyChunks[0].vel;
+                        self.owner.bodyChunks[0].vel += offset;
+                        self.owner.bodyChunks[1].vel += offset;
+                        self.slugcat.bodyChunks[1].vel -= offset*mass_ratio;
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            c.Emit(OpCodes.Ret);
+            c.Index = c.Index - 1;
+            c.Emit(OpCodes.Brfalse, c.Next.Next);
+            
+
+
+        } catch (Exception except) {
+            RainMeadow.Error(except);
+        }
+
+    }
+    private void Player_UpdateMSC(On.Player.orig_UpdateMSC orig, Player self) {
+        orig(self);
+        if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player)) {
+            if (self.tongue is not null && self.tongue.Attached) {
+                self.tongue.Release();
+            }
+
+
+            if (self.IsLocal() && self.onBack == null) {
+                if (!saint_player!.tongue.Attached) {
+                    if (!MoreSlugcats.MMF.cfgOldTongue.Value && self.input[0].jmp && !self.input[1].jmp && !self.input[0].pckp && self.canJump <= 0 && self.bodyMode != Player.BodyModeIndex.Crawl && self.animation != Player.AnimationIndex.ClimbOnBeam && self.animation != Player.AnimationIndex.AntlerClimb && self.animation != Player.AnimationIndex.HangFromBeam 
+                            && saint_player!.SaintTongueCheck() && 
+                            self.bodyMode != Player.BodyModeIndex.CorridorClimb && !self.corridorDrop && 
+                            self.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && self.bodyMode != Player.BodyModeIndex.WallClimb && 
+                            self.bodyMode != Player.BodyModeIndex.Swimming && self.animation != Player.AnimationIndex.VineGrab &&
+                            self.animation != Player.AnimationIndex.ZeroGPoleGrab)
+                    {
+                        Vector2 vector = new Vector2((float)self.flipDirection, 0.7f);
+                        Vector2 normalized = vector.normalized;
+                        if (self.input[0].y > 0)
+                        {
+                            normalized = new Vector2(0f, 1f);
+                        }
+                        normalized = (normalized + self.mainBodyChunk.vel.normalized * 0.2f).normalized;
+                        saint_player!.tongue.Shoot(normalized);
+                    }
+                }
+
+
+                if (saint_player!.tongue.Attached) {
+                    if (self.input[0].jmp && !self.input[1].jmp && saint_player!.tongueAttachTime >= 2)
+					{
+                        float num = Mathf.Lerp(1f, 1.15f, self.Adrenaline);
+                        if (self.grasps[0] != null && self.HeavyCarry(self.grasps[0].grabbed) && !(self.grasps[0].grabbed is Cicada))
+                        {
+                            num += Mathf.Min(Mathf.Max(0f, self.grasps[0].grabbed.TotalMass - 0.2f) * 1.5f, 1.3f);
+                        }
+
+                        self.bodyChunks[0].vel.y = 8f * num;
+                        self.bodyChunks[1].vel.y = 7f * num;
+                        self.jumpBoost = 8f;
+						saint_player!.tongue.Release();
+                    }
+
+
+                    if (self.input[0].y > 0)
+                    {
+                        saint_player!.tongue.decreaseRopeLength(3f);
+                    }
+
+                    if (saint_player!.input[0].x == 0) {
+                        saint_player!.input[0].x = self.input[0].x;
+                    }
+
+                    if (self.input[0].y < 0)
+                    {
+                        saint_player!.tongue.increaseRopeLength(3f);
+                    }
+                }
+            }
+        }
+    }
+
+    private void GourmandOnBackMechanics(ILContext ctx) {
+        // generic hook for when somebody has gourmand on there back
+        try {
+            ILCursor c = new(ctx);
+
+            // converts all 
+            // this.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+            // this.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand) || this.slugonback.slugcat.SlugCatClass <some operator> MoreSlugcatsEnums.SlugcatStatsName.Gourmand)
+
+            Mono.Cecil.MethodReference comparison = null!;
+            int overriden_count = 0;
+            while (c.TryGotoNext(MoveType.After, 
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>(nameof(Player.SlugCatClass)),
+                x => x.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>(nameof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand)),
+                x => x.MatchCall(out comparison)
+            )) {
+                overriden_count++;
+                if (comparison.Name == "op_Equality") {
+                    c.Emit(OpCodes.Ldarg, 0);
+                    c.EmitDelegate(static (bool result, Player p) => {
+                        return result || ((OnlineManager.lobby != null) && HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _));
+                    });
+                } else if (comparison.Name == "op_Inequality") {
+                    c.Emit(OpCodes.Ldarg, 0);
+                    c.EmitDelegate(static (bool result, Player p) => {
+                        return result && !((OnlineManager.lobby != null) && HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _));
+                    });
+                } else {
+                    RainMeadow.Error($"No comparison implementation for {comparison.Name}");
+                }
+            }
+
+            RainMeadow.Debug($"Overriden {overriden_count} comparisons in {ctx.Method.Name}");
+        } catch (Exception except) {
+            RainMeadow.Error(except);
+        }
+
+
+
+        
+    }
+
+    public static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
+        onback = null;
+
+        while (player != null) {
+            if (player.slugOnBack is null) break;
+            player = player.slugOnBack.slugcat;
+            if (player is null) break;
+
+            if (player.SlugCatClass == name) {
+                onback = player;
+            }
+        }
+
+        return onback != null;
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -266,6 +443,7 @@ public partial class RainMeadow
 
             self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
+            self.slugcat.immuneToFallDamage += 10;
             if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
         }
     }
@@ -858,6 +1036,47 @@ public partial class RainMeadow
         }
     }
 
+    private ConditionalWeakTable<SlugcatStats, GourmandDecorator> gourmand_decorators = new();
+    class GourmandDecorator : SlugcatStats {
+        SlugcatStats origin;
+        public GourmandDecorator(SlugcatStats slugcatStats) : base(slugcatStats.name, slugcatStats.malnourished) {
+            origin = slugcatStats;
+            Update();
+        }
+
+        public void Update() {
+            this.throwingSkill = origin.throwingSkill;
+            this.generalVisibilityBonus = origin.generalVisibilityBonus;
+            this.visualStealthInSneakMode = origin.visualStealthInSneakMode;
+            this.lungsFac = origin.lungsFac;
+            this.throwingSkill = origin.throwingSkill;
+            this.malnourished = origin.malnourished;
+            this.foodToHibernate = origin.foodToHibernate;
+            this.maxFood = origin.maxFood;
+            this.swimBoostCooldown = origin.swimBoostCooldown;
+            this.swimBoostCost = origin.swimBoostCost;
+            this.swimBoostForce = origin.swimBoostForce;
+            this.swimBoostMinAir = origin.swimBoostMinAir;
+            this.swimForceFac = origin.swimForceFac;
+
+            this.bodyWeightFac = origin.bodyWeightFac + 1.35f;
+            this.loudnessFac = origin.loudnessFac + 1.5f;
+            this.poleClimbSpeedFac = 0.8f;
+            this.corridorClimbSpeedFac = 0.86f;
+            this.runspeedFac = 0.9f;
+        }   
+    }
+
+
+    private SlugcatStats Player_slugcatStatsGourmandBack(Func<Player, SlugcatStats> orig, Player self) {
+        SlugcatStats stats =  orig(self);
+        if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand, out _)) {
+            var gourmstats = gourmand_decorators.GetValue(stats, _stats => new GourmandDecorator(stats));
+            gourmstats.Update();
+            stats = gourmstats;
+        }
+        return stats;
+    }
     private SlugcatStats Player_slugcatStats(Func<Player, SlugcatStats> orig, Player self)
     {
         if (OnlineManager.lobby != null)

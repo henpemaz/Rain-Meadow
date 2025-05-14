@@ -139,6 +139,18 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef? tongueAttachedChunk;
+
+        [OnlineField(group = "tongue_on_back")]
+        public byte tongueModeOnBack;
+        [OnlineField(group = "tongue_on_back")]
+        public Vector2 tonguePosOnBack;
+        [OnlineFieldHalf(group = "tongue_on_back")]
+        public float tongueIdealLengthOnBack;
+        [OnlineFieldHalf(group = "tongue_on_back")]
+        public float tongueRequestedLengthOnBack;
+        [OnlineField(group = "tongue_on_back", nullable = true)]
+        public BodyChunkRef? tongueAttachedChunkOnBack;
+
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
 
@@ -168,7 +180,21 @@ namespace RainMeadow
                 tongueIdealLength = tongue.idealRopeLength;
                 tongueRequestedLength = tongue.requestedRopeLength;
                 tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
+            }    
+
+            if (p.onBack is null) {
+                if (RainMeadow.HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out var saint_player) &&
+                        saint_player?.tongue is Player.Tongue tongue2) {
+                    tongueModeOnBack = (byte)tongue2.mode;
+                    tonguePosOnBack = tongue2.pos;
+                    tongueIdealLengthOnBack = tongue2.idealRopeLength;
+                    tongueRequestedLengthOnBack = tongue2.requestedRopeLength;
+                    tongueAttachedChunkOnBack = BodyChunkRef.FromBodyChunk(tongue2.attachedChunk);
+                }   
             }
+
+
+
 
             var i = p.input[0];
             inputs = (ushort)(
@@ -275,21 +301,44 @@ namespace RainMeadow
                 }
             }
 
-            if (p.tongue is Player.Tongue tongue)
-            {
-                tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
-                tongue.pos = tonguePos;
-                tongue.idealRopeLength = tongueIdealLength;
-                tongue.requestedRopeLength = tongueRequestedLength;
-                if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
+            bool has_saint_on_back = RainMeadow.HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out var saint_player);
+            if (has_saint_on_back && saint_player?.tongue is Player.Tongue tongue2) {
+                if (p.onBack == null) {
+                    var mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueModeOnBack));
+                    tongue2.mode = mode;
+                    tongue2.pos = tonguePosOnBack;
+                    tongue2.idealRopeLength = tongueIdealLengthOnBack;
+                    tongue2.requestedRopeLength = tongueRequestedLengthOnBack;
+                    if (tongue2.mode == Player.Tongue.Mode.AttachedToTerrain)
+                    {
+                        tongue2.terrainStuckPos = tongue2.pos;
+                    }
+                    else if (tongue2.mode == Player.Tongue.Mode.AttachedToObject)
+                    {
+                        tongue2.attachedChunk = tongueAttachedChunkOnBack.ToBodyChunk();
+                    }
+                }  
+            }
+
+            if (p.onBack == null || has_saint_on_back) {
+                if (p.tongue is Player.Tongue tongue)
                 {
-                    tongue.terrainStuckPos = tongue.pos;
-                }
-                else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
-                {
-                    tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
+                    var mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
+                    tongue.mode = mode;
+                    tongue.pos = tonguePos;
+                    tongue.idealRopeLength = tongueIdealLength;
+                    tongue.requestedRopeLength = tongueRequestedLength;
+                    if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
+                    {
+                        tongue.terrainStuckPos = tongue.pos;
+                    }
+                    else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
+                    {
+                        tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
+                    }
                 }
             }
+            
 
             if (p.room?.climbableVines != null)
             {

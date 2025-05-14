@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -158,6 +159,8 @@ namespace RainMeadow
             }
         }
 
+
+
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             if (OnlineManager.lobby?.gameMode is MeadowGameMode)
@@ -169,6 +172,7 @@ namespace RainMeadow
                     self.manager.blackDelay = 0;
                 }
             }
+
 
             orig(self);
 
