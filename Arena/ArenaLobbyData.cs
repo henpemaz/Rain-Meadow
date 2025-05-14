@@ -68,7 +68,7 @@ namespace RainMeadow
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+                isInGame = arena.isInGame;
                 playList = arena.playList;
                 arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;

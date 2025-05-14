@@ -76,7 +76,6 @@ namespace RainMeadow
                 }
             }
         }
-
         public OnlineStateMessage QueueStateMessage(OnlineStateMessage stateMessage)
         {
             TraceOutgoingState(stateMessage);
@@ -202,7 +201,10 @@ namespace RainMeadow
             return other != null && id == other.id;
         }
         public override int GetHashCode() => id.GetHashCode();
-
+        public string GetUniqueID()
+        {
+            return id is SteamMatchmakingManager.SteamPlayerId steamPlayerID ? steamPlayerID.steamID.m_SteamID.ToString() : inLobbyId.ToString();
+        }
         public static bool operator ==(OnlinePlayer lhs, OnlinePlayer rhs)
         {
             return lhs is null ? rhs is null : lhs.Equals(rhs);

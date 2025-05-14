@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class ChatHud : HudPart
+    public class ChatHud : HudPart, IChatSubscriber
     {
         private TextPrompt textPrompt;
         private RoomCamera camera;
@@ -16,7 +16,7 @@ namespace RainMeadow
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
         public bool chatInputActive => chatInputOverlay is not null;
-        private bool showChatLog = false;
+        public bool showChatLog = false;
 
         public List<(string, string)> chatLog = new();
 
@@ -43,7 +43,7 @@ namespace RainMeadow
             if (isLogToggled)
             {
                 RainMeadow.Debug("creating log");
-                chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
                 showChatLog = true;
             }
 
@@ -97,7 +97,7 @@ namespace RainMeadow
                 else if (!textPrompt.pausedMode)
                 {
                     RainMeadow.Debug("creating log");
-                    chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                    chatLogOverlay = new ChatLogOverlay(this, game.manager);
                     showChatLog = true;
                     isLogToggled = true;
                 }
@@ -117,11 +117,10 @@ namespace RainMeadow
                     if (chatLogOverlay is null)
                     {
                         RainMeadow.Debug("creating log");
-                        chatLogOverlay = new ChatLogOverlay(this, game.manager, game);
+                        chatLogOverlay = new ChatLogOverlay(this, game.manager);
                     }
                 }
             }
-
             
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
@@ -167,7 +166,10 @@ namespace RainMeadow
                 if (chatInputOverlay != null) ShutDownChatInput();
                 if (chatLogOverlay != null) ShutDownChatLog();
             }
-
+            else if (showChatLog && chatLogOverlay == null)
+            {
+                chatLogOverlay = new ChatLogOverlay(this, game.manager);
+            }
             chatLogOverlay?.Update();
             chatInputOverlay?.Update();
         }

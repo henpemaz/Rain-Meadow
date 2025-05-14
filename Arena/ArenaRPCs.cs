@@ -1,11 +1,27 @@
-﻿using Menu;
-using Newtonsoft.Json.Linq;
-using System;
+using Menu;
+using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+
+        [RPCMethod]
+        public static void Arena_EndSessionEarly()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null)
+                {
+                    RainMeadow.Error("Arena: RainWorldGame is null!");
+                    return;
+                }
+                game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
+
+            }
+        }
 
         [RPCMethod]
         public static void Arena_ForceReadyUp()
@@ -33,6 +49,25 @@ namespace RainMeadow
                 {
                     lobby.playButton.Clicked();
                 }
+            }
+        }
+        [RPCMethod]
+        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                return;
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                string id = userChangingClass.GetUniqueID();
+                if (!arena.playersInLobbyChoosingSlugs.ContainsKey(id))
+                {
+                    arena.playersInLobbyChoosingSlugs.Add(id, currentColorIndex);
+                    return;
+                }
+                arena.playersInLobbyChoosingSlugs[id] = currentColorIndex;
+
             }
         }
 
@@ -183,44 +218,6 @@ namespace RainMeadow
                 }
             }
         }
-
-        [RPCMethod]
-        public static void Arena_NotifyClassChange(OnlinePlayer userChangingClass, int currentColorIndex)
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playersInLobbyChoosingSlugs[userChangingClass.id.ToString()] = currentColorIndex;
-                }
-
-                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-                if (game.manager.upcomingProcess != null)
-                {
-                    return;
-                }
-                var Sluglist = ArenaHelpers.AllSlugcats();
-                try
-                {
-                    for (int i = 0; i < game.classButtons.Length; i++)
-                    {
-                        if (game.classButtons[i].profileIdentifier == userChangingClass)
-                        {
-                            game.classButtons[i].portrait.fileName = game.ArenaImage(Sluglist[currentColorIndex], currentColorIndex);
-                            game.classButtons[i].portrait.LoadFile();
-                            game.classButtons[i].portrait.sprite.SetElementByName(game.classButtons[i].portrait.fileName);
-                        }
-
-                    }
-                }
-                catch
-                {
-                    RainMeadow.Debug("Could not find user");
-                }
-
-            }
-
-        }
         [RPCMethod]
         public static void Arena_NotifyLobbyReadyUp(OnlinePlayer userIsReady)
         {
@@ -234,6 +231,25 @@ namespace RainMeadow
             }
 
         }
+        [RPCMethod]
+        public static void Arena_NotifyStartGame()
+        {
+            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (lobby == null)
+                {
+                    RainMeadow.Debug("Could not start player");
+                    return;
+                }
+                RainMeadow.Debug("Starting game for player");
+                arena.isInGame = true; // state might be too late
+                lobby.StartGame();
+            }
+        }
+
+
+
 
         [RPCMethod]
         public static void Arena_NextLevelCall()

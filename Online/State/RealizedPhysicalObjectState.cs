@@ -19,19 +19,24 @@ namespace RainMeadow
         {
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
-            chunkStates = opo.lenientPos ? new ChunkStates() : new ChunkStates(onlineEntity);
-            collisionLayer = (byte)po.collisionLayer;
+            chunkStates = ShouldPosBeLenient(onlineEntity.apo.realizedObject) || !ShouldSyncChunks(onlineEntity.apo.realizedObject) ? new ChunkStates() : new ChunkStates(onlineEntity);
+            collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
         }
-
-        public virtual bool ShouldPosBeLenient(PhysicalObject po) {
+        
+        virtual public bool ShouldSyncChunks(PhysicalObject po) {
+            return true;
+        }
+        
+        virtual public bool ShouldPosBeLenient(PhysicalObject po) {
             if (po.room?.world?.name == "SS" && (po is Oracle || po is PebblesPearl || po is Rock || po is OracleSwarmer || po is SSOracleSwarmer))
                 return true; // 5 pebbles leniency due to 0G
-            return po.grabbedBy.Any((x) => {
-                if (x.grabber == null)
-                    return false;
-                var oe = x.grabber.abstractCreature.GetOnlineCreature();
-                return oe != null && oe.lenientPos;
-            });
+            if (po.grabbedBy.Any((x) => {
+                if (x.grabber == null) return false;
+                var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
+                if (onlinegrabber == null) return false;
+                return onlinegrabber.lenientPos;
+            })) return true;
+            return false;
         }
 
         public virtual void ReadTo(OnlineEntity onlineEntity)

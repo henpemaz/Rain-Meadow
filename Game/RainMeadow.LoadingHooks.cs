@@ -55,9 +55,11 @@ namespace RainMeadow
                                 entities.Remove(oe.apo);
 
                                 absRoom.creatures.Remove(oe.apo as AbstractCreature);
-
-                                room.RemoveObject(oe.apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                if (oe.apo.realizedObject != null)
+                                {
+                                    room.RemoveObject(oe.apo.realizedObject);
+                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                                }
                                 oe.beingMoved = false;
                             }
                             else // mine leave the old online world elegantly
