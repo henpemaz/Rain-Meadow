@@ -11,18 +11,22 @@ namespace RainMeadow
         {
             On.WorldLoader.ctor_RainWorldGame_Name_Timeline_bool_string_Region_SetupValues += WorldLoader_ctor;
             On.WorldLoader.Update += WorldLoader_Update;
-            On.WorldLoader.UpdateThread += (On.WorldLoader.orig_UpdateThread orig, WorldLoader self) => {
-                if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
-                {
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
-                    RainMeadow.Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
-                }
-                orig(self);
-            };
+            On.WorldLoader.UpdateThread += WorldLoader_UpdateThread2;
             On.RoomPreparer.Update += RoomPreparer_Update;
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+        }
+
+        public void WorldLoader_UpdateThread2(On.WorldLoader.orig_UpdateThread orig, WorldLoader self) {
+            // TODO: Race condition (possible), for example meadow mode may not unset the worldCreatureSpawn on time, so let's do it at the init
+            // to ensure NOTHING is even possible
+            if (OnlineManager.lobby != null && self.game != null && WorldSession.map.TryGetValue(self.world, out var ws0))
+            {
+                self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
+                RainMeadow.Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
+            }
+            orig(self);
         }
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
