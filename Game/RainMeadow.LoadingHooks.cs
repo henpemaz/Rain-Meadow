@@ -188,21 +188,12 @@ namespace RainMeadow
                 ws0.Needed();
                 if (!ws0.isAvailable || ws0.isPending)
                 {
-                    lock (self)
-                    {
-                        self.requestCreateWorld = false;
-                        orig(self);
-                    }
                     if (self.game.overWorld.activeWorld == null)
                     {
                         OnlineManager.ForceLoadUpdate();
                     }
+                    // no processing while not available
                     return;
-                }
-                else if (self.requestCreateWorld)
-                {
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
-                    Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
                 }
             }
             orig(self);
@@ -216,7 +207,7 @@ namespace RainMeadow
                 }
 
                 // if there is a gate, the gate's room will be reused, it needs to be made available
-                if (self.Finished && self.game.overWorld?.reportBackToGate is RegionGate gate)
+                if (ws.isActive && self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
                     var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
                     newRoom.Needed();
@@ -235,8 +226,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-
-
             }
             orig(self, game, playerCharacter, timeline, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
@@ -254,8 +243,7 @@ namespace RainMeadow
                     {
                         ws = OnlineManager.lobby.worldSessions[region.name];
                     }
-                    ws.BindWorld(self.world);
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
+                    ws.BindWorld(self, self.world);
                 }
                 catch (System.NullReferenceException e) // happens in riv ending
                 {
