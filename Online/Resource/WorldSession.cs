@@ -21,7 +21,8 @@ namespace RainMeadow
         public void BindWorld(World world)
         {
             this.world = world;
-            if (RainMeadow.isArenaMode(out var _)) {
+            if (RainMeadow.isArenaMode(out var _))
+            {
 
                 world.region = new Region("arena", 0, 0, SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer));
             }
@@ -54,7 +55,6 @@ namespace RainMeadow
                 }
                 subresources.Add(rs);
             }
-            RainMeadow.Debug("creating early APOs");
             foreach (var item in earlyApos)
             {
                 ApoEnteringWorld(item);
