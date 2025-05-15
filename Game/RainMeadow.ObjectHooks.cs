@@ -1,7 +1,6 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
-
 namespace RainMeadow
 {
     public partial class RainMeadow
