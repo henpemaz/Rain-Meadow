@@ -32,20 +32,6 @@ namespace RainMeadow
             base.RemoveSprites();
             this.ClearMenuObject(ref kickButton);
         }
-        public override void UpdateAlpha(float alpha)
-        {
-            base.UpdateAlpha(alpha);
-            if (kickButton != null)
-            {
-                kickButton.symbolSprite.alpha = alpha;
-                for (int i = 0; i < kickButton.roundedRect.sprites.Length; i++)
-                {
-                    kickButton.roundedRect.sprites[i].alpha = alpha;
-                    kickButton.roundedRect.fillAlpha = alpha / 2;
-                }
-                kickButton.GetButtonBehavior.greyedOut = alpha < 1;
-            }    
-        }
         public SimplerSymbolButton? kickButton;
     }
     public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
