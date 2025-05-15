@@ -36,7 +36,7 @@ namespace RainMeadow
 
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
         {
-            return true;
+            return false;
         }
         public override string TimerText()
         {
