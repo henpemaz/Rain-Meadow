@@ -20,7 +20,6 @@ namespace RainMeadow
         public FSpriteWrap cursorWrap;
 
         public static string lastSentMessage = "";
-        public bool focused = true;
         public ChatTemplate(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
@@ -58,14 +57,10 @@ namespace RainMeadow
 
         public override void Update()
         {
-            if (!buttonBehav.clicked && Input.GetMouseButtonDown(0)) focused = false;
-
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false); // FYI this line WILL crash the game if there are multiple text box instances (something like ArguementOutOfRangeException i think)
             cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 8f : 15f) + this.pos.x;
             cursorWrap.sprite.y = pos.y + size.y / 2;
-            if (focused) cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
-            else cursorWrap.sprite.alpha = 0f;
             cursorWrap.sprite.isVisible = ChatTextBox.selectionPos == -1;
             if (ChatTextBox.selectionPos != -1)
             {
@@ -98,12 +93,6 @@ namespace RainMeadow
                 selectRect.sprites[j].color = this.MyColor(timeStacker);
                 selectRect.sprites[j].alpha = num * fadeAlpha;
             }
-        }
-
-        public override void Clicked()
-        {
-            base.Clicked();
-            focused = true;
         }
     }
 }
