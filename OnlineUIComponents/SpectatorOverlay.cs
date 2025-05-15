@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -184,7 +185,7 @@ namespace RainMeadow
             public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
             public OnlinePhysicalObject? opo;
-            public SimplerSymbolButton? kickbutton;
+            public ScrollSymbolButton? kickbutton;
         }
     }
 }
