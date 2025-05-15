@@ -1,6 +1,8 @@
+using IL.Watcher;
 using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using Rewired;
 using System;
@@ -102,9 +104,119 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
-            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+            new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.SetRippleLevel);
+            new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.SetLevitate);
+            new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.SetCamoDuration);
+            new Hook(typeof(Player).GetProperty("maxRippleLevel").GetGetMethod(), this.SetRippleLevel);
+            new Hook(typeof(Watcher.CamoMeter).GetProperty("Unlocked").GetGetMethod(), this.SetCamoMeter);
+            new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
+            On.Watcher.CamoMeter.Update += CamoMeter_Update;
+            On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
         }
 
+        private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
+        {
+            if (isArenaMode(out var _))
+            {
+                float a = Mathf.Lerp(self.lastFade, self.fade, timeStacker);
+                float r = Mathf.Lerp(self.lastFull, self.full, timeStacker);
+                float b = Mathf.Lerp(self.lastAnimTime, self.animTime, timeStacker);
+                self.meterSprite.SetPosition(self.DrawPos(timeStacker));
+                self.meterSprite.color = new Color(r, self.percentLimited, b, a);
+                self.meterSprite.scaleY = 5f;
+            }
+            else
+            {
+                orig(self, timeStacker);
+            }
+        }
+
+        private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (self.Player == null)
+                {
+                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.cameras[0].followAbstractCreature != null)
+                    {
+                        self.hud.owner = (game.cameras[0].followAbstractCreature.realizedCreature as Player);
+                    }
+                }
+
+                if (self.Player != null)
+                {
+                    self.lastPos = self.pos;
+                    self.lastFade = self.fade;
+                    self.lastFull = self.full;
+                    self.lastAnimTime = self.animTime;
+                    self.Player.camoCharge = Mathf.Clamp(self.Player.camoCharge, 0f, self.Player.camoLimit);
+
+                    self.animSpeed = RWCustom.Custom.LerpAndTick(to: (self.Player.camoCharge == 0f) ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f), from: self.animSpeed, lerp: 0.02f, tick: 0.01f);
+                    self.animTime += self.animSpeed / 40f;
+                    self.pos = new Vector2(Mathf.Max(55.01f, self.hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, self.hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
+                    self.fade = self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher ? 1f : 0f; // why
+                    self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
+                }
+
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
+
+        private bool SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+        // This is funky. Can't seem to ever get it to only be true when airborne
+        private bool SetLevitate(Func<Player, bool> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return true;
+            }
+            return orig(self);
+        }
+        private float SetRippleLevel(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 1f;
+            }
+            return orig(self);
+        }
+
+        private float SetCamoDuration(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 600f;
+            }
+            return orig(self);
+            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
+        }
+        private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
+        {
+            if (OnlineManager.lobby != null && (self.input[0].y <= 0))
+            {
+                foreach (var grasp in self.grasps)
+                {
+                    if (grasp?.grabbed is Player pl && pl.Stunned)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return orig(self);
+        }
         private static void Player_Collide2(ILContext il, MethodBase original)
         {
             // Find Violence, Inject our RPC call, then run it locally
