@@ -9,7 +9,7 @@ namespace RainMeadow.UI.Components
 {
     public class IllustrationButton : ButtonTemplate, ButtonScroller.IPartOfButtonScroller
     {
-        public float Alpha { get => alpha; set => alpha = value; }
+        public float Alpha { get; set; } = 1;
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
         public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName) : base(menu, owner, pos, Vector2.zero)
@@ -62,10 +62,6 @@ namespace RainMeadow.UI.Components
             base.Clicked();
             OnClick?.Invoke(this);
         }
-        public virtual void UpdateAlpha(float alpha)
-        {
-            myContainer.alpha = alpha;
-        }
         public void SetNewImage(string folderName, string fileName)
         {
             portrait.folderName = folderName;
@@ -75,7 +71,7 @@ namespace RainMeadow.UI.Components
         }
 
         public event Action<IllustrationButton> OnClick;
-        public float alpha = 1, portraitBlack = 1, lastPortraitBlack = 1;
+        public float portraitBlack = 1, lastPortraitBlack = 1;
         public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;
         public Color? portraitColor;
         public MenuIllustration portrait;

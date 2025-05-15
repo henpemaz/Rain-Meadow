@@ -39,6 +39,7 @@ namespace RainMeadow
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
             On.Menu.MenuObject.ctor += On_MenuObject_Ctor;
+            On.Menu.MenuObject.Update += On_MenuObject_Update;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
@@ -83,13 +84,19 @@ namespace RainMeadow
                 (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
             }
         }
+        void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
+        {
+            orig(self);
+            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
+                foreach (ButtonScroller.IPartOfButtonScroller subObj in self.subObjects.OfType<ButtonScroller.IPartOfButtonScroller>())
+                    subObj.Alpha = buttonScroll.Alpha;
+
+        }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
             if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-            {
-                buttonScroll.UpdateAlpha(buttonScroll.Alpha);
-            }
+                self.myContainer.alpha = self.owner is not ButtonScroller.IPartOfButtonScroller ? buttonScroll.Alpha : 1;
         }
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
