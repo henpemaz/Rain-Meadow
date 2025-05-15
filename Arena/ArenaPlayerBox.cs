@@ -95,7 +95,7 @@ namespace RainMeadow.UI.Components
 
             selectingStatusLabel.x = slugcatButton.pos.x + (slugcatButton.size.x / 2) + pos.x;
             selectingStatusLabel.y = slugcatButton.pos.y + (slugcatButton.size.y / 2) + pos.y;
-            selectingStatusLabel.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f) * alphaValue;
+            selectingStatusLabel.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f);
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
@@ -105,19 +105,8 @@ namespace RainMeadow.UI.Components
         }
         public void UpdateAlpha(float alpha)
         {
-            nameLabel.label.alpha = alpha;
-            slugcatButton.Alpha = alpha;
-            colorInfoButton.Alpha = alpha;
-            if (infoKickButton != null)
-            {
-                infoKickButton.Alpha = alpha;
-            }
-            lines.Do(x => x.lineConnector.alpha = alpha / 2);
-            sprites.Do(x => x.alpha = alpha);
-            pingLabel.alpha = alpha;
-            selectingStatusLabel.alpha = alpha * selectingStatusLabelFade;
-
-            alphaValue = alpha;
+            myContainer.alpha = alpha;
+            lines.Do(x => x.lineConnector.alpha = 0.5f);
         }
         public void InitButtons(bool canKick)
         {
@@ -169,7 +158,7 @@ namespace RainMeadow.UI.Components
             }
             return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
         }
-        public float alpha, selectingStatusLabelFade = 0, lastSelectingStatusLabelFade = 0, alphaValue = 1;
+        public float alpha = 1, selectingStatusLabelFade = 0, lastSelectingStatusLabelFade = 0;
         public int realPing;
         public bool showRainbow, isSelectingSlugcat;
         public HSLColor? baseColor;

@@ -68,12 +68,13 @@ namespace RainMeadow.UI.Components
         }
         public void UpdateAlpha(float alpha)
         {
-            playerButton.Alpha = alpha;
+            myContainer.alpha = alpha;
+            /*playerButton.Alpha = alpha;
             slugcatButton.Alpha = alpha;
             if (colorKickButton != null)
             {
                 colorKickButton.Alpha = alpha;
-            }
+            }*/
         }
         public void InitButtons(bool canKick)
         {
