@@ -1297,6 +1297,7 @@ public partial class RainMeadow
             if (isArenaMode(out var arena))
             {
                 if (obj.grabbedBy.Any(x => x.grabber is Player grabbing_player))
+                {
                     if (arena.itemSteal)
                     {
                         return orig(self, obj);
@@ -1305,6 +1306,7 @@ public partial class RainMeadow
                     {
                         return false;
                     }
+                }
                 if (obj is Player pl)
                 {
                     if (pl.Stunned || pl.dead)
