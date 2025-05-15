@@ -29,15 +29,28 @@ namespace RainMeadow.UI.Components
         }
         public virtual void UpdateAlpha(float alpha)
         {
-            symbolSprite.alpha = alpha * desiredSpriteAlpha;
+            myContainer.alpha = alpha;
+            /*symbolSprite.alpha = alpha * desiredSpriteAlpha;
             for (int i = 0; i < roundedRect.sprites.Length; i++)
             {
                 roundedRect.sprites[i].alpha = alpha;
                 roundedRect.fillAlpha = alpha / 2;
-            }
+            }*/
         }
 
         public float alpha = 1, desiredSpriteAlpha = 1;
         public bool forceGreyOut;
+    }
+    public class ScrollMenuLabel(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool bigText, FTextParams textParams = null) : ProperlyAlignedMenuLabel(menu, owner, text, pos, size, bigText), ButtonScroller.IPartOfButtonScroller
+    {
+        public float Alpha { get => alpha; set => alpha = value; }
+        public Vector2 Pos { get => pos; set => pos = value; }
+        public Vector2 Size { get => size; set => size = value; }
+        public void UpdateAlpha(float alpha)
+        {
+            this.alpha = alpha;
+            label.alpha = alpha * desiredOrigAlpha;
+        }
+        public float alpha = 1, desiredOrigAlpha = 1;
     }
 }

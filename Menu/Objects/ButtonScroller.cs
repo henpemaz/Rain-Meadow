@@ -216,16 +216,7 @@ namespace RainMeadow
             }
             public virtual void UpdateAlpha(float alpha) //should be for changing graphics, dependent on frame refresh rate
             {
-                menuLabel.label.alpha = alpha;
-                for (int i = 0; i < roundedRect.sprites.Length; i++)
-                {
-                    roundedRect.sprites[i].alpha = alpha;
-                    roundedRect.fillAlpha = alpha / 2;
-                }
-                for (int i = 0; i < selectRect.sprites.Length; i++)
-                {
-                    selectRect.sprites[i].alpha = alpha;
-                }
+                myContainer.alpha = alpha;
             }
             public bool forceGreyedOut;
             public float alpha = 1;

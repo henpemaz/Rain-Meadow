@@ -64,16 +64,7 @@ namespace RainMeadow.UI.Components
         }
         public virtual void UpdateAlpha(float alpha)
         {
-            portrait.setAlpha = alpha * desiredOrigAlpha;
-            for (int i = 0; i < roundedRect.sprites.Length; i++)
-            {
-                roundedRect.sprites[i].alpha = alpha;
-                roundedRect.fillAlpha = alpha / 2;
-            }
-            for (int i = 0; i < selectRect.sprites.Length; i++)
-            {
-                selectRect.sprites[i].alpha = alpha;
-            }
+            myContainer.alpha = alpha;
         }
         public void SetNewImage(string folderName, string fileName)
         {
@@ -84,7 +75,7 @@ namespace RainMeadow.UI.Components
         }
 
         public event Action<IllustrationButton> OnClick;
-        public float alpha = 1, desiredOrigAlpha = 1, portraitBlack = 1, lastPortraitBlack = 1;
+        public float alpha = 1, portraitBlack = 1, lastPortraitBlack = 1;
         public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;
         public Color? portraitColor;
         public MenuIllustration portrait;
