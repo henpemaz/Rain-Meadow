@@ -45,11 +45,10 @@ namespace RainMeadow.UI.Components
             slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
+            selectingStatusLabel = new(menu, slugcatButton, "Selecting\nSlugcat", Vector2.zero, slugcatButton.size, false);
             InitButtons(canKick);
-            this.SafeAddSubobjects(slugcatButton, nameLabel, colorInfoButton, infoKickButton);
+            this.SafeAddSubobjects(slugcatButton, nameLabel, selectingStatusLabel, colorInfoButton, infoKickButton);
             subObjects.AddRange(lines);
-            selectingStatusLabel = new FLabel(Custom.GetFont(), "Selecting\nSlugcat");
-            Container.AddChild(selectingStatusLabel);
 
         }
         public override void RemoveSprites()
@@ -57,7 +56,6 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             sprites.Do(x => x.RemoveFromContainer());
             pingLabel.RemoveFromContainer();
-            selectingStatusLabel.RemoveFromContainer();
         }
         public override void Update()
         {
@@ -93,9 +91,7 @@ namespace RainMeadow.UI.Components
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             lines.Do(x => x.lineConnector.alpha = 0.5f);
-            selectingStatusLabel.x = slugcatButton.pos.x + (slugcatButton.size.x / 2) + pos.x;
-            selectingStatusLabel.y = slugcatButton.pos.y + (slugcatButton.size.y / 2) + pos.y;
-            selectingStatusLabel.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f);
+            selectingStatusLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f);
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
@@ -159,7 +155,8 @@ namespace RainMeadow.UI.Components
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
         public FSprite[] sprites;
-        public FLabel pingLabel, selectingStatusLabel;
+        public FLabel pingLabel;
+        public MenuLabel selectingStatusLabel;
         public List<UiLineConnector> lines;
         public ScrollSymbolButton? infoKickButton;
         public ScrollSymbolButton colorInfoButton;
