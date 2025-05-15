@@ -108,7 +108,7 @@ namespace RainMeadow
                 return orig(self, obj);
             }
 
-            if (!(onlineobj.isMine || onlineobj.isTransferring))
+            if (!(onlineobj.isMine || onlineobj.isTransfering))
             {
                 return false;
             }
@@ -471,7 +471,7 @@ namespace RainMeadow
 
                 return ret;
             }
-            else if (WeaponOnline.isMine || WeaponOnline.isTransferring) {
+            else if (WeaponOnline.isMine || WeaponOnline.isTransfering) {
                 RealizedPhysicalObjectState realizedstate = null!;
                 if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);    
                 else realizedstate = new RealizedWeaponState(WeaponOnline);
