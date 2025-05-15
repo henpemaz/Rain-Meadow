@@ -70,7 +70,7 @@ namespace RainMeadow.UI.Components
         }
 
         public event Action<IllustrationButton>? OnClick;
-        public float portraitBlack = 1, lastPortraitBlack = 1;
+        public float portraitBlack = 0, lastPortraitBlack = 0;
         public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;
         public Color? portraitColor;
         public MenuIllustration portrait;
