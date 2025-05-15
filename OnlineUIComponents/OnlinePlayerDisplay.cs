@@ -151,6 +151,13 @@ namespace RainMeadow
             this.flashIcons = (RainMeadow.rainMeadowOptions.ShowFriends.Value || RainMeadow.rainMeadowOptions.ReadyToContinueToggle.Value) && (owner.PlayerInGate || owner.PlayerInShelter);
 
             bool show = RainMeadow.rainMeadowOptions.ShowFriends.Value || (owner.clientSettings.isMine && onlineTimeSinceSpawn < 120);
+            if (RainMeadow.isArenaMode(out var _) && owner.RealizedPlayer != null && owner.RealizedPlayer.isCamo && !player.isMe)
+            {
+                show = false; // Don't show if it's arena mode and the player is camo
+                pos.x = -1000;
+                this.alpha = 0f;
+            }
+
             if (show || this.alpha > 0 || flashIcons)
             {
                 this.lastAlpha = this.alpha;
@@ -159,10 +166,11 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
-                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe  )//
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe )//
                     {
                         this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
                     }
+
                     this.pos = owner.drawpos;
                     if (owner.pointDir == Vector2.down) pos += new Vector2(0f, 45f);
 
