@@ -23,7 +23,7 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "spear")]
         private float spearDamageBonus;
 
-        [OnlineFieldHalf]
+        [OnlineField]
         private bool ignited;
 
         public RealizedSpearState() { }
