@@ -175,20 +175,6 @@ namespace RainMeadow
                 base.RemoveSprites();
                 this.ClearMenuObject(ref kickbutton);
             }
-            public override void UpdateAlpha(float alpha)
-            {
-                base.UpdateAlpha(alpha);
-                if (kickbutton != null)
-                {
-                    kickbutton.symbolSprite.alpha = alpha;
-                    for (int i = 0; i < kickbutton.roundedRect.sprites.Length; i++)
-                    {
-                        kickbutton.roundedRect.sprites[i].alpha = alpha;
-                        kickbutton.roundedRect.fillAlpha = alpha / 2;
-                    }
-                    kickbutton.GetButtonBehavior.greyedOut = forceKickGreyOut || alpha < 1;
-                }
-            }
             public override void Update()
             {
                 base.Update();
