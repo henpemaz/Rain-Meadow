@@ -97,7 +97,12 @@ namespace RainMeadow
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (!self.IsLocal()) {
+            if (!self.abstractPhysicalObject.GetOnlineObject(out var onlineobj)) {
+                RainMeadow.Error($"Object {self.abstractPhysicalObject} does not exist in online space");
+                return orig(self, obj);
+            }
+
+            if (!(onlineobj.isMine || onlineobj.isTransferring) {
                 return false;
             }
 
@@ -459,7 +464,7 @@ namespace RainMeadow
 
                 return ret;
             }
-            else if (self.IsLocal()) {
+            else if (WeaponOnline.isMine || WeaponOnline.isTransferring) {
                 RealizedPhysicalObjectState realizedstate = null!;
                 if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);    
                 else realizedstate = new RealizedWeaponState(WeaponOnline);
