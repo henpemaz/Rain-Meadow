@@ -193,7 +193,7 @@ namespace RainMeadow
                         self.requestCreateWorld = false;
                         orig(self);
                     }
-                    if (self.game.overWorld == null)
+                    if (self.game.overWorld.activeWorld == null)
                     {
                         OnlineManager.ForceLoadUpdate();
                     }
