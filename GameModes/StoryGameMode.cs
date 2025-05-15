@@ -39,6 +39,9 @@ namespace RainMeadow
         public float rippleLevel;
 
         public List<AbstractCreature> pups;
+
+        public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
+
         public void Sanitize()
         {
             hasSheltered = false;

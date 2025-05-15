@@ -54,6 +54,8 @@ namespace RainMeadow
             public bool requireCampaignSlugcat;
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
+            [OnlineField]
+            public bool storyItemSteal;
             //watcher stuff
             // TODO: Food for tought, what if we use a LUT and encode these in bytes? afterall
             // we know they can only go from 1-10 (integer) and 0, 0.25 and 0.5
@@ -81,6 +83,7 @@ namespace RainMeadow
                 readyForWin = storyGameMode.readyForWin;
                 readyForTransition = (byte)storyGameMode.readyForTransition;
                 saveStateString = storyGameMode.saveStateString;
+                storyItemSteal = storyGameMode.itemSteal;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
@@ -156,6 +159,7 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).region = region;
 
                 (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
+                (lobby.gameMode as StoryGameMode).itemSteal = storyItemSteal;
 
 
                 foreach (OnlineEntity.EntityId pupid in pups) {
