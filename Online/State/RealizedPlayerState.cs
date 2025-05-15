@@ -110,8 +110,6 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
-        [OnlineField]
-        private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
@@ -158,7 +156,6 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
-            isPup = p.playerState.isPup;
             burstX = p.burstX;
             burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -230,7 +227,7 @@ namespace RainMeadow
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
             if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
-            return false;
+            return base.ShouldPosBeLenient(po);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -254,8 +251,7 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
-            if (p.playerState.isPup != isPup)
-                p.playerState.isPup = isPup;
+
 
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;

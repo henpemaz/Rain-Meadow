@@ -23,6 +23,9 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "spear")]
         private float spearDamageBonus;
 
+        [OnlineField]
+        private bool ignited;
+
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -31,6 +34,10 @@ namespace RainMeadow
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
             spearDamageBonus = spear.spearDamageBonus;
+            
+            if (spear is ExplosiveSpear explosive) {
+                ignited = explosive.Ignited;
+            }
 
 
             if (spear.stuckInObject != null)
@@ -62,6 +69,12 @@ namespace RainMeadow
                 spear.stuckRotation = stuckRotation;
             }
 
+            if (spear is ExplosiveSpear explosive) {
+                if (ignited && !explosive.Ignited) {
+                    explosive.Ignite();
+                }
+            }
+
             base.ReadTo(onlineEntity);
             if (spear.mode == Weapon.Mode.StuckInWall && !spear.stuckInWall.HasValue)
             {
@@ -80,7 +93,9 @@ namespace RainMeadow
         {
             if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
             if (p.onPlayerBack) return true;
-            return false;        }
+            if (p.stuckInObject != null) return true; 
+            return base.ShouldPosBeLenient(po);
+        }
     }
 
     public class AppendageRef : Serializer.ICustomSerializable, IEquatable<AppendageRef>
