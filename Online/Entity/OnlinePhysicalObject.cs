@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Unity.Burst.Intrinsics;
 using UnityEngine;
 
 namespace RainMeadow
