@@ -507,6 +507,7 @@ namespace RainMeadow
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
+                    storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
                 }
             }

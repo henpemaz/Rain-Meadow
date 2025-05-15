@@ -243,10 +243,6 @@ namespace RainMeadow
                 }
 
             }
-            //if (player.SlugCatClass == SlugcatStats.Name.Night)
-            //{
-            //    Nightcat.CheckInputForActivatingNightcat(player);
-            //}
 
         }
 

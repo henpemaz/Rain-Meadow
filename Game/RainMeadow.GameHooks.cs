@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
@@ -27,6 +27,7 @@ namespace RainMeadow
             On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
+            On.RegionState.InfectRegionRoomWithSentientRot += RegionState_InfectRegionRoomWithSentientRot;
 
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
@@ -52,6 +53,7 @@ namespace RainMeadow
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
         }
+
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
@@ -106,9 +108,23 @@ namespace RainMeadow
         {
             try
             {
-                // no construct pause menu if pause menu already there!
+                // if chat is open, moves pausing logic to RawUpdate for consistent input detection
                 var c = new ILCursor(il);
                 var skip = il.DefineLabel();
+                c.GotoNext(
+                    i => i.MatchLdloc(0),
+                    i => i.MatchBrfalse(out var _),
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<RainWorldGame>("lastPauseButton"),
+                    i => i.MatchBrfalse(out var _),
+                    i => i.MatchCall<Kittehface.Framework20.Platform>("get_systemMenuShowing"),
+                    i => i.MatchBrfalse(out skip)
+                );
+                c.MoveAfterLabels();
+                c.EmitDelegate(() => OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && ChatTextBox.blockInput);
+                c.Emit(OpCodes.Brtrue_S, skip);
+
+                // no construct pause menu if pause menu already there!
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchStfld<RainWorldGame>("pauseMenu")
                     );
@@ -308,7 +324,28 @@ namespace RainMeadow
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
+            var closeChat = false;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && !self.lastPauseButton && ChatTextBox.blockInput)
+            {
+                ChatTextBox.blockInput = false;
+                if (RWInput.CheckPauseButton(0) || UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Escape))
+                {
+                    closeChat = true;
+                    self.lastPauseButton = true;
+                }
+                ChatTextBox.blockInput = true;
+            }
             orig(self, dt);
+            // riskier chat stuff is run after orig, to minimize chances of orig not being run if things go wrong
+            if(closeChat)
+            {
+                self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                ChatTextBox.InvokeShutDownChat();
+                if ((self.cameras[0].hud.parts.Find(x => x is ChatHud) is ChatHud hud) && !hud.showChatLog)
+                {
+                    hud.ShutDownChatLog();
+                }
+            }
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
@@ -386,6 +423,29 @@ namespace RainMeadow
             orig(self);
         }
 
+        private bool RegionState_InfectRegionRoomWithSentientRot(On.RegionState.orig_InfectRegionRoomWithSentientRot orig, RegionState self, float amount, string roomName)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
+            {
+                if (orig(self, amount, roomName))
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.InfectRegionRoomWithSentientRot, amount, roomName);
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return orig(self, amount, roomName);
+            }
+        }
+
         // Prevent gameplay items
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom, bool devUI)
         {
@@ -452,6 +512,24 @@ namespace RainMeadow
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
+                //
+                // section 2: prevent toys in WAUA_TOYS from duplicating
+                c = new ILCursor(il);
+                for (int i = 0; i < 4; i++)
+                { // SpinToy, BallToy, SoftToy, WeirdToy
+                    var skipApo = il.DefineLabel();
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<RainWorldGame>("get_GetStorySession"),
+                        i => i.MatchLdfld<StoryGameSession>("saveState"),
+                        i => i.MatchLdfld<SaveState>("deathPersistentSaveData"),
+                        i => i.MatchLdfld<DeathPersistentSaveData>("sawVoidBathSlideshow"),
+                        i => i.MatchBrfalse(out skipApo)
+                    );
+                    //c.MoveAfterLabels();
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
+                    c.Emit(OpCodes.Brfalse, skipApo);
+                }
             }
             catch (Exception e)
             {

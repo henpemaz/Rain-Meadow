@@ -39,6 +39,7 @@ namespace RainMeadow
                 ignited = explosive.Ignited;
             }
 
+
             if (spear.stuckInObject != null)
             {
                 stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk);
@@ -55,8 +56,8 @@ namespace RainMeadow
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             spear.spearDamageBonus = spearDamageBonus;
-            if (!stuckInWall.HasValue)
-                spear.addPoles = false;
+            spear.addPoles = stuckInWall.HasValue;
+
             spear.spearmasterNeedle_hasConnection = needleActive;
 
             if (stuckInChunk is not null)
@@ -85,6 +86,7 @@ namespace RainMeadow
                 RainMeadow.Error("Stuck in creature but no creature");
                 spear.ChangeMode(Weapon.Mode.Free);
             }
+
         }
 
         override public bool ShouldPosBeLenient(PhysicalObject po)

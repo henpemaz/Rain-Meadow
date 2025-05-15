@@ -352,7 +352,18 @@ namespace RainMeadow
                         return roomSession;
                     }
                 }
-
+                if (rid.Length >= 4)
+                {
+                    if (rid.Length >= 8)
+                    {
+                        // stuff like WARFWARF like wtf is that
+                        if (rid.Length == 8 && lobby.worldSessions.TryGetValue(rid, out var r5)) return r5;
+                        if (rid.Length > 8 && lobby.worldSessions.TryGetValue(rid.Substring(0, 8), out var r6) && r6.roomSessions.TryGetValue(rid.Substring(8), out var wa2Room)) return wa2Room;
+                    }
+                    // For watcher, which needs 4-letter worlds
+                    if (rid.Length == 4 && lobby.worldSessions.TryGetValue(rid, out var r3)) return r3;
+                    if (rid.Length > 4 && lobby.worldSessions.TryGetValue(rid.Substring(0, 4), out var r4) && r4.roomSessions.TryGetValue(rid.Substring(4), out var waRoom)) return waRoom;
+                }
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
             }
