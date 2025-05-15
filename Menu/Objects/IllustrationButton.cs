@@ -42,7 +42,6 @@ namespace RainMeadow.UI.Components
             base.Update();
             lastPortraitBlack = portraitBlack;
             portraitBlack = Custom.LerpAndTick(portraitBlack, isBlackPortrait ? 1 : 0, 0.06f, 0.05f); // Set to 1 to grey out
-            buttonBehav.Update();
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
             selectRect.addSize = new Vector2(2f, -2f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
@@ -70,7 +69,7 @@ namespace RainMeadow.UI.Components
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 
-        public event Action<IllustrationButton> OnClick;
+        public event Action<IllustrationButton>? OnClick;
         public float portraitBlack = 1, lastPortraitBlack = 1;
         public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;
         public Color? portraitColor;
