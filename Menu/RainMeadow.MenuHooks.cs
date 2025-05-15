@@ -38,10 +38,13 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
+            On.Menu.MenuObject.ctor += On_MenuObject_Ctor;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
         }
+
+
         void IL_Menu_Update(ILContext il)
         {
             try
@@ -69,6 +72,15 @@ namespace RainMeadow
             else
             {
                 orig(self, direction);
+            }
+        }
+        void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
+        {
+            orig(self, menu, owner);
+            if (self is ButtonScroller.IPartOfButtonScroller && self.myContainer == null)
+            {
+                self.myContainer = new();
+                (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
             }
         }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
