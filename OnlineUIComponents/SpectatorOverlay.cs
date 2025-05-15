@@ -180,6 +180,8 @@ namespace RainMeadow
             {
                 base.Update();
                 BanClickedOnce = menu.selectedObject == kickbutton && BanClickedOnce;
+                if (kickbutton != null)
+                    kickbutton.forceGreyOut = forceKickGreyOut;
             }
 
             public bool banClickedOnce, forceKickGreyOut;
