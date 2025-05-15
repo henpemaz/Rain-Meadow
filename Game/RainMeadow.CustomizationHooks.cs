@@ -72,7 +72,27 @@ namespace RainMeadow
         {
             try
             {
+                // watcher color fixes (jolly doesnt even work, but we do)
                 var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.Before,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdfld<PlayerGraphics>("player"),
+                    i => i.MatchLdfld<Creature>("injectedPoison"),
+                    i => i.MatchLdcR4(0.0F)
+                );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloca, 1);
+                c.EmitDelegate((PlayerGraphics self, ref Color originalBodyColor) =>
+                {
+                    if (RainMeadow.creatureCustomizations.TryGetValue(self.player, out var customization))
+                    {
+                        customization.ModifyBodyColor(ref originalBodyColor);
+                        RainMeadow.Trace("color became " + originalBodyColor);
+                    }
+                });
+                // basegame color overrides
+                c = new ILCursor(il);
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchStloc(0)
                     );
