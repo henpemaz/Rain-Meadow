@@ -221,7 +221,7 @@ was swallowed by the grass.|ha sido tragado por el césped.
 was swallowed by the walls.|ha sido tragado por las paredes.
 was electrocuted.|ha sido electrocutado.
 licked the power.|ha lamido la energía.
-was consummed by the swarm.|ha sido consumido por el enjambre de arañas.
+was consumed by the swarm.|ha sido consumido por el enjambre de arañas.
 was electrocuted in the water.|ha sido electrocutado en el agua.
 was obliterated by the sandstorm.|ha sido arrasado por la tormenta de arena.
 died from poison.|ha muerto de envenenamiento.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using HUD;
 using Menu;
 using MoreSlugcats;
 using RainMeadow;
@@ -81,6 +82,12 @@ namespace RainMeadow
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
             self.AddPart(new Pointing(self));
             self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
+            self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
+            if (ModManager.Watcher && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                RainMeadow.Debug("Adding Watcher Camo Meter");
+                self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
+            }
         }
         public virtual void ArenaCreatureSpawner_SpawnCreatures(ArenaOnlineGameMode arena, On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
         {
@@ -170,10 +177,7 @@ namespace RainMeadow
             self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
             RainMeadow.sSpawningAvatar = false;
 
-            if (ModManager.MSC)
-            {
-                self.game.cameras[0].followAbstractCreature = abstractCreature;
-            }
+            self.game.cameras[0].followAbstractCreature = abstractCreature;
 
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
@@ -188,7 +192,6 @@ namespace RainMeadow
 
             RainMeadow.Debug("Arena: Realize Creature!");
             abstractCreature.Realize();
-
             var shortCutVessel = new ShortcutHandler.ShortCutVessel(room.ShortcutLeadingToNode(randomExitIndex).DestTile, abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
 
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
@@ -263,6 +266,11 @@ namespace RainMeadow
 
                     }
                 }
+            }
+
+            if (ModManager.Watcher && (abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
             }
 
 
