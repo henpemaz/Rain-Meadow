@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
 using Menu;
+using RainMeadow.UI.Components;
 using UnityEngine;
 
 namespace RainMeadow
@@ -32,7 +33,7 @@ namespace RainMeadow
             base.RemoveSprites();
             this.ClearMenuObject(ref kickButton);
         }
-        public SimplerSymbolButton? kickButton;
+        public ScrollSymbolButton? kickButton;
     }
     public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
     {
