@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using Menu;
 using UnityEngine;
+using static RainMeadow.ButtonScroller;
 
 namespace RainMeadow.UI.Components
 {
@@ -65,16 +66,6 @@ namespace RainMeadow.UI.Components
             playerButton.labelColor = lerpedBaseCol;
             slugcatButton.rectColor = lerpedBaseCol;
             slugcatButton.labelColor = lerpedBaseCol;
-        }
-        public void UpdateAlpha(float alpha)
-        {
-            myContainer.alpha = alpha;
-            /*playerButton.Alpha = alpha;
-            slugcatButton.Alpha = alpha;
-            if (colorKickButton != null)
-            {
-                colorKickButton.Alpha = alpha;
-            }*/
         }
         public void InitButtons(bool canKick)
         {
