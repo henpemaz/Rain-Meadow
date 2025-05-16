@@ -27,10 +27,13 @@ namespace RainMeadow
             return false;
         }
 
-        public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
+
+        public static bool isArenaTeamBattleMode(out ExternalArenaGameMode teamBattle)
         {
-            if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
+            teamBattle = null;
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena && arena.currentGameMode == TeamBattleMode.TeamBattle.value)
             {
+                teamBattle = arena.onlineArenaGameMode;
                 return true;
             }
             return false;
@@ -593,9 +596,14 @@ namespace RainMeadow
             if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
             {
                 var comp = new Competitive();
+                var teamBattle = new TeamBattleMode();
                 if (!arena.registeredGameModes.ContainsKey(comp))
                 {
-                    arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+                    arena.registeredGameModes.Add(comp, Competitive.CompetitiveMode.value);
+                }
+                if (!arena.registeredGameModes.ContainsKey(teamBattle))
+                {
+                    arena.registeredGameModes.Add(teamBattle, TeamBattleMode.TeamBattle.value);
                 }
             }
 

@@ -284,8 +284,13 @@ namespace RainMeadow
             if (creature is Player p)
             {
                 if (p.isNPC) return false;
-                if (RainMeadow.isArenaMode(out var _) && p.room.game.IsArenaSession && p.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false) {
-                    return true; // you are a safety candidate
+                if (RainMeadow.isArenaMode(out var arena))
+                {
+                    if (p.room.game.IsArenaSession && p.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false)
+                    {
+                        return true; // you are a safety candidate
+                    }
+
                 };
 
             }
@@ -295,9 +300,10 @@ namespace RainMeadow
             {
                 return !story.friendlyFire;
             }
-            if (RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena2))
             {
-                return arena.countdownInitiatedHoldFire;
+
+                return arena2.countdownInitiatedHoldFire;
             }
 
             return false;

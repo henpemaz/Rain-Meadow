@@ -1,24 +1,34 @@
 ﻿using RainMeadow;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 namespace RainMeadow
 {
-    public class Competitive : ExternalArenaGameMode
+    public class TeamBattleMode : ExternalArenaGameMode
     {
 
-        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: false);
+        public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
 
         private int _timerDuration;  // Backing field for TimerDuration
 
-        public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
+        public List<OnlinePlayer> ChieftainPlayers = new();
+        public List<OnlinePlayer> Dragonslayers = new();
+        public enum TeamMappings
         {
-            if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
-            {
-                return true;
-            }
-            return false;
+            Martyrs,
+            Outlaws,
+            Dragonslayers,
+            Chieftains
         }
+        public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
+        {
+            { TeamMappings.Martyrs, "yes" },
+            { TeamMappings.Outlaws, "no" },
+            { TeamMappings.Dragonslayers, "Kill_Slugcat" },
+            { TeamMappings.Chieftains, "ChieftainA" }
+    };
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
@@ -63,7 +73,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {            
+        {
             return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
@@ -87,6 +97,20 @@ namespace RainMeadow
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
+        }
+
+
+        public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        {
+            if ((arena.onlineArenaGameMode as TeamBattleMode).ChieftainPlayers.Contains(OnlineManager.mePlayer))
+            {
+                return TeamMappingsDictionary[TeamMappings.Chieftains];
+            }
+            if ((arena.onlineArenaGameMode as TeamBattleMode).Dragonslayers.Contains(OnlineManager.mePlayer))
+            {
+                return TeamMappingsDictionary[TeamMappings.Dragonslayers];
+            }
+            return "";
         }
     }
 }
