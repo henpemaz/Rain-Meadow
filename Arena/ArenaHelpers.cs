@@ -275,12 +275,22 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner) return;
             if (obj is bool c)
             {
-                arena.onlineArenaSettingsInterfaceeBool.SafeSaveToDictionary(ID, c);
+                arena.onlineArenaSettingsInterfaceeBool[ID] = c;
             }
             if (obj is int i)
             {
-                arena.onlineArenaSettingsInterfaceMultiChoice.SafeSaveToDictionary(ID, i);
+                arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
             }
+        }
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                RainMeadow.Error("Lobby is null!");
+                return null;
+            }
+            if (player == null) return null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
         }
 
     }
