@@ -22,7 +22,7 @@ namespace RainMeadow
         public int textLimit = 75;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
-        public static bool focused = false;
+        public bool focused = false;
 
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
