@@ -142,25 +142,26 @@ namespace RainMeadow
                 {
                     OnlineCreature? spectatee = Overlay?.spectatee?.GetOnlineCreature();
                     var spectatable_avatars = GetSpectableAvatars().ToList();
-                    if (player.isMe) 
+                    if (player.isMe)
                     {
                         spectatee = null;
                     }
-                    else if (spectatee is not null) 
+                    else if (spectatee is not null)
                     {
-                        if (spectatable_avatars.Contains(spectatee)) 
+                        if (spectatable_avatars.Contains(spectatee))
                         {
                             // iterate to next avatar
                             int index = spectatable_avatars.IndexOf(spectatee);
                             index += 1;
+                            index = index % spectatable_avatars.Count;
                             spectatee = spectatable_avatars.ElementAtOrDefault(index);
-                        } 
-                        else 
+                        }
+                        else
                         {
                             spectatee = spectatable_avatars.FirstOrDefault();
                         }
                     }
-                    else 
+                    else
                     {
                         spectatee = spectatable_avatars.FirstOrDefault();
                     }

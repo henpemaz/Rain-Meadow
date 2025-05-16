@@ -79,8 +79,16 @@ namespace RainMeadow
             ModifyExistingMenuItems();
 
             if (ModManager.JollyCoop) {
-                AddJollyButtons();
-                storyGameMode.avatarCount = manager.rainWorld.options.JollyPlayerCount;
+                if (base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]))
+                {
+                    AddJollyButtons();
+                }
+                else if (colorChecked)
+                {
+                    AddColorButtons();
+                }
+                
+                
             }
 
 
@@ -132,31 +140,69 @@ namespace RainMeadow
             {
                 storyGameMode.currentCampaign = storyGameCharacter;
             }
-            
-            for (int i = 0; i < storyGameMode.avatarSettings.Length; i++) {
+
+            var jollyallowed = ModManager.JollyCoop && base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
+            storyGameMode.avatarCount = jollyallowed ? manager.rainWorld.options.JollyPlayerCount : 1;
+            if (jollyallowed) PlayerGraphics.PopulateJollyColorArray(PlayerSelectedSlugcat);
+            for (int i = 0; i < storyGameMode.avatarSettings.Length; i++)
+            {
                 storyGameMode.avatarSettings[i].playingAs = storyGameMode.currentCampaign;
-                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name)) {
+                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name))
+                {
                     storyGameMode.avatarSettings[i].playingAs = name;
                 }
 
-                if ((storyGameMode.avatarCount > 1) && ModManager.JollyCoop) {
+
+
+
+                if ((storyGameMode.avatarCount > 1) && jollyallowed)
+                {
                     storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
                 }
 
-                if (ModManager.JollyCoop) {
-                    if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM) {
-                        storyGameMode.avatarSettings[i].currentColors = new List<Color>{
-                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetBodyColor(), 
-                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetFaceColor(),
-                            manager.rainWorld.options.jollyPlayerOptionsArray[i].GetUniqueColor()
-                        };
-                    } else {
-                        storyGameMode.avatarSettings[i].currentColors = [..PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
+
+
+                if (jollyallowed)
+                {
+                    if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM)
+                    {
+                        storyGameMode.avatarSettings[i].currentColors = new List<Color>
+                            {
+                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetBodyColor(),
+                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetFaceColor(),
+                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetUniqueColor()
+                            };
+
+                    }
+                    else if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.AUTO)
+                    {
+
+                        if (i == 0)
+                        {
+                            storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
+                        }
+                        else
+                        {
+                            storyGameMode.avatarSettings[i].currentColors = new List<Color>
+                            {
+                                PlayerGraphics.JollyColor(i, 0),
+                                PlayerGraphics.JollyColor(i, 1),
+                                PlayerGraphics.JollyColor(i, 2)
+                            };
+                        }
+
+                    }
+                    else
+                    {
+                        storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
                     }
                     storyGameMode.avatarSettings[i].fakePup = manager.rainWorld.options.jollyPlayerOptionsArray[i].isPup;
-                } else {
+                }
+                else
+                {
                     // TODO: seperate custom colors for each avatar
                     storyGameMode.avatarSettings[i].currentColors = this.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+                    storyGameMode.avatarSettings[i].fakePup = false;
                 }
 
             }
@@ -185,6 +231,30 @@ namespace RainMeadow
 
         public override void Update()
         {
+            var jollyallowed = false;
+            if (ModManager.JollyCoop)
+            {
+                jollyallowed = base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
+                if (jollyallowed && jollyToggleConfigMenu is null)
+                {
+                    AddJollyButtons();
+                }
+                else if ((!jollyallowed) && (jollyToggleConfigMenu is not null))
+                {
+                    RemoveJollyButtons();
+                }
+
+                if (jollyallowed && colorInterface is not null)
+                {
+                    RemoveColorInterface();
+                }
+                else if (colorChecked && (!jollyallowed) && (colorInterface is null))
+                {
+                    AddColorButtons();
+                }
+            }
+
+
             if (ChatTextBox.blockInput)
             {
                 ChatTextBox.blockInput = false;
@@ -200,8 +270,12 @@ namespace RainMeadow
 
             if (ModManager.JollyCoop) {
                 this.storyGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
-                this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
-                this.RefreshJollySummary();
+                if (jollyallowed)
+                {
+                    this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
+                    this.RefreshJollySummary();
+                }
+                
             }
             
 
@@ -280,7 +354,8 @@ namespace RainMeadow
             ChatLogManager.Unsubscribe(this);
 
             RainMeadow.DebugMe();
-            if (manager.upcomingProcess != ProcessManager.ProcessID.Game) // if join on sleep/deathscreen this needs to be added here as well
+            if ((manager.upcomingProcess != ProcessManager.ProcessID.Game) &&
+                (manager.upcomingProcess != ProcessManager.ProcessID.InputOptions)) // if join on sleep/deathscreen this needs to be added here as well
             {
                 OnlineManager.LeaveLobby();
             }
