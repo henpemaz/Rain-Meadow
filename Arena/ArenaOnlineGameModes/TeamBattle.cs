@@ -30,6 +30,14 @@ namespace RainMeadow
             { TeamMappings.Chieftains, "ChieftainA" }
     };
 
+        public static Dictionary<TeamMappings, Color> TeamColors = new Dictionary<TeamMappings, Color>
+        {
+            { TeamMappings.Martyrs, Color.red },
+            { TeamMappings.Outlaws, Color.yellow },
+            { TeamMappings.Dragonslayers, Color.magenta },
+            { TeamMappings.Chieftains, Color.blue }
+    };
+
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             int playersStillStanding = self.gameSession.Players?.Count(player =>
@@ -97,6 +105,11 @@ namespace RainMeadow
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
+            if (this.ChieftainPlayers.Contains(OnlineManager.mePlayer))
+            {
+                this.ChieftainPlayers.Add(OnlineManager.mePlayer);
+            }
+
         }
 
 
