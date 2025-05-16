@@ -171,7 +171,7 @@ public class LobbyCreateMenu : SmartMenu
     {
         if (popupDialog != null) HideDialog();
 
-        popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+        popupDialog = new DialogBoxNotify(this, mainPage, Translate(error), "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
         mainPage.subObjects.Add(popupDialog);
     }
 
