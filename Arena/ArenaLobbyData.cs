@@ -57,8 +57,6 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
             [OnlineField]
-            public string currentGameMode;
-            [OnlineField]
             public bool arenaItemSteal;
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
