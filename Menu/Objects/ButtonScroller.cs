@@ -206,7 +206,7 @@ namespace RainMeadow
         public List<IPartOfButtonScroller> buttons = [];
         public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : SimplerButton(menu, owner, displayText, pos, size, description), IPartOfButtonScroller
         {
-            public float Alpha { get => alpha; set => alpha = value; }
+            public float Alpha { get; set; } = 1;
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
             public override void Update()
@@ -214,28 +214,13 @@ namespace RainMeadow
                 base.Update();
                 buttonBehav.greyedOut = forceGreyedOut || Alpha < 1;
             }
-            public virtual void UpdateAlpha(float alpha) //should be for changing graphics, dependent on frame refresh rate
-            {
-                menuLabel.label.alpha = alpha;
-                for (int i = 0; i < roundedRect.sprites.Length; i++)
-                {
-                    roundedRect.sprites[i].alpha = alpha;
-                    roundedRect.fillAlpha = alpha / 2;
-                }
-                for (int i = 0; i < selectRect.sprites.Length; i++)
-                {
-                    selectRect.sprites[i].alpha = alpha;
-                }
-            }
             public bool forceGreyedOut;
-            public float alpha = 1;
         }
         public interface IPartOfButtonScroller //allows other derived objects to be part of the button scroller
         {
             public float Alpha { get; set; }
             public Vector2 Pos { get; set; }
             public Vector2 Size { get; set; }
-            public void UpdateAlpha(float alpha);
         }
     }
 }
