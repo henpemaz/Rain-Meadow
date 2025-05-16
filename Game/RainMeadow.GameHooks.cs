@@ -199,8 +199,8 @@ namespace RainMeadow
             if (isStoryMode(out var story))
             {
                 // synchronize food between all local avatars
-                PlayerState? first_state = self.Players?[0]?.state as PlayerState;
-                Player? first_player = self.Players?[0]?.realizedCreature as Player;
+                PlayerState? first_state = story.avatars[0]?.abstractCreature?.state as PlayerState;
+                Player? first_player = story.avatars[0]?.abstractCreature?.realizedCreature as Player;
                 if (story.lobby.isOwner)
                 {
                     foreach (OnlineCreature avatar in story.avatars)
