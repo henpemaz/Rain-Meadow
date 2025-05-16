@@ -158,7 +158,7 @@ Selected Slugcat|Gatobabosa<LINE>seleccionado
 Slugpup|Cría
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
-Require Campaign Slugcat| Usar sólo este gatobabosa
+Require Campaign Slugcat|Requerir gatobabosa actual
 Match save|Igualar guar.
 PLAYERS|JUGADORES
 Press again to ban player!|¡Pulsa otra vez para banear al jugador!
