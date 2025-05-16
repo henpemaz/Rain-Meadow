@@ -551,7 +551,18 @@ namespace RainMeadow
                 bool starving = false;
                 for (int i = 0; i < self.room.game.Players.Count; i++) {
                     AbstractCreature player = self.room.game.Players[i];
-                    if (player.state.dead) continue;    
+                    if (player.state.dead)
+                    {
+                        if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.EASY)
+                        {
+                            continue;
+                        }
+                        else if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.HARD)
+                        {
+                            ready_for_win = false;
+                            break;
+                        }
+                    }
 
                     if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6) {
                         ready_for_win = false;

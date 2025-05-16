@@ -196,6 +196,33 @@ namespace RainMeadow
                 }
             }
 
+            if (isStoryMode(out var story))
+            {
+                // synchronize food between all local avatars
+                PlayerState? first_state = story.avatars[0]?.abstractCreature?.state as PlayerState;
+                Player? first_player = story.avatars[0]?.abstractCreature?.realizedCreature as Player;
+                if (story.lobby.isOwner)
+                {
+                    foreach (OnlineCreature avatar in story.avatars)
+                    {
+                        if (first_state is not null)
+                        {
+                            if (avatar?.abstractCreature?.state is PlayerState state)
+                            {
+                                state.foodInStomach = first_state.foodInStomach;
+                                state.quarterFoodPoints = first_state.quarterFoodPoints;
+                            }
+                        }
+                        
+
+                        if (avatar?.abstractCreature?.realizedCreature is Player p && first_player is not null)
+                        {
+                            p.mushroomCounter = first_player.mushroomCounter;
+                        }
+                    }
+                }
+            }
+
             orig(self);
 
             if (OnlineManager.lobby?.gameMode is MeadowGameMode mgm)
