@@ -66,6 +66,8 @@ reds can't jump on false floors
 
 waterfall pushdown on scavs is a bit much
 
+scavs stuck in pole-near-ceiling in zerog, can only jump out up
+
 HIGH-PRIO
 
 crashes

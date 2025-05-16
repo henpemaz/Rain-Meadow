@@ -31,6 +31,7 @@ namespace RainMeadow
         public bool painCatLizard = RainMeadow.rainMeadowOptions.PainCatLizard.Value;
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
+        public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -38,6 +39,8 @@ namespace RainMeadow
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
         public List<string> slugcatSelectPainCatDescriptions;
+        public override bool PlayersCanHandhold => false;
+
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();

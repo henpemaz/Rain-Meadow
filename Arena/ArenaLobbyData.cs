@@ -56,6 +56,10 @@ namespace RainMeadow
             public bool disableMaul;
             [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
+            [OnlineField]
+            public string currentGameMode;
+            [OnlineField]
+            public bool arenaItemSteal;
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
 
@@ -112,7 +116,7 @@ namespace RainMeadow
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
-
+                arenaItemSteal = arena.itemSteal;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -149,6 +153,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
+                (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
 
             }
 

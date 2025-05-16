@@ -248,10 +248,6 @@ namespace RainMeadow
                 }
 
             }
-            //if (player.SlugCatClass == SlugcatStats.Name.Night)
-            //{
-            //    Nightcat.CheckInputForActivatingNightcat(player);
-            //}
 
         }
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
