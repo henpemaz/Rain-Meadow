@@ -192,12 +192,6 @@ Gorbo|Gorbo
 Winner!|¡Ganador!
 Unknown user|Usuario desconocido
 
-// External Game Modes (only names)
-Tag|Pilla pilla
-Drown|Ahogado
-Capture the Pearl|Captura la perla
-Hot Potato|Patata caliente
-
 // Chat Tutorial
 Press '|Pulsa «
 ' to chat, press '|» para chatear y «
