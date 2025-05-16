@@ -9,7 +9,6 @@ namespace RainMeadow
         public HSLColor labelColor;
         public MenuLabel menuLabel;
         public RoundedRect roundedRect;
-        public RoundedRect selectRect;
         public float fadeAlpha;
 
         public FSprite _selection;
@@ -24,8 +23,6 @@ namespace RainMeadow
         {
             labelColor = Menu.Menu.MenuColor(Menu.Menu.MenuColors.White);
             roundedRect = new RoundedRect(menu, owner, pos, size, true);
-            this.subObjects.Add(roundedRect);
-            selectRect = new RoundedRect(menu, owner, pos, size, false);
             this.subObjects.Add(roundedRect);
 
             this._selection = new FSprite("pixel", true);
@@ -51,14 +48,13 @@ namespace RainMeadow
         {
             size = newSize;
             roundedRect.size = newSize;
-            selectRect.size = newSize;
             menuLabel.size = newSize;
         }
 
         public override void Update()
         {
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
-            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false); // FYI this line WILL crash the game if there are multiple text box instances (something like ArguementOutOfRangeException i think)
+            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false);
             cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 8f : 15f) + this.pos.x;
             cursorWrap.sprite.y = pos.y + size.y / 2;
             cursorWrap.sprite.isVisible = ChatTextBox.selectionPos == -1;
@@ -74,7 +70,6 @@ namespace RainMeadow
             buttonBehav.Update();
             roundedRect.fillAlpha = 1.0f;
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked ? 0f : 1f);
-            selectRect.addSize = new Vector2(1f, -1f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked ? 0f : 1f);
         }
 
         public override void GrafUpdate(float timeStacker)
@@ -88,11 +83,6 @@ namespace RainMeadow
             }
             float num = 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(this.buttonBehav.lastSin, this.buttonBehav.sin, timeStacker) / 30f * 3.1415927f * 2f);
             num *= buttonBehav.sizeBump;
-            for (int j = 0; j < 8; j++)
-            {
-                selectRect.sprites[j].color = this.MyColor(timeStacker);
-                selectRect.sprites[j].alpha = num * fadeAlpha;
-            }
         }
     }
 }
