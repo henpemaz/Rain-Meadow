@@ -276,7 +276,7 @@ public class RainMeadowOptions : OptionInterface
             OpHoldButton arenaSpoilerButton;
             OpCheckBox slugpupHellBackgroundCheckbox;
 
-            OnlineArenaSettings = new UIelement[21]
+            OnlineArenaSettings = new UIelement[]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -309,6 +309,11 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
+                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25)),
 
                 arenaSpoilerLabel = new OpLabel(10f, 50, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
                 {
@@ -323,16 +328,9 @@ public class RainMeadowOptions : OptionInterface
             };
             UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
             for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
-                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
-                {
-                    verticalAlignment = OpLabel.LabelVAlignment.Center
-                },
-                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
 
-
-
-        };
             arenaTab.AddItems(OnlineArenaSettings);
+
             arenaSpoilerButton.OnPressDone += btn =>
             {
                 OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);

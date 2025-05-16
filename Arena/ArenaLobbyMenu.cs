@@ -530,11 +530,6 @@ namespace RainMeadow
                             return;
                         }
                     }
-                    //if (arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
-                    //{
-                    //    RainMeadow.Debug("Arena: You've let the host know you're ready, but they're not ready for you");
-                    //    return;
-                    //}
 
                     // there's still a chance someone is queued and they're not ready by host yet
                     if (!arena.hasPermissionToRejoin && arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId))
