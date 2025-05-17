@@ -283,7 +283,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return "Lobby";
+            return Utils.Translate("Lobby");
         }
 
         public OnlinePlayer PlayerFromId(ushort id)
