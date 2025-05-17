@@ -619,6 +619,7 @@ public partial class RainMeadow
                     if (!viable) continue;
 
                     other.slugOnBack?.SlugToBack(self);
+                    break;
                 }
             }
         }
