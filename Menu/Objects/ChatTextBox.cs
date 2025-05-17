@@ -22,7 +22,7 @@ namespace RainMeadow
         public int textLimit = 75;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
-        public bool focused = false;
+        public bool focused = false, clicked;
 
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
@@ -110,13 +110,13 @@ namespace RainMeadow
             }
             else
             {
-                if(selectionPos != -1)
+                if (selectionPos != -1)
                 {
                     // replaces the selected text with the emitted character
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
                     DeleteSelection();
                     cursorPos++;
-                    if(cursorPos == lastSentMessage.Length)
+                    if (cursorPos == lastSentMessage.Length)
                     {
                         SetCursorSprite(false);
                     }
@@ -135,21 +135,34 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (focused && Input.GetMouseButton(0)) focused = false;
+            if (focused && Input.GetMouseButton(0))
+            {
+                focused = false;
+                clicked = false;
+            }
 
-            if (focused) cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
+            if (focused)
+            {
+                cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
+                menu.allowSelectMove = false; // Menu.Update() will set this back to true
+            }
             else cursorWrap.sprite.alpha = 0f;
         }
         public override void Clicked()
         {
             base.Clicked();
-            focused = true;
+
+            if (focused && Input.GetKey(KeyCode.Space)) return;
+
+            if (Input.GetMouseButton(0)) clicked = false; // if someone clicks with mouse we reset clicked check since clicking with mouse should always focus 
+
+            focused = !clicked;
+            clicked = !clicked;
         }
 
         public override void GrafUpdate(float timeStacker)
         {
-            if (focused) ShouldCapture(true);
-            else ShouldCapture(false);
+            ShouldCapture(focused);
 
             var msg = lastSentMessage;
             var len = msg.Length;
@@ -202,7 +215,7 @@ namespace RainMeadow
                             int space = msg.Substring(cursorPos, len - cursorPos).IndexOf(' ');
                             lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = len - cursorPos) : space + 1);
                             menuLabel.text = lastSentMessage;
-                            
+
                         }
                         else
                         {
@@ -266,7 +279,7 @@ namespace RainMeadow
                                     if (newPos < 0 || newPos > len) newPos = 0;
                                 }
                                 else newPos--;
-                                if(shiftHeld)
+                                if (shiftHeld)
                                 {
                                     // stops the selection if it's on the same index as the anchor
                                     selectionPos = (newPos == cursorPos) ? -1 : newPos;
@@ -316,7 +329,7 @@ namespace RainMeadow
                                     else
                                     {
                                         cursorPos = newPos;
-                                        if(newPos == len) SetCursorSprite(false);
+                                        if (newPos == len) SetCursorSprite(false);
                                     }
                                 }
                             }
