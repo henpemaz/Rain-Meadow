@@ -1277,8 +1277,8 @@ public partial class RainMeadow
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
         if (!self.abstractPhysicalObject.IsLocal()) return Player.ObjectGrabability.CantGrab;
-        if (obj is Player p && p.playerState.isPup) {
-            return Player.ObjectGrabability.BigOneHand; // pick up jolly pups
+        if (obj is Player p && (p.playerState?.isPup ?? false) && !(self.playerState?.isPup ?? false)) {
+            return Player.ObjectGrabability.OneHand; // pick up jolly pups
         }
 
         return orig(self, obj);
