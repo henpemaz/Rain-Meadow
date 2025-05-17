@@ -246,12 +246,14 @@ namespace RainMeadow
 
                 if (jollyallowed && colorInterface is not null)
                 {
-                    RemoveColorInterface();
+                    RemoveColorButtons();
                 }
                 else if (colorChecked && (!jollyallowed) && (colorInterface is null))
                 {
                     AddColorButtons();
                 }
+
+                colorsCheckbox.buttonBehav.greyedOut = jollyallowed;
             }
 
 
