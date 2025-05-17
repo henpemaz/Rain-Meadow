@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace RainMeadow
@@ -84,6 +84,7 @@ namespace RainMeadow
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+
                 if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
                     profileColor = Random.Range(0, 4);
@@ -93,6 +94,7 @@ namespace RainMeadow
                 {
                     arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
+
             }
         }
 
@@ -111,10 +113,15 @@ namespace RainMeadow
         }
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
-            arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
             arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+
 
         }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
@@ -129,12 +136,10 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
-                arena.initiatedStartGameForClient = false;
             }
             if (arena.returnToLobby)
             {
                 arena.playersReadiedUp.list.Clear();
-
                 arena.returnToLobby = false;
             }
 
@@ -243,7 +248,39 @@ namespace RainMeadow
                 }
 
             }
+            //if (player.SlugCatClass == SlugcatStats.Name.Night)
+            //{
+            //    Nightcat.CheckInputForActivatingNightcat(player);
+            //}
 
+        }
+        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
+        {
+            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                if (typeof(T) == typeof(bool) && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceeBool[ID];
+                }
+                if (typeof(T) == typeof(int) && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
+                }
+            }
+            return defaultIfNonExistant;
+        }
+        public static void SaveOptionToArena(string ID, object obj)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
+            if (!OnlineManager.lobby.isOwner) return;
+            if (obj is bool c)
+            {
+                arena.onlineArenaSettingsInterfaceeBool[ID] = c;
+            }
+            if (obj is int i)
+            {
+                arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
+            }
         }
 
     }
