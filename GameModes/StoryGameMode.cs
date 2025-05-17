@@ -9,20 +9,21 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool readyForWin = false;
-        public enum ReadyForGate : byte
+        public enum ReadyForTransition : byte
         {
             Closed,
             MeetRequirement,
             Opening,
             Crossed,
         }
-        public ReadyForGate readyForGate = ReadyForGate.Closed;
+        public ReadyForTransition readyForTransition = ReadyForTransition.Closed;
         public bool friendlyFire = false;
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
         public bool requireCampaignSlugcat;
         public string? saveStateString;
+        public bool lastWarpIsEcho = false;
 
         // TODO: split these out for other gamemodes to reuse (see Story/StoryMenuHelpers for methods)
         public Dictionary<string, bool> storyBoolRemixSettings;
@@ -32,32 +33,41 @@ namespace RainMeadow
         public SlugcatCustomization avatarSettings;
         public StoryClientSettingsData storyClientData;
 
+        public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
+        public float rippleLevel;
 
         public List<AbstractCreature> pups;
+
+        public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
+
         public void Sanitize()
         {
             hasSheltered = false;
             isInGame = false;
             changedRegions = false;
             readyForWin = false;
-            readyForGate = ReadyForGate.Closed;
+            readyForTransition = ReadyForTransition.Closed;
             defaultDenPos = null;
+            myLastWarp = null;
             myLastDenPos = null;
+            lastWarpIsEcho = false;
             region = null;
             saveStateString = null;
             pups = new();
             storyClientData?.Sanitize();
+            rippleLevel = 0.0f;
         }
 
-        public bool canJoinGame => isInGame && !changedRegions && readyForGate == ReadyForGate.Closed && !readyForWin;
+        public bool canJoinGame => isInGame && !changedRegions && readyForTransition == ReadyForTransition.Closed && !readyForWin;
 
         public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
         {
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            rippleLevel = 0.0f;
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
@@ -69,7 +79,8 @@ namespace RainMeadow
         {
             PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
-            DLCSharedEnums.PlacedObjectType.Stowaway //cause severe visual glitches and shaking when overlapped
+            DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
+            Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };
 
         public override bool AllowedInMode(PlacedObject item)
@@ -105,6 +116,7 @@ namespace RainMeadow
             AbstractPhysicalObject.AbstractObjectType.VoidSpawn,
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee,
+            Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, //Causes issues, plus its per player thing
         };
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
@@ -177,10 +189,10 @@ namespace RainMeadow
                     readyForWin = true;
                 }
 
-                if (readyForGate == ReadyForGate.MeetRequirement)
+                if (readyForTransition == ReadyForTransition.MeetRequirement)
                 {
                     gateRoom = null;
-                    if (inGameClientsData.All(scs => scs.readyForGate))
+                    if (inGameClientsData.All(scs => scs.readyForTransition))
                     {
                         // make sure they're at the same region gate
                         var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
@@ -188,19 +200,19 @@ namespace RainMeadow
                         {
                             RainWorld.roomIndexToName.TryGetValue(rooms.First(), out gateRoom);
                             RainMeadow.Debug($"ready for gate {gateRoom}!");
-                            readyForGate = ReadyForGate.Opening;
+                            readyForTransition = ReadyForTransition.Opening;
                         }
                     }
                 }
-                else if (readyForGate == ReadyForGate.Crossed)
+                else if (readyForTransition == ReadyForTransition.Crossed)
                 {
                     // wait for all players to pass through OR leave the gate room
-                    if (inGameClientsData.All(scs => !scs.readyForGate)
+                    if (inGameClientsData.All(scs => !scs.readyForTransition)
                         || (gateRoom is not null && !inGameAvatarOPOs.Select(opo => opo.apo.Room?.name).Contains(gateRoom))  // HACK: AllPlayersThroughToOtherSide may not get called if warp, which softlocks gates
                         )
                     {
                         RainMeadow.Debug($"all through gate {gateRoom}!");
-                        readyForGate = ReadyForGate.Closed;
+                        readyForTransition = ReadyForTransition.Closed;
                     }
                 }
             }
@@ -250,7 +262,7 @@ namespace RainMeadow
             changedRegions = false;
             hasSheltered = false;
             readyForWin = false;
-            readyForGate = ReadyForGate.Closed;
+            readyForTransition = ReadyForTransition.Closed;
             storyClientData.Sanitize();
         }
 

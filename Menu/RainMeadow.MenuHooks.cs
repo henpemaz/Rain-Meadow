@@ -38,10 +38,14 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.UpdateStartButtonText += SlugcatSelectMenu_UpdateStartButtonText;
 
             On.Menu.SlugcatSelectMenu.AddColorButtons += SlugcatSelectMenu_AddColorButtons;
+            On.Menu.MenuObject.ctor += On_MenuObject_Ctor;
+            On.Menu.MenuObject.Update += On_MenuObject_Update;
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
         }
+
+
         void IL_Menu_Update(ILContext il)
         {
             try
@@ -71,13 +75,28 @@ namespace RainMeadow
                 orig(self, direction);
             }
         }
+        void On_MenuObject_Ctor(On.Menu.MenuObject.orig_ctor orig, MenuObject self, Menu.Menu menu, MenuObject owner)
+        {
+            orig(self, menu, owner);
+            if (self is ButtonScroller.IPartOfButtonScroller && self.myContainer == null)
+            {
+                self.myContainer = new();
+                (owner?.Container ?? menu.container).AddChild(self.myContainer); //new feature to incude myContainer instead of manually setting sprite alphas
+            }
+        }
+        void On_MenuObject_Update(On.Menu.MenuObject.orig_Update orig, MenuObject self)
+        {
+            orig(self);
+            if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
+                foreach (ButtonScroller.IPartOfButtonScroller subObj in self.subObjects.OfType<ButtonScroller.IPartOfButtonScroller>())
+                    subObj.Alpha = buttonScroll.Alpha;
+
+        }
         void On_MenuObject_GrafUpdate(On.Menu.MenuObject.orig_GrafUpdate orig, MenuObject self, float timestacker)
         {
             orig(self, timestacker);
             if (self is ButtonScroller.IPartOfButtonScroller buttonScroll)
-            {
-                buttonScroll.UpdateAlpha(buttonScroll.Alpha);
-            }
+                self.myContainer.alpha = self.owner is not ButtonScroller.IPartOfButtonScroller ? buttonScroll.Alpha : 1;
         }
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
