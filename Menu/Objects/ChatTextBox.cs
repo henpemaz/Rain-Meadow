@@ -115,6 +115,7 @@ namespace RainMeadow
                     // replaces the selected text with the emitted character
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
                     DeleteSelection();
+                    lastSentMessage = lastSentMessage.Insert(cursorPos, input.ToString());
                     cursorPos++;
                     if (cursorPos == lastSentMessage.Length)
                     {
@@ -345,7 +346,7 @@ namespace RainMeadow
 
         private void DeleteSelection()
         {
-            lastSentMessage = lastSentMessage.Remove(Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos), Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos));
+            lastSentMessage = lastSentMessage.Remove(Mathf.Min(cursorPos, selectionPos), Mathf.Abs(selectionPos - cursorPos));
             menuLabel.text = lastSentMessage;
             if (selectionPos < cursorPos) cursorPos = selectionPos;
             selectionPos = -1;

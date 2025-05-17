@@ -23,6 +23,9 @@ namespace RainMeadow
         [OnlineFieldHalf(group = "spear")]
         private float spearDamageBonus;
 
+        [OnlineField]
+        private bool ignited;
+
         public RealizedSpearState() { }
         public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
@@ -31,6 +34,11 @@ namespace RainMeadow
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
             spearDamageBonus = spear.spearDamageBonus;
+            
+            if (spear is ExplosiveSpear explosive) {
+                ignited = explosive.Ignited;
+            }
+
 
             if (spear.stuckInObject != null)
             {
@@ -48,8 +56,8 @@ namespace RainMeadow
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             spear.spearDamageBonus = spearDamageBonus;
-            if (!stuckInWall.HasValue)
-                spear.addPoles = false;
+            spear.addPoles = stuckInWall.HasValue;
+
             spear.spearmasterNeedle_hasConnection = needleActive;
 
             if (stuckInChunk is not null)
@@ -59,6 +67,12 @@ namespace RainMeadow
                 spear.stuckInAppendage = spear.stuckInObject != null ? stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
                 spear.stuckBodyPart = stuckBodyPart;
                 spear.stuckRotation = stuckRotation;
+            }
+
+            if (spear is ExplosiveSpear explosive) {
+                if (ignited && !explosive.Ignited) {
+                    explosive.Ignite();
+                }
             }
 
             base.ReadTo(onlineEntity);
@@ -72,13 +86,15 @@ namespace RainMeadow
                 RainMeadow.Error("Stuck in creature but no creature");
                 spear.ChangeMode(Weapon.Mode.Free);
             }
+
         }
 
         override public bool ShouldPosBeLenient(PhysicalObject po)
         {
             if (po is not Spear p) { RainMeadow.Error("target is wrong type: " + po); return false; }
             if (p.onPlayerBack) return true;
-            return false;
+            if (p.stuckInObject != null) return true; 
+            return base.ShouldPosBeLenient(po);
         }
     }
 
