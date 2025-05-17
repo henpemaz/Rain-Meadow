@@ -147,6 +147,7 @@ namespace RainMeadow
     /// Holds data for the stuck state of a given spear, this is mainly
     /// because the properties of being stuck can be easily nullable.
     /// </summary>
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class StuckSpearState : OnlineState
     {
         public Vector2? stuckInWall;
