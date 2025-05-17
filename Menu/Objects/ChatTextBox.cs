@@ -19,10 +19,10 @@ namespace RainMeadow
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
-        public static int textLimit = 75;
+        public int textLimit = 75;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
-        public static string lastSentMessage = "";
+        public bool focused = false;
 
         public static event Action? OnShutDownRequest;
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
@@ -35,7 +35,6 @@ namespace RainMeadow
             OnKeyDown = (Action<char>)Delegate.Combine(OnKeyDown, new Action<char>(CaptureInputs));
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
-            ShouldCapture(true);
         }
 
         public void DelayedUnload(float delay)
@@ -43,7 +42,6 @@ namespace RainMeadow
             if (!isUnloading)
             {
                 cursorPos = 0;
-                ShouldCapture(false);
                 isUnloading = true;
                 typingHandler.StartCoroutine(Unload(delay));
             }
@@ -62,6 +60,8 @@ namespace RainMeadow
         }
         private void CaptureInputs(char input)
         {
+            if (!focused) return;
+
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = lastSentMessage;
@@ -101,6 +101,7 @@ namespace RainMeadow
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                     RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
+                focused = false;
                 // only resets the chat text box if in a story lobby menu, otherwise the text box is just destroyed
                 OnShutDownRequest.Invoke();
                 typingHandler.Unassign(this);
@@ -131,8 +132,25 @@ namespace RainMeadow
             menuLabel.text = lastSentMessage;
         }
 
+        public override void Update()
+        {
+            base.Update();
+            if (focused && Input.GetMouseButton(0)) focused = false;
+
+            if (focused) cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
+            else cursorWrap.sprite.alpha = 0f;
+        }
+        public override void Clicked()
+        {
+            base.Clicked();
+            focused = true;
+        }
+
         public override void GrafUpdate(float timeStacker)
         {
+            if (focused) ShouldCapture(true);
+            else ShouldCapture(false);
+
             var msg = lastSentMessage;
             var len = msg.Length;
             if (len > 0)
@@ -386,13 +404,13 @@ namespace RainMeadow
         {
             if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
 
-            return blockInput? false : orig(code);
+            return blockInput ? false : orig(code);
         }
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.Return) return orig(code);
-            
+
             return blockInput ? false : orig(code);
         }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
