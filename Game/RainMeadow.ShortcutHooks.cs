@@ -15,7 +15,6 @@ namespace RainMeadow
             On.Room.AddObject += RoomOnAddObject; // Prevent adding item to update list twice
 
             IL.ShortcutHandler.Update += ShortcutHandler_Update; // cleanup of entities in shortcut system
-            On.ShortcutHandler.Update += ShortcutHandler_Update1;
             On.ShortcutHandler.VesselAllowedInRoom += ShortcutHandlerOnVesselAllowedInRoom; // Prevent creatures from entering a room if their online counterpart has not yet entered!
 
             On.ShortcutHandler.CreatureTakeFlight += ShortcutHandler_CreatureTakeFlight;
@@ -93,9 +92,7 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null) {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
-                            oc.AllMoving(true);
-                            creature.Move(cord);
-                            oc.AllMoving(false);
+                            creature.MoveMovable(cord);
                             return true;
                         }
                     }
@@ -307,7 +304,6 @@ namespace RainMeadow
 
         private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) 
         {
-
           
             orig(self, pos, newRoom, spitOutAllSticks);
             if (OnlineManager.lobby == null) {
