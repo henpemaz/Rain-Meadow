@@ -47,8 +47,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             throw new InvalidOperationException("lobby is null");
 
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
-
-        manager.arenaSetup ??= new(manager);
+        if (manager.arenaSetup == null || manager.arenaSetup is not ArenaOnlineSetup)
+        {
+            manager.arenaSetup = new ArenaOnlineSetup(manager);
+        }
 
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
@@ -61,8 +63,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
-
-        ChangeScene(slugcatScene = Arena.slugcatSelectMenuScenes[Arena.arenaClientSettings.playingAs.value]);
 
         competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
@@ -173,6 +173,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        SwitchSelectedSlugcat(GetArenaSetup.playerClass[0] ?? Arena.arenaClientSettings.playingAs);
     }
 
     public void ChangeScene(MenuScene.SceneID sceneID)
@@ -223,8 +224,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             RainMeadow.Error("arena is null, slugcat wont be changed!");
             return;
         }
+        slugcat = slugcat.Index == -1? SlugcatStats.Name.White : slugcat;
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
         Arena.arenaClientSettings.playingAs = slugcat;
+        GetArenaSetup.playerClass[0] = slugcat;
         RainMeadow.Debug($"My Slugcat: {Arena.arenaClientSettings.playingAs}, in lobby list of client settings: {(ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)?.playingAs?.value) ?? "NULL!"}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
@@ -244,10 +247,12 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             GetArenaSetup.SaveToFile();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
+        else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
         manager.rainWorld.progression.SaveProgression(true, true);
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
             OnlineManager.LeaveLobby();
+            manager.arenaSetup = null;
         }
         base.ShutDownProcess();
     }
