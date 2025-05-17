@@ -27,28 +27,10 @@ namespace RainMeadow
                 ignited = explosive.Ignited;
             }
 
-            if (spear.stuckInObject != null)
+            stuck = null;
+            if (spear.stuckInObject != null || spear.stuckInWall != null)
             {
-                stuck = new()
-                {
-                    stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk),
-                    stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null,
-                    stuckBodyPart = (sbyte)spear.stuckBodyPart,
-                    stuckRotation = spear.stuckRotation
-                };
-            }
-            else if (spear.stuckInWall != null)
-            {
-                stuck = new()
-                {
-                    stuckInWall = spear.stuckInWall,
-                    stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles,
-                    stuckInChunk = null
-                };
-            }
-            else
-            {
-                stuck = null;
+                stuck = new(spear);
             }
         }
 
@@ -58,21 +40,7 @@ namespace RainMeadow
 
             spear.spearDamageBonus = spearDamageBonus;
             spear.spearmasterNeedle_hasConnection = needleActive;
-            if (stuck != null)
-            {
-                spear.stuckInWall = stuck.stuckInWall;
-                spear.abstractSpear.stuckInWallCycles = stuck.stuckInWallCycles;
-                if (!stuck.stuckInWall.HasValue)
-                    spear.addPoles = false;
-                if (stuck.stuckInChunk is not null)
-                {
-                    spear.stuckInObject = stuck.stuckInChunk.owner;
-                    spear.stuckInChunkIndex = stuck.stuckInChunk.index;
-                    spear.stuckInAppendage = spear.stuckInObject != null ? stuck.stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
-                    spear.stuckBodyPart = stuck.stuckBodyPart;
-                    spear.stuckRotation = stuck.stuckRotation;
-                }
-            }
+            stuck?.ReadTo(spear);
 
             if (spear is ExplosiveSpear explosive) {
                 if (ignited && !explosive.Ignited) {
@@ -150,11 +118,38 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class StuckSpearState : OnlineState
     {
+        [OnlineFieldHalf]
         public Vector2? stuckInWall;
-        public BodyChunkRef? stuckInChunk;
-        public AppendageRef? stuckInAppendage;
-        public sbyte stuckBodyPart;
+        [OnlineFieldHalf]
         public float stuckRotation;
+        [OnlineField]
+        public BodyChunkRef? stuckInChunk;
+        [OnlineField]
+        public AppendageRef? stuckInAppendage;
+        [OnlineField]
+        public sbyte stuckBodyPart;
+        [OnlineField]
         public sbyte stuckInWallCycles;
+
+        public StuckSpearState(Spear spear) {
+            stuckInChunk = BodyChunkRef.FromBodyChunk(spear.stuckInChunk);
+            stuckInAppendage = spear.stuckInAppendage != null ? new AppendageRef(spear.stuckInAppendage) : null;
+            stuckBodyPart = (sbyte)spear.stuckBodyPart;
+            stuckRotation = spear.stuckRotation;
+        }
+        public void ReadTo(Spear spear) {
+            spear.stuckInWall = stuckInWall;
+            spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
+            if (!stuckInWall.HasValue)
+                spear.addPoles = false;
+            if (stuckInChunk is not null)
+            {
+                spear.stuckInObject = this.stuckInChunk.owner;
+                spear.stuckInChunkIndex = this.stuckInChunk.index;
+                spear.stuckInAppendage = spear.stuckInObject != null ? this.stuckInAppendage?.GetAppendagePos(spear.stuckInObject) : null;
+                spear.stuckBodyPart = this.stuckBodyPart;
+                spear.stuckRotation = this.stuckRotation;
+            }
+        }
     }
 }
