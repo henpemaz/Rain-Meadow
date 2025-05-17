@@ -25,7 +25,7 @@ namespace RainMeadow
         {
             mode = (byte)tongue.mode;
             pos = tongue.pos;
-            // idealRopeLength = tongue.idealRopeLength;
+            idealRopeLength = tongue.idealRopeLength;
             requestedRopeLength = tongue.requestedRopeLength;
             attachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
         }
@@ -43,7 +43,7 @@ namespace RainMeadow
         {
             tongue.mode = new TubeWorm.Tongue.Mode(TubeWorm.Tongue.Mode.values.GetEntry(mode));
             tongue.pos = pos;
-            //tongue.idealRopeLength = idealRopeLength;
+            tongue.idealRopeLength = idealRopeLength;
             tongue.requestedRopeLength = requestedRopeLength;
             if (tongue.mode == TubeWorm.Tongue.Mode.AttachedToTerrain)
             {
