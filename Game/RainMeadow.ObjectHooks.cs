@@ -31,32 +31,21 @@ namespace RainMeadow
             On.Water.Update += CentiLag_Water_Update2;
             On.RainWorldGame.Update += CentiLag_RainWorldGame_Update;
             On.Creature.TerrainImpact += CentiLag_Creature_TerrainImpact;
-            IL.Creature.TerrainImpact += CentiLag_Creature_TerrainImpact2;
         }
 
         private void CentiLag_Creature_TerrainImpact(On.Creature.orig_TerrainImpact orig, Creature self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact) {
-            var oldCount = self.room.updateList.Count;
-            orig(self, chunk, direction, speed, firstContact);
-            dripTickCount += (int)Mathf.Max((float)(self.room.updateList.Count - oldCount), 0.0f);
-        }
-
-        private void CentiLag_Creature_TerrainImpact2(ILContext il) {
-            try
+            if (OnlineManager.lobby != null)
             {
-                var c = new ILCursor(il);
-                ILLabel skip = null;
-                c.GotoNext(moveType: MoveType.After,
-                    i => i.MatchLdloc(0),
-                    i => i.MatchLdcR4(10),
-                    i => i.MatchBleUn(out skip)
-                );
-                c.MoveAfterLabels();
-                c.EmitDelegate(() => OnlineManager.lobby != null && dripObjectCount >= 30); //bound to 20 particles
-                c.Emit(OpCodes.Brtrue, skip);
+                var oldCount = self.room.updateList.Count;
+                if (dripObjectCount < 10 && Math.Min(5, (int)((1f + Mathf.Lerp(speed * Mathf.Lerp(self.bodyChunks[chunk].mass, 1f, 0.75f), 1f, 0.8f) * 0.4f) * self.room.roomSettings.CeilingDrips)) <= 5.0f)
+                {
+                    orig(self, chunk, direction, speed, firstContact);
+                }
+                dripObjectCount += (int)Mathf.Max((float)(self.room.updateList.Count - oldCount), 0.0f);
             }
-            catch (Exception e)
+            else
             {
-                Logger.LogError(e);
+                orig(self, chunk, direction, speed, firstContact);
             }
         }
 
@@ -109,7 +98,7 @@ namespace RainMeadow
                     {
                         float minVelY = -50.0F;
                         float maxVelY = 50.0F;
-                        if (splashObjectCount >= 50 || value <= minVelY || value >= maxVelY)
+                        if (splashObjectCount >= 25 || value <= minVelY || value >= maxVelY)
                         { //dont spawn any splashes after N splashes over 40 ticks OR has too much velocity
                             return 0.0F;
                         }
