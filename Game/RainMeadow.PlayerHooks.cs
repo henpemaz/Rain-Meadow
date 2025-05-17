@@ -71,18 +71,21 @@ public partial class RainMeadow
         new Hook(typeof(Watcher.CamoMeter).GetProperty("Unlocked").GetGetMethod(), this.CamoMeter_SetCamoMeter);
         new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.CamoMeter_SetCamoMeter);
         new Hook(typeof(Player).GetProperty("CanSpawnDynamicWarpPoints").GetGetMethod(), this.Player_CanSpawnDynamicWarpPoints);
-        
-        On.Player.TickLevitation += (On.Player.orig_TickLevitation orig, Player self, bool levitateUp) => {
+
+        On.Player.TickLevitation += (On.Player.orig_TickLevitation orig, Player self, bool levitateUp) =>
+        {
             WatcherOverrideForLevitation = true;
             orig(self, levitateUp);
             WatcherOverrideForLevitation = false;
         };
-        On.Player.MovementUpdate += (On.Player.orig_MovementUpdate orig, Player self, bool eu) => {
+        On.Player.MovementUpdate += (On.Player.orig_MovementUpdate orig, Player self, bool eu) =>
+        {
             WatcherOverrideRippleLevel = true;
             orig(self, eu);
             WatcherOverrideRippleLevel = false;
         };
-        On.Player.WatcherUpdate += (On.Player.orig_WatcherUpdate orig, Player self) => {
+        On.Player.WatcherUpdate += (On.Player.orig_WatcherUpdate orig, Player self) =>
+        {
             WatcherOverrideRippleLevel = true;
             orig(self);
             WatcherOverrideRippleLevel = false;
@@ -99,7 +102,7 @@ public partial class RainMeadow
     public static bool WatcherOverrideRippleLevel = false;
     // And for the "levitation calculation" ticks so we levitate like we had ripple lvl. 10
     public static bool WatcherOverrideForLevitation = false;
-    
+
     private float Player_SetRippleLevel(Func<Player, float> orig, Player self)
     {
         if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
@@ -1281,15 +1284,34 @@ public partial class RainMeadow
     {
         if (!self.isNPC)
         {
-            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return story.itemSteal;
+            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
+
+                if (story.itemSteal)
+                {
+                    return orig(self, obj);
+                }
+                else
+                {
+                    return false;
+                }
             if (isArenaMode(out var arena))
             {
-                if (obj.grabbedBy.Any(x => x.grabber is Player grabbing_player)) return arena.itemSteal;
+                if (obj.grabbedBy.Any(x => x.grabber is Player grabbing_player))
+                {
+                    if (arena.itemSteal)
+                    {
+                        return orig(self, obj);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
                 if (obj is Player pl)
                 {
                     if (pl.Stunned || pl.dead)
                     {
-                        return true;
+                        return orig(self, obj);
                     };
                 }
 
