@@ -74,17 +74,7 @@ namespace RainMeadow
         public static void MoveMovable(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
             foreach (AbstractPhysicalObject obj in apo.GetAllConnectedObjects()) {
                 if (obj.CanMove(newCoord, true))
-                {
-                    // for stuff we are carrying
-                    if (apo != obj)
-                    {
-                        if (obj?.realizedObject is Creature critter && critter.inShortcut)
-                        {
-                            // IN A MINUTE!!! (I'll move myself across rooms)
-                            continue;
-                        }
-                    }
-                    
+                {   
                     if (newCoord.CompareDisregardingTile(obj.pos)) return;
 
                     obj.timeSpentHere = 0;
@@ -105,7 +95,7 @@ namespace RainMeadow
             }
         }
         public static void MoveOnly(this AbstractPhysicalObject apo, WorldCoordinate newCoord) {
-            if (apo.CanMove(newCoord)) {
+            if (apo.CanMove(newCoord, true)) {
                 if (newCoord.CompareDisregardingTile(apo.pos)) return;
 
                 apo.timeSpentHere = 0;

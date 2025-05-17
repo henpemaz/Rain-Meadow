@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using RWCustom;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using System.Collections.Generic;
 
 namespace RainMeadow;
 
@@ -465,13 +466,19 @@ public partial class RainMeadow
 
     public static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
         onback = null;
+        int i = 0;
 
-        while (player != null) {
+        List<Player?> checked_players = new List<Player?> { null };
+
+        while (player != null && ((++i) < 20)) // builtin hard limit to prevent infinite loops.
+        {
             if (player.slugOnBack is null) break;
             player = player.slugOnBack.slugcat;
-            if (player is null) break;
+            if (checked_players.Contains(player)) break;
+            checked_players.Add(player);
 
-            if (player.SlugCatClass == name) {
+            if (player.SlugCatClass == name)
+            {
                 onback = player;
             }
         }
