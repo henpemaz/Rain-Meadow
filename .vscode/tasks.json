@@ -18,6 +18,17 @@
 			}
 		},
 		{
+			"label": "Steam Build & Run",
+			"command": "steam",
+			"type": "process",
+			"args": ["steam://rungameid/312520"],
+			"dependsOn": ["Steam Build"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
 			"label": "Local Build",
 			"command": "dotnet",
 			"type": "process",
