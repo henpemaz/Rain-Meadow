@@ -38,7 +38,7 @@ namespace RainMeadow
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
         public bool CanScrollUp => scrollOffset > 0;
         public bool CanScrollDown => scrollOffset < MaxDownScroll;
-        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX,float heightOfButton, float buttonSpacing) : this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, heightOfButton, buttonSpacing)))
+        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, float heightOfButton, float buttonSpacing) : this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, heightOfButton, buttonSpacing)))
         {
             buttonHeight = heightOfButton;
             this.buttonSpacing = buttonSpacing;
@@ -54,7 +54,6 @@ namespace RainMeadow
         public override void RemoveSprites()
         {
             base.RemoveSprites();
-            this.ClearMenuObject(ref scrollSlider);
             RemoveAllButtons();
         }
         public override void Update()
@@ -106,11 +105,11 @@ namespace RainMeadow
         }
         protected void DirectConstrainScroll() //for direct scroll clamp, like for DownScrollOffset set method, this doesnt not update slider value
         {
-            scrollOffset =  Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
+            scrollOffset = Mathf.Clamp(scrollOffset, 0, MaxDownScroll);
         }
         public List<T> GetSpecificButtons<T>()
         {
-            return [..buttons.OfType<T>()];
+            return [.. buttons.OfType<T>()];
         }
         public int IndexFromButton(IPartOfButtonScroller button)
         {
@@ -212,7 +211,7 @@ namespace RainMeadow
             public override void Update()
             {
                 base.Update();
-                buttonBehav.greyedOut = forceGreyedOut || Alpha < 1;
+                buttonBehav.greyedOut = forceGreyedOut;
             }
             public bool forceGreyedOut;
         }

@@ -35,7 +35,7 @@ namespace RainMeadow
             writer = new(stream);
             reader = new(stream);
 
-            if (!scratch) scratchpad = new Serializer(this.capacity, true);
+            if (!scratch) scratchpad = new Serializer(2 * this.capacity, true);
         }
 
         private void PlayerHeaders()

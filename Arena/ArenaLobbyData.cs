@@ -19,7 +19,7 @@ namespace RainMeadow
             // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
-            
+
             [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
             [OnlineField(group = "arenaLobby")]
@@ -58,6 +58,9 @@ namespace RainMeadow
             public bool disableArtiStun;
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
+            [OnlineField(group = "arenaSetup")]
+            public bool arenaItemSteal;
+
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -78,12 +81,11 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
             public int playerEnteredGame;
-
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;             
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 playList = arena.playList;
                 arenaSittingOnlineOrder = new(arena.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
@@ -112,7 +114,7 @@ namespace RainMeadow
                 painCatLizard = arena.painCatLizard;
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
-
+                arenaItemSteal = arena.itemSteal;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -149,6 +151,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).painCatLizard = painCatLizard;
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
+                (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
 
             }
 

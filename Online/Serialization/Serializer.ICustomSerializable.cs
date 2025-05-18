@@ -159,6 +159,7 @@ namespace RainMeadow
 
         // tempting to try and cache this, would need a query icomparable
         // liz: say no more!
+        // hen: yeah sure nice except it was untested and didn't work :(
         internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var key = new Serializer.TypeInfo(fieldType, nullable, polymorphic, longList);

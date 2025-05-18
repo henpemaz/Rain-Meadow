@@ -1,4 +1,4 @@
-﻿using Mono.Cecil.Cil;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
@@ -27,6 +27,7 @@ namespace RainMeadow
             On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
+            On.RegionState.InfectRegionRoomWithSentientRot += RegionState_InfectRegionRoomWithSentientRot;
 
             On.Room.ctor += Room_ctor;
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
@@ -51,6 +52,31 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        
+            IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
+        }
+
+        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il) {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Inequality"),
+                    i => i.MatchBrfalse(out skip),
+                    i => i.MatchLdloc(3),
+                    i => i.MatchBrtrue(out skip),
+                    i => i.MatchLdloc(2),
+                    i => i.MatchBrtrue(out skip)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Menu.SleepAndDeathScreen self) => OnlineManager.lobby != null && self.karmaLadder == null);
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
@@ -421,6 +447,29 @@ namespace RainMeadow
             orig(self);
         }
 
+        private bool RegionState_InfectRegionRoomWithSentientRot(On.RegionState.orig_InfectRegionRoomWithSentientRot orig, RegionState self, float amount, string roomName)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
+            {
+                if (orig(self, amount, roomName))
+                {
+                    foreach (var player in OnlineManager.players)
+                    {
+                        if (!player.isMe)
+                        {
+                            player.InvokeOnceRPC(StoryRPCs.InfectRegionRoomWithSentientRot, amount, roomName);
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+            else
+            {
+                return orig(self, amount, roomName);
+            }
+        }
+
         // Prevent gameplay items
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom, bool devUI)
         {
@@ -487,6 +536,24 @@ namespace RainMeadow
                     return OnlineManager.lobby != null && RoomSession.map.TryGetValue(self.abstractRoom, out var roomSession) && !OnlineManager.lobby.gameMode.ShouldSpawnRoomItems(self.game, roomSession);
                 });
                 c.Emit(OpCodes.Brtrue, skip);
+                //
+                // section 2: prevent toys in WAUA_TOYS from duplicating
+                c = new ILCursor(il);
+                for (int i = 0; i < 4; i++)
+                { // SpinToy, BallToy, SoftToy, WeirdToy
+                    var skipApo = il.DefineLabel();
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<RainWorldGame>("get_GetStorySession"),
+                        i => i.MatchLdfld<StoryGameSession>("saveState"),
+                        i => i.MatchLdfld<SaveState>("deathPersistentSaveData"),
+                        i => i.MatchLdfld<DeathPersistentSaveData>("sawVoidBathSlideshow"),
+                        i => i.MatchBrfalse(out skipApo)
+                    );
+                    //c.MoveAfterLabels();
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
+                    c.Emit(OpCodes.Brfalse, skipApo);
+                }
             }
             catch (Exception e)
             {

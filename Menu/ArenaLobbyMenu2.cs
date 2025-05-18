@@ -78,9 +78,27 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
+        var x = new VerticalScrollSelector(this, playListTab, new Vector2(100, 100), new Vector2(200, 50), 3);
+        x.AddSideButton("Menu_Symbol_Show_Thumbs", "test");
+        x.AddSideButton("Menu_Symbol_Show_List", "test 2");
+        x.AddScrollElements(
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
+            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50))
+            );
+        playListTab.AddObjects(x);
+
         arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
+
         if (ModManager.MSC)
         {
             painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];

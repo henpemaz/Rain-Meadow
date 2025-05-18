@@ -21,7 +21,7 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
-            buttonBehav.greyedOut = forceGreyOut || Alpha < 1;
+            buttonBehav.greyedOut = forceGreyOut;
         }
         public override void GrafUpdate(float timeStacker)
         {
