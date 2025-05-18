@@ -1,9 +1,11 @@
 ﻿using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using System.Collections.Generic;
 using Menu;
+using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Interfaces;
 using UnityEngine;
+using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow.UI.Components
 {
@@ -39,15 +41,10 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 50), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-15, -153), new Vector2(105, 20), false);
-            countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new Vector2(countdownTimerLabel.pos.x + 135, countdownTimerLabel.pos.y + 3), 50)
+            countdownTimerDragger = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), countdownTimerLabel.pos.x + 135, countdownTimerLabel.pos.y + 3)
             {
-                alignment = FLabelAlignment.Center,
-                description = "How long the grace timer at the beginning of rounds lasts for. Default 5s."
-            };
-            countdownTimerTextBox.OnValueUpdate += (config, value, lastValue) =>
-            {
-                if (RainMeadow.isArenaMode(out ArenaMode arena))
-                    arena.setupTime = countdownTimerTextBox.valueInt;
+                description = "How long the grace timer at the beginning of rounds lasts for. Default 5s.",
+                max = int.MaxValue //unless a psycho is here nobody would want this xd
             };
             arenaGameModeLabel = new(menu, this, "Arena Game Mode:", new Vector2(-95, -103), new Vector2(105, 20), false);
             arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(arenaGameModeLabel.pos.x + 215, arenaGameModeLabel.pos.y - 2), 175f, gameModes);
@@ -57,7 +54,7 @@ namespace RainMeadow.UI.Components
                 arena.currentGameMode = value;
             };
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, 
-                new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox), arenaGameModeLabel, new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox));
+                new UIelementWrapper(tabWrapper, countdownTimerDragger), arenaGameModeLabel, new UIelementWrapper(tabWrapper, arenaGameModeComboBox));
         }
         public override void RemoveSprites()
         {
@@ -77,16 +74,11 @@ namespace RainMeadow.UI.Components
                 divSprites[i].x = pos.x + divSpritePos[i].x;
                 divSprites[i].y = pos.y + divSpritePos[i].y;
             }
-            countdownTimerLabel.label.color = countdownTimerTextBox.rect.colorEdge;
+            countdownTimerLabel.label.color = countdownTimerDragger.rect.colorEdge;
             arenaGameModeLabel.label.color = arenaGameModeComboBox._rect.colorEdge;
         }
         public override void Update()
         {
-            gameModeComboBoxLastHeld = countdownTimerTextBox.held;
-            if (this.IsAllRemixUINotHeld() && tabWrapper.holdElement)
-            {
-                tabWrapper.holdElement = false;
-            }
             base.Update();
             bool isNotOwner = !(OnlineManager.lobby?.isOwner == true);
             foreach (MenuObject obj in subObjects)
@@ -96,14 +88,13 @@ namespace RainMeadow.UI.Components
                 if (obj is MultipleChoiceArray array)
                     array.greyedOut = isNotOwner;
             }
-            countdownTimerTextBox.greyedOut = isNotOwner;
+            countdownTimerDragger.greyedOut = isNotOwner;
             arenaGameModeComboBox.greyedOut = isNotOwner;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime)
-                {
-                    countdownTimerTextBox.valueInt = arena.setupTime;
-                }
+                if (countdownTimerDragger.greyedOut || (!countdownTimerDragger.held && !countdownTimerDragger.MouseOver)) countdownTimerDragger.SetValueInt(arena.setupTime);
+                else arena.setupTime = countdownTimerDragger.GetValueInt();
+
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld)
                 {
                     arenaGameModeComboBox.value = arena.currentGameMode;
@@ -188,15 +179,19 @@ namespace RainMeadow.UI.Components
                     array.CheckedButton = array.CheckedButton;
                 }
             }
+            if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+            arena.setupTime = countdownTimerDragger.GetValueInt();
+            arena.currentGameMode = arenaGameModeComboBox.value;
         }
+
         public bool gameModeComboBoxLastHeld;
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
-        public OpTextBox countdownTimerTextBox;
+        public OpDragger countdownTimerDragger;
         public OpComboBox arenaGameModeComboBox;
-        public RestorableMenuLabel countdownTimerLabel, arenaGameModeLabel;
-        public RestorableCheckbox spearsHitCheckbox, evilAICheckBox;
-        public RestorableMultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
-        public RestorableMenuTabWrapper tabWrapper;
+        public MenuLabel countdownTimerLabel, arenaGameModeLabel;
+        public CheckBox spearsHitCheckbox, evilAICheckBox;
+        public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
+        public MenuTabWrapper tabWrapper;
     }
 }
