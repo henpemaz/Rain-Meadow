@@ -236,7 +236,7 @@ namespace RainMeadow
             {
                 Error(ex);
             }
-
+        }
         private float SetCamoDuration(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var _))
