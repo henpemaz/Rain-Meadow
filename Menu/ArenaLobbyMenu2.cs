@@ -47,11 +47,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             throw new InvalidOperationException("lobby is null");
 
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
-        if (manager.arenaSetup == null || manager.arenaSetup is not ArenaOnlineSetup)
-        {
-            manager.arenaSetup = new ArenaOnlineSetup(manager);
-        }
-
+        if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
         Competitive competitive = new();
@@ -191,6 +187,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
         SwitchSelectedSlugcat(GetArenaSetup.playerClass[0]);
     }
 

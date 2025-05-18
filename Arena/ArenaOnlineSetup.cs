@@ -15,12 +15,6 @@ namespace RainMeadow
         {
             return name + "<msuB>" + value + "<msuA>";
         }
-        public static List<string> SessionSaveIdentifiableStrings =>
-        [
-            "CURRGAMETYPE",
-            "GAMETYPE",
-        ];
-        public bool isSavingNonSessionOnly = false;
         public ArenaOnlineSetup(ProcessManager manager) : base(manager)
         {
         }
@@ -29,7 +23,7 @@ namespace RainMeadow
             string saveString = "";
             ArenaHelpers.ParseArenaSetupSaveString(manager.rainWorld.options.LoadArenaSetup(savFilePath), (name, value) =>
             {
-                if (name != null && SessionSaveIdentifiableStrings.Contains(name))
+                if (name != null && sessionSaveIdentifiableStrings.Contains(name))
                 {
                     saveString += SetIntoSaveString(name, value);
                 }
@@ -38,12 +32,16 @@ namespace RainMeadow
         }
         public string SetSaveStringFilter(string origText)
         {
-            if (!saveNonSessionOnly) return origText;
+            if (!isSavingNonSessionOnly)
+            {
+                RainMeadow.Debug("Saving everything!");
+                return origText;
+            }
             string newSaveString = "";
             string SessionSaveString = GetSessionSaveString();
             ArenaHelpers.ParseArenaSetupSaveString(origText, (name, value) =>
             {
-                if (name != null && !SessionSaveIdentifiableStrings.Contains(name))
+                if (name != null && !sessionSaveIdentifiableStrings.Contains(name))
                 {
                     RainMeadow.Debug($"Saving: {name}");
                     newSaveString += SetIntoSaveString(name, value);
@@ -54,10 +52,12 @@ namespace RainMeadow
         }
         public void SaveNonSessionToFile()
         {
+            RainMeadow.DebugMe();
             isSavingNonSessionOnly = true;
             SaveToFile();
             isSavingNonSessionOnly = false;
         }
-        public bool saveNonSessionOnly = false;
+        public bool isSavingNonSessionOnly = false;
+        public List<string> sessionSaveIdentifiableStrings = ["CURRGAMETYPE", "GAMETYPE"];
     }
 }
