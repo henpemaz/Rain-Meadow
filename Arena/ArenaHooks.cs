@@ -1073,6 +1073,22 @@ namespace RainMeadow
                         }
                     }
                 }
+
+                if (self.gameTypeSetup.gameType == TeamBattleMode.TeamBattle)
+                {
+                    if (list.Count == 1)
+                    {
+                        list[0].winner = list[0].alive;
+                    }
+                    else if (list.Count > 1)
+                    {
+                        foreach (var player in list)
+                        {
+                            player.winner = true;
+                        }
+
+                    }
+                }
                 // More gamemodes here?
 
 
@@ -1344,14 +1360,15 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
-
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
+
             if (self.backgroundRect == null)
             {
                 RainMeadow.Debug("Rectangle went missing. Bringing it back");
                 self.backgroundRect = new Menu.RoundedRect(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
                 self.subObjects.Add(self.backgroundRect);
             }
+            
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
                 self.portrait.RemoveSprites();

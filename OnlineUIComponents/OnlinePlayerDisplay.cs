@@ -61,6 +61,8 @@ namespace RainMeadow
 
             Color.RGBToHSV(color, out H, out S, out V);
 
+
+            // FIX THIS
             if (V < 0.8f)
             {
                 this.lighter_color = Color.HSVToRGB(H, S, 0.8f);
@@ -68,6 +70,13 @@ namespace RainMeadow
             else
             {
                 this.lighter_color = color;
+            }
+
+            if (RainMeadow.isArenaTeamBattleMode(out var arena2))
+            {
+
+                this.color = (arena2 as TeamBattleMode).myTeam.teamColor;
+                this.lighter_color = this.color;
             }
 
             this.pos = new Vector2(-1000f, -1000f);
@@ -114,6 +123,12 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
+
+            if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+            {
+                slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+
+            }
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
@@ -225,6 +240,7 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
+            RainMeadow.Debug(RainMeadow.isArenaTeamBattleMode(out var tb));
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             var pos = vector;
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);

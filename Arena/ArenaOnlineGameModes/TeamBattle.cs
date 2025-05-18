@@ -6,6 +6,13 @@ using System.Linq;
 using UnityEngine;
 namespace RainMeadow
 {
+
+    public class Team
+    {
+        public string TeamName;
+        public Color teamColor;
+
+    }
     public class TeamBattleMode : ExternalArenaGameMode
     {
 
@@ -15,6 +22,8 @@ namespace RainMeadow
 
         public List<OnlinePlayer> ChieftainPlayers = new();
         public List<OnlinePlayer> Dragonslayers = new();
+        public Team myTeam;
+
         public enum TeamMappings
         {
             Martyrs,
@@ -105,10 +114,9 @@ namespace RainMeadow
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            if (this.ChieftainPlayers.Contains(OnlineManager.mePlayer))
-            {
-                this.ChieftainPlayers.Add(OnlineManager.mePlayer);
-            }
+            this.myTeam = new Team() { TeamName = TeamMappingsDictionary[TeamMappings.Outlaws], teamColor = TeamColors[TeamMappings.Outlaws] }; // make this dynamic
+
+
 
         }
 
