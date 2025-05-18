@@ -111,7 +111,7 @@ namespace RainMeadow
         private const int size = 5;
         private const float targetLength = 50f;
         public const int totalSprites = 1;
-        private readonly int firstSpriteIndex;
+        public int firstSpriteIndex;
 
         public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, Color cloakColor)
         {
