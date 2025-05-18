@@ -45,7 +45,7 @@ namespace RainMeadow.UI.Components
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
             selectRect.addSize = new Vector2(2f, -2f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
-            buttonBehav.greyedOut = forceGreyedOut || Alpha < 1;
+            buttonBehav.greyedOut = forceGreyedOut;
         }
         public override void GrafUpdate(float timeStacker)
         {
