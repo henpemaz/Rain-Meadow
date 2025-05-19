@@ -5,7 +5,7 @@ using System.Linq;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using RainMeadow.UI.Interfaces;
+using RainMeadow.UI.Components.Patched;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components;
@@ -20,7 +20,7 @@ public class TabContainer : RectangularMenuObject
         public TabButton(string name, TabContainer container, MenuTabWrapper myTabWrapper, Vector2 pos, int tabIndex, float ySize = 125) : base(pos, new(30, ySize))
         {
             this.container = container;
-            wrapper = new(myTabWrapper, this);
+            wrapper = new PatchedUIelementWrapper(myTabWrapper, this);
             index = tabIndex;
             _rect.hiddenSide = DyeableRect.HiddenSide.Right;
             _rectH.hiddenSide = DyeableRect.HiddenSide.Right;
@@ -33,7 +33,7 @@ public class TabContainer : RectangularMenuObject
 
         public override void Update()
         {
-            soundClick = Active? SoundID.MENU_Greyed_Out_Button_Clicked : SoundID.MENU_Button_Standard_Button_Pressed;
+            soundClick = Active ? SoundID.MENU_Greyed_Out_Button_Clicked : SoundID.MENU_Button_Standard_Button_Pressed;
             base.Update();
         }
         public override void GrafUpdate(float timeStacker)
@@ -75,13 +75,13 @@ public class TabContainer : RectangularMenuObject
             {
                 topArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset > 0);
                 TabButton? topTabBtn = activeTabButtons.First();
-                topArrowButton.pos.y = topTabBtn != null? topTabBtn.pos.y + topTabBtn.size.y + 10 : container.size.y;
+                topArrowButton.pos.y = topTabBtn != null ? topTabBtn.pos.y + topTabBtn.size.y + 10 : container.size.y;
             }
             if (bottomArrowButton != null)
             {
                 bottomArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset < MaxOffset);
                 TabButton? bottomTabBtn = activeTabButtons.Last();
-                bottomArrowButton.pos.y = (bottomTabBtn != null? bottomTabBtn.pos.y : 0) - 34;
+                bottomArrowButton.pos.y = (bottomTabBtn != null ? bottomTabBtn.pos.y : 0) - 34;
             }
         }
         public void AddNewTabButton(string name)
@@ -132,7 +132,7 @@ public class TabContainer : RectangularMenuObject
         }
         public void ClearVisibleTabButtons()
         {
-            for(int i = 0; i < activeTabButtons.Count; i++)
+            for (int i = 0; i < activeTabButtons.Count; i++)
             {
                 activeTabButtons[i].wrapper.tabWrapper.ClearMenuObject(activeTabButtons[i].wrapper);
                 activeTabButtons[i].wrapper.tabWrapper.wrappers.Remove(activeTabButtons[i]);

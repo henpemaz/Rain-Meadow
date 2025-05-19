@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace RainMeadow
@@ -87,7 +89,7 @@ namespace RainMeadow
 
                 if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
-                    profileColor = Random.Range(0, 4);
+                    profileColor = UnityEngine.Random.Range(0, 4);
                     arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
                 else
@@ -280,6 +282,25 @@ namespace RainMeadow
             if (obj is int i)
             {
                 arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
+            }
+        }
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                RainMeadow.Error("Lobby is null!");
+                return null;
+            }
+            if (player == null) return null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
+        }
+        public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
+        {
+            string[] array = Regex.Split(text, "<msuA>");
+            for (int i = 0; i < array.Length; i++)
+            {
+                string[] array2 = Regex.Split(array[i], "<msuB>");
+                action.Invoke(array2[0], array[1]);
             }
         }
 

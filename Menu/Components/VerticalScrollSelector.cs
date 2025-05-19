@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Menu;
+using RainMeadow.UI.Components.Patched;
 using RWCustom;
 using UnityEngine;
 
@@ -42,7 +43,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
 
     public List<ButtonScroller.IPartOfButtonScroller> scrollElements = [];
     public VerticalSlider slider;
-    public EventfulScrollButton scrollUpButton, scrollDownButton;
+    public EventfulScrollButton? scrollUpButton, scrollDownButton;
     public FSprite[] rightLines = [];
     public List<SideButton> sideButtons = [];
     public bool sliderPulled;
@@ -60,17 +61,13 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         elementHeight = elementSize.y;
         this.elementSpacing = elementSpacing;
 
-        slider = new VerticalSliderPlus(menu, this, null, new Vector2(-32f, 9f), new Vector2(30f, size.y - 40f), new Slider.SliderID(""), true);
+        slider = new PatchedVerticalSlider(menu, this, null, new Vector2(-32f, 9f), new Vector2(30f, size.y - 40f), new Slider.SliderID(""), true);
 
         if (scrollButtons)
         {
-            scrollUpButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - 50f, size.y), 0, scrollButtonWidth);
-            scrollUpButton.size.x = 100f;
-            scrollUpButton.roundedRect.size.x = 100f;
+            scrollUpButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, size.y), 0, scrollButtonWidth);
             scrollUpButton.OnClick += _ => Scroll(-1);
-            scrollDownButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - 50f, -34f), 2, scrollButtonWidth);
-            scrollDownButton.size.x = 100f;
-            scrollDownButton.roundedRect.size.x = 100f;
+            scrollDownButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, -34f), 2, scrollButtonWidth);
             scrollDownButton.OnClick += _ => Scroll(1);
         }
 
