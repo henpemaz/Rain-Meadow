@@ -10,6 +10,7 @@ namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
+        public ArenaOnlineSetup myArenaSetup;
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
@@ -35,6 +36,8 @@ namespace RainMeadow
 
         public string paincatName;
         public int lizardEvent;
+
+        public override bool PlayersCanHandhold => false;
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;

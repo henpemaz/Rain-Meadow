@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow;
+
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -28,6 +29,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> SlugpupHellBackground;
@@ -276,7 +278,7 @@ public class RainMeadowOptions : OptionInterface
             OpHoldButton arenaSpoilerButton;
             OpCheckBox slugpupHellBackgroundCheckbox;
 
-            OnlineArenaSettings = new UIelement[21]
+            OnlineArenaSettings = new UIelement[23]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -310,28 +312,26 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
 
-                arenaSpoilerLabel = new OpLabel(10f, 50, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
-                {
-                    color = new Color(0.85f, 0.35f, 0.4f)
-                },
-                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 15f), new Vector2(110, 30), "OKIE DOKIE")
-                {
-                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
-                },
-                slugpupHellBackgroundLabel = new OpLabel(10f, 50, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
-                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 25)),
-            };
-            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
-            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
                 new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
-                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
+                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25)),
 
 
-
-        };
+                arenaSpoilerLabel = new OpLabel(225f, 505, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
+                {
+                    color = new Color(0.85f, 0.35f, 0.4f)
+                },
+                arenaSpoilerButton = new OpHoldButton(new Vector2(225f, 470f), new Vector2(110, 30), "OKIE DOKIE")
+                {
+                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
+                },
+                slugpupHellBackgroundLabel = new OpLabel(225f, 505, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
+                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(225f, 480)),
+            };
+            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
+            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
             arenaSpoilerButton.OnPressDone += btn =>
             {

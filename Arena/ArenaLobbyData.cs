@@ -19,7 +19,7 @@ namespace RainMeadow
             // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
-            
+
             [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
             [OnlineField(group = "arenaLobby")]
@@ -56,10 +56,12 @@ namespace RainMeadow
             public bool disableMaul;
             [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
-            [OnlineField]
-            public bool arenaItemSteal;
+<<<<<<<<< Temporary merge branch 1
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
+            [OnlineField(group = "arenaSetup")]
+            public bool arenaItemSteal;
+
 
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -80,12 +82,11 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
             public int playerEnteredGame;
-
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;             
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 playList = arena.playList;
                 arenaSittingOnlineOrder = new(arena.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;

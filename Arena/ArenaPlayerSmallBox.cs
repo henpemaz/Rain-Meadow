@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using Menu;
 using UnityEngine;
+using static RainMeadow.ButtonScroller;
 
 namespace RainMeadow.UI.Components
 {
-    public class ArenaPlayerSmallBox : RectangularMenuObject, ButtonScroller.IPartOfButtonScroller
+    public class ArenaPlayerSmallBox : RectangularMenuObject, IPartOfButtonScroller
     {
         public static Vector2 DefaultSize => new(ArenaPlayerBox.DefaultSize.x, 40);
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
-        public float Alpha { get => alpha; set => alpha = value; }
+        public float Alpha { get; set; } = 1;
         public ArenaPlayerSmallBox(Menu.Menu menu, MenuObject owner, OnlinePlayer player, bool canKick, Vector2 pos, Vector2 size = default) : base(menu, owner, pos, size == default? DefaultSize : size)
         {
             profileIdentifier = player;
@@ -66,15 +67,6 @@ namespace RainMeadow.UI.Components
             slugcatButton.rectColor = lerpedBaseCol;
             slugcatButton.labelColor = lerpedBaseCol;
         }
-        public void UpdateAlpha(float alpha)
-        {
-            playerButton.Alpha = alpha;
-            slugcatButton.Alpha = alpha;
-            if (colorKickButton != null)
-            {
-                colorKickButton.Alpha = alpha;
-            }
-        }
         public void InitButtons(bool canKick)
         {
             float yPosDefaultSymbol = MiddleOfY(24);
@@ -103,13 +95,11 @@ namespace RainMeadow.UI.Components
         {
             slugcatButton.slug = slugcat;
         }
-
-        public float alpha;
         public bool showRainbow;
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
         public FSprite[] baseSprites;
-        public ButtonScroller.ScrollerButton playerButton;
+        public ScrollerButton playerButton;
         public StoryMenuSlugcatButton slugcatButton;
         public ScrollSymbolButton? colorKickButton; //no kicking yourself pls
         public OnlinePlayer profileIdentifier;

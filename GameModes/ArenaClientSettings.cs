@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Drawing;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -7,6 +7,7 @@ namespace RainMeadow
     {
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
         public bool selectingSlugcat;
+        public Color slugcatColor = Color.black;
 
         public ArenaClientSettings() { }
 
@@ -19,6 +20,8 @@ namespace RainMeadow
         {
             [OnlineField(group = "arenaClientData")]
             public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
+            [OnlineFieldColorRgb(group = "arenaClientData")]
+            public Color slugcatColor = Color.black;
             [OnlineField(group = "arenaClientData")]
             public bool selectingSlugcat;
 
@@ -28,6 +31,7 @@ namespace RainMeadow
             {
                 playingAs = onlineEntity.playingAs;
                 selectingSlugcat = onlineEntity.selectingSlugcat;
+                slugcatColor = onlineEntity.slugcatColor;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -35,6 +39,7 @@ namespace RainMeadow
                 var clientSettings = (ArenaClientSettings)entityData;
                 clientSettings.playingAs = playingAs;
                 clientSettings.selectingSlugcat = selectingSlugcat;
+                clientSettings.slugcatColor = slugcatColor;
             }
 
             public override Type GetDataType() => typeof(ArenaClientSettings);

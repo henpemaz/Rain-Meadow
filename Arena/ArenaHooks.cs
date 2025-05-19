@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-
+using RainMeadow.UI.Components;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -40,7 +42,9 @@ namespace RainMeadow
 
         private void ArenaHooks()
         {
-
+            On.Options.LoadArenaSetup += On_Options_LoadArenaSetup;
+            On.Options.SaveArenaSetup += On_Options_SaveArenaSetup;
+            IL.ArenaSetup.SaveToFile += IL_ArenaSetup_SaveToFile;
             On.Spear.Update += Spear_Update;
 
 
@@ -73,6 +77,7 @@ namespace RainMeadow
 
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
+            IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
@@ -192,6 +197,46 @@ namespace RainMeadow
             return orig(self);
         }
 
+        private string? On_Options_LoadArenaSetup(On.Options.orig_LoadArenaSetup orig, Options self, string fallBack)
+        {
+            if (self.optionsLoaded && self.optionsFile != null && isArenaMode(out _))
+            {
+                return self.optionsFile.Contains("ArenaOnlineMeadowSetup") ? self.optionsFile.Get("ArenaOnlineMeadowSetup", "") : null;
+            }
+            return orig(self, fallBack);
+        }
+        private void On_Options_SaveArenaSetup(On.Options.orig_SaveArenaSetup orig, Options self, string arenaSetupStrings)
+        {
+            if (isArenaMode(out _))
+            {
+                if (self.optionsLoaded && self.optionsFile != null)
+                {
+                    self.optionsFile.Set("ArenaOnlineMeadowSetup", arenaSetupStrings, self.optionsFileCanSave ? Kittehface.Framework20.UserData.WriteMode.Immediate : Kittehface.Framework20.UserData.WriteMode.Deferred);
+                }
+                return;
+            }
+            orig(self, arenaSetupStrings);
+        }
+        private void IL_ArenaSetup_SaveToFile(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.GotoNext(x => x.MatchCallvirt<Options>("SaveArenaSetup"));
+                cursor.GotoPrev(x => x.MatchLdarg(0));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.Emit(OpCodes.Ldloca, 0);
+                cursor.EmitDelegate(delegate (ArenaSetup self, ref string text)
+                {
+                    if (self is not ArenaOnlineSetup onlineSetup) return;
+                    text = onlineSetup.SetSaveStringFilter(text);
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         private float SetCamoDuration(Func<Player, float> orig, Player self)
         {
             if (isArenaMode(out var _))
@@ -1346,18 +1391,15 @@ namespace RainMeadow
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
             if (self.backgroundRect == null)
             {
-                RainMeadow.Debug("Rectangle went missing. Bringing it back");
-                self.backgroundRect = new Menu.RoundedRect(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
+                Debug("Rectangle went missing. Bringing it back");
+                self.backgroundRect = new(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
                 self.subObjects.Add(self.backgroundRect);
             }
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
                 OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                if (currentName != null)
-                {
-                    player.playerClass = OnlineManager.lobby.clientSettings[currentName].GetData<ArenaClientSettings>().playingAs; // update for rejoins
-                }
-
+                ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
+                player.playerClass = arenaclientSettings?.playingAs ?? player.playerClass;  // update for rejoins
                 if (OnlineManager.lobby.isOwner)
                 {
 
@@ -1398,73 +1440,33 @@ namespace RainMeadow
                 {
                     self.playerNameLabel.text = Utils.Translate(userNameBackup);
                 }
-
-
-                if (!ModManager.MSC)
-                {
-                    if (ArenaHelpers.baseGameSlugcats.Contains(player.playerClass))
-                    {
-                        var portaitMapper = (player.playerClass == SlugcatStats.Name.White) ? 0 :
-                              (player.playerClass == SlugcatStats.Name.Yellow) ? 1 :
-                              (player.playerClass == SlugcatStats.Name.Red) ? 2 :
-                              (player.playerClass == SlugcatStats.Name.Night) ? 3 : 0;
-
-
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + portaitMapper + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    }
-                    else
-                    {
-                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                        }
-                        else
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
-                        }
-
-                    }
-                    self.subObjects.Add(self.portrait);
-
-                }
-                if (ModManager.Watcher && player.playerClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-                {
-                    self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    self.subObjects.Add(self.portrait);
-                }
-
-
-                if (ModManager.MSC)
-                {
-                    if (player.playerClass == SlugcatStats.Name.Night)
-                    {
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "3" + (self.DeadPortraint ? "0" : "1"), new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    }
-
-                    else if (player.playerClass == MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
-                    {
-                        self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "4" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                    }
-                    else
-                    {
-                        if (currentName != null && arena.playerResultColors.ContainsKey(currentName.GetUniqueID()))
-                        {
-                            RainMeadow.Debug("FOUND" + currentName.GetUniqueID() + currentName.id.name);
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + arena.playerResultColors[currentName.GetUniqueID()] + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-                        }
-                        else
-                        {
-                            self.portrait = new Menu.MenuIllustration(menu, self, "", "MultiplayerPortrait" + "0" + (self.DeadPortraint ? "0" : "1") + "-" + player.playerClass.value, new Vector2(size.y / 2f, size.y / 2f), crispPixels: true, anchorCenter: true);
-
-                        }
-                    }
-                    self.subObjects.Add(self.portrait);
-                }
+                self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(player.playerClass, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
+                self.subObjects.Add(self.portrait);
             }
 
         }
-
+        private void IL_PlayerResultBox_GrafUpdate(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.TryGotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(delegate(Color whiteCol,Menu.PlayerResultBox self)
+                {
+                    if (isArenaMode(out ArenaOnlineGameMode arena))
+                    {
+                        ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber));
+                        if (arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black) return arenaclientSettings.slugcatColor;
+                    }
+                    return whiteCol;
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         private void Spear_Update(On.Spear.orig_Update orig, Spear self, bool eu)
         {
 

@@ -153,13 +153,6 @@ namespace RainMeadow
 
             return dictionary;
         }
-        public static void SafeSaveToDictionary<TKey, TValue>(this Dictionary<TKey, TValue> dic, TKey key, TValue toSave)
-        {
-            if (dic == null) return;
-            if (!dic.ContainsKey(key)) dic.Add(key, toSave);
-            dic[key] = toSave;
-
-        }
         public static (List<T1>, List<T2>) ToListTuple<T1, T2>(this IEnumerable<(T1, T2)> source)
         {
             var list = source.ToList(); // eval once
