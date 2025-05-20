@@ -21,13 +21,13 @@ namespace RainMeadow
         public string GetSessionSaveString()
         {
             string saveString = "";
-            ArenaHelpers.ParseArenaSetupSaveString(manager.rainWorld.options.LoadArenaSetup(savFilePath), (name, value) =>
-            {
-                if (name != null && sessionSaveIdentifiableStrings.Contains(name))
-                {
-                    saveString += SetIntoSaveString(name, value);
-                }
-            });
+            //ArenaHelpers.ParseArenaSetupSaveString(manager.rainWorld.options.LoadArenaSetup(savFilePath), (name, value) =>
+            //{
+            //    if (name != null && sessionSaveIdentifiableStrings.Contains(name))
+            //    {
+            //        saveString += SetIntoSaveString(name, value);
+            //    }
+            //});
             return saveString;
         }
         public string SetSaveStringFilter(string origText)
@@ -39,14 +39,14 @@ namespace RainMeadow
             }
             string newSaveString = "";
             string SessionSaveString = GetSessionSaveString();
-            ArenaHelpers.ParseArenaSetupSaveString(origText, (name, value) =>
-            {
-                if (name != null && !sessionSaveIdentifiableStrings.Contains(name))
-                {
-                    RainMeadow.Debug($"Saving: {name}");
-                    newSaveString += SetIntoSaveString(name, value);
-                }
-            });
+            //ArenaHelpers.ParseArenaSetupSaveString(origText, (name, value) =>
+            //{
+            //    if (name != null && !sessionSaveIdentifiableStrings.Contains(name))
+            //    {
+            //        RainMeadow.Debug($"Saving: {name}");
+            //        newSaveString += SetIntoSaveString(name, value);
+            //    }
+            //});
             newSaveString += SessionSaveString;
             return newSaveString;
         }

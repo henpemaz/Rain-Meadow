@@ -27,6 +27,14 @@ namespace RainMeadow
             Dragonslayers,
             Chieftains
         }
+
+        public static List<TeamMappings> teamMappingsList = new List<TeamMappings>
+    {
+        TeamMappings.Martyrs,
+        TeamMappings.Outlaws,
+        TeamMappings.Dragonslayers,
+        TeamMappings.Chieftains
+    };
         public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
         {
             { TeamMappings.Martyrs, "yes" },
@@ -73,6 +81,7 @@ namespace RainMeadow
 
             if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
+
                 return Utils.Translate($"Prepare for war, {Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "")}");
             }
             return Utils.Translate($"Prepare for war, {Utils.Translate(SlugcatStats.getSlugcatName(OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs))}");

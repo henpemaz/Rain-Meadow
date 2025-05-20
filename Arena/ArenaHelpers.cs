@@ -293,15 +293,15 @@ namespace RainMeadow
             if (player == null) return null;
             return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
         }
-        public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
-        {
-            string[] array = Regex.Split(text, "<msuA>");
-            for (int i = 0; i < array.Length; i++)
-            {
-                string[] array2 = Regex.Split(array[i], "<msuB>");
-                action.Invoke(array2[0], array[1]);
-            }
-        }
+        //public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
+        //{
+        //    string[] array = Regex.Split(text, "<msuA>");
+        //    for (int i = 0; i < array.Length; i++)
+        //    {
+        //        string[] array2 = Regex.Split(array[i], "<msuB>");
+        //        action.Invoke(array2[0], array[1]);
+        //    }
+        //}
 
         public static bool CheckSameTeam(Player them)
         {

@@ -51,8 +51,11 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
         Competitive competitive = new();
+        TeamBattleMode tb = new();
         if (!Arena.registeredGameModes.ContainsKey(competitive))
             Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+        if (!Arena.registeredGameModes.ContainsKey(tb))
+            Arena.registeredGameModes.Add(new TeamBattleMode(), TeamBattleMode.TeamBattle.value);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;

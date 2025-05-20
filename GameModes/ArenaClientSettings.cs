@@ -5,7 +5,6 @@ namespace RainMeadow
 {
     public class ArenaClientSettings : OnlineEntity.EntityData
     {
-        public SlugcatStats.Name playingAs;
         public int team;
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
         public bool selectingSlugcat;
@@ -27,8 +26,6 @@ namespace RainMeadow
             [OnlineField(group = "arenaClientData")]
             public bool selectingSlugcat;
 
-            [OnlineField(nullable = true)]
-            public SlugcatStats.Name playingAs;
             [OnlineField]
             public int team;
             public State() { }
