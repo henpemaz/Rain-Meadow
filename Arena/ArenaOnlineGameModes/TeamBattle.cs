@@ -70,11 +70,12 @@ namespace RainMeadow
         }
         public override string TimerText()
         {
+
             if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
-                return Utils.Translate($"Prepare for war,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
+                return Utils.Translate($"Prepare for war, {Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "")}");
             }
-            return Utils.Translate("Prepare for war,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
+            return Utils.Translate($"Prepare for war, {Utils.Translate(SlugcatStats.getSlugcatName(OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs))}");
         }
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
@@ -120,14 +121,15 @@ namespace RainMeadow
 
                 }
 
-            } else
+            }
+            else
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
                 {
                     tb.team = (int)TeamMappings.Chieftains;
                 }
             }
-           
+
 
         }
 
