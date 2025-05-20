@@ -1,0 +1,29 @@
+{
+	"frames":
+	{
+		"Meadow_Menu_ColorBucket.png":
+		{
+			"frame":{"x":0,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
+		"Meadow_Menu_BigColorBucket.png":
+		{
+			"frame":{"x":20,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		}
+	},
+	"meta":
+	{
+		"app":"https://github.com/piskelapp/piskel/",
+		"version":"1.0",
+		"image":"arenauielements_colorbucket.png",
+		"format":"RGBA8888",
+		"size":{"w":40,"h":20}
+	}
+}

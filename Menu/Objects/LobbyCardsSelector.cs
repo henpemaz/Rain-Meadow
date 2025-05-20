@@ -375,10 +375,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
     /// </summary>
     public LobbyCardsList(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
     {
-        if (!Futile.atlasManager.DoesContainAtlas("ui_elements"))
-        {
-            HeavyTexturesCache.futileAtlasListings.Add(Futile.atlasManager.LoadAtlas("illustrations/ui_elements").name);
-        }
+        Futile.atlasManager.LoadAtlas("illustrations/ui_elements");
         filter = new LobbyCardsFilter();
 
         searchBar = new OpTextBox(new Configurable<string>(""), new Vector2(pos.x + 15, pos.y + size.y), 300);

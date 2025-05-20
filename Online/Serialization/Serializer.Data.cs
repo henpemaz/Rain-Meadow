@@ -1327,10 +1327,45 @@ namespace RainMeadow
                 }
 
             }
+        }
+
+            public void Serialize(ref Dictionary<int, int> data)
+            {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+                if (IsWriting)
+                {
+                    if (data is null)
+                    {
+                        writer.Write((byte)0);
+                    }
+                    else
+                    {
+                        writer.Write((byte)data.Count);
+                        foreach (var kvp in data)
+                        {
+                            writer.Write(kvp.Key);
+                            writer.Write(kvp.Value);
+                        }
+                    }
+                }
+                if (IsReading)
+                {
+                    var count = reader.ReadByte();
+                    data = new Dictionary<int, int>(count);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var key = reader.ReadInt32();
+                        var value = reader.ReadInt32();
+                        data.Add(key, value);
+                    }
+
+                }
 #if TRACING
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
-        }
+            }
 
         public void Serialize(ref Color data)
         {
