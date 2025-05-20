@@ -1282,19 +1282,9 @@ public partial class RainMeadow
 
     private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        if (!self.isNPC)
+        if (OnlineManager.lobby != null)
         {
-            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
-
-                if (story.itemSteal)
-                {
-                    return orig(self, obj);
-                }
-                else
-                {
-                    return false;
-                }
-            if (isArenaMode(out var arena))
+            if (!self.isNPC)
             {
                 if (obj.grabbedBy.Any(x => x.grabber is Player))
                 {
@@ -1303,8 +1293,11 @@ public partial class RainMeadow
                     {
                         return orig(self, obj);
                     }
+                }
 
-                    if (arena.itemSteal)
+                if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
+
+                    if (story.itemSteal)
                     {
                         return orig(self, obj);
                     }
@@ -1312,20 +1305,31 @@ public partial class RainMeadow
                     {
                         return false;
                     }
-                }
-                if (obj is Player pl)
+                if (isArenaMode(out var arena))
                 {
-                    if (pl.Stunned || pl.dead)
+                    if (obj.grabbedBy.Any(x => x.grabber is Player))
                     {
-                        return orig(self, obj);
-                    };
+
+                        if (arena.itemSteal)
+                        {
+                            return orig(self, obj);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    if (obj is Player pl)
+                    {
+                        if (pl.Stunned || pl.dead)
+                        {
+                            return orig(self, obj);
+                        };
+                    }
+
                 }
-
             }
-        }
 
-        if (OnlineManager.lobby != null)
-        {
             if (obj is Player p)
             {
                 if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC)
@@ -1335,9 +1339,8 @@ public partial class RainMeadow
             }
 
         }
-
-
         return orig(self, obj);
+
     }
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
