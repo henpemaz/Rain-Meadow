@@ -9,7 +9,7 @@ namespace RainMeadow
 
     public class Team
     {
-        public string TeamName;
+        public string teamName = "";
         public Color teamColor;
 
     }
@@ -19,10 +19,6 @@ namespace RainMeadow
         public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
 
         private int _timerDuration;  // Backing field for TimerDuration
-
-        public List<OnlinePlayer> ChieftainPlayers = new();
-        public List<OnlinePlayer> Dragonslayers = new();
-        public Team myTeam;
 
         public enum TeamMappings
         {
@@ -76,9 +72,9 @@ namespace RainMeadow
         {
             if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
-                return Utils.Translate($"Prepare for combat,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
+                return Utils.Translate($"Prepare for war,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
             }
-            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
+            return Utils.Translate("Prepare for war,") + " " + Utils.Translate(SlugcatStats.getSlugcatName((OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs));
         }
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
@@ -114,22 +110,33 @@ namespace RainMeadow
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            this.myTeam = new Team() { TeamName = TeamMappingsDictionary[TeamMappings.Outlaws], teamColor = TeamColors[TeamMappings.Outlaws] }; // make this dynamic
 
+            // TODO: Remove this testing
+            if (OnlineManager.lobby.isOwner)
+            {
+                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
+                {
+                    tb.team = (int)TeamMappings.Dragonslayers;
 
+                }
+
+            } else
+            {
+                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
+                {
+                    tb.team = (int)TeamMappings.Chieftains;
+                }
+            }
+           
 
         }
 
 
         public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
         {
-            if ((arena.onlineArenaGameMode as TeamBattleMode).ChieftainPlayers.Contains(OnlineManager.mePlayer))
+            if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaClientSettings>(out var tb2))
             {
-                return TeamMappingsDictionary[TeamMappings.Chieftains];
-            }
-            if ((arena.onlineArenaGameMode as TeamBattleMode).Dragonslayers.Contains(OnlineManager.mePlayer))
-            {
-                return TeamMappingsDictionary[TeamMappings.Dragonslayers];
+                return TeamMappingsDictionary[(TeamMappings)tb2.team];
             }
             return "";
         }

@@ -246,6 +246,19 @@ namespace RainMeadow
 
         }
 
+        public static bool CheckSameTeam(Player them)
+        {
+            if (them != null)
+            {
+                if (OnlineManager.lobby.clientSettings[them.abstractPhysicalObject.GetOnlineObject().owner].TryGetData<ArenaClientSettings>(out var tb1) && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb2) && tb1 == tb2)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 
 }

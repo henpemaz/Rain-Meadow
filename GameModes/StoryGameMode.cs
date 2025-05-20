@@ -290,6 +290,10 @@ namespace RainMeadow
                     {
                         return true; // you are a safety candidate
                     }
+                    if (RainMeadow.isArenaTeamBattleMode(out _))
+                    {
+                        return ArenaHelpers.CheckSameTeam(p);
+                    }
 
                 };
 

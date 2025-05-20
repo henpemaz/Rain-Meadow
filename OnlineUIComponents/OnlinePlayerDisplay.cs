@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using static RainMeadow.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -75,8 +76,11 @@ namespace RainMeadow
             if (RainMeadow.isArenaTeamBattleMode(out var arena2))
             {
 
-                this.color = (arena2 as TeamBattleMode).myTeam.teamColor;
-                this.lighter_color = this.color;
+                if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaClientSettings>(out var tb2))
+                {
+                    this.color = TeamBattleMode.TeamColors[(TeamMappings)tb2.team];
+                    this.lighter_color = this.color;
+                }
             }
 
             this.pos = new Vector2(-1000f, -1000f);
@@ -108,10 +112,9 @@ namespace RainMeadow
             {
                 this.iconString = "ChieftainA";
             }
-
-            if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+            else if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
             {
-                slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+                this.iconString = arena.onlineArenaGameMode.AddCustomIcon(arena, owner);
             }
 
             else
@@ -124,11 +127,7 @@ namespace RainMeadow
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
 
-            if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
-            {
-                slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
 
-            }
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
@@ -240,7 +239,6 @@ namespace RainMeadow
 
         public override void Draw(float timeStacker)
         {
-            RainMeadow.Debug(RainMeadow.isArenaTeamBattleMode(out var tb));
             Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker) + new Vector2(0.01f, 0.01f);
             var pos = vector;
             float num = Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(this.lastAlpha, this.alpha, timeStacker)), 0.7f);
