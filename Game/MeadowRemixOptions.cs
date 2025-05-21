@@ -28,19 +28,20 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> StoryItemSteal;
+    public readonly Configurable<bool> ArenaItemSteal;
+
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
     public readonly Configurable<int> ShowPingLocation;
-
-
 
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<int> UdpTimeout;
     public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
-
+    public readonly Configurable<string> PrivateLobbyPassword;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -87,6 +88,9 @@ public class RainMeadowOptions : OptionInterface
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
         WearingCape = config.Bind("WearingCape", true);
 
+        StoryItemSteal = config.Bind("StoryItemSteal", false);
+        ArenaItemSteal = config.Bind("ArenaItemSteal", false);
+
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
@@ -95,8 +99,8 @@ public class RainMeadowOptions : OptionInterface
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
-        
 
+        PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
     }
 
     public override void Initialize()
@@ -234,7 +238,7 @@ public class RainMeadowOptions : OptionInterface
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            OnlineStorySettings = new UIelement[9]
+            OnlineStorySettings = new UIelement[11]
            {    new OpLabel(10f, 550f, Translate("Story"), bigText: true),
 
                 new OpLabel(10f, 500, Translate("Ready to shelter/gate"), bigText: false),
@@ -255,13 +259,20 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 320, RWCustom.Custom.ReplaceLineDelimeters(Translate("If selected, hosts can choose slugcat campaigns that are unstable.")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+
+                new OpCheckBox(StoryItemSteal, new Vector2(10, 260)),
+
+                new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Story mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
                 }
            };
             storyTab.AddItems(OnlineStorySettings);
 
 
 
-            OnlineArenaSettings = new UIelement[17]
+            OnlineArenaSettings = new UIelement[19]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -294,6 +305,13 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
                 new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
+
+                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
+
 
 
         };

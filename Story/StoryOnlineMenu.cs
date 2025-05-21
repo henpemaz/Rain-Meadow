@@ -49,11 +49,11 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcat ?? slugcatColorOrder[slugcatPageIndex];
+                return playerSelectedSlugcat ?? storyGameMode.currentCampaign;
             }
             set
             {
-                playerSelectedSlugcat = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                playerSelectedSlugcat = value == storyGameMode.currentCampaign? null : value;
                 CurrentSlugcat = PlayerSelectedSlugcat;
             }
         }
@@ -141,11 +141,13 @@ namespace RainMeadow
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
             personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             manager.arenaSitting = null;
-            if (restartChecked)
+
+            if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
             }
+
             else
             {
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.Load;
@@ -156,6 +158,17 @@ namespace RainMeadow
 
         public override void Update()
         {
+            if (ChatTextBox.blockInput)
+            {
+                ChatTextBox.blockInput = false;
+                if ((RWInput.CheckPauseButton(0) || Input.GetKeyDown(KeyCode.Escape)) && !lastPauseButton)
+                {
+                    PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    ToggleChat(false);
+                    lastPauseButton = true;
+                }
+                ChatTextBox.blockInput = true;
+            }
             base.Update();
 
             if (this.isChatToggled)
@@ -277,7 +290,16 @@ namespace RainMeadow
                 var shelterName = saveGameData[storyGameMode.currentCampaign]?.shelterName;
                 if (shelterName != null && shelterName.Length > 2)
                 {
-                    return Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    var s = Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    if (s == "Unknown Region")
+                    {
+                        // watcher regions
+                        if (shelterName.Length > 4)
+                        {
+                            return Region.GetRegionFullName(shelterName.Substring(0, 4), storyGameMode.currentCampaign);
+                        }
+                        return s;
+                    }
                 }
             }
             catch (Exception e)
@@ -353,10 +375,13 @@ namespace RainMeadow
 
             this.chatTextBoxPos = new Vector2(this.manager.rainWorld.options.ScreenSize.x * 0.001f + (1366f - this.manager.rainWorld.options.ScreenSize.x) / 2f, 0);
             var toggleChat = new SimplerSymbolButton(this, pages[0], "Kill_Slugcat", "", this.chatTextBoxPos);
-            toggleChat.OnClick += (_) => {
-                this.isChatToggled = !this.isChatToggled;
-                this.ResetChatInput();
-                this.UpdateLogDisplay();
+            toggleChat.OnClick += (_) =>
+            {
+                ToggleChat(!this.isChatToggled);
+                if (input.controllerType == Options.ControlSetup.Preset.KeyboardSinglePlayer)
+                {
+                    selectedObject = null;
+                }
             };
             pages[0].subObjects.Add(toggleChat);
 
@@ -370,6 +395,13 @@ namespace RainMeadow
             }
             pages[0].subObjects.Add(friendlyFire);
             pages[0].subObjects.Add(reqCampaignSlug);
+        }
+
+        public void ToggleChat(bool toggled)
+        {
+            this.isChatToggled = toggled;
+            this.ResetChatInput();
+            this.UpdateLogDisplay();
         }
 
         private void ModifyExistingMenuItems()
