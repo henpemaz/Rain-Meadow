@@ -29,6 +29,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public Dialog? slugcatDialog;
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
+    public ChatMenuBox chatMenuBox;
     public Page slugcatSelectPage;
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
@@ -67,8 +68,9 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
 
         tabContainer = new(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
-
-        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer);
+        chatMenuBox = new(this, mainPage, new(100f, 125f), new(300, 475));
+        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer, chatMenuBox);
+        ChatLogManager.Subscribe(chatMenuBox);
 
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
@@ -257,6 +259,8 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
     public override void ShutDownProcess()
     {
+        chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
+        ChatLogManager.Unsubscribe(chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
             SaveInterfaceOptions();

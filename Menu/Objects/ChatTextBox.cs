@@ -376,7 +376,7 @@ namespace RainMeadow
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 
-        private static void ShouldCapture(bool shouldCapture)
+        public static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)
             {
@@ -413,21 +413,21 @@ namespace RainMeadow
                 blockInput = false;
             }
         }
-        private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
+        public static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        public static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
 
             return blockInput ? false : orig(code);
         }
-        private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
+        public static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        public static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.Return) return orig(code);
 
             return blockInput ? false : orig(code);
         }
-        private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
-        private static bool GetKeyUp(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
+        public static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
+        public static bool GetKeyUp(Func<KeyCode, bool> orig, KeyCode code) => blockInput ? false : orig(code);
     }
 }
