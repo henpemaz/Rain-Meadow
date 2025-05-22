@@ -1,12 +1,12 @@
-﻿using Ionic.Zlib;
-using System.IO;
+﻿using System.IO;
+using System.IO.Compression;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace RainMeadow
 {
     [DeltaSupport(level = StateHandler.DeltaSupport.None)]
-    internal class DeflateState : OnlineState
+    internal class Lz4CompressedState : OnlineState
     {
         public class LongBytesFieldAttribute : OnlineFieldAttribute
         {
@@ -18,8 +18,8 @@ namespace RainMeadow
         [LongBytesField]
         public byte[] bytes;
 
-        public DeflateState() { }
-        public DeflateState(Stream input, int len)
+        public Lz4CompressedState() { }
+        public Lz4CompressedState(Stream input, int len)
         {
             this.bytes = Compress(input, len);
         }
@@ -27,14 +27,14 @@ namespace RainMeadow
         public void Decompress(Stream into)
         {
             using (var compressStream = new MemoryStream(bytes))
-            using (var decompressor = new DeflateStream(compressStream, CompressionMode.Decompress))
+            using (var decompressor = new LZ4.LZ4Stream(compressStream, LZ4.LZ4StreamMode.Decompress))
                 decompressor.CopyTo(into);
         }
 
         private static byte[] Compress(Stream input, int len)
         {
             using (var compressStream = new MemoryStream())
-            using (var compressor = new DeflateStream(compressStream, CompressionMode.Compress))
+            using (var compressor = new LZ4.LZ4Stream(compressStream, LZ4.LZ4StreamMode.Compress, LZ4.LZ4StreamFlags.HighCompression))
             {
                 input.CopyTo(compressor, len);
                 compressor.Close();
