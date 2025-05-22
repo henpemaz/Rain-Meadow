@@ -18,7 +18,7 @@ namespace RainMeadow.UI.Components
             saintAscendanceTimerLabel = new(menu, this, menu.Translate("Saint Ascendance Duration:"), (-spacing * 3) - new Vector2(300, -2), new(151, 20), false);
             saintAscendDurationTimerDragger = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), saintAscendanceTimerLabel.pos.x + 300, saintAscendanceTimerLabel.pos.y - 2)
             {
-                description = "How long Saint's ascendance ability lasts for. Default 120.",
+                description = "How long Saint's ascendance ability lasts for. Scroll or move up/down while holding jump to configure it. Default 120.",
                 max = int.MaxValue //who will want this
             };
             painCatEggCheckBox = new(menu, this, this, -spacing * 4, 300, $"{painCatName} gets egg at 0 throw skill:", PAINCATEGG, description: $"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0");

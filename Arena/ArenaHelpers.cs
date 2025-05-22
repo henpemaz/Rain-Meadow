@@ -296,6 +296,7 @@ namespace RainMeadow
         }
         public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
         {
+            if (text == null) return;
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
             {

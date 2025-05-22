@@ -40,14 +40,17 @@ namespace RainMeadow.UI.Components
             rainTimerArray = new(menu, this, this, new(0, 100), menu.Translate("Rain Timer:"), "SESSIONLENGTH", InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f, settingsWidth, 6, false, menu.CurrLang == InGameTranslator.LanguageID.French || menu.CurrLang == InGameTranslator.LanguageID.Spanish || menu.CurrLang == InGameTranslator.LanguageID.Portuguese);
             wildlifeArray = new(menu, this, this, new(0, 50), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
-            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-15, -153), new Vector2(105, 20), false);
-            countdownTimerDragger = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), countdownTimerLabel.pos.x + 135, countdownTimerLabel.pos.y + 3)
+            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(30, -20), new Vector2(0, 20), false);
+            countdownTimerLabel.label.alignment = FLabelAlignment.Right;
+            countdownTimerDragger = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), countdownTimerLabel.pos.x + 10, countdownTimerLabel.pos.y - 3)
             {
-                description = "How long the grace timer at the beginning of rounds lasts for. Default 5s.",
-                max = int.MaxValue //unless a psycho is here nobody would want this xd
+                description = "How long the grace timer at the beginning of rounds lasts for. Scroll or move up/down while holding jump to configure it. Default 5s.",
+                max = 60 //max under one min
             };
-            arenaGameModeLabel = new(menu, this, "Arena Game Mode:", new Vector2(-95, -103), new Vector2(105, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(arenaGameModeLabel.pos.x + 215, arenaGameModeLabel.pos.y - 2), 175f, gameModes);
+
+            arenaGameModeLabel = new(menu, this, "Arena Game Mode:", new Vector2(30, -100), new Vector2(0, 20), false);
+            arenaGameModeLabel.label.alignment = FLabelAlignment.Right;
+            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(arenaGameModeLabel.pos.x + 10, arenaGameModeLabel.pos.y - 3), 175f, gameModes);
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
