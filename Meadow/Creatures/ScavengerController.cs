@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    internal class ScavengerController : GroundCreatureController
+    public class ScavengerController : GroundCreatureController
     {
         public static void EnableScavenger()
         {

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    class NoodleController : AirCreatureController
+    public class NoodleController : AirCreatureController
     {
         private bool actLock; // act is hooked both at base and an override
         private bool forceMove;
