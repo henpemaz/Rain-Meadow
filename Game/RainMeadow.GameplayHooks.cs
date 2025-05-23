@@ -487,8 +487,13 @@ namespace RainMeadow
                 orig(self);
                 return;
             }
+            RainMeadow.isStoryMode(out var storyGameMode);
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !self.Broken)
+            if (storyGameMode is not null && StoryRPCs.RPCcloseShelter)
+            {
+                storyGameMode.storyClientData.readyForWin = true;
+            }
+            else if (storyGameMode is not null && !self.Broken)
             {
                 bool ready_for_win = true;
                 bool starving = false;
@@ -518,7 +523,7 @@ namespace RainMeadow
                     }
 
 
-                    if (player.Room != self.room.abstractRoom)  {
+                    if (player.Room != self.room.abstractRoom) {
                         ready_for_win = false;
                         continue;
                     }
@@ -529,7 +534,7 @@ namespace RainMeadow
                                 ready_for_win = false;
                                 break;
                             }
-                            
+
                             if (p.touchedNoInputCounter < 80) {
                                 ready_for_win = false;
                                 break;
@@ -539,18 +544,19 @@ namespace RainMeadow
 
                         if (p.forceSleepCounter > 0) {
                             starving = true;
-                        } 
+                        }
                     }
                 }
 
-                if (ready_for_win) {
+                if (ready_for_win)
+                {
                     storyGameMode.storyClientData.readyForWin = true;
                 }
 
                 if (!(ready_for_win && starving && OnlineManager.lobby.isOwner)) {
                     if (!storyGameMode.readyForWin) return;
                 }
-                
+
             }
             else
             {
@@ -570,6 +576,14 @@ namespace RainMeadow
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        foreach (OnlinePlayer p in OnlineManager.players)
+                        {
+                            p.InvokeOnceRPC(StoryRPCs.CloseAllShelters);
+                        }   
+                    }
                 }
             }
         }

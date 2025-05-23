@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -38,6 +39,7 @@ namespace RainMeadow
             On.Menu.SlugcatSelectMenu.CommunicateWithUpcomingProcess += SlugcatSelectMenu_CommunicateWithUpcomingProcess;
             On.Menu.InputOptionsMenu.Singal += InputOptionsMenu_Singal;
             On.RoomCamera.Update += RoomCamera_Update1;
+            IL.RoomSpecificScript.SU_C04StartUp.Update += SU_C04StartUp_Update;
 
 
             // disabling jolly co-op code.
@@ -77,8 +79,11 @@ namespace RainMeadow
             IL.Creature.Update += SoftDisableJollyCoOP;
             IL.DaddyCorruption.EatenCreature.Update += SoftDisableJollyCoOP;
             IL.Ghost.Update += SoftDisableJollyCoOP;
-            IL.HardmodeStart.ctor += SoftDisableJollyCoOP;
-            IL.HardmodeStart.Update += SoftDisableJollyCoOP;
+
+            // the jolly code here is fine.
+            IL.HardmodeStart.ctor += WhiteListJollyCoop;
+            IL.HardmodeStart.Update += WhiteListJollyCoop;
+
             IL.HUD.HUD.InitSinglePlayerHud += SoftDisableJollyCoOP;
             IL.HUD.TextPrompt.EnterGameOverMode += SoftDisableJollyCoOP;
             IL.HUD.TextPrompt.Update += SoftDisableJollyCoOP;
@@ -188,9 +193,13 @@ namespace RainMeadow
             IL.RoomCamera.Update += SoftDisableJollyCoOP;
 
             IL.RoomRealizer.CanAbstractizeRoom += SoftDisableJollyCoOP;
-            IL.RoomSpecificScript.SB_A14KarmaIncrease.Update += SoftDisableJollyCoOP;
-            IL.RoomSpecificScript.SL_C12JetFish.ctor += SoftDisableJollyCoOP;
-            IL.RoomSpecificScript.SU_C04StartUp.Update += SoftDisableJollyCoOP;
+
+            // Also fine...
+            IL.RoomSpecificScript.SB_A14KarmaIncrease.Update += WhiteListJollyCoop;
+            IL.RoomSpecificScript.SL_C12JetFish.ctor += WhiteListJollyCoop;
+            IL.RoomSpecificScript.SU_C04StartUp.Update += WhiteListJollyCoop;
+
+
             IL.SaveState.BringUpToDate += SoftDisableJollyCoOP;
             IL.SaveState.SessionEnded += SoftDisableJollyCoOP;
             IL.ShelterDoor.Close += SoftDisableJollyCoOP;
@@ -363,6 +372,81 @@ namespace RainMeadow
         }
 
 
+        private void SU_C04StartUp_Update(ILContext context)
+        {
+            try
+            {
+                ILCursor c = new(context);
+                int i = 0;
+
+                var sw = Stopwatch.StartNew();
+                while (c.TryGotoNext(MoveType.After,
+                    x => (x.MatchLdfld<Room>(nameof(Room.physicalObjects)))
+                ))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+                    c.EmitDelegate((List<PhysicalObject>[] objs, RoomSpecificScript.SU_C04StartUp startup) =>
+                    {
+                        if (isStoryMode(out _))
+                        {
+                            return objs.Select(x => x.Where(y => y?.IsLocal() ?? true).ToList()).ToArray();
+                        }
+
+                        return objs;
+                    });
+
+                    i++;
+                }
+                sw.Stop();
+                RainMeadow.Debug($"Replacec {i} SU_C04 physical object references in {sw.Elapsed.TotalSeconds}s");
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
+        }
+
+
+        private void WhiteListJollyCoop(ILContext context)
+        {
+            try
+            {
+                ILCursor c = new(context);
+                int i = 0;
+
+                var sw = Stopwatch.StartNew();
+                while (c.TryGotoNext(MoveType.After,
+                    x => (x.MatchLdsfld<ModManager>(nameof(ModManager.JollyCoop)) || x.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable)))
+                ))
+                {
+                    c.Emit(OpCodes.Ldc_I4, c.Prev.MatchLdsfld<ModManager>(nameof(ModManager.CoopAvailable)) ? 1 : 0);
+                    c.EmitDelegate((bool value, int coopavail) =>
+                    {
+                        if (isStoryMode(out var story))
+                        {
+                            if (coopavail != 0)
+                            {
+                                return story.avatarCount > 1;
+                            }
+
+                            return ModManager.JollyCoop;
+                        }
+
+                        return value;
+                    });
+
+                    i++;
+                }
+                sw.Stop();
+                RainMeadow.Debug($"Replace {i} Jolly CoOP checks in {context.Method.Name} in {sw.Elapsed.TotalSeconds}s");
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
+        }
+
+
         private void SoftDisableJollyCoOP(ILContext context)
         {
             try
@@ -467,14 +551,18 @@ namespace RainMeadow
                     spectator.ClearSpectatee();
                 }
 
-                if (cameraTarget.Room.realizedRoom is null)
+                if (self.followAbstractCreature is not null)
                 {
-                    cameraTarget.Room.world.ActivateRoom(cameraTarget.Room);
-                }
+                    if (self.followAbstractCreature.Room.realizedRoom is null)
+                    {
+                        self.followAbstractCreature.Room.world.ActivateRoom(self.followAbstractCreature.Room);
+                    }
 
-                if (self.room?.abstractRoom != cameraTarget.Room && cameraTarget.Room.realizedRoom is not null)
-                {
-                    self.MoveCamera(cameraTarget.Room.realizedRoom, -1);
+                    if (self.room?.abstractRoom != self.followAbstractCreature.Room && self.followAbstractCreature.Room.realizedRoom is not null)
+                    {
+                        self.MoveCamera(self.followAbstractCreature.Room.realizedRoom, -1);
+                    }
+                    self.GetCameraBestIndex();
                 }
             }
 
