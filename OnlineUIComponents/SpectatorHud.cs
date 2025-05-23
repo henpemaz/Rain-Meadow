@@ -45,11 +45,15 @@ namespace RainMeadow
 
         public void ClearSpectatee()
         {
+            if (spectatee != null)
+            {
+                ReturnCameraToPlayer();
+            }
             spectatee = null;
             spectatorOverlay?.ShutDownProcess();
             spectatorOverlay = null;
             isActive = false;
-            ReturnCameraToPlayer();
+            
         }
 
         public void ReturnCameraToPlayer()
@@ -102,9 +106,10 @@ namespace RainMeadow
                 spectatorOverlay.forceNonMouseSelectFreeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
                 spectatorOverlay.Update();
 
-                if (spectatee is not null && spectatorOverlay.spectatee is null)
+                if (spectatorOverlay.spectatee is null && isSpectating)
                 {
                     ReturnCameraToPlayer();
+                    spectatee = null;
                 }
                 spectatee = spectatorOverlay.spectatee;
             }
