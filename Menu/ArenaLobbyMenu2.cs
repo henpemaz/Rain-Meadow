@@ -54,7 +54,6 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         Competitive competitive = new();
         if (!Arena.registeredGameModes.ContainsKey(competitive))
             Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
-
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;
 
@@ -91,7 +90,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             );
         playListTab.AddObjects(x);
 
-        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 0), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
@@ -384,7 +383,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
     public void SaveInterfaceOptions()
     {
-        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerDragger.GetValueInt();
+        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
         if (slugcatAbilitiesInterface != null)
         {
             RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;
@@ -393,7 +392,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             RainMeadow.rainMeadowOptions.PainCatEgg.Value = slugcatAbilitiesInterface.painCatEggCheckBox.Checked;
             RainMeadow.rainMeadowOptions.PainCatThrows.Value = slugcatAbilitiesInterface.painCatThrowsCheckBox.Checked;
             RainMeadow.rainMeadowOptions.PainCatLizard.Value = slugcatAbilitiesInterface.painCatLizardCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerDragger.GetValueInt();
+            RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
     public void BuildPlayerDisplay()

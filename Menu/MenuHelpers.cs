@@ -19,6 +19,6 @@ namespace RainMeadow
             }
             container.subObjects.AddRange(subObjectsToAdd.Where(x => x != null && !container.subObjects.Contains(x)));
         }
-        public static bool IsAllRemixUINotHeld(this MenuObject owner) => owner.subObjects.OfType<UIelementWrapper>().All(x => !(x.thisElement is UIconfig config && config.held));
+        public static bool IsAllRemixUINotHeld(this MenuTabWrapper tabWrapper) => !tabWrapper.wrappers.All(x => x.Key is UIconfig config && config.held);
     }
 }
