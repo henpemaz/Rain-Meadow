@@ -38,5 +38,47 @@ namespace RainMeadow
             return [.. strings];
 
         }
+
+        /// <summary>
+        /// This delimits the text on word boundaries into multiple lines to fit some metric of width based on rw text width. Tries to smartly split string
+        /// </summary>
+        public static void GetStringSplit(string text, float width, Action<string> recieveString, bool bigText = false)
+        {
+            Predicate<string> s = t => LabelTest.GetWidth(t, bigText) < width;
+            int num = 0, textLength = text.Length;
+            while (num < textLength)
+            {
+                string currentString = text.Substring(num);
+                string[] words = currentString.Split(' ');
+                string trimmedTxt = string.Empty;
+                foreach (string word in words)
+                {
+                    string temp = trimmedTxt;
+                    if (!string.IsNullOrEmpty(temp)) temp += " ";
+                    temp += word;
+                    if (s(temp)) //see if adding a word will not overflow, if does not continue to the next word
+                    {
+                        trimmedTxt = temp;
+                        continue;
+                    }
+                    if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " ")) //add space is there is avaliable space for it
+                    {
+                        trimmedTxt += " ";
+                        break;
+                    }
+                    trimmedTxt = LabelTest.TrimText(temp, width, bigText: bigText); //technically for long first word, omg pls no mitosis of characters PLSSSSS
+                    break; //skip over words that are supposed to be in next line
+                }
+                recieveString(trimmedTxt);
+                num += trimmedTxt.Length;
+            }
+
+        }
+        public static string[] SmartSplitIntoStrings(this string text, float wrapWidth, bool bigText = false)
+        {
+            List<string> strings = [];
+            GetStringSplit(text, wrapWidth, strings.Add, bigText);
+            return [.. strings];
+        }
     }
 }

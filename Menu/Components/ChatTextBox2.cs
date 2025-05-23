@@ -91,7 +91,6 @@ namespace RainMeadow.UI.Components
 
             int lowestCursorPos = selectionStartPos != -1 ? Mathf.Min(cursorPos, selectionStartPos) : cursorPos;
             float cursorPosition = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowestCursorPos > VisibleTextLimit ? menuLabel.label.text.Length : lowestCursorPos), false);
-            RainMeadow.Debug($"Lowest Pos out of cursor and selector: {lowestCursorPos}, cursorSpritePosition {cursorPosition}");
             if (cursorIsInMiddle)
             {
                 if (cursorSprite.element.name != "pixel") cursorSprite.SetElementByName("pixel");

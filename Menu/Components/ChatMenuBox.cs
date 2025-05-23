@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Components
 {
-    public class ChatMenuBox : RectangularMenuObject, IChatSubscriber //call ChatLogManager.Subscribe/Unsubscribe somewhere in menu
+    public class ChatMenuBox : RectangularMenuObject, IChatSubscriber //call ChatLogManager.Subscribe/Unsubscribe somewhere in mainprocess
     {
         public bool Active => menu.Active;
         public ChatMenuBox(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
@@ -40,10 +40,10 @@ namespace RainMeadow.UI.Components
                 AlignedMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 userLabel.label.alignment = FLabelAlignment.Left;
-                userLabel.label.color = ChatLogManager.GetDisplayPlayerColor(user!);
+                userLabel.label.color = ChatLogManager.GetDisplayPlayerColor(user!, MenuColorEffect.rgbMediumGrey);
 
 
-                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, stg, new(LabelTest.GetWidth(user) + 2, 0), userLabel.size, false)
+                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, $": {stg}", new(LabelTest.GetWidth(user) + 2, 0), userLabel.size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 messageWithUserLabel.label.alignment = FLabelAlignment.Left;
                 userLabel.subObjects.Add(messageWithUserLabel);
@@ -58,11 +58,16 @@ namespace RainMeadow.UI.Components
         {
             List<AlignedMenuLabel> messageLabels = [];
             bool isSystemMessage = user == null || user == "";
-            float desiredXWidth = messageScroller.size.x - 5 - (isSystemMessage? 0 : LabelTest.GetWidth(user, false));
+            float desiredXWidth = messageScroller.size.x - 5;
             Vector2 desiredSize = new(desiredXWidth, messageScroller.buttonHeight);
-            string[] array = MenuHelpers.SplitIntoStrings($"{(isSystemMessage? "" : ": ")}{message}", desiredXWidth);
-            for (int i = 0; i < array.Length; i++)
-                messageLabels.Add(GetMessageLabel(user, array[i], isSystemMessage, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
+
+            List<string> splitMessages = [];
+            string firstMessage = MenuHelpers.SmartSplitIntoStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false))).FirstOrDefault();
+            splitMessages.Add(firstMessage);
+            splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(message.Substring(firstMessage.Length), desiredXWidth));
+
+            for (int i = 0; i < splitMessages.Count; i++)
+                messageLabels.Add(GetMessageLabel(user, splitMessages[i], isSystemMessage, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
             return [.. messageLabels];
         }
         public void AddMessage(string user, string message)
@@ -73,6 +78,8 @@ namespace RainMeadow.UI.Components
             if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
 
         }
+
+
         public RoundedRect roundedRect;
         public ChatTextBox2 chatTypingBox;
         public ButtonScroller messageScroller;

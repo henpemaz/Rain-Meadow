@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -56,15 +57,18 @@ namespace RainMeadow
         /// <summary>
         /// Obtains a player's color from it's name, with HSV adjustment
         /// </summary>
-        public static UnityEngine.Color GetDisplayPlayerColor(string s)
+        public static UnityEngine.Color GetDisplayPlayerColor(string s, UnityEngine.Color colorIfNotFound = default)
         {
             float H = 0f;
             float S = 0f;
             float V = 0f;
-            var color = colorDict.TryGetValue(s, out var colorOrig) ? colorOrig : UnityEngine.Color.white;
-            UnityEngine.Color.RGBToHSV(color, out H, out S, out V);
-            if (V < 0.8f) { color = UnityEngine.Color.HSVToRGB(H, S, 0.8f); }
-            return color;
+            if (colorDict.TryGetValue(s, out var colorOrig))
+            {
+                UnityEngine.Color.RGBToHSV(colorOrig, out H, out S, out V);
+                if (V < 0.8f) return UnityEngine.Color.HSVToRGB(H, S, 0.8f);
+                return colorOrig;
+            }
+            return colorIfNotFound == default? Color.white : colorIfNotFound;
         }
     }
 
