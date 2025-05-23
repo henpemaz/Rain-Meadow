@@ -1034,7 +1034,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                return OnlineManager.lobby.isOwner;
+                return self.playerNumber == 0 && OnlineManager.lobby.isOwner;
             }
             return orig(self);
         }
