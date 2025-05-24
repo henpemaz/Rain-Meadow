@@ -56,7 +56,6 @@ namespace RainMeadow
             public bool disableMaul;
             [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
-<<<<<<<<< Temporary merge branch 1
             [OnlineField(group = "arenaSetup")]
             public string currentGameMode; // maybe not use string
             [OnlineField(group = "arenaSetup")]

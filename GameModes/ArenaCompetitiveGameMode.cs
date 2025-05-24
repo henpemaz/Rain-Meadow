@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using Menu;
 using MoreSlugcats;
 using static RainMeadow.ArenaPrepTimer;
@@ -42,7 +40,6 @@ namespace RainMeadow
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
         public List<string> slugcatSelectPainCatDescriptions;
-        public override bool PlayersCanHandhold => false;
 
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
@@ -214,6 +211,15 @@ namespace RainMeadow
                     break;
             }
 
+        }
+
+        public void AddExternalGameModes() // external mods will hook and insert
+        {
+            Competitive competitiveMode = new Competitive();
+            if (!this.registeredGameModes.ContainsKey(competitiveMode))
+            {
+                this.registeredGameModes.Add(competitiveMode, Competitive.CompetitiveMode.value);
+            }
         }
         public void ResetChampAddition()
         {
