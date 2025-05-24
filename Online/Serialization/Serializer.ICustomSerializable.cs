@@ -175,6 +175,15 @@ namespace RainMeadow
             return method;
         }
 
+        /// <summary>
+        /// Returns an appropriate instantiation of a generic method to serialize the given type
+        /// </summary>
+        /// <param name="nullable">
+        /// Type can be null, accounted for with an extra tag bool
+        /// </param>
+        /// <param name="polymorphic">
+        /// Serializes and instantiates from (for example think of vtable fill at ctor time in C++)
+        /// </param>
         internal static MethodInfo MakeSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var arguments = new { nullable, polymorphic, longList }; // one hell of a drug
@@ -201,7 +210,7 @@ namespace RainMeadow
                     { nullable: false, polymorphic: false, longList: true } => "SerializeStaticStatesShort",
                     { nullable: false, polymorphic: true, longList: true } => "SerializePolyStatesShort",
                     { nullable: true, polymorphic: false, longList: true } => "SerializeNullableStaticStatesShort",
-                    { nullable: true, polymorphic: true, longList: true } => "SerializeNullablePolyStatesShort"
+                    { nullable: true, polymorphic: true, longList: true } => "SerializeNullablePolyStatesByte"
 
                 } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == fieldType.IsArray)).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] });
             }
@@ -250,7 +259,11 @@ namespace RainMeadow
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
                 return typeof(Serializer).GetMethods().Single(m =>
-                m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                m.Name == arguments switch
+                {
+                    { nullable: false } => "SerializeExtEnum",
+                    { nullable: true } => "SerializeExtEnumNullable",
+                } && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
