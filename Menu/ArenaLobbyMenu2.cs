@@ -52,7 +52,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
 
 
-        Arena.AddExternalGameModes();
+        Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;

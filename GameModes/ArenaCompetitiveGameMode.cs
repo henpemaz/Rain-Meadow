@@ -213,12 +213,12 @@ namespace RainMeadow
 
         }
 
-        public void AddExternalGameModes() // external mods will hook and insert
+        public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
         {
-            Competitive competitiveMode = new Competitive();
-            if (!this.registeredGameModes.ContainsKey(competitiveMode))
+            
+            if (!this.registeredGameModes.ContainsKey(externMode))
             {
-                this.registeredGameModes.Add(competitiveMode, Competitive.CompetitiveMode.value);
+                this.registeredGameModes.Add(externMode, gametypeID.value);
             }
         }
         public void ResetChampAddition()
