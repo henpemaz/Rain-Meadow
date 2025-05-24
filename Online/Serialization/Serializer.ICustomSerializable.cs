@@ -210,7 +210,7 @@ namespace RainMeadow
                     { nullable: false, polymorphic: false, longList: true } => "SerializeStaticStatesShort",
                     { nullable: false, polymorphic: true, longList: true } => "SerializePolyStatesShort",
                     { nullable: true, polymorphic: false, longList: true } => "SerializeNullableStaticStatesShort",
-                    { nullable: true, polymorphic: true, longList: true } => "SerializeNullablePolyStatesByte"
+                    { nullable: true, polymorphic: true, longList: true } => "SerializeNullablePolyStatesShort"
 
                 } && m.IsGenericMethod && (m.GetParameters()[0].ParameterType.GetElementType().IsArray == fieldType.IsArray)).MakeGenericMethod(new Type[] { fieldType.IsArray ? fieldType.GetElementType() : fieldType.GetGenericArguments()[0] });
             }
