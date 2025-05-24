@@ -32,6 +32,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> SlugpupHellBackground;
 
 
     public readonly Configurable<float> ScrollSpeed;

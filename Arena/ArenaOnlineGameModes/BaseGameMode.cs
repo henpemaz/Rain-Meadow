@@ -291,6 +291,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.isInGame = true; // used for readied players at the beginning
+                arena.leaveForNextLevel = false;
                 if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                 {
                     foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
