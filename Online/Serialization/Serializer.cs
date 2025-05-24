@@ -145,9 +145,12 @@ namespace RainMeadow
             bool fits = scratchpad.Position < (capacity - Position - margin);
             if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
             {
-                return WriteZippedState(state);
+                if (WriteZippedState(state))
+                {
+                    return true;
+                }
             }
-            else if (fits)
+            if (fits)
             {
                 writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
                 stateCount++;
