@@ -72,7 +72,7 @@ namespace RainMeadow
         public static string[] SmartSplitIntoStrings(this string text, float wrapWidth, bool bigText = false)
         {
             List<string> strings = [];
-            GetStringSplit(text, wrapWidth, (s) => { RainMeadow.Debug(s);  strings.Add(s); }, bigText);
+            GetStringSplit(text, wrapWidth, strings.Add, bigText);
             return [.. strings];
         }
     }
