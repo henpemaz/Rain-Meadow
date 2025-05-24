@@ -45,34 +45,26 @@ namespace RainMeadow
         public static void GetStringSplit(string text, float width, Action<string> recieveString, bool bigText = false)
         {
             Predicate<string> s = t => LabelTest.GetWidth(t, bigText) < width;
-            int num = 0, textLength = text.Length;
-            while (num < textLength)
-            {
-                string currentString = text.Substring(num);
-                string[] words = currentString.Split(' ');
-                string trimmedTxt = string.Empty;
-                foreach (string word in words)
-                {
-                    string temp = trimmedTxt;
-                    if (!string.IsNullOrEmpty(temp)) temp += " ";
-                    temp += word;
-                    if (s(temp)) //see if adding a word will not overflow, if does not continue to the next word
-                    {
-                        trimmedTxt = temp;
-                        continue;
-                    }
-                    if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " ")) //add space is there is avaliable space for it
-                    {
-                        trimmedTxt += " ";
-                        break;
-                    }
-                    trimmedTxt = LabelTest.TrimText(temp, width, bigText: bigText); //technically for long first word, omg pls no mitosis of characters PLSSSSS
-                    break; //skip over words that are supposed to be in next line
-                }
-                recieveString(trimmedTxt);
-                num += trimmedTxt.Length;
-            }
 
+            string[] words = text.Split(' ');
+            string trimmedTxt = string.Empty;
+            foreach (string word in words)
+            {
+                string temp = trimmedTxt;
+                if (!string.IsNullOrEmpty(temp)) temp += " ";
+                temp += word;
+                if (s(temp)) //skip over to next word if it doesnt overflow
+                {
+                    trimmedTxt = temp;
+                    continue;
+                }
+                if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " ")) trimmedTxt += " "; //if space doesnt overflow then recieve string and set text back to empty
+                else trimmedTxt = LabelTest.TrimText(temp, width, false, bigText); 
+                recieveString(trimmedTxt);
+                trimmedTxt = string.Empty;
+                continue;
+            }
+            if (trimmedTxt.Length > 0) recieveString(trimmedTxt); //add text if it isnt added, happens if there is no overflow
         }
         public static string[] SmartSplitIntoStrings(this string text, float wrapWidth, bool bigText = false)
         {
