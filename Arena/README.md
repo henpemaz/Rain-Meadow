@@ -42,8 +42,7 @@ namespace MyNamespace
             try
             {
 
-                On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
-
+                On.Menu.Menu.ctor += Menu_ctor;
                 fullyInit = true;
             }
             catch (Exception e)
@@ -53,18 +52,22 @@ namespace MyNamespace
             }
         }
 
-        private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
+        private void Menu_ctor(On.Menu.Menu.orig_ctor orig, Menu.Menu self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
+            orig(self, manager, ID);
+            if (self is ArenaLobbyMenu2)
+            {
+                AddNewMode();
+            }
+        }
+
+        private void AddNewMode()
+        {
+            
             if (RainMeadow.RainMeadow.isArenaMode(out var arena))
             {
-                var myNewGamemode = new MyNewExternalArenaGameMode();
-                if (!arena.registeredGameModes.ContainsKey(myNewGamemode))
-                {
-                    arena.registeredGameModes.Add(myNewGamemode, MyNewExternalArenaGameMode.MyGameModeName.value);
-                }
+                arena.AddExternalGameModes(new myNewGamemode(),  MyNewExternalArenaGameMode.MyGameModeName);
             }
-            orig(self, manager);
-
 
         }
     }
