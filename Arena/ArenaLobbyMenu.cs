@@ -21,6 +21,7 @@ namespace RainMeadow
         private int currentColorIndex = -1;
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
         private bool flushArenaSittingForWaitingClients = false;
+        private bool pushClientIntoGame = false;
 
         private ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
         private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
@@ -111,6 +112,21 @@ namespace RainMeadow
                         forceReady.buttonBehav.greyedOut = OnlineManager.players.Count == arena.playersReadiedUp.list.Count;
                     }
                 }
+            }
+            else
+            {
+                if (arena.isInGame && arena.arenaSittingOnlineOrder.Count == arena.playersReadiedUp.list.Count && !pushClientIntoGame && !arena.clientWantsToLeaveGame && !arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
+                {
+                    pushClientIntoGame = true;
+                    this.StartGame();
+                }
+                if (arena.isInGame && !pushClientIntoGame && !arena.clientWantsToLeaveGame && arena.hasPermissionToRejoin)
+                {
+                    RainMeadow.Debug("Client was late but given permission to rejoin!");
+                    pushClientIntoGame = true;
+                    this.StartGame();
+                }
+
             }
             UpdateSlugcatButtons();
             UpdateReadyUpLabel();
@@ -303,7 +319,7 @@ namespace RainMeadow
                     (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs = SlugcatFromIndex;
                     RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
 
-                    
+
                 };
             }
         }
@@ -429,6 +445,7 @@ namespace RainMeadow
             else
             {
                 manager.arenaSitting.levelPlaylist = arena.playList;
+                manager.arenaSitting.currentLevel = arena.currentLevel;
 
             }
 
@@ -449,23 +466,20 @@ namespace RainMeadow
         public void StartGame()
         {
             RainMeadow.DebugMe();
-            if (arena.isInGame && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
-            {
-                return;
-            }
             if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive)
             {
                 return;
             }
+
+
             if (OnlineManager.lobby.isOwner && this.GetGameTypeSetup.playList != null && this.GetGameTypeSetup.playList.Count == 0)
             {
                 return; // don't be foolish
             }
-            if (arena.playersReadiedUp.list.Count != OnlineManager.players.Count && arena.isInGame)
-            {
-                return;
-            }
-            if (!arena.allPlayersReadyLockLobby)
+
+
+            // Players Who Arrive On Time 
+            if (!arena.allPlayersReadyLockLobby && !arena.isInGame)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
@@ -479,6 +493,8 @@ namespace RainMeadow
 
                     if (OnlineManager.players.Count > 1 && !arena.playersReadiedUp.list.Contains(OnlineManager.mePlayer.id))
                     {
+                        RainMeadow.Debug("Arena: Notifying host I'm ready to go");
+
                         OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_NotifyLobbyReadyUp, OnlineManager.mePlayer);
                         this.playButton.menuLabel.text = this.Translate("Waiting for others...");
                         this.playButton.inactive = true;
@@ -488,10 +504,48 @@ namespace RainMeadow
                 return;
             }
 
-            if (!OnlineManager.lobby.isOwner && !arena.isInGame)
+            // Players Who Didn't
+            if (!OnlineManager.lobby.isOwner)
             {
-                RainMeadow.Debug("Host is not in game");
-                return;
+                if (!arena.isInGame)
+                {
+                    RainMeadow.Debug("Host is not in game");
+                    return;
+                }
+                else
+                {
+
+                    if (!arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId)) // lobby's locked up, you don't have permission to rejoin, you haven't asked to be queued
+                    {
+                        if (arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId)) // normal. You should be removed when you quit back to lobby or on next level if you're missing
+                        {
+                            // noop
+                        }
+                        else
+                        {
+                            RainMeadow.Debug("Arena: Notifying host I'm late");
+                            OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddPlayerWaiting, OnlineManager.mePlayer);
+                            this.playButton.inactive = true;
+                            this.playButton.buttonBehav.greyedOut = true;
+                            return;
+                        }
+                    }
+                    //if (arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId) && !arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
+                    //{
+                    //    RainMeadow.Debug("Arena: You've let the host know you're ready, but they're not ready for you");
+                    //    return;
+                    //}
+
+                    // there's still a chance someone is queued and they're not ready by host yet
+                    if (!arena.hasPermissionToRejoin && arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId))
+                    {
+                        RainMeadow.Debug("Arena: You've let the host know you're ready, they've acknowled the request, but the time is not right");
+                        return;
+                    }
+
+
+                    arena.clientWantsToLeaveGame = false;
+                }
             }
             if (colorConfigDialog != null)
             {
@@ -583,28 +637,36 @@ namespace RainMeadow
             {
                 if (arena.isInGame)
                 {
-                    playButton.inactive = true;
-                    if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true)) // you're late
+                    if ((arena.playersLateWaitingInLobbyForNextRound.Contains(OnlineManager.mePlayer.inLobbyId)))
                     {
-                        playButton.menuLabel.text = Translate("GAME IN SESSION");
-
+                        playButton.menuLabel.text = Translate("QUEUED TO JOIN");
+                        playButton.inactive = true;
                     }
-                }
-                if (!arena.isInGame && !(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true))
-                {
-                    playButton.menuLabel.text = Translate("READY?");
-                    playButton.inactive = false;
-                }
-                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
-                {
-                    playButton.menuLabel.text = Translate("Waiting for others...");
-                    playButton.inactive = true;
-                }
+                    else
+                    {
+                        playButton.menuLabel.text = Translate("JOIN?");
+                        playButton.inactive = false;
+                    }
 
-                if (!arena.isInGame && arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                }
+                else
                 {
-                    playButton.menuLabel.text = Translate("Waiting for host...");
-                    playButton.inactive = true;
+                    if (!(arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true))
+                    {
+                        playButton.menuLabel.text = Translate("READY?");
+                        playButton.inactive = false;
+                    }
+                    if (arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count != OnlineManager.players.Count)
+                    {
+                        playButton.menuLabel.text = Translate("Waiting for others...");
+                        playButton.inactive = true;
+                    }
+
+                    if (arena.playersReadiedUp?.list?.Contains(OnlineManager.mePlayer.id) == true && arena.playersReadiedUp.list.Count == OnlineManager.players.Count)
+                    {
+                        playButton.menuLabel.text = Translate("Waiting for host...");
+                        playButton.inactive = true;
+                    }
                 }
             }
             if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
