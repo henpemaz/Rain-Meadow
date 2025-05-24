@@ -21,7 +21,9 @@ namespace RainMeadow
             container.subObjects.AddRange(subObjectsToAdd.Where(x => x != null && !container.subObjects.Contains(x)));
         }
         public static bool IsAllRemixUINotHeld(this MenuObject owner) => owner.subObjects.OfType<UIelementWrapper>().All(x => !(x.thisElement is UIconfig config && config.held));
-        public static string[] SplitIntoStrings(string text, float width, bool bigText = false) //not using wrapText since method checks if the language is wrappable
+
+        /// <returns>an array of strings that were split based on string input over a width based on rw text</returns>
+        public static string[] SplitIntoStrings(this string text, float width, bool bigText = false) //not using wrapText since method checks if the language is wrappable
         {
             width = Mathf.Max(LabelTest.CharMean(bigText), width);
             List<string> strings = [];
@@ -38,10 +40,6 @@ namespace RainMeadow
             return [.. strings];
 
         }
-
-        /// <summary>
-        /// This delimits the text on word boundaries into multiple lines to fit some metric of width based on rw text width. Tries to smartly split string
-        /// </summary>
         public static void GetStringSplit(string text, float width, Action<string> recieveString, bool bigText = false)
         {
             Predicate<string> s = t => LabelTest.GetWidth(t, bigText) < width;
@@ -51,25 +49,30 @@ namespace RainMeadow
             foreach (string word in words)
             {
                 string temp = trimmedTxt;
-                if (!string.IsNullOrEmpty(temp)) temp += " ";
-                temp += word;
+                temp += $"{(!string.IsNullOrEmpty(temp)? " " : "")}{word}";
+
                 if (s(temp)) //skip over to next word if it doesnt overflow
                 {
                     trimmedTxt = temp;
                     continue;
                 }
-                if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " ")) trimmedTxt += " "; //if space doesnt overflow then recieve string and set text back to empty
-                else trimmedTxt = LabelTest.TrimText(temp, width, false, bigText); 
-                recieveString(trimmedTxt);
-                trimmedTxt = string.Empty;
-                continue;
+                if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " "))
+                {
+                    recieveString(trimmedTxt + " "); //if space doesnt overflow then recieve string and set text back to empty 
+                    trimmedTxt = word; //dont skip word before going to the next word
+                    continue;
+                }
+                foreach (string line in temp.SplitIntoStrings(width, bigText)) recieveString(line); //for extremly long words etc whole text`HAHAHAHHAHAHAHAHAHAHHA`
+                trimmedTxt = string.Empty; //reset
             }
             if (trimmedTxt.Length > 0) recieveString(trimmedTxt); //add text if it isnt added, happens if there is no overflow
         }
+
+        /// <returns>an array of strings that were split based on string input over a width based on rw text</returns>
         public static string[] SmartSplitIntoStrings(this string text, float wrapWidth, bool bigText = false)
         {
             List<string> strings = [];
-            GetStringSplit(text, wrapWidth, strings.Add, bigText);
+            GetStringSplit(text, wrapWidth, (s) => { RainMeadow.Debug(s);  strings.Add(s); }, bigText);
             return [.. strings];
         }
     }
