@@ -277,27 +277,6 @@ namespace RainMeadow
         }
 
 
-
-
-        [RPCMethod]
-        public static void Arena_NextLevelCall()
-        {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-
-            if (lobby != null)
-            {
-                return;
-            }
-
-            if (game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-            game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
-            game.arenaOverlay.nextLevelCall = true;
-        }
-
         [RPCMethod]
         public static void AddShortCutVessel(RWCustom.IntVector2 pos, OnlinePhysicalObject crit, RoomSession roomSess, int wait)
         {
