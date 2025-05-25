@@ -44,6 +44,22 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             baseSprites.Do(x => x.RemoveFromContainer());
         }
+        public override void Singal(MenuObject sender, string message)
+        {
+            base.Singal(sender, message);
+            if (message == "KICKPLAYER")
+            {
+                BanHammer.BanUser(profileIdentifier);
+                menu.PlaySound(SoundID.MENU_Remove_Level);
+            }
+            if (message == "MUTEPLAYER")
+            {
+                ArenaPlayerBox.AddOrRemoveFromMute(profileIdentifier);
+                (sender as SymbolButton)?.UpdateSymbol(ArenaPlayerBox.GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true));
+                menu.PlaySound(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
+            }
+
+        }
         public override void Update()
         {
             base.Update();
@@ -70,18 +86,9 @@ namespace RainMeadow.UI.Components
         public void InitButtons(bool canKick)
         {
             float yPosDefaultSymbol = MiddleOfY(24);
-            if (profileIdentifier.isMe)
-            {
-                colorKickButton = new(menu, this, "Meadow_Menu_ColorBucket", "Color_Slugcat", new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
-            }
-            else if (canKick)
-            {
-                colorKickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
-                colorKickButton.OnClick += (_) =>
-                {
-                    BanHammer.BanUser(profileIdentifier);
-                };
-            }
+            string sprite = profileIdentifier.isMe ? "Meadow_Menu_ColorBucket" : canKick? "Menu_Symbol_Clear_All" : ArenaPlayerBox.GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), 
+                signal = profileIdentifier.isMe ? "Color_Slugcat" : canKick ? "KICKPLAYER" : "MUTEPLAYER";
+            colorKickButton = new(menu, this, sprite, signal, new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
         }
         public HSLColor MyBaseColor()
         {
@@ -101,7 +108,7 @@ namespace RainMeadow.UI.Components
         public FSprite[] baseSprites;
         public ScrollerButton playerButton;
         public StoryMenuSlugcatButton slugcatButton;
-        public ScrollSymbolButton? colorKickButton; //no kicking yourself pls
+        public ScrollSymbolButton colorKickButton; //no kicking yourself pls
         public OnlinePlayer profileIdentifier;
     }
 }

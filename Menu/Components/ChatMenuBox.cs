@@ -62,10 +62,14 @@ namespace RainMeadow.UI.Components
             Vector2 desiredSize = new(desiredXWidth, messageScroller.buttonHeight);
 
             List<string> splitMessages = [];
-            string firstMessage = MenuHelpers.SmartSplitIntoStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false))).FirstOrDefault();
-            splitMessages.Add(firstMessage);
-            splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(message.Substring(firstMessage.Length), desiredXWidth));
+            List<string> pendingSplitMessages = [..MenuHelpers.SmartSplitIntoStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false)))];
+            if (pendingSplitMessages.Count > 0)
+            {
+                splitMessages.Add(pendingSplitMessages[0]);
+                pendingSplitMessages.RemoveAt(0);
+                if (pendingSplitMessages.Count > 1) splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(string.Join(" ", pendingSplitMessages), desiredXWidth));
 
+            }
             for (int i = 0; i < splitMessages.Count; i++)
                 messageLabels.Add(GetMessageLabel(user, splitMessages[i], isSystemMessage, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
             return [.. messageLabels];
