@@ -356,7 +356,7 @@ Note: These inputs are not used in Meadow mode|Nota: Estas entradas no son utili
 Show usernames|Mostrar nombres de usuario
 Username Toggle|Pulsar para ver los nombres de usuario
 Replace holding with toggling|Reemplazar «mantener» con «pulsar».
-Key used for toggling spectator mode|Botón para act./des. el modo espectador
+Key used for toggling spectator mode|Activar o desactivar el modo espectador
 Stop Inputs While Spectating|Detener entradas al espectear
 Pointing Key|Botón para señalar
 Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|Controla qué mods están permitidos en los clientes, editando los archivos de abajo.<LINE>Incluyen instrucciones (en inglés) dentro.
