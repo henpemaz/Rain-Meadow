@@ -6,7 +6,7 @@ namespace RainMeadow {
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class ArtificialIntelligenceState : OnlineState {
 
-        [OnlineField(group: "AImodules", nullable: true)]
+        [OnlineField(group: "AImodules")]
         public DynamicOrderedStates<AIModuleState>? moduleStates;
         public ArtificialIntelligenceState(OnlineCreature onlineCreature) {
             if (onlineCreature.apo is AbstractCreature creature) {

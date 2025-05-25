@@ -163,8 +163,7 @@ namespace RainMeadow
         internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var key = new Serializer.TypeInfo(fieldType, nullable, polymorphic, longList);
-            MethodInfo cached = null;
-            if (serializerMethods.TryGetValue(key, out cached))
+            if (serializerMethods.TryGetValue(key, out var cached))
             {
                 RainMeadow.Debug($"Using cached method for {key}");
                 return cached;

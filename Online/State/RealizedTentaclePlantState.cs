@@ -4,11 +4,11 @@ namespace RainMeadow
 {
     public class RealizedTentaclePlantState : RealizedCreatureState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField]
         OnlinePhysicalObject? mostInterestingItem;
         [OnlineField]
         Vector2 idlePos;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         Vector2? floatGrabDest;
 
         public RealizedTentaclePlantState() { }

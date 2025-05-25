@@ -12,11 +12,11 @@ namespace RainMeadow
         public float health;
         [OnlineField]
         public Vector2 pos;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         public Vector2? floatGrabDest;
         [OnlineField]
         public DaddyTentacle.Task task;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         public BodyChunkRef? grabChunk;
 
         public DaddyTentacleState() { }

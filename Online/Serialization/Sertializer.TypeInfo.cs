@@ -18,12 +18,12 @@ namespace RainMeadow
                 this.polymorphic = polymorphic;
                 this.longList = longList;
             }
-            public override string ToString() => $"{this.fieldType.FullName}{this.nullable}{this.polymorphic}{this.longList}";
-            public bool Equals(TypeInfo b1, TypeInfo b2)
+            public readonly override string ToString() => $"{this.fieldType.FullName}{this.nullable}{this.polymorphic}{this.longList}";
+            public readonly bool Equals(TypeInfo b1, TypeInfo b2)
             {
                 return b1.fieldType.FullName == b2.fieldType.FullName && b1.nullable == b2.nullable && b1.polymorphic == b2.polymorphic && b1.longList == b2.longList;
             }
-            public int GetHashCode(TypeInfo obj) => obj.ToString().GetHashCode();
+            public readonly int GetHashCode(TypeInfo obj) => obj.ToString().GetHashCode();
         }
     }
 }

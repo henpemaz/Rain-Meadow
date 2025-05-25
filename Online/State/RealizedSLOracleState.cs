@@ -6,7 +6,7 @@ namespace RainMeadow
 {
     public class RealizedSLOracleState : RealizedOracleState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField]
         public OnlinePhysicalObject? holdingObject;
         [OnlineField]
         public Phase revivePhase = Phase.LookingForSwarmer;

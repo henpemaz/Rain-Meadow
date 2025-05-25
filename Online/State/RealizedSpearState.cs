@@ -6,11 +6,11 @@ namespace RainMeadow
 {
     public class RealizedSpearState : RealizedWeaponState
     {
-        [OnlineFieldHalf(group = "spear", nullable = true)]
+        [OnlineFieldHalf(group = "spear")]
         private Vector2? stuckInWall;
-        [OnlineField(group = "spear", nullable = true)]
+        [OnlineField(group = "spear")]
         private BodyChunkRef? stuckInChunk;
-        [OnlineField(group = "spear", nullable = true)]
+        [OnlineField(group = "spear")]
         private AppendageRef? stuckInAppendage;
         [OnlineField(group = "spear")]
         private sbyte stuckBodyPart;

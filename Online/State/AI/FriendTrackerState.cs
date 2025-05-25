@@ -8,7 +8,7 @@ namespace RainMeadow {
         [OnlineField]
         public bool followClosestFriend;
 
-        [OnlineField(nullable: true)]
+        [OnlineField]
         public OnlineEntity.EntityId? friend;
 
         [OnlineFieldHalf]

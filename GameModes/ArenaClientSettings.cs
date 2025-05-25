@@ -16,8 +16,8 @@ namespace RainMeadow
 
         public class State : EntityDataState
         {
-            [OnlineField(nullable = true)]
-            public SlugcatStats.Name playingAs;
+            [OnlineField]
+            public SlugcatStats.Name? playingAs;
             public State() { }
             public State(ArenaClientSettings onlineEntity) : base()
             {

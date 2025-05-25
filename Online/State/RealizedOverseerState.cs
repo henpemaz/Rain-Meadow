@@ -26,7 +26,7 @@ namespace RainMeadow
         private Overseer.Mode mode;
         [OnlineField]
         private float extended;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private OnlinePhysicalObject? conversationPartner;
 
         public RealizedOverseerState() { }

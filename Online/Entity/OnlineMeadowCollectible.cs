@@ -46,8 +46,8 @@ namespace RainMeadow
             private bool placed;
             [OnlineField]
             private bool collected;
-            [OnlineField(nullable = true)]
-            private TickReference collectedTR;
+            [OnlineField]
+            private TickReference? collectedTR;
 
             public MeadowCollectibleState() : base() { }
             public MeadowCollectibleState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)

@@ -4,7 +4,7 @@ namespace RainMeadow
 {
     internal class RealizedScavengerState : RealizedCreatureState
     {
-        [OnlineField(nullable = true, group = "swing")]
+        [OnlineField(group = "swing")]
         private Vector2? swingPos;
         [OnlineFieldHalf(group = "swing")]
         private float swingRadius;

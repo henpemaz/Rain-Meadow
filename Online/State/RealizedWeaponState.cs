@@ -12,7 +12,7 @@ namespace RainMeadow
         private float rotation;
         [OnlineFieldHalf]
         private float rotationSpeed;  // is this really necessary?
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private OnlineCreature? thrownBy;
         [OnlineField]
         private byte throwDir;  // 00> 01v 10< 11^

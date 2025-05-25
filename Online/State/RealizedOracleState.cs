@@ -7,8 +7,8 @@ namespace RainMeadow
     {
         [OnlineField]
         public Vector2 lookPoint;
-        [OnlineField(nullable = true)]
-        public Generics.DynamicOrderedEntityIDs mySwarmers;
+        [OnlineField]
+        public Generics.DynamicOrderedEntityIDs? mySwarmers;
 
         public RealizedOracleState() { }
 

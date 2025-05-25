@@ -34,10 +34,10 @@ namespace RainMeadow
             public Dictionary<string, int> playersChoosingSlugs;
             [OnlineField]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs reigningChamps;
+            [OnlineField]
+            public Generics.DynamicOrderedPlayerIDs? playersReadiedUp;
+            [OnlineField]
+            public Generics.DynamicOrderedPlayerIDs? reigningChamps;
             [OnlineField]
             public bool countdownInitiatedHoldFire;
             [OnlineField]

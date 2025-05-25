@@ -10,7 +10,7 @@ namespace RainMeadow
         private Vector2 pos;
         [OnlineField]
         private Limb.Mode mode;
-        [OnlineFieldHalf(nullable = true)]
+        [OnlineFieldHalf]
         private Vector2? huntPos;
 
         public LimbState() { }
@@ -48,10 +48,10 @@ namespace RainMeadow
 
     public class RealizedLizardState : RealizedCreatureState
     {
-        [OnlineFieldHalf(nullable = true)]
+        [OnlineFieldHalf]
         private Vector2? gripPoint;
-        [OnlineField(nullable = true)]
-        private Generics.DynamicOrderedStates<LizLimbState> limbState;
+        [OnlineField]
+        private Generics.DynamicOrderedStates<LizLimbState>? limbState;
 
         public RealizedLizardState() { }
         public RealizedLizardState(OnlineCreature onlineCreature) : base(onlineCreature)

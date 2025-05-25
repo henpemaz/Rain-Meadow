@@ -7,15 +7,15 @@ namespace RainMeadow
 {
     public class RealizedCreatureState : RealizedPhysicalObjectState
     {
-        [OnlineField(nullable = true)]
-        private DynamicOrderedStates<GraspRef> grasps;
+        [OnlineField]
+        private DynamicOrderedStates<GraspRef>? grasps;
         [OnlineField(group = "counters")]
         public short stun;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private IntVector2? enteringShortcut;
         [OnlineField]
         private WorldCoordinate transportationDestination;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         public ArtificialIntelligenceState? artificialIntelligenceState;
 
         public RealizedCreatureState() { }

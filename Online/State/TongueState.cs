@@ -17,8 +17,8 @@ namespace RainMeadow
         //public float idealRopeLength; // used by Player.Tongue, not modified by TubeWorm
         [OnlineFieldHalf]
         public float requestedRopeLength;
-        [OnlineField(nullable = true)]
-        public BodyChunkRef attachedChunk;
+        [OnlineField]
+        public BodyChunkRef? attachedChunk;
 
         public TongueState() { }
         public TongueState(TubeWorm.Tongue tongue)

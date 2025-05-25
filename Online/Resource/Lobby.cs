@@ -197,12 +197,12 @@ namespace RainMeadow
             public string[] requiredmods;
             [OnlineField]
             public string[] bannedmods;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs bannedUsers;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs players;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedUshorts inLobbyIds;
+            [OnlineField]
+            public Generics.DynamicOrderedPlayerIDs? bannedUsers;
+            [OnlineField]
+            public Generics.DynamicOrderedPlayerIDs? players;
+            [OnlineField]
+            public Generics.DynamicOrderedUshorts? inLobbyIds;
             [OnlineField]
             public Dictionary<string, bool> onlineBoolRemixSettings;
             [OnlineField]

@@ -83,14 +83,14 @@ namespace RainMeadow
         {
             [OnlineField(always = true)]
             public OnlineResource resource;
-            [OnlineField(nullable = true, group = "entitydefs")]
-            public DynamicIdentifiablesICustomSerializables<EntityMembership, OnlineEntity.EntityId> entitiesJoined;
-            [OnlineField(nullable = true, group = "entitydefs")]
-            public DeltaStates<OnlineEntity.EntityDefinition, OnlineEntity.EntityId> registeredEntities;
-            [OnlineField(nullable = true, group = "entities")]
-            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
-            [OnlineField(nullable = true, group = "data")]
-            public DeltaDataStates<ResourceData.ResourceDataState> resourceDataStates;
+            [OnlineField(group = "entitydefs")]
+            public DynamicIdentifiablesICustomSerializables<EntityMembership, OnlineEntity.EntityId>? entitiesJoined;
+            [OnlineField(group = "entitydefs")]
+            public DeltaStates<OnlineEntity.EntityDefinition, OnlineEntity.EntityId>? registeredEntities;
+            [OnlineField(group = "entities")]
+            public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId>? entityStates;
+            [OnlineField(group = "data")]
+            public DeltaDataStates<ResourceData.ResourceDataState>? resourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -248,8 +248,8 @@ namespace RainMeadow
 
         public abstract class ResourceWithSubresourcesState : ResourceState
         {
-            [OnlineField(nullable = true)]
-            public LeaseList subleaseState;
+            [OnlineField]
+            public LeaseList? subleaseState;
 
             protected ResourceWithSubresourcesState() { }
             protected ResourceWithSubresourcesState(OnlineResource resource, uint ts) : base(resource, ts)

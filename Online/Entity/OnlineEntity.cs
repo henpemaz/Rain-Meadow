@@ -478,8 +478,8 @@ namespace RainMeadow
             public OnlineEntity.EntityId entityId;
             [OnlineField(group: "meta")]
             public ushort version;
-            [OnlineField(nullable: true)]
-            public DeltaDataStates<EntityData.EntityDataState> entityDataStates;
+            [OnlineField]
+            public DeltaDataStates<EntityData.EntityDataState>? entityDataStates;
             public OnlineEntity.EntityId ID => entityId;
 
             protected EntityState() : base() { }

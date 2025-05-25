@@ -54,8 +54,8 @@ namespace RainMeadow
         {
             [OnlineFieldColorRgb]
             public Color[] customColors;
-            [OnlineField(nullable = true)]
-            public SlugcatStats.Name playingAs;
+            [OnlineField]
+            public SlugcatStats.Name? playingAs;
             [OnlineField]
             public string nickname;
 

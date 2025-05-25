@@ -11,7 +11,7 @@
         [OnlineFieldHalf]
         public float permanentDamageTracking;
 
-        [OnlineField(nullable: true)]
+        [OnlineField]
         public OnlineEntity.EntityId? objectInStomach;
 
         public PlayerStateState() { }

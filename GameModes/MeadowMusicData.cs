@@ -28,8 +28,8 @@ namespace RainMeadow
             //public int inGroup;
             //[OnlineField(group = "music")]
             //public bool isDJ;
-            [OnlineField(group = "music", nullable = true)]
-            public string providedSong;
+            [OnlineField(group = "music")]
+            public string? providedSong;
             [OnlineField(group = "music")]
             public float startedPlayingAt;
 

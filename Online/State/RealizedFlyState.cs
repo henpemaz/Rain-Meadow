@@ -10,7 +10,7 @@ namespace RainMeadow
         byte eaten;
         [OnlineFieldHalf]
         private Vector2 dir;
-        [OnlineField(nullable: true)]
+        [OnlineField]
         private Vector2? burrowOrHangSpot;
         public RealizedFlyState() { }
         public RealizedFlyState(OnlineCreature onlineEntity) : base(onlineEntity)

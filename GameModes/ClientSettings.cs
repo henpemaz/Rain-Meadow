@@ -43,8 +43,8 @@ namespace RainMeadow
         {
             [OnlineField]
             public bool inGame;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedEntityIDs avatars;
+            [OnlineField]
+            public Generics.DynamicOrderedEntityIDs? avatars;
 
             public State() { }
 

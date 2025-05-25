@@ -103,8 +103,8 @@ namespace RainMeadow
         {
             [OnlineField]
             public RainCycleData rainCycleData;
-            [OnlineField(nullable: true)]
-            public Generics.DynamicOrderedUshorts realizedRooms;
+            [OnlineField]
+            public Generics.DynamicOrderedUshorts? realizedRooms;
             public WorldState() : base() { }
             public WorldState(WorldSession resource, uint ts) : base(resource, ts)
             {

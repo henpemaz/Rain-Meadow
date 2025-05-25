@@ -14,11 +14,11 @@ namespace RainMeadow
 
         public class State : ResourceDataState
         {
-            [OnlineField(nullable = true)]
+            [OnlineField]
             public string? defaultDenPos;
-            [OnlineField(nullable = true)]
+            [OnlineField]
             public string? region;
-            [OnlineField(nullable = true)]
+            [OnlineField]
             public string? defaultWarpPos; //this is mainly so clients do not brick saves when activating echoes
             [OnlineField]
             public bool isInGame;
@@ -48,7 +48,7 @@ namespace RainMeadow
             public int quarterfood;
             [OnlineField]
             public int mushroomCounter;
-            [OnlineField(nullable = true)]
+            [OnlineField]
             public string? saveStateString;
             [OnlineField]
             public bool requireCampaignSlugcat;

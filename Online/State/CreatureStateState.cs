@@ -11,7 +11,7 @@ namespace RainMeadow
         [OnlineField]
         public byte meatLeft;
 
-        [OnlineField(nullable: true)]
+        [OnlineField]
         SocialMemoryState? socialMemory;
 
         public CreatureStateState() { }

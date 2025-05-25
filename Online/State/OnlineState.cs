@@ -148,22 +148,20 @@ namespace RainMeadow
         public class OnlineFieldAttribute : Attribute
         {
             public string group; // things on the same group are gruped in deltas, saving bytes
-            public bool nullable; // field can be null
             public bool polymorphic; // type of field needs to be serialized/parsed
             public bool longList; // field needs ushort for indexes rather than bytes
             public bool always; // field is always sent, to be used as key
 
-            public OnlineFieldAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false)
+            public OnlineFieldAttribute(string group = "default", bool polymorphic = false, bool always = false)
             {
                 this.group = group;
-                this.nullable = nullable;
                 this.polymorphic = polymorphic;
                 this.always = always;
             }
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic, longList), fieldRef);
+                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, Nullable.GetUnderlyingType(f.FieldType) != null, polymorphic, longList), fieldRef);
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
@@ -179,17 +177,17 @@ namespace RainMeadow
 
         public class OnlineFieldHalf : OnlineFieldAttribute
         {
-            public OnlineFieldHalf(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public OnlineFieldHalf(string group = "default", bool polymorphic = false, bool always = false) : base(group, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => 
-                nullable ? m.Name == nameof(Serializer.SerializeHalfNullable) : m.Name == nameof(Serializer.SerializeHalf)
+                Nullable.GetUnderlyingType(f.FieldType) != null ? m.Name == nameof(Serializer.SerializeHalfNullable) : m.Name == nameof(Serializer.SerializeHalf)
                 && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);
             }
         }
         public class OnlineFieldColorRgbAttribute : OnlineFieldAttribute
         {
-            public OnlineFieldColorRgbAttribute(string group = "default", bool nullable = false, bool polymorphic = false, bool always = false) : base(group, nullable, polymorphic, always) { }
+            public OnlineFieldColorRgbAttribute(string group = "default", bool polymorphic = false, bool always = false) : base(group, polymorphic, always) { }
             public override Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
                 return Expression.Call(serializerRef, typeof(Serializer).GetMethods().First(m => m.Name == nameof(Serializer.SerializeRGB) && m.GetParameters()[0].ParameterType == f.FieldType.MakeByRefType()), fieldRef);

@@ -9,12 +9,12 @@ namespace RainMeadow
         public WorldCoordinate pos;
         [OnlineField]
         public bool inDen;
-        [OnlineField(nullable = true)]
-        public Generics.DynamicOrderedStates<AbstractObjStickRepr> sticks;
+        [OnlineField]
+        public Generics.DynamicOrderedStates<AbstractObjStickRepr>? sticks;
         [OnlineField]
         public bool realized;
-        [OnlineField(group = "realized", nullable = true, polymorphic = true)]
-        public RealizedPhysicalObjectState realizedObjectState;
+        [OnlineField(group = "realized", polymorphic = true)]
+        public RealizedPhysicalObjectState? realizedObjectState;
 
         public AbstractPhysicalObjectState() : base() { }
         public AbstractPhysicalObjectState(OnlinePhysicalObject onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)

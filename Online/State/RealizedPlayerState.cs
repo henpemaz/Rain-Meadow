@@ -24,13 +24,13 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class PlayerInAntlersState : OnlineState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField]
         public OnlinePhysicalObject? onlineDeer;
         [OnlineField]
         bool dangle;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         OnlineAntlerPoint? upperAntlerPoint;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         OnlineAntlerPoint? lowerAntlerPoint;
 
         [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
@@ -94,9 +94,9 @@ namespace RainMeadow
 
     public class RealizedPlayerState : RealizedCreatureState
     {
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private VinePositionState? vinePosState;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private PlayerInAntlersState? playerInAntlersState;
         [OnlineField]
         private byte animationIndex;
@@ -110,9 +110,9 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private OnlineEntity.EntityId? spearOnBack;
-        [OnlineField(nullable = true)]
+        [OnlineField]
         private OnlineEntity.EntityId? slugcatRidingOnBack;
         private Player? slugcatOnBackTemp; // need this for clients to fix their overlap when slugpup is dropped
         [OnlineField(group = "inputs")]
@@ -135,11 +135,11 @@ namespace RainMeadow
         public float tongueIdealLength;
         [OnlineFieldHalf(group = "tongue")]
         public float tongueRequestedLength;
-        [OnlineField(group = "tongue", nullable = true)]
+        [OnlineField(group = "tongue")]
         public BodyChunkRef? tongueAttachedChunk;
         [OnlineField(group = "watcher")]
         public bool isCamo;
-        [OnlineFieldHalf(nullable = true)]
+        [OnlineFieldHalf]
         private Vector2? pointingDir;
 
         public RealizedPlayerState() { }

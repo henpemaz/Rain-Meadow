@@ -29,8 +29,8 @@ namespace RainMeadow
 
         public class State : EntityDataState
         {
-            [OnlineField(nullable = true, group = "emotes")]
-            public Generics.DynamicOrderedExtEnums<MeadowProgression.Emote> emotes;
+            [OnlineField(group = "emotes")]
+            public Generics.DynamicOrderedExtEnums<MeadowProgression.Emote>? emotes;
             [OnlineField(group = "emotes")]
             public TickReference emotesTick;
             [OnlineFieldHalf(group = "emotes")]

@@ -57,10 +57,10 @@ namespace RainMeadow
 
             public class State : ResourceDataState
             {
-                [OnlineField(nullable = true)]
-                private UshortToByteDict playerGroups;
-                [OnlineField(nullable = true)]
-                private ByteToUshortDict groupHosts;
+                [OnlineField]
+                private UshortToByteDict? playerGroups;
+                [OnlineField]
+                private ByteToUshortDict? groupHosts;
 
                 public State() { }
                 public State(LobbyMusicData lobbyMusicData)
