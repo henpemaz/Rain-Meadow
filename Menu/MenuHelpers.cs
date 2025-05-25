@@ -21,11 +21,20 @@ namespace RainMeadow
             container.subObjects.AddRange(subObjectsToAdd.Where(x => x != null && !container.subObjects.Contains(x)));
         }
         public static bool IsAllRemixUINotHeld(this MenuObject owner) => owner.subObjects.OfType<UIelementWrapper>().All(x => !(x.thisElement is UIconfig config && config.held));
+        public static float GetMaxWidthInText(this string text, bool bigText)
+        {
+            FLetterQuad[] quads = [..Futile.atlasManager.GetFontWithName(LabelTest.GetFont(bigText)).GetQuadInfoForText(text, new())?.SelectMany(x => x.quads)];
+            if (quads?.Length > 0)
+            {
+                return quads.Max(x => x.rect.width);
+            }
+            return LabelTest.CharMean(bigText);
+        }
 
         /// <returns>an array of strings that were split based on string input over a width based on rw text</returns>
         public static string[] SplitIntoStrings(this string text, float width, bool bigText = false) //not using wrapText since method checks if the language is wrappable
         {
-            width = Mathf.Max(LabelTest.CharMean(bigText), width);
+            width = Mathf.Max(text.GetMaxWidthInText(bigText), width);
             List<string> strings = [];
             if (text != null)
             {

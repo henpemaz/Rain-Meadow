@@ -10,13 +10,15 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Collections;
 using Rewired;
+using RWCustom;
 
 namespace RainMeadow.UI.Components
 {
     //supports multi view, cuz previous one does not and its messy af
     public class ChatTextBox2 : ButtonTemplate, ICanBeTyped
     {
-        public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt((menuLabel.size.x) / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), LabelTest.CharMean(false)));
+        public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt((menuLabel.size.x) / currentMessage.GetMaxWidthInText(false));
+        public bool SelectionActive => selectionStartPos != -1 ;
         public Action OnTextSubmit => onTextSubmit ?? HandleTextSubmit;
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
@@ -71,6 +73,8 @@ namespace RainMeadow.UI.Components
             buttonBehav.Update();
             roundedRect.fillAlpha = 1.0f;
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked ? 0f : 1f);
+            cursorIsInMiddle = cursorPos < currentMessage.Length;
+            maxVisibleLength = Mathf.FloorToInt(Custom.LerpAndTick(maxVisibleLength, VisibleTextLimit, 0.12f, 0.12f));
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -83,14 +87,14 @@ namespace RainMeadow.UI.Components
             {
                 roundedRect.sprites[i].color = Color.black;
             }
-            int firstLetterViewed = cursorPos > VisibleTextLimit? cursorPos - VisibleTextLimit: 0,
-                lastLetterViewed = Mathf.Max(0, cursorPos > VisibleTextLimit ? VisibleTextLimit : Mathf.Min(VisibleTextLimit, currentMessage.Length));
+            int firstLetterViewed = cursorPos > maxVisibleLength ? cursorPos - maxVisibleLength : 0,
+                lastLetterViewed = Mathf.Max(0, cursorPos > maxVisibleLength ? maxVisibleLength : Mathf.Min(maxVisibleLength, currentMessage.Length));
 
             menuLabel.text = currentMessage.Substring(firstLetterViewed, lastLetterViewed);
             menuLabel.label.color = InterpColor(timeStacker, labelColor ?? Menu.Menu.MenuColor(Menu.Menu.MenuColors.White));
 
-            int lowestCursorPos = selectionStartPos != -1 ? Mathf.Min(cursorPos, selectionStartPos) : cursorPos;
-            float cursorPosition = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowestCursorPos > VisibleTextLimit ? menuLabel.label.text.Length : lowestCursorPos), false);
+            int lowestCursorPos = SelectionActive ? Mathf.Min(cursorPos, selectionStartPos) : cursorPos;
+            float cursorPosition = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowestCursorPos > maxVisibleLength ? menuLabel.label.text.Length : lowestCursorPos), false);
             if (cursorIsInMiddle)
             {
                 if (cursorSprite.element.name != "pixel") cursorSprite.SetElementByName("pixel");
@@ -113,14 +117,15 @@ namespace RainMeadow.UI.Components
             }
             else
             {
+                int start = lowestCursorPos > firstLetterViewed ? lowestCursorPos - firstLetterViewed : firstLetterViewed > 0 ? 0 : lowestCursorPos;
+                cursorPosition = LabelTest.GetWidth(menuLabel.text.Substring(0, start));
+                float width = LabelTest.GetWidth(menuLabel.text.Substring(start, Mathf.Min(Mathf.Abs(selectionStartPos - cursorPos), maxVisibleLength - start)), false);
                 cursorSprite.isVisible = false;
                 selectionSprite.isVisible = true;
                 selectionSprite.x = cursorPosition + screenPos.x + 10;
                 selectionSprite.y = screenPos.y + size.y / 2;
-                selectionSprite.width = LabelTest.GetWidth(menuLabel.text.Substring(lowestCursorPos > VisibleTextLimit? lowestCursorPos - VisibleTextLimit : lowestCursorPos, Mathf.Min(Mathf.Abs(selectionStartPos - cursorPos), VisibleTextLimit)), false);
+                selectionSprite.width = width;
             }
-
-
 
         }
         public void CaptureInputs(char input)
@@ -204,7 +209,6 @@ namespace RainMeadow.UI.Components
                         {
                             menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                             DeleteSelectedText();
-                            if (cursorPos == currentMessage.Length) cursorIsInMiddle = false;
                         }
                         else if (cursorPos > 0)
                         {
@@ -237,7 +241,6 @@ namespace RainMeadow.UI.Components
                             currentMessage = msg.Remove(cursorPos, 1);
                         }
                     }
-                    if (cursorPos == currentMessage.Length) cursorIsInMiddle = false;
                     backspaceHeld++;
                 }
                 else
@@ -245,16 +248,13 @@ namespace RainMeadow.UI.Components
                     backspaceHeld = 0;
                     if (Input.GetKeyDown(KeyCode.Home))
                     {
-                        bool changeSprite = cursorPos == len;
                         cursorPos = 0;
                         selectionStartPos = -1;
-                        if (changeSprite) SetCursorSprite(true);
                     }
                     else if (Input.GetKeyDown(KeyCode.End) && cursorPos < len)
                     {
                         cursorPos = len;
                         selectionStartPos = -1;
-                        SetCursorSprite(false);
                     }
                     else if (Input.GetKeyDown(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
                     {
@@ -265,73 +265,41 @@ namespace RainMeadow.UI.Components
                     else if (Input.GetKey(KeyCode.LeftArrow))
                     {
                         // cursor position is used as the anchor for selection
-                        if ((cursorPos > 0 || selectionStartPos != -1) && (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 1 == 0))))
+                        if ((cursorPos > 0 || SelectionActive) && arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 1 == 0)))
                         {
                             var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                            var selectionActive = selectionStartPos != -1;
-                            if (selectionActive && !shiftHeld)
+                            if (SelectionActive && !shiftHeld) selectionStartPos = -1;
+                            else if (!SelectionActive || cursorPos > 0)
                             {
-                                var changeSprite = cursorPos == len;
-                                if (selectionStartPos < cursorPos) cursorPos = selectionStartPos;
-                                selectionStartPos = -1;
-                                if (changeSprite) SetCursorSprite(true);
-                            }
-                            else
-                            {
-                                var newPos = (shiftHeld && selectionActive) ? cursorPos : selectionActive? selectionStartPos = cursorPos : cursorPos;
+                                if (!SelectionActive && shiftHeld) selectionStartPos = cursorPos;
                                 if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
                                 {
-                                    newPos = msg.Substring(0, newPos - 1).LastIndexOf(' ') + 1;
-                                    if (newPos < 0 || newPos > len) newPos = 0;
+                                    cursorPos = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
                                 }
-                                else newPos--;
-                                if (shiftHeld)
-                                {
-                                    cursorPos = newPos;
-                                }
-                                else
-                                {
-                                    cursorPos = newPos;
-                                    if (cursorPos < len) SetCursorSprite(true);
-                                }
+                                else cursorPos--;
                             }
                         }
                         arrowHeld++;
                     }
                     else if (Input.GetKey(KeyCode.RightArrow))
                     {
-                        if ((cursorPos < len || selectionStartPos != -1) && (arrowHeld == 0 || arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        if ((cursorPos < len || SelectionActive) && arrowHeld == 0 || arrowHeld >= 30 && (arrowHeld % 1 == 0))
                         {
-                            var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                            var selectionActive = selectionStartPos != -1;
-                            if (selectionActive && !shiftHeld)
+                            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                            if (SelectionActive && !shiftHeld)
                             {
                                 if (selectionStartPos > cursorPos) cursorPos = selectionStartPos;
                                 selectionStartPos = -1;
-                                if (cursorPos == len)
-                                {
-                                    SetCursorSprite(false);
-                                }
                             }
-                            else if (!selectionActive || cursorPos < msg.Length)
+                            else if (!SelectionActive || cursorPos < len)
                             {
-                                var newPos = (shiftHeld && selectionActive) ? cursorPos : selectionActive? selectionStartPos = cursorPos : cursorPos;
+                                if (!SelectionActive && shiftHeld) selectionStartPos = cursorPos;
                                 if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
                                 {
-                                    int space = msg.Substring(newPos, len - newPos - 1).IndexOf(' ');
-                                    if (space < 0 || space >= len) newPos = len;
-                                    else newPos = space + newPos + 1;
+                                    int space = msg.Substring(cursorPos, len - cursorPos - 1).IndexOf(' ');
+                                    cursorPos = space < 0 || space >= len ? len : space + cursorPos + 1;
                                 }
-                                else newPos++;
-                                if (shiftHeld)
-                                {
-                                    cursorPos = newPos;
-                                }
-                                else
-                                {
-                                    cursorPos = newPos;
-                                    if (newPos == len) SetCursorSprite(false);
-                                }
+                                else cursorPos++;
                             }
                         }
                         arrowHeld++;
@@ -343,16 +311,9 @@ namespace RainMeadow.UI.Components
             cursorPos = Mathf.Clamp(cursorPos, 0, currentMessage.Length);
             selectionStartPos = selectionStartPos > currentMessage.Length ? currentMessage.Length : selectionStartPos;
         }
-        public void SetCursorSprite(bool inMiddle)
-        {
-            cursorIsInMiddle = inMiddle;
-        }
         public void DeleteSelectedText()
         {
-            RainMeadow.Debug(currentMessage);
-            RainMeadow.Debug($"selectionPos: {selectionStartPos}, cursorPos {cursorPos}, diff: {Mathf.Abs(selectionStartPos - cursorPos)}");
             currentMessage = currentMessage.Remove(Mathf.Min(selectionStartPos, cursorPos), Mathf.Abs(selectionStartPos - cursorPos));
-            RainMeadow.Debug(currentMessage);
             if (selectionStartPos < cursorPos) cursorPos = selectionStartPos;
             selectionStartPos = -1;
         }
@@ -384,7 +345,7 @@ namespace RainMeadow.UI.Components
             }
         }
 
-        private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
+        private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld, maxVisibleLength; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
         public int? visibleTextLimit;
         public int textLimit = 75;
         public bool focused, clicked, cursorIsInMiddle, isUnloading;

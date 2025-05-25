@@ -67,7 +67,7 @@ namespace RainMeadow.UI.Components
             {
                 splitMessages.Add(pendingSplitMessages[0]);
                 pendingSplitMessages.RemoveAt(0);
-                if (pendingSplitMessages.Count > 1) splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(string.Join(" ", pendingSplitMessages), desiredXWidth));
+                if (pendingSplitMessages.Count > 0) splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(string.Join("", pendingSplitMessages), desiredXWidth));
 
             }
             for (int i = 0; i < splitMessages.Count; i++)
