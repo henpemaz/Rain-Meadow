@@ -100,11 +100,11 @@ namespace RainMeadow
                     if (arena.forceReadyCountdownTimer > 0)
                     {
                         forceReady.buttonBehav.greyedOut = true;
-                        forceReady.menuLabel.text = forceReadyText + $" ({arena.forceReadyCountdownTimer})";
+                        forceReady.menuLabel.text = Translate(forceReadyText) + $" ({arena.forceReadyCountdownTimer})";
                     }
                     else
                     {
-                        forceReady.menuLabel.text = forceReadyText;
+                        forceReady.menuLabel.text = Translate(forceReadyText);
                     }
                     if (arena.playersReadiedUp?.list != null && arena.forceReadyCountdownTimer <= 0)
                     {
