@@ -25,6 +25,7 @@ namespace RainMeadow
         public bool returnToLobby;
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
+        public bool leaveForNextLevel;
 
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
@@ -33,6 +34,7 @@ namespace RainMeadow
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
+        
 
         public string paincatName;
         public int lizardEvent;
@@ -42,6 +44,7 @@ namespace RainMeadow
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
         public List<string> slugcatSelectPainCatDescriptions;
+
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -100,6 +103,7 @@ namespace RainMeadow
             forceReadyCountdownTimer = 15;
             clientWantsToLeaveGame = false;
             hasPermissionToRejoin = false;
+            leaveForNextLevel = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -112,7 +116,7 @@ namespace RainMeadow
             {
                 { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "You have no time to waste. Grab your spears and get to work." },
+                { "Red", "Afflicted from the beginning, and a figher to the end. Show them the meaning of suffering." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
