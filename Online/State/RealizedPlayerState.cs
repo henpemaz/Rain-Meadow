@@ -110,8 +110,6 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
-        [OnlineField]
-        private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
@@ -139,6 +137,8 @@ namespace RainMeadow
         public float tongueRequestedLength;
         [OnlineField(group = "tongue", nullable = true)]
         public BodyChunkRef? tongueAttachedChunk;
+        [OnlineField(group = "watcher")]
+        public bool isCamo;
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
 
@@ -147,6 +147,8 @@ namespace RainMeadow
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            isCamo = p.isCamo; // watcher
+
             monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -154,7 +156,6 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
-            isPup = p.playerState.isPup;
             burstX = p.burstX;
             burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -226,7 +227,7 @@ namespace RainMeadow
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
             if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
-            return false;
+            return base.ShouldPosBeLenient(po);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -238,6 +239,8 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            //watcher
+            p.isCamo = isCamo;
             p.monkAscension = monkAscension;
             p.burstY = burstY;
             p.burstX = burstX;
@@ -248,8 +251,7 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
-            if (p.playerState.isPup != isPup)
-                p.playerState.isPup = isPup;
+
 
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;

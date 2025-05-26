@@ -1,11 +1,16 @@
+using IL.Watcher;
+using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MoreSlugcats;
 using Rewired;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
+
 
 namespace RainMeadow
 {
@@ -99,6 +104,173 @@ namespace RainMeadow
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
+            new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.SetRippleLevel);
+            new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.SetLevitate);
+            new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.SetCamoDuration);
+            new Hook(typeof(Player).GetProperty("maxRippleLevel").GetGetMethod(), this.SetRippleLevel);
+            new Hook(typeof(Watcher.CamoMeter).GetProperty("Unlocked").GetGetMethod(), this.SetCamoMeter);
+            new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
+            On.Watcher.CamoMeter.Update += CamoMeter_Update;
+            On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
+        }
+
+        private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
+        {
+            if (isArenaMode(out var _))
+            {
+                float a = Mathf.Lerp(self.lastFade, self.fade, timeStacker);
+                float r = Mathf.Lerp(self.lastFull, self.full, timeStacker);
+                float b = Mathf.Lerp(self.lastAnimTime, self.animTime, timeStacker);
+                self.meterSprite.SetPosition(self.DrawPos(timeStacker));
+                self.meterSprite.color = new Color(r, self.percentLimited, b, a);
+                self.meterSprite.scaleY = 5f;
+            }
+            else
+            {
+                orig(self, timeStacker);
+            }
+        }
+
+        private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
+        {
+            if (isArenaMode(out var _))
+            {
+                if (self.Player == null)
+                {
+                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.cameras[0].followAbstractCreature != null)
+                    {
+                        self.hud.owner = (game.cameras[0].followAbstractCreature.realizedCreature as Player);
+                    }
+                }
+
+                if (self.Player != null)
+                {
+                    self.lastPos = self.pos;
+                    self.lastFade = self.fade;
+                    self.lastFull = self.full;
+                    self.lastAnimTime = self.animTime;
+                    self.Player.camoCharge = Mathf.Clamp(self.Player.camoCharge, 0f, self.Player.camoLimit);
+
+                    self.animSpeed = RWCustom.Custom.LerpAndTick(to: (self.Player.camoCharge == 0f) ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f), from: self.animSpeed, lerp: 0.02f, tick: 0.01f);
+                    self.animTime += self.animSpeed / 40f;
+                    self.pos = new Vector2(Mathf.Max(55.01f, self.hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, self.hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
+                    self.fade = self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher ? 1f : 0f; // why
+                    self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
+                }
+
+            }
+            else
+            {
+                orig(self);
+            }
+        }
+
+
+        private bool SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return true;
+            }
+            return orig(self);
+        }
+
+        // This is funky. Can't seem to ever get it to only be true when airborne
+        private bool SetLevitate(Func<Player, bool> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return true;
+            }
+            return orig(self);
+        }
+        private float SetRippleLevel(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 1f;
+            }
+            return orig(self);
+        }
+
+        private float SetCamoDuration(Func<Player, float> orig, Player self)
+        {
+            if (isArenaMode(out var _))
+            {
+                return 600f;
+            }
+            return orig(self);
+            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
+        }
+        private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
+        {
+            if (OnlineManager.lobby != null && (self.input[0].y <= 0))
+            {
+                foreach (var grasp in self.grasps)
+                {
+                    if (grasp?.grabbed is Player pl && pl.Stunned)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return orig(self);
+        }
+        private static void Player_Collide2(ILContext il, MethodBase original)
+        {
+            // Find Violence, Inject our RPC call, then run it locally
+            var c = new ILCursor(il);
+
+            try
+            {
+                while (c.TryGotoNext(MoveType.Before,
+                    i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))))
+                {
+                    // Make a skip label
+                    var skip = il.DefineLabel();
+
+                    // Get caller type
+                    c.Emit(OpCodes.Ldtoken, original.DeclaringType);
+                    c.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+
+                    // Load null onto stack if method is static, otherwise load the type
+                    if (original.IsStatic)
+                    {
+                        c.Emit(OpCodes.Ldnull);
+                    }
+                    else
+                    {
+                        c.Emit(OpCodes.Ldarg_0);
+                    }
+
+                    // Replace creature.Violence with a delegate that calls our event first.
+                    c.EmitDelegate((Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus, Type callerType, object caller) =>
+                    {
+                        if (OnlineManager.lobby != null)
+                        {
+                            var onlineCreature = self.abstractPhysicalObject.GetOnlineObject();
+                            if (onlineCreature != null && !onlineCreature.isMine)
+                            {
+                                (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                            }
+                        }
+                    });
+                    c.Emit(OpCodes.Br, skip);
+                    c.GotoNext(moveType: MoveType.After,
+                        i => i.MatchCallOrCallvirt<Creature>(nameof(Creature.Violence))
+                    );
+                    c.MarkLabel(skip);
+
+                    RainMeadow.Debug("Gourm Stomp RPC set with " + original.DeclaringType);
+                }
+
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Debug("Gourm Stomp RPC with errors. - Type: " + original.DeclaringType + " - " + e);
+            }
+
         }
 
         private void MultiplayerResults_Update(On.Menu.MultiplayerResults.orig_Update orig, Menu.MultiplayerResults self)
@@ -106,6 +278,14 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                foreach (var selectable in self.pages[0].selectables)
+                {
+                    if (selectable is Menu.SimpleButton && (selectable as Menu.SimpleButton).signalText == "QUIT")
+                    {
+                        (selectable as Menu.SimpleButton).buttonBehav.greyedOut = self.counter < 120;
+                    }
+                }
+
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
@@ -143,7 +323,7 @@ namespace RainMeadow
                         {
                             if (self.result[i] != null && self.result[i].winner)
                             {
-                                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber);
+                                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.result[i].playerNumber);
 
                                 if (onlinePlayer != null)
                                 {
@@ -364,7 +544,21 @@ namespace RainMeadow
         {
             if (message == "EXIT" && isArenaMode(out var arena))
             {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+                    {
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        if (onlinePlayer != null && !onlinePlayer.isMe)
+                        {
+                            onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
+                        }
+                    }
+                    self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
+                }
                 arena.returnToLobby = true;
+
             }
             orig(self, sender, message);
         }
@@ -426,7 +620,7 @@ namespace RainMeadow
                     Debug("Is null!");
                     return "MultiplayerPortrait" + color + "2";
                 }
-                if ( ArenaHelpers.vanillaSlugcats.Contains(classID))
+                if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
                     return $"MultiplayerPortrait{color}1";
                 }
@@ -780,7 +974,12 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+                OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+                if (onlinePlayer == null)
+                {
+                    RainMeadow.Error("Error getting online player from fake player number!");
+                    return false;
+                }
                 for (int i = 0; i < self.exitManager.playersInDens.Count; i++)
                 {
 
@@ -1267,8 +1466,9 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                self.continueButton.menuLabel.text = "TO LOBBY";
 
-                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
+                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("QUIT"), "QUIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
@@ -17,9 +18,33 @@ namespace RainMeadow
             On.Creature.Update += CreatureOnUpdate;
             On.Creature.Violence += CreatureOnViolence;
             On.Lizard.Violence += Lizard_Violence; // todo there might be more like this one that do not call base()
-            On.PhysicalObject.HitByWeapon += PhysicalObject_HitByWeapon;
+
+            // If the weapon super calls Weapon.HitSomething we don't have to hook
+            // Weapon_HitSomething hooks
+            HookWeaponHitSomething<Spear>();
+            HookWeaponHitSomething<ScavengerBomb>();
+            HookWeaponHitSomething<FirecrackerPlant>();
+            // HookWeapon<FlareBomb>();
+            // HookWeapon<PuffBall>();
+            HookWeaponHitSomething<Rock>();
+
+            // moreslugcats Weapon_HitSomething hooks
+            HookWeaponHitSomething<MoreSlugcats.LillyPuck>();
+            HookWeaponHitSomething<MoreSlugcats.Bullet>();
+            HookWeaponHitSomething<MoreSlugcats.SingularityBomb>();
+
+            // Watcher Weapon_HitSomething
+            HookWeaponHitSomething<Boomerang>();
+
+            // for super calls
+            HookWeaponHitSomething<Weapon>();
+            
+
+
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
             IL.ScavengerBomb.Explode += PhysicalObject_Explode;
+            IL.ExplosiveSpear.Explode += PhysicalObject_Explode;
+
             IL.MoreSlugcats.SingularityBomb.Explode += PhysicalObject_Explode;
             IL.FlareBomb.StartBurn += PhysicalObject_Explode;
             IL.FirecrackerPlant.Ignite += PhysicalObject_Trigger;
@@ -72,6 +97,10 @@ namespace RainMeadow
 
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
+            if (!self.IsLocal()) {
+                return false;
+            }
+
             if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {
                 return true;
@@ -81,6 +110,7 @@ namespace RainMeadow
             {
                 return false;
             }
+
             return orig(self, obj);
         }
 
@@ -123,7 +153,7 @@ namespace RainMeadow
             }
         }
 
-        // Keep this for now despite having DeathContextualizer
+        // Keep this for now despite having DeathContextualizerf
         private void Player_TerrainImpact(ILContext il)
         {
             try
@@ -371,42 +401,82 @@ namespace RainMeadow
             if (self.room == null && (self.room = explosion?.room) == null)
                 return;
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner)
+            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var room))
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
-                if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                if (!room.isOwner)
                 {
-                    room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
-                    return;
+                    OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
+                    OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
+                    if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                    {
+                        room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
+                        return;
+                    }
                 }
             }
 
             orig(self, hitFac, explosion, hitChunk);
         }
 
-        private void PhysicalObject_HitByWeapon(On.PhysicalObject.orig_HitByWeapon orig, PhysicalObject self, Weapon weapon)
+
+        void HookWeaponHitSomething<T>() where T : Weapon => new Hook(typeof(T).GetMethod("HitSomething"), Weapon_HitSomething<T>);
+        delegate bool Weapon_orig_HitSomething<T>(T self, SharedPhysics.CollisionResult result, bool eu);
+        private bool Weapon_HitSomething<WeaponT>(Weapon_orig_HitSomething<WeaponT> orig, WeaponT self, SharedPhysics.CollisionResult result, bool eu) 
+            where WeaponT : Weapon 
         {
+
             if (OnlineManager.lobby == null)
-            {
-                orig(self, weapon);
-                return;
+            {    
+                return orig(self, result, eu);
             }
 
-            RoomSession.map.TryGetValue(self.room.abstractRoom, out var room);
-            if (!room.isOwner)
+            if (result.obj == null) 
             {
-                OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                OnlinePhysicalObject.map.TryGetValue(weapon.abstractPhysicalObject, out var abstWeapon);
-                if (objectHit != null && abstWeapon != null && (objectHit.isMine || abstWeapon.isMine))
-                {
-                    room.owner.InvokeRPC(objectHit.HitByWeapon, abstWeapon);
-                    return;
+                return orig(self, result, eu);
+            }
+
+            OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var WeaponOnline);
+            OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var onlineHit);
+            if (onlineHit == null) {
+                RainMeadow.Debug($"Object hit by weapon not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
+            }
+
+            if (WeaponOnline == null) {
+                RainMeadow.Debug($"weapon that hit object not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
+                return orig(self, result, eu);
+            }
+
+            if (WeaponOnline.HittingRemotely) {
+                bool wasthrown = self.mode == Weapon.Mode.Thrown;
+                bool ret = orig(self, result, eu);
+
+                if (self is ExplosiveSpear explosiveSpear) {
+                    if (wasthrown && explosiveSpear.mode != Weapon.Mode.Thrown && explosiveSpear.igniteCounter < 1) {
+                        explosiveSpear.Ignite();
+                    }
                 }
-            }
 
-            orig(self, weapon);
+                return ret;
+            }
+            else if (self.IsLocal()) {
+                RealizedPhysicalObjectState realizedstate = null!;
+                if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);    
+                else realizedstate = new RealizedWeaponState(WeaponOnline);
+
+
+                BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
+
+                if (!onlineHit.owner.isMe) {
+                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                        onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
+                    ));
+                }
+
+                return orig(self, result, eu);
+            } 
+            return true;
         }
 
         private void ShelterDoorOnClose(On.ShelterDoor.orig_Close orig, ShelterDoor self)
@@ -437,6 +507,7 @@ namespace RainMeadow
                 if (storyGameMode != null && storyGameMode.storyClientData.readyForWin)
                 {
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
+                    storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
                 }
             }
@@ -581,20 +652,24 @@ namespace RainMeadow
                         orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
                         return;
                     }
-                    if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineApo.owner.isMe) // I'm violencing a remote entity
+                    if (!(trueVillain is Weapon)) // handled Weapon_HitSomething 
                     {
-                        OnlinePhysicalObject onlineVillain = null;
-                        if (source != null && !OnlinePhysicalObject.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain))
+                        if ((onlineTrueVillain.owner.isMe || onlineTrueVillain.isPending) && !onlineApo.owner.isMe) // I'm violencing a remote entity
                         {
-                            Error($"Source {source.owner} - {source.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
-                            orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
-                            return;
+                            OnlinePhysicalObject onlineVillain = null;
+                            if (source != null && !OnlinePhysicalObject.map.TryGetValue(source.owner.abstractPhysicalObject, out onlineVillain))
+                            {
+                                Error($"Source {source.owner} - {source.owner.abstractPhysicalObject.ID} doesn't exist in online space!");
+                                orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
+                                return;
+                            }
+                            // Notify entity owner of violence
+                            onlineCreature.RPCCreatureViolence(onlineVillain, hitChunk?.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                            return; // Remote is gonna handle this
                         }
-                        // Notify entity owner of violence
-                        onlineCreature.RPCCreatureViolence(onlineVillain, hitChunk?.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
-                        return; // Remote is gonna handle this
+                        if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
                     }
-                    if (!onlineTrueVillain.owner.isMe) return; // Remote entity will send an event
+
                 }
             }
             orig(self, source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);

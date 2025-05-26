@@ -6,6 +6,11 @@
         public int foodInStomach;
         [OnlineField]
         public int quarterFoodPoints;
+        [OnlineField]
+        private bool isPup;
+        [OnlineFieldHalf]
+        public float permanentDamageTracking;
+
         [OnlineField(nullable: true)]
         public OnlineEntity.EntityId? objectInStomach;
 
@@ -18,6 +23,8 @@
 
             foodInStomach = playerState.foodInStomach;
             quarterFoodPoints = playerState.quarterFoodPoints;
+            permanentDamageTracking = (float)playerState.permanentDamageTracking;
+            isPup = playerState.isPup;
 
             if ((abstractCreature.realizedCreature as Player)?.objectInStomach is AbstractPhysicalObject apo)
             {
@@ -45,6 +52,10 @@
 
             playerState.foodInStomach = this.foodInStomach;
             playerState.quarterFoodPoints = this.quarterFoodPoints;
+            playerState.permanentDamageTracking = (double)this.permanentDamageTracking;
+
+            if (playerState.isPup != isPup)
+                playerState.isPup = isPup;
 
             if (abstractCreature.realizedCreature is Player player)
             {

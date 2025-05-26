@@ -7,6 +7,23 @@ namespace RainMeadow
     {
 
         [RPCMethod]
+        public static void Arena_EndSessionEarly()
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null)
+                {
+                    RainMeadow.Error("Arena: RainWorldGame is null!");
+                    return;
+                }
+                game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
+
+            }
+        }
+
+        [RPCMethod]
         public static void Arena_ForceReadyUp()
         {
             if (RainMeadow.isArenaMode(out var arena))

@@ -6,20 +6,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RainMeadow {
-    static class CapeManager {
+namespace RainMeadow
+{
+    static class CapeManager
+    {
         const string capes_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics/refs/heads/master/capes.txt";
-        static public void FetchCapes() {
-            try {
+        static public void FetchCapes()
+        {
+            try
+            {
                 RainMeadow.DebugMe();
-                using (WebClient client = new WebClient ()) 
+                using (WebClient client = new WebClient())
                 {
                     string capes = client.DownloadString(capes_txt);
                     entries.Clear();
-                    
-                    foreach(string line in capes.Split('\n')) {
+
+                    foreach (string line in capes.Split('\n'))
+                    {
                         RainMeadow.Debug(line);
-                         // Skip the header or empty lines
+                        // Skip the header or empty lines
                         if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
                             continue;
 
@@ -44,8 +49,11 @@ namespace RainMeadow {
                             {
                                 rgbColor = new Color(r, g, b);
                             }
-                        } else {
-                            if (color == "sgold") {
+                        }
+                        else
+                        {
+                            if (color == "sgold")
+                            {
                                 rgbColor = RainWorld.SaturatedGold;
                             }
                         }
@@ -55,18 +63,22 @@ namespace RainMeadow {
                     }
 
                 }
-            } catch (Exception except) {
+            }
+            catch (Exception except)
+            {
                 RainMeadow.Error(except);
             }
 
         }
 
 
-        public class CapeEntry {
+        public class CapeEntry
+        {
             public ulong steamID;
-            public Color color; 
+            public Color color;
 
-            public CapeEntry(ulong steamID, Color color) {
+            public CapeEntry(ulong steamID, Color color)
+            {
                 RainMeadow.Debug($"Cape Entry {steamID}, {color}");
                 this.steamID = steamID;
                 this.color = color;
@@ -75,32 +87,37 @@ namespace RainMeadow {
         }
         private static List<CapeEntry> entries = new();
 
-        static public Color? HasCape(MeadowPlayerId player) {
-            if (player is SteamMatchmakingManager.SteamPlayerId steamid) {
+        static public Color? HasCape(MeadowPlayerId player)
+        {
+            if (player is SteamMatchmakingManager.SteamPlayerId steamid)
+            {
                 CapeEntry? entry = entries.Where(x => steamid.oid.GetSteamID64() == x.steamID).FirstOrDefault();
-                if (entry is not null) {
+                if (entry is not null)
+                {
                     return entry.color;
                 }
-            } 
+            }
             return null;
-        } 
-        
+        }
+
     }
 
-    class SlugcatCape {
-        public static ConditionalWeakTable<PlayerGraphics, SlugcatCape> cloaked_slugcats = new();  
-        public PlayerGraphics playerGFX {  get; private set; }
+    class SlugcatCape
+    {
+        public static ConditionalWeakTable<PlayerGraphics, SlugcatCape> cloaked_slugcats = new();
+        public PlayerGraphics playerGFX { get; private set; }
         public Color cloakColor;
-        private SimpleSegment[,] segments;           
+        private SimpleSegment[,] segments;
         private const int size = 5;
         private const float targetLength = 50f;
         public const int totalSprites = 1;
         private readonly int firstSpriteIndex;
 
-        public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, Color cloakColor) {
+        public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, Color cloakColor)
+        {
             cloaked_slugcats.Add(gfx, this);
             this.segments = new SimpleSegment[size + 1, size + 1];
-            this.firstSpriteIndex = firstSpriteIndex; 
+            this.firstSpriteIndex = firstSpriteIndex;
             this.cloakColor = cloakColor;
             this.playerGFX = gfx;
         }
@@ -149,20 +166,26 @@ namespace RainMeadow {
         }
 
 
-    public void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner) {
-        sLeaser.sprites[this.firstSpriteIndex].RemoveFromContainer();
-        var background = rCam.ReturnFContainer("Background");
-        if (background == newContatiner) {
-            // looks better 75% of the time
-            background = rCam.ReturnFContainer("BackgroundShortcuts");
+        public void AddToContainer(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, FContainer newContatiner)
+        {
+            sLeaser.sprites[this.firstSpriteIndex].RemoveFromContainer();
+            var background = rCam.ReturnFContainer("Background");
+            if (background == newContatiner)
+            {
+                // looks better 75% of the time
+                background = rCam.ReturnFContainer("BackgroundShortcuts");
+            }
+            background.AddChild(sLeaser.sprites[this.firstSpriteIndex]);
+
         }
-        background.AddChild(sLeaser.sprites[this.firstSpriteIndex]);
-        
-    }
 
         // Token: 0x060022B4 RID: 8884 RVA: 0x002B2484 File Offset: 0x002B0684
         private void ConnectEnd()
         {
+            if (ModManager.Watcher && playerGFX.player.isCamo)
+            {
+                return;
+            }
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             BodyChunk bodyChunk = playerGFX.player.bodyChunks[1];
             Vector2 normalized = GetBodyNormalized();
@@ -171,14 +194,14 @@ namespace RainMeadow {
             {
                 float d = (float)i / (float)SlugcatCape.size * 2f - 1f;
                 ref SimpleSegment ptr = ref this.segments[i, 0];
-                ptr.pos = mainBodyChunk.pos + (a * d * 3f) + Vector2.right*-playerGFX.player.flipDirection*0.5f;
+                ptr.pos = mainBodyChunk.pos + (a * d * 3f) + Vector2.right * -playerGFX.player.flipDirection * 0.5f;
                 ptr.vel = mainBodyChunk.vel;
             }
             for (int j = 0; j <= SlugcatCape.size; j++)
             {
                 float d2 = (float)j / (float)SlugcatCape.size * 2f - 1f;
                 ref SimpleSegment ptr2 = ref this.segments[j, 1];
-                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d2 * 5f + Vector2.right*-playerGFX.player.flipDirection*1.0f;
+                ptr2.pos = mainBodyChunk.pos + normalized * 3f + a * d2 * 5f + Vector2.right * -playerGFX.player.flipDirection * 1.0f;
                 ptr2.vel = mainBodyChunk.vel;
             }
         }
@@ -201,14 +224,16 @@ namespace RainMeadow {
             }
         }
 
-        public Vector2 GetBodyNormalized() {
+        public Vector2 GetBodyNormalized()
+        {
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             Vector2 normalized = (playerGFX.player.bodyChunks[1].pos - mainBodyChunk.pos).normalized;
-            if (normalized.x < 0.05f && (playerGFX.player.input[0].x == 0)) {
-                normalized.x = (float)playerGFX.player.flipDirection*0.05f;
+            if (normalized.x < 0.05f && (playerGFX.player.input[0].x == 0))
+            {
+                normalized.x = (float)playerGFX.player.flipDirection * 0.05f;
 
                 // simplification of sin(acos(x)) 
-                normalized.y = Mathf.Sqrt(1 - normalized.x*normalized.x)*Math.Sign(normalized.y); 
+                normalized.y = Mathf.Sqrt(1 - normalized.x * normalized.x) * Math.Sign(normalized.y);
             }
 
             return normalized;
@@ -237,7 +262,9 @@ namespace RainMeadow {
                     }
                 }
             }
+
             this.ConnectEnd();
+
             for (int k = 2; k <= SlugcatCape.size; k++)
             {
                 float num2 = (float)k / (float)SlugcatCape.size;

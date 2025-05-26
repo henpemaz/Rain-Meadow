@@ -1140,32 +1140,46 @@ namespace RainMeadow
         {
             orig(self);
 
-            //if is meadowgamemode if not return lmao
-            if (OnlineManager.lobby?.gameMode is MeadowGameMode)
+            try // music code still has some instabilities
             {
-                var mic = self.cameras[0].virtualMicrophone;
-                CurrentRegion = self.world?.region?.name ?? "sl";
-                currentAgora = RWCustom.Custom.LerpAndTick(currentAgora, agora, 0.008f, 0.0005f);
-                if (MeadowMusic.AllowPlopping)
+                //if is meadowgamemode if not return lmao
+                if (OnlineManager.lobby?.gameMode is MeadowGameMode)
                 {
-                    debugstopwatch++;
-                    float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
-                    fichtean = (Mathf.Pow(x, 1 / (currentAgora / 2 + 1)) + x) / 2;
-                    PlayEntry();
-                    DrumMachine.Update(mic, this);
-                }
+                    var mic = self.cameras[0].virtualMicrophone;
+                    CurrentRegion = self.world?.region?.name ?? "sl";
+                    currentAgora = RWCustom.Custom.LerpAndTick(currentAgora, agora, 0.008f, 0.0005f);
+                    if (MeadowMusic.AllowPlopping)
+                    {
+                        debugstopwatch++;
+                        float x = Mathf.PerlinNoise(debugstopwatch / 1000f, debugstopwatch / 4000f);
+                        fichtean = (Mathf.Pow(x, 1 / (currentAgora / 2 + 1)) + x) / 2;
+                        PlayEntry();
+                        DrumMachine.Update(mic, this);
+                    }
 
-                
-                //if (Input.GetKey("e") && !ol1)
-                //{
-                //    agora++;
-                //}
-                //ol1 = Input.GetKey("e");
-                //if (Input.GetKey("q") && !ol3)
-                //{
-                //    agora--;
-                //}
-                //ol3 = Input.GetKey("q");
+                    if (Input.GetKey("f") && !ol2)
+                    {
+                        //RainMeadow.Debug("Manually fading out song");
+                        //self.manager.musicPlayer.song.FadeOut(30f);
+                    }
+                    ol2 = Input.GetKey("f");
+
+
+                    if (Input.GetKey("e") && !ol1)
+                    {
+                        agora++;
+                    }
+                    ol1 = Input.GetKey("e");
+                    if (Input.GetKey("q") && !ol3)
+                    {
+                        agora--;
+                    }
+                    ol3 = Input.GetKey("q");
+                }
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e); // log but don't throw
             }
         }
 

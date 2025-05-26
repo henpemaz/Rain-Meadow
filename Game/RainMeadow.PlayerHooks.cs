@@ -64,10 +64,234 @@ public partial class RainMeadow
         On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
-        
+        new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.Player_SetRippleLevel);
+        new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.Player_SetLevitate);
+        new Hook(typeof(Player).GetProperty("camoLimit").GetGetMethod(), this.Player_SetCamoDuration);
+        new Hook(typeof(Player).GetProperty("maxRippleLevel").GetGetMethod(), this.Player_SetRippleLevel);
+        new Hook(typeof(Watcher.CamoMeter).GetProperty("Unlocked").GetGetMethod(), this.CamoMeter_SetCamoMeter);
+        new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.CamoMeter_SetCamoMeter);
+        new Hook(typeof(Player).GetProperty("CanSpawnDynamicWarpPoints").GetGetMethod(), this.Player_CanSpawnDynamicWarpPoints);
+
+        On.Player.TickLevitation += (On.Player.orig_TickLevitation orig, Player self, bool levitateUp) =>
+        {
+            WatcherOverrideForLevitation = true;
+            orig(self, levitateUp);
+            WatcherOverrideForLevitation = false;
+        };
+        On.Player.MovementUpdate += (On.Player.orig_MovementUpdate orig, Player self, bool eu) =>
+        {
+            WatcherOverrideRippleLevel = true;
+            orig(self, eu);
+            WatcherOverrideRippleLevel = false;
+        };
+        On.Player.WatcherUpdate += (On.Player.orig_WatcherUpdate orig, Player self) =>
+        {
+            WatcherOverrideRippleLevel = true;
+            orig(self);
+            WatcherOverrideRippleLevel = false;
+        };
+        On.Player.CamoUpdate += Player_CamoUpdate;
+
+
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+
+    // Used to override normal ripple level
+    public static bool WatcherOverrideRippleLevel = false;
+    // And for the "levitation calculation" ticks so we levitate like we had ripple lvl. 10
+    public static bool WatcherOverrideForLevitation = false;
+
+    private float Player_SetRippleLevel(Func<Player, float> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            if (WatcherOverrideForLevitation) return 10f;
+            if (WatcherOverrideRippleLevel) return 4f;
+        }
+        return orig(self);
+    }
+    private bool CamoMeter_SetCamoMeter(Func<Watcher.CamoMeter, bool> orig, Watcher.CamoMeter self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return true;
+        }
+        return orig(self);
+    }
+    // This is funky. Can't seem to ever get it to only be true when airborne
+    private bool Player_SetLevitate(Func<Player, bool> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return true;
+        }
+        return orig(self);
+    }
+    private float Player_SetCamoDuration(Func<Player, float> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return 1500f;
+        }
+        return orig(self);
+    }
+    private bool Player_CanSpawnDynamicWarpPoints(Func<Player, bool> orig, Player self)
+    {
+        if (isStoryMode(out var storyGameMode) && self.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher && storyGameMode.currentCampaign != Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+        {
+            return false;
+        }
+        return orig(self);
+    }
+
+    private void Player_CamoUpdate(On.Player.orig_CamoUpdate orig, Player self)
+    {
+        if (self.isCamo && (!self.Consious || self.warpExhausionTime > 0))
+        {
+            self.ToggleCamo();
+        }
+
+        if (self.camoProgress < 1f && self.transitionRipple != null && self.room.fsRipple != null)
+        {
+            self.room.fsRipple.Destroy();
+            self.room.fsRipple = null;
+        }
+
+        if (self.isCamo)
+        {
+            self.camoCharge = Mathf.Min(self.camoCharge + 1f, self.usableCamoLimit);
+            self.inCamoTime++;
+            self.outOfCamoTime = 0;
+            if (self.room.game.IsStorySession && self.room.game.GetStorySession.saveState.miscWorldSaveData.usedCamoAbility == 0)
+            {
+                self.room.game.GetStorySession.saveState.miscWorldSaveData.usedCamoAbility = 1;
+            }
+
+            if (self.camoCharge >= self.usableCamoLimit)
+            {
+                self.camoRechargePenalty = 400;
+                self.Stun(80);
+            }
+        }
+        else
+        {
+            self.inCamoTime = 0;
+            self.outOfCamoTime++;
+            if (self.camoRechargePenalty <= 0)
+            {
+                self.camoCharge = Mathf.Max(self.camoCharge - 1f, 0f);
+            }
+        }
+
+        if (self.consumedRippleFood > 0)
+        {
+            self.consumedRippleFood--;
+            self.camoCharge = Mathf.Max(self.camoCharge - 2f, 0f);
+        }
+
+        if (self.camoRechargePenalty > 0)
+        {
+            self.camoRechargePenalty--;
+        }
+
+        Watcher.WarpSpawningRipple obj = self.warpSpawningRipple;
+        if (obj != null && obj.slatedForDeletetion)
+        {
+            self.warpSpawningRipple = null;
+        }
+
+        if (self.activateCamoTimer == 0 && self.watcherDynamicWarpInput && self.dynamicWarpCooldown <= 0)
+        {
+            self.activateDynamicWarpTimer++;
+            Watcher.WarpSpawningRipple obj2 = self.warpSpawningRipple;
+            if (obj2 == null || obj2.isFinished)
+            {
+                self.room.AddObject(self.warpSpawningRipple = new Watcher.WarpSpawningRipple(self.room, self.mainBodyChunk.pos, self.camoProgress, !self.KarmaIsReinforced));
+            }
+
+            if (self.activateDynamicWarpTimer >= self.activateDynamicWarpDuration)
+            {
+                self.SpawnDynamicWarpPoint();
+                self.dynamicWarpCooldown = 200;
+                self.activateDynamicWarpTimer = 0;
+            }
+        }
+        else if (self.activateDynamicWarpTimer > 0)
+        {
+            self.activateDynamicWarpTimer = 0;
+        }
+
+        if (self.dynamicWarpCooldown > 0)
+        {
+            self.dynamicWarpCooldown--;
+        }
+
+        if (self.isCamo && self.camoProgress < 1f)
+        {
+            self.camoProgress += 0.01f;
+        }
+        else if (!self.isCamo && self.camoProgress > 0f)
+        {
+            self.camoProgress -= 0.01f;
+        }
+
+        if (self.rippleLevel >= 5f && self.rippleData != null)
+        {
+            self.rippleData.gameplayRippleAnimation = self.camoProgress;
+        }
+
+        self.TrySpawnTrailRipple();
+
+        if (self.rippleLevel >= 5f && ((self.abstractCreature.rippleLayer == 0 && self.isCamo) || (self.abstractCreature.rippleLayer == 1 && !self.isCamo)))
+        {
+            self.ChangeRippleLayer(self.isCamo ? 1 : 0);
+            if (self.rippleData != null && self.IsLocal())
+            {
+                self.rippleData.gameplayRippleActive = self.isCamo;
+            }
+
+            if (self.isCamo)
+            {
+                for (int i = 0; i < 5 * self.room.cameraPositions.Length; i++)
+                {
+                    self.room.MaterializeRippleSpawn(self.room.RandomPos(), Room.RippleSpawnSource.Dimension);
+                }
+            }
+        }
+
+        if (self.rippleData != null && self.IsLocal())
+        {
+            if (self.rippleLevel < 3f || !self.isCamo)
+            {
+                self.rippleData.TrailAmount = Mathf.Lerp(self.rippleData.TrailAmount, (self.rippleLevel < 2f) ? 0f : 0.01f, 0.01f);
+            }
+            else
+            {
+                self.rippleData.TrailAmount = Mathf.Lerp(self.rippleData.TrailAmount, (self.rippleLevel < 5f) ? 0.35f : 1f, 0.01f);
+            }
+
+            if (self.isCamo)
+            {
+                self.rippleData.trailPaletteAmount = Mathf.Lerp(self.rippleData.trailPaletteAmount, 0f, 0.09f);
+            }
+            else
+            {
+                self.rippleData.trailPaletteAmount = Mathf.Lerp(self.rippleData.trailPaletteAmount, 1f, 0.003f);
+            }
+        }
+
+        if (self.isCamo && self.rippleLevel >= 3f && self.rippleLevel < 5f)
+        {
+            int num = Mathf.Min(80, self.lastPositions.Length - 1);
+            int maxExclusive = Mathf.Min(40, self.lastPositions.Length - 1);
+            if (Vector2.Distance(self.mainBodyChunk.pos, self.lastPositions[num]) > 50f && UnityEngine.Random.value < 0.002f)
+            {
+                int num2 = UnityEngine.Random.Range(0, maxExclusive);
+                self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
+            }
+        }
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -100,9 +324,12 @@ public partial class RainMeadow
         }
     }
 
-    public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self) {
-        if (OnlineManager.lobby != null) {
-            if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null) {
+    public bool SlugcatHand_EngageInMovement(On.SlugcatHand.orig_EngageInMovement orig, global::SlugcatHand self)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (self.owner.owner is Player slugcat && !slugcat.isNPC && slugcat.onBack != null)
+            {
                 (self.owner as PlayerGraphics)!.airborneCounter = 0; // fix for weird hand movement when on back.
             }
         }
@@ -110,10 +337,14 @@ public partial class RainMeadow
         return orig(self);
     }
 
-    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit) {
-        if (OnlineManager.lobby != null) {
-            if (self.standing && self.CanPutSlugToBack) {
-                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p)) {
+    public bool Player_CanEatMeat(On.Player.orig_CanEatMeat orig, Player self, Creature crit)
+    {
+        if (OnlineManager.lobby != null)
+        {
+            if (self.standing && self.CanPutSlugToBack)
+            {
+                if (crit is Player p && p.dead && self.CanIPutDeadSlugOnBack(p))
+                {
                     return false;
                 }
             }
@@ -121,8 +352,10 @@ public partial class RainMeadow
         return orig(self, crit);
     }
 
-    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate) {
-        if (OnlineManager.lobby != null) {
+    bool Player_CanIPutDeadSlugOnBack(On.Player.orig_CanIPutDeadSlugOnBack orig, Player self, Player pickUpCandidate)
+    {
+        if (OnlineManager.lobby != null)
+        {
             if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
             return true;
         }
@@ -130,10 +363,13 @@ public partial class RainMeadow
         return orig(self, pickUpCandidate);
     }
 
-    Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name) {
+    Color PlayerGraphics_DefaultSlugcatColor(On.PlayerGraphics.orig_DefaultSlugcatColor orig, SlugcatStats.Name name)
+    {
         Color orig_color = orig(name);
-        if (OnlineManager.lobby != null) {
-            if (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup) {
+        if (OnlineManager.lobby != null)
+        {
+            if (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+            {
                 return new Color(0.467f, 0.867f, 0.812f);
             }
         }
@@ -141,15 +377,18 @@ public partial class RainMeadow
         return orig_color;
     }
 
-    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self) {
+    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self)
+    {
         var slugcat = self.slugcat;
         orig(self);
 
         if (OnlineManager.lobby == null) return;
         if (slugcat == null) return;
 
-        if (slugcat.IsLocal()) {
-            if (!slugcat.isNPC && slugcat.input[0].jmp) {
+        if (slugcat.IsLocal())
+        {
+            if (!slugcat.isNPC && slugcat.input[0].jmp)
+            {
                 slugcat.jumpChunk = self.owner.mainBodyChunk;
                 slugcat.JumpOnChunk();
             }
@@ -158,10 +397,12 @@ public partial class RainMeadow
     }
 
     // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
-    private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu) {
+    private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu)
+    {
         orig(self, eu);
         if (OnlineManager.lobby == null) return;
-        if (!OnlineManager.lobby.gameMode.PlayersCanStack) {
+        if (!OnlineManager.lobby.gameMode.PlayersCanStack)
+        {
             return;
         }
         if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
@@ -170,28 +411,31 @@ public partial class RainMeadow
         }
 
         float range = 26 + self.bodyChunks[1].rad;
-        if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null && 
-            !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0) {
-                foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer]) {
-                    if (obj is Player other && other.IsLocal()) {
-                        if (other == self) continue;
-                        if (other.slugOnBack == null) continue;
-                        if (other.abstractCreature.GetAllConnectedObjects().Contains(self.abstractCreature)) continue;
-                        if (other.isNPC) continue;
-                        if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
-                        if (!other.Consious) continue;
-                        // if (other.onBack != null) continue; // this is pretty funny
+        if (self.input[0].pckp && !self.input[1].pckp && self.onBack == null && self.room != null &&
+            !self.isNPC && !self.pyroJumpped && !self.submerged && self.standing && self.lowerBodyFramesOffGround > 0)
+        {
+            foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer])
+            {
+                if (obj is Player other && other.IsLocal())
+                {
+                    if (other == self) continue;
+                    if (other.slugOnBack == null) continue;
+                    if (other.abstractCreature.GetAllConnectedObjects().Contains(self.abstractCreature)) continue;
+                    if (other.isNPC) continue;
+                    if (!Custom.DistLess(self.bodyChunks[1].pos, other.bodyChunks[0].pos, range)) continue;
+                    if (!other.Consious) continue;
+                    // if (other.onBack != null) continue; // this is pretty funny
 
 
-                        var viable = false;
-                        viable = viable || other.standing;
-                        viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
-                        viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
-                        if (!viable) continue;
-                        
-                        other.slugOnBack?.SlugToBack(self);
-                    }
+                    var viable = false;
+                    viable = viable || other.standing;
+                    viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
+                    viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
+                    if (!viable) continue;
+
+                    other.slugOnBack?.SlugToBack(self);
                 }
+            }
         }
     }
 
@@ -199,7 +443,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-           upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
+            upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
         }
         orig(self, upPicker);
     }
@@ -270,26 +514,30 @@ public partial class RainMeadow
         }
     }
 
-    private void Player_checkInput_IgnoreIfCarryingSlugNPC(ILContext context) {
+    private void Player_checkInput_IgnoreIfCarryingSlugNPC(ILContext context)
+    {
         try
         {
             var cursor = new ILCursor(context);
             // if (this.controller != null)
-            cursor.GotoNext( MoveType.After,
-                x => x.MatchLdarg(0), 
+            cursor.GotoNext(MoveType.After,
+                x => x.MatchLdarg(0),
                 x => x.MatchLdfld<Player>(nameof(Player.controller))
                 // x => x.MatchBrfalse
             );
-            
+
             cursor.Emit(OpCodes.Ldarg_0);
-            cursor.EmitDelegate((Player.PlayerController controller, Player self) => {
-                if (OnlineManager.lobby != null && isStoryMode(out var _)) {
-                    if (controller is OnlineController && self.isNPC) {
+            cursor.EmitDelegate((Player.PlayerController controller, Player self) =>
+            {
+                if (OnlineManager.lobby != null && isStoryMode(out var _))
+                {
+                    if (controller is OnlineController && self.isNPC)
+                    {
                         if (self.grabbedBy.FirstOrDefault(x => x.grabber is Player) is not null) return null;
                         if (self.onBack is not null) return null;
                     }
-                } 
-                
+                }
+
                 return controller;
             });
 
@@ -356,26 +604,39 @@ public partial class RainMeadow
 
     private void Player_checkInput(On.Player.orig_checkInput orig, Player self)
     {
-        if (OnlineManager.lobby != null) {
+        if (OnlineManager.lobby != null)
+        {
             var onlineEntity = self.abstractCreature?.GetOnlineObject();
-            if (onlineEntity is not null) {
-                if (onlineEntity.isMine) { // If we own the player we don't need a controller
-                    if (self.controller is OnlineController) {
+            if (onlineEntity is not null)
+            {
+                if (onlineEntity.isMine)
+                { // If we own the player we don't need a controller
+                    if (self.controller is OnlineController)
+                    {
                         self.controller = null;
                     }
 
-                } else { 
-                    if (self.controller is null) { // If we don't own the player we need a controller
+                }
+                else
+                {
+                    if (self.controller is null)
+                    { // If we don't own the player we need a controller
                         self.controller = new OnlineController(onlineEntity, self);
                     }
 
                     // If we're being held by a local player. they should request ownership of us
-                    if (self.isNPC) {
-                        if (self.onBack is not null) {
-                            if (self.onBack.IsLocal() &&  onlineEntity.isTransferable && !onlineEntity.isPending) {
-                                try {
+                    if (self.isNPC)
+                    {
+                        if (self.onBack is not null)
+                        {
+                            if (self.onBack.IsLocal() && onlineEntity.isTransferable && !onlineEntity.isPending)
+                            {
+                                try
+                                {
                                     onlineEntity.Request();
-                                } catch (Exception except) {
+                                }
+                                catch (Exception except)
+                                {
                                     RainMeadow.Debug(except);
                                 }
                             }
@@ -404,10 +665,12 @@ public partial class RainMeadow
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
             }
 
-            if (!self.isNPC) {
+            if (!self.isNPC)
+            {
                 Player? grabbingplayer = self.grabbedBy.FirstOrDefault(x => x.grabber is Player)?.grabber as Player;
-                if (grabbingplayer != null) {
-                    if (!self.input[0].AnyDirectionalInput && !self.input[0].jmp) 
+                if (grabbingplayer != null)
+                {
+                    if (!self.input[0].AnyDirectionalInput && !self.input[0].jmp)
                     {
                         self.input[0].x = grabbingplayer.input[0].x;
                         self.input[0].y = grabbingplayer.input[0].y;
@@ -422,7 +685,7 @@ public partial class RainMeadow
 
                         self.input[0].jmp = grabbingplayer.input[0].jmp;
                     }
-                } 
+                }
 
             }
         }
@@ -524,7 +787,6 @@ public partial class RainMeadow
                 }
             }
         }
-
 
     }
 
@@ -830,6 +1092,13 @@ public partial class RainMeadow
                 slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
                 RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
+
+            // Allow glow for any non-watcher in watcher campaign
+            if (ModManager.Watcher && self.room.game.session is StoryGameSession storyGameSession && self.rippleLevel > 0f && self.room != null && self.AI == null)
+            {
+                storyGameSession.saveState.theGlow = true;
+                self.glowing = storyGameSession.saveState.theGlow || self.room.game.setupValues.playerGlowing;
+            }
         }
     }
 
@@ -862,7 +1131,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            if (!self.isNPC) 
+            if (!self.isNPC)
             {
                 if (slugcatStatsPerPlayer.TryGetValue(self, out var slugcatStats))
                 {
@@ -908,7 +1177,8 @@ public partial class RainMeadow
             return;
         }
 
-        if (self.slugOnBack is not null) {
+        if (self.slugOnBack is not null)
+        {
             self.slugOnBack.DropSlug();
         }
 
@@ -1010,24 +1280,67 @@ public partial class RainMeadow
         orig(self, grasp, eu);
     }
 
-    // TODO: toggleable friendly steal
     private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        if (!self.isNPC) {
-            if (isStoryMode(out _) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC)) return false;
-        }
+        if (OnlineManager.lobby != null)
+        {
+            if (!self.isNPC)
+            {
+                if (obj.grabbedBy.Any(x => x.grabber is Player))
+                {
 
-        if (OnlineManager.lobby != null) {
-            if (obj is Player p) {
-                if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC) {
+                    if (obj.grabbedBy.Any(x => x.grabber is Player grabbingPlayer && grabbingPlayer.Stunned))
+                    {
+                        return orig(self, obj);
+                    }
+                }
+
+                if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
+
+                    if (story.itemSteal)
+                    {
+                        return orig(self, obj);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                if (isArenaMode(out var arena))
+                {
+                    if (obj.grabbedBy.Any(x => x.grabber is Player))
+                    {
+
+                        if (arena.itemSteal)
+                        {
+                            return orig(self, obj);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    if (obj is Player pl)
+                    {
+                        if (pl.Stunned || pl.dead)
+                        {
+                            return orig(self, obj);
+                        };
+                    }
+
+                }
+            }
+
+            if (obj is Player p)
+            {
+                if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC)
+                {
                     return false;
                 }
             }
 
         }
-
-        
         return orig(self, obj);
+
     }
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
