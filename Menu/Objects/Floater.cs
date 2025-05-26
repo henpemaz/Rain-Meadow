@@ -85,6 +85,54 @@ namespace RainMeadow
             lastprogress = progress;
         }
     }
+    public class MusicTitleDisplay : MenuLabel
+    {
+        static int dttt = 20;
+        static float lastprogress = 0f;
+        public MusicTitleDisplay(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size, false)
+        {
+        }
+        public void Display(string desiredtext, float progress)
+        {
+            bool appearing = lastprogress <= progress;
+            if (appearing && (progress < 0.5f)) return;
+            if (!appearing) desiredtext = "";
+            if (desiredtext == text) return;
+            if (dttt > 0) 
+                dttt--;
+            else {
+                dttt = appearing ? 4 : 0;
+                bool correct = true;
+                char goodletter = 'a';
+                if (desiredtext.Length < text.Length) correct = false;
+                else
+                {
+                    for (int i = 0; i < desiredtext.Length; i++) 
+                    {
+                        if (i == text.Length) {
+                            goodletter = desiredtext[i];
+                            break;
+                        }
+                        if (desiredtext[i] != text[i])
+                        {
+                            correct = false;
+                            break;
+                        }
+                    }
+                }
+                if (!correct) { text = text.Substring(0, text.Length - 1); } else { text = text + goodletter; }
+                if (!appearing && (progress < 0.7)) text = text.Substring(0, text.Length - 1);
+                if (!appearing && (progress < 0.4)) text = text.Substring(0, text.Length - 1);
+            }
+            lastprogress = progress;
+        }
+
+        public override void Update()
+        {
+            base.Update();
+        }
+    } 
+
     public class FloatyButton : SimplerButton
     {
         private float initx;

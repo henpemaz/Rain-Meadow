@@ -84,6 +84,11 @@ namespace RainMeadow
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
             
+            pos.y += 40f;
+            var text = new MusicTitleDisplay(this, this.pages[0], "", pos, new Vector2(110f, 30f));
+            pages[0].subObjects.Add(text);
+            pos.y -= 40f;
+
             pos.y -= (buttonCount) * 40f;
             var slider = new FloatySlider(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), HubVolume, false);
             slider.subObjects.Add(new Floater(this, slider, 0.7f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f)));
@@ -124,6 +129,11 @@ namespace RainMeadow
                 if (c is FloatyButton button) button.progress = blackFade;
                 if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
                 if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
+                if (c is MusicTitleDisplay texts)
+                {
+                    //texts.progress = blackFade;
+                    texts.Display(manager?.musicPlayer?.song?.name ?? "", blackFade);
+                }
             }
             base.Update();
         }

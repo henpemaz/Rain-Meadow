@@ -258,6 +258,7 @@ namespace RainMeadow
             MeadowProgression.SaveProgression();
 
             manager.musicPlayer?.song?.FadeOut(20f);
+            MeadowMusic.NewGame();
 
             manager.arenaSitting = null;
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
