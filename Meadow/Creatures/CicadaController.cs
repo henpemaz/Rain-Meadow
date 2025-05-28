@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    class CicadaController : AirCreatureController
+    public class CicadaController : AirCreatureController
     {
         public CicadaController(Cicada creature, OnlineCreature oc, int playerNumber, MeadowAvatarData customization) : base(creature, oc, playerNumber, customization) { }
 
