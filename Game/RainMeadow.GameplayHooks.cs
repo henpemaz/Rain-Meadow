@@ -586,13 +586,22 @@ namespace RainMeadow
                     }
 
                     if (player.realizedCreature is Player p) {
-                        if (p.forceSleepCounter <= 0) {
-                            if (p.timeSinceInCorridorMode < 10) {
+                        if (p.forceSleepCounter <= 0)
+                        {
+                            if (p.timeSinceInCorridorMode < 10)
+                            {
                                 ready_for_win = false;
                                 break;
                             }
 
-                            if (p.touchedNoInputCounter < 80) {
+                            if (p.touchedNoInputCounter < 80)
+                            {
+                                ready_for_win = false;
+                                break;
+                            }
+
+                            if (!p.readyForWin)
+                            {
                                 ready_for_win = false;
                                 break;
                             }
@@ -611,7 +620,17 @@ namespace RainMeadow
                 }
 
                 if (!(ready_for_win && starving && OnlineManager.lobby.isOwner)) {
-                    if (!storyGameMode.readyForWin) return;
+                    if (!storyGameMode.readyForWin)
+                    {
+                        if (self.room.updateList[self.room.updateIndex] is Player smeepy)
+                        {
+                            // wake us up
+                            smeepy.sleepCounter = 0;
+                            smeepy.forceSleepCounter = 0;
+                        }
+                        
+                        return;
+                    }
                 }
 
             }
@@ -642,6 +661,7 @@ namespace RainMeadow
                         }   
                     }
                 }
+            } else {
             }
         }
 
