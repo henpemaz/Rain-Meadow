@@ -22,7 +22,7 @@ namespace RainMeadow
             colorChooser = -1;
             colorCheckbox = new(this, pages[0], this, new(size.x + 40, size.y + -40 * 5), 0, "", COLORCHECKBOXID);
             pages[0].subObjects.Add(colorCheckbox);
-            this.TryMutualBind(colorCheckbox, okButton, true);
+            MutualHorizontalButtonBind(colorCheckbox, okButton);
             GetSaveColorEnabled();
         }
         public override void ShutDownProcess()
@@ -83,8 +83,7 @@ namespace RainMeadow
             SetUpSafeColorChoices();
             if (!manager.rainWorld.progression.miscProgressionData.colorsEnabled.ContainsKey(id.value))
             {
-                manager.rainWorld.progression.miscProgressionData.colorsEnabled.Add(id.value, colorChecked);
-                return;
+                manager.rainWorld.progression.miscProgressionData.colorsEnabled.Add(id.value, false);
             }
             colorCheckbox.Checked = manager.rainWorld.progression.miscProgressionData.colorsEnabled[id.value];
 
@@ -158,8 +157,11 @@ namespace RainMeadow
                 pages[0].subObjects.Add(defaultColor);
             }
             this.TryMutualBind(hueSlider, bodyInterface?.bodyButtons?.FirstOrDefault(), bottomTop: true);
+            MutualVerticalButtonBind(satSlider, hueSlider);
+            MutualVerticalButtonBind(litSlider, satSlider);
+            MutualVerticalButtonBind(defaultColor, litSlider);
             MutualVerticalButtonBind(colorCheckbox, defaultColor);
-            this.TryMutualBind(okButton, defaultColor);
+
         }
         public void RemoveColorButtons()
         {
