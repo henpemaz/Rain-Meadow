@@ -55,7 +55,7 @@ namespace MyNamespace
         private void Menu_ctor(On.Menu.Menu.orig_ctor orig, Menu.Menu self, ProcessManager manager, ProcessManager.ProcessID ID)
         {
             orig(self, manager, ID);
-            if (self is ArenaLobbyMenu2)
+            if (self is ArenaOnlineLobbyMenu)
             {
                 AddNewMode();
             }
