@@ -13,7 +13,7 @@ namespace RainMeadow
         public ArenaOnlineSetup myArenaSetup;
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
-        public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
+        public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public bool registeredNewGameModes = false;
 
@@ -83,7 +83,7 @@ namespace RainMeadow
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             playerResultColors = new Dictionary<string, int>();
-            registeredGameModes = new Dictionary<ExternalArenaGameMode, string>();
+            registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
             playerEnteredGame = 0;
             painCatThrowingSkill = 0;
             totalLevelCount = 0;

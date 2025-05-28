@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Linq;
+using Rewired.ControllerExtensions;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
@@ -158,14 +159,15 @@ namespace RainMeadow
                     var gameModesList = arena.registeredGameModes.ToList();
 
                     // Find the current game mode entry
-                    var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+                    var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Key == arena.currentGameMode);
 
                     // Get the next mode in the list, or wrap around to the first mode if at the end
                     var nextModeIndex = (currentModeIndex + 1) % gameModesList.Count;
 
                     // Update the current game mode
-                    arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
-                    arena.currentGameMode = gameModesList[nextModeIndex].Value;
+                    arena.onlineArenaGameMode = gameModesList[nextModeIndex].Value;
+                    arena.currentGameMode = gameModesList[nextModeIndex].Key;
+                    this.currentGameType = gameModesList[nextModeIndex].Value.GameModeSetups;
 
                 }
 
@@ -174,15 +176,16 @@ namespace RainMeadow
                     var gameModesList = arena.registeredGameModes.ToList();
 
                     // Find the current game mode entry
-                    int currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+                    int currentModeIndex = gameModesList.FindIndex(kvp => kvp.Key == arena.currentGameMode);
 
                     // Handle the case when we're at the beginning of the list
                     if (currentModeIndex > 0)
                     {
                         // Get the previous mode in the list
                         int prevModeIndex = currentModeIndex - 1;
-                        arena.onlineArenaGameMode = gameModesList[prevModeIndex].Key;
-                        arena.currentGameMode = gameModesList[prevModeIndex].Value;
+                        arena.onlineArenaGameMode = gameModesList[prevModeIndex].Value;
+                        arena.currentGameMode = gameModesList[prevModeIndex].Key;
+                        this.currentGameType = gameModesList[prevModeIndex].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
@@ -190,13 +193,16 @@ namespace RainMeadow
                     {
                         // Handle the case when we're already at the beginning
                         // You might want to wrap around to the last mode here
-                        arena.onlineArenaGameMode = gameModesList[gameModesList.Count - 1].Key;
-                        arena.currentGameMode = gameModesList[gameModesList.Count - 1].Value;
+                        arena.onlineArenaGameMode = gameModesList[gameModesList.Count - 1].Value;
+                        arena.currentGameMode = gameModesList[gameModesList.Count - 1].Key;
+                        this.currentGameType = gameModesList[gameModesList.Count - 1].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
 
+
                 }
+                RainMeadow.Debug(this.currentGameType);
 
             }
         }
@@ -233,6 +239,7 @@ namespace RainMeadow
             RemoveExcessArenaObjects();
 
             this.currentGameType = this.nextGameType = ArenaSetup.GameTypeID.Competitive;
+            RainMeadow.Debug(this.currentGameType);
             this.nextButton.signalText = "NEXTONLINEGAME";
             this.prevButton.signalText = "PREVONLINEGAME";
 
@@ -450,15 +457,15 @@ namespace RainMeadow
             }
 
             ArenaHelpers.SetProfileColor(arena);
-            if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
+            if (arena.registeredGameModes.Keys.Contains(arena.currentGameMode))
             {
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
                 RainMeadow.Debug("Playing GameMode: " + arena.onlineArenaGameMode);
             }
             else
             {
                 RainMeadow.Error("Could not find gamemode in list! Setting to Competitive as a fallback");
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Competitive.CompetitiveMode.value).Value;
             }
             arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 

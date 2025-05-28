@@ -18,24 +18,34 @@ namespace RainMeadow
 
         public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
 
-        private int _timerDuration;  // Backing field for TimerDuration
-
-        public enum TeamMappings
+        public override ArenaSetup.GameTypeID GameModeSetups
         {
-            Martyrs,
-            Outlaws,
-            Dragonslayers,
-            Chieftains
+            get
+            {
+                return TeamBattle; // Assuming TeamBattleMode is a concrete class
+            }
         }
 
-        public static List<TeamMappings> teamMappingsList = new List<TeamMappings>
+
+
+        private int _timerDuration;  // Backing field for TimerDuration
+
+    public enum TeamMappings
+    {
+        Martyrs,
+        Outlaws,
+        Dragonslayers,
+        Chieftains
+    }
+
+    public static List<TeamMappings> teamMappingsList = new List<TeamMappings>
     {
         TeamMappings.Martyrs,
         TeamMappings.Outlaws,
         TeamMappings.Dragonslayers,
         TeamMappings.Chieftains
     };
-        public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
+    public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
         {
             { TeamMappings.Martyrs, "yes" },
             { TeamMappings.Outlaws, "no" },
@@ -43,7 +53,7 @@ namespace RainMeadow
             { TeamMappings.Chieftains, "ChieftainA" }
     };
 
-        public static Dictionary<TeamMappings, Color> TeamColors = new Dictionary<TeamMappings, Color>
+    public static Dictionary<TeamMappings, Color> TeamColors = new Dictionary<TeamMappings, Color>
         {
             { TeamMappings.Martyrs, Color.red },
             { TeamMappings.Outlaws, Color.yellow },
@@ -51,105 +61,105 @@ namespace RainMeadow
             { TeamMappings.Chieftains, Color.blue }
     };
 
-        public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+    public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+    {
+        int playersStillStanding = self.gameSession.Players?.Count(player =>
+            player.realizedCreature != null &&
+            (player.realizedCreature.State.alive)) ?? 0;
+
+        if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
         {
-            int playersStillStanding = self.gameSession.Players?.Count(player =>
-                player.realizedCreature != null &&
-                (player.realizedCreature.State.alive)) ?? 0;
-
-            if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1)
-            {
-                return true;
-            }
-
-            if (self.world.rainCycle.TimeUntilRain <= 100)
-            {
-                return true;
-            }
-
-            orig(self);
-
-            return orig(self);
+            return true;
         }
 
-        public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
+        if (self.world.rainCycle.TimeUntilRain <= 100)
         {
-            return false;
-        }
-        public override string TimerText()
-        {
-
-            if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-
-                return Utils.Translate($"Prepare for war, {Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "")}");
-            }
-            return Utils.Translate($"Prepare for war, {Utils.Translate(SlugcatStats.getSlugcatName(OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs))}");
-        }
-        public override int SetTimer(ArenaOnlineGameMode arena)
-        {
-            return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
-        }
-        public override int TimerDuration
-        {
-            get { return _timerDuration; }
-            set { _timerDuration = value; }
-        }
-        public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {
-            return --arena.setupTime;
-        }
-        public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
-        {
-            if (arena.setupTime > 0)
-            {
-                return arena.countdownInitiatedHoldFire = true;
-            }
-            else
-            {
-                return arena.countdownInitiatedHoldFire = false;
-            }
+            return true;
         }
 
-        public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
-        {
-            aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
+        orig(self);
 
+        return orig(self);
+    }
+
+    public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
+    {
+        return false;
+    }
+    public override string TimerText()
+    {
+
+        if (ModManager.MSC && (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+        {
+
+            return Utils.Translate($"Prepare for war, {Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "")}");
         }
-
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        return Utils.Translate($"Prepare for war, {Utils.Translate(SlugcatStats.getSlugcatName(OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs))}");
+    }
+    public override int SetTimer(ArenaOnlineGameMode arena)
+    {
+        return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+    }
+    public override int TimerDuration
+    {
+        get { return _timerDuration; }
+        set { _timerDuration = value; }
+    }
+    public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
+    {
+        return --arena.setupTime;
+    }
+    public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
+    {
+        if (arena.setupTime > 0)
         {
-            base.ArenaSessionCtor(arena, orig, self, game);
-
-            // TODO: Remove this testing
-            if (OnlineManager.lobby.isOwner)
-            {
-                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
-                {
-                    tb.team = (int)TeamMappings.Dragonslayers;
-
-                }
-
-            }
-            else
-            {
-                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
-                {
-                    tb.team = (int)TeamMappings.Chieftains;
-                }
-            }
-
-
+            return arena.countdownInitiatedHoldFire = true;
         }
-
-
-        public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        else
         {
-            if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaClientSettings>(out var tb2))
-            {
-                return TeamMappingsDictionary[(TeamMappings)tb2.team];
-            }
-            return "";
+            return arena.countdownInitiatedHoldFire = false;
         }
     }
+
+    public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
+    {
+        aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
+
+    }
+
+    public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+    {
+        base.ArenaSessionCtor(arena, orig, self, game);
+
+        // TODO: Remove this testing
+        if (OnlineManager.lobby.isOwner)
+        {
+            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
+            {
+                tb.team = (int)TeamMappings.Dragonslayers;
+
+            }
+
+        }
+        else
+        {
+            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
+            {
+                tb.team = (int)TeamMappings.Chieftains;
+            }
+        }
+
+
+    }
+
+
+    public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+    {
+        if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaClientSettings>(out var tb2))
+        {
+            return TeamMappingsDictionary[(TeamMappings)tb2.team];
+        }
+        return "";
+    }
+}
 }

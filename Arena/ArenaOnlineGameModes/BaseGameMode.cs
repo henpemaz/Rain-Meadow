@@ -14,6 +14,7 @@ namespace RainMeadow
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
+        public abstract ArenaSetup.GameTypeID GameModeSetups { get; }
 
         public abstract bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);

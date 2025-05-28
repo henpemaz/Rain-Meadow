@@ -81,6 +81,7 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
+            
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
@@ -119,7 +120,10 @@ namespace RainMeadow
             new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
             On.Watcher.CamoMeter.Update += CamoMeter_Update;
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
+            
         }
+
+
 
         private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
         {
@@ -587,7 +591,9 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
+                        RainMeadow.Debug(arena.arenaSittingOnlineOrder.Count);
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                        RainMeadow.Debug(onlinePlayer.id.name);
                         if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
                             onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
@@ -648,13 +654,14 @@ namespace RainMeadow
             {
                 var comp = new Competitive();
                 var teamBattle = new TeamBattleMode();
-                if (!arena.registeredGameModes.ContainsKey(comp))
+                // TODO: Move this to a Menu check
+                if (!arena.registeredGameModes.ContainsKey(Competitive.CompetitiveMode.value))
                 {
-                    arena.registeredGameModes.Add(comp, Competitive.CompetitiveMode.value);
+                    arena.registeredGameModes.Add(Competitive.CompetitiveMode.value, comp);
                 }
-                if (!arena.registeredGameModes.ContainsKey(teamBattle))
+                if (!arena.registeredGameModes.ContainsKey(TeamBattleMode.TeamBattle.value))
                 {
-                    arena.registeredGameModes.Add(teamBattle, TeamBattleMode.TeamBattle.value);
+                    arena.registeredGameModes.Add(TeamBattleMode.TeamBattle.value, teamBattle);
                 }
             }
 
@@ -1108,6 +1115,8 @@ namespace RainMeadow
 
                 if (self.gameTypeSetup.gameType == ArenaSetup.GameTypeID.Competitive)
                 {
+                    RainMeadow.Debug("======COMP");
+
                     if (list.Count == 1)
                     {
                         list[0].winner = list[0].alive;
@@ -1127,6 +1136,7 @@ namespace RainMeadow
 
                 if (self.gameTypeSetup.gameType == TeamBattleMode.TeamBattle)
                 {
+                    RainMeadow.Debug("======TEAM");
                     if (list.Count == 1)
                     {
                         list[0].winner = list[0].alive;
@@ -1136,6 +1146,7 @@ namespace RainMeadow
                         foreach (var player in list)
                         {
                             player.winner = true;
+                           
                         }
 
                     }
@@ -1411,6 +1422,7 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
+            player.winner = true;
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
 
             if (self.backgroundRect == null)
@@ -1419,7 +1431,6 @@ namespace RainMeadow
                 self.backgroundRect = new(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
                 self.subObjects.Add(self.backgroundRect);
             }
-            
             if (isArenaMode(out var arena) && self.backgroundRect != null)
             {
                 OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);

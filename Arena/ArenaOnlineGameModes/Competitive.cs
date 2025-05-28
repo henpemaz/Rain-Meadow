@@ -10,7 +10,13 @@ namespace RainMeadow
         public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: false);
 
         private int _timerDuration;  // Backing field for TimerDuration
-
+        public override ArenaSetup.GameTypeID GameModeSetups
+        {
+            get
+            {
+                return CompetitiveMode; // Assuming TeamBattleMode is a concrete class
+            }
+        }
         public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
         {
             if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)

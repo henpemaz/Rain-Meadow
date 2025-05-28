@@ -52,10 +52,10 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         Competitive competitive = new();
         TeamBattleMode tb = new();
-        if (!Arena.registeredGameModes.ContainsKey(competitive))
-            Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
-        if (!Arena.registeredGameModes.ContainsKey(tb))
-            Arena.registeredGameModes.Add(new TeamBattleMode(), TeamBattleMode.TeamBattle.value);
+        if (!Arena.registeredGameModes.ContainsKey(Competitive.CompetitiveMode.value))
+            Arena.registeredGameModes.Add(Competitive.CompetitiveMode.value, competitive);
+        if (!Arena.registeredGameModes.ContainsKey(TeamBattleMode.TeamBattle.value))
+            Arena.registeredGameModes.Add(TeamBattleMode.TeamBattle.value, tb);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;
@@ -93,7 +93,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             );
         playListTab.AddObjects(x);
 
-        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
