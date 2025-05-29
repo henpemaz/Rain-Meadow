@@ -241,7 +241,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
             RainMeadow.Error("arena is null, slugcat wont be changed!");
             return;
         }
-        slugcat = allSlugcats.IndexOf(slugcat) == -1? allSlugcats[0] : slugcat;
+        slugcat = allSlugcats.IndexOf(slugcat) == -1 ? allSlugcats[0] : slugcat;
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
         Arena.arenaClientSettings.playingAs = slugcat;
         GetArenaSetup.playerClass[0] = slugcat;
@@ -256,6 +256,12 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
 
         slugcatDescriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
         slugcatNameLabel.text = Arena.slugcatSelectDisplayNames[slugcat.value];
+
+        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
+        {
+            PlaySound(RainMeadow.Ext_SoundID.Fartificer);
+            slugcatNameLabel.text = "The Fartificer";
+        }
     }
     public override void ShutDownProcess()
     {
