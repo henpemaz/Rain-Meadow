@@ -46,7 +46,6 @@ namespace RainMeadow.UI.Components
             {
                 alignment = FLabelAlignment.Center,
                 description = menu.Translate("How long the grace timer at the beginning of rounds lasts for. Default 5s."),
-                maxLength = 2,
             };
             countdownTimerTextBox.OnValueUpdate += (config, value, lastValue) =>
             {

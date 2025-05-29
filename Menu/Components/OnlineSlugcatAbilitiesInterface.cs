@@ -19,9 +19,8 @@ namespace RainMeadow.UI.Components
             saintAscendanceTimerLabel = new(menu, this, menu.Translate("Saint Ascendance Duration:"), (-spacing * 3) - new Vector2(300, -2), new(151, 20), false);
             saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), new(saintAscendanceTimerLabel.pos.x + 295, saintAscendanceTimerLabel.pos.y - 2), 40)
             {
-                alignment = FLabelAlignment.Left,
-                description = menu.Translate("How long Saint's ascendance ability lasts for. Default 120."),
-                maxLength = 3
+                alignment = FLabelAlignment.Center,
+                description = menu.Translate("How long Saint's ascendance ability lasts for. Default 120.")
             };
             saintAscendDurationTimerTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
             {
