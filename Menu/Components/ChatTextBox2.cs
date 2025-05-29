@@ -109,6 +109,7 @@ namespace RainMeadow.UI.Components
             }
             cursorSprite.y = screenPos.y + size.y / 2;
             cursorSprite.alpha = focused ? Mathf.PingPong(Time.time * 4, 1) : 0;
+            selectionSprite.alpha = focused ? 1 : 0;
 
             if (selectionStartPos == -1)
             {
@@ -324,7 +325,6 @@ namespace RainMeadow.UI.Components
             currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
-            cursorIsInMiddle = false;
         }
         public void DelayedUnload(float delay)
         {
