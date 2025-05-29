@@ -138,6 +138,7 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
+                arena.leaveForNextLevel = false;
             }
             if (arena.returnToLobby)
             {
@@ -250,10 +251,6 @@ namespace RainMeadow
                 }
 
             }
-            //if (player.SlugCatClass == SlugcatStats.Name.Night)
-            //{
-            //    Nightcat.CheckInputForActivatingNightcat(player);
-            //}
 
         }
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)

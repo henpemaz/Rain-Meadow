@@ -80,6 +80,7 @@ namespace RainMeadow
             On.HUD.HUD.InitMultiplayerHud += HUD_InitMultiplayerHud;
 
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
+            On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
@@ -120,6 +121,19 @@ namespace RainMeadow
             new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
             On.Watcher.CamoMeter.Update += CamoMeter_Update;
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
+        }
+
+        private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)
+        {
+            orig(self);
+            if (isArenaMode(out var arena))
+            {
+                if (!OnlineManager.lobby.isOwner && arena.leaveForNextLevel && !self.nextLevelCall)
+                {
+                    self.ArenaSitting.NextLevel(self.manager);
+                    self.nextLevelCall = true;
+                }
+            }
         }
 
         private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
@@ -1472,7 +1486,7 @@ namespace RainMeadow
                 ILCursor cursor = new(il);
                 cursor.TryGotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate(delegate(Color whiteCol,Menu.PlayerResultBox self)
+                cursor.EmitDelegate(delegate (Color whiteCol, Menu.PlayerResultBox self)
                 {
                     if (isArenaMode(out ArenaOnlineGameMode arena))
                     {
