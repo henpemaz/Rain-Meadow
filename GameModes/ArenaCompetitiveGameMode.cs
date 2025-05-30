@@ -34,7 +34,6 @@ namespace RainMeadow
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
-        
 
         public string paincatName;
         public int lizardEvent;
@@ -116,7 +115,7 @@ namespace RainMeadow
             {
                 { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "Afflicted from the beginning, and a figher to the end. Show them the meaning of suffering." },
+                { "Red", "Afflicted from the beginning, and a figher to the end.\nShow them the meaning of suffering." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()

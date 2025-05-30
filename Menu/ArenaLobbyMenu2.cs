@@ -17,6 +17,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
     public SimplerButton playButton, slugcatSelectBackButton;
+    public ArenaLevelSelector levelSelector;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
@@ -75,22 +76,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
-        var x = new VerticalScrollSelector(this, playListTab, new Vector2(100, 100), new Vector2(200, 50), 3);
-        x.AddSideButton("Menu_Symbol_Show_Thumbs", "test");
-        x.AddSideButton("Menu_Symbol_Show_List", "test 2");
-        x.AddScrollElements(
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50))
-            );
-        playListTab.AddObjects(x);
+        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(this, playListTab, new Vector2(65, 7.5f), false));
 
         arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
@@ -354,7 +340,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         ChatLogManager.UpdatePlayerColors();
         SlugcatStats.Name slugcat = Arena.arenaClientSettings.playingAs;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat)? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
