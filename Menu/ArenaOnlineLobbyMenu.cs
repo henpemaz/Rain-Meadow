@@ -51,8 +51,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-
-
         Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
