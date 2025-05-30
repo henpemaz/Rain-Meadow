@@ -9,6 +9,7 @@ namespace RainMeadow
         public bool isInGame = false;
         public bool changedRegions = false;
         public bool readyForWin = false;
+        public bool syncFoodBars = RainMeadow.rainMeadowOptions.StorySyncFoodBars.Value;
         public enum ReadyForTransition : byte
         {
             Closed,

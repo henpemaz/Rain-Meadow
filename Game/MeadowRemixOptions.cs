@@ -30,6 +30,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> WearingCape;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> StorySyncFoodBars;
 
 
     public readonly Configurable<float> ScrollSpeed;
@@ -90,6 +91,8 @@ public class RainMeadowOptions : OptionInterface
 
         StoryItemSteal = config.Bind("StoryItemSteal", false);
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
+
+        StorySyncFoodBars = config.Bind("StorySeparateFoodBars", true);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
@@ -238,7 +241,7 @@ public class RainMeadowOptions : OptionInterface
 
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            OnlineStorySettings = new UIelement[11]
+            OnlineStorySettings = new UIelement[13]
            {    new OpLabel(10f, 550f, Translate("Story"), bigText: true),
 
                 new OpLabel(10f, 500, Translate("Ready to shelter/gate"), bigText: false),
@@ -264,6 +267,13 @@ public class RainMeadowOptions : OptionInterface
                 new OpCheckBox(StoryItemSteal, new Vector2(10, 260)),
 
                 new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Story mode")))
+                {
+                    verticalAlignment = OpLabel.LabelVAlignment.Center
+                },
+
+                new OpCheckBox(StorySyncFoodBars, new Vector2(10, 170)),
+
+                new OpLabel(40f, 179, RWCustom.Custom.ReplaceLineDelimeters(Translate("Separate food bars")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 }

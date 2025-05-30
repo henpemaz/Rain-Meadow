@@ -65,6 +65,7 @@ namespace RainMeadow
             public float minimumRippleLevel;
             [OnlineFieldHalf]
             public float maximumRippleLevel;
+            
 
             public State() { }
 
@@ -94,9 +95,11 @@ namespace RainMeadow
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
-
-                food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
-                quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
+                if (storyGameMode.syncFoodBars)
+                {
+                    food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
+                    quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
+                }
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
 
                 pups = new();
@@ -121,7 +124,7 @@ namespace RainMeadow
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
 
-                if (playerstate != null)
+                if (playerstate != null && (lobby.gameMode as StoryGameMode).syncFoodBars)
                 {
                     playerstate.foodInStomach = food;
                     playerstate.quarterFoodPoints = quarterfood;

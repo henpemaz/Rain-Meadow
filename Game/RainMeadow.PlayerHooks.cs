@@ -947,11 +947,9 @@ public partial class RainMeadow
         }
     }
 
-    public static bool sUpdateFood = true;
-
     private void Player_AddQuarterFood(On.Player.orig_AddQuarterFood orig, Player self)
     {
-        if (OnlineManager.lobby is null || !sUpdateFood)
+        if (OnlineManager.lobby is null || RainMeadow.rainMeadowOptions.StorySyncFoodBars.Value == false)
         {
             orig(self);
             return;
@@ -974,7 +972,7 @@ public partial class RainMeadow
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby is null || !sUpdateFood)
+        if (OnlineManager.lobby is null || RainMeadow.rainMeadowOptions.StorySyncFoodBars.Value == false)
         {
             orig(self, add);
             return;
@@ -998,7 +996,7 @@ public partial class RainMeadow
 
     private void Player_SubtractFood(On.Player.orig_SubtractFood orig, Player self, int add)
     {
-        if (OnlineManager.lobby is null || !sUpdateFood)
+        if (OnlineManager.lobby is null || RainMeadow.rainMeadowOptions.StorySyncFoodBars.Value == false)
         {
             orig(self, add);
             return;
