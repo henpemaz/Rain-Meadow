@@ -542,7 +542,7 @@ namespace RainMeadow
 
         private void PauseMenu_Singal(On.Menu.PauseMenu.orig_Singal orig, Menu.PauseMenu self, Menu.MenuObject sender, string message)
         {
-            if (message == "QUIT" && isArenaMode(out var arena))
+            if (message == "EXIT" && isArenaMode(out var arena))
             {
                 if (OnlineManager.lobby.isOwner)
                 {
