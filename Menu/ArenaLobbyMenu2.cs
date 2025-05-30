@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace RainMeadow.UI;
 
-public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
+public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
@@ -40,7 +40,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
-    public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
+    public ArenaOnlineLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
 
@@ -51,9 +51,9 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-        Competitive competitive = new();
-        if (!Arena.registeredGameModes.ContainsKey(competitive))
-            Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+
+
+        Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;

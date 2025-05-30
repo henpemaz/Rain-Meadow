@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using Menu;
 using MoreSlugcats;
 using static RainMeadow.ArenaPrepTimer;
@@ -215,6 +213,15 @@ namespace RainMeadow
                     break;
             }
 
+        }
+
+        public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
+        {
+            
+            if (!this.registeredGameModes.ContainsKey(externMode))
+            {
+                this.registeredGameModes.Add(externMode, gametypeID.value);
+            }
         }
         public void ResetChampAddition()
         {
