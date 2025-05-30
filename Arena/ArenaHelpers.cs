@@ -1,6 +1,8 @@
+using Menu;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 using UnityEngine;
 
 namespace RainMeadow
@@ -11,6 +13,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
+        public static List<MenuScene.SceneID> randomScenes = [];
         public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
 
         public static void RecreateSlugcatCache()
@@ -79,7 +82,33 @@ namespace RainMeadow
                 }
             }
         }
-
+        public static void RecreateRandomScenes()
+        {
+            randomScenes =
+            [
+                MenuScene.SceneID.MainMenu_Downpour,
+                MenuScene.SceneID.Intro_1_Tree,
+                MenuScene.SceneID.Intro_3_In_Tree,
+                MenuScene.SceneID.Intro_4_Walking,
+                MenuScene.SceneID.Intro_5_Hunting,
+                MenuScene.SceneID.Intro_8_Climbing,
+                MenuScene.SceneID.Intro_11_Drowning,
+                MenuScene.SceneID.Landscape_CC,
+                MenuScene.SceneID.Landscape_DS,
+                MenuScene.SceneID.Landscape_GW,
+                MenuScene.SceneID.Landscape_HI,
+                MenuScene.SceneID.Landscape_LF,
+                MenuScene.SceneID.Landscape_SB,
+                MenuScene.SceneID.Landscape_SH,
+                MenuScene.SceneID.Landscape_SI,
+                MenuScene.SceneID.Landscape_SL,
+                MenuScene.SceneID.Landscape_SU,
+                MenuScene.SceneID.Dream_Moon_Friend,
+                MenuScene.SceneID.Dream_Pebbles,
+            ];
+            if (ModManager.MSC) randomScenes.AddRange([MSCScene.Landscape_MS, MSCScene.Landscape_LC, MSCScene.Landscape_OE, MSCScene.Landscape_HR, MSCScene.Landscape_UG, MSCScene.Landscape_VS, MSCScene.Landscape_CL]);
+            if (ModManager.Watcher) randomScenes.AddRange([Watcher.WatcherEnums.MenuSceneID.MainMenu_Watcher]);
+        }
         public static void SetProfileColor(ArenaOnlineGameMode arena)
         {
             int profileColor = 0;

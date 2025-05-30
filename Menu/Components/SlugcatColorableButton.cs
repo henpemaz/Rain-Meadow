@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Menu;
 using RWCustom;
 using UnityEngine;
+using System.IO;
 
 namespace RainMeadow.UI.Components
 {
@@ -15,16 +16,15 @@ namespace RainMeadow.UI.Components
         public static string GetFileForSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead = false)
         {
             if (slugcat == null || isColored)
-            {
                 return GetFileForSlugcatIndex(slugcat, 0, isDead);
-            }
             if (slugcat == SlugcatStats.Name.White || slugcat == SlugcatStats.Name.Yellow || slugcat == SlugcatStats.Name.Red)
-            {
                 return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2);
-            }
-            if (IsMSCSlugcat(slugcat))
+            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4);
+            for (int i = 4; i >= 0; i--)
             {
-                return GetFileForSlugcatIndex(slugcat, 4, isDead);
+                string txt = GetFileForSlugcatIndex(slugcat, i, isDead);
+                if (File.Exists(AssetManager.ResolveFilePath($"illustrations/{txt}.png")))
+                    return txt;
             }
             return GetFileForSlugcatIndex(slugcat, 0, isDead);
         }
