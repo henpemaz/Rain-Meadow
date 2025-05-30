@@ -82,7 +82,7 @@ namespace RainMeadow
                 }
             }
         }
-        public static void RecreateRandomScenes()
+        public static void RecreateRandomScenes(bool isFlat)
         {
             randomScenes =
             [
@@ -106,6 +106,10 @@ namespace RainMeadow
                 MenuScene.SceneID.Dream_Moon_Friend,
                 MenuScene.SceneID.Dream_Pebbles,
             ];
+            if (isFlat)
+            {
+                randomScenes.AddRange([MenuScene.SceneID.Intro_2_Branch, MenuScene.SceneID.Intro_9_Rainy_Climb, MenuScene.SceneID.Intro_10_Fall, MenuScene.SceneID.Intro_10_5_Separation]);
+            }
             if (ModManager.MSC) randomScenes.AddRange([MSCScene.Landscape_MS, MSCScene.Landscape_LC, MSCScene.Landscape_OE, MSCScene.Landscape_HR, MSCScene.Landscape_UG, MSCScene.Landscape_VS, MSCScene.Landscape_CL]);
             if (ModManager.Watcher) randomScenes.AddRange([Watcher.WatcherEnums.MenuSceneID.MainMenu_Watcher]);
         }
