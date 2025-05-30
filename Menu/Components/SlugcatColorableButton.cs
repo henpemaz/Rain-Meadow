@@ -19,7 +19,7 @@ namespace RainMeadow.UI.Components
                 return GetFileForSlugcatIndex(slugcat, 0, isDead);
             if (slugcat == SlugcatStats.Name.White || slugcat == SlugcatStats.Name.Yellow || slugcat == SlugcatStats.Name.Red)
                 return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2);
-            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4);
+            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4, isDead);
             for (int i = 4; i >= 0; i--)
             {
                 string txt = GetFileForSlugcatIndex(slugcat, i, isDead);
