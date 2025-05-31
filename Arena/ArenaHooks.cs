@@ -121,6 +121,8 @@ namespace RainMeadow
             new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
             On.Watcher.CamoMeter.Update += CamoMeter_Update;
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
+
+            
         }
 
         private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)

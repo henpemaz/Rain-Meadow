@@ -15,9 +15,11 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         public MenuLabel label;
         public event Action<SideButton>? OnUpdate;
         public float labelFade, lastLabelFade;
+        public new event Action<SideButton>? OnClick;
 
-        public SideButton(Menu.Menu menu, MenuObject owner, string symbolName, string text, Vector2 pos) : base(menu, owner, symbolName, "", pos)
+        public SideButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string symbolName, string text, string description) : base(menu, owner, symbolName, "", pos)
         {
+            this.description = description;
             label = new MenuLabel(menu, this, text, new Vector2(34f, -3f), new Vector2(0f, 30f), false);
             label.label.alignment = FLabelAlignment.Left;
             subObjects.Add(label);
@@ -39,6 +41,8 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
 
             label.label.alpha = Mathf.Lerp(lastLabelFade, labelFade, timeStacker);
         }
+
+        public override void Clicked() => OnClick?.Invoke(this);
     }
 
     public List<ButtonScroller.IPartOfButtonScroller> scrollElements = [];
@@ -56,7 +60,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
     public float LowerBound => 0;
 
     public VerticalScrollSelector(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 elementSize, int amountOfVisibleElements, bool scrollButtons = true, float elementSpacing = 10f, float scrollButtonWidth = 24f)
-        : base(menu, owner, pos, new Vector2(elementSize.x, amountOfVisibleElements * (elementSize.y + elementSpacing)))
+        : base(menu, owner, pos, new Vector2(elementSize.x, amountOfVisibleElements * (elementSize.y + elementSpacing) + elementSpacing))
     {
         elementHeight = elementSize.y;
         this.elementSpacing = elementSpacing;
@@ -65,7 +69,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
 
         if (scrollButtons)
         {
-            scrollUpButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, size.y), 0, scrollButtonWidth);
+            scrollUpButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, size.y + 10f), 0, scrollButtonWidth);
             scrollUpButton.OnClick += _ => Scroll(-1);
             scrollDownButton = new EventfulScrollButton(menu, this, new Vector2(size.x / 2f - scrollButtonWidth / 2f, -34f), 2, scrollButtonWidth);
             scrollDownButton.OnClick += _ => Scroll(1);
@@ -97,9 +101,9 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         }
     }
 
-    public SideButton AddSideButton(string symbolName, string text = "")
+    public SideButton AddSideButton(string symbolName, string text = "", string description = "")
     {
-        SideButton btn = new(menu, this, symbolName, text, new Vector2(size.x + 7f, 14f + 30f * sideButtons.Count));
+        SideButton btn = new(menu, this, new Vector2(size.x + 7f, 14f + 30f * sideButtons.Count), symbolName, text, description);
         sideButtons.Add(btn);
         subObjects.Add(btn);
 
@@ -118,6 +122,14 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
             scrollElements.Add(element);
             subObjects.Add((MenuObject)element);
         }
+
+        ConstrainScroll();
+    }
+
+    public void RemoveScrollElements(params ButtonScroller.IPartOfButtonScroller[] elements)
+    {
+        for (int i = 0; i < elements.Length; i++)
+            scrollElements.Remove(elements[i]);
 
         ConstrainScroll();
     }

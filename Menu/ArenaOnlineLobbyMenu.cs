@@ -13,11 +13,12 @@ using UnityEngine;
 
 namespace RainMeadow.UI;
 
-public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
+public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
 {
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
     public SimplerButton playButton, slugcatSelectBackButton;
+    public ArenaLevelSelector levelSelector;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
@@ -40,7 +41,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
-    public ArenaLobbyMenu2(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
+    public ArenaOnlineLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
 
@@ -51,9 +52,9 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-        Competitive competitive = new();
-        if (!Arena.registeredGameModes.ContainsKey(competitive))
-            Arena.registeredGameModes.Add(new Competitive(), Competitive.CompetitiveMode.value);
+        Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
+
+
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;
 
@@ -72,22 +73,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
-        var x = new VerticalScrollSelector(this, playListTab, new Vector2(100, 100), new Vector2(200, 50), 3);
-        x.AddSideButton("Menu_Symbol_Show_Thumbs", "test");
-        x.AddSideButton("Menu_Symbol_Show_List", "test 2");
-        x.AddScrollElements(
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50)),
-            new ButtonScroller.ScrollerButton(this, x, "Hi", default, new Vector2(200, 50))
-            );
-        playListTab.AddObjects(x);
+        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(this, playListTab, new Vector2(65, 7.5f), false));
 
         arenaSettingsInterface = new(this, matchSettingsTab, new(120, 0), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
@@ -190,7 +176,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
     }
 
     public void ChangeScene(MenuScene.SceneID sceneID)
-    {
+        RainMeadow.Debug($"Scene wanted to switch: {sceneID.value}");
         RainMeadow.Debug($"Scene wanted to switch: {sceneID.value}");
         slugcatScene = sceneID;
         pendingBgChange = false;
@@ -342,7 +328,7 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat)? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
