@@ -84,7 +84,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return "Room " + Id();
+            return Utils.Translate("Room ") + Id();
         }
     }
 }
