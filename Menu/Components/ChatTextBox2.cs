@@ -17,8 +17,9 @@ namespace RainMeadow.UI.Components
     //supports multi view, cuz previous one does not and its messy af
     public class ChatTextBox2 : ButtonTemplate, ICanBeTyped
     {
-        public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt((menuLabel.size.x) / currentMessage.GetMaxWidthInText(false));
+        public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
         public bool SelectionActive => selectionStartPos != -1 ;
+        public bool IgnoreSelect => focused && !menu.manager.menuesMouseMode;
         public Action OnTextSubmit => onTextSubmit ?? HandleTextSubmit;
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
@@ -60,21 +61,20 @@ namespace RainMeadow.UI.Components
         public override void Clicked()
         {
             base.Clicked();
-            if (focused && Input.GetKey(KeyCode.Space)) return;
-            if (Input.GetMouseButton(0)) clicked = false; // if someone clicks with mouse we reset clicked check since clicking with mouse should always focus 
-            focused = !clicked;
-            clicked = !clicked;
+            if (IgnoreSelect) return;
+            if (buttonBehav.clicked) focused = !focused;
         }
         public override void Update()
         {
             base.Update();
+            buttonBehav.Update();
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) focused = false;
             if (menu.allowSelectMove) menu.allowSelectMove = !focused;
             UpdateSelection();
-            buttonBehav.Update();
             roundedRect.fillAlpha = 1.0f;
-            roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked ? 0f : 1f);
+            roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
             cursorIsInMiddle = cursorPos < currentMessage.Length;
-            maxVisibleLength = Mathf.FloorToInt(Custom.LerpAndTick(maxVisibleLength, VisibleTextLimit, 0.12f, 0.12f));
+            maxVisibleLength = VisibleTextLimit;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -348,7 +348,7 @@ namespace RainMeadow.UI.Components
         private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld, maxVisibleLength; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
         public int? visibleTextLimit;
         public int textLimit = 75;
-        public bool focused, clicked, cursorIsInMiddle, isUnloading;
+        public bool focused, cursorIsInMiddle, isUnloading;
         public string currentMessage = "";
         public HSLColor? labelColor;
         public FSprite cursorSprite, selectionSprite;

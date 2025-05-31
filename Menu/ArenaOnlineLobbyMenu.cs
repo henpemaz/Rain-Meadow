@@ -58,18 +58,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName);
-
-        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
+        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        slugcatDescriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
-            container.AddChild(slugcatDescriptionGradients[i]);
-        }
-
-        BuildPlayerDisplay();
-        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-        BuildPlayerDisplay();
-        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        
         RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
         SwitchSelectedSlugcat(GetArenaSetup.playerClass[0]);
     }
@@ -205,12 +197,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
-        ChatLogManager.UpdatePlayerColors();
         if (!RainMeadow.isArenaMode(out _)) return;
-        ChatLogManager.UpdatePlayerColors();
         SlugcatStats.Name slugcat = Arena.arenaClientSettings.playingAs;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
+
     }
     public void UpdateMovingPage()
     {

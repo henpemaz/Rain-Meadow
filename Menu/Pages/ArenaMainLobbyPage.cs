@@ -42,8 +42,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
-        this.SafeAddSubobjects(playButton, tabContainer);
+        this.SafeAddSubobjects(playButton, tabContainer, chatMenuBox);
     }
 
     public void BuildPlayerDisplay()
@@ -63,39 +62,31 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         BuildPlayerDisplay();
         playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
-
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
+        ArenaOnlineLobbyMenu? arenaMenu = (menu as ArenaOnlineLobbyMenu);
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
-            if (player.isMe && menu is ArenaOnlineLobbyMenu arenaMenuThatHasADifferentNameSinceEvenThoughTheseTwoIfBranchesWillNeverCollideTheCompilerComplainsThatThereAreTwoVariablesNamedTheSameThing)
+            if (player.isMe)
             {
-                playerBox.slugcatButton.OnClick += (_) =>
-                {
-                    arenaMenuThatHasADifferentNameSinceEvenThoughTheseTwoIfBranchesWillNeverCollideTheCompilerComplainsThatThereAreTwoVariablesNamedTheSameThing.MovePage(new Vector2(-1500f, 0f), 1);
-                };
-                playerBox.colorInfoButton.OnClick += (_) =>
-                {
-                    OpenColorConfig(playerBox.slugcatButton.slugcat);
-                };
+                playerBox.slugcatButton.OnClick += _ => arenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
+                playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
             }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
             return playerBox;
         }
 
         ArenaPlayerSmallBox playerSmallBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
-
-        if (player.isMe && menu is ArenaOnlineLobbyMenu arenaMenu)
+        if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += _ => arenaMenu.MovePage(new Vector2(-1500f, 0f), 1);
+            playerSmallBox.slugcatButton.OnClick += _ => arenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
             playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
 
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
-
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (!ModManager.MMF)
@@ -129,7 +120,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public override void Update()
     {
         base.Update();
-
+        if (!RainMeadow.isArenaMode(out _)) return;
+        ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
@@ -147,5 +139,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
+
     }
 }
