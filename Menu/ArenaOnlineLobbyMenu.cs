@@ -7,35 +7,25 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
+using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI;
 
-public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOwner
+public class ArenaOnlineLobbyMenu : SmartMenu
 {
-    public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
     public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
-    public SimplerButton playButton, slugcatSelectBackButton;
-    public ArenaLevelSelector levelSelector;
-    public OnlineArenaSettingsInferface arenaSettingsInterface;
-    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
-    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
+    public ArenaMainLobbyPage arenaMainLobbyPage;
+    public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
-    public EventfulSelectOneButton[] slugcatSelectButtons;
-    public FSprite[] slugcatDescriptionGradients;
-    public Vector2[] slugcatDescriptionGradientsPos, oldPagesPos = [];
-    public TabContainer tabContainer;
-    public PlayerDisplayer? playerDisplayer;
-    public Dialog? slugcatDialog;
+    public Vector2[] oldPagesPos = [];
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
-    public ChatMenuBox chatMenuBox;
     public Page slugcatSelectPage;
     public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
-    public string? painCatName, painCatDescription;
-    public int selectedSlugcatIndex = 0;
+    public string painCatName;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
@@ -49,7 +39,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
             throw new InvalidOperationException("lobby is null");
 
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
-        if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
+        if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
         Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
@@ -60,117 +50,24 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
         ChangeScene(slugcatScene = Arena.slugcatSelectMenuScenes[Arena.arenaClientSettings.playingAs.value]);
-        competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
-        competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveShadow = new MenuIllustration(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveTitle = new MenuIllustration(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-        playButton = new(this, mainPage, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        painCatName = Arena.slugcatSelectPainCatNames[UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count)];
 
-        tabContainer = new(this, mainPage, new Vector2(470f, 125f), new Vector2(450, 475));
-        chatMenuBox = new(this, mainPage, new(100f, 125f), new(300, 475));
-        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, playButton, tabContainer, chatMenuBox);
-        ChatLogManager.Subscribe(chatMenuBox);
+        arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName);
+        arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName);
 
-        TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
-            matchSettingsTab = tabContainer.AddTab("Match Settings");
-
-        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(this, playListTab, new Vector2(65, 7.5f), false));
-
-        arenaSettingsInterface = new(this, matchSettingsTab, new(120, 205), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
-        arenaSettingsInterface.CallForSync();
-        matchSettingsTab.AddObjects(arenaSettingsInterface);
-
-        if (ModManager.MSC)
-        {
-            painCatName = PainCatNames[UnityEngine.Random.Range(0, PainCatNames.Length)];
-            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab("Slugcat Abilities");
-            slugcatAbilitiesInterface = new(this, slugabilitiesTab, new(360, 380), new(0, 50), painCatName);
-            slugcatAbilitiesInterface.CallForSync();
-            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
-        }
-
-        slugcatSelectBackButton = new SimplerButton(this, slugcatSelectPage, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), description: "Go back to main lobby");
-        slugcatSelectBackButton.OnClick += _ => MovePage(new Vector2(1500f, 0f), 0);
-        slugcatSelectPage.subObjects.Add(slugcatSelectBackButton);
-
-        slugcatSelectButtons = new EventfulSelectOneButton[allSlugcats.Count];
-        int buttonsInTopRow = (int)Mathf.Floor(allSlugcats.Count / 2f);
-        int buttonsInBottomRow = allSlugcats.Count - buttonsInTopRow;
-        float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
-        float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
-
-        MenuIllustration painCatPortrait = null;
-        EventfulSelectOneButton painCatButton = null;
-        for (int i = 0; i < allSlugcats.Count; i++)
-        {
-            int index = i;
-
-            Vector2 pos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
-            EventfulSelectOneButton btn = new(this, slugcatSelectPage, "", "scug select", pos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            btn.OnClick += _ => SwitchSelectedSlugcat(allSlugcats[index]);
-
-            MenuIllustration portrait = new(this, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
-            btn.subObjects.Add(portrait);
-
-            if (allSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-                painCatButton = btn;
-                painCatPortrait = portrait;
-                painCatDescription = Arena.slugcatSelectPainCatDescriptions
-                [
-                    UnityEngine.Random.Range(0, 3) == 1 ? // 33% chance for portrait specific description, 66% for general quotes
-                    int.Parse(Regex.Match(painCatPortrait.fileName, @"\d+").Value[0].ToString()) :
-                    UnityEngine.Random.Range(5, Arena.slugcatSelectPainCatDescriptions.Count)
-                ].Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
-            }
-
-            slugcatSelectPage.subObjects.Add(btn);
-            slugcatSelectButtons[i] = btn;
-        }
-
-        SimplerButton randomizePainCat = new(this, slugcatSelectPage, $"Randomize {painCatName} select data", new Vector2(1056, 50), new Vector2(300, 30));
-        randomizePainCat.OnClick += _ =>
-        {
-            painCatPortrait.RemoveSprites();
-            slugcatSelectPage.RemoveSubObject(painCatPortrait);
-            slugcatSelectPage.SafeAddSubobjects(painCatPortrait = new(this, painCatButton, "", SlugcatColorableButton.GetFileForSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel, false), painCatButton.size / 2, true, true));
-            bool usePortraitDescription = UnityEngine.Random.Range(0, 3) == 1;
-            int portraitIndex = int.Parse(Regex.Match(painCatPortrait.fileName, @"\d+").Value[0].ToString());
-            int descriptionIndex = usePortraitDescription ? UnityEngine.Random.Range(5, Arena.slugcatSelectPainCatDescriptions.Count) : portraitIndex;
-            RainMeadow.Debug($"description index: {descriptionIndex}; portrait index: {portraitIndex}; random: {usePortraitDescription}; portrait name: {painCatPortrait.fileName}");
-
-            painCatDescription = Arena.slugcatSelectPainCatDescriptions[descriptionIndex].Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
-            SwitchSelectedSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
-        };
-        slugcatSelectPage.subObjects.Add(randomizePainCat);
-
-        MenuLabel chooseYourSlugcatLabel = new(this, slugcatSelectPage, "Choose Your Slugcat", new Vector2(680f, 575f), default, true);
-        chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
-        slugcatSelectPage.subObjects.Add(chooseYourSlugcatLabel);
-
-        slugcatNameLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectDisplayNames[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 310f), default, true);
-        slugcatSelectPage.subObjects.Add(slugcatNameLabel);
-
-        slugcatDescriptionLabel = new MenuLabel(this, slugcatSelectPage, Arena.slugcatSelectDescriptions[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 210f), default, bigText: true);
-        slugcatDescriptionLabel.label.color = new Color(0.8f, 0.8f, 0.8f);
-        slugcatSelectPage.subObjects.Add(slugcatDescriptionLabel);
-
-        slugcatDescriptionGradients = new FSprite[4];
-        slugcatDescriptionGradientsPos = new Vector2[4];
-
-        for (int i = 0; i < slugcatDescriptionGradients.Length; i++)
-        {
-            slugcatDescriptionGradients[i] = new FSprite("LinearGradient200")
-            {
-                rotation = i % 2 == 0 ? 270f : 90f,
-                scaleY = 2f,
-                anchorX = 0.6f,
-                anchorY = 0f,
-            };
-            slugcatDescriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
+        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
+        ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
+        slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
+        slugcatDescriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
             container.AddChild(slugcatDescriptionGradients[i]);
         }
 
+        BuildPlayerDisplay();
+        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
@@ -221,7 +118,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         if (!RainMeadow.isArenaMode(out _))
-        {
+          {
             RainMeadow.Error("arena is null, slugcat wont be changed!");
             return;
         }
@@ -229,31 +126,16 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
         Arena.arenaClientSettings.playingAs = slugcat;
         GetArenaSetup.playerClass[0] = slugcat;
-        selectedSlugcatIndex = allSlugcats.IndexOf(slugcat);
+
         RainMeadow.Debug($"My Slugcat: {Arena.arenaClientSettings.playingAs}, in lobby list of client settings: {(ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)?.playingAs?.value) ?? "NULL!"}");
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-        {
-            slugcatDescriptionLabel.text = painCatDescription;
-            slugcatNameLabel.text = painCatName;
-            return;
-        }
-
-        slugcatDescriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
-        slugcatNameLabel.text = Arena.slugcatSelectDisplayNames[slugcat.value];
-
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
-        {
-            PlaySound(RainMeadow.Ext_SoundID.Fartificer);
-            slugcatNameLabel.text = "The Fartificer";
-        }
     }
     public override void ShutDownProcess()
     {
-        chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
-        ChatLogManager.Unsubscribe(chatMenuBox);
+        arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
+        ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
-            SaveInterfaceOptions();
+            arenaMainLobbyPage.SaveInterfaceOptions();
             GetArenaSetup.SaveToFile();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
@@ -276,9 +158,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
         else if (pageFullyTransitioned) base.Update();
         else SmartMenuUpdateNoEscapeCheck();
 
-        foreach (SelectOneButton button in slugcatSelectButtons)
-            button.buttonBehav.greyedOut = pendingBgChange;
-
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + (pendingBgChange ? 0.01f : -0.01f), 0.8f, 1.1f);
         pendingBgChange = pendingBgChange || slugcatScene != scene.sceneID;
@@ -291,14 +170,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
     {
         base.GrafUpdate(timeStacker);
         menuDarkSprite.darkSprite.alpha = Mathf.Clamp(Mathf.Lerp(lastDesiredBgCoverAlpha, desiredBgCoverAlpha, timeStacker), 0.8f, 1.1f);
-        for (int i = 0; i < slugcatDescriptionGradients.Length; i++)
-        {
-            FSprite gradientSprite = slugcatDescriptionGradients[i];
-            Vector2 gradientSpritePos = slugcatDescriptionGradientsPos[i];
-
-            gradientSprite.x = slugcatSelectPage.DrawX(timeStacker) + gradientSpritePos.x;
-            gradientSprite.y = slugcatSelectPage.DrawY(timeStacker) + gradientSpritePos.y;
-        }
     }
     public override string UpdateInfoText()
     {
@@ -306,9 +177,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
         {
             string idString = checkBox.IDString;
             if (idString == "SPEARSHIT")
-                return arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
+                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
             if (idString == "EVILAI")
-                return arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
+                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -334,28 +205,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
+        ChatLogManager.UpdatePlayerColors();
         if (!RainMeadow.isArenaMode(out _)) return;
         ChatLogManager.UpdatePlayerColors();
         SlugcatStats.Name slugcat = Arena.arenaClientSettings.playingAs;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
-        if (playerDisplayer != null)
-        {
-            foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
-            {
-                if (button is ArenaPlayerBox playerBox)
-                {
-                    ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
-                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
-                    playerBox.isSelectingSlugcat = clientSettings?.selectingSlugcat ?? false;
-
-                    if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
-                    else playerBox.slugcatButton.portraitColor = Color.white;
-                }
-                if (button is ArenaPlayerSmallBox smallPlayerBox)
-                    smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
-            }
-        }
     }
     public void UpdateMovingPage()
     {
@@ -375,89 +230,5 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
                 pageFullyTransitioned = true;
             }
         }
-    }
-    public void SaveInterfaceOptions()
-    {
-        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
-        if (slugcatAbilitiesInterface != null)
-        {
-            RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.BlockArtiStun.Value = slugcatAbilitiesInterface.blockArtiStunCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.ArenaSAINOT.Value = slugcatAbilitiesInterface.sainotCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.PainCatEgg.Value = slugcatAbilitiesInterface.painCatEggCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.PainCatThrows.Value = slugcatAbilitiesInterface.painCatThrowsCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.PainCatLizard.Value = slugcatAbilitiesInterface.painCatLizardCheckBox.Checked;
-            RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
-        }
-    }
-    public void BuildPlayerDisplay()
-    {
-        if (playerDisplayer != null) return;
-
-        playerDisplayer = new(this, mainPage, new(960, 130), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x + 30, ArenaPlayerBox.DefaultSize.y, 0, ArenaPlayerSmallBox.DefaultSize.y, 10);
-        mainPage.subObjects.Add(playerDisplayer);
-        playerDisplayer.CallForRefresh();
-    }
-    public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
-    {
-        if (!RainMeadow.isArenaMode(out _)) return;
-
-        RainMeadow.DebugMe();
-        BuildPlayerDisplay();
-        playerDisplayer?.UpdatePlayerList(OnlineManager.players);
-    }
-    public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
-    {
-        if (isLargeDisplay)
-        {
-            ArenaPlayerBox playerBox = new(this, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
-            if (player.isMe)
-            {
-                playerBox.slugcatButton.OnClick += (_) =>
-                {
-                    MovePage(new Vector2(-1500f, 0f), 1);
-                };
-                playerBox.colorInfoButton.OnClick += (_) =>
-                {
-                    OpenColorConfig(playerBox.slugcatButton.slugcat);
-                };
-            }
-            playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
-            return playerBox;
-        }
-
-        ArenaPlayerSmallBox playerSmallBox = new(this, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
-
-        if (player.isMe)
-        {
-            playerSmallBox.slugcatButton.OnClick += _ => MovePage(new Vector2(-1500f, 0f), 1);
-            playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
-        }
-
-        playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
-        return playerSmallBox;
-    }
-    public void OpenColorConfig(SlugcatStats.Name? slugcat)
-    {
-        if (!ModManager.MMF)
-        {
-            PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            slugcatDialog = new DialogNotify("You cant color without Remix on!", new(500, 200), manager, () => { });
-            manager.ShowDialog(slugcatDialog);
-            return;
-        }
-        PlaySound(SoundID.MENU_Checkbox_Check);
-        slugcatDialog = new ColorMultipleSlugcatsDialog(manager, () => { }, allSlugcats, slugcat);
-        manager.ShowDialog(slugcatDialog);
-    }
-
-    public int GetCurrentlySelectedOfSeries(string series)
-    {
-        return selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
-    }
-
-    public void SetCurrentlySelectedOfSeries(string series, int to)
-    {
-        selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
 }
