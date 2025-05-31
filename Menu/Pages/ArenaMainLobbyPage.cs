@@ -11,6 +11,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public SimplerButton playButton;
     public TabContainer tabContainer;
     public ArenaLevelSelector levelSelector;
+    public ChatMenuBox chatMenuBox;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
@@ -20,7 +21,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
     {
         playButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-
+        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
