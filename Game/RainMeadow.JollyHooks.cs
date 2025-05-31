@@ -110,8 +110,11 @@ namespace RainMeadow
 
             // IL.OverseerAbstractAI.get_RelevantPlayer += SoftDisableJollyCoOP; 
 
-            IL.Player.AddFood += SoftDisableJollyCoOP;
-            IL.Player.AddQuarterFood += SoftDisableJollyCoOP;
+            IL.Player.AddFood += WhiteListJollyCoop;
+            IL.Player.AddQuarterFood += WhiteListJollyCoop;
+            IL.Player.SubtractFood += WhiteListJollyCoop;
+
+
             IL.Player.CanEatMeat += SoftDisableJollyCoOP;
             IL.Player.CanIPickThisUp += SoftDisableJollyCoOP;
             IL.Player.CanIPutDeadSlugOnBack += SoftDisableJollyCoOP;
@@ -152,7 +155,6 @@ namespace RainMeadow
             IL.Player.SlugOnBack.Update += SoftDisableJollyCoOP;
             IL.Player.SlugSlamConditions += SoftDisableJollyCoOP;
             IL.Player.Stun += SoftDisableJollyCoOP;
-            IL.Player.SubtractFood += SoftDisableJollyCoOP;
             IL.Player.Update += SoftDisableJollyCoOP;
             IL.Player.UpdateMSC += SoftDisableJollyCoOP;
             IL.PlayerGraphics.ApplyPalette += SoftDisableJollyCoOP;
@@ -199,11 +201,14 @@ namespace RainMeadow
             IL.RoomSpecificScript.SL_C12JetFish.ctor += WhiteListJollyCoop;
             IL.RoomSpecificScript.SU_C04StartUp.Update += WhiteListJollyCoop;
 
+            // 
+            IL.ShelterDoor.DoorClosed += WhiteListJollyCoop;
+
 
             IL.SaveState.BringUpToDate += SoftDisableJollyCoOP;
             IL.SaveState.SessionEnded += SoftDisableJollyCoOP;
             IL.ShelterDoor.Close += SoftDisableJollyCoOP;
-            IL.ShelterDoor.DoorClosed += SoftDisableJollyCoOP;
+            
             IL.ShelterDoor.Update += SoftDisableJollyCoOP;
             IL.ShortcutHandler.SuckInCreature += SoftDisableJollyCoOP;
             IL.ShortcutHandler.Update += SoftDisableJollyCoOP;

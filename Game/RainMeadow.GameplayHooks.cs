@@ -554,52 +554,77 @@ namespace RainMeadow
             {
                 bool ready_for_win = true;
                 bool starving = false;
-                for (int i = 0; i < self.room.game.Players.Count; i++) {
-                    AbstractCreature player = self.room.game.Players[i];
+                for (int i = 0; i < self.room.game.Players.Count; i++)
+                {
+                    AbstractCreature? player = self.room.game.Players[i];
+                    if (player is null) continue;
                     if (player.state.dead)
                     {
                         if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.EASY)
                         {
-                            continue;
-                        }
-                        else if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.HARD)
-                        {
-                            ready_for_win = false;
-                            break;
+                            if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.EASY)
+                            {
+                                continue;
+                            }
+                            else if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.HARD)
+                            {
+                                // RainMeadow.Debug("not ready for win since somebody is dead on hard mode");
+                                ready_for_win = false;
+                                break;
+                            }
                         }
                     }
 
-                    if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6) {
+                    if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6)
+                    {
+                        // RainMeadow.Debug("not ready for win since somebody is to close to the entrance");
                         ready_for_win = false;
                         break;
                     }
 
-                    if (!ShelterDoor.IsTileInsideShelterRange(self.room.abstractRoom, player.pos.Tile)) {
+                    if (!ShelterDoor.IsTileInsideShelterRange(self.room.abstractRoom, player.pos.Tile))
+                    {
+                        // RainMeadow.Debug("not ready for win since somebody is not in the shelters range");
                         ready_for_win = false;
                         break;
                     }
 
-
-                    if (player.Room != self.room.abstractRoom) {
+                    if (player.Room != self.room.abstractRoom)
+                    {
+                        // RainMeadow.Debug($"not ready for win since somebody is not in the room. is_dead: {player.state.dead}");
                         ready_for_win = false;
                         continue;
                     }
 
-                    if (player.realizedCreature is Player p) {
-                        if (p.forceSleepCounter <= 0) {
-                            if (p.timeSinceInCorridorMode < 10) {
+                    if (player.realizedCreature is Player p && !player.state.dead)
+                    {
+                        if (p.forceSleepCounter <= 0)
+                        {
+                            if (p.timeSinceInCorridorMode < 10)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody is in a corridor. is_dead: {player.state.dead}");
                                 ready_for_win = false;
                                 break;
                             }
 
-                            if (p.touchedNoInputCounter < 80) {
+                            if (p.touchedNoInputCounter < 80)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody is touching iputs. is_dead: {player.state.dead}");
+                                ready_for_win = false;
+                                break;
+                            }
+
+                            if (!p.readyForWin)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody isn't ready for win. is_dead: {player.state.dead}");
                                 ready_for_win = false;
                                 break;
                             }
                         }
 
 
-                        if (p.forceSleepCounter > 0) {
+                        if (p.forceSleepCounter > 0)
+                        {
                             starving = true;
                         }
                     }
@@ -611,7 +636,17 @@ namespace RainMeadow
                 }
 
                 if (!(ready_for_win && starving && OnlineManager.lobby.isOwner)) {
-                    if (!storyGameMode.readyForWin) return;
+                    if (!storyGameMode.readyForWin)
+                    {
+                        if (self.room.updateList[self.room.updateIndex] is Player smeepy)
+                        {
+                            // wake us up
+                            smeepy.sleepCounter = 0;
+                            smeepy.forceSleepCounter = Mathf.Min(smeepy.forceSleepCounter, 260);
+                        }
+                        
+                        return;
+                    }
                 }
 
             }
@@ -624,6 +659,7 @@ namespace RainMeadow
                 if (!realizedScug.readyForWin) return;
             }
 
+            bool wasClosing = self.IsClosing;
             orig(self);
 
             if (self.IsClosing)
@@ -634,7 +670,7 @@ namespace RainMeadow
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
 
-                    if (OnlineManager.lobby.isOwner)
+                    if (OnlineManager.lobby.isOwner && !wasClosing)
                     {
                         foreach (OnlinePlayer p in OnlineManager.players)
                         {

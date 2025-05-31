@@ -1038,20 +1038,7 @@ public partial class RainMeadow
 
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
-        if (state.playerNumber != 0)
-        {
-            // jolly sync food
-            try
-            {
-                state = (PlayerState)self.abstractPhysicalObject.world.game.Players[0].state;
-            }
-            catch (Exception except)
-            {
-                RainMeadow.Error(except);
-            }
-            
-        }
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self);
@@ -1081,7 +1068,7 @@ public partial class RainMeadow
 
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self, add);
@@ -1111,7 +1098,7 @@ public partial class RainMeadow
 
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self, add);
