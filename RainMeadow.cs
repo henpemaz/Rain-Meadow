@@ -208,6 +208,7 @@ namespace RainMeadow
                 ArenaHooks();
                 ItemHooks();
                 ObjectHooks();
+                JollyHooks();
 
                 CapeManager.FetchCapes();
 
