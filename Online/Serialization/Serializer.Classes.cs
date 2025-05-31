@@ -21,6 +21,30 @@ namespace RainMeadow
             }
         }
 
+        // TODO: this is just a copy paste of above with the extra bool for nullability,
+        // we could probably do better tbh - no idea how through
+        public void SerializeExtEnumNullable<T>(ref T extEnum) where T : ExtEnum<T>
+        {
+            if (IsWriting)
+            {
+                writer.Write(extEnum != null);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                if (extEnum != null)
+                {
+                    writer.Write((byte)extEnum.Index);
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                }
+            }
+        }
+
         public void SerializeExtEnums<T>(ref T[] extEnum) where T : ExtEnum<T>
         {
             if (IsWriting)
