@@ -40,8 +40,7 @@ namespace RainMeadow
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
-        public List<string> slugcatSelectPainCatDescriptions;
-
+        public List<string> slugcatSelectPainCatNames = [], slugcatSelectPainCatDescriptions = [];
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -141,6 +140,7 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
+                slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
                 slugcatSelectPainCatDescriptions = [
                     /* portrait 0 */ ":)",
                     /* portrait 1 */ "uwu",
@@ -217,7 +217,7 @@ namespace RainMeadow
 
         public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
         {
-            
+
             if (!this.registeredGameModes.ContainsKey(externMode))
             {
                 this.registeredGameModes.Add(externMode, gametypeID.value);
