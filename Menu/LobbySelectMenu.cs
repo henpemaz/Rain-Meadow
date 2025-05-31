@@ -292,13 +292,16 @@ namespace RainMeadow
             }
 
             // If has password, we show the dialog, otherwise we only let them join when the dialog is no longer present
-            if (lobbyInfo.hasPassword)
+            if (popupDialog is null)
             {
-                ShowPasswordRequestDialog();
-            }
-            else if (popupDialog is null)
-            {
-                StartJoiningLobby(lobbyInfo);
+                if (lobbyInfo.hasPassword)
+                {
+                    ShowPasswordRequestDialog();
+                }
+                else
+                {
+                    StartJoiningLobby(lobbyInfo);
+                }
             }
         }
 
