@@ -64,13 +64,15 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-        ArenaOnlineLobbyMenu? arenaMenu = (menu as ArenaOnlineLobbyMenu);
+        ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
+
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
             if (player.isMe)
             {
-                playerBox.slugcatButton.OnClick += _ => arenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
+                playerBox.slugcatButton.OnClick += _ =>
+                    dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
                 playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
             }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
@@ -78,9 +80,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
 
         ArenaPlayerSmallBox playerSmallBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
+
         if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += _ => arenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
+            playerSmallBox.slugcatButton.OnClick += _ => dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
             playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
 
