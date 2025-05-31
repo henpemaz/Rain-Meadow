@@ -260,8 +260,6 @@ namespace RainMeadow
                 }
             }
 
-            this.ConnectEnd();
-
             for (int k = 2; k <= SlugcatCape.size; k++)
             {
                 float num2 = (float)k / (float)SlugcatCape.size;
@@ -269,11 +267,13 @@ namespace RainMeadow
                 {
                     float num3 = (float)l / (float)SlugcatCape.size * 2f - 1f;
                     ref SimpleSegment ptr = ref this.segments[l, k];
-                    ptr.vel.y = ptr.vel.y - 0.4f*room.gravity;
+                    ptr.vel.y = ptr.vel.y - 0.4f * room.gravity;
                     float num4 = 1f - 2f * num2;
 
-                    if (room.waterObject is not null) {
-                        if (room.PointSubmerged(ptr.pos)) {
+                    if (room.waterObject is not null)
+                    {
+                        if (room.PointSubmerged(ptr.pos))
+                        {
                             ptr.vel.x = ptr.vel.x * (1f - 0.75f * room.waterObject.viscosity);
                             if (ptr.vel.y > 0f)
                             {
@@ -284,12 +284,12 @@ namespace RainMeadow
                                 ptr.vel.y = ptr.vel.y * (1f - 0.15f * room.waterObject.viscosity);
                             }
 
-                            ptr.vel.y += 0.45f + (0.2f*room.waterObject.viscosity);
+                            ptr.vel.y += 0.45f + (0.2f * room.waterObject.viscosity);
                         }
                     }
                     if (num4 > 0f)
                     {
-                        ptr.vel +=  Custom.PerpendicularVector(normalized) * num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
+                        ptr.vel += Custom.PerpendicularVector(normalized) * num4 * num3 * 2.0f * (1f - 0.7f * Mathf.Abs(normalized.x));
                     }
                 }
             }
@@ -311,6 +311,8 @@ namespace RainMeadow
                     }
                 }
             }
+            
+            this.ConnectEnd();
         }
     }
 }
