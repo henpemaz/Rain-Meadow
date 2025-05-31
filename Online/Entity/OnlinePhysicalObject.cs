@@ -556,10 +556,15 @@ namespace RainMeadow
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) {
+                if (result.HasValue)
+                {
+                    if (result.Value.obj != null && result.Value.obj is Creature c)
+                    {
+                        c.killTag = (this.apo.realizedObject as Weapon).thrownBy.abstractCreature;
+                    }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
-                
+
             }
             
             HittingRemotely = false;
