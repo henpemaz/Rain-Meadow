@@ -176,7 +176,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu, SelectOneButton.SelectOneButtonOw
     }
 
     public void ChangeScene(MenuScene.SceneID sceneID)
-        RainMeadow.Debug($"Scene wanted to switch: {sceneID.value}");
+    {
         RainMeadow.Debug($"Scene wanted to switch: {sceneID.value}");
         slugcatScene = sceneID;
         pendingBgChange = false;
