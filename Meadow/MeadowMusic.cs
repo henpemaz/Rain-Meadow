@@ -26,7 +26,10 @@ namespace RainMeadow
             
             On.Music.PlayerThreatTracker.Update += PlayerThreatTracker_Update; // joke of how hooks get grouped, so, oooo what about them below vvvvvv??  --> yo which hook is this one go to? oooOOOoooooo
 
-            On.Music.MusicPiece.ctor += MusicPiece_ctor;
+            //On.Music.MusicPlayer.ctor += MusicPlayer_ctor; Liar doesn't actually hook onto it for some reason (AddComponent's return null)
+            //On.Music.MusicPlayer.Update += MusicPlayer_Update;
+            //On.Music.MusicPiece.ctor += MusicPiece_ctor;
+            On.Music.MusicPlayer.UpdateMusicContext += MusicPlayer_UpdateMusicContext;
             On.Music.MusicPiece.StopAndDestroy += MusicPiece_StopAndDestroy;
 
             //In game music requests we want to hook for treatment if we're in a group (to broadcast/not play)
@@ -252,19 +255,24 @@ namespace RainMeadow
 
 
         // Music code
-        private static void MusicPiece_ctor(On.Music.MusicPiece.orig_ctor orig, MusicPiece self, MusicPlayer musicPlayer, string name, MusicPlayer.MusicContext context)
+        private static void MusicPlayer_UpdateMusicContext(On.Music.MusicPlayer.orig_UpdateMusicContext orig, MusicPlayer self, MainLoopProcess currentProcess)
         {
-            orig.Invoke(self, musicPlayer, name, context);
-
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
+            if (self.musicContext != null
+                && currentProcess.ID == ProcessManager.ProcessID.Game
+                && ((RainWorldGame)currentProcess).IsStorySession && OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode mgm)
             {
-                if (self.musicPlayer.gameObj != null)
+                if ((self.song != null) && self.gameObj.GetComponent<AudioHighPassFilter>() == null)
                 {
-                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
-                    self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = false;
+                    var hpf = self.gameObj.AddComponent<AudioHighPassFilter>();
+                    hpf.cutoffFrequency = 10f;
+                    hpf.enabled = false;
                 }
             }
+            else
+            {
+                if (self.song != null && self.gameObj.GetComponent<AudioHighPassFilter>() != null) self.song.FadeOut(120f);
+            }
+            orig.Invoke(self, currentProcess);
         }
         private static void PlayerThreatTracker_Update(On.Music.PlayerThreatTracker.orig_Update orig, PlayerThreatTracker self)
         {
@@ -287,25 +295,41 @@ namespace RainMeadow
                 float ghostiness = ((RainWorldGame)self.musicPlayer.manager.currentMainLoop).cameras[0].ghostMode;
                 self.ghostMode = ghostiness > 0.1f ? ghostiness : 0f;
                 
-                var Components = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>;
+                var highPassFilter = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>();
 
-                if (self.ghostMode == 0f && Components().enabled)
+                if (highPassFilter == null)
                 {
-                    if (Components().cutoffFrequency < 12f)
+                    self.musicPlayer.gameObj.AddComponent<AudioHighPassFilter>();
+                    if (self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>() == null)
                     {
-                        Components().enabled = false;
+                        RainMeadow.Debug("Pillock");
+                        return;
+                    }
+                    else
+                    {
+                        self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().enabled = true;
+                        self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>().cutoffFrequency = 10f;
+                        highPassFilter = self.musicPlayer.gameObj.GetComponent<AudioHighPassFilter>();
                     }
                 }
-                else if (self.ghostMode > 0f && !Components().enabled)
+
+                if (self.ghostMode == 0f && highPassFilter.enabled)
                 {
-                    Components().enabled = true;
+                    if (highPassFilter.cutoffFrequency < 12f)
+                    {
+                        highPassFilter.enabled = false;
+                    }
+                }
+                else if (self.ghostMode > 0f && !highPassFilter.enabled)
+                {
+                    highPassFilter.enabled = true;
                 }
                 
-                if (self.ghostMode > 0f || Components().cutoffFrequency > 12f)
+                if (self.ghostMode > 0f || highPassFilter.cutoffFrequency > 12f)
                 {
-                    float currenthighpass = Components().cutoffFrequency;
-                    float highpassgoal = Mathf.Lerp(0f, 2400f, Mathf.Pow(self.ghostMode, 2.5f));    
-                    Components().cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, currenthighpass > highpassgoal ? 0.025f : 0.005f, 0.0f);
+                    float currenthighpass = highPassFilter.cutoffFrequency;
+                    float highpassgoal = Mathf.Lerp(0f, 2400f, Mathf.Pow(self.ghostMode, 2.5f));
+                    highPassFilter.cutoffFrequency = Custom.LerpAndTick(currenthighpass, highpassgoal, currenthighpass > highpassgoal ? 0.025f : 0.005f, 0.0f);
                 }
 
                 // further things commented out by this: roomswitches updating, a deltaactivated NewRegion call, a threatmusic thing for msc challenges (ew why is that there),
@@ -867,7 +891,7 @@ namespace RainMeadow
             }
             else
             {
-                    Song song = new(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode) { priority = 255_207_64, stopAtDeath = false, stopAtGate = false, lp = providedsong == "NA_41 - Random Gods" }; // :) I trust my songs to be tantamount :) also NA_41 is right next to "NA_40 - Unseen Lands", funny
+                Song song = new Song(musicPlayer, providedsong, MusicPlayer.MusicContext.StoryMode) { priority = 255_207_64, stopAtDeath = false, stopAtGate = false, lp = providedsong == "NA_41 - Random Gods" }; // :) I trust my songs to be tantamount :) also NA_41 is right next to "NA_40 - Unseen Lands", funny
                 if (willfadein) song.fadeInTime = 120f;
                 MusicPiece.SubTrack sub = song.subTracks[0];
                 sub.source.Pause();

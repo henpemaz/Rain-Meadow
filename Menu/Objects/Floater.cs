@@ -121,8 +121,8 @@ namespace RainMeadow
                     }
                 }
                 if (!correct) { text = text.Substring(0, text.Length - 1); } else { text = text + goodletter; }
-                if (!appearing && (progress < 0.7)) text = text.Substring(0, text.Length - 1);
-                if (!appearing && (progress < 0.4)) text = text.Substring(0, text.Length - 1);
+                if (!appearing && (progress < 0.7) && text.Length > 0) text = text.Substring(0, text.Length - 1);
+                if (!appearing && (progress < 0.4) && text.Length > 0) text = text.Substring(0, text.Length - 1);
             }
             lastprogress = progress;
         }
