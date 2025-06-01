@@ -62,12 +62,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-
-        RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
-        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-        RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
-        SwitchSelectedSlugcat(GetArenaSetup.playerClass[0]);
-        ChangeScene(slugcatScene!);
     }
 
     public void ChangeScene(MenuScene.SceneID sceneID)
@@ -114,12 +108,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
-        slugcat = allSlugcats.IndexOf(slugcat) == -1 ? allSlugcats[0] : slugcat;
         GetArenaSetup.playerClass[0] = slugcat;
-
-        }
-        slugcatNameLabel.text = "The Fartificer";
-        }
+        slugcatScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
+        pendingBgChange = true;
     }
     public override void ShutDownProcess()
     {
@@ -217,8 +208,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (pages[i].pos == oldPagesPos[i] + newPagePos)
             {
                 pagesMoving = false;
+            }
         }
-    {
-        selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
     }
 }

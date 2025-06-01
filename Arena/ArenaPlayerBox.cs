@@ -45,7 +45,7 @@ namespace RainMeadow.UI.Components
             slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
-            selectingStatusLabel = new(menu, slugcatButton, menu.Translate("Selecting\nSlugcat"), Vector2.zero, slugcatButton.size, false);
+            selectingStatusLabel = new(menu, slugcatButton, Custom.ReplaceLineDelimeters(menu.Translate("Selecting<LINE>Slugcat")), Vector2.zero, slugcatButton.size, false);
             InitButtons(canKick);
             this.SafeAddSubobjects(slugcatButton, nameLabel, selectingStatusLabel, colorInfoButton, infoKickButton);
             subObjects.AddRange(lines);

@@ -27,7 +27,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f), false));
 
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 205f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
@@ -97,7 +97,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (!ModManager.MMF)
         {
             menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            slugcatDialog = new DialogNotify("You cant color without Remix on!", new Vector2(500f, 200f), menu.manager, () => { });
+            slugcatDialog = new DialogNotify(menu.Translate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
             menu.manager.ShowDialog(slugcatDialog);
             return;
         }

@@ -79,7 +79,6 @@ namespace RainMeadow
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             ArenaHelpers.RecreateSlugcatCache();
-            ArenaHelpers.RecreateRandomScenes(OnlineManager.instance.manager.rainWorld.flatIllustrations);
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             playerResultColors = new Dictionary<string, int>();
@@ -118,10 +117,10 @@ namespace RainMeadow
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
-                { "White", "The Survivor" },
-                { "Yellow", "The Monk" },
-                { "Red", "The Hunter" },
-                { "Night", "The Nightcat" },
+                { "White", "THE SURVIVOR" },
+                { "Yellow", "THE MONK" },
+                { "Red", "THE HUNTER" },
+                { "Night", "THE NIGHTCAT" },
             };
 
             if (ModManager.MSC)
@@ -141,7 +140,8 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
-                slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
+
+                slugcatSelectPainCatNames = ["INV", "ENOT", "PAINCAT", "SOFANTHIEL", "GORBO"]; // not using "???" cause it might cause some confusion to players who don't know Inv
                 slugcatSelectPainCatDescriptions = [
                     /* portrait 0 */ ":)",
                     /* portrait 1 */ "uwu",
@@ -166,20 +166,20 @@ namespace RainMeadow
                     "$5 to unlock this description.",
                 ];
 
-                slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
-                slugcatSelectDisplayNames.Add("Artificer", "The Artificer");
-                slugcatSelectDisplayNames.Add("Spear", "The Spearmaster");
-                slugcatSelectDisplayNames.Add("Rivulet", "The Rivulet");
-                slugcatSelectDisplayNames.Add("Saint", "The Saint");
-                slugcatSelectDisplayNames.Add("Slugpup", "The Slugpup");
-                slugcatSelectDisplayNames.Add("Inv", "Inv");
+                slugcatSelectDisplayNames.Add("Gourmand", "THE GOURMAND");
+                slugcatSelectDisplayNames.Add("Artificer", "THE ARTIFICER");
+                slugcatSelectDisplayNames.Add("Spear", "THE SPEARMASTER");
+                slugcatSelectDisplayNames.Add("Rivulet", "THE RIVULET");
+                slugcatSelectDisplayNames.Add("Saint", "THE SAINT");
+                slugcatSelectDisplayNames.Add("Slugpup", "THE SLUGPUP");
+                slugcatSelectDisplayNames.Add("Inv", "INV");
             }
 
             if (ModManager.Watcher)
             {
                 slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
                 slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.\nClosed: Whispers. Freezing. Drowning.\nOpen: Echoes. Balance. Weightless.");
-                slugcatSelectDisplayNames.Add("Watcher", "The Watcher");
+                slugcatSelectDisplayNames.Add("Watcher", "THE WATCHER");
 
                 slugcatSelectMenuScenes.Remove("Night");
                 slugcatSelectDescriptions.Remove("Night");
