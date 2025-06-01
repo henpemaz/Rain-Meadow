@@ -21,6 +21,29 @@ namespace RainMeadow
             }
         }
 
+        public void SerializeNullableExtEnum<T>(ref T extEnum) where T : ExtEnum<T>
+        {
+            if (IsWriting)
+            {
+                writer.Write(extEnum != null);
+#if TRACING
+                if (IsWriting) RainMeadow.Trace(1);
+#endif
+                if (extEnum != null)
+                {
+                    SerializeExtEnum<T>(ref extEnum);
+                }
+            }
+            if (IsReading)
+            {
+                if (reader.ReadBoolean())
+                {
+                    SerializeExtEnum<T>(ref extEnum!);
+                }
+            }
+        }
+
+
         public void SerializeExtEnums<T>(ref T[] extEnum) where T : ExtEnum<T>
         {
             if (IsWriting)

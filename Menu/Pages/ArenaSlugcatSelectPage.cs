@@ -11,7 +11,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 {
     public SimplerButton backButton;
     public MenuLabel slugcatNameLabel, descriptionLabel;
-    public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
@@ -28,27 +27,27 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), "Go back to main lobby");
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
-        slugcatSelectButtons = new EventfulSelectOneButton[allSlugcats.Count];
+        slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
 
-        int buttonsInTopRow = (int)Mathf.Floor(allSlugcats.Count / 2f);
-        int buttonsInBottomRow = allSlugcats.Count - buttonsInTopRow;
+        int buttonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
+        int buttonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - buttonsInTopRow;
         float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
 
         MenuIllustration painCatPortrait = null;
         EventfulSelectOneButton painCatButton = null;
-        for (int i = 0; i < allSlugcats.Count; i++)
+        for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
         {
             int index = i;
 
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            btn.OnClick += _ => ArenaMenu?.SwitchSelectedSlugcat(allSlugcats[index]);
+            btn.OnClick += _ => SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
 
-            MenuIllustration portrait = new(menu, btn, "", SlugcatColorableButton.GetFileForSlugcat(allSlugcats[i], false), btn.size / 2, true, true);
+            MenuIllustration portrait = new(menu, btn, "", SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false), btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
 
-            if (allSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            if (ArenaHelpers.selectableSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
                 painCatButton = btn;
                 painCatPortrait = portrait;
@@ -110,7 +109,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
-        selectedSlugcatIndex = allSlugcats.IndexOf(slugcat);
+        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat);
+        try
+        {
+            slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
+        } catch (System.IndexOutOfRangeException) {
+            selectedSlugcatIndex = 0;
+            slugcat = ArenaHelpers.selectableSlugcats[0];
+        }
+
+        ArenaMenu?.SwitchSelectedSlugcat(slugcat);
 
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
