@@ -34,7 +34,7 @@ namespace RainMeadow
             selectionWrap = new FSpriteWrap(menu, owner, _selection);
             this.subObjects.Add(selectionWrap);
 
-            menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f + pos.x, pos.y), size, false);
+            menuLabel = new MenuLabel(menu, this, displayText, new Vector2(-roundedRect.size.x / 2 + 10, 0), size, false);
             menuLabel.label.alignment = FLabelAlignment.Left;
             this.subObjects.Add(menuLabel);
 
