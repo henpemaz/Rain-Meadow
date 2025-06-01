@@ -93,6 +93,18 @@ namespace RainMeadow
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
                             creature.MoveMovable(cord);
+                            try
+                            {
+                                if (creature == handler.game.cameras[0].followAbstractCreature)
+                                {
+                                    handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
+                                } 
+                            }
+                            catch (Exception except)
+                            {
+                                RainMeadow.Debug(except);
+                            }
+                            
                             return true;
                         }
                     }
@@ -180,7 +192,8 @@ namespace RainMeadow
                             RoomSession? session = vessel.room.GetResource();
                             if (session is not null) {
                                 session.Needed();
-                                if (session.isAvailable && !session.isPending && ready) {
+                                if (session.isAvailable && !session.isPending && ready)
+                                {
                                     WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, -1);
                                     apo.MoveOnly(newCoord);
                                 }
