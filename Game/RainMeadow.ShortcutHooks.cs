@@ -95,10 +95,10 @@ namespace RainMeadow
                             creature.MoveMovable(cord);
                             try
                             {
-                                if (creature == handler.game.cameras[0].followAbstractCreature)
+                                if (creature.GetAllConnectedObjects().Contains(handler.game.cameras[0].followAbstractCreature))
                                 {
                                     handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
-                                } 
+                                }
                             }
                             catch (Exception except)
                             {
@@ -155,7 +155,8 @@ namespace RainMeadow
         // Prevent creatures from entering a room if their online counterpart has not yet entered!
         private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
         {
-            var result = orig(self, vessel);
+            var orig_result = orig(self, vessel);
+            var result = orig_result;
             if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
@@ -181,10 +182,11 @@ namespace RainMeadow
                         result = false; // Same for all connected entities
                         if (apo.Room != vessel.room && innerOnlineEntity.isMine) {
 
-                            bool ready = true;
+                            bool ready = orig_result;
                             if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null) {
                                 apo.world.ActivateRoom(vessel.room);
-                                if (apo is AbstractCreature critter) {
+                                if (apo is AbstractCreature critter)
+                                {
                                     ready = ready && self.CreatureAllowedInRoom(critter, vessel.room.realizedRoom);
                                 }  
                             }
