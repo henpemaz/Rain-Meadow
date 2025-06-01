@@ -14,6 +14,7 @@ namespace RainMeadow.UI.Components;
 
 public class ArenaLevelSelector : PositionedMenuObject
 {
+    //holy shit wtf is this
     public class LevelItem : ButtonTemplate, ButtonScroller.IPartOfButtonScroller, IHaveADescription
     {
         public MenuLabel label;
@@ -409,9 +410,7 @@ public class ArenaLevelSelector : PositionedMenuObject
 
         thumbLoadDelay = 2;
     }
-
     public bool IsThumbnailLoaded(string levelName) => loadedThumbTextures.Contains(levelName);
-
     public override void Update()
     {
         base.Update();
