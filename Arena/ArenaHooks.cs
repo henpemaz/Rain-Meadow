@@ -1489,7 +1489,7 @@ namespace RainMeadow
 
                     }
 
-                    if (message == "EXIT")
+                    if (message == "QUIT")
                     {
 
                         self.manager.rainWorld.options.DeleteArenaSitting();
