@@ -309,12 +309,12 @@ namespace RainMeadow
                                     RainMeadow.Debug($"early entity"); // room loading will place it
                                 }
 
-                            } 
-                            else 
+                            }
+                            else
                             {
                                 RainMeadow.Debug("node defined");
                                 apo.MoveOnly(topos);
-                                
+
                                 bool inshortcuts = false;
                                 if (apo.realizedObject is Creature c)
                                 {

@@ -278,6 +278,11 @@ namespace RainMeadow
                     slugcatOnBackTemp.onBack = p;
 
                     p.slugOnBack.DropSlug();
+                    if (!slugcatOnBackTemp.isNPC && slugcatOnBackTemp.input[0].jmp && slugcatOnBackTemp.IsLocal())
+                    {
+                        slugcatOnBackTemp.jumpChunk = p.mainBodyChunk;
+                        slugcatOnBackTemp.JumpOnChunk();
+                    }
                     slugcatOnBackTemp.onBack = null;
                     slugcatOnBackTemp = null;
                 }

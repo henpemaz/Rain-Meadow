@@ -64,7 +64,6 @@ public partial class RainMeadow
         On.SlugcatHand.EngageInMovement += SlugcatHand_EngageInMovement;
 
         On.Player.GrabUpdate += Player_GrabUpdatePiggyBack;
-        On.Player.SlugOnBack.DropSlug += Player_JumpOffOfBack;
         On.Player.CanIPutDeadSlugOnBack += Player_CanIPutDeadSlugOnBack;
         On.Player.CanEatMeat += Player_CanEatMeat;
         new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.Player_SetRippleLevel);
@@ -306,7 +305,6 @@ public partial class RainMeadow
             }
         }
     }
-    
     private void SlugOnBack_GraphicsModuleUpdated(ILContext ctx)
     {
         try
@@ -334,7 +332,7 @@ public partial class RainMeadow
                         Vector2 moveTo2 = Vector2.Lerp(self.owner.bodyChunks[1].pos, self.slugcat.bodyChunks[1].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
                         self.owner.bodyChunks[0].MoveFromOutsideMyUpdate(eu, moveTo);
                         self.owner.bodyChunks[1].MoveFromOutsideMyUpdate(eu, moveTo2);
-                        float mass_ratio = (self.owner.bodyChunks[0].mass/self.slugcat.bodyChunks[1].mass)/2f;
+                        float mass_ratio = (self.owner.bodyChunks[0].mass / self.slugcat.bodyChunks[1].mass) / 2f;
                         var offset = self.slugcat.bodyChunks[1].vel - self.owner.bodyChunks[0].vel;
                         self.owner.bodyChunks[0].vel += offset;
                         self.owner.bodyChunks[1].vel += offset;
@@ -464,13 +462,14 @@ public partial class RainMeadow
         
     }
 
-    public static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback) {
+    public static bool HasSlugcatClassOnBack(Player player, SlugcatStats.Name name, out Player? onback)
+    {
         onback = null;
-        int i = 0;
+        int i = 25;
 
         List<Player?> checked_players = new List<Player?> { null };
 
-        while (player != null && ((++i) < 20)) // builtin hard limit to prevent infinite loops.
+        while (player != null && ((--i) >= 0)) // builtin hard limit to prevent infinite loops.
         {
             if (player.slugOnBack is null) break;
             player = player.slugOnBack.slugcat;
@@ -485,6 +484,30 @@ public partial class RainMeadow
 
         return onback != null;
     }
+
+    public static bool GetBottomPlayer(Player player, out Player? bottom) {
+        bottom = null;
+        int i = 25;
+        var tempBottom = player;
+        while ((--i) >= 0)
+        {
+            if (tempBottom.onBack is null) break;
+            tempBottom = tempBottom.onBack;
+            // somebody is already acting as the backpack mechanic guy.
+            if ((tempBottom.SlugCatClass == player.SlugCatClass) && (tempBottom.onBack != null))
+            {
+                return false;
+            }
+        }
+
+        if (tempBottom != player)
+        {
+            bottom = tempBottom;
+        }
+
+        return bottom != null;
+    }
+    
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
     {
@@ -569,30 +592,13 @@ public partial class RainMeadow
         return orig_color;
     }
 
-    private void Player_JumpOffOfBack(On.Player.SlugOnBack.orig_DropSlug orig, Player.SlugOnBack self)
-    {
-        var slugcat = self.slugcat;
-        orig(self);
-
-        if (OnlineManager.lobby == null) return;
-        if (slugcat == null) return;
-
-        if (slugcat.IsLocal())
-        {
-            if (!slugcat.isNPC && slugcat.input[0].jmp)
-            {
-                slugcat.jumpChunk = self.owner.mainBodyChunk;
-                slugcat.JumpOnChunk();
-            }
-        }
-
-    }
 
     // Player Quick Piggy Backing from Stick Together Co-Op by WillowWisp 
     private void Player_GrabUpdatePiggyBack(On.Player.orig_GrabUpdate orig, Player self, bool eu)
     {
         orig(self, eu);
         if (OnlineManager.lobby == null) return;
+        if (!self.IsLocal()) return;
         if (!OnlineManager.lobby.gameMode.PlayersCanStack)
         {
             return;
@@ -608,7 +614,7 @@ public partial class RainMeadow
         {
             foreach (PhysicalObject obj in self.room.physicalObjects[self.collisionLayer])
             {
-                if (obj is Player other && other.IsLocal())
+                if (obj is Player other)
                 {
                     if (other == self) continue;
                     if (other.slugOnBack == null) continue;
@@ -624,8 +630,26 @@ public partial class RainMeadow
                     viable = viable || other.animation == Player.AnimationIndex.SurfaceSwim;
                     viable = viable || other.animation == Player.AnimationIndex.GrapplingSwing;
                     if (!viable) continue;
-
-                    other.slugOnBack?.SlugToBack(self);
+                    if (other.IsLocal())
+                    {
+                        other.slugOnBack?.SlugToBack(self);
+                    }
+                    else
+                    {
+                        var myobj = self.abstractCreature.GetOnlineCreature();
+                        if (myobj is null)
+                        {
+                            RainMeadow.Error($"{self.abstractCreature} is trying to backpack but it has no online presence.");
+                            continue;
+                        }
+                        var otherobj = other.abstractCreature.GetOnlineCreature();
+                        if (otherobj is null)
+                        {
+                            RainMeadow.Error($"{self.abstractCreature} is trying to backpack {other.abstractCreature} but it has no online presence.");
+                            continue;
+                        }
+                        otherobj.owner.InvokeRPC(otherobj.HopOnBack, myobj);
+                    }
                     break;
                 }
             }
@@ -704,7 +728,22 @@ public partial class RainMeadow
             self.slugcat.standing = true; // SlugNPCs do this in there AI. but it looks right for all players.
             self.slugcat.animation = Player.AnimationIndex.GrapplingSwing; // jolly does this
             self.slugcat.immuneToFallDamage += 10;
-            if (self.slugcat.input[0].jmp) self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
+            if (self.slugcat.input[0].jmp)
+            {
+                var slug = self.slugcat;
+                self.owner.slugOnBack.DropSlug(); //NOTE: makes self.slugcat null!
+
+                if (!slug.isNPC && slug.input[0].jmp && slug.IsLocal())
+                {
+                    slug.jumpChunk = self.owner.mainBodyChunk;
+                    slug.JumpOnChunk();
+                }
+            }
+
+            if (self.owner.input[0].pckp && (self.owner.input[0].y > 0) && self.HasASlug)
+            {
+                self.counter = 0;
+            }
         }
     }
 
@@ -858,6 +897,16 @@ public partial class RainMeadow
 
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
             }
+
+            if (ModManager.MSC && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
+            {
+                if (GetBottomPlayer(self, out var bottom))
+                {
+                    if (self.grasps[0] is null && self.grasps[1] is null) {
+                        if (bottom.input[0].pckp && (bottom.input[0].y > 0)) self.input[0].pckp = true;
+                    }
+                }
+            } 
 
             if (!self.isNPC)
             {
@@ -1073,7 +1122,18 @@ public partial class RainMeadow
                 i => i.MatchNewobj<AbstractSpear>()
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.EmitDelegate((Player self) => {
+                if (GetBottomPlayer(self, out var bottom))
+                {
+                    if (bottom.input[0].pckp && (bottom.input[0].y > 0))
+                    {
+                        return bottom.IsLocal();
+                    }
+                }
+
+
+                return self.abstractPhysicalObject.IsLocal();
+            });
             c.Emit(OpCodes.Brfalse, skip);
         }
         catch (Exception e)
@@ -1133,6 +1193,48 @@ public partial class RainMeadow
                 {
                     asp.needle = false;
                 }
+            });
+
+            c.GotoNext(MoveType.Before,
+                x => x.MatchCall<Player>(nameof(Player.FreeHand)));
+            var delegate_givespeartobottomplayer = (Player self) =>
+            {
+                
+                if (OnlineManager.lobby != null)
+                {
+                    if (GetBottomPlayer(self, out var bottom))
+                    {
+                        if (bottom.input[0].pckp && (bottom.input[0].y > 0))
+                        {
+                            return bottom;
+                        }
+                    }
+                }
+                return self;
+            };
+            c.GotoNext(MoveType.After,
+                x => x.MatchCall<Player>(nameof(Player.FreeHand)));
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, 19);
+            c.EmitDelegate((int freehand, Player p, AbstractSpear spear) =>
+            {
+                if (OnlineManager.lobby != null)
+                {
+                    Player bottomplayer = delegate_givespeartobottomplayer(p);
+                    if (bottomplayer != p)
+                    {
+                        if (bottomplayer.IsLocal())
+                        {
+                            freehand = bottomplayer.FreeHand();
+                            if (freehand != -1 && bottomplayer.CanIPickThisUp(spear.realizedObject))
+                                bottomplayer.SlugcatGrab(spear.realizedObject, freehand);
+                        }
+                        return -1;
+                    }   
+                }
+
+                return freehand;
+                
             });
         }
         catch (Exception e)
@@ -1626,10 +1728,30 @@ public partial class RainMeadow
     {
         try
         {
+            // if (this.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer || (ExpeditionGame.explosivejump && !this.isSlugpup))
+            // becomes
+            // if (this.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Artificer || HasSlugcatClassOnBack() || ...
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.After,
+                // 10	0017	ldarg.0
+                // 11	0018	ldfld	class SlugcatStats/Name Player::SlugCatClass
+                // 12	001D	ldsfld	class SlugcatStats/Name MoreSlugcats.MoreSlugcatsEnums/SlugcatStatsName::Artificer
+                // 13	0022	call	bool class ExtEnum`1<class SlugcatStats/Name>::op_Equality(class ExtEnum`1<!0>, class ExtEnum`1<!0>)
+                x => x.MatchLdarg(0),
+                x => x.MatchLdfld<Player>(nameof(Player.SlugCatClass)),
+                x => x.MatchLdsfld<MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName>(nameof(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)),
+                x => x.MatchCall(out _)
+            );
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((bool isarti, Player self) =>
+            {
+                return isarti || HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer, out _);
+            });
+
+
             // bool flag3 = !ModManager.CoopAvailable || Custom.rainWorld.options.friendlyFire || !(room.physicalObjects[m][n] is Player player) || player.isNPC;
             //becomes
             // bool flag3 = (!isStoryMode(out _) && (!ModManager.CoopAvailable || Custom.rainWorld.options.friendlyFire)) || !(room.physicalObjects[m][n] is Player player) || player.isNPC;
-            var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(MoveType.AfterLabel,
                 i => i.MatchLdsfld<ModManager>("CoopAvailable"),
