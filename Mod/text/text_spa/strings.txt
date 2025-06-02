@@ -12,6 +12,9 @@ Public Lobbies Only|Solo salas públicas
 Max Lobby Size|Tamaño máximo de la sala
 Lobby Mods|Mods de la sala
 Unfiltered|Sin filtro
+MSC|MSC
+Watcher|Vigilante
+MSC + Watcher|MSC + Vigilante
 Exact order|Orden exacto
 Any order|Cualquier orden
 Direct Connect|Conexión directa
@@ -71,7 +74,7 @@ ENTER|ENTRAR
 Tint color|Color de tinte
 Tint amount|Cantidad de tinte
 SKINS|ASPECTOS
-SLUGCAT|GATOBABOSA
+SLUGCAT|GATO-BABOSA
 Survivor|Superviviente
 Monk|Monje
 Hunter|Cazador
@@ -87,7 +90,7 @@ Axo|Ajolote
 Sala|Salamandra
 Cyan|Cian
 Fluffers|Peludo
-CICADA|CHICHARRA
+CICADA|CALAMIGARRA
 White|Blanco
 Dark|Oscuro
 SCAVENGER|CARROÑERO
@@ -148,24 +151,24 @@ Hub zone volume|Volumen del centro
 Display names|Mostrar nombres
 Collision|Colisión
 New character unlocked|Nuevo personaje desbloqueado
-New emote unlocked|Nuevo emote desbloqueado
+New emote unlocked|Nuevo emoticón desbloqueado
 New skin unlocked|Nuevo aspecto desbloqueado
 
 // Story Mode
  - New Game| - Juego nuevo
 Current Campaign: |Campaña actual: 
-Selected Slugcat|Gatobabosa<LINE>seleccionado
-Slugpup|Cría
+Selected Slugcat|Gato-babosa<LINE>seleccionado
+Slugpup|Cría de Gato-babosa
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
-Require Campaign Slugcat|Requerir gatobabosa actual
+Require Campaign Slugcat|Gato-babosa de la campaña
 Match save|Igualar guar.
 PLAYERS|JUGADORES
 Press again to ban player!|¡Pulsa otra vez para banear al jugador!
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
  to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
 READY|LISTO
-Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gatobabosa
+Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gato-babosa
 
 // ArenaCompetitive Mode
 Current Mode:|Modo actual:
@@ -176,13 +179,15 @@ WAIT FOR OTHERS|ESTOY LISTO
 FORCE READY|FORZAR LISTOS
 LOBBY WILL LOCK|BLOQUEAR SALA
 GAME IN SESSION|EN CURSO
+JOIN?|¿UNIRTE?
+QUEUED TO JOIN|HACIENDO COLA
 READY?|¿LISTO?
 Waiting for others...|Espera a los demás
 Waiting for host...|Espera al anfitrión
 Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
 Waiting|Esperando
 Prepare for combat,|Prepárate para el combate,
-Paincat|Gatodolor
+Paincat|Gato-dolor
 Inv|Inv
 Enot|Enot
 Sofanthiel|Sofanthiel
@@ -246,18 +251,18 @@ Snail|Caracol
 Vulture|Buitre
 Garbage Worm|Gusano de la Basura
 Lantern Mouse|Ratón Farol
-Cicada A|Chicharra A
-Cicada B|Chicharra B
-Jet Fish|Pez Chorro
-Big Eel|Anguila Gigante
-Deer|Ciervo
-Tube Worm|Gusano de Tubería
+Cicada A|Calamigarra Blanca
+Cicada B|Calamigarra Oscura
+Jet Fish|Impulpez
+Big Eel|Leviatán
+Deer|Ciervo Pluvial
+Tube Worm|Gusano Gancho
 Daddy Long Legs|Papá Patilargo
 Brother Long Legs|Hermano Patilargo
-Tentacle Plant|Planta de Tentáculos
-Pole Mimic|Mímico de Postes
+Tentacle Plant|Monstrualga
+Pole Mimic|Planta de Postes
 Miros Bird|Pájaro Miró
-Temple Guard|Guardia del Templo
+Temple Guard|Guardián
 Centipede|Ciempiés
 Red Centipede|Ciempiés Rojo
 Scavenger|Carroñero
@@ -267,38 +272,37 @@ Overseer|Supervisor
 Vulture Grub|Larva de Buitre
 Big Spider|Araña Gigante
 Spitter Spider|Araña Escupidora
-Egg Bug|Bicho Huevo
-Small Needle|Aguja Pequeña
-Big Needle|Aguja Gigante
-Drop Bug|Bicho Trampa
+Egg Bug|Bichohuevo
+Small Needle|Cría de Moscafideo
+Big Needle|Moscafideo
+Drop Bug|Tijereta
 King Vulture|Buitre Real
 Hazer|Calamar Humeante
 Miros Vulture|Buitre Miró
 Caramel Lizard|Lagarto Caramelo
-Eel|Anguila
-Strawberry|Fresa
+Eel|Lagarto Anguila
+Strawberry|Lagarto Fresa
 Mother Spider|Araña Nodriza
 Terror Long Legs|Madre Patilarga
 Aquapede|Acuípedo
-Stowaway Bug|Bicho Polizón
+Stowaway Bug|Bichogancho
 Elite Scavenger|Carroñero de Élite
 Inspector|Inspector
 Yeek|Yeek
 Big Jellyfish|Medusa Gigante
 Jungle Leech|Sanguijuela Selvática
-Hell Bug|Bicho Infernal
-King Scavenger|Carroñero Real
-Slugcat NPC|NPC de Gatobabosa
+Hell Bug|Bichofuego
+King Scavenger|Carroñero Líder
 Train Lizard|Lagarto Tren
 Barnacle|Percebe
 DrillCrab|Cangrejo Perforador
 SandGrub|Larva de Arena
-BigSandGrub|Larva Gigante de Arena
+BigSandGrub|Gusano de Arena
 BigMoth|Polilla Gigante
 SmallMoth|Polilla Pequeña
 Box Worm|Gusano de Caja
 Fire Sprite|Duende de Fuego
-Rattler|Cascabel
+Rattler|Agitahuesos
 SkyWhale|Ballena Celestial
 ScavengerTemplar|Carroñero Templario
 ScavengerDisciple|Carroñero Discípulo
@@ -374,10 +378,10 @@ Downpour DLC is not activated, vanilla intro will be used instead|Si el DLC Down
 Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|Velocidad de desplazamiento de los menús de jugadores (espectador, historia y arena). Predeterminado: 5
 Disable Pause Menu Animation|Desactivar animación del menú de pausa
 If selected, disables the sway animation in the pause menu|Desactiva la animación de tambaleo en el menú de pausa.
-Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos
+Input “cheats” to access cheats|Escribe «cheats» para acceder a los trucos.
 Just make sure not to ruin the fun for yourself...|Solo asegúrate de no arruinarte la diversión...
-Emote and skin unlocks will affect the currently selected character|Los desbloqueables de emotes y aspectos afectarán al personaje seleccionado actualmente.
-Unlock Emote|Desbl. emote
+Emote and skin unlocks will affect the currently selected character|Los desbloqueables de abajo afectarán al personaje seleccionado actualmente.
+Unlock Emote|Desbl. emoticón
 Unlock Skin|Desbl. aspecto
 Unlock Character|Desbl. personaje
 Reset all progression|Reiniciar todo el progreso
@@ -390,12 +394,14 @@ Inv: Enable ???|Inv: Activar ???
 Artificer: Disable Stun|Artífice: Desactivar aturdimiento
 Mauling: Disable|Morder: Desactivar
 Steal items from other players in Arena mode|Robar objetos de otros jugadores en el modo arena
+The following option may contain spoilers for Saint's campaign.|La opción a continuación puede contener spoilers de la campaña del Santo.
+Slugpup: Rubicon background in select menu|Cría de Gato-babosa: Fondo de Rubicón en el menú de selección
 Ready to shelter/gate|Preparado para hibernar o pasar de región
 If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|Los nombres de usuario y los íconos siempre aparecerán en pantalla en una puerta o refugio.
 [Experimental Features]|[Características experimentales]
 WARNING: Experimental features may cause data corruption, back up your saves|ADVERTENCIA: Pueden causar corrupciones de datos, realiza una copia de seguridad de tus partidas.
 Custom Story Slugcat:|Campañas personalizadas:
-If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gatobabosa que sean inestables.
+If selected, hosts can choose slugcat campaigns that are unstable.|Los anfitriones podrán elegir campañas de gato-babosa que sean inestables.
 Steal items from other players in Story mode|Robar objetos de otros jugadores en el modo historia
 Username|Nombre de usuario
 UDP timeout (ms)|Tiempo de espera de UDP (ms)
