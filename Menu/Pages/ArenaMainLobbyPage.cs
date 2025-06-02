@@ -11,6 +11,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public SimplerButton playButton;
     public TabContainer tabContainer;
     public ArenaLevelSelector levelSelector;
+    public ChatMenuBox chatMenuBox;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
@@ -20,7 +21,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
     {
         playButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-
+        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
@@ -41,8 +42,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-
-        this.SafeAddSubobjects(playButton, tabContainer);
+        this.SafeAddSubobjects(playButton, tabContainer, chatMenuBox);
     }
 
     public void BuildPlayerDisplay()
@@ -62,7 +62,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         BuildPlayerDisplay();
         playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
-
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
         ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
@@ -91,7 +90,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
-
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (!ModManager.MMF)
@@ -125,7 +123,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public override void Update()
     {
         base.Update();
-
+        if (!RainMeadow.isArenaMode(out _)) return;
+        ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
@@ -143,5 +142,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
+
     }
 }

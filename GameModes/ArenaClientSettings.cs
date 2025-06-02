@@ -6,6 +6,7 @@ namespace RainMeadow
     public class ArenaClientSettings : OnlineEntity.EntityData
     {
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
+        public SlugcatStats.Name? randomPlayingAs;
         public bool selectingSlugcat;
         public Color slugcatColor = Color.black;
 
@@ -20,8 +21,11 @@ namespace RainMeadow
         {
             [OnlineField(group = "arenaClientData")]
             public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
+            [OnlineField(group = "arenaClientData", nullable = true)]
+            public SlugcatStats.Name? randomPlayingAs;
             [OnlineFieldColorRgb(group = "arenaClientData")]
             public Color slugcatColor = Color.black;
+
             [OnlineField(group = "arenaClientData")]
             public bool selectingSlugcat;
 
@@ -30,6 +34,7 @@ namespace RainMeadow
             public State(ArenaClientSettings onlineEntity) : base()
             {
                 playingAs = onlineEntity.playingAs;
+                randomPlayingAs = onlineEntity.randomPlayingAs;
                 selectingSlugcat = onlineEntity.selectingSlugcat;
                 slugcatColor = onlineEntity.slugcatColor;
             }
@@ -38,6 +43,7 @@ namespace RainMeadow
             {
                 var clientSettings = (ArenaClientSettings)entityData;
                 clientSettings.playingAs = playingAs;
+                clientSettings.randomPlayingAs = randomPlayingAs;
                 clientSettings.selectingSlugcat = selectingSlugcat;
                 clientSettings.slugcatColor = slugcatColor;
             }
