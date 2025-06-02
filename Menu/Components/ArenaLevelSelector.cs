@@ -5,6 +5,7 @@ using System.Linq;
 using Menu;
 using Menu.Remix;
 using MoreSlugcats;
+using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
 using static Menu.Menu;
@@ -12,10 +13,10 @@ using static MultiplayerUnlocks;
 
 namespace RainMeadow.UI.Components;
 
-public class ArenaLevelSelector : PositionedMenuObject
+public class ArenaLevelSelector : PositionedMenuObject, ICanHideMenuObject
 {
     //holy shit wtf is this
-    public class LevelItem : ButtonTemplate, ButtonScroller.IPartOfButtonScroller, IHaveADescription
+    public class LevelItem : ButtonTemplate, ButtonScroller.IPartOfButtonScroller, IHaveADescription, ICanHideMenuObject
     {
         public MenuLabel label;
         public FSprite thumbnailSprite;
@@ -23,10 +24,14 @@ public class ArenaLevelSelector : PositionedMenuObject
         public RoundedRect roundedRect;
         public LevelItem? dividerAbove, dividerBelow;
         public bool thumbLoaded, lastSelected, doAThumbFade;
-        public float labelSelectedBlink, labelLastSelectedBlink, lastAlpha, thumbChangeFade, lastThumbChangeFade;
+        public float labelSelectedBlink, labelLastSelectedBlink, lastAlpha, thumbChangeFade, lastThumbChangeFade, fadeAway;
         public string name, description;
-        public event Action<LevelItem>? OnClick;
+        public PlaylistSelector? MyPlaylistSelector => owner as PlaylistSelector;
         public bool ShowThumbDivider => ShowThumbsTransitionState(1f) > 0.5f;
+        public float Alpha { get; set; }
+        public Vector2 Pos { get => pos; set => pos = value; }
+        public Vector2 Size { get => size; set => size = value; }
+        public string Description => description;
 
         public LevelItem(Menu.Menu menu, MenuObject owner, string levelName, string description) : base(menu, owner, default, new Vector2(120f, 20f))
         {
@@ -45,27 +50,6 @@ public class ArenaLevelSelector : PositionedMenuObject
             Container.AddChild(thumbnailSprite);
         }
 
-        public void AddDividers(LevelItem nxt)
-        {
-            dividerSprite = new FSprite(ShowThumbDivider ? "listDivider2" : "listDivider");
-            dividerSprite2 = new FSprite("listDivider2bkg");
-            dividerSprite.color = MenuRGB(MenuColors.DarkGrey);
-            dividerSprite2.color = Color.black;
-
-            dividerBelow = nxt;
-            nxt.dividerAbove = this;
-
-            Container.AddChild(dividerSprite);
-            (owner as PlaylistSelector)?.dividerContainer.AddChild(dividerSprite2);
-        }
-
-        public void ThumbnailHasBeenLoaded()
-        {
-            thumbLoaded = true;
-            doAThumbFade = true;
-        }
-
-        public float ShowThumbsTransitionState(float timeStacker) => (owner as PlaylistSelector)?.ShowThumbsTransitionState(timeStacker) ?? 1f;
 
         public override Color MyColor(float timeStacker)
         {
@@ -108,15 +92,24 @@ public class ArenaLevelSelector : PositionedMenuObject
                     doAThumbFade = false;
                 }
             }
-            else
-                thumbChangeFade = Custom.LerpAndTick(thumbChangeFade, 0f, 0.08f, 1f / 30f);
-
+            else thumbChangeFade = Custom.LerpAndTick(thumbChangeFade, 0f, 0.08f, 1f / 30f);
+            if (fadeAway > 0)
+            {
+                fadeAway += 0.1f;
+                if (fadeAway >= 1)
+                {
+                    MyPlaylistSelector?.HandleLevelItemFade(this);
+                    return;
+                }
+            }
             float num3 = Custom.SCurve(ShowThumbsTransitionState(1f) * Mathf.InverseLerp(0f, 0.8f, Alpha), 0.5f);
-
             roundedRect.size = new Vector2(size.x, size.y * (0.3f + 0.7f * Mathf.Pow(num3, 0.5f)));
             roundedRect.pos = new Vector2(0.01f, -0.49f + size.y * 0.125f * Mathf.Pow(1f - num3, 1.5f));
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * 0.5f * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * (float)Math.PI)) * (buttonBehav.clicked ? 0f : 1f); roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
+
+            if (!thumbLoaded && (Selected || Alpha > 0.5f))
+                MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(name);
 
             if (dividerSprite is not null)
             {
@@ -125,7 +118,6 @@ public class ArenaLevelSelector : PositionedMenuObject
             }
             if (dividerAbove is not null) roundedRect.pos.y -= 3f;
         }
-
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
@@ -189,67 +181,287 @@ public class ArenaLevelSelector : PositionedMenuObject
                 for (int i = 0; i < 17; i++)
                     roundedRect.sprites[i].isVisible = false;
         }
+        public override void Clicked()
+        {
+            if (MyPlaylistSelector?.LevelItems?.Contains(this) == true) 
+                MyPlaylistSelector.LevelItemClicked(MyPlaylistSelector.LevelItems.IndexOf(this));
 
-        public override void Clicked() => OnClick?.Invoke(this);
+        }
+        public void HiddenUpdate() => Update();
+        public void HiddenGrafUpdate(float timeStacker) => GrafUpdate(timeStacker);
+        public void AddDividers(LevelItem nxt)
+        {
+            dividerSprite = new FSprite(ShowThumbDivider ? "listDivider2" : "listDivider");
+            dividerSprite2 = new FSprite("listDivider2bkg");
+            dividerSprite.color = MenuRGB(MenuColors.DarkGrey);
+            dividerSprite2.color = Color.black;
 
-        public float Alpha { get; set; }
-        public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = value; }
+            dividerBelow = nxt;
+            nxt.dividerAbove = this;
 
-        public string Description => description;
+            Container.AddChild(dividerSprite);
+            (owner as PlaylistSelector)?.dividerContainer.AddChild(dividerSprite2);
+        }
+        public void ThumbnailHasBeenLoaded()
+        {
+            thumbLoaded = true;
+            doAThumbFade = true;
+        }
+        public float ShowThumbsTransitionState(float timeStacker) => MyPlaylistSelector?.ShowThumbsTransitionState(timeStacker) ?? 1f;
+        public void StartFadeAway() => fadeAway = Mathf.Max(fadeAway, 0.01f);
     }
 
     public class PlaylistSelector : VerticalScrollSelector
     {
+        public const string AddOnClick = "Add level to playlist", RemoveOnClick = "Remove level from playlist";
         public FContainer dividerContainer;
-        public bool showThumbs = true;
+        public SideButton showThumbsButton;
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
-
+        public override int ScrollPos
+        {
+            get
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) return MyLevelSelector.GetGameTypeSetup.allLevelsScroll;
+                return 0;
+            }
+            set
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.allLevelsScroll = value;
+            }
+        }
+        public virtual bool ShowThumbsStatus
+        {
+            get => MyLevelSelector?.GetGameTypeSetup?.allLevelsThumbs == true;
+            set
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.allLevelsThumbs = value;
+            }
+        }
+        public ArenaLevelSelector? MyLevelSelector => owner as ArenaLevelSelector;
+        public List<LevelItem> LevelItems => [.. scrollElements.Cast<LevelItem>()];
         public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, new Vector2(120f, 80f), 5)
         {
+            RainMeadow.DebugMe();
             dividerContainer = new FContainer();
 
             scrollUpButton!.pos.y += 10f;
             scrollDownButton!.pos.y -= 10f;
 
-            AddSideButton("Menu_Symbol_Show_Thumbs", description: "Showing level thumbnails").OnClick += btn =>
-            {
-                showThumbs = !showThumbs;
-                btn.description = showThumbs ? "Showing level thumbnails" : "Showing level names";
-                btn.UpdateSymbol(showThumbs ? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List");
-                menu.PlaySound(showThumbs ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
-            };
+            showThumbsButton = AddSideButton(ShowThumbsStatus? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List", signal: "THUMBS");
+            showThumbsButton.OnClick += btn =>
+             {
+                 ShowThumbsStatus = !ShowThumbsStatus;
+                 btn.UpdateSymbol(ShowThumbsStatus ? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List");
+                 menu.PlaySound(ShowThumbsStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
+             };
+            LoadLevelsInit();
+            RainMeadow.DebugMe();
         }
-
-        public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
-
-        public override void Update()
+        public override void RemoveSprites()
         {
-            base.Update();
-
+            this.dividerContainer.RemoveFromContainer();
+            base.RemoveSprites();
+        }
+        public override void HiddenUpdate()
+        {
+            base.HiddenUpdate();
             lastShowThumbsTransitionState = showThumbsTransitionState;
-            showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, showThumbs ? 1f : 0f, 0.015f, 1f / 30f);
+            showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, ShowThumbsStatus ? 1f : 0f, 0.015f, 1f / 30f);
 
-            if (showThumbsTransitionState > 0f && showThumbsTransitionState < 1f)
-                ConstrainScroll();
+            if (showThumbsTransitionState > 0f && showThumbsTransitionState < 1f) ConstrainScroll();
 
             elementHeight = Mathf.Lerp(20f, 30f + ThumbHeight, ShowThumbsTransitionState(1f));
             elementSpacing = (elementHeight - 20) / 6;
         }
+        public override void HiddenGrafUpdate(float timeStacker) => base.HiddenGrafUpdate(timeStacker);
+        public virtual void LoadLevelsInit()
+        {
+            if (MyLevelSelector == null) return;
+            for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
+                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], AddOnClick));
+            for (int i = 0; i < scrollElements.Count - 1; i++)
+            {
+                if (scrollElements[i] is not LevelItem levelItem || scrollElements[i + 1] is not LevelItem nextLevelItem) 
+                    continue;
+                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name)) 
+                    levelItem.AddDividers(nextLevelItem);
+            }
+            ConstrainScroll();
+        }
+        public virtual void HandleLevelItemFade(LevelItem item) { }
+        public virtual void LevelItemClicked(int index) => MyLevelSelector?.AddItemToSelectedList(MyLevelSelector.allLevels[index]);
+        public void AddLevelItem(LevelItem item) => AddScrollElements(item);
+        public void RemoveLevelItem(LevelItem item, bool constrainScroll = true)
+        {
+            this.ClearMenuObject(item);
+            RemoveScrollElements(constrainScroll, item);
+        }
+        public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
+    }
+    public class PlaylistHolder : PlaylistSelector
+    {
+        public SideButton clearButton, shuffleButton;
+        public int clearAllCounter = -1, mismatchCounter;
+        public override int ScrollPos
+        {
+            get
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) return MyLevelSelector.GetGameTypeSetup.playListScroll;
+                return 0;
+            }
+            set
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.playListScroll = value;
+            }
+        }
+        public override bool ShowThumbsStatus
+        {
+            get => MyLevelSelector?.GetGameTypeSetup?.playListThumbs == true;
+            set
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.playListThumbs = value;
+            }
+        }
+        public bool ShuffleStatus
+        {
+            get => MyLevelSelector?.GetGameTypeSetup?.shufflePlaylist == true;
+            set
+            {
+                if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.shufflePlaylist = value;
+            }
+        }
+        public bool IsMismatched => MyLevelSelector != null && LevelItems.Count != MyLevelSelector.PlayList.Count;
+
+        public PlaylistHolder(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
+        {
+            clearButton = AddSideButton("Menu_Symbol_Clear_All", menu.Translate("Clear playlist"), menu.Translate("Clear playlist"), "");
+            clearButton.maintainOutlineColorWhenGreyedOut = true;
+            clearButton.OnClick += _ =>
+            {
+                clearAllCounter = 1;
+                menu.PlaySound(_.buttonBehav.greyedOut ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Greyed_Out_Button_Clicked);
+            };
+            shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order"), "", "SHUFFLE");
+            shuffleButton.OnClick += _ =>
+            {
+                ShuffleStatus = !ShuffleStatus;
+                _.label.text = menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order");
+                _.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
+                menu.PlaySound(ShuffleStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
+            };
+        }
+        public override void HiddenUpdate()
+        {
+            base.HiddenUpdate();
+            UpdatePlaylist();
+        }
+        public override void LevelItemClicked(int index)
+        {
+            if (MyLevelSelector == null) return;
+            MyLevelSelector.RemoveLevelFromPlayList(index);
+            menu.selectedObject = null;
+            if (!menu.manager.menuesMouseMode)
+            {
+                int num = index - 1;
+                while (num >= 0 && num < LevelItems.Count)
+                {
+                    if (LevelItems[num].fadeAway == 0)
+                    {
+                        menu.selectedObject = LevelItems[num];
+                        break;
+                    }
+                    num--;
+                }
+                if (menu.selectedObject == null)
+                {
+                    int num2 = index + 1;
+                    while (num2 >= 0 && num2 < LevelItems.Count)
+                    {
+                        if (LevelItems[num2].fadeAway == 0)
+                        {
+                            menu.selectedObject = LevelItems[num2];
+                            break;
+                        }
+                        num2++;
+                    }
+                }
+            }
+            LevelItems[index].StartFadeAway();
+        }
+        public override void HandleLevelItemFade(LevelItem item) => RemoveLevelItem(item, true);
+        public override void LoadLevelsInit() => ResolvePlaylistMismatch();
+        public void UpdatePlaylist()
+        {
+            clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0;
+            if (clearAllCounter > 0)
+            {
+                clearAllCounter--;
+                if (clearAllCounter < 1 && scrollElements.Count > 0)
+                {
+                    clearAllCounter = 4;
+                    bool isClearingObj = false;
+                    for (int i = LevelItems.Count - 1; i >= 0; i--)
+                    {
+                        if (LevelItems[i].fadeAway == 0)
+                        {
+                            isClearingObj = true;
+                            LevelItems[i].StartFadeAway();
+                            RemovePlaylistLevelItem(LevelItems[i]);
+                            ConstrainScroll();
+                            break;
+                        }
+                    }
+                    if (!isClearingObj) MyLevelSelector?.PlayList?.Clear();
+                }
+                return;
+            }
+            mismatchCounter = IsMismatched ? mismatchCounter + 1 : 0;
+            if (mismatchCounter == 80) ResolvePlaylistMismatch();
+
+        }
+        public void ResolvePlaylistMismatch()
+        {
+            if (MyLevelSelector == null) return;
+            for (int i = LevelItems.Count - 1; i >= 0; i--)
+                RemoveLevelItem(LevelItems[i], false);
+            for (int j = 0; j < MyLevelSelector.PlayList.Count; j++)
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.PlayList[j], "Remove level from playlist"));
+            ConstrainScroll();
+            mismatchCounter = 0;
+
+        }
+        public void RemovePlaylistLevelItem(LevelItem levelItem)
+        {
+            if (MyLevelSelector == null) return;
+            for (int i = MyLevelSelector.PlayList.Count - 1; i >= 0; i--)
+            {
+                if (MyLevelSelector.PlayList[i] == levelItem.name)
+                {
+                    MyLevelSelector.RemoveLevelFromPlayList(i);
+                    break;
+                }
+            }
+
+        }
+
     }
 
-    public VerticalScrollSelector allLevelsPlaylist, selectedLevelsPlaylist;
+
+    public PlaylistSelector allLevelsPlaylist;
+    public PlaylistHolder selectedLevelsPlaylist;
     public List<LevelUnlockID> unlockBatchIds = [];
     public List<string> allLevels = [], thumbsToBeLoaded = [], loadedThumbTextures = [];
-    public bool showThumbs = true, shuffle;
     public int thumbLoadDelay;
     public static int ThumbWidth => 100;
     public static int ThumbHeight => 50;
+    public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
+    public ArenaSetup.GameTypeID CurrentGameType => GetArenaSetup.currentGameType;
+    public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
 
-    public ArenaLevelSelector(Menu.Menu menu, MenuObject owner, Vector2 pos, bool shuffleSetup)
-        : base(menu, owner, pos)
+    public List<string> PlayList => GetGameTypeSetup.playList;
+
+    public ArenaLevelSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
     {
-        shuffle = shuffleSetup;
 
         for (int i = LevelUnlockID.Hidden.Index + 1; i < ExtEnum<LevelUnlockID>.values.Count; i++)
         {
@@ -279,59 +491,20 @@ public class ArenaLevelSelector : PositionedMenuObject
 
         thumbsToBeLoaded = [.. allLevels];
 
-        allLevelsPlaylist = new PlaylistSelector(menu, this, default);
-        selectedLevelsPlaylist = new PlaylistSelector(menu, this, new Vector2(200, 0));
-
-        VerticalScrollSelector.SideButton clearButton = selectedLevelsPlaylist.AddSideButton("Menu_Symbol_Clear_All", "Clear playlist", "Clear playlist");
-        clearButton.OnClick += _ =>
-        {
-            LevelItem[] levelItems = [.. selectedLevelsPlaylist.scrollElements.Cast<LevelItem>()];
-            selectedLevelsPlaylist.RemoveScrollElements(levelItems);
-            this.ClearMenuObjectIList(levelItems);
-        };
-        clearButton.OnUpdate += btn => btn.buttonBehav.greyedOut = selectedLevelsPlaylist.scrollElements.Count == 0;
-
-        selectedLevelsPlaylist.AddSideButton(shuffle ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", shuffle ? "Shuffling Levels" : "Playing in order", shuffle ? "Playing levels in random order" : "Playing levels in selected order").OnClick += btn =>
-        {
-            shuffle = !shuffle;
-            btn.label.text = shuffle ? "Shuffling Levels" : "Playing in order";
-            btn.description = shuffle ? "Playing levels in random order" : "Playing levels in selected order";
-            btn.UpdateSymbol(shuffle ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
-            menu.PlaySound(shuffle ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
-        };
-
-        LevelItem[] levelItems = new LevelItem[allLevels.Count];
-
-        void AddItemToSelectedList(LevelItem levelItem)
-        {
-            void RemoveItemFromSelectedList(LevelItem levelItem)
-            {
-                selectedLevelsPlaylist.RemoveScrollElements(levelItem);
-                this.ClearMenuObject(levelItem);
-            }
-            LevelItem item = new(menu, selectedLevelsPlaylist, levelItem.name, "Remove level from playlist");
-            item.OnClick += RemoveItemFromSelectedList;
-            selectedLevelsPlaylist.AddScrollElements(item);
-        }
-
-        for (int i = 0; i < allLevels.Count; i++)
-        {
-            levelItems[i] = new LevelItem(menu, allLevelsPlaylist, allLevels[i], "Add level to playlist");
-            levelItems[i].OnClick += AddItemToSelectedList;
-        }
-
-        allLevelsPlaylist.AddScrollElements(levelItems);
-
-        for (int i = 0; i < allLevelsPlaylist.scrollElements.Count - 1; i++)
-        {
-            if (allLevelsPlaylist.scrollElements[i] is not LevelItem levelItem || allLevelsPlaylist.scrollElements[i + 1] is not LevelItem nextLevelItem) continue;
-            if (LevelListSortNumber(levelItem.name) != LevelListSortNumber(nextLevelItem.name))
-                levelItem.AddDividers(nextLevelItem);
-        }
-
+        allLevelsPlaylist = new(menu, this, default);
+        selectedLevelsPlaylist = new(menu, this, new Vector2(200, 0));
+     
         this.SafeAddSubobjects(allLevelsPlaylist, selectedLevelsPlaylist);
     }
-
+    public override void Update()
+    {
+        base.Update();
+        LoadThumbSprite();
+    }
+    public void HiddenUpdate() => LoadThumbSprite();
+    public void HiddenGrafUpdate(float timeStacker)
+    {
+    }
     public int LevelListSortNumber(string levelName)
     {
         LevelUnlockID levelUnlockID = LevelLockID(levelName);
@@ -344,9 +517,31 @@ public class ArenaLevelSelector : PositionedMenuObject
 
         return 0;
     }
-
     public string LevelListSortString(string levelName) => LevelListSortNumber(levelName).ToString("000") + LevelDisplayName(levelName);
-
+    public void AddItemToSelectedList(string name)
+    {
+        PlayList.Add(name);
+        LevelItem item = new(menu, selectedLevelsPlaylist, name, "Remove level from playlist");
+        selectedLevelsPlaylist.AddLevelItem(item);
+        selectedLevelsPlaylist.ScrollPos = selectedLevelsPlaylist.MaximumScrollPos;
+        selectedLevelsPlaylist.ConstrainScroll();
+        menu.PlaySound(SoundID.MENU_Add_Level);
+    }
+    public void RemoveLevelFromPlayList(int index)
+    {
+        if (index < 0 || index >= PlayList.Count) return;
+        PlayList.RemoveAt(index);
+        menu.PlaySound(SoundID.MENU_Remove_Level);
+    }
+    public bool IsThumbnailLoaded(string levelName) => loadedThumbTextures.Contains(levelName);
+    public void BumpUpThumbnailLoad(string levelName)
+    {
+        if (thumbsToBeLoaded.Count > 0 && thumbsToBeLoaded[0] == levelName) return;
+        if (IsThumbnailLoaded(levelName)) return;
+        for (int i = thumbsToBeLoaded.Count - 1; i >= 0; i--)
+            if (thumbsToBeLoaded[i] == levelName) thumbsToBeLoaded.RemoveAt(i);
+        thumbsToBeLoaded.Insert(0, levelName);
+    }
     public void LoadThumbSprite()
     {
         if (thumbLoadDelay > 0) thumbLoadDelay--;
@@ -404,16 +599,9 @@ public class ArenaLevelSelector : PositionedMenuObject
         for (int i = 0; i < levelItems.Length; i++)
         {
             if (levelItems[i] is not LevelItem levelItem || levelItem.name != thumbToBeLoaded) continue;
-
             levelItem.ThumbnailHasBeenLoaded();
         }
 
         thumbLoadDelay = 2;
-    }
-    public bool IsThumbnailLoaded(string levelName) => loadedThumbTextures.Contains(levelName);
-    public override void Update()
-    {
-        base.Update();
-        LoadThumbSprite();
     }
 }
