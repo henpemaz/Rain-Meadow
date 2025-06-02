@@ -36,7 +36,7 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             bodyColors?.Do((illuIndex) =>
             {
-                illuIndex.Key.color = ColorHelpers.HSL2RGB(menu.GetMenuHSL(slugcatID, illuIndex.Value));
+                illuIndex.Key.color = ColorHelpers.HSL2RGB(this.menu.manager.rainWorld.progression.GetCustomColorHSL(slugcatID, illuIndex.Value));
             });
         }
         public override void RemoveSprites()

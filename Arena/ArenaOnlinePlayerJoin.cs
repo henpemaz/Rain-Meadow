@@ -21,7 +21,7 @@ namespace Menu
         public SimplerButton usernameButton;
         public SimplerSymbolButton? kickButton;
         public OnlinePlayer profileIdentifier;
-        public SlugcatStats.Name slugcat;
+        public SlugcatStats.Name? slugcat;
 
         public event Action<ArenaOnlinePlayerJoinButton> OnClick;
         public override void Clicked() { base.Clicked(); OnClick?.Invoke(this); }
@@ -40,12 +40,13 @@ namespace Menu
         public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index, OnlinePlayer player, bool canKick)
             : base(menu, owner, pos, new Vector2(100f, 100f))
         {
+            
             slugcat = SlugcatStats.Name.White;
             colorIndex = index;
             profileIdentifier = player;
             roundedRect = new(menu, this, new Vector2(0f, 0f), size, filled: true);
             selectRect = new(menu, this, new Vector2(0f, 0f), size, filled: false);
-            portrait = new(menu, this, "", "MultiplayerPortrait" + index + "1", size / 2f, crispPixels: true, anchorCenter: true);
+            portrait = new(menu, this, "", (menu as MultiplayerMenu)!.ArenaImage(ArenaHelpers.selectableSlugcats[index], index), size / 2f, crispPixels: true, anchorCenter: true);
             readyForCombat = false;
             string text = "";
             float num = 0f;
@@ -140,7 +141,7 @@ namespace Menu
             {
                 this.slugcat = slugcat;
                 colorIndex = currentColorIndex;
-                SetNewPortrait(arenaImage.Invoke(slugcat, currentColorIndex));
+                SetNewPortrait(arenaImage.Invoke(slugcat!, currentColorIndex));
             }
         } //func for now ig
         public void SetNewPortrait(string newFile)

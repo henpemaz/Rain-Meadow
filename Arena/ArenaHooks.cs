@@ -1,18 +1,18 @@
 using IL.Watcher;
 using HarmonyLib;
+using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
-using Rewired;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using RainMeadow.UI.Components;
-using System.IO;
-using System.Text.RegularExpressions;
+using RainMeadow.UI;
+
 
 namespace RainMeadow
 {
@@ -121,7 +121,9 @@ namespace RainMeadow
             new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
             On.Watcher.CamoMeter.Update += CamoMeter_Update;
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
-
+            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
+            On.SlugcatStats.getSlugcatName += SlugcatStats_getSlugcatName;
+            IL.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
             
         }
 
@@ -136,6 +138,60 @@ namespace RainMeadow
                     self.nextLevelCall = true;
                 }
             }
+        }
+
+        public void MenuScene_BuildScene(ILContext context)
+        {
+            // remove symbol for wanderer in the random players background image.
+            try
+            {
+                ILCursor cursor = new(context);
+
+
+                cursor.GotoNext(MoveType.After, x => x.MatchLdstr("Endgame - Wanderer - Flat"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(string (string orig, MenuScene self) =>
+                {
+                    if (self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu)
+                    {
+                        return "Endgame - Wanderer - Flat - Nosymbol";
+                    }
+                    return orig;
+                });
+
+
+
+                cursor.GotoNext(x => x.MatchLdstr("Wanderer - Symbol"));
+                cursor.GotoNext(MoveType.Before, x => x.MatchCall<MenuScene>(nameof(MenuScene.AddIllustration)));
+                cursor.Emit(OpCodes.Dup);
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((MenuIllustration illus, MenuScene self) =>
+                {
+                    Debug(self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu);
+                    if (self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu)
+                    {
+                        illus.sprite.alpha = 0.0f;
+                        illus.lastAlpha = 0.0f;
+                        illus.alpha = 0.0f;
+                        illus.setAlpha = 0.0f;
+                    }
+                });
+
+
+
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
+        }
+
+        public string SlugcatStats_getSlugcatName(On.SlugcatStats.orig_getSlugcatName orig, SlugcatStats.Name id) {
+            if (id == Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+                return "Unknown";
+            }
+
+            return orig(id);
         }
 
         private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
@@ -694,14 +750,14 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                if (classID == null)
+                if ((classID is null) || (classID == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
                 {
-                    Debug("Is null!");
-                    return "MultiplayerPortrait" + color + "2";
+                    return "MultiplayerPortrait02";
                 }
                 if (ArenaHelpers.vanillaSlugcats.Contains(classID))
                 {
-                    return $"MultiplayerPortrait{color}1";
+                    // subtract 1 since 
+                    return $"MultiplayerPortrait{ArenaHelpers.vanillaSlugcats.IndexOf(classID)}1";
                 }
                 if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
@@ -1423,6 +1479,24 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
+            bool playingAsRandom = false;
+            // for random class players.
+            if (isArenaMode(out var aren))
+            {
+                var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(aren, player.playerNumber);
+                if (onlinePlayer is not null) {
+                    if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaClientSettings>(out var settings)) {
+                        player.playerClass = settings.playingAs;
+                        if (settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+                            player.playerClass = settings.randomPlayingAs;
+                            playingAsRandom = true;
+                        }
+
+                    } else RainMeadow.Error("no client settings");
+                    
+                } else RainMeadow.Error("no online object");
+                if (player.playerClass == null) player.playerClass = SlugcatStats.Name.White; // prevent crash from null
+            }
 
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
             if (self.backgroundRect == null)
@@ -1435,7 +1509,6 @@ namespace RainMeadow
             {
                 OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
-                player.playerClass = arenaclientSettings?.playingAs ?? player.playerClass;  // update for rejoins
                 if (OnlineManager.lobby.isOwner)
                 {
 
@@ -1476,7 +1549,15 @@ namespace RainMeadow
                 {
                     self.playerNameLabel.text = Utils.Translate(userNameBackup);
                 }
-                self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(player.playerClass, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
+
+                var portraitcat = player.playerClass;
+                if (self is FinalResultbox && playingAsRandom)
+                {
+                    portraitcat = RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat;
+                }
+
+                
+                self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(portraitcat, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
                 self.subObjects.Add(self.portrait);
             }
 

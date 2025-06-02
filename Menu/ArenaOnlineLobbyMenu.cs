@@ -16,7 +16,12 @@ namespace RainMeadow.UI;
 
 public class ArenaOnlineLobbyMenu : SmartMenu
 {
-    public List<SlugcatStats.Name> allSlugcats = ArenaHelpers.allSlugcats;
+    public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
+    public SimplerButton playButton, slugcatSelectBackButton;
+    public ArenaLevelSelector levelSelector;
+    public OnlineArenaSettingsInferface arenaSettingsInterface;
+    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
+    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
     public ArenaMainLobbyPage arenaMainLobbyPage;
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
@@ -59,7 +64,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName);
-
+        ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
     }
@@ -114,6 +119,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public override void ShutDownProcess()
     {
+        arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
+        ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
             arenaMainLobbyPage.SaveInterfaceOptions();
@@ -191,7 +198,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.GetMenuHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat)? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+
+
     }
     public void UpdateMovingPage()
     {
@@ -208,6 +217,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (pages[i].pos == oldPagesPos[i] + newPagePos)
             {
                 pagesMoving = false;
+                pageFullyTransitioned = true;
             }
         }
     }

@@ -17,7 +17,21 @@ namespace RainMeadow.UI.Components
         public static Color MyRainbowColor(HSLColor rainbowColor, bool showRainbow, float alpha = 0.5f)
         {
             Color color = rainbowColor.rgb;
-            return new(color.r, color.g, color.b, showRainbow ? 0.5f : 0);
+            return new(color.r, color.g, color.b, showRainbow ? alpha : 0);
+        }
+        public static string GetMuteSymbol(bool isMuted)
+        {
+            float gen = UnityEngine.Random.Range(0, 100), type = 0;
+            if (gen < 5) type = 1;
+            return $"Meadow_Menu_MutePlayerChat{type}{(isMuted ? 0 : 1)}";
+        }
+        public static void AddOrRemoveFromMute(OnlinePlayer player)
+        {
+            if (OnlineManager.lobby?.gameMode == null) return;
+
+            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(player.id.name))
+                OnlineManager.lobby.gameMode.mutedPlayers.Remove(player.id.name);
+            else OnlineManager.lobby.gameMode.mutedPlayers.Add(player.id.name);
         }
         public static Vector2 DefaultSize => new(290, 120);
         public float Alpha { get; set; } = 1;
@@ -56,6 +70,22 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             sprites.Do(x => x.RemoveFromContainer());
             pingLabel.RemoveFromContainer();
+        }
+        public override void Singal(MenuObject sender, string message)
+        {
+            base.Singal(sender, message);
+            if (message == "KICKPLAYER")
+            {
+                BanHammer.BanUser(profileIdentifier);
+                menu.PlaySound(SoundID.MENU_Remove_Level);
+            }
+            if (message == "MUTEPLAYER")
+            {
+                AddOrRemoveFromMute(profileIdentifier);
+                (sender as SymbolButton)?.UpdateSymbol(GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true));
+                menu.PlaySound(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
+            }
+
         }
         public override void Update()
         {
@@ -124,17 +154,11 @@ namespace RainMeadow.UI.Components
                 {
                     profileIdentifier.id.OpenProfileLink();
                 };
-                if (canKick)
-                {
-                    infoKickButton = new(menu, this, "Menu_Symbol_Clear_All", "KICKPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
-                    infoKickButton.OnClick += (_) =>
-                    {
-                        BanHammer.BanUser(profileIdentifier);
-                    };
-                    UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false);
-                    connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
-                    lines.Add(connector);
-                }
+                infoKickButton = new(menu, this, canKick? "Menu_Symbol_Clear_All" : GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), canKick ? "KICKPLAYER" : "MUTEPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
+                UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false);
+                connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
+                lines.Add(connector);
+
             }
         }
         public HSLColor MyBaseColor()
@@ -149,6 +173,7 @@ namespace RainMeadow.UI.Components
             }
             return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
         }
+
         public float selectingStatusLabelFade = 0, lastSelectingStatusLabelFade = 0;
         public int realPing;
         public bool showRainbow, isSelectingSlugcat;
