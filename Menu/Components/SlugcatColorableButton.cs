@@ -15,7 +15,7 @@ namespace RainMeadow.UI.Components
     {
         public static string GetFileForSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead = false)
         {
-            if (slugcat == null || isColored)
+            if (slugcat == null || slugcat == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat || isColored)
                 return GetFileForSlugcatIndex(slugcat, 0, isDead);
             if (slugcat == SlugcatStats.Name.White || slugcat == SlugcatStats.Name.Yellow || slugcat == SlugcatStats.Name.Red)
                 return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2);

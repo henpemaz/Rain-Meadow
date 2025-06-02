@@ -17,11 +17,8 @@ namespace RainMeadow.UI;
 public class ArenaOnlineLobbyMenu : SmartMenu
 {
     public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-    public SimplerButton playButton, slugcatSelectBackButton;
-    public ArenaLevelSelector levelSelector;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
-    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
     public ArenaMainLobbyPage arenaMainLobbyPage;
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
@@ -29,9 +26,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public MenuIllustration competitiveTitle, competitiveShadow;
     public MenuScene.SceneID slugcatScene;
     public Page slugcatSelectPage;
-    public bool pagesMoving = false, pageFullyTransitioned = true, pendingBgChange = false;
+    public bool pagesMoving = false, pendingBgChange = false;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
+    public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
@@ -60,7 +58,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
-        painCatName = Arena.slugcatSelectPainCatNames[UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count)];
+        painCatName = Arena.slugcatSelectPainCatNames.GetValueOrDefault(UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count), "")!;
 
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName);
@@ -106,7 +104,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             oldPagesPos[i] = pages[i].pos;
 
         currentPage = index;
-        pageFullyTransitioned = false;
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
@@ -138,14 +135,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public override void Update()
     {
-        if (currentPage == 1)
+        base.Update();
+        if (!CanEscExit && RWInput.CheckPauseButton(0))
         {
-            SmartMenuUpdateNoEscapeCheck();
-            if (RWInput.CheckPauseButton(0)) MovePage(new Vector2(1500f, 0f), 0);
+            if (currentPage == 1) MovePage(new Vector2(1500f, 0f), 0);
         }
-        else if (pageFullyTransitioned) base.Update();
-        else SmartMenuUpdateNoEscapeCheck();
-
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + (pendingBgChange ? 0.01f : -0.01f), 0.8f, 1.1f);
         pendingBgChange = pendingBgChange || slugcatScene != scene.sceneID;
@@ -217,7 +211,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (pages[i].pos == oldPagesPos[i] + newPagePos)
             {
                 pagesMoving = false;
-                pageFullyTransitioned = true;
             }
         }
     }

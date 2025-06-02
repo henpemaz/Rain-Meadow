@@ -21,8 +21,8 @@ namespace RainMeadow
             selectableSlugcats = colorableSlugcats;
             if (slugcat != null && !selectableSlugcats.Contains(slugcat))
             {
-                RainMeadow.Debug("slugcat choosen first isnt part of the slugcat list? adding it if it was unintended. be warned for your original list used for the parameter");
-                selectableSlugcats.Insert(0, slugcat);
+                RainMeadow.Debug("slugcat choosen first isnt part of the slugcat list? Selecting the first slugcat part of the list");
+                ChangeSlugcat(0);
             }
             if (SlugcatPagesOn) ActivateSlugcatButtons();
         }

@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI.Pages;
@@ -128,11 +129,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = painCatDescription;
-            slugcatNameLabel.text = painCatName;
+            descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
+            slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-        descriptionLabel.text = menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc)? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
+        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc)? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
@@ -171,6 +172,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
         if (selectedSlugcatIndex == to) return;
-        SwitchSelectedSlugcat(allSlugcats[to]);
+        SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[to]);
     }
 }
