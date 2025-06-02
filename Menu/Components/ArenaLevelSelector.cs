@@ -276,6 +276,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
              };
             LoadLevelsInit();
         }
+        public override void RemoveSprites()
+        {
+            dividerContainer.RemoveFromContainer();
+            levelContainer.RemoveFromContainer();
+            base.RemoveSprites();
+        }
         public override void HiddenUpdate()
         {
             base.HiddenUpdate();
