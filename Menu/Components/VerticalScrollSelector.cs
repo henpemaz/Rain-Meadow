@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace RainMeadow.UI.Components;
 
-public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner, ICanHideMenuObject
+public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner, IPLEASEUPDATEME
 {
     public class SideButton : SimplerSymbolButton
     {
@@ -139,7 +139,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         ConstrainScroll();
     }
 
-    public float IdealScrollElementYPos(int elementIndex) => UpperBound - (elementHeight + elementSpacing + (elementIndex * (elementSpacing + elementHeight))) + (floatScrollPos * (elementHeight + elementSpacing));
+    public virtual float IdealScrollElementYPos(int elementIndex) => UpperBound - (elementHeight + elementSpacing + (elementIndex * (elementSpacing + elementHeight))) + (floatScrollPos * (elementHeight + elementSpacing));
 
     public float PercentageOverYBound(float y)
     {
@@ -148,7 +148,6 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         if (elementUpperBound > UpperBound) return 1 - Math.Min(1, (elementUpperBound - UpperBound) / elementHeight);
         return 1;
     }
-
     public void SliderSetValue(Slider slider, float setValue)
     {
         sliderValue = 1 - setValue;
@@ -170,6 +169,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
         base.GrafUpdate(timeStacker);
         HiddenGrafUpdate(timeStacker);
     }
+    public virtual float GetCurrentScrollPos() => ScrollPos;
     public virtual void HiddenUpdate()
     {
         for (int i = 0; i < scrollElements.Count; i++)
@@ -177,16 +177,19 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
             scrollElements[i].Pos = new(scrollElements[i].Pos.x, IdealScrollElementYPos(i));
             scrollElements[i].Alpha = PercentageOverYBound(scrollElements[i].Pos.y);
         }
-
-        floatScrollPos = Custom.LerpAndTick(floatScrollPos, ScrollPos, 0.01f, 0.01f);
-        floatScrollVelocity *= Custom.LerpMap(Math.Abs(ScrollPos - floatScrollPos), 0.25f, 1.5f, 0.45f, 0.99f);
-        floatScrollVelocity += Mathf.Clamp(ScrollPos - floatScrollPos, -2.5f, 2.5f) / 2.5f * 0.15f;
+        float scrollPos = GetCurrentScrollPos();
+        floatScrollPos = Custom.LerpAndTick(floatScrollPos, scrollPos, 0.01f, 0.01f);
+        floatScrollVelocity *= Custom.LerpMap(Math.Abs(scrollPos - floatScrollPos), 0.25f, 1.5f, 0.45f, 0.99f);
+        floatScrollVelocity += Mathf.Clamp(scrollPos - floatScrollPos, -2.5f, 2.5f) / 2.5f * 0.15f;
         floatScrollVelocity = Mathf.Clamp(floatScrollVelocity, -1.2f, 1.2f);
         floatScrollPos += floatScrollVelocity;
         sliderValueCap = Custom.LerpAndTick(sliderValueCap, MaximumScrollPos, 0.02f, scrollElements.Count / 40f);
 
         slider.buttonBehav.greyedOut = MaximumScrollPos == 0;
-
+        if (scrollDownButton != null)
+            scrollDownButton.buttonBehav.greyedOut = ScrollPos == MaximumScrollPos;
+        if (scrollUpButton != null)
+            scrollUpButton.buttonBehav.greyedOut = ScrollPos == 0;
         if (MaximumScrollPos == 0)
             sliderValue = Custom.LerpAndTick(sliderValue, 0.5f, 0.02f, 0.05f);
         else

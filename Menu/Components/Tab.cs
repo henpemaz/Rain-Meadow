@@ -240,7 +240,7 @@ public class TabContainer : RectangularMenuObject
         {
             foreach (MenuObject subObj in obj.subObjects)
             {
-                (subObj as ICanHideMenuObject)?.HiddenUpdate();
+                (subObj as IPLEASEUPDATEME)?.HiddenUpdate();
                 UpdateHiddenObjects(subObj);
             }
         }
@@ -248,7 +248,7 @@ public class TabContainer : RectangularMenuObject
         {
             foreach (MenuObject subObj in obj.subObjects)
             {
-                (subObj as ICanHideMenuObject)?.HiddenGrafUpdate(timeStacker);
+                (subObj as IPLEASEUPDATEME)?.HiddenGrafUpdate(timeStacker);
                 GrafUpdateHiddenObjects(subObj, timeStacker);
             }
         }
