@@ -273,7 +273,7 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpCheckBox(StorySyncFoodBars, new Vector2(10, 170)),
 
-                new OpLabel(40f, 179, RWCustom.Custom.ReplaceLineDelimeters(Translate("Separate food bars")))
+                new OpLabel(40f, 179, RWCustom.Custom.ReplaceLineDelimeters(Translate("Sync food bars")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 }

@@ -65,6 +65,8 @@ namespace RainMeadow
             public float minimumRippleLevel;
             [OnlineFieldHalf]
             public float maximumRippleLevel;
+            [OnlineField]
+            public bool syncFood;
             
 
             public State() { }
@@ -78,6 +80,7 @@ namespace RainMeadow
                 currentCampaign = storyGameMode.currentCampaign;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
                 rippleLevel = storyGameMode.rippleLevel;
+                syncFood = storyGameMode.syncFoodBars;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
@@ -95,7 +98,7 @@ namespace RainMeadow
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
-                if (storyGameMode.syncFoodBars)
+                if (syncFood)
                 {
                     food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                     quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
@@ -121,10 +124,11 @@ namespace RainMeadow
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (resource as Lobby);
                 (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
+                (lobby.gameMode as StoryGameMode).syncFoodBars = syncFood;
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
 
-                if (playerstate != null && (lobby.gameMode as StoryGameMode).syncFoodBars)
+                if (playerstate != null && syncFood)
                 {
                     playerstate.foodInStomach = food;
                     playerstate.quarterFoodPoints = quarterfood;
