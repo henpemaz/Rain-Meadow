@@ -31,17 +31,17 @@ namespace RainMeadow
         public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            if (onlineEntity.isTransfering)
-            {
-                RainMeadow.Debug($"Transferring {onlineEntity}, not updating state!");
-                return;
-            }
 
             var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = mode;
             
             if (weapon.room != null && weapon.mode != newMode)
             {
+                if (onlineEntity.isTransfering)
+                {
+                    RainMeadow.Debug($"Transferring {onlineEntity}, not updating state!");
+                    return;
+                }
                 RainMeadow.Debug($"{onlineEntity} new mode : {newMode}");
                 weapon.ChangeMode(newMode);
                 weapon.throwModeFrames = -1; // not synched, behaves as "infinite"
