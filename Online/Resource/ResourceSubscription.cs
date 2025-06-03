@@ -10,14 +10,13 @@ namespace RainMeadow
         public OnlinePlayer player;
         public Queue<OnlineStateMessage> OutgoingStates = new(32);
         public OnlineResource.ResourceState lastAcknoledgedState;
-        private int basecooldown;
-        private int cooldown;
+        private float cooldown = 1f;
+        private const float FULL_STATE_OPTIMIZATION = 0.5f;
 
         public ResourceSubscription(OnlineResource resource, OnlinePlayer player)
         {
             this.resource = resource;
             this.player = player;
-            if (resource is Lobby or WorldSession) basecooldown = 5; // 0 for room
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (player.isMe) throw new InvalidOperationException("subscribed to self");
         }
@@ -27,18 +26,6 @@ namespace RainMeadow
             if (!resource.isAvailable) throw new InvalidOperationException("not available");
             if (!resource.isOwner) throw new InvalidOperationException("not owner");
             if (!resource.isActive) return; // resource not ready yet
-
-            if (EventMath.IsNewerOrEqual(player.latestTickAck, resource.lastModified)) // player has acked latest relevant changes
-            {
-                if (cooldown > 0) // don't spam
-                {
-                    cooldown--;
-                    return;
-                }
-            }
-
-            cooldown = basecooldown;
-            cooldown--;
 
             if (player.recentlyAckdTicks.Count > 0)
             {
@@ -55,6 +42,16 @@ namespace RainMeadow
             }
 
             var newState = resource.GetState(tick);
+
+            //determine whether or not to send
+            cooldown -= newState.SendFrequency(null) * (lastAcknoledgedState == null ? FULL_STATE_OPTIMIZATION : 1f);
+            if (cooldown > 0) return;
+            else
+            {
+                cooldown += 1f;
+                if (cooldown < 0) cooldown = 0; //prevent it from becoming indefinitely negative
+            }
+
             if (lastAcknoledgedState != null)
             {
                 RainMeadow.Trace($"sending delta for tick {newState.tick} from reference {lastAcknoledgedState.tick}");
