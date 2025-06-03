@@ -27,7 +27,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
-
         arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 205f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
@@ -142,6 +141,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
+        if (OnlineManager.lobby.isOwner)
+            levelSelector.LoadNewPlaylist(Arena.playList, false);
+        else levelSelector.LoadNewPlaylist(Arena.playList, true);
 
     }
 }

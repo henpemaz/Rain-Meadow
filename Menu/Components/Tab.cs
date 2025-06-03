@@ -238,16 +238,18 @@ public class TabContainer : RectangularMenuObject
         }
         public void UpdateHiddenObjects(MenuObject obj)
         {
-            foreach (MenuObject subObj in obj.subObjects)
+            for (int i = 0; i < obj.subObjects.Count; i++)
             {
+                MenuObject subObj = obj.subObjects[i];
                 (subObj as IPLEASEUPDATEME)?.HiddenUpdate();
                 UpdateHiddenObjects(subObj);
             }
         }
         public void GrafUpdateHiddenObjects(MenuObject obj, float timeStacker)
         {
-            foreach (MenuObject subObj in obj.subObjects)
+            for (int i = 0; i < obj.subObjects.Count; i++)
             {
+                MenuObject subObj = obj.subObjects[i];
                 (subObj as IPLEASEUPDATEME)?.HiddenGrafUpdate(timeStacker);
                 GrafUpdateHiddenObjects(subObj, timeStacker);
             }

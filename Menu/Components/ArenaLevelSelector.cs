@@ -22,7 +22,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public FSprite thumbnailSprite;
         public FSprite? dividerSprite, dividerSprite2;
         public RoundedRect roundedRect;
-        public LevelItem? dividerAbove, dividerBelow;
+        public LevelItem? levelItemAbove, levelItemBelow;
         public bool thumbLoaded, lastSelected, doAThumbFade, showThumbDivider;
         public float labelSelectedBlink, labelLastSelectedBlink, lastFade, fade, thumbChangeFade, lastThumbChangeFade, fadeAway;
         public string name, description;
@@ -71,7 +71,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override void Update()
         {
             base.Update();
-
+            buttonBehav.greyedOut = MyPlaylistSelector?.MyLevelSelector?.ForceGreyOutAll == true;
             lastFade = fade;
             labelLastSelectedBlink = labelSelectedBlink;
 
@@ -116,7 +116,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * 0.5f * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * (float)Math.PI)) * (buttonBehav.clicked ? 0f : 1f); roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
 
-            if (!thumbLoaded && (Selected || fade > 0.5f))
+            if (!thumbLoaded && (Selected || Alpha > 0.5f))
                 MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(name);
 
             if (dividerSprite != null && showThumbDivider != ShowThumbDivider)
@@ -150,8 +150,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (dividerSprite != null)
             {
                 dividerSprite.x = thumbnailSprite.x;
-                dividerSprite.y = Mathf.Lerp(DrawY(timeStacker), dividerBelow!.DrawY(timeStacker) + dividerBelow!.DrawSize(timeStacker).y, 0.5f) - 1 * thumbTransitionState - (10 - MyPlaylistSelector?.elementSpacing ?? 0);
-                dividerSprite.alpha = Mathf.Min(fade, Custom.SCurve(Mathf.Lerp(dividerBelow!.lastFade, dividerBelow!.fade, timeStacker), 0.3f)) * Alpha;
+                dividerSprite.y = Mathf.Lerp(DrawY(timeStacker), levelItemBelow!.DrawY(timeStacker) + levelItemBelow!.DrawSize(timeStacker).y, 0.5f) - 1 * thumbTransitionState - (10 - MyPlaylistSelector?.elementSpacing ?? 0);
+                dividerSprite.alpha = Mathf.Min(fade, Custom.SCurve(Mathf.Lerp(levelItemBelow!.lastFade, levelItemBelow!.fade, timeStacker), 0.3f)) * Alpha;
                 if (showThumbDivider)
                 {
                     dividerSprite.alpha *= Mathf.InverseLerp(0.75f, 1f, thumbTransitionState);
@@ -208,8 +208,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             MyDividerContainer.AddChild(dividerSprite2);
             MyDividerContainer.AddChild(dividerSprite);
-            dividerBelow = nxt;
-            nxt.dividerAbove = this;
+            levelItemBelow = nxt;
+            nxt.levelItemAbove = this;
         }
         public void ThumbnailHasBeenLoaded()
         {
@@ -287,9 +287,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override float IdealScrollElementYPos(int elementIndex)
         {
             float scrollPos = StepsDownOfItem(elementIndex) - floatScrollPos;
-            float idealScrollPos = size.y - scrollPos * (elementHeight + elementSpacing);
+            float idealScrollPos = UpperBound - scrollPos * (elementHeight + elementSpacing);
             LevelItem? lvlItem = scrollElements.GetValueOrDefault(elementIndex) as LevelItem;
-            return idealScrollPos + (((lvlItem?.dividerBelow != null)? 3 : 0) - (lvlItem?.dividerAbove != null? 3 : 0) * showThumbsTransitionState);
+            return idealScrollPos + (((lvlItem?.levelItemBelow != null)? 3 : 0) - (lvlItem?.levelItemAbove != null? 3 : 0) * showThumbsTransitionState);
         }
         public override float GetCurrentScrollPos()
         {
@@ -329,8 +329,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public void AddLevelItem(LevelItem item) => AddScrollElements(item);
         public void RemoveLevelItem(LevelItem item, bool constrainScroll = true)
         {
-            this.ClearMenuObject(item);
             RemoveScrollElements(constrainScroll, item);
+            this.ClearMenuObject(item);
         }
         public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
     }
@@ -366,7 +366,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (MyLevelSelector?.GetGameTypeSetup != null) MyLevelSelector.GetGameTypeSetup.shufflePlaylist = value;
             }
         }
-        public bool IsMismatched => MyLevelSelector != null && LevelItems.Count != MyLevelSelector.PlayList.Count;
+        public bool IsMismatched => MyLevelSelector != null && LevelItems.Count != MyLevelSelector.SelectedPlayList.Count;
 
         public PlaylistHolder(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
         {
@@ -428,7 +428,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public override void LoadLevelsInit() => ResolvePlaylistMismatch();
         public void UpdatePlaylist()
         {
-            clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0;
+            clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true;
             if (clearAllCounter > 0)
             {
                 clearAllCounter--;
@@ -447,7 +447,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                             break;
                         }
                     }
-                    if (!isClearingObj) MyLevelSelector?.PlayList?.Clear();
+                    if (!isClearingObj) MyLevelSelector?.SelectedPlayList?.Clear();
                 }
                 return;
             }
@@ -460,8 +460,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (MyLevelSelector == null) return;
             for (int i = LevelItems.Count - 1; i >= 0; i--)
                 RemoveLevelItem(LevelItems[i], false);
-            for (int j = 0; j < MyLevelSelector.PlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.PlayList[j], "Remove level from playlist"));
+            for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], "Remove level from playlist"));
             ConstrainScroll();
             mismatchCounter = 0;
 
@@ -469,9 +469,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public void RemovePlaylistLevelItem(LevelItem levelItem)
         {
             if (MyLevelSelector == null) return;
-            for (int i = MyLevelSelector.PlayList.Count - 1; i >= 0; i--)
+            for (int i = MyLevelSelector.SelectedPlayList.Count - 1; i >= 0; i--)
             {
-                if (MyLevelSelector.PlayList[i] == levelItem.name)
+                if (MyLevelSelector.SelectedPlayList[i] == levelItem.name)
                 {
                     MyLevelSelector.RemoveLevelFromPlayList(i);
                     break;
@@ -493,9 +493,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType => GetArenaSetup.currentGameType;
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
-
-    public List<string> PlayList => GetGameTypeSetup.playList;
-
+    public List<string> SelectedPlayList => GetGameTypeSetup.playList;
+    public bool ForceGreyOutAll => RainMeadow.isArenaMode(out _) && !OnlineManager.lobby.isOwner;
     public ArenaLevelSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
     {
 
@@ -537,6 +536,13 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         base.Update();
         LoadThumbSprite();
     }
+    public void LoadNewPlaylist(List<string> playlist, bool addToOwnPlaylist)
+    {
+        List<string> playListToClear = addToOwnPlaylist ? SelectedPlayList : playlist,
+            playListToRead = addToOwnPlaylist ? playlist : SelectedPlayList;
+        playListToClear.Clear();
+        playListToClear.AddRange(playListToRead);
+    }
     public void HiddenUpdate() => LoadThumbSprite();
     public void HiddenGrafUpdate(float timeStacker)
     {
@@ -556,7 +562,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public string LevelListSortString(string levelName) => LevelListSortNumber(levelName).ToString("000") + LevelDisplayName(levelName);
     public void AddItemToSelectedList(string name)
     {
-        PlayList.Add(name);
+        SelectedPlayList.Add(name);
         LevelItem item = new(menu, selectedLevelsPlaylist, name, "Remove level from playlist");
         selectedLevelsPlaylist.AddLevelItem(item);
         selectedLevelsPlaylist.ScrollPos = selectedLevelsPlaylist.MaximumScrollPos;
@@ -565,8 +571,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     }
     public void RemoveLevelFromPlayList(int index)
     {
-        if (index < 0 || index >= PlayList.Count) return;
-        PlayList.RemoveAt(index);
+        if (index < 0 || index >= SelectedPlayList.Count) return;
+        SelectedPlayList.RemoveAt(index);
         menu.PlaySound(SoundID.MENU_Remove_Level);
     }
     public bool IsThumbnailLoaded(string levelName) => loadedThumbTextures.Contains(levelName);
