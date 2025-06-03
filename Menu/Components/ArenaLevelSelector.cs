@@ -56,7 +56,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             Container.AddChild(thumbnailSprite);
         }
 
-
         public override Color MyColor(float timeStacker)
         {
             if (buttonBehav.greyedOut)
@@ -99,16 +98,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             else thumbChangeFade = Custom.LerpAndTick(thumbChangeFade, 0f, 0.08f, 1f / 30f);
 
             float desiredSquashFactor = 1;
-            if (MyPlaylistSelector != null)
-            {
-                int index = MyPlaylistSelector.scrollElements.IndexOf(this);
-                float value = MyPlaylistSelector.StepsDownOfItem(index) - 1;
-                if (index < MyPlaylistSelector.floatScrollPos)
-                    desiredSquashFactor = Mathf.InverseLerp(MyPlaylistSelector.floatScrollPos - 1, MyPlaylistSelector.floatScrollPos, value);
-
-                else if (index > MyPlaylistSelector.floatScrollPos + MyPlaylistSelector.MaxVisibleElements - 1)
-                    desiredSquashFactor = Mathf.InverseLerp(MyPlaylistSelector.floatScrollPos + MyPlaylistSelector.MaxVisibleElements, MyPlaylistSelector.floatScrollPos + MyPlaylistSelector.MaxVisibleElements - 1, value);
-            }
             if (fadeAway > 0)
             {
                 fadeAway += 0.1f;
@@ -206,6 +195,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 MyPlaylistSelector.LevelItemClicked(MyPlaylistSelector.LevelItems.IndexOf(this));
 
         }
+
         public void HiddenUpdate() => Update();
         public void HiddenGrafUpdate(float timeStacker) => GrafUpdate(timeStacker);
         public void AddDividers(LevelItem nxt)
