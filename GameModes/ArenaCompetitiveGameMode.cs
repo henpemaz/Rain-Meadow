@@ -42,7 +42,9 @@ namespace RainMeadow
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
-        public List<string> slugcatSelectPainCatNames = [], slugcatSelectPainCatDescriptions = [];
+        public List<string> slugcatSelectPainCatNames = [];
+        // have fun fixing this UO ;)
+        public List<string> slugcatSelectPainCatNormalDescriptions, slugcatSelectPainCatJokeDescriptions, slugcatSelectPainCatQuoteDescriptions, slugcatSelectPainCatDevJokeDescriptions, slugcatSelectPainCatSmileyDescriptions, slugcatSelectPainCatUwUDescriptions, slugcatSelectPainCatWaveDescriptions, slugcatSelectPainCatDeadDescriptions;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -144,28 +146,69 @@ namespace RainMeadow
 
 
                 slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-                slugcatSelectPainCatDescriptions = [
-                    /* portrait 0 */ ":)",
-                    /* portrait 1 */ "uwu",
-                    /* portrait 2 */ "hiiii!",
-                    /* portrait 3 */ "i'm ded",
-                    /* portrait 4 */ "You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.",
+
+                slugcatSelectPainCatNormalDescriptions =
+                [
+                    "You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.",
                     "...",
                     "...why are you here",
-                    ".kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
-                    "\"<USERNAME>, youre gonna get us both killed\"",
-                    "Seeking love will lead you down the beautiful path of heartbreaking wrecks.",
-                    "\"i gotta throw 2 spears to kill, its just dumb. at least they re added me to arena mode i guess...\"",
-                    "\"u dont need 2 be alone, bby.\"",
-                    "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Thanks, Andrew.",
-                    "Don't Care<LINE>Nuh<LINE>Yuh",
+                ];
+                slugcatSelectPainCatJokeDescriptions =
+                [
+                    ".kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
                     "Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!",
-                    "egg",
-                    "\"sometimes i wake up with a friend ive never met b4\"",
-                    "\"inv? like invalidunits?\"",
                     "$5 to unlock this description.",
+                    "egg",
+                    "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
+                    "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
+                    "7",
+                ];
+                slugcatSelectPainCatQuoteDescriptions =
+                [
+                    "\"<USERNAME>, youre gonna get us both killed\"",
+                    "\"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess...\"",
+                    "\"u dont need 2 be alone, bby.\"",
+                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"i luv u <3\"",
+                ];
+                slugcatSelectPainCatDevJokeDescriptions =
+                [
+                    "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
+                    "Don't Care<LINE>Nuh<LINE>Yuh",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
+                    "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
+                    "Be careful when selecting the Fartificer",
+                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh"
+                ];
+                slugcatSelectPainCatSmileyDescriptions =
+                [
+                    ":)",
+                    ":D",
+                    ":')",
+                    ";)",
+                    ";D",
+                ];
+                slugcatSelectPainCatUwUDescriptions =
+                [
+                    "uwu",
+                    "owo",
+                    "UwU",
+                    "OwO",
+                    ">w<",
+                    "^w^",
+                ];
+                slugcatSelectPainCatWaveDescriptions =
+                [
+                    "\"hiiii!\"",
+                    "  o /<LINE>/|<LINE> / \\",
+                ];
+                slugcatSelectPainCatDeadDescriptions =
+                [
+                    "\"i'm ded\"",
+                    "bleh",
+                    "X.X",
                 ];
 
                 slugcatSelectDisplayNames.Add("Gourmand", "THE GOURMAND");
@@ -207,10 +250,10 @@ namespace RainMeadow
             {
                 slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.");
             }
-            
+
             slugcatSelectDisplayNames.Add("MeadowRandom", "The Unknown");
 
-            
+
         }
 
         public void ResetInvDetails()
@@ -290,12 +333,16 @@ namespace RainMeadow
 
         }
 
-        public void InitializeSlugcat() {
-            if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+        public void InitializeSlugcat()
+        {
+            if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
+            {
                 System.Random random = new System.Random((int)DateTime.Now.Ticks);
                 avatarSettings.playingAs = ArenaHelpers.allSlugcats[random.Next(ArenaHelpers.allSlugcats.Count)]!;
                 arenaClientSettings.randomPlayingAs = avatarSettings.playingAs;
-            } else {
+            }
+            else
+            {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
 

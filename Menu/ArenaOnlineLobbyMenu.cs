@@ -16,9 +16,6 @@ namespace RainMeadow.UI;
 
 public class ArenaOnlineLobbyMenu : SmartMenu
 {
-    public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-    public OnlineArenaSettingsInferface arenaSettingsInterface;
-    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public ArenaMainLobbyPage arenaMainLobbyPage;
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
@@ -192,7 +189,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat)? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
 
     }
