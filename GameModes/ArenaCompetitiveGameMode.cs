@@ -176,7 +176,7 @@ namespace RainMeadow
                 [
                     "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Don't Care<LINE>Nuh<LINE>Yuh",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
                     "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
                     "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
                     "Be careful when selecting the Fartificer",
