@@ -263,7 +263,8 @@ namespace RainMeadow
             hasSheltered = false;
             readyForWin = false;
             readyForTransition = ReadyForTransition.Closed;
-            storyClientData.Sanitize();
+            // NOTE: May start game before client data is fully created, how can we fix? - does it need to be fix?
+            storyClientData?.Sanitize();
         }
 
         public override void PostGameStart(RainWorldGame game)
