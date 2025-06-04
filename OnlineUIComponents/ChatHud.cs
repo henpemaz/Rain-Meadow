@@ -149,16 +149,22 @@ namespace RainMeadow
 
         public void Destroy()
         {
+            RainMeadow.DebugMe();
+            if (chatInputOverlay != null) ShutDownChatInput();
+            if (chatLogOverlay != null) ShutDownChatLog();
             ChatTextBox.OnShutDownRequest -= ShutDownChatInput;
             ChatLogManager.Unsubscribe(this);
         }
-
+        public override void ClearSprites()
+        {
+            base.ClearSprites();
+            Destroy();
+        }
         public override void Update()
         {
             base.Update();
 
-            if (slatedForDeletion) { Destroy(); return; }
-
+            if (slatedForDeletion) { return; }
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode) return;
 
             if (game.pauseMenu != null || camera.hud?.map?.visible is true || game.manager.upcomingProcess != null)
