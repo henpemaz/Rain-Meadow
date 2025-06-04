@@ -15,12 +15,6 @@ namespace RainMeadow.UI;
 
 public class ArenaOnlineLobbyMenu : SmartMenu
 {
-    public static string[] PainCatNames => ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-    public SimplerButton playButton, slugcatSelectBackButton;
-    public ArenaLevelSelector levelSelector;
-    public OnlineArenaSettingsInferface arenaSettingsInterface;
-    public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
-    public MenuLabel slugcatNameLabel, slugcatDescriptionLabel;
     public ArenaMainLobbyPage arenaMainLobbyPage;
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
@@ -66,7 +60,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        
+
         RainMeadow.Debug(GetArenaSetup.playerClass[0]?.value ?? "NULL");
         SwitchSelectedSlugcat(GetArenaSetup.playerClass[0]);
     }
@@ -115,11 +109,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         if (!RainMeadow.isArenaMode(out _))
-          {
+        {
             RainMeadow.Error("arena is null, slugcat wont be changed!");
             return;
         }
-        slugcat = ArenaHelpers.selectableSlugcats.IndexOf(slugcat) == -1? ArenaHelpers.selectableSlugcats[0] : slugcat;
+        slugcat = ArenaHelpers.selectableSlugcats.IndexOf(slugcat) == -1 ? ArenaHelpers.selectableSlugcats[0] : slugcat;
         slugcatScene = Arena.slugcatSelectMenuScenes[slugcat.value];
         Arena.arenaClientSettings.playingAs = slugcat;
         GetArenaSetup.playerClass[0] = slugcat;
@@ -204,7 +198,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (!RainMeadow.isArenaMode(out _)) return;
         SlugcatStats.Name slugcat = Arena.arenaClientSettings.playingAs;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat)? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
 
     }
