@@ -114,17 +114,17 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
+                { "White", "Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "Afflicted from the beginning, and a figher to the end.\nShow them the meaning of suffering." },
+                { "Red", "Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
-                { "White", "The Survivor" },
-                { "Yellow", "The Monk" },
-                { "Red", "The Hunter" },
-                { "Night", "The Nightcat" },
+                { "White", "THE SURVIVOR" },
+                { "Yellow", "THE MONK" },
+                { "Red", "THE HUNTER" },
+                { "Night", "THE NIGHTCAT" },
             };
 
             if (ModManager.MSC)
@@ -137,12 +137,13 @@ namespace RainMeadow
                 slugcatSelectMenuScenes.Add("Slugpup", RainMeadow.rainMeadowOptions.SlugpupHellBackground.Value ? MoreSlugcatsEnums.MenuSceneID.Landscape_HR : MenuScene.SceneID.Intro_4_Walking);
                 slugcatSelectMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
 
-                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.\nCrush this one last quest.");
-                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.\nMaul and detonate your way to vengeance.");
+                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.");
+                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.");
                 slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
-                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
-                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
+                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.");
+                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
+
 
                 slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
 
@@ -175,7 +176,7 @@ namespace RainMeadow
                 [
                     "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Don't Care<LINE>Nuh<LINE>Yuh",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
                     "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
                     "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
                     "Be careful when selecting the Fartificer",
@@ -210,20 +211,20 @@ namespace RainMeadow
                     "X.X",
                 ];
 
-                slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
-                slugcatSelectDisplayNames.Add("Artificer", "The Artificer");
-                slugcatSelectDisplayNames.Add("Spear", "The Spearmaster");
-                slugcatSelectDisplayNames.Add("Rivulet", "The Rivulet");
-                slugcatSelectDisplayNames.Add("Saint", "The Saint");
-                slugcatSelectDisplayNames.Add("Slugpup", "The Slugpup");
-                slugcatSelectDisplayNames.Add("Inv", "Inv");
+                slugcatSelectDisplayNames.Add("Gourmand", "THE GOURMAND");
+                slugcatSelectDisplayNames.Add("Artificer", "THE ARTIFICER");
+                slugcatSelectDisplayNames.Add("Spear", "THE SPEARMASTER");
+                slugcatSelectDisplayNames.Add("Rivulet", "THE RIVULET");
+                slugcatSelectDisplayNames.Add("Saint", "THE SAINT");
+                slugcatSelectDisplayNames.Add("Slugpup", "THE SLUGPUP");
+                slugcatSelectDisplayNames.Add("Inv", "INV");
             }
 
             if (ModManager.Watcher)
             {
                 slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
-                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.\nClosed: Whispers. Freezing. Drowning.\nOpen: Echoes. Balance. Weightless.");
-                slugcatSelectDisplayNames.Add("Watcher", "The Watcher");
+                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Open: Echoes. Balance. Weightless.");
+                slugcatSelectDisplayNames.Add("Watcher", "THE WATCHER");
 
                 slugcatSelectMenuScenes.Remove("Night");
                 slugcatSelectDescriptions.Remove("Night");
@@ -240,14 +241,14 @@ namespace RainMeadow
                 StringBuilder randomDescBuilder = new();
                 if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
                 else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("\nAm I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("\nAm I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("\nI do not know, for I am not one. I am many.");
+                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
+                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
+                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else
             {
-                slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.\nThose who wander many paths will find great truth.");
+                slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.");
             }
 
             slugcatSelectDisplayNames.Add("MeadowRandom", "The Unknown");

@@ -1,6 +1,8 @@
+using Menu;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 using UnityEngine;
 
 namespace RainMeadow
@@ -93,7 +95,6 @@ namespace RainMeadow
             selectableSlugcats.AddRange(allSlugcats);
             selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
         }
-
         public static void SetProfileColor(ArenaOnlineGameMode arena)
         {
             int profileColor = 0;
@@ -307,6 +308,7 @@ namespace RainMeadow
         }
         public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
         {
+            if (text == null) return;
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
             {

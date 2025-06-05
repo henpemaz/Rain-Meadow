@@ -14,6 +14,7 @@ namespace RainMeadow
         private bool isExiting;
         private bool isInit = true;
 
+        public virtual bool CanEscExit => manager.dialog == null;
         public abstract MenuScene.SceneID GetScene { get; }
 
         protected SmartMenu(ProcessManager manager, ProcessManager.ProcessID ID) : base(manager, ID)
@@ -59,8 +60,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
-            if (RWInput.CheckPauseButton(0) && !isExiting)
+            if (RWInput.CheckPauseButton(0) && !isExiting && CanEscExit)
             {
                 manager.RequestMainProcessSwitch(this.backTarget);
                 base.PlaySound(SoundID.MENU_Switch_Page_Out);
@@ -71,11 +71,7 @@ namespace RainMeadow
                 isExiting = false;
                 isInit = false;
             }
-        }
 
-        public void SmartMenuUpdateNoEscapeCheck()
-        {
-            base.Update();
         }
     }
 }

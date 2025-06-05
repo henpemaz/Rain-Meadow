@@ -44,7 +44,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            btn.OnClick += _ => SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
 
             string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
@@ -87,12 +86,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 SwitchSelectedSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
             };
 
-        MenuLabel chooseYourSlugcatLabel = new(menu, this, "Choose Your Slugcat", new Vector2(680f, 575f), default, true);
+        MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
-
-        slugcatNameLabel = new MenuLabel(menu, this, Arena.slugcatSelectDisplayNames[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 310f), default, true);
-
-        descriptionLabel = new MenuLabel(menu, this, Arena.slugcatSelectDescriptions[Arena.arenaClientSettings.playingAs.value], new Vector2(680f, 210f), default, true);
+        chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
+        slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310f), default, true);
+        slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
+        descriptionLabel = new MenuLabel(menu, this, "", new Vector2(680f, 210f), default, true);
         descriptionLabel.label.color = new Color(0.8f, 0.8f, 0.8f);
 
         descriptionGradients = new FSprite[4];
@@ -112,9 +111,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         }
 
         this.SafeAddSubobjects(backButton, chooseYourSlugcatLabel, slugcatNameLabel, descriptionLabel, randomizePainCat);
+        if (ArenaMenu != null)
+        {
+            SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
+            RainMeadow.Debug($"Saved Slugcat: {savedSlugcat?.value ?? "NULL"}");
+            SwitchSelectedSlugcat(savedSlugcat);
+            ArenaMenu.ChangeScene(ArenaMenu.slugcatScene);
+        }
     }
 
-    public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
+    public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
         selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat);
         try
@@ -131,18 +137,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = painCatDescription;
-            slugcatNameLabel.text = painCatName;
+            descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
+            slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-
-        descriptionLabel.text = Arena.slugcatSelectDescriptions[slugcat.value];
-        slugcatNameLabel.text = Arena.slugcatSelectDisplayNames[slugcat.value];
-
+        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc)? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
+        slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
             menu.PlaySound(RainMeadow.Ext_SoundID.Fartificer);
-            slugcatNameLabel.text = "The Fartificer";
+            slugcatNameLabel.text = menu.Translate("THE FARTIFICER");
         }
     }
 
@@ -207,5 +211,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public int GetCurrentlySelectedOfSeries(string series) => selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu
 
-    public void SetCurrentlySelectedOfSeries(string series, int to) => selectedSlugcatIndex = to; // no need to check series (for now) since there is only one SelectOneButton in this menu
+    public void SetCurrentlySelectedOfSeries(string series, int to)
+    {
+        if (selectedSlugcatIndex == to) return;
+        SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[to]);
+    }
 }

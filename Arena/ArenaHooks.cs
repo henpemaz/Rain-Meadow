@@ -44,6 +44,10 @@ namespace RainMeadow
         {
             On.Options.LoadArenaSetup += On_Options_LoadArenaSetup;
             On.Options.SaveArenaSetup += On_Options_SaveArenaSetup;
+
+            IL.ArenaSetup.ctor += IL_ArenaSetup_SaveSlugcatFix;
+            IL.ArenaSetup.LoadFromFile += IL_ArenaSetup_SaveSlugcatFix;
+            IL.ArenaSetup.SaveToFile += IL_ArenaSetup_SaveSlugcatFix;
             IL.ArenaSetup.SaveToFile += IL_ArenaSetup_SaveToFile;
             On.Spear.Update += Spear_Update;
 
@@ -148,7 +152,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(string (string orig, MenuScene self) =>
                 {
-                    if (self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu)
+                    if (self.menu is ArenaOnlineLobbyMenu)
                     {
                         return "Endgame - Wanderer - Flat - Nosymbol";
                     }
@@ -163,8 +167,8 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate((MenuIllustration illus, MenuScene self) =>
                 {
-                    Debug(self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu);
-                    if (self.menu.manager.currentMainLoop is ArenaOnlineLobbyMenu)
+                    Debug(self.menu is ArenaOnlineLobbyMenu);
+                    if (self.menu is ArenaOnlineLobbyMenu)
                     {
                         illus.sprite.alpha = 0.0f;
                         illus.lastAlpha = 0.0f;
@@ -289,6 +293,23 @@ namespace RainMeadow
             }
             orig(self, arenaSetupStrings);
         }
+        private void IL_ArenaSetup_SaveSlugcatFix(ILContext il)
+        {
+            try
+            {
+                ILCursor cursor = new(il);
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<ModManager>("get_NewSlugcatsModule"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(delegate (bool mscWatcher, ArenaSetup self)
+                {
+                    return mscWatcher || self is ArenaOnlineSetup;
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         private void IL_ArenaSetup_SaveToFile(ILContext il)
         {
             try
@@ -300,8 +321,7 @@ namespace RainMeadow
                 cursor.Emit(OpCodes.Ldloca, 0);
                 cursor.EmitDelegate(delegate (ArenaSetup self, ref string text)
                 {
-                    if (self is not ArenaOnlineSetup onlineSetup) return;
-                    text = onlineSetup.SetSaveStringFilter(text);
+                    if (self is ArenaOnlineSetup onlineSetup) text = onlineSetup.SetSaveStringFilter(text);
                 });
             }
             catch (Exception ex)
