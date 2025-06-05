@@ -307,12 +307,19 @@ namespace RainMeadow
         {
             if (them != null)
             {
-                if (OnlineManager.lobby.clientSettings[them.abstractPhysicalObject.GetOnlineObject().owner].TryGetData<ArenaClientSettings>(out var tb1) && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb2) && tb1 == tb2)
+                if (OnlineManager.lobby.clientSettings[them.abstractPhysicalObject.GetOnlineObject().owner].TryGetData<ArenaTeamClientSettings>(out var tb1))
                 {
-                    return true;
+                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    {
+                        if (tb1.team == tb2.team)
+                        {
+                            RainMeadow.Debug("Same team! No hits");
+                        }
+                        return tb1.team == tb2.team;
+                    }
                 }
             }
-
+            RainMeadow.Debug("Different teams or Player is null");
             return false;
         }
 

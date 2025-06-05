@@ -13,6 +13,7 @@ using UnityEngine;
 using RainMeadow.UI.Components;
 using System.IO;
 using System.Text.RegularExpressions;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 namespace RainMeadow
 {
@@ -24,18 +25,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena)
             {
                 gameMode = arena;
-                return true;
-            }
-            return false;
-        }
-
-
-        public static bool isArenaTeamBattleMode(out ExternalArenaGameMode teamBattle)
-        {
-            teamBattle = null;
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is ArenaOnlineGameMode arena && arena.currentGameMode == TeamBattleMode.TeamBattle.value)
-            {
-                teamBattle = arena.onlineArenaGameMode;
                 return true;
             }
             return false;
@@ -81,7 +70,7 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
-            
+
             On.Menu.PlayerResultMenu.Update += PlayerResultMenu_Update;
             On.Menu.MultiplayerResults.ctor += MultiplayerResults_ctor;
             On.Menu.MultiplayerResults.Update += MultiplayerResults_Update;
@@ -120,10 +109,37 @@ namespace RainMeadow
             new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.SetCamoMeter);
             On.Watcher.CamoMeter.Update += CamoMeter_Update;
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
-            
+
+            On.Menu.ArenaOverlayResultBox.ctor += ArenaOverlayResultBox_ctor;
+
         }
 
+        private void ArenaOverlayResultBox_ctor(On.Menu.ArenaOverlayResultBox.orig_ctor orig, Menu.ArenaOverlayResultBox self, Menu.ArenaOverlay arenaOverlay, Menu.MenuObject owner, ArenaSitting.ArenaPlayer player, int index, bool showWinnerStar)
+        {
+            if (isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    if (onlinePlayer != null)
+                    {
+                        if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaTeamClientSettings>(out var userTeam))
+                        {
+                            RainMeadow.Debug("SHOW WINNER STAR????");
+                            showWinnerStar = userTeam.team == tb.winningTeam;
+                            RainMeadow.Debug(showWinnerStar);
+                            RainMeadow.Debug(userTeam.team);
+                            RainMeadow.Debug(tb.winningTeam);
+                        }
 
+                    }
+
+                }
+            }
+            orig(self, arenaOverlay, owner, player, index, showWinnerStar);
+
+
+        }
 
         private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
         {
@@ -591,9 +607,7 @@ namespace RainMeadow
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                     {
-                        RainMeadow.Debug(arena.arenaSittingOnlineOrder.Count);
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                        RainMeadow.Debug(onlinePlayer.id.name);
                         if (onlinePlayer != null && !onlinePlayer.isMe)
                         {
                             onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
@@ -652,12 +666,12 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
             {
-                var comp = new Competitive();
+                var comp = new FFA();
                 var teamBattle = new TeamBattleMode();
                 // TODO: Move this to a Menu check
-                if (!arena.registeredGameModes.ContainsKey(Competitive.CompetitiveMode.value))
+                if (!arena.registeredGameModes.ContainsKey(FFA.FFAMode.value))
                 {
-                    arena.registeredGameModes.Add(Competitive.CompetitiveMode.value, comp);
+                    arena.registeredGameModes.Add(FFA.FFAMode.value, comp);
                 }
                 if (!arena.registeredGameModes.ContainsKey(TeamBattleMode.TeamBattle.value))
                 {
@@ -1115,40 +1129,83 @@ namespace RainMeadow
 
                 if (self.gameTypeSetup.gameType == ArenaSetup.GameTypeID.Competitive)
                 {
-                    RainMeadow.Debug("======COMP");
+                    if (FFA.isFFA(arena, out _))
+                    {
+                        RainMeadow.Debug("======COMP");
 
-                    if (list.Count == 1)
-                    {
-                        list[0].winner = list[0].alive;
-                    }
-                    else if (list.Count > 1)
-                    {
-                        if (list[0].alive && !list[1].alive)
+                        if (list.Count == 1)
                         {
-                            list[0].winner = true;
+                            list[0].winner = list[0].alive;
                         }
-                        else if (list[0].score > list[1].score)
+                        else if (list.Count > 1)
                         {
-                            list[0].winner = true;
+                            if (list[0].alive && !list[1].alive)
+                            {
+                                list[0].winner = true;
+                            }
+                            else if (list[0].score > list[1].score)
+                            {
+                                list[0].winner = true;
+                            }
                         }
                     }
-                }
 
-                if (self.gameTypeSetup.gameType == TeamBattleMode.TeamBattle)
-                {
-                    RainMeadow.Debug("======TEAM");
-                    if (list.Count == 1)
-                    {
-                        list[0].winner = list[0].alive;
-                    }
-                    else if (list.Count > 1)
-                    {
-                        foreach (var player in list)
-                        {
-                            player.winner = true;
-                           
-                        }
 
+                    else if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                    {
+                        RainMeadow.Debug("======TEAM");
+                        if (list.Count == 1)
+                        {
+                            list[0].winner = list[0].alive;
+                        }
+                        else if (list.Count > 1)
+                        {
+                            bool gotMyTeam = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var myTeam);
+                            if (gotMyTeam)
+                            {
+                                var firstAlivePlayer = list.FirstOrDefault(x => x.alive);
+                                if (firstAlivePlayer != null)
+                                {
+                                    OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, firstAlivePlayer.playerNumber);
+                                    if (onlineP != null)
+                                    {
+                                        bool getWinningTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var winners);
+                                        if (getWinningTeam)
+                                        {
+                                            // This should be wrapped in a host check, but we don't have enough time before the ArenaResultBox comes asking for showWinnerStar.
+                                            // We could send an RPC with the owner check, but that seems worse than this.
+                                            //
+
+                                            //if (OnlineManager.lobby.isOwner)
+                                            //{
+                                                tb.winningTeam = winners.team;
+
+                                            //}
+                                        }
+                                    }
+                                }
+
+                                foreach (var player in list)
+                                {
+                                    if (player.alive)
+                                    {
+                                        player.winner = true;
+                                    }
+                                    else
+                                    {
+                                        OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                                        if (deadPlayer != null)
+                                        {
+                                            if (OnlineManager.lobby.clientSettings[deadPlayer].TryGetData<ArenaTeamClientSettings>(out var deadPlayerTeam))
+                                            {
+                                                player.winner = deadPlayerTeam.team == tb.winningTeam;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
                     }
                 }
                 // More gamemodes here?
@@ -1422,7 +1479,6 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
-            player.winner = true;
             orig(self, menu, owner, pos, size, player, index); // stupid rectangle
 
             if (self.backgroundRect == null)
@@ -1488,7 +1544,7 @@ namespace RainMeadow
                 ILCursor cursor = new(il);
                 cursor.TryGotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate(delegate(Color whiteCol,Menu.PlayerResultBox self)
+                cursor.EmitDelegate(delegate (Color whiteCol, Menu.PlayerResultBox self)
                 {
                     if (isArenaMode(out ArenaOnlineGameMode arena))
                     {

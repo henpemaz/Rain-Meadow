@@ -100,6 +100,11 @@ namespace RainMeadow
             if (!self.IsLocal()) {
                 return false;
             }
+            
+            if (obj.FriendlyFireSafetyCandidate())
+            {
+                return false;
+            }
 
             if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
             {

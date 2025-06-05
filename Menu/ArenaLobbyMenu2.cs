@@ -6,6 +6,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
@@ -50,15 +51,15 @@ public class ArenaLobbyMenu2 : SmartMenu, SelectOneButton.SelectOneButtonOwner
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-        Competitive competitive = new();
+        FFA competitive = new();
         TeamBattleMode tb = new();
-        if (!Arena.registeredGameModes.ContainsKey(Competitive.CompetitiveMode.value))
-            Arena.registeredGameModes.Add(Competitive.CompetitiveMode.value, competitive);
+        if (!Arena.registeredGameModes.ContainsKey(FFA.FFAMode.value))
+            Arena.registeredGameModes.Add(FFA.FFAMode.value, competitive);
         if (!Arena.registeredGameModes.ContainsKey(TeamBattleMode.TeamBattle.value))
             Arena.registeredGameModes.Add(TeamBattleMode.TeamBattle.value, tb);
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
-            Arena.currentGameMode = Competitive.CompetitiveMode.value;
+            Arena.currentGameMode = FFA.FFAMode.value;
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -290,7 +291,7 @@ namespace RainMeadow
                     {
                         return true; // you are a safety candidate
                     }
-                    if (RainMeadow.isArenaTeamBattleMode(out _))
+                    if (TeamBattleMode.isTeamBattleMode(arena, out _))
                     {
                         return ArenaHelpers.CheckSameTeam(p);
                     }

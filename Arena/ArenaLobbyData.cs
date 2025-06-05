@@ -19,7 +19,6 @@ namespace RainMeadow
             // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
-
             [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
             [OnlineField(group = "arenaLobby")]

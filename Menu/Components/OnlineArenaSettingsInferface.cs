@@ -5,8 +5,9 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Interfaces;
 using UnityEngine;
 using System.Linq;
-using static RainMeadow.TeamBattleMode;
+using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 using System;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 namespace RainMeadow.UI.Components
 {
@@ -65,7 +66,7 @@ namespace RainMeadow.UI.Components
                 arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaClientSettings>(out var tb))
+                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
                     {
                         if (Enum.TryParse<TeamMappings>(value, out var parsedTeam))
                         {
@@ -132,7 +133,7 @@ namespace RainMeadow.UI.Components
                 {
                     if (!arenaTeamComboBox.held && !gameModeComboBoxLastHeld)
                     {
-                        arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().team.ToString();
+                        arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
                     }
                 }
             }

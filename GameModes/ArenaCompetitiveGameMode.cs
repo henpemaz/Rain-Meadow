@@ -71,6 +71,7 @@ namespace RainMeadow
 
 
         public ArenaClientSettings arenaClientSettings;
+        public ArenaTeamClientSettings arenaTeamClientSettings;
         public SlugcatCustomization avatarSettings;
 
         public List<string> playList = new List<string>();
@@ -82,6 +83,7 @@ namespace RainMeadow
             ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
+            arenaTeamClientSettings = new ArenaTeamClientSettings();
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
             playerEnteredGame = 0;
@@ -374,12 +376,15 @@ namespace RainMeadow
             if (onlineResource is Lobby lobby)
             {
                 lobby.AddData(new ArenaLobbyData());
+                lobby.AddData(new TeamBattleLobbyData());
             }
         }
 
         public override void AddClientData()
         {
             clientSettings.AddData(arenaClientSettings);
+            clientSettings.AddData(arenaTeamClientSettings);
+
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)

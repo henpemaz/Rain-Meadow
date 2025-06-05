@@ -1,29 +1,34 @@
 ﻿using RainMeadow;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 namespace RainMeadow
 {
-    public class Competitive : ExternalArenaGameMode
+    public class FFA : ExternalArenaGameMode
     {
 
-        public static ArenaSetup.GameTypeID CompetitiveMode = new ArenaSetup.GameTypeID("Free For All", register: false);
+        public static ArenaSetup.GameTypeID FFAMode = new ArenaSetup.GameTypeID("Free For All", register: false);
 
-        private int _timerDuration;  // Backing field for TimerDuration
+        private int _timerDuration;
         public override ArenaSetup.GameTypeID GameModeSetups
         {
             get
             {
-                return CompetitiveMode; // Assuming TeamBattleMode is a concrete class
+                return FFAMode;
             }
         }
-        public static bool isArenaCompetitive(ArenaOnlineGameMode arena)
+        public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
         {
-            if (arena.currentGameMode == ArenaSetup.GameTypeID.Competitive.value)
+
+            ffa = null;
+            if (arena.currentGameMode == FFAMode.value)
             {
+                ffa = (arena.registeredGameModes.FirstOrDefault(x => x.Key == FFAMode.value).Value as FFA);
                 return true;
             }
             return false;
+
         }
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
@@ -69,7 +74,7 @@ namespace RainMeadow
             set { _timerDuration = value; }
         }
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
-        {            
+        {
             return --arena.setupTime;
         }
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)

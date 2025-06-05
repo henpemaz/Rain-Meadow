@@ -61,7 +61,7 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             if (arena.currentGameMode == "" || arena.currentGameMode is null)
             {
-                arena.currentGameMode = Competitive.CompetitiveMode.value;
+                arena.currentGameMode = FFA.FFAMode.value;
             }
 
         }
@@ -167,7 +167,7 @@ namespace RainMeadow
                     // Update the current game mode
                     arena.onlineArenaGameMode = gameModesList[nextModeIndex].Value;
                     arena.currentGameMode = gameModesList[nextModeIndex].Key;
-                    this.currentGameType = gameModesList[nextModeIndex].Value.GameModeSetups;
+                    //this.currentGameType = gameModesList[nextModeIndex].Value.GameModeSetups;
 
                 }
 
@@ -185,7 +185,7 @@ namespace RainMeadow
                         int prevModeIndex = currentModeIndex - 1;
                         arena.onlineArenaGameMode = gameModesList[prevModeIndex].Value;
                         arena.currentGameMode = gameModesList[prevModeIndex].Key;
-                        this.currentGameType = gameModesList[prevModeIndex].Value.GameModeSetups;
+                        //this.currentGameType = gameModesList[prevModeIndex].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
@@ -195,14 +195,13 @@ namespace RainMeadow
                         // You might want to wrap around to the last mode here
                         arena.onlineArenaGameMode = gameModesList[gameModesList.Count - 1].Value;
                         arena.currentGameMode = gameModesList[gameModesList.Count - 1].Key;
-                        this.currentGameType = gameModesList[gameModesList.Count - 1].Value.GameModeSetups;
+                        //this.currentGameType = gameModesList[gameModesList.Count - 1].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
 
 
                 }
-                RainMeadow.Debug(this.currentGameType);
 
             }
         }
@@ -465,7 +464,7 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Error("Could not find gamemode in list! Setting to Competitive as a fallback");
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Competitive.CompetitiveMode.value).Value;
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
             }
             arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 

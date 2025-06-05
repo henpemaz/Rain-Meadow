@@ -5,7 +5,6 @@ namespace RainMeadow
 {
     public class ArenaClientSettings : OnlineEntity.EntityData
     {
-        public int team;
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
         public bool selectingSlugcat;
         public Color slugcatColor = Color.black;
@@ -33,7 +32,6 @@ namespace RainMeadow
             public State(ArenaClientSettings onlineEntity) : base()
             {
                 playingAs = onlineEntity.playingAs;
-                team = onlineEntity.team;
                 selectingSlugcat = onlineEntity.selectingSlugcat;
                 slugcatColor = onlineEntity.slugcatColor;
             }
@@ -42,7 +40,6 @@ namespace RainMeadow
             {
                 var avatarSettings = (ArenaClientSettings)entityData;
                 avatarSettings.playingAs = playingAs;
-                avatarSettings.team = team;
                 var clientSettings = (ArenaClientSettings)entityData;
                 clientSettings.playingAs = playingAs;
                 clientSettings.selectingSlugcat = selectingSlugcat;

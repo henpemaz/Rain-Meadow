@@ -1,10 +1,11 @@
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
-using static RainMeadow.TeamBattleMode;
+using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -73,13 +74,16 @@ namespace RainMeadow
                 this.lighter_color = color;
             }
 
-            if (RainMeadow.isArenaTeamBattleMode(out var arena2))
+            if (RainMeadow.isArenaMode(out var a))
             {
-
-                if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaClientSettings>(out var tb2))
+                if (isTeamBattleMode(a, out var _))
                 {
-                    this.color = TeamBattleMode.TeamColors[(TeamMappings)tb2.team];
-                    this.lighter_color = this.color;
+
+                    if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    {
+                        this.color = TeamBattleMode.TeamColors[(TeamMappings)tb2.team];
+                        this.lighter_color = this.color;
+                    }
                 }
             }
 
