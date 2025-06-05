@@ -122,16 +122,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat);
-        try
-        {
-            slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
-        }
-        catch (System.IndexOutOfRangeException)
-        {
-            selectedSlugcatIndex = 0;
-            slugcat = ArenaHelpers.selectableSlugcats[0];
-        }
+        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat ?? SlugcatStats.Name.White);
+        // I mean technically selectableSlugcats[0] should never be null but idk just in case
+        slugcat = ArenaHelpers.selectableSlugcats.GetValueOrDefault(selectedSlugcatIndex, ArenaHelpers.selectableSlugcats[0]) ?? SlugcatStats.Name.White;
 
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
 
@@ -141,7 +134,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc)? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
+        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
