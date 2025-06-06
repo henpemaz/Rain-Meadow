@@ -19,6 +19,14 @@ namespace RainMeadow
         {
             [OnlineField]
             public int winningTeam;
+            [OnlineField]
+            public int martyrs;
+            [OnlineField]
+            public int outlaws;
+            [OnlineField]
+            public int dragonslayers;
+            [OnlineField]
+            public int chieftains;
             public State() { }
             public State(TeamBattleLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -27,6 +35,10 @@ namespace RainMeadow
                 if (isTb && teamBattleMode != null)
                 {
                     winningTeam = teamBattleMode.winningTeam;
+                    martyrs = teamBattleMode.martyrs;
+                    outlaws = teamBattleMode.outlaws;
+                    dragonslayers = teamBattleMode.dragonslayers;
+                    chieftains = teamBattleMode.chieftains;
                 }
             }
 
@@ -38,6 +50,10 @@ namespace RainMeadow
                 if (cachedTb && teamBattleMode != null)
                 {
                     teamBattleMode.winningTeam = winningTeam;
+                    teamBattleMode.martyrs = martyrs;
+                    teamBattleMode.outlaws = outlaws;
+                    teamBattleMode.dragonslayers = dragonslayers;
+                    teamBattleMode.outlaws = outlaws;
                 }
 
 

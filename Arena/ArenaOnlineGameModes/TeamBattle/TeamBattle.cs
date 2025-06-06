@@ -40,13 +40,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         private int _timerDuration;
 
-        public Generics.DynamicOrderedPlayerIDs martyrs = new Generics.DynamicOrderedPlayerIDs();
-        public Generics.DynamicOrderedPlayerIDs outlaws = new Generics.DynamicOrderedPlayerIDs();
-        public Generics.DynamicOrderedPlayerIDs dragonslayers = new Generics.DynamicOrderedPlayerIDs();
-        public Generics.DynamicOrderedPlayerIDs chieftains = new Generics.DynamicOrderedPlayerIDs();
+        //public Generics.DynamicOrderedPlayerIDs martyrs = new Generics.DynamicOrderedPlayerIDs();
+        //public Generics.DynamicOrderedPlayerIDs outlaws = new Generics.DynamicOrderedPlayerIDs();
+        //public Generics.DynamicOrderedPlayerIDs dragonslayers = new Generics.DynamicOrderedPlayerIDs();
+        //public Generics.DynamicOrderedPlayerIDs chieftains = new Generics.DynamicOrderedPlayerIDs();
 
         public int winningTeam = -1;
-
+        public int martyrs = -1;
+        public int outlaws = -1;
+        public int dragonslayers = -1;
+        public int chieftains = -1;
         public enum TeamMappings
         {
             Martyrs,

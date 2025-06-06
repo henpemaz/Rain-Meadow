@@ -14,6 +14,7 @@ using RainMeadow.UI.Components;
 using System.IO;
 using System.Text.RegularExpressions;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -111,8 +112,9 @@ namespace RainMeadow
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
 
             On.Menu.ArenaOverlayResultBox.ctor += ArenaOverlayResultBox_ctor;
-
         }
+
+
 
         private void ArenaOverlayResultBox_ctor(On.Menu.ArenaOverlayResultBox.orig_ctor orig, Menu.ArenaOverlayResultBox self, Menu.ArenaOverlay arenaOverlay, Menu.MenuObject owner, ArenaSitting.ArenaPlayer player, int index, bool showWinnerStar)
         {
@@ -125,11 +127,7 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaTeamClientSettings>(out var userTeam))
                         {
-                            RainMeadow.Debug("SHOW WINNER STAR????");
                             showWinnerStar = userTeam.team == tb.winningTeam;
-                            RainMeadow.Debug(showWinnerStar);
-                            RainMeadow.Debug(userTeam.team);
-                            RainMeadow.Debug(tb.winningTeam);
                         }
 
                     }
@@ -1527,6 +1525,12 @@ namespace RainMeadow
                 {
                     userNameBackup = currentName.id.name;
                     self.playerNameLabel.text = userNameBackup;
+                    if (TeamBattleMode.isTeamBattleMode(arena, out var team))
+                    {
+                        if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td)) {
+                            self.playerNameLabel.text += $" -- {((TeamMappings)td.team).ToString().ToUpper()}";
+                        }
+                    }
                 }
                 catch
                 {
@@ -1593,6 +1597,14 @@ namespace RainMeadow
 
                 var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
+
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    if (tb.winningTeam != -1)
+                    {
+                        self.headingLabel.text = Utils.Translate($"{((TeamMappings)tb.winningTeam).ToString().ToUpper()} WIN!"); 
+                    }
+                }
             }
         }
 
