@@ -108,6 +108,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void SaveInterfaceOptions()
     {
         RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
+        RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
+
         if (slugcatAbilitiesInterface != null)
         {
             RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;

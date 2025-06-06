@@ -38,7 +38,7 @@ namespace RainMeadow
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-                
+
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                 baseGameSlugcats.AddRange(mscSlugcats);
@@ -73,7 +73,8 @@ namespace RainMeadow
                         continue; // Skip the Night slugcat if Watcher mod is active
                     }
 
-                    if (allSlugcats.Contains(slugcatStatSlug)) {
+                    if (allSlugcats.Contains(slugcatStatSlug))
+                    {
                         continue;
                     }
 
@@ -240,7 +241,7 @@ namespace RainMeadow
                     {
                         if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
                         {
-                            player.maxGodTime = arena.arenaSaintAscendanceTimer;
+                            player.maxGodTime = arena.arenaSaintAscendanceTimer * 40;
                             player.ActivateAscension();
                         }
                         if (player.wantToJump > 0 && player.monkAscension)
