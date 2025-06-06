@@ -65,69 +65,64 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (!ShouldForceCloseChat)
+            if (chatInputOverlay is null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value))
             {
-                if (chatInputActive)
+                if (chatLogOverlay is not null)
                 {
-                    if (Input.GetKey(KeyCode.UpArrow))
-                    {
-                        if (currentLogIndex < chatLog.Count - 1)
-                        {
-                            currentLogIndex++;
-                            chatLogOverlay?.UpdateLogDisplay();
-                        }
-                    }
-
-                    if (Input.GetKey(KeyCode.DownArrow))
-                    {
-                        if (currentLogIndex > 0)
-                        {
-                            currentLogIndex--;
-                            chatLogOverlay?.UpdateLogDisplay();
-                        }
-                    }
+                    ShutDownChatLog();
+                    showChatLog = false;
+                    isLogToggled = false;
                 }
-
-                if (chatInputOverlay is null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value))
+                else if (!textPrompt.pausedMode && !ShouldForceCloseChat)
                 {
-                    if (chatLogOverlay is not null)
-                    {
-                        ShutDownChatLog();
-                        showChatLog = false;
-                        isLogToggled = false;
-                    }
-                    else if (!textPrompt.pausedMode)
+                    RainMeadow.Debug("creating log");
+                    chatLogOverlay = new ChatLogOverlay(this, game.manager);
+                    showChatLog = true;
+                    isLogToggled = true;
+                }
+            }
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
+            {
+                if (chatInputOverlay is not null)
+                {
+                    ShutDownChatInput();
+                    if (!showChatLog && chatLogOverlay is not null) ShutDownChatLog();
+                }
+                else if (!textPrompt.pausedMode && !ShouldForceCloseChat)
+                {
+                    RainMeadow.Debug("creating input");
+                    chatInputOverlay = new ChatInputOverlay(game.manager);
+                    if (chatLogOverlay is null)
                     {
                         RainMeadow.Debug("creating log");
                         chatLogOverlay = new ChatLogOverlay(this, game.manager);
-                        showChatLog = true;
-                        isLogToggled = true;
+                    }
+                }
+            }
+            if (chatInputActive)
+            {
+                if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    if (currentLogIndex < chatLog.Count - 1)
+                    {
+                        currentLogIndex++;
+                        chatLogOverlay?.UpdateLogDisplay();
                     }
                 }
 
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
+                if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    if (chatInputOverlay is not null)
+                    if (currentLogIndex > 0)
                     {
-                        ShutDownChatInput();
-                        if (!showChatLog && chatLogOverlay is not null) ShutDownChatLog();
-                    }
-                    else if (!textPrompt.pausedMode)
-                    {
-                        RainMeadow.Debug("creating input");
-                        chatInputOverlay = new ChatInputOverlay(game.manager);
-                        if (chatLogOverlay is null)
-                        {
-                            RainMeadow.Debug("creating log");
-                            chatLogOverlay = new ChatLogOverlay(this, game.manager);
-                        }
+                        currentLogIndex--;
+                        chatLogOverlay?.UpdateLogDisplay();
                     }
                 }
             }
             chatLogOverlay?.GrafUpdate(timeStacker);
             chatInputOverlay?.GrafUpdate(timeStacker);
         }
-
+    
         public void ShutDownChatLog()
         {
             RainMeadow.DebugMe();
