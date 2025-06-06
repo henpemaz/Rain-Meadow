@@ -20,7 +20,7 @@ namespace RainMeadow
             }
             container.subObjects.AddRange(subObjectsToAdd.Where(x => x != null && !container.subObjects.Contains(x)));
         }
-        public static bool IsAllRemixUINotHeld(this MenuObject owner) => owner.subObjects.OfType<UIelementWrapper>().All(x => !(x.thisElement is UIconfig config && config.held));
+        public static bool IsAllRemixUINotHeld(this MenuTabWrapper tabWrapper) => !tabWrapper.wrappers.All(x => x.Key is UIconfig config && config.held);
         public static float GetMaxWidthInText(this string text, bool bigText)
         {
             FLetterQuad[] quads = [..Futile.atlasManager.GetFontWithName(LabelTest.GetFont(bigText)).GetQuadInfoForText(text, new())?.SelectMany(x => x.quads)];
@@ -49,12 +49,39 @@ namespace RainMeadow
             return [.. strings];
 
         }
-        public static ValueTuple<string, string>[] GetStringSplit(string text, float width, Action<string> recieveString, bool bigText = false, int maxLineCount  = -1)
+        public static void GetStringSplit(string text, float width, Action<string> recieveString, bool bigText = false)
         {
-            maxLineCount = maxLineCount >= -1 ? Mathf.Max(maxLineCount, 1) : maxLineCount;
+            //made another copy because for some reason the third line in arena lobby will ignore width
+            Predicate<string> s = t => LabelTest.GetWidth(t, bigText) < width;
+            string[] words = text.Split(' ');
+            string trimmedTxt = string.Empty;
+            foreach (string word in words)
+            {
+                string temp = trimmedTxt;
+                temp += $"{(!string.IsNullOrEmpty(temp) ? " " : "")}{word}";
+                if (s(temp)) //skip over to next word if it doesnt overflow
+                {
+                    trimmedTxt = temp;
+                    continue;
+                }
+                if (!string.IsNullOrEmpty(trimmedTxt) && s(trimmedTxt + " "))
+                {
+                    recieveString(trimmedTxt + " "); //if space doesnt overflow then recieve string and set text back to empty 
+                    trimmedTxt = word; //dont skip word before going to the next word
+                    continue;
+                }
+                foreach (string line in temp.SplitIntoStrings(width, bigText))
+                    recieveString(line); //for extremly long words etc whole text`HAHAHAHHAHAHAHAHAHAHHA`
+                trimmedTxt = string.Empty; //reset
+            }
+            if (trimmedTxt.Length > 0) recieveString(trimmedTxt); //add text if it isnt added, happens if there is no overflow
+        }
+        public static ValueTuple<string, string>[] GetStringSplit(string text, float width, Action<string> recieveString, int maxLineCount, bool bigText = false)
+        {
+            maxLineCount = Mathf.Max(maxLineCount, 1);
             int amtOfLinesAdded = 0;
             Predicate<string> s = t => LabelTest.GetWidth(t, bigText) < width;
-            Func<bool> hasOverflowed = () => maxLineCount > -1 && amtOfLinesAdded >= maxLineCount;
+            Func<bool> hasOverflowed = () => amtOfLinesAdded >= maxLineCount;
             Action<string> tryRecieveString = _ =>
             {
                 recieveString(_);
@@ -117,12 +144,8 @@ namespace RainMeadow
         public static string[] SmartSplitIntoFixedStrings(this string text, float wrapWidth, int maxLineCount, out string remainingString, bool bigText = false)
         {
             List<string> strings = [];
-            ValueTuple<string, string>[] remainingWords = GetStringSplit(text, wrapWidth, strings.Add, bigText, maxLineCount);
-            remainingString = "";
-            foreach (ValueTuple<string, string> connectorWord in remainingWords)
-            {
-                remainingString += connectorWord.Item2 + connectorWord.Item1;
-            }
+            ValueTuple<string, string>[] remainingWords = GetStringSplit(text, wrapWidth, strings.Add, maxLineCount, bigText);
+            remainingString = string.Join("", remainingWords.Select(x => x.Item2).Zip(remainingWords.Select(x => x.Item1), (connector, word) => $"{connector}{word}"));
             return [.. strings];
         }
     }

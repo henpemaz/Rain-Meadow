@@ -42,7 +42,9 @@ namespace RainMeadow
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
-        public List<string> slugcatSelectPainCatNames = [], slugcatSelectPainCatDescriptions = [];
+        public List<string> slugcatSelectPainCatNames = [];
+        // have fun fixing this UO ;)
+        public List<string> slugcatSelectPainCatNormalDescriptions, slugcatSelectPainCatJokeDescriptions, slugcatSelectPainCatQuoteDescriptions, slugcatSelectPainCatDevJokeDescriptions, slugcatSelectPainCatSmileyDescriptions, slugcatSelectPainCatUwUDescriptions, slugcatSelectPainCatWaveDescriptions, slugcatSelectPainCatDeadDescriptions;
 
         public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice = new Dictionary<string, int>();
         public Dictionary<string, bool> onlineArenaSettingsInterfaceeBool = new Dictionary<string, bool>();
@@ -112,17 +114,17 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it's not like your first time.\nSnatch your spear and rock." },
+                { "White", "Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "Afflicted from the beginning, and a figher to the end.\nShow them the meaning of suffering." },
+                { "Red", "Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
-                { "White", "The Survivor" },
-                { "Yellow", "The Monk" },
-                { "Red", "The Hunter" },
-                { "Night", "The Nightcat" },
+                { "White", "THE SURVIVOR" },
+                { "Yellow", "THE MONK" },
+                { "Red", "THE HUNTER" },
+                { "Night", "THE NIGHTCAT" },
             };
 
             if (ModManager.MSC)
@@ -135,52 +137,94 @@ namespace RainMeadow
                 slugcatSelectMenuScenes.Add("Slugpup", RainMeadow.rainMeadowOptions.SlugpupHellBackground.Value ? MoreSlugcatsEnums.MenuSceneID.Landscape_HR : MenuScene.SceneID.Intro_4_Walking);
                 slugcatSelectMenuScenes.Add("Inv", MoreSlugcatsEnums.MenuSceneID.End_Inv);
 
-                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.\nCrush this one last quest.");
-                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.\nMaul and detonate your way to vengeance.");
+                slugcatSelectDescriptions.Add("Gourmand", "Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.");
+                slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.");
                 slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
-                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.\nMove quickly so it's not lost.");
-                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world\nfrom the markings of your mind.");
+                slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.");
+                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
+
                 slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
-                slugcatSelectPainCatDescriptions = [
-                    /* portrait 0 */ ":)",
-                    /* portrait 1 */ "uwu",
-                    /* portrait 2 */ "hiiii!",
-                    /* portrait 3 */ "i'm ded",
-                    /* portrait 4 */ "You have been through hell and back, but now, it's\ntime to atone for your sins in your past cycles.",
+
+                slugcatSelectPainCatNormalDescriptions =
+                [
+                    "You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.",
                     "...",
                     "...why are you here",
-                    ".kcor dna raeps ruoy hctanS\n.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.\nWhat the hell. I thought that glitch was fixed a while ago...",
-                    "\"<USERNAME>, youre gonna get us both killed\"",
-                    "Seeking love will lead you down the beautiful path of heartbreaking wrecks.",
-                    "\"i gotta throw 2 spears to kill, its just dumb. at least they re added me to arena mode i guess...\"",
-                    "\"u dont need 2 be alone, bby.\"",
-                    "WHY DID IT HAVE TO BE A VARIABLE\nnum2 IS LITERALLY 0",
                     "Thanks, Andrew.",
-                    "Don't Care\nNuh\nYuh",
-                    "Welcome to tower of gains: where you'll be doing heavy lifting for the\nduration of your stay. I hope you've brought hydration, <USERNAME>!",
-                    "egg",
-                    "\"sometimes i wake up with a friend ive never met b4\"",
-                    "\"inv? like invalidunits?\"",
+                ];
+                slugcatSelectPainCatJokeDescriptions =
+                [
+                    ".kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
+                    "Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!",
                     "$5 to unlock this description.",
+                    "egg",
+                    "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
+                    "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
+                    "7",
+                ];
+                slugcatSelectPainCatQuoteDescriptions =
+                [
+                    "\"<USERNAME>, youre gonna get us both killed\"",
+                    "\"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess...\"",
+                    "\"u dont need 2 be alone, bby.\"",
+                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"i luv u <3\"",
+                ];
+                slugcatSelectPainCatDevJokeDescriptions =
+                [
+                    "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
+                    "Don't Care<LINE>Nuh<LINE>Yuh",
+                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
+                    "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
+                    "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
+                    "Be careful when selecting the Fartificer",
+                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh"
+                ];
+                slugcatSelectPainCatSmileyDescriptions =
+                [
+                    ":)",
+                    ":D",
+                    ":')",
+                    ";)",
+                    ";D",
+                ];
+                slugcatSelectPainCatUwUDescriptions =
+                [
+                    "uwu",
+                    "owo",
+                    "UwU",
+                    "OwO",
+                    ">w<",
+                    "^w^",
+                ];
+                slugcatSelectPainCatWaveDescriptions =
+                [
+                    "\"hiiii!\"",
+                    "  o /<LINE>/|<LINE> / \\",
+                ];
+                slugcatSelectPainCatDeadDescriptions =
+                [
+                    "\"i'm ded\"",
+                    "bleh",
+                    "X.X",
                 ];
 
-                slugcatSelectDisplayNames.Add("Gourmand", "The Gourmand");
-                slugcatSelectDisplayNames.Add("Artificer", "The Artificer");
-                slugcatSelectDisplayNames.Add("Spear", "The Spearmaster");
-                slugcatSelectDisplayNames.Add("Rivulet", "The Rivulet");
-                slugcatSelectDisplayNames.Add("Saint", "The Saint");
-                slugcatSelectDisplayNames.Add("Slugpup", "The Slugpup");
-                slugcatSelectDisplayNames.Add("Inv", "Inv");
+                slugcatSelectDisplayNames.Add("Gourmand", "THE GOURMAND");
+                slugcatSelectDisplayNames.Add("Artificer", "THE ARTIFICER");
+                slugcatSelectDisplayNames.Add("Spear", "THE SPEARMASTER");
+                slugcatSelectDisplayNames.Add("Rivulet", "THE RIVULET");
+                slugcatSelectDisplayNames.Add("Saint", "THE SAINT");
+                slugcatSelectDisplayNames.Add("Slugpup", "THE SLUGPUP");
+                slugcatSelectDisplayNames.Add("Inv", "INV");
             }
 
             if (ModManager.Watcher)
             {
                 slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
-                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.\nClosed: Whispers. Freezing. Drowning.\nOpen: Echoes. Balance. Weightless.");
-                slugcatSelectDisplayNames.Add("Watcher", "The Watcher");
+                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Open: Echoes. Balance. Weightless.");
+                slugcatSelectDisplayNames.Add("Watcher", "THE WATCHER");
 
                 slugcatSelectMenuScenes.Remove("Night");
                 slugcatSelectDescriptions.Remove("Night");
@@ -197,19 +241,19 @@ namespace RainMeadow
                 StringBuilder randomDescBuilder = new();
                 if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
                 else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("\nAm I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("\nAm I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("\nI do not know, for I am not one. I am many.");
+                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
+                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
+                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else
             {
-                slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.\nThose who wander many paths will find great truth.");
+                slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.");
             }
-            
+
             slugcatSelectDisplayNames.Add("MeadowRandom", "The Unknown");
 
-            
+
         }
 
         public void ResetInvDetails()
@@ -289,12 +333,16 @@ namespace RainMeadow
 
         }
 
-        public void InitializeSlugcat() {
-            if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+        public void InitializeSlugcat()
+        {
+            if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
+            {
                 System.Random random = new System.Random((int)DateTime.Now.Ticks);
                 avatarSettings.playingAs = ArenaHelpers.allSlugcats[random.Next(ArenaHelpers.allSlugcats.Count)]!;
                 arenaClientSettings.randomPlayingAs = avatarSettings.playingAs;
-            } else {
+            }
+            else
+            {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
 
