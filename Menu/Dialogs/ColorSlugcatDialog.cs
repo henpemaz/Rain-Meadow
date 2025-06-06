@@ -108,11 +108,11 @@ namespace RainMeadow
         }
         public Vector3 GetHSL()
         {
-            return this.GetMenuHSL(id, colorChooser);
+            return this.manager.rainWorld.progression.GetCustomColorHSL(id, colorChooser);
         }
         public void ApplyHSL(Vector3 hsl)
         {
-            this.SaveMenuHSL(id, colorChooser, hsl);
+            this.manager.rainWorld.progression.SaveCustomColorHSL(id, colorChooser, hsl);
         }
         public void AddOrRemoveColorInterface(int num)
         {

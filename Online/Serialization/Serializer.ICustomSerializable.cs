@@ -249,8 +249,8 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m =>
-                m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                return typeof(Serializer).GetMethods().Single(m => 
+                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))

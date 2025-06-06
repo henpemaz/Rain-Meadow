@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Menu;
 using RWCustom;
 using UnityEngine;
+using System.IO;
 
 namespace RainMeadow.UI.Components
 {
@@ -14,23 +15,22 @@ namespace RainMeadow.UI.Components
     {
         public static string GetFileForSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead = false)
         {
-            if (slugcat == null || isColored)
-            {
+            if (slugcat == null || slugcat == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat || isColored)
                 return GetFileForSlugcatIndex(slugcat, 0, isDead);
-            }
             if (slugcat == SlugcatStats.Name.White || slugcat == SlugcatStats.Name.Yellow || slugcat == SlugcatStats.Name.Red)
-            {
                 return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2);
-            }
-            if (IsMSCSlugcat(slugcat))
+            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4, isDead);
+            for (int i = 4; i > 0; i--)
             {
-                return GetFileForSlugcatIndex(slugcat, 4, isDead);
+                string txt = GetFileForSlugcatIndex(slugcat, i, isDead);
+                if (File.Exists(AssetManager.ResolveFilePath($"illustrations/{txt}.png")))
+                    return txt;
             }
             return GetFileForSlugcatIndex(slugcat, 0, isDead);
         }
         public static string GetFileForSlugcatIndex(SlugcatStats.Name? slugcat, int colorIndex, bool isDead = false)
         {
-            if (slugcat == null)
+            if ((slugcat is null) || (slugcat == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
             {
                 return $"Multiplayerportrait{colorIndex}2";
             }
@@ -44,6 +44,7 @@ namespace RainMeadow.UI.Components
                 int randomChoice = UnityEngine.Random.Range(0, 5);
                 return $"Multiplayerportrait{randomChoice}{deadIndex}-{slugcat.value}";
             }
+            
             return $"Multiplayerportrait{(ModManager.MSC && slugcat == MSCScugs.Slugpup ? 4 : colorIndex)}{deadIndex}-{slugcat.value}";
         }
         public static bool IsMSCSlugcat(SlugcatStats.Name slugcat)

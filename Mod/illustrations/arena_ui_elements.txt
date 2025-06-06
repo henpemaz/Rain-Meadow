@@ -16,7 +16,39 @@
 			"trimmed":false,
 			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
 			"sourceSize":{"w":20,"h":20}
-		}
+		},
+		"Meadow_Menu_MutePlayerChat00.png":
+		{
+			"frame":{"x":40,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
+		"Meadow_Menu_MutePlayerChat01.png":
+		{
+			"frame":{"x":60,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
+		"Meadow_Menu_MutePlayerChat10.png":
+		{
+			"frame":{"x":80,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
+		"Meadow_Menu_MutePlayerChat11.png":
+		{
+			"frame":{"x":100,"y":0,"w":20,"h":20},
+			"rotated":false,
+			"trimmed":false,
+			"spriteSourceSize":{"x":0,"y":0,"w":20,"h":20},
+			"sourceSize":{"w":20,"h":20}
+		},
 	},
 	"meta":
 	{
@@ -24,6 +56,6 @@
 		"version":"1.0",
 		"image":"arenauielements_colorbucket.png",
 		"format":"RGBA8888",
-		"size":{"w":40,"h":20}
+		"size":{"w":120,"h":20}
 	}
 }

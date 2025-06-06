@@ -1,34 +1,37 @@
 ﻿using ArenaMode = RainMeadow.ArenaOnlineGameMode;
+using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
-using RainMeadow.UI.Interfaces;
+using Menu.Remix;
+using Menu.Remix.MixedUI.ValueTypes;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components
 {
-    public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject, IRestorableMenuObject, CheckBox.IOwnCheckBox //for MSC currently
+    public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject, CheckBox.IOwnCheckBox //for MSC currently
     {
         public OnlineSlugcatAbilitiesInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 spacing, string painCatName, float textSpacing = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
-            blockMaulCheckBox = new(menu, this, this, Vector2.zero, textSpacing, menu.Translate("Disable Mauling:"), DISABLEMAUL, description: $"Block Artificer and {painCatName} to maul held creatures");
-            blockArtiStunCheckBox = new(menu, this, this, -spacing, textSpacing, menu.Translate("Disable Artificer Stun:"), DISABLEARTISTUN, description: "Block Artificer to stun other players");
-            sainotCheckBox = new(menu, this, this, -spacing * 2, textSpacing, menu.Translate("Sain't:"), SAINOT, description: "Disable Saint ascendance ability");
+            blockMaulCheckBox = new(menu, this, this, Vector2.zero, textSpacing, menu.Translate("Disable Mauling:"), DISABLEMAUL, false,  menu.Translate($"Block Artificer and {painCatName} to maul held creatures"));
+            blockArtiStunCheckBox = new(menu, this, this,  -spacing, textSpacing, menu.Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, menu.Translate("Block Artificer to stun other players"));
+            sainotCheckBox = new(menu, this, this, -spacing * 2, textSpacing, menu.Translate("Sain't:"), SAINOT, false, menu.Translate("Disable Saint ascendance ability"));
             saintAscendanceTimerLabel = new(menu, this, menu.Translate("Saint Ascendance Duration:"), (-spacing * 3) - new Vector2(300, -2), new(151, 20), false);
-            saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), saintAscendanceTimerLabel.pos + new Vector2(300, -2), 50f)
+            saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), new(saintAscendanceTimerLabel.pos.x + 295, saintAscendanceTimerLabel.pos.y - 2), 40)
             {
                 alignment = FLabelAlignment.Center,
-                description = "How long Saint's ascendance ability lasts for. Default 120."
+                description = menu.Translate("How long Saint's ascendance ability lasts for. Default 120.")
             };
             saintAscendDurationTimerTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
             };
-            painCatEggCheckBox = new(menu, this, this, -spacing * 4, 300, $"{painCatName} gets egg at 0 throw skill:", PAINCATEGG, description: $"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0");
-            painCatThrowsCheckBox = new(menu, this, this, -spacing * 5, 300, $"{painCatName} can always throw spears:", PAINCATTHROWS, description: $"Always allow {painCatName} to throw spears, even if throw skill is 0");
-            painCatLizardCheckBox = new(menu, this, this, -spacing * 6, 300, $"{painCatName} sometimes gets a friend:", PAINCATLIZARD, description: $"Allow {painCatName} to rarely spawn with a little friend");
-            this.SafeAddSubobjects([tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, new RestorableUIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox), painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox]);
+            painCatEggCheckBox = new(menu, this, this, -spacing * 4, 300, menu.Translate($"{painCatName} gets egg at 0 throw skill:"), PAINCATEGG, description: menu.Translate($"If {painCatName} spawns with 0 throw skill, also spawn with Eggzer0"));
+            painCatThrowsCheckBox = new(menu, this, this, -spacing * 5, 300, menu.Translate($"{painCatName} can always throw spears:"), PAINCATTHROWS, description: menu.Translate($"Always allow {painCatName} to throw spears, even if throw skill is 0"));
+            painCatLizardCheckBox = new(menu, this, this, -spacing * 6, 300, menu.Translate($"{painCatName} sometimes gets a friend:"), PAINCATLIZARD, description: menu.Translate($"Allow {painCatName} to rarely spawn with a little friend"));
+            new UIelementWrapper(tabWrapper, saintAscendDurationTimerTextBox);
+            this.SafeAddSubobjects([tabWrapper, blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, saintAscendanceTimerLabel, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox]);
         }
         public override void RemoveSprites()
         {
@@ -36,10 +39,7 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (this.IsAllRemixUINotHeld() && tabWrapper.holdElement)
-            {
-                tabWrapper.holdElement = false;
-            }
+            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
             bool isNotOwner = !(OnlineManager.lobby?.isOwner == true);
             foreach (MenuObject obj in subObjects)
@@ -48,10 +48,10 @@ namespace RainMeadow.UI.Components
                     btn.buttonBehav.greyedOut = isNotOwner;
             }
             saintAscendDurationTimerTextBox.greyedOut = isNotOwner;
+            saintAscendDurationTimerTextBox.held = saintAscendDurationTimerTextBox._KeyboardOn;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                if (!saintAscendDurationTimerTextBox.held && saintAscendDurationTimerTextBox.valueInt != arena.arenaSaintAscendanceTimer)
-                    saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
+                if (!saintAscendDurationTimerTextBox.held && saintAscendDurationTimerTextBox.valueInt != arena.arenaSaintAscendanceTimer) saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
             }
         }
         public override void GrafUpdate(float timeStacker)
@@ -84,10 +84,6 @@ namespace RainMeadow.UI.Components
             if (id == PAINCATTHROWS) arena.painCatThrows = c;
             if (id == PAINCATLIZARD) arena.painCatLizard = c;
         }
-        public void RestoreSprites() 
-        {
-        }
-        public void RestoreSelectables() { }
         public void CallForSync() //call this after ctor if needed for sync at start
         {
             foreach (MenuObject obj in subObjects)
@@ -100,10 +96,11 @@ namespace RainMeadow.UI.Components
             if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
             arena.arenaSaintAscendanceTimer = saintAscendDurationTimerTextBox.valueInt;
         }
+
         public const string SAINOT = "SAINOT", PAINCATTHROWS = "PAINCATTHROWS", PAINCATEGG = "PAINCATEGG", DISABLEARTISTUN = "DISABLEARTISTUN", DISABLEMAUL = "DISABLEMAUL", PAINCATLIZARD = "PAINCATLIZARD", SAINTASENSIONTIMER = "SAINTASCENSIONTIMER";
-        public RestorableMenuTabWrapper tabWrapper;
+        public MenuTabWrapper tabWrapper;
         public OpTextBox saintAscendDurationTimerTextBox;
-        public RestorableMenuLabel saintAscendanceTimerLabel;
+        public MenuLabel saintAscendanceTimerLabel;
         public RestorableCheckbox blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
     }
 }

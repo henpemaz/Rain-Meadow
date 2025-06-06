@@ -80,6 +80,8 @@ namespace RainMeadow
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
             public int playerEnteredGame;
+            [OnlineField(group = "arenaGameplay")]
+            public bool leaveForNextLevel;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -97,6 +99,7 @@ namespace RainMeadow
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
+               
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
@@ -114,6 +117,8 @@ namespace RainMeadow
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
                 arenaItemSteal = arena.itemSteal;
+
+                leaveForNextLevel = arena.leaveForNextLevel;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -151,6 +156,10 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
+
+
+                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
+
 
             }
 

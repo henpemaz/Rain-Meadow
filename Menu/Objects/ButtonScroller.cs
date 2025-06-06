@@ -4,6 +4,8 @@ using System.Linq;
 using Menu;
 using UnityEngine;
 using HarmonyLib;
+using RainMeadow.UI.Components;
+using RainMeadow.UI.Components.Patched;
 
 namespace RainMeadow
 {
@@ -20,34 +22,30 @@ namespace RainMeadow
         public float MaxDownScroll => Mathf.Max(0, (ItemCount - MaxVisibleItemsShown) * ButtonHeightAndSpacing);
         public float DownScrollOffset
         {
-            get
-            {
-                return scrollOffset;
-            }
+            get => scrollOffset;
             set
             {
                 scrollOffset = value;
                 DirectConstrainScroll();
-                scrollSliderValue = MaxDownScroll > 0 ? Mathf.InverseLerp(MaxDownScroll, 0, scrollOffset) : 1; //lower slider value means down, higher means up
 
             }
         }
         public float LowerBound => 0;
         public float UpperBound => size.y;
-        public float ScrollingMultipler => buttonHeight / 30 * buttons.Count / 2;
+        public float ScrollingMultipler => Mathf.Lerp(1, 15, Mathf.InverseLerp(30, 120, buttonHeight + buttonSpacing)) * buttons.Count / 2;
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
         public bool CanScrollUp => scrollOffset > 0;
         public bool CanScrollDown => scrollOffset < MaxDownScroll;
-        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, float heightOfButton, float buttonSpacing) : this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, heightOfButton, buttonSpacing)))
+        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, float heightOfButton, float buttonSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0) : this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, heightOfButton, buttonSpacing)), sliderOnRight, sliderPosOffset, sliderSizeYOffset)
         {
             buttonHeight = heightOfButton;
             this.buttonSpacing = buttonSpacing;
         }
-        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
+        public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0) : base(menu, owner, pos, size)
         {
+            sliderIsOnRightSide = sliderOnRight;
             scrollOffset = 0;
-            scrollSliderValue = 1;
-            scrollSlider = new(menu, this, "Scroller", new(-30, 0), new Vector2(20, size.y), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
+            scrollSlider = new(menu, this, "Scroller", sliderPosOffset + new Vector2(sliderOnRight? size.x + 30 : -30, 0), new Vector2(20, size.y + sliderSizeYOffset), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
             subObjects.Add(scrollSlider);
             ConstrainScroll();
         }
@@ -66,7 +64,7 @@ namespace RainMeadow
             for (int i = 0; i < buttons.Count; i++)
             {
                 buttons[i].Size = new(buttons[i].Size.x, buttonHeight);
-                buttons[i].Pos = GetIdealPosWithScrollForButton(i);
+                buttons[i].Pos = new(buttons[i].Pos.x, GetIdealPosWithScrollForButton(i).y);
                 buttons[i].Alpha = GetAmountOfAlphaByCrossingBounds(buttons[i].Pos);
             }
         }
@@ -82,7 +80,7 @@ namespace RainMeadow
         {
             if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER")
             {
-                return scrollSliderValue;
+                return MaxDownScroll > 0 ? Mathf.InverseLerp(MaxDownScroll, 0, scrollOffset) : sliderDefaultIsDown ? 0 : 1;
             }
             return 0;
         }
@@ -122,19 +120,11 @@ namespace RainMeadow
             }
             return -1;
         }
-        public void RemoveButton(int index)
-        {
-            RemoveButton(index, true);
-        }
-        public void RemoveButton(int index, bool constrainScroll)
+        public void RemoveButton(int index, bool constrainScroll = true)
         {
             RemoveButton(buttons.GetValueOrDefault(index), constrainScroll);
         }
-        public void RemoveButton(IPartOfButtonScroller? button)
-        {
-            RemoveButton(button, true);
-        }
-        public void RemoveButton(IPartOfButtonScroller? button, bool constrainScroll)
+        public void RemoveButton(IPartOfButtonScroller? button, bool constrainScroll = true)
         {
             if (button != null)
             {
@@ -149,11 +139,7 @@ namespace RainMeadow
                 ConstrainScroll();
             }
         }
-        public void RemoveAllButtons()
-        {
-            RemoveAllButtons(true);
-        }
-        public void RemoveAllButtons(bool constrainScroll)
+        public void RemoveAllButtons(bool constrainScroll = true)
         {
             this.ClearMenuObjectIList(buttons.Where(x => x is MenuObject).Cast<MenuObject>());
             buttons.Clear();
@@ -178,7 +164,7 @@ namespace RainMeadow
                 }
                 if (bindToSlider)
                 {
-                    buttons.DoIf(x => x is MenuObject, x => (x as MenuObject).TryBind(scrollSlider, true));
+                    buttons.DoIf(x => x is MenuObject, x => (x as MenuObject).TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide));
                 }
 
             }
@@ -199,9 +185,11 @@ namespace RainMeadow
             return combinedPosY < LowerBound ? Mathf.InverseLerp(LowerBound - (ButtonHeightAndSpacing / 3), LowerBound, combinedPosY) : combinedPosY + buttonHeight > UpperBound ? Mathf.InverseLerp(UpperBound + (ButtonHeightAndSpacing / 3), UpperBound, combinedPosY + buttonHeight) : 1;
         }
 
+        public bool sliderDefaultIsDown;
+        private bool sliderIsOnRightSide;
         private float scrollOffset;
-        public float scrollSliderValue, buttonSpacing, buttonHeight = 30;
-        public VerticalSlider? scrollSlider;
+        public float buttonSpacing, buttonHeight = 30;
+        public PatchedVerticalSlider scrollSlider;
         public List<IPartOfButtonScroller> buttons = [];
         public class ScrollerButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : SimplerButton(menu, owner, displayText, pos, size, description), IPartOfButtonScroller
         {

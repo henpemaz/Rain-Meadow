@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using HUD;
-using Menu;
-using MoreSlugcats;
-using RainMeadow;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using static RainMeadow.OnlineEntity;
+
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -292,6 +284,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner)
             {
                 arena.isInGame = true; // used for readied players at the beginning
+                arena.leaveForNextLevel = false;
                 if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                 {
                     foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
