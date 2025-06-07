@@ -43,6 +43,7 @@ namespace RainMeadow
         }
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0) : base(menu, owner, pos, size)
         {
+            (owner?.Container ?? menu.container).AddChild(myContainer = new());
             sliderIsOnRightSide = sliderOnRight;
             scrollOffset = 0;
             scrollSlider = new(menu, this, "Scroller", sliderPosOffset + new Vector2(sliderOnRight? size.x + 30 : -30, 0), new Vector2(20, size.y + sliderSizeYOffset), new("BUTTONSCROLLER_SCROLLSLIDER"), true);

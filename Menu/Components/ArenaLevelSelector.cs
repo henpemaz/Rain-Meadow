@@ -9,6 +9,7 @@ using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
 using static Menu.Menu;
+using static MonoMod.InlineRT.MonoModRule;
 using static MultiplayerUnlocks;
 
 namespace RainMeadow.UI.Components;
@@ -16,11 +17,103 @@ namespace RainMeadow.UI.Components;
 public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 {
     //holy shit wtf is this
+    public class LevelPreview : RectangularMenuObject, IPLEASEUPDATEME
+    {
+        public LevelItem? lastSelectedLevel;
+        public RoundedRect roundedRect;
+        public FSprite imageSprite;
+        public string levelName;
+        public float toFade, lastToFade, yPos,goalYPos;
+        public int sleepCounter, awakeCounter;
+        public PlaylistSelector? MyPlaylistSelector => owner as PlaylistSelector;
+        public LevelPreview(Menu.Menu menu, MenuObject owner, bool rightFacing) : base(menu, owner, default, new(ThumbWidth + 20, ThumbHeight + 20))
+        {
+            roundedRect = new(menu, this, new Vector2(0.01f, 0.01f), size, true);
+            subObjects.Add(roundedRect);
+            imageSprite = new("Menu_Empty_Level_Thumb", true)
+            {
+                color = MenuRGB(MenuColors.VeryDarkGrey)
+            };
+            Container.AddChild(imageSprite);
+            levelName = "";
+            pos.x = rightFacing ? ((owner as RectangularMenuObject)?.size ?? Vector2.zero).x + 20 : -(size.x + 20);
+        }
+        public override void Update()
+        {
+            base.Update();
+            lastToFade = toFade;
+            awakeCounter++;
+            sleepCounter++;
+            LevelItem? levelItem = null;
+            if (MyPlaylistSelector?.ShowThumbsTransitionState(1) == 0)
+            {
+                for (int i = 0; i < MyPlaylistSelector.LevelItems.Count; i++)
+                {
+                    if (MyPlaylistSelector.LevelItems[i].Selected)
+                    {
+                        levelItem = MyPlaylistSelector.LevelItems[i];
+                        break;
+                    }
+                }
+            }
+            if (levelItem != null)
+            {
+                if (levelItem != lastSelectedLevel)
+                {
+                    awakeCounter = 0;
+                    sleepCounter = 0;
+                    if (levelItem.thumbLoaded)
+                    {
+                        levelName = levelItem.name;
+                        imageSprite.element = Futile.atlasManager.GetElementWithName(levelName + "_Thumb");
+                        imageSprite.color = Color.white;
+                    }
+                }
+                lastSelectedLevel = levelItem;
+            }
+            else sleepCounter = 0;
+            toFade = (levelItem != null && (awakeCounter > 60 || toFade > 0) && sleepCounter < 200) ? Custom.LerpAndTick(toFade, 1f, 0.03f, 0.033333335f) : Custom.LerpAndTick(toFade, 0f, 0.015f, 0.016666668f);
+            Vector2 posOfOwner = (owner as PositionedMenuObject)?.ScreenPos ?? Vector2.zero, sizeOfOwner = (owner as RectangularMenuObject)?.size ?? Vector2.zero;
+            if (menu.manager.menuesMouseMode)
+            { 
+                yPos = goalYPos = Mathf.Clamp(Futile.mousePosition.y, posOfOwner.y + size.y * 0.5f, posOfOwner.y + sizeOfOwner.y - size.y * 0.5f);
+            }
+            else
+            {
+                if (lastSelectedLevel?.Alpha == 1f)
+                    goalYPos = Mathf.Clamp(lastSelectedLevel.DrawY(1) + lastSelectedLevel.size.y * 0.5f, posOfOwner.y + size.y * 0.5f, posOfOwner.y + sizeOfOwner.y - size.y * 0.5f);
+                yPos = Custom.LerpAndTick(yPos, goalYPos, 0.09f, 1.25f);
+            }
+            pos.y = goalYPos - posOfOwner.y - size.y * 0.5f;
+        }
+        public override void GrafUpdate(float timeStacker)
+        {
+            Vector2 drawPos = DrawPos(timeStacker), drawSize = DrawSize(timeStacker);
+            imageSprite.x = drawPos.x + drawSize.x / 2;
+            imageSprite.y = drawPos.y + drawSize.y / 2;
+            float num = Custom.SCurve(Mathf.Lerp(lastToFade, toFade, timeStacker), 0.75f);
+            imageSprite.alpha = Mathf.Pow(num, 0.7f);
+            base.GrafUpdate(timeStacker);
+            for (int i = 0; i < 17; i++)
+            {
+                roundedRect.sprites[i].color = i < 9? Color.black : MenuRGB(MenuColors.VeryDarkGrey);
+                roundedRect.sprites[i].alpha = i < 9? 0.5f * Mathf.Pow(num, 1.5f) : num;
+                roundedRect.sprites[i].isVisible = true;
+            }
+        }
+        public override void RemoveSprites()
+        {
+            imageSprite.RemoveFromContainer();
+            base.RemoveSprites();
+        }
+        public void HiddenUpdate() => Update();
+        public void HiddenGrafUpdate(float timeStacker) => GrafUpdate(timeStacker);
+    }
     public class LevelItem : ButtonTemplate, ButtonScroller.IPartOfButtonScroller, IHaveADescription, IPLEASEUPDATEME
     {
         public MenuLabel label;
         public FSprite thumbnailSprite;
-        public FSprite? dividerSprite, dividerSprite2;
+        public FSprite? outlineDividerSprite, bkgDividerSprite;
         public RoundedRect roundedRect;
         public LevelItem? levelItemAbove, levelItemBelow;
         public bool thumbLoaded, lastSelected, doAThumbFade, showThumbDivider;
@@ -34,6 +127,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public string Description => description;
         public FContainer MyLevelContainer => MyPlaylistSelector?.levelContainer ?? Container;
         public FContainer MyDividerContainer => MyPlaylistSelector?.dividerContainer ?? Container;
+        public override bool CurrentlySelectableMouse => !buttonBehav.greyedOut && Alpha > 0.5f;
+        public override bool CurrentlySelectableNonMouse => !buttonBehav.greyedOut && Alpha > 0.5f;
         public LevelItem(Menu.Menu menu, MenuObject owner, string levelName, string description) : base(menu, owner, default, new Vector2(120f, 20f))
         {
             if (MyLevelContainer != Container)
@@ -44,8 +139,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             name = levelName;
             this.description = description;
             buttonBehav = new(this);
-            label = new(menu, this, LevelDisplayName(levelName), default, new Vector2(size.x, 20f), false);
-            roundedRect = new(menu, this, default, new Vector2(size.x, size.y), true);
+            label = new(menu, this, LevelDisplayName(levelName), Vector2.zero, new Vector2(size.x, 20f), false);
+            roundedRect = new(menu, this, Vector2.zero, new Vector2(size.x, size.y), true);
 
             thumbLoaded = MyPlaylistSelector?.MyLevelSelector?.IsThumbnailLoaded(name) == true;
             thumbnailSprite = thumbLoaded ? new FSprite($"{name}_Thumb") : new FSprite("Menu_Empty_Level_Thumb") { color = MenuRGB(MenuColors.DarkGrey) };
@@ -55,18 +150,17 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             this.SafeAddSubobjects(label, roundedRect);
             Container.AddChild(thumbnailSprite);
         }
-
         public override Color MyColor(float timeStacker)
         {
-            if (buttonBehav.greyedOut)
-            {
-                return HSLColor.Lerp(MenuColor(MenuColors.DarkGrey), MenuColor(MenuColors.Black), 0).rgb;
-            }
+            if (buttonBehav.greyedOut) return MenuColor(MenuColors.DarkGrey).rgb;
+            return HSLColor.Lerp(MenuColor(MenuColors.MediumGrey), MenuColor(MenuColors.White), Mathf.Max(Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker))).rgb;
+        }
+        public override void Clicked()
+        {
+            if (fade < 1 || fadeAway > 0) return;
+            if (MyPlaylistSelector?.LevelItems?.Contains(this) == true)
+                MyPlaylistSelector.LevelItemClicked(MyPlaylistSelector.LevelItems.IndexOf(this));
 
-            float a = Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker);
-            a = Mathf.Max(a, Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
-            HSLColor hSLColor = HSLColor.Lerp(MenuColor(MenuColors.MediumGrey), MenuColor(MenuColors.White), a);
-            return HSLColor.Lerp(hSLColor, MenuColor(MenuColors.Black), 0).rgb;
         }
         public override void Update()
         {
@@ -82,8 +176,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             }
             else labelSelectedBlink = 0f;
             lastSelected = Selected;
-            if (owner is PlaylistSelector selector)
-            size.y = selector.elementHeight * ShowThumbsTransitionState(1);
+            if (owner is PlaylistSelector selector) size.y = selector.elementHeight;
             lastThumbChangeFade = thumbChangeFade;
             if (doAThumbFade)
             {
@@ -119,95 +212,79 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (!thumbLoaded && (Selected || Alpha > 0.5f))
                 MyPlaylistSelector?.MyLevelSelector?.BumpUpThumbnailLoad(name);
 
-            if (dividerSprite != null && showThumbDivider != ShowThumbDivider)
+            if (outlineDividerSprite != null && showThumbDivider != ShowThumbDivider)
             {
                 showThumbDivider = ShowThumbDivider;
-                dividerSprite.element = Futile.atlasManager.GetElementWithName(showThumbDivider ? "listDivider2" : "listDivider");
+                outlineDividerSprite.element = Futile.atlasManager.GetElementWithName(showThumbDivider ? "listDivider2" : "listDivider");
                 roundedRect.pos.y += 3f;
             }
         }
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            float num = Custom.SCurve(Mathf.Lerp(lastFade, fade, timeStacker), 0.3f),
+            Vector2 myPos = DrawPos(timeStacker);
+            float fadeFactor = Custom.SCurve(Mathf.Lerp(lastFade, fade, timeStacker), 0.3f),
                 thumbTransitionState = ShowThumbsTransitionState(timeStacker),
-                num3 = thumbTransitionState * Mathf.InverseLerp(0, 0.8f, num);
+                alphaThumbFactor = thumbTransitionState * Mathf.InverseLerp(0, 0.8f, fadeFactor); 
 
-            thumbnailSprite.x = DrawX(timeStacker) + size.x / 2;
-            thumbnailSprite.y = DrawY(timeStacker) + 20 + ThumbHeight * num3 / 2;
-            thumbnailSprite.alpha = fade * (0.85f + 0.15f * Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker)) * Mathf.Pow(thumbTransitionState, 1.5f) * (1 - Mathf.Lerp(0, 0, timeStacker));
-            thumbnailSprite.scaleX = ThumbWidth * (0.5f + 0.5f * Mathf.Pow(num3, 0.3f)) / thumbnailSprite.element.sourcePixelSize.x;
-            thumbnailSprite.scaleY = ThumbHeight * num3 / thumbnailSprite.element.sourcePixelSize.y;
+            thumbnailSprite.x = myPos.x + size.x / 2;
+            thumbnailSprite.y = myPos.y + 20 + ThumbHeight * alphaThumbFactor / 2;
+            thumbnailSprite.alpha = fadeFactor * (0.85f + 0.15f * Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker)) * Mathf.Pow(thumbTransitionState, 1.5f) * (1 - Mathf.Lerp(0, 0, timeStacker));
+            thumbnailSprite.scaleX = ThumbWidth * (0.5f + 0.5f * Mathf.Pow(alphaThumbFactor, 0.3f)) / thumbnailSprite.element.sourcePixelSize.x;
+            thumbnailSprite.scaleY = ThumbHeight * alphaThumbFactor / thumbnailSprite.element.sourcePixelSize.y;
 
-            float a = Mathf.Max(Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker)),
-                num4 = Mathf.Lerp(1, 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(buttonBehav.lastSin, buttonBehav.sin, timeStacker) / 30 * (float)Math.PI * 2), Mathf.Lerp(buttonBehav.lastExtraSizeBump, buttonBehav.extraSizeBump, timeStacker) * fade * Mathf.Lerp(1f, 0.5f, 1));
+            float buttonBehavSin = Mathf.Lerp(1, 0.5f + 0.5f * Mathf.Sin(Mathf.Lerp(buttonBehav.lastSin, buttonBehav.sin, timeStacker) / 30 * Mathf.PI * 2), 
+                Mathf.Lerp(buttonBehav.lastExtraSizeBump, buttonBehav.extraSizeBump, timeStacker) * fadeFactor * Mathf.Lerp(1, 0.5f, thumbTransitionState)),
 
-            label.label.color = Color.Lerp(MenuRGB(MenuColors.Black), MyColor(timeStacker), Mathf.Lerp(num * num4, UnityEngine.Random.value, Mathf.Lerp(labelLastSelectedBlink, labelSelectedBlink, timeStacker)));
-            label.label.alpha = Mathf.Pow(num, 2);
-            Color color = HSLColor.Lerp(MenuColor(MenuColors.VeryDarkGrey), HSLColor.Lerp(MenuColor(MenuColors.DarkGrey), MenuColor(MenuColors.MediumGrey), num4), a).rgb,
+                a = Mathf.Max(Mathf.Lerp(buttonBehav.lastCol, buttonBehav.col, timeStacker), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
+
+            label.label.color = Color.Lerp(MenuRGB(MenuColors.Black), MyColor(timeStacker), Mathf.Lerp(fadeFactor * buttonBehavSin, UnityEngine.Random.value, Mathf.Lerp(labelLastSelectedBlink, labelSelectedBlink, timeStacker)));
+            label.label.alpha = Mathf.Pow(fadeFactor, 2);
+            Color color = HSLColor.Lerp(MenuColor(MenuColors.VeryDarkGrey), HSLColor.Lerp(MenuColor(MenuColors.DarkGrey), MenuColor(MenuColors.MediumGrey), buttonBehavSin), a).rgb,
                 rectColor = Color.Lerp(MenuRGB(MenuColors.Black), MenuRGB(MenuColors.DarkGrey), Mathf.Lerp(buttonBehav.lastFlash, buttonBehav.flash, timeStacker));
 
-            if (dividerSprite != null)
+            if (outlineDividerSprite != null)
             {
-                dividerSprite.x = thumbnailSprite.x;
-                dividerSprite.y = Mathf.Lerp(DrawY(timeStacker), levelItemBelow!.DrawY(timeStacker) + levelItemBelow!.DrawSize(timeStacker).y, 0.5f) - 1 * thumbTransitionState - (10 - MyPlaylistSelector?.elementSpacing ?? 0);
-                dividerSprite.alpha = Mathf.Min(fade, Custom.SCurve(Mathf.Lerp(levelItemBelow!.lastFade, levelItemBelow!.fade, timeStacker), 0.3f)) * Alpha;
+                outlineDividerSprite.x = thumbnailSprite.x;
+                outlineDividerSprite.y = Mathf.Lerp(myPos.y, levelItemBelow!.DrawY(timeStacker) + levelItemBelow!.DrawSize(timeStacker).y, 0.5f) - 1 * thumbTransitionState - (10 - MyPlaylistSelector?.elementSpacing ?? 0);
+                outlineDividerSprite.alpha = Mathf.Min(fadeFactor * Alpha, Custom.SCurve(Mathf.Lerp(levelItemBelow.lastFade, levelItemBelow.fade, timeStacker) * levelItemBelow.Alpha, 0.3f));
                 if (showThumbDivider)
                 {
-                    dividerSprite.alpha *= Mathf.InverseLerp(0.75f, 1f, thumbTransitionState);
-                    dividerSprite.scaleY = 0.5f + 0.5f * Mathf.InverseLerp(0.75f, 1, thumbTransitionState);
-                    dividerSprite2!.x = dividerSprite.x;
-                    dividerSprite2!.y = dividerSprite.y;
-                    dividerSprite2!.scaleY = dividerSprite.scaleY;
-                    dividerSprite2!.alpha = dividerSprite.alpha;
+                    outlineDividerSprite.alpha *= Mathf.InverseLerp(0.75f, 1f, thumbTransitionState);
+                    outlineDividerSprite.scaleY = 0.5f + 0.5f * Mathf.InverseLerp(0.75f, 1, thumbTransitionState);
+                    bkgDividerSprite!.x = outlineDividerSprite.x;
+                    bkgDividerSprite!.y = outlineDividerSprite.y;
+                    bkgDividerSprite!.scaleY = outlineDividerSprite.scaleY;
+                    bkgDividerSprite!.alpha = outlineDividerSprite.alpha;
+                    bkgDividerSprite!.isVisible = true;
                 }
                 else
                 {
-                    dividerSprite.alpha *= Mathf.InverseLerp(0.25f, 0, thumbTransitionState);
-                    dividerSprite.scaleY = 1;
+                    bkgDividerSprite!.isVisible = false;
+                    outlineDividerSprite.y = myPos.y;
+                    outlineDividerSprite.alpha *= Mathf.InverseLerp(0.25f, 0, thumbTransitionState);
+                    outlineDividerSprite.scaleY = 1;
                 }
             }
-
-            if (thumbTransitionState * num > 0)
+            for (int i = 0; i < 17; i++)
             {
-                for (int i = 0; i < 9; i++)
-                {
-                    roundedRect.sprites[i].color = rectColor;
-                    roundedRect.sprites[i].alpha = num * thumbTransitionState * 0.5f;
-                    roundedRect.sprites[i].isVisible = true;
-                }
-
-                for (int j = 9; j < 17; j++)
-                {
-                    roundedRect.sprites[j].color = color;
-                    roundedRect.sprites[j].alpha = num * thumbTransitionState;
-                    roundedRect.sprites[j].isVisible = true;
-                }
+                roundedRect.sprites[i].color = i < 9 ? rectColor : color;
+                roundedRect.sprites[i].alpha = fadeFactor * thumbTransitionState * (i < 9 ? 0.5f : 1);
+                roundedRect.sprites[i].isVisible = thumbTransitionState * fadeFactor > 0;
             }
-            else
-                for (int i = 0; i < 17; i++)
-                    roundedRect.sprites[i].isVisible = false;
         }
-        public override void Clicked()
-        {
-            if (fade < 1 || fadeAway > 0) return;
-            if (MyPlaylistSelector?.LevelItems?.Contains(this) == true) 
-                MyPlaylistSelector.LevelItemClicked(MyPlaylistSelector.LevelItems.IndexOf(this));
-
-        }
-
         public void HiddenUpdate() => Update();
         public void HiddenGrafUpdate(float timeStacker) => GrafUpdate(timeStacker);
         public void AddDividers(LevelItem nxt)
         {
             showThumbDivider = ShowThumbDivider;
-            dividerSprite = new FSprite(showThumbDivider ? "listDivider2" : "listDivider");
-            dividerSprite2 = new FSprite("listDivider2bkg");
-            dividerSprite.color = MenuRGB(MenuColors.DarkGrey);
-            dividerSprite2.color = Color.black;
+            outlineDividerSprite = new FSprite(showThumbDivider ? "listDivider2" : "listDivider");
+            bkgDividerSprite = new FSprite("listDivider2bkg");
+            outlineDividerSprite.color = MenuRGB(MenuColors.DarkGrey);
+            bkgDividerSprite.color = Color.black;
 
-            MyDividerContainer.AddChild(dividerSprite2);
-            MyDividerContainer.AddChild(dividerSprite);
+            MyDividerContainer.AddChild(bkgDividerSprite);
+            MyDividerContainer.AddChild(outlineDividerSprite);
             levelItemBelow = nxt;
             nxt.levelItemAbove = this;
         }
@@ -219,7 +296,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public float ShowThumbsTransitionState(float timeStacker) => MyPlaylistSelector?.ShowThumbsTransitionState(timeStacker) ?? 1;
         public void StartFadeAway() => fadeAway = Mathf.Max(fadeAway, 0.01f);
     }
-
     public class PlaylistSelector : VerticalScrollSelector
     {
         public const string AddOnClick = "Add level to playlist", RemoveOnClick = "Remove level from playlist";
@@ -264,7 +340,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                  btn.UpdateSymbol(ShowThumbsStatus ? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List");
                  menu.PlaySound(ShowThumbsStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
              };
+            subObjects.Add(new LevelPreview(menu, this, this is PlaylistHolder));
             LoadLevelsInit();
+
         }
         public override void RemoveSprites()
         {
@@ -332,7 +410,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             RemoveScrollElements(constrainScroll, item);
             this.ClearMenuObject(item);
         }
-        public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0f, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
+        public float ShowThumbsTransitionState(float timeStacker) => Custom.SCurve(Mathf.Pow(Mathf.Max(0, Mathf.Lerp(lastShowThumbsTransitionState, showThumbsTransitionState, timeStacker)), 0.7f), 0.3f);
     }
     public class PlaylistHolder : PlaylistSelector
     {
