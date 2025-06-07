@@ -589,7 +589,7 @@ public partial class RainMeadow
 
     private void Weapon_HitSomethingWithoutStopping(On.Weapon.orig_HitSomethingWithoutStopping orig, Weapon self, PhysicalObject obj, BodyChunk chunk, PhysicalObject.Appendage appendage)
     {
-        if (isStoryMode(out var _))
+        if (OnlineManager.lobby != null)
         {
             if (obj is Player)
             {
