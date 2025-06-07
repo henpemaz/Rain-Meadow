@@ -328,7 +328,7 @@ Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás
 LAN Lobby|Sala de LAN
 Nobody|Nadie
 Your network interface(s) are|Tu(s) interfaz/ces de red son
-<NAME> network interface is |La interfaz de red de <NAME> es 
+<USERNAME> network interface is |La interfaz de red de <USERNAME> es 
 You are |Tú eres 
 This player is |Este jugador es 
 the owner of the lobby.|el dueño de la sala.

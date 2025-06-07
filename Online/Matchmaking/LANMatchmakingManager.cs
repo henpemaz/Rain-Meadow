@@ -49,7 +49,7 @@ namespace RainMeadow {
                     foreach (var ip in UDPPeerManager.getInterfaceAddresses()) {
                         dialogue += Environment.NewLine + ip.ToString() + ":" + this.endPoint.Port.ToString();
                     }
-                } else dialogue += Utils.Translate("<NAME> network interface is ").Replace("<NAME>", name) + endPoint.ToString();
+                } else dialogue += Utils.Translate("<USERNAME> network interface is ").Replace("<USERNAME>", name) + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
                     dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) + Utils.Translate( "the owner of the lobby.");
                     dialogue += Environment.NewLine + Utils.Translate("Players can “Direct Connect” to this lobby through ") + (isMe? Utils.Translate("your") : Utils.Translate("their")) + Utils.Translate(" interface(s).");
