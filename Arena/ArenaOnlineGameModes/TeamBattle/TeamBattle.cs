@@ -183,6 +183,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
+            if (TeamBattleMode.isTeamBattleMode(arena, out _))
+            {
+                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
+                {
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)t.team], 0.6f);
+                }
+            }
 
         }
 
