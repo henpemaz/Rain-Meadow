@@ -1282,19 +1282,9 @@ public partial class RainMeadow
 
     private bool Player_CanIPickThisUp(On.Player.orig_CanIPickThisUp orig, Player self, PhysicalObject obj)
     {
-        if (!self.isNPC)
+        if (OnlineManager.lobby != null)
         {
-            if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
-
-                if (story.itemSteal)
-                {
-                    return orig(self, obj);
-                }
-                else
-                {
-                    return false;
-                }
-            if (isArenaMode(out var arena))
+            if (!self.isNPC)
             {
                 if (obj.grabbedBy.Any(x => x.grabber is Player))
                 {
@@ -1303,8 +1293,11 @@ public partial class RainMeadow
                     {
                         return orig(self, obj);
                     }
+                }
 
-                    if (arena.itemSteal)
+                if (isStoryMode(out var story) && obj.grabbedBy.Any(x => x.grabber is Player grabbing_player && !grabbing_player.isNPC))
+
+                    if (story.itemSteal)
                     {
                         return orig(self, obj);
                     }
@@ -1312,20 +1305,31 @@ public partial class RainMeadow
                     {
                         return false;
                     }
-                }
-                if (obj is Player pl)
+                if (isArenaMode(out var arena))
                 {
-                    if (pl.Stunned || pl.dead)
+                    if (obj.grabbedBy.Any(x => x.grabber is Player))
                     {
-                        return orig(self, obj);
-                    };
+
+                        if (arena.itemSteal)
+                        {
+                            return orig(self, obj);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    if (obj is Player pl)
+                    {
+                        if (pl.Stunned || pl.dead)
+                        {
+                            return orig(self, obj);
+                        };
+                    }
+
                 }
-
             }
-        }
 
-        if (OnlineManager.lobby != null)
-        {
             if (obj is Player p)
             {
                 if (!OnlineManager.lobby.gameMode.PlayersCanHandhold && !p.isNPC)
@@ -1335,9 +1339,8 @@ public partial class RainMeadow
             }
 
         }
-
-
         return orig(self, obj);
+
     }
 
     private void Player_SpitUpCraftedObject(On.Player.orig_SpitUpCraftedObject orig, Player self)
@@ -1352,7 +1355,7 @@ public partial class RainMeadow
         {
             // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             //becomes
-            // if (!(otherObject.FriendlyFireSafetyCandidate()) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            // if (!(otherObject.FriendlyFireSafetyCandidate(me)) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(
@@ -1371,7 +1374,8 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => otherObject.FriendlyFireSafetyCandidate());
+            c.Emit(OpCodes.Ldarg_1);
+            c.EmitDelegate((Creature me, Creature otherObject) => otherObject.FriendlyFireSafetyCandidate(me));
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
@@ -1382,13 +1386,9 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (otherObject.FriendlyFireSafetyCandidate())
+        if (otherObject is Creature c && c.FriendlyFireSafetyCandidate(self))
         {
-            if (otherObject is Player) return false;
-        }
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
-        {
-            if (otherObject is Player) return false;
+            return false;
         }
         return orig(self, otherObject);
     }
@@ -1423,7 +1423,7 @@ public partial class RainMeadow
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
-        if (crit.FriendlyFireSafetyCandidate()) return false;
+        if (crit.FriendlyFireSafetyCandidate(self)) return false;
         if (isArenaMode(out var arena))
         {
             if (arena.disableMaul && crit is Player)
