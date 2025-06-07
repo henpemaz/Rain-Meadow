@@ -89,7 +89,7 @@ namespace RainMeadow
             On.Menu.LevelSelector.LevelFromPlayList += LevelSelector_LevelFromPlayList;
             On.Menu.MultiplayerMenu.InitiateGameTypeSpecificButtons += MultiplayerMenu_InitiateGameTypeSpecificButtons;
             On.Menu.MultiplayerMenu.ArenaImage += MultiplayerMenu_ArenaImage;
-            On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
+            //On.Menu.MultiplayerMenu.ctor += MultiplayerMenu_ctor;
             On.Menu.PauseMenu.Singal += PauseMenu_Singal;
 
             IL.CreatureCommunities.ctor += OverwriteArenaPlayerMax;
@@ -727,21 +727,13 @@ namespace RainMeadow
 
             }
         }
+
         private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
         {
             if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
             {
-                var comp = new FFA();
-                var teamBattle = new TeamBattleMode();
-                // TODO: Move this to a Menu check
-                if (!arena.registeredGameModes.ContainsKey(FFA.FFAMode.value))
-                {
-                    arena.registeredGameModes.Add(FFA.FFAMode.value, comp);
-                }
-                if (!arena.registeredGameModes.ContainsKey(TeamBattleMode.TeamBattle.value))
-                {
-                    arena.registeredGameModes.Add(TeamBattleMode.TeamBattle.value, teamBattle);
-                }
+                arena.AddExternalGameModes(FFA.FFAMode, new FFA());
+                arena.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
             }
 
             orig(self, manager);

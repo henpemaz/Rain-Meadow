@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Menu;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
 
@@ -287,10 +288,10 @@ namespace RainMeadow
 
         }
 
-        public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
+        public void AddExternalGameModes(ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
         {
 
-            if (!this.registeredGameModes.ContainsValue(externMode))
+            if (!this.registeredGameModes.ContainsKey(gametypeID.value))
             {
                 this.registeredGameModes.Add(gametypeID.value, externMode);
             }
@@ -474,6 +475,10 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
+
+
+                this.AddExternalGameModes(FFA.FFAMode, new FFA());
+                this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
             }
         }
 

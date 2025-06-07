@@ -16,7 +16,7 @@ namespace RainMeadow.UI.Components
     {
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, string team, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -66,25 +66,26 @@ namespace RainMeadow.UI.Components
 
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel);
-            if (currentGameMode == TeamBattleMode.TeamBattle.value)
+
+            arenaTeamLabel = new(menu, this, menu.Translate("Team:"), new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 50), new Vector2(0, 20), false);
+
+            arenaTeamComboBox = new OpComboBox2(new Configurable<string>(team), new Vector2(arenaGameModeComboBox.pos.x, arenaGameModeComboBox.pos.y - 50), 175f, [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
+            arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
             {
-                arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(arenaGameModeComboBox.pos.x + 215, arenaGameModeComboBox.pos.y - 2), 175f, [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
-                arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
+                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
                 {
-                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
+                    if (Enum.TryParse<TeamBattleMode.TeamMappings>(value, out var parsedTeam))
                     {
-                        if (Enum.TryParse<TeamBattleMode.TeamMappings>(value, out var parsedTeam))
-                        {
-                            tb.team = (int)parsedTeam;
-                            RainMeadow.Debug(tb.team);
-                        }
+                        tb.team = (int)parsedTeam;
+                        RainMeadow.Debug(tb.team);
                     }
-                };
-            }
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel,
-                new RestorableUIelementWrapper(tabWrapper, countdownTimerTextBox), arenaGameModeLabel, new RestorableUIelementWrapper(tabWrapper, arenaGameModeComboBox));
+                }
+            };
+
+            teamWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
+
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel);
         }
         public override void RemoveSprites()
         {
@@ -127,10 +128,8 @@ namespace RainMeadow.UI.Components
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
                 if (arenaTeamComboBox != null)
                 {
-                    if (!arenaTeamComboBox.held && !gameModeComboBoxLastHeld)
-                    {
-                        arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
-                    }
+                    if (!arenaTeamComboBox.held && !teamComboBoxHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
+
                 }
             }
         }
@@ -209,6 +208,8 @@ namespace RainMeadow.UI.Components
         }
 
         public bool gameModeComboBoxLastHeld;
+        public bool teamComboBoxHeld;
+
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
@@ -216,9 +217,9 @@ namespace RainMeadow.UI.Components
         public OpComboBox arenaTeamComboBox;
 
         public CheckBox spearsHitCheckbox, evilAICheckBox;
-        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
+        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
-        public UIelementWrapper countdownWrapper, gameModeWrapper;
+        public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;
     }
 }
