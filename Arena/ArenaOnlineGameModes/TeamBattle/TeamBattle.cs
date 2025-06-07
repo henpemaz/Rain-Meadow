@@ -112,9 +112,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                                 {
                                     if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2) && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb1))
                                     {
-                                        if (tb1.team != tb2.team)
+                                        if (tb1.team == tb2.team)
                                         {
-                                            return false;
+                                            return true;
                                         }
                                         else
                                         {
@@ -125,8 +125,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             }
                         }
                     }
-                    return true;
-
                 }
             }
 
