@@ -5,6 +5,7 @@ using RWCustom;
 using UnityEngine;
 using HarmonyLib;
 using static RainMeadow.ButtonScroller;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 namespace RainMeadow.UI.Components
 {
@@ -127,7 +128,35 @@ namespace RainMeadow.UI.Components
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            slugcatButton.secondaryColor = showRainbow ? rainbow : null;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
+                    {
+
+                        if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
+                        {
+                            if (team.team == tb.winningTeam && tb.winningTeam != -1)
+                            {
+                                slugcatButton.secondaryColor = rainbow;
+                            }
+                            else
+                            {
+                                slugcatButton.secondaryColor = TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)team.team];
+                            }
+                        }
+
+                    }
+
+                }
+                else
+                {
+                    slugcatButton.secondaryColor = showRainbow ? rainbow : null;
+
+                }
+            }
+
         }
         public void InitButtons(bool canKick)
         {
@@ -154,7 +183,7 @@ namespace RainMeadow.UI.Components
                 {
                     profileIdentifier.id.OpenProfileLink();
                 };
-                infoKickButton = new(menu, this, canKick? "Menu_Symbol_Clear_All" : GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), canKick ? "KICKPLAYER" : "MUTEPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
+                infoKickButton = new(menu, this, canKick ? "Menu_Symbol_Clear_All" : GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), canKick ? "KICKPLAYER" : "MUTEPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
                 UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false);
                 connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
                 lines.Add(connector);

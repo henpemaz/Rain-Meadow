@@ -43,9 +43,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
-
-        //Arena.AddExternalGameModes(FFA.FFAMode, new FFA());
-        //Arena.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = FFA.FFAMode.value;
 

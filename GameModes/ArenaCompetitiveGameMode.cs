@@ -257,6 +257,9 @@ namespace RainMeadow
             slugcatSelectDisplayNames.Add("MeadowRandom", "The Unknown");
 
 
+
+            this.AddExternalGameModes(FFA.FFAMode, new FFA());
+            this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
         }
 
         public void ResetInvDetails()
@@ -475,10 +478,6 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
-
-
-                this.AddExternalGameModes(FFA.FFAMode, new FFA());
-                this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
             }
         }
 

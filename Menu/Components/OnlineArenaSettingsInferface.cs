@@ -67,9 +67,9 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
-            arenaTeamLabel = new(menu, this, menu.Translate("Team:"), new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 50), new Vector2(0, 20), false);
 
-            arenaTeamComboBox = new OpComboBox2(new Configurable<string>(team), new Vector2(arenaGameModeComboBox.pos.x, arenaGameModeComboBox.pos.y - 50), 175f, [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
+            arenaTeamLabel = new(menu, this, menu.Translate("Team:"), new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 50), new Vector2(0, 20), false);
+            arenaTeamComboBox = new OpComboBox2(new Configurable<string>(team), new Vector2(arenaGameModeComboBox.pos.x, arenaGameModeComboBox.pos.y - 150), 175f, [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
             arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
@@ -120,17 +120,18 @@ namespace RainMeadow.UI.Components
                 if (obj is MultipleChoiceArray array)
                     array.greyedOut = isNotOwner;
             }
-            countdownTimerTextBox.greyedOut = isNotOwner;
-            arenaGameModeComboBox.greyedOut = isNotOwner;
+            if (countdownTimerTextBox != null) countdownTimerTextBox.greyedOut = isNotOwner;
+            if (arenaTeamComboBox != null) arenaGameModeComboBox.greyedOut = isNotOwner;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
                 if (arenaTeamComboBox != null)
-                {
-                    if (!arenaTeamComboBox.held && !teamComboBoxHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
-
+                {                   
+                    if (arenaTeamComboBox.greyedOut = arena.currentGameMode != TeamBattleMode.TeamBattle.value)
+                    if (!arenaTeamComboBox.held && !teamComboBoxLastHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
                 }
+
             }
         }
         public bool GetChecked(CheckBox box)
@@ -208,7 +209,7 @@ namespace RainMeadow.UI.Components
         }
 
         public bool gameModeComboBoxLastHeld;
-        public bool teamComboBoxHeld;
+        public bool teamComboBoxLastHeld;
 
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
