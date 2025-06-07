@@ -51,8 +51,10 @@ namespace RainMeadow {
                     }
                 } else dialogue += Utils.Translate("<USERNAME> network interface is ").Replace("<USERNAME>", name) + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
-                    dialogue += Environment.NewLine + (isMe? Utils.Translate("You are ") : Utils.Translate("This player is ")) + Utils.Translate( "the owner of the lobby.");
-                    dialogue += Environment.NewLine + Utils.Translate("Players can “Direct Connect” to this lobby through ") + (isMe? Utils.Translate("your") : Utils.Translate("their")) + Utils.Translate(" interface(s).");
+                    string isMe0 = isMe ? "You are" : "This player is";
+                    string isMe1 = isMe ? "your" : "their";
+                    dialogue += Environment.NewLine + Utils.Translate($"{isMe0} the owner of the lobby.");
+                    dialogue += Environment.NewLine + Utils.Translate($"Players can “Direct Connect” to this lobby through {isMe1} interface(s).");
                 }
                 OnlineManager.instance.manager.ShowDialog(
                     new DialogNotify(dialogue, new Vector2(478.1f, 115.200005f*(1 + 0.2f*UDPPeerManager.getInterfaceAddresses().Length)), 
