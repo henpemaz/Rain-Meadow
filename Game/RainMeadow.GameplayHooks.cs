@@ -95,20 +95,24 @@ namespace RainMeadow
             orig(self, obj);
         }
 
+        bool WeaponIsDangerous(Weapon weapon)
+        {
+            if (ModManager.DLCShared && weapon is MoreSlugcats.LillyPuck) return true;
+            if (weapon is Spear) return true;
+
+            return false;
+        }
+
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (!self.IsLocal()) {
-                return false;
-            }
-            
-            if (obj.FriendlyFireSafetyCandidate())
+            if (!self.IsLocal())
             {
                 return false;
             }
 
-            if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (obj is Creature c && c.FriendlyFireSafetyCandidate(self.thrownBy) && WeaponIsDangerous(self))
             {
-                return true;
+                return false;
             }
 
             if (ModManager.MSC && (OnlineManager.lobby != null) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
