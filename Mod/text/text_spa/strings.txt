@@ -328,7 +328,7 @@ Are you SURE you know what you're doing?|¿Estás SEGURO que sabes lo que estás
 LAN Lobby|Sala de LAN
 Nobody|Nadie
 Your network interface(s) are|Tus interfaces de red son
-<USERNAME> network interface is |La interfaz de red de <USERNAME> es 
+<NAME> network interface is |La interfaz de red de <NAME> es 
 You are the owner of the lobby.|Tú eres el dueño de la sala.
 This player is the owner of the lobby.|Este jugador es el dueño de la sala.
 Players can “Direct Connect” to this lobby through your interface(s).|Los jugadores pueden conectarse directamente a esta sala vía tus interfaces.

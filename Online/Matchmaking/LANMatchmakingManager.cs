@@ -49,7 +49,7 @@ namespace RainMeadow {
                     foreach (var ip in UDPPeerManager.getInterfaceAddresses()) {
                         dialogue += Environment.NewLine + ip.ToString() + ":" + this.endPoint.Port.ToString();
                     }
-                } else dialogue += Utils.Translate("<USERNAME> network interface is ").Replace("<USERNAME>", name) + endPoint.ToString();
+                } else dialogue += Utils.Translate("<NAME> network interface is ").Replace("<NAME>", name) + endPoint.ToString();
                 if (OnlineManager.lobby?.owner?.id?.Equals(this) ?? false) {
                     string isMe0 = isMe ? "You are" : "This player is";
                     string isMe1 = isMe ? "your" : "their";
