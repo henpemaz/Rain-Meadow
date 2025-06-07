@@ -7,6 +7,8 @@ using RainMeadow.UI.Interfaces;
 using UnityEngine;
 using Menu.Remix.MixedUI.ValueTypes;
 using System.Linq;
+using System;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 namespace RainMeadow.UI.Components
 {
@@ -60,6 +62,8 @@ namespace RainMeadow.UI.Components
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
             };
+
+
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel);
@@ -71,7 +75,7 @@ namespace RainMeadow.UI.Components
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
                     {
-                        if (Enum.TryParse<TeamMappings>(value, out var parsedTeam))
+                        if (Enum.TryParse<TeamBattleMode.TeamMappings>(value, out var parsedTeam))
                         {
                             tb.team = (int)parsedTeam;
                             RainMeadow.Debug(tb.team);
@@ -121,6 +125,13 @@ namespace RainMeadow.UI.Components
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
+                if (arenaTeamComboBox != null)
+                {
+                    if (!arenaTeamComboBox.held && !gameModeComboBoxLastHeld)
+                    {
+                        arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
+                    }
+                }
             }
         }
         public bool GetChecked(CheckBox box)
@@ -202,6 +213,8 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
+        public OpComboBox arenaTeamComboBox;
+
         public CheckBox spearsHitCheckbox, evilAICheckBox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;

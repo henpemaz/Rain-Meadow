@@ -12,6 +12,7 @@ using System.Reflection;
 using UnityEngine;
 using RainMeadow.UI.Components;
 using RainMeadow.UI;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 
 namespace RainMeadow
@@ -116,7 +117,7 @@ namespace RainMeadow
             IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
             On.SlugcatStats.getSlugcatName += SlugcatStats_getSlugcatName;
             IL.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
-            
+
         }
 
         private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)
@@ -178,8 +179,10 @@ namespace RainMeadow
             }
         }
 
-        public string SlugcatStats_getSlugcatName(On.SlugcatStats.orig_getSlugcatName orig, SlugcatStats.Name id) {
-            if (id == Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+        public string SlugcatStats_getSlugcatName(On.SlugcatStats.orig_getSlugcatName orig, SlugcatStats.Name id)
+        {
+            if (id == Ext_SlugcatStatsName.OnlineRandomSlugcat)
+            {
                 return "Unknown";
             }
 
@@ -1235,32 +1238,20 @@ namespace RainMeadow
                                         {
                                             // This should be wrapped in a host check, but we don't have enough time before the ArenaResultBox comes asking for showWinnerStar.
                                             // We could send an RPC with the owner check, but that seems worse than this.
-                                            //
+                                            tb.winningTeam = winners.team;
 
-                                            //if (OnlineManager.lobby.isOwner)
-                                            //{
-                                                tb.winningTeam = winners.team;
-
-                                            //}
                                         }
                                     }
                                 }
 
                                 foreach (var player in list)
                                 {
-                                    if (player.alive)
+                                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                                    if (onlinePlayer != null)
                                     {
-                                        player.winner = true;
-                                    }
-                                    else
-                                    {
-                                        OnlinePlayer? deadPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                                        if (deadPlayer != null)
+                                        if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaTeamClientSettings>(out var deadPlayerTeam))
                                         {
-                                            if (OnlineManager.lobby.clientSettings[deadPlayer].TryGetData<ArenaTeamClientSettings>(out var deadPlayerTeam))
-                                            {
-                                                player.winner = deadPlayerTeam.team == tb.winningTeam;
-                                            }
+                                            player.winner = deadPlayerTeam.team == tb.winningTeam;
                                         }
                                     }
                                 }
@@ -1545,17 +1536,22 @@ namespace RainMeadow
             if (isArenaMode(out var aren))
             {
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(aren, player.playerNumber);
-                if (onlinePlayer is not null) {
-                    if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaClientSettings>(out var settings)) {
+                if (onlinePlayer is not null)
+                {
+                    if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaClientSettings>(out var settings))
+                    {
                         player.playerClass = settings.playingAs;
-                        if (settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+                        if (settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
+                        {
                             player.playerClass = settings.randomPlayingAs;
                             playingAsRandom = true;
                         }
 
-                    } else RainMeadow.Error("no client settings");
-                    
-                } else RainMeadow.Error("no online object");
+                    }
+                    else RainMeadow.Error("no client settings");
+
+                }
+                else RainMeadow.Error("no online object");
                 if (player.playerClass == null) player.playerClass = SlugcatStats.Name.White; // prevent crash from null
             }
 
@@ -1608,8 +1604,9 @@ namespace RainMeadow
                     self.playerNameLabel.text = userNameBackup;
                     if (TeamBattleMode.isTeamBattleMode(arena, out var team))
                     {
-                        if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td)) {
-                            self.playerNameLabel.text += $" -- {((TeamMappings)td.team).ToString().ToUpper()}";
+                        if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
+                        {
+                            self.playerNameLabel.text += $" -- {((TeamBattleMode.TeamMappings)td.team).ToString().ToUpper()}";
                         }
                     }
                 }
@@ -1624,7 +1621,7 @@ namespace RainMeadow
                     portraitcat = RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat;
                 }
 
-                
+
                 self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(portraitcat, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
                 self.subObjects.Add(self.portrait);
             }
@@ -1691,7 +1688,7 @@ namespace RainMeadow
                 {
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{((TeamMappings)tb.winningTeam).ToString().ToUpper()} WIN!"); 
+                        self.headingLabel.text = Utils.Translate($"{((TeamBattleMode.TeamMappings)tb.winningTeam).ToString().ToUpper()} WIN!");
                     }
                 }
             }

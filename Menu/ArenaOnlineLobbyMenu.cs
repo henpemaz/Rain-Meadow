@@ -7,6 +7,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using Menu.Remix.MixedUI.ValueTypes;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
@@ -43,11 +44,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
-        Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
+        Arena.AddExternalGameModes(new FFA(), FFA.FFAMode);
+        Arena.AddExternalGameModes(new TeamBattleMode(), TeamBattleMode.TeamBattle);
 
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
-            Arena.currentGameMode = Competitive.CompetitiveMode.value;
+            Arena.currentGameMode = FFA.FFAMode.value;
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;

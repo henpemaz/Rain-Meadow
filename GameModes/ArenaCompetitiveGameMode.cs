@@ -290,9 +290,9 @@ namespace RainMeadow
         public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
         {
 
-            if (!this.registeredGameModes.ContainsKey(externMode))
+            if (!this.registeredGameModes.ContainsValue(externMode))
             {
-                this.registeredGameModes.Add(externMode, gametypeID.value);
+                this.registeredGameModes.Add(gametypeID.value, externMode);
             }
         }
         public void ResetChampAddition()

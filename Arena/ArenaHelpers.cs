@@ -315,6 +315,8 @@ namespace RainMeadow
                 string[] array2 = Regex.Split(array[i], "<msuB>");
                 action.Invoke(array2[0], array[1]);
 
+            }
+        }
 
         public static bool CheckSameTeam(Player them)
         {

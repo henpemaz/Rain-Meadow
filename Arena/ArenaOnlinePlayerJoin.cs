@@ -1,4 +1,5 @@
 ﻿using RainMeadow;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using Rewired;
 using RWCustom;
 using System;
@@ -40,7 +41,7 @@ namespace Menu
         public ArenaOnlinePlayerJoinButton(Menu menu, MenuObject owner, Vector2 pos, int index, OnlinePlayer player, bool canKick)
             : base(menu, owner, pos, new Vector2(100f, 100f))
         {
-            
+
             slugcat = SlugcatStats.Name.White;
             colorIndex = index;
             profileIdentifier = player;
@@ -129,10 +130,30 @@ namespace Menu
                 roundedRect.borderColor = HSLColor.Lerp(ogColor.ToHSL(), champBorderColor.ToHSL(), lerpFactor);
                 portrait.sprite.color = Color.Lerp(ogColor, champBorderColor, lerpFactor);
             }
+            if (arena != null)
+            {
+
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
+                    {
+                        if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
+                        {
+                            roundedRect.borderColor = TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)team.team].ToHSL();
+                        }
+                    }
+
+                } else
+                {
+                    roundedRect.borderColor = ogColor.ToHSL();
+                }
+            }
             else
             {
                 portrait.sprite.color = ogColor;
+
                 roundedRect.borderColor = ogColor.ToHSL();
+
             }
         }
         public void SetNewSlugcat(SlugcatStats.Name slugcat, int currentColorIndex, Func<SlugcatStats.Name, int, string> arenaImage)

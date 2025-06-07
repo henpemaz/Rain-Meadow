@@ -184,15 +184,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             base.ArenaSessionCtor(arena, orig, self, game);
 
-            // TODO: Remove this testing
-
-            if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
-            {
-                int teamNumber = UnityEngine.Random.Range(0, 4);
-                tb.team = (int)(TeamMappings)teamNumber;
-
-            }
-
         }
 
 
