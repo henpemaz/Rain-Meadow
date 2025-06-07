@@ -161,7 +161,7 @@ namespace RainMeadow
 
         public override string ToString()
         {
-            return "Region " + Id();
+            return Utils.Translate("Region ") + Id();
         }
     }
 }
