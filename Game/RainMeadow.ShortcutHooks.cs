@@ -4,6 +4,7 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace RainMeadow
 {
@@ -57,40 +58,6 @@ namespace RainMeadow
 
                 var c = new ILCursor(il);
 
-
-                //// cleanup betweenroomswaitinglobby of wandering entities
-                //// this is right before the forloop on betweenRoomsWaitingLobby
-                //c.GotoNext(moveType: MoveType.Before,
-                //    i => i.MatchLdarg(0),
-                //    i => i.MatchLdfld<ShortcutHandler>("betweenRoomsWaitingLobby"),
-                //    i => i.MatchCallOrCallvirt(out _),
-                //    i => i.MatchLdcI4(1)
-                //    );
-                //c.MoveAfterLabels();
-                //c.Emit(OpCodes.Ldarg_0);
-                //c.EmitDelegate((ShortcutHandler self) =>
-                //{
-                //    if (OnlineManager.lobby != null)
-                //    {
-                //        for (var i = self.betweenRoomsWaitingLobby.Count - 1; i >= 0; i--)
-                //        {
-                //            var vessel = self.betweenRoomsWaitingLobby[i];
-                //            if (OnlinePhysicalObject.map.TryGetValue(vessel.creature.abstractPhysicalObject, out var oe))
-                //            {
-                //                if (!oe.isMine && oe.roomSession?.absroom != vessel.room)
-                //                {
-                //                    self.betweenRoomsWaitingLobby.Remove(vessel);
-                //                    foreach (var obj in vessel.creature.abstractCreature.GetAllConnectedObjects())
-                //                    {
-                //                        if (obj.realizedObject is Creature c) c.inShortcut = false;
-                //                    }
-                //                }
-                //            }
-                //        }
-                //    }
-                //});
-
-
                 // this.betweenRoomsWaitingLobby[k].creature.abstractCreature.Move(newCoord)
                 // becomes 
                 //
@@ -125,9 +92,19 @@ namespace RainMeadow
                     if (OnlineManager.lobby != null) {
                         var creature = handler.betweenRoomsWaitingLobby[inbetween_room_index].creature?.abstractCreature;
                         if (creature?.GetOnlineCreature() is OnlineCreature oc) {
-                            oc.AllMoving(true);
-                            creature.Move(cord);
-                            oc.AllMoving(false);
+                            creature.MoveMovable(cord);
+                            try
+                            {
+                                if (creature.GetAllConnectedObjects().Contains(handler.game.cameras[0].followAbstractCreature))
+                                {
+                                    handler.game.cameras[0].MoveCamera(handler.betweenRoomsWaitingLobby[inbetween_room_index].room.realizedRoom, handler.betweenRoomsWaitingLobby[inbetween_room_index].room.nodes[handler.betweenRoomsWaitingLobby[inbetween_room_index].entranceNode].viewedByCamera);
+                                }
+                            }
+                            catch (Exception except)
+                            {
+                                RainMeadow.Debug(except);
+                            }
+                            
                             return true;
                         }
                     }
@@ -150,10 +127,36 @@ namespace RainMeadow
             }
         }
 
+        // prevent creature from being spit out of a shortcut if we don't own it
+        // owner will send us an RPC to spit it out.
+        private void ShortcutHandler_Update1(On.ShortcutHandler.orig_Update orig, ShortcutHandler self)
+        {
+            try {
+                for (int i = self.transportVessels.Count - 1; i >= 0; i--)
+                {
+                    if (!self.transportVessels[i].creature.IsLocal())
+                    {
+                        Room realized_room = self.transportVessels[i].room.realizedRoom;
+                        IntVector2 next_pos = ShortcutHandler.NextShortcutPosition(self.transportVessels[i].pos, self.transportVessels[i].lastPos, realized_room);
+                        if (realized_room.GetTile(next_pos).Terrain == Room.Tile.TerrainType.ShortcutEntrance) {
+                            self.transportVessels[i].wait = 5;
+                        }
+                    }
+                }
+            } catch (Exception err) {
+                RainMeadow.Error(err);
+            }
+
+            orig(self);
+        }
+
+
+
         // Prevent creatures from entering a room if their online counterpart has not yet entered!
         private bool ShortcutHandlerOnVesselAllowedInRoom(On.ShortcutHandler.orig_VesselAllowedInRoom orig, ShortcutHandler self, ShortcutHandler.Vessel vessel)
         {
-            var result = orig(self, vessel);
+            var orig_result = orig(self, vessel);
+            var result = orig_result;
             if (OnlineManager.lobby == null) return result;
 
             var absCrit = vessel.creature.abstractCreature;
@@ -177,12 +180,13 @@ namespace RainMeadow
                     {
                         Trace($"Denied because of connected object: {innerOnlineEntity}");
                         result = false; // Same for all connected entities
-                        if (apo.Room != vessel.room && apo.CanMove()) {
+                        if (apo.Room != vessel.room && innerOnlineEntity.isMine) {
 
-                            bool ready = true;
+                            bool ready = orig_result;
                             if (!innerOnlineEntity.isTransferable && apo.realizedObject is not null) {
                                 apo.world.ActivateRoom(vessel.room);
-                                if (apo is AbstractCreature critter) {
+                                if (apo is AbstractCreature critter)
+                                {
                                     ready = ready && self.CreatureAllowedInRoom(critter, vessel.room.realizedRoom);
                                 }  
                             }
@@ -190,7 +194,8 @@ namespace RainMeadow
                             RoomSession? session = vessel.room.GetResource();
                             if (session is not null) {
                                 session.Needed();
-                                if (session.isAvailable && !session.isPending && ready) {
+                                if (session.isAvailable && !session.isPending && ready)
+                                {
                                     WorldCoordinate newCoord = new WorldCoordinate(vessel.room.index, -1, -1, -1);
                                     apo.MoveOnly(newCoord);
                                 }
@@ -314,10 +319,7 @@ namespace RainMeadow
 
         private void Creature_SpitOutOfShortCut(On.Creature.orig_SpitOutOfShortCut orig, Creature self, IntVector2 pos, Room newRoom, bool spitOutAllSticks) 
         {
-            if (OnlineManager.lobby != null) {
-                OnlineManager.RunDeferred(() => self.RemoveFromShortcuts());
-            }
-            
+          
             orig(self, pos, newRoom, spitOutAllSticks);
             if (OnlineManager.lobby == null) {
                 return;
