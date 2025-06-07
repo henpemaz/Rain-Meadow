@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -21,6 +23,12 @@ namespace RainMeadow
         public virtual void ArenaSessionNextLevel(ArenaOnlineGameMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
         {
             arena.ResetAtNextLevel();
+        }
+
+        /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
+        public virtual void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
+        {
+
         }
 
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
@@ -56,6 +64,8 @@ namespace RainMeadow
         {
             return --timer;
         }
+
+        /// <summary> This is ran on the victim's end, not the killer's! </summary>
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
         }

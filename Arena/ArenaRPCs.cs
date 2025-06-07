@@ -7,6 +7,20 @@ namespace RainMeadow
     public static class ArenaRPCs
     {
 
+        [RPCMethod]
+        public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb)) { 
+                
+                    tb.martyrsSpawn = martyrs;
+                    tb.outlawsSpawn = outlaws;
+                    tb.dragonslayersSpawn = dragonslayers;
+                    tb.chieftainsSpawn = chieftains;
+                }
+            }
+        }
 
         [RPCMethod]
         public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
@@ -51,7 +65,7 @@ namespace RainMeadow
                 lobby.StartGame();
             }
         }
-
+        [RPCMethod]
         public static void Arena_EndSessionEarly()
         {
             if (RainMeadow.isArenaMode(out var arena))

@@ -676,6 +676,7 @@ namespace RainMeadow
                         {
                             onlinePlayer.InvokeOnceRPC(ArenaRPCs.Arena_EndSessionEarly);
                         }
+
                     }
                     self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
 
@@ -1193,75 +1194,8 @@ namespace RainMeadow
 
                 if (self.gameTypeSetup.gameType == ArenaSetup.GameTypeID.Competitive)
                 {
-                    if (FFA.isFFA(arena, out _))
-                    {
-                        RainMeadow.Debug("======COMP");
-
-                        if (list.Count == 1)
-                        {
-                            list[0].winner = list[0].alive;
-                        }
-                        else if (list.Count > 1)
-                        {
-                            if (list[0].alive && !list[1].alive)
-                            {
-                                list[0].winner = true;
-                            }
-                            else if (list[0].score > list[1].score)
-                            {
-                                list[0].winner = true;
-                            }
-                        }
-                    }
-
-
-                    else if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
-                    {
-                        RainMeadow.Debug("======TEAM");
-                        if (list.Count == 1)
-                        {
-                            list[0].winner = list[0].alive;
-                        }
-                        else if (list.Count > 1)
-                        {
-                            bool gotMyTeam = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var myTeam);
-                            if (gotMyTeam)
-                            {
-                                var firstAlivePlayer = list.FirstOrDefault(x => x.alive);
-                                if (firstAlivePlayer != null)
-                                {
-                                    OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, firstAlivePlayer.playerNumber);
-                                    if (onlineP != null)
-                                    {
-                                        bool getWinningTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var winners);
-                                        if (getWinningTeam)
-                                        {
-                                            // This should be wrapped in a host check, but we don't have enough time before the ArenaResultBox comes asking for showWinnerStar.
-                                            // We could send an RPC with the owner check, but that seems worse than this.
-                                            tb.winningTeam = winners.team;
-
-                                        }
-                                    }
-                                }
-
-                                foreach (var player in list)
-                                {
-                                    OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                                    if (onlinePlayer != null)
-                                    {
-                                        if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaTeamClientSettings>(out var deadPlayerTeam))
-                                        {
-                                            player.winner = deadPlayerTeam.team == tb.winningTeam;
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
+                    arena.onlineArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
                 }
-                // More gamemodes here?
-
 
                 for (int num2 = 0; num2 < list.Count; num2++)
                 {

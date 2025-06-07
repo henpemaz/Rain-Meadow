@@ -27,6 +27,8 @@ namespace RainMeadow
             public int dragonslayers;
             [OnlineField]
             public int chieftains;
+            [OnlineField]
+            public int roundSpawnPointCycler;
             public State() { }
             public State(TeamBattleLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -35,10 +37,11 @@ namespace RainMeadow
                 if (isTb && teamBattleMode != null)
                 {
                     winningTeam = teamBattleMode.winningTeam;
-                    martyrs = teamBattleMode.martyrs;
-                    outlaws = teamBattleMode.outlaws;
-                    dragonslayers = teamBattleMode.dragonslayers;
-                    chieftains = teamBattleMode.chieftains;
+                    martyrs = teamBattleMode.martyrsSpawn;
+                    outlaws = teamBattleMode.outlawsSpawn;
+                    dragonslayers = teamBattleMode.dragonslayersSpawn;
+                    chieftains = teamBattleMode.chieftainsSpawn;
+                    roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
                 }
             }
 
@@ -50,10 +53,11 @@ namespace RainMeadow
                 if (cachedTb && teamBattleMode != null)
                 {
                     teamBattleMode.winningTeam = winningTeam;
-                    teamBattleMode.martyrs = martyrs;
-                    teamBattleMode.outlaws = outlaws;
-                    teamBattleMode.dragonslayers = dragonslayers;
-                    teamBattleMode.outlaws = outlaws;
+                    teamBattleMode.martyrsSpawn = martyrs;
+                    teamBattleMode.outlawsSpawn = outlaws;
+                    teamBattleMode.dragonslayersSpawn = dragonslayers;
+                    teamBattleMode.outlawsSpawn = outlaws;
+                    teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
                 }
 
 

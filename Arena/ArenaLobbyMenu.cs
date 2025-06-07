@@ -590,7 +590,7 @@ namespace RainMeadow
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)t.team], 0.6f);
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)t.team], 0.5f);
                 }
             }
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();

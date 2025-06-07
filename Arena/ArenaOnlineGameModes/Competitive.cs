@@ -59,11 +59,14 @@ namespace RainMeadow
         public override string TimerText()
         {
             var client_settings = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>();
-            
+
             SlugcatStats.Name playingAs;
-            if (client_settings.playingAs != RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat) {
+            if (client_settings.playingAs != RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
+            {
                 playingAs = client_settings.playingAs;
-            } else {
+            }
+            else
+            {
                 playingAs = client_settings.randomPlayingAs ?? SlugcatStats.Name.White;
             }
 
@@ -71,7 +74,7 @@ namespace RainMeadow
             {
                 return Utils.Translate($"Prepare for combat,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
             }
-            
+
             return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName(playingAs));
         }
         public override int SetTimer(ArenaOnlineGameMode arena)
@@ -105,9 +108,24 @@ namespace RainMeadow
 
         }
 
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
         {
-            base.ArenaSessionCtor(arena, orig, self, game);
+            if (list.Count == 1)
+            {
+                list[0].winner = list[0].alive;
+            }
+            else if (list.Count > 1)
+            {
+                if (list[0].alive && !list[1].alive)
+                {
+                    list[0].winner = true;
+                }
+                else if (list[0].score > list[1].score)
+                {
+                    list[0].winner = true;
+                }
+            }
         }
+
     }
 }
