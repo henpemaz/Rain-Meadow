@@ -318,13 +318,13 @@ namespace RainMeadow
             }
         }
 
-        public static bool CheckSameTeam(Player them)
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)
         {
-            if (them != null)
+            if (A is not null && B is not null)
             {
-                if (OnlineManager.lobby.clientSettings[them.abstractPhysicalObject.GetOnlineObject().owner].TryGetData<ArenaTeamClientSettings>(out var tb1))
+                if (OnlineManager.lobby.clientSettings[A].TryGetData<ArenaTeamClientSettings>(out var tb1))
                 {
-                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
                     {
                         if (tb1.team == tb2.team)
                         {
@@ -332,8 +332,9 @@ namespace RainMeadow
                         }
                         return tb1.team == tb2.team;
                     }
-                }
+                }         
             }
+
             RainMeadow.Debug("Different teams or Player is null");
             return false;
         }
