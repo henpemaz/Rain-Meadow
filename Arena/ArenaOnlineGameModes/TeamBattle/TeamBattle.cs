@@ -69,7 +69,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             { TeamMappings.Martyrs, "SaintA" },
             { TeamMappings.Outlaws, "OutlawA" },
-            { TeamMappings.Dragonslayers, "Kill_Yellow_Lizard" },
+            { TeamMappings.Dragonslayers, "DragonSlayerA" },
             { TeamMappings.Chieftains, "ChieftainA" }
     };
 
