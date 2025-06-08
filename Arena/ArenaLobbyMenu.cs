@@ -66,6 +66,7 @@ namespace RainMeadow
             if (arena.currentGameMode == "" || arena.currentGameMode is null)
             {
                 arena.currentGameMode = FFA.FFAMode.value;
+                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
             }
 
         }

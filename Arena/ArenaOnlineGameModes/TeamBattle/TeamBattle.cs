@@ -1,9 +1,21 @@
-﻿using Steamworks;
+﻿using Menu;
+using Menu.Remix;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using ArenaMode = RainMeadow.ArenaOnlineGameMode;
+using System.Collections.Generic;
+using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using UnityEngine;
+using System.Linq;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Components;
+
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
 
@@ -18,7 +30,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
 
-        public override ArenaSetup.GameTypeID GameModeSetups
+        public override ArenaSetup.GameTypeID GetGameModeId
         {
             get
             {
@@ -489,6 +501,55 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return TeamMappingsDictionary[(TeamMappings)tb2.team];
             }
             return "";
+        }
+        public override void ArenaExternalGameModeSettingsInterface_ctor(OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        {
+            var arenaGameModeLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team:"), new Vector2(50, 380f), new Vector2(0, 20), false);
+            var arenaTeamComboBox = new OpComboBox2(new Configurable<string>(""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
+            arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
+            {
+                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
+                {
+                    if (System.Enum.TryParse<TeamBattleMode.TeamMappings>(value, out var parsedTeam))
+                    {
+                        tb.team = (int)parsedTeam;
+                        RainMeadow.Debug(tb.team);
+                    }
+                }
+            };
+            UIelementWrapper externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
+
+            extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel);
+        }
+
+        public override void ArenaPlayerBox_GrafUpdate(ArenaMode arena, float timestacker, bool showRainbow, Color rainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        {
+
+            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+            {
+                if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
+                {
+
+                    if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
+                    {
+                        if (team.team == tb.winningTeam && tb.winningTeam != -1)
+                        {
+                            slugcatButton.secondaryColor = rainbow;
+                        }
+                        else
+                        {
+                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)team.team];
+                        }
+                    }
+
+                }
+            }
+
+        }
+
+        public override string AddGameSettingsTab()
+        {
+            return "Team Settings";
         }
     }
 }

@@ -4,6 +4,10 @@ using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using UnityEngine;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using System;
+
 
 namespace RainMeadow.UI.Pages;
 
@@ -17,6 +21,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
     public Dialog? slugcatDialog;
+    public TabContainer.Tab? externalTabContainer;
+
+
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
 
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
@@ -30,9 +37,11 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f), false));
 
 
+
         arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, TeamBattleMode.TeamMappingsDictionary[0], [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
+
 
         if (ModManager.MSC)
         {
@@ -127,6 +136,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         base.Update();
         if (!RainMeadow.isArenaMode(out _)) return;
         ChatLogManager.UpdatePlayerColors();
+
+        if (Arena.onlineArenaGameMode != null && Arena.currentGameMode == Arena.onlineArenaGameMode.GetGameModeId.value && Arena.onlineArenaGameMode.AddGameSettingsTab() != "" && externalTabContainer == null)
+        {
+            externalTabContainer = tabContainer.AddTab(Arena.onlineArenaGameMode.AddGameSettingsTab());
+
+            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(menu, externalTabContainer, new Vector2(0f, 0f), [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
+
+            externalTabContainer.AddObjects(externalInterface);
+        }
+
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)

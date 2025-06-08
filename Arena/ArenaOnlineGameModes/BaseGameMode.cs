@@ -1,14 +1,27 @@
-﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+﻿using IL.Menu;
+using Menu.Remix;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Components;
+using Steamworks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
-        public abstract ArenaSetup.GameTypeID GameModeSetups { get; }
+        public virtual ArenaSetup.GameTypeID GetGameModeId
+        {
+            get
+            {
+                return FFA.FFAMode;
+            }
+            set { GetGameModeId = value; }
+            
+        }
 
         public abstract bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
@@ -328,13 +341,27 @@ namespace RainMeadow
             arena.hasPermissionToRejoin = false;
 
 
-
-
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
         {
 
+        }
+
+        public virtual void ArenaExternalGameModeSettingsInterface_ctor(OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, Menu.MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        {
+
+        }
+
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, float timestacker, bool showRainbow, Color rainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        {
+            slugcatButton.secondaryColor = showRainbow ? rainbow : null;
+
+        }
+
+        public virtual string AddGameSettingsTab()
+        {
+            return "";
         }
 
     }
