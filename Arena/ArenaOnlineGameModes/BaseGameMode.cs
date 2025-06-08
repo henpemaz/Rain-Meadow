@@ -348,6 +348,16 @@ namespace RainMeadow
 
         }
 
+        public virtual bool PlayerSessionResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            return orig(self, A, B);
+        }
+
+        public virtual bool PlayerSittingResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            return orig(self, A, B);
+        }
+
         public virtual void ArenaExternalGameModeSettingsInterface_ctor(OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, Menu.MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
         {
 
@@ -356,7 +366,6 @@ namespace RainMeadow
         public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, float timestacker, bool showRainbow, Color rainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
         {
             slugcatButton.secondaryColor = showRainbow ? rainbow : null;
-
         }
 
         public virtual string AddGameSettingsTab()

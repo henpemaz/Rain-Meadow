@@ -117,7 +117,38 @@ namespace RainMeadow
             IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
             On.SlugcatStats.getSlugcatName += SlugcatStats_getSlugcatName;
             IL.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
+            On.ArenaSitting.PlayerSessionResultSort += ArenaSitting_PlayerSessionResultSort;
+            On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
 
+
+        }
+
+        private bool ArenaSitting_PlayerSittingResultSort(On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            if (isArenaMode(out var arena))
+            {
+
+                return arena.onlineArenaGameMode.PlayerSittingResultSort(arena, orig, self, A, B);
+
+            }
+            else
+            {
+                return orig(self, A, B);
+            }
+        }
+
+        private bool ArenaSitting_PlayerSessionResultSort(On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            if (isArenaMode(out var arena))
+            {
+
+                return arena.onlineArenaGameMode.PlayerSessionResultSort(arena, orig, self, A, B);
+
+            }
+            else
+            {
+                return orig(self, A, B);
+            }
         }
 
         private void ArenaOverlay_Update(On.Menu.ArenaOverlay.orig_Update orig, Menu.ArenaOverlay self)

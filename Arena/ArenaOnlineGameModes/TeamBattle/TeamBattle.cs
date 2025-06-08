@@ -547,6 +547,88 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
+        public override bool PlayerSittingResultSort(ArenaMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            if (isTeamBattleMode(arena, out var tb))
+            {
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
+
+                if (playerA != null && playerB != null)
+                {
+                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var team);
+                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var team2);
+
+                    if (team != null && team2 != null)
+                    {
+                        if (team.team != team2.team)
+                        {
+                            return team.team == tb.winningTeam;
+                        }
+                        if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
+                        {
+                            if (A.totScore != B.totScore)
+                            {
+                                return A.totScore > B.totScore;
+                            }
+                            else
+                            {
+                                return playerA.isMe;
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return orig(self, A, B);
+
+        }
+
+        public override bool PlayerSessionResultSort(ArenaMode arena, On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+
+            if (isTeamBattleMode(arena, out var tb))
+            {
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
+
+                if (playerA != null && playerB != null)
+                {
+                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var team);
+                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var team2);
+
+                    if (team != null && team2 != null)
+                    {
+                        if (team.team != team2.team)
+                        {
+                            return team.team == tb.winningTeam;
+                        }
+                        if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
+                        {
+                            if (A.alive == B.alive)
+                            {
+                                return A.deaths < B.deaths;
+                            }
+                            else
+                            {
+                                return A.alive;
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return orig(self, A, B);
+
+
+        }
+
         public override string AddGameSettingsTab()
         {
             return "Team Settings";
