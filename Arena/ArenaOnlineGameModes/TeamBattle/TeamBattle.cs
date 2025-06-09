@@ -59,6 +59,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int dragonslayersSpawn = 0;
         public int chieftainsSpawn = 0;
         public int roundSpawnPointCycler = 0;
+
+        public HashSet<int> aliveTeams = new HashSet<int>();
         public enum TeamMappings
         {
             Martyrs,
@@ -90,6 +92,23 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { TeamMappings.Chieftains, Color.blue }
     };
 
+        public override void ResetOnSessionEnd()
+        {
+            winningTeam = -1;
+            martyrsSpawn = 0;
+            outlawsSpawn = 0;
+            dragonslayersSpawn = 0;
+            chieftainsSpawn = 0;
+            roundSpawnPointCycler = 0;
+            aliveTeams.Clear();
+        }
+
+        public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
+        {
+            base.ArenaSessionNextLevel(arena, orig, self, process);
+            this.ResetOnSessionEnd();
+        }
+
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             int playersStillStanding = self.gameSession.Players?.Count(player =>
@@ -106,6 +125,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return true;
             }
 
+            // TODO: Check players aliev per team
             if (playersStillStanding > 1 && arena.setupTime == 0)
             {
                 if (self.gameSession.Players != null)
@@ -114,28 +134,29 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     {
                         if (acPlayer != null)
                         {
-                            if (acPlayer.state.alive)
+                            OnlinePhysicalObject? onlineP = acPlayer.GetOnlineObject();
+                            if (onlineP != null)
                             {
-                                var onlineAPO = acPlayer?.GetOnlineObject();
-                                if (onlineAPO != null && !onlineAPO.owner.isMe)
+                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP.owner].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                if (gotPlayerTeam)
                                 {
-                                    var player = onlineAPO.owner;
-                                    if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2) && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb1))
+                                    if (acPlayer.state.alive)
                                     {
-                                        if (tb1.team == tb2.team)
-                                        {
-                                            return true;
-                                        }
-                                        else
-                                        {
-                                            continue;
-                                        }
+                                        aliveTeams.Add(playerTeam.team);
                                     }
-
+                                    else
+                                    {
+                                        aliveTeams.Remove(playerTeam.team);
+                                    }
                                 }
                             }
                         }
                     }
+                }
+
+                if (aliveTeams.Count == 1)
+                {
+                    return true;
                 }
             }
 
@@ -143,6 +164,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             return orig(self);
         }
+
 
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
         {
@@ -212,46 +234,51 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
                 else if (list.Count > 1)
                 {
-                    bool gotMyTeam = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var myTeam);
-                    if (gotMyTeam)
+                    HashSet<int> teamsRemaining = new HashSet<int>();
+
+                    foreach (var player in list)
                     {
-                        var firstAlivePlayer = list.FirstOrDefault(x => x.alive);
-                        if (firstAlivePlayer != null)
+                        if (player.alive)
                         {
-                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, firstAlivePlayer.playerNumber);
+                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                             if (onlineP != null)
                             {
-                                bool getWinningTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var winners);
-                                if (getWinningTeam)
+                                bool getPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                if (getPlayerTeam)
                                 {
-                                    // This should be wrapped in a host check, but we don't have enough time before the ArenaResultBox comes asking for showWinnerStar.
-                                    // We could send an RPC with the owner check, but that seems worse than this.
-                                    tb.winningTeam = winners.team;
-
+                                    teamsRemaining.Add(playerTeam.team);
                                 }
-                            }
-                        }
 
-                        foreach (var player in list)
-                        {
-                            OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                            if (onlinePlayer != null)
-                            {
-                                if (OnlineManager.lobby.clientSettings[onlinePlayer].TryGetData<ArenaTeamClientSettings>(out var playerTeam))
-                                {
-                                    player.winner = playerTeam.team == tb.winningTeam;
-                                }
                             }
                         }
                     }
 
+                    foreach (var player in list)
+                    {
+                        if (teamsRemaining.Count == 1)
+                        {
+                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                            if (onlineP != null)
+                            {
+                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                if (gotPlayerTeam)
+                                {
+                                    player.winner = teamsRemaining.TryGetValue(playerTeam.team, out var winningTeam);
+                                    tb.winningTeam = winningTeam;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            player.winner = false; // everyone's a loser. Kill your enemies!
+                        }
+                    }
                 }
+            }
 
-                if (OnlineManager.lobby.isOwner)
-                {
-                    tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
-                }
-
+            if (OnlineManager.lobby.isOwner)
+            {
+                tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
             }
         }
 
@@ -547,6 +574,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
+
+
         public override bool PlayerSittingResultSort(ArenaMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
         {
             if (isTeamBattleMode(arena, out var tb))
@@ -565,17 +594,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         {
                             return team.team == tb.winningTeam;
                         }
-                        if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
-                        {
-                            if (A.totScore != B.totScore)
-                            {
-                                return A.totScore > B.totScore;
-                            }
-                            else
-                            {
-                                return playerA.isMe;
-                            }
-                        }
+                        //if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
+                        //{
+                        //    if (A.totScore != B.totScore)
+                        //    {
+                        //        return A.totScore > B.totScore;
+                        //    }
+                        //    else
+                        //    {
+                        //        return playerA.isMe;
+                        //    }
+                        //}
 
                     }
 
@@ -602,21 +631,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                     if (team != null && team2 != null)
                     {
+                        // TODO: Doesn't show winning team on top
                         if (team.team != team2.team)
                         {
                             return team.team == tb.winningTeam;
                         }
-                        if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
-                        {
-                            if (A.alive == B.alive)
-                            {
-                                return A.deaths < B.deaths;
-                            }
-                            else
-                            {
-                                return A.alive;
-                            }
-                        }
+                        //if (team.team == tb.winningTeam && team2.team == tb.winningTeam)
+                        //{
+                        //    if (A.alive != B.alive)
+                        //    {
+                        //        return A.alive;
+                        //    }
+
+                        //}
 
                     }
 

@@ -586,14 +586,6 @@ namespace RainMeadow
             arena.InitializeSlugcat();
             InitializeNewOnlineSitting();
             ArenaHelpers.SetupOnlineArenaStting(arena, this.manager);
-
-            if (TeamBattleMode.isTeamBattleMode(arena, out _))
-            {
-                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
-                {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)t.team], 0.5f);
-                }
-            }
             this.manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             // temp
             UserInput.SetUserCount(OnlineManager.players.Count);

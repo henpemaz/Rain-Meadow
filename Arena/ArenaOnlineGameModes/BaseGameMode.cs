@@ -23,6 +23,11 @@ namespace RainMeadow
             
         }
 
+        public virtual void ResetOnSessionEnd()
+        {
+
+        }
+
         public abstract bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
 
