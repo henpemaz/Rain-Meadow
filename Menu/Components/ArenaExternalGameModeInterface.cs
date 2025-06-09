@@ -38,9 +38,6 @@ namespace RainMeadow.UI.Components
         {
             if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-            bool isNotOwner = !(OnlineManager.lobby?.isOwner == true);
-
-
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
                 arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_Update(arena, this, menu, owner, tabWrapper, pos);
