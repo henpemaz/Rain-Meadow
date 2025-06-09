@@ -13,7 +13,7 @@ namespace RainMeadow.UI.Components
     {
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
-        public OnlineArenaExternalGameModeSettingsInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaExternalGameModeSettingsInterface(ArenaOnlineGameMode arena, Menu.Menu menu, MenuObject owner, Vector2 pos, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -21,11 +21,8 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
 
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_ctor(this, menu, owner, tabWrapper, pos);
-                
-            }
+            arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_ctor(arena, this, menu, owner, tabWrapper, pos);
+
         }
         public override void RemoveSprites()
         {
@@ -46,12 +43,7 @@ namespace RainMeadow.UI.Components
 
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-
-                if (arenaTeamComboBox != null)
-                {
-                    if (arenaTeamComboBox.greyedOut = arena.currentGameMode != TeamBattleMode.TeamBattle.value)
-                        if (!arenaTeamComboBox.held && !teamComboBoxLastHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
-                }
+                arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_Update(arena, this, menu, owner, tabWrapper, pos);
 
             }
         }
@@ -81,8 +73,9 @@ namespace RainMeadow.UI.Components
 
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
-        public OpComboBox arenaTeamComboBox;
+
         public UIelementWrapper externalModeWrapper;
         public MenuTabWrapper tabWrapper;
+
     }
 }

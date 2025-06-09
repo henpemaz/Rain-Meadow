@@ -141,7 +141,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             externalTabContainer = tabContainer.AddTab(Arena.onlineArenaGameMode.AddGameSettingsTab());
 
-            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(menu, externalTabContainer, new Vector2(0f, 0f), [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
+            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. TeamBattleMode.teamMappingsList.Select(v => new ListItem(v.ToString()))]);
 
             externalTabContainer.AddObjects(externalInterface);
         }

@@ -28,6 +28,9 @@ namespace RainMeadow
             [OnlineField]
             public int chieftains;
             [OnlineField]
+            public string martyrsName;
+
+            [OnlineField]
             public int roundSpawnPointCycler;
             public State() { }
             public State(TeamBattleLobbyData arenaLobbyData, OnlineResource onlineResource)
@@ -42,6 +45,7 @@ namespace RainMeadow
                     dragonslayers = teamBattleMode.dragonslayersSpawn;
                     chieftains = teamBattleMode.chieftainsSpawn;
                     roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
+                    martyrsName = teamBattleMode.martyrsTeamName;
                 }
             }
 
@@ -58,6 +62,7 @@ namespace RainMeadow
                     teamBattleMode.dragonslayersSpawn = dragonslayers;
                     teamBattleMode.outlawsSpawn = outlaws;
                     teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
+                    teamBattleMode.martyrsTeamName = martyrsName;
                 }
 
 
