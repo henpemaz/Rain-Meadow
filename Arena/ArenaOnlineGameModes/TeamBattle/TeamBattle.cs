@@ -576,6 +576,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     RainMeadow.rainMeadowOptions.MartyrTeamName.Value = value;
                     var alListItems = arenaTeamComboBox.GetItemList();
+                    // TODO: Don't update all of them
                     for (int i = 0; i < alListItems.Length; i++)
                     {
                         alListItems[i].name = value;
