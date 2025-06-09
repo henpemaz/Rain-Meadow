@@ -104,10 +104,46 @@ public partial class RainMeadow
         On.Player.UpdateMSC += Player_UpdateMSC;
         IL.Player.SlugOnBack.GraphicsModuleUpdated += SlugOnBack_GraphicsModuleUpdated;
 
+        new Hook(typeof(Player).GetProperty(nameof(Player.CanPutSlugToBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+        new Hook(typeof(Player).GetProperty(nameof(Player.CanPutSpearToBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+        new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSlugFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+        new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+        new Hook(typeof(Player).GetProperty(nameof(Player.CanRetrieveSpearFromBack)).GetGetMethod(), DisablePutOnBackWithSpearMasterAbility);
+
         
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
+    }
+    public bool BottomPlayerUsingSpearmasterAbility(Player spearmaster, out Player user)
+    {
+        user = null!;
+        if (OnlineManager.lobby == null) return false;
+        if (!ModManager.MSC) return false; 
+        if (spearmaster.SlugCatClass != MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear) return false; 
+
+        if (GetBottomPlayer(spearmaster, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear, out var bottom))
+        {
+            if (bottom.input[0].pckp && (bottom.input[0].y > 0))
+            {
+                user = bottom;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    public bool DisablePutOnBackWithSpearMasterAbility(Func<Player, bool> orig, Player self)
+    {
+        bool orig_result = orig(self);
+        if (OnlineManager.lobby != null) return orig_result;
+        if (BottomPlayerUsingSpearmasterAbility(self, out _))
+        {
+            return false;
+        }
+
+        return orig_result;
     }
 
     // Used to override normal ripple level
@@ -326,7 +362,12 @@ public partial class RainMeadow
             {
                 if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self.owner, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player))
                 {
-                    if (saint_player!.tongue.Attached)
+                    Player bottom;
+                    if (!GetBottomPlayer(self.owner, null, out bottom))
+                    {
+                        bottom = self.owner;
+                    }
+                    if (saint_player!.tongue.Attached && self.owner.onBack == null && bottom.IsLocal())
                     {
                         Vector2 moveTo = Vector2.Lerp(self.owner.bodyChunks[0].pos, self.slugcat.bodyChunks[0].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
                         Vector2 moveTo2 = Vector2.Lerp(self.owner.bodyChunks[1].pos, self.slugcat.bodyChunks[1].pos - Custom.DirVec(self.owner.bodyChunks[1].pos, self.owner.bodyChunks[0].pos) * 14f, 0.75f);
@@ -485,7 +526,7 @@ public partial class RainMeadow
         return onback != null;
     }
 
-    public static bool GetBottomPlayer(Player player, out Player? bottom) {
+    public static bool GetBottomPlayer(Player player, SlugcatStats.Name? Ignoreclass, out Player bottom) {
         bottom = null;
         int i = 25;
         var tempBottom = player;
@@ -494,7 +535,7 @@ public partial class RainMeadow
             if (tempBottom.onBack is null) break;
             tempBottom = tempBottom.onBack;
             // somebody is already acting as the backpack mechanic guy.
-            if ((tempBottom.SlugCatClass == player.SlugCatClass) && (tempBottom.onBack != null))
+            if ((tempBottom.SlugCatClass == Ignoreclass) && (tempBottom.onBack != null))
             {
                 return false;
             }
@@ -898,13 +939,11 @@ public partial class RainMeadow
                 ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
             }
 
-            if (ModManager.MSC && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear)
+            if (ModManager.MSC)
             {
-                if (GetBottomPlayer(self, out var bottom))
+                if (BottomPlayerUsingSpearmasterAbility(self, out _))
                 {
-                    if (self.grasps[0] is null && self.grasps[1] is null) {
-                        if (bottom.input[0].pckp && (bottom.input[0].y > 0)) self.input[0].pckp = true;
-                    }
+                    self.input[0].pckp = true;
                 }
             } 
 
@@ -1123,12 +1162,9 @@ public partial class RainMeadow
                 );
             c.Emit(OpCodes.Ldarg_0);
             c.EmitDelegate((Player self) => {
-                if (GetBottomPlayer(self, out var bottom))
+                if (BottomPlayerUsingSpearmasterAbility(self, out var bottom))
                 {
-                    if (bottom.input[0].pckp && (bottom.input[0].y > 0))
-                    {
-                        return bottom.IsLocal();
-                    }
+                    return bottom.IsLocal();
                 }
 
 
@@ -1202,12 +1238,9 @@ public partial class RainMeadow
                 
                 if (OnlineManager.lobby != null)
                 {
-                    if (GetBottomPlayer(self, out var bottom))
+                    if (BottomPlayerUsingSpearmasterAbility(self, out var bottom))
                     {
-                        if (bottom.input[0].pckp && (bottom.input[0].y > 0))
-                        {
-                            return bottom;
-                        }
+                        return bottom;
                     }
                 }
                 return self;
@@ -1721,6 +1754,31 @@ public partial class RainMeadow
         {
             if (otherObject is Player) return false;
         }
+
+
+        // check if it's somebody from below
+        int i = 25;
+        for (Player? bottom = self.onBack; bottom != null; bottom = bottom.onBack)
+        {
+            if (i-- <= 0) break;
+            if (bottom == otherObject)
+            {
+                return false;
+            }
+        }
+
+        // check if somebody from above aswell.
+        i = 25;
+        for (Player? top = self.slugOnBack?.slugcat; top != null; top = self.slugOnBack?.slugcat)
+        {
+            if (i-- <= 0) break;
+            if (top == otherObject)
+            {
+                return false;
+            }
+        }
+
+
         return orig(self, otherObject);
     }
 
