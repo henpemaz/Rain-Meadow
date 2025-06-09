@@ -63,6 +63,7 @@ namespace RainMeadow
                     teamBattleMode.outlawsSpawn = outlaws;
                     teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
                     teamBattleMode.martyrsTeamName = martyrsName;
+                    RainMeadow.Debug(teamBattleMode.martyrsTeamName);
                 }
 
 

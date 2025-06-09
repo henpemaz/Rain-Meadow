@@ -61,7 +61,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int chieftainsSpawn = 0;
         public int roundSpawnPointCycler = 0;
 
-        public string martyrsTeamName = "Martyrs";
+        public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
+        public UIelementWrapper externalModeWrapper;
+
         public string outlawTeamName = "Outlaws";
         public string dragonslayers = "Dragonslayers";
         public string chieftainsName = "Chieftains";
@@ -546,16 +548,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (isTeamBattleMode(arena, out var tb))
             {
-                teamNameList = new List<string>
-                {
-                    martyrsTeamName,
-                    outlawTeamName,
-                    dragonslayers,
-                    chieftainsName
-                };
+
+                ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
+
+
+                List<ListItem> teamNameListItems = new List<ListItem>();
+                teamNameListItems.Add(martyrListItem);
 
                 var arenaGameModeLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team:"), new Vector2(50, 380f), new Vector2(0, 20), false);
-                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, [.. teamNameList.Select(v => new ListItem(v.ToString()))]);
+                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(RainMeadow.rainMeadowOptions.MartyrTeamName.Value), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
                 arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
                 {
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
@@ -568,19 +569,36 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     }
                 };
 
+                var martyrTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 1 Name:"), new Vector2(arenaGameModeLabel.pos.x, arenaTeamComboBox.pos.y - 45), new Vector2(0, 20), false);
 
+                martyrsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.MartyrTeamName.Value), new(martyrTeamLabel.pos.x + 50, martyrTeamLabel.pos.y), 150);
+                martyrsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
+                {
+                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = value;
+                    var alListItems = arenaTeamComboBox.GetItemList();
+                    for (int i = 0; i < alListItems.Length; i++)
+                    {
+                        alListItems[i].name = value;
+                        alListItems[i].desc = value;
+                        alListItems[i].displayName = value;
+                    }
+                    arenaTeamComboBox.value = value;
+                    tb.martyrsTeamName = value;
 
-                martyrsTeamNameUpdate = new(new Configurable<string>(martyrsTeamName), new(arenaTeamComboBox.pos.x + 50, arenaTeamComboBox.pos.y - 15), 150);
+                };
+
 
                 //OpTextBox outlawsTeamName
                 //OpTextBox dragonslayersTeamName
                 //OpTextBox chieftainsTeamName
 
-                UIelementWrapper externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
+                externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
                 UIelementWrapper martyrWrapper = new UIelementWrapper(tabWrapper, martyrsTeamNameUpdate);
 
 
-                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper);
+
+
+                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel);
             }
         }
 
@@ -591,13 +609,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 if (arenaTeamComboBox.greyedOut = arena.currentGameMode != TeamBattleMode.TeamBattle.value)
                     if (!arenaTeamComboBox.held && !teamComboBoxLastHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
             }
-            if (martyrsTeamNameUpdate != null)
-            {
-                martyrsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
-                {
-                    martyrsTeamName = value;
-                };
-            }
+
         }
 
 

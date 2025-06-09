@@ -45,6 +45,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
     public readonly Configurable<string> PrivateLobbyPassword;
 
+    public readonly Configurable<string> MartyrTeamName;
+
+
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
     public enum IntroRoll
@@ -104,6 +107,8 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
+
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
     }
 
     public override void Initialize()
