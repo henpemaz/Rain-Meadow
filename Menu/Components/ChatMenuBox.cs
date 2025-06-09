@@ -16,13 +16,19 @@ namespace RainMeadow.UI.Components
         {
             roundedRect = new(menu, this, Vector2.zero, this.size, true);
             chatTypingBox = new(menu, this, new(10, 10), new(this.size.x - 30, 30));
-            float posYOffset = chatTypingBox.size.y + 10;
-            messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), true, new(-35, -posYOffset), posYOffset - 25)
+            chatTypingBox.OnTextSubmit += () =>
             {
+                if (messageScroller != null) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
+            };
+            float posYOffset = chatTypingBox.size.y + 10;
+            messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), true, new(-5, -posYOffset), posYOffset - 25)
+            {
+                greyOutWhenNoScroll = true,
                 buttonHeight = 20,
                 buttonSpacing = 3,
                 sliderDefaultIsDown = true,
             };
+            menu.MutualHorizontalButtonBind(chatTypingBox, messageScroller.scrollSlider);
             subObjects.AddRange([roundedRect, chatTypingBox, messageScroller]);
         }
         public AlignedMenuLabel GetMessageLabel(string? user, string stg, bool isSystemMessage, bool withUser, Vector2 pos, Vector2 size)

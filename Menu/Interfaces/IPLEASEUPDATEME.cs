@@ -8,7 +8,9 @@ namespace RainMeadow.UI.Interfaces
 {
     public interface IPLEASEUPDATEME
     {
-        public abstract void HiddenUpdate();
-        public abstract void HiddenGrafUpdate(float timeStacker);
+        /// <summary>
+        /// Basically makes you be able to manage ur updates with Tabs -> (tabs will update the class). 
+        /// </summary>
+        public bool IsHidden { get; set; }
     }
 }

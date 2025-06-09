@@ -58,6 +58,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
     public int MaximumScrollPos => Math.Max(0, TotalItems - MaxVisibleElements);
     public float UpperBound => size.y;
     public float LowerBound => 0;
+    public bool IsHidden { get; set; }
     public virtual int ScrollPos { get; set; }
     public VerticalScrollSelector(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 elementSize, int amountOfVisibleElements, bool scrollButtons = true, float elementSpacing = 10f, float scrollButtonWidth = 24f)
         : base(menu, owner, pos, new Vector2(elementSize.x, amountOfVisibleElements * (elementSize.y + elementSpacing) + elementSpacing))
@@ -159,19 +160,7 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
     public override void Update()
     {
         base.Update();
-        if (MouseOver && menu.manager.menuesMouseMode && menu.mouseScrollWheelMovement != 0)
-            Scroll(menu.mouseScrollWheelMovement);
-        HiddenUpdate();
-    }
-
-    public override void GrafUpdate(float timeStacker)
-    {
-        base.GrafUpdate(timeStacker);
-        HiddenGrafUpdate(timeStacker);
-    }
-    public virtual float GetCurrentScrollPos() => ScrollPos;
-    public virtual void HiddenUpdate()
-    {
+        if (!IsHidden && MouseOver && menu.manager.menuesMouseMode && menu.mouseScrollWheelMovement != 0) Scroll(menu.mouseScrollWheelMovement);
         for (int i = 0; i < scrollElements.Count; i++)
         {
             scrollElements[i].Pos = new(scrollElements[i].Pos.x, IdealScrollElementYPos(i));
@@ -204,8 +193,10 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
                 sliderValue = Custom.LerpAndTick(sliderValue, Mathf.InverseLerp(0f, sliderValueCap, floatScrollPos), 0.02f, 0.05f);
         }
     }
-    public virtual void HiddenGrafUpdate(float timeStacker)
+
+    public override void GrafUpdate(float timeStacker)
     {
+        base.GrafUpdate(timeStacker);
         for (int i = 0; i < rightLines.Length; i++)
         {
             float num = (i != 0) ? (sideButtons[i - 1].DrawY(timeStacker) + sideButtons[i - 1].DrawSize(timeStacker).y + 0.01f) : (DrawY(timeStacker) + 9.01f);
@@ -216,4 +207,5 @@ public class VerticalScrollSelector : RectangularMenuObject, Slider.ISliderOwner
             rightLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
         }
     }
+    public virtual float GetCurrentScrollPos() => ScrollPos;
 }

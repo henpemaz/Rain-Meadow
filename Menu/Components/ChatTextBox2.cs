@@ -14,13 +14,12 @@ using RWCustom;
 
 namespace RainMeadow.UI.Components
 {
-    //supports multi view, cuz previous one does not and its messy af
+    //supports multi view, meant more for menu use where there are multiple buttons
     public class ChatTextBox2 : ButtonTemplate, ICanBeTyped
     {
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
         public bool SelectionActive => selectionStartPos != -1 ;
-        public bool IgnoreSelect => focused && !menu.manager.menuesMouseMode;
-        public Action OnTextSubmit => onTextSubmit ?? HandleTextSubmit;
+        public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
@@ -61,13 +60,20 @@ namespace RainMeadow.UI.Components
         public override void Clicked()
         {
             base.Clicked();
+            if (dontGetPressed)
+            {
+                dontGetPressed = false;
+                if (!menu.manager.menuesMouseMode) return;
+            }
             if (IgnoreSelect) return;
-            if (buttonBehav.clicked) focused = !focused;
+            if (!buttonBehav.clicked) return;
+            focused = !focused;
         }
         public override void Update()
         {
             base.Update();
-            buttonBehav.Update();
+            if (dontGetPressed) dontGetPressed = dontGetPressed && menu.selectedObject == this;
+             buttonBehav.Update();
             if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) focused = false;
             if (menu.allowSelectMove) menu.allowSelectMove = !focused;
             UpdateSelection();
@@ -75,6 +81,8 @@ namespace RainMeadow.UI.Components
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
             cursorIsInMiddle = cursorPos < currentMessage.Length;
             maxVisibleLength = VisibleTextLimit;
+            lastMenuMouseMode = menu.manager.menuesMouseMode;
+
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -164,8 +172,7 @@ namespace RainMeadow.UI.Components
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
-                    focused = false;
-                    OnTextSubmit();
+                    HandleTextSubmit();
                 }
             }
             else  //any other character, lets type
@@ -320,11 +327,13 @@ namespace RainMeadow.UI.Components
         }
         public void HandleTextSubmit()
         {
-            ChatTextBox.blockInput = false;
             focused = false;
             currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
+            ChatTextBox.blockInput = false;
+            dontGetPressed = !menu.manager.menuesMouseMode;
+            OnTextSubmit?.Invoke();
         }
         public void DelayedUnload(float delay)
         {
@@ -341,14 +350,14 @@ namespace RainMeadow.UI.Components
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-
+                ChatTextBox.blockInput = false;
             }
         }
 
         private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld, maxVisibleLength; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
         public int? visibleTextLimit;
         public int textLimit = 75;
-        public bool focused, cursorIsInMiddle, isUnloading;
+        public bool focused, dontGetPressed, cursorIsInMiddle, isUnloading, lastMenuMouseMode;
         public string currentMessage = "";
         public HSLColor? labelColor;
         public FSprite cursorSprite, selectionSprite;
@@ -356,6 +365,6 @@ namespace RainMeadow.UI.Components
         public RoundedRect roundedRect;
         public GameObject gameObject;
         public ButtonTypingHandler typingHandler;
-        public event Action? onTextSubmit;
+        public event Action? OnTextSubmit;
     }
 }

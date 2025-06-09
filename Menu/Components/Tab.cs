@@ -227,6 +227,7 @@ public class TabContainer : RectangularMenuObject
         public void ShowObject(MenuObject? obj)
         {
             if (obj is SelectableMenuObject selectableObj && !obj.page.selectables.Contains(selectableObj)) obj.page.selectables.Add(selectableObj);
+            if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = false;
             for (int i = 0; i < obj?.subObjects?.Count; i++)
             {
                 ShowObject(obj.subObjects[i]);
@@ -235,14 +236,15 @@ public class TabContainer : RectangularMenuObject
         public void HideObject(MenuObject? obj)
         {
             if (obj != null) RecursiveRemoveSelectables(obj);
+            if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = true;
         }
         public void UpdateHiddenObjects(MenuObject obj)
         {
             for (int i = 0; i < obj.subObjects.Count; i++)
             {
                 MenuObject subObj = obj.subObjects[i];
-                (subObj as IPLEASEUPDATEME)?.HiddenUpdate();
-                UpdateHiddenObjects(subObj);
+                if (subObj is IPLEASEUPDATEME) subObj.Update(); //assuming you update all subobjects as well
+                else UpdateHiddenObjects(subObj);
             }
         }
         public void GrafUpdateHiddenObjects(MenuObject obj, float timeStacker)
@@ -250,8 +252,9 @@ public class TabContainer : RectangularMenuObject
             for (int i = 0; i < obj.subObjects.Count; i++)
             {
                 MenuObject subObj = obj.subObjects[i];
-                (subObj as IPLEASEUPDATEME)?.HiddenGrafUpdate(timeStacker);
-                GrafUpdateHiddenObjects(subObj, timeStacker);
+                if (subObj is IPLEASEUPDATEME) subObj.GrafUpdate(timeStacker);
+                else GrafUpdateHiddenObjects(subObj, timeStacker);
+
             }
         }
         public void AddObjects(params MenuObject[] objects)
