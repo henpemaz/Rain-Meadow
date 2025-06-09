@@ -46,6 +46,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> PrivateLobbyPassword;
 
     public readonly Configurable<string> MartyrTeamName;
+    public readonly Configurable<string> OutlawsTeamName;
+    public readonly Configurable<string> DragonSlayersTeamName;
+    public readonly Configurable<string> ChieftainTeamName;
 
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
@@ -109,6 +112,10 @@ public class RainMeadowOptions : OptionInterface
         PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
 
         MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+
     }
 
     public override void Initialize()

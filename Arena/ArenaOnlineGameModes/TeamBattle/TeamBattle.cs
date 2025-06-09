@@ -62,14 +62,21 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int roundSpawnPointCycler = 0;
 
         public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
+        public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+        public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+        public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+
         public UIelementWrapper externalModeWrapper;
 
-        public string outlawTeamName = "Outlaws";
-        public string dragonslayers = "Dragonslayers";
-        public string chieftainsName = "Chieftains";
+        public string dragonslayersTeamName = "Dragonslayers";
+        public string chieftainsTeamName = "Chieftains";
 
         public OpComboBox? arenaTeamComboBox;
         public OpTextBox? martyrsTeamNameUpdate;
+        public OpTextBox? outlawsTeamNameUpdate;
+        public OpTextBox? dragonsSlayersTeamNameUpdate;
+        public OpTextBox? chieftainsTeamNameUpdate;
+
         public bool teamComboBoxLastHeld;
 
         public HashSet<int> aliveTeams = new HashSet<int>();
@@ -78,8 +85,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             martyrsTeamName,
             outlawTeamName,
-            dragonslayers,
-            chieftainsName
+            dragonslayersTeamName,
+            chieftainsTeamName
         }
 
 
@@ -87,24 +94,24 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     {
         TeamMappings.martyrsTeamName,
         TeamMappings.outlawTeamName,
-        TeamMappings.dragonslayers,
-        TeamMappings.chieftainsName
+        TeamMappings.dragonslayersTeamName,
+        TeamMappings.chieftainsTeamName
     };
 
         public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
         {
             { TeamMappings.martyrsTeamName, "SaintA" },
             { TeamMappings.outlawTeamName, "OutlawA" },
-            { TeamMappings.dragonslayers, "DragonSlayerA" },
-            { TeamMappings.chieftainsName, "ChieftainA" }
+            { TeamMappings.dragonslayersTeamName, "DragonSlayerA" },
+            { TeamMappings.chieftainsTeamName, "ChieftainA" }
     };
 
         public static Dictionary<TeamMappings, Color> TeamColors = new Dictionary<TeamMappings, Color>
         {
             { TeamMappings.martyrsTeamName, Color.red },
             { TeamMappings.outlawTeamName, Color.yellow },
-            { TeamMappings.dragonslayers, Color.magenta },
-            { TeamMappings.chieftainsName, Color.blue }
+            { TeamMappings.dragonslayersTeamName, Color.magenta },
+            { TeamMappings.chieftainsTeamName, Color.blue }
     };
 
         public override void ResetOnSessionEnd()
@@ -328,8 +335,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     teamBattleMode.martyrsSpawn = ((int)TeamMappings.martyrsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
                     teamBattleMode.outlawsSpawn = ((int)TeamMappings.outlawTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.dragonslayersSpawn = ((int)TeamMappings.dragonslayers + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.chieftainsSpawn = ((int)TeamMappings.chieftainsName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.dragonslayersSpawn = ((int)TeamMappings.dragonslayersTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.chieftainsSpawn = ((int)TeamMappings.chieftainsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
 
                     switch ((TeamMappings)teamSettings.team)
                     {
@@ -339,10 +346,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         case TeamMappings.outlawTeamName:
                             randomExitIndex = teamBattleMode.outlawsSpawn;
                             break;
-                        case TeamMappings.dragonslayers:
+                        case TeamMappings.dragonslayersTeamName:
                             randomExitIndex = teamBattleMode.dragonslayersSpawn;
                             break;
-                        case TeamMappings.chieftainsName:
+                        case TeamMappings.chieftainsTeamName:
                             randomExitIndex = teamBattleMode.chieftainsSpawn;
                             break;
                         default:
@@ -550,56 +557,122 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
 
                 ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
+                ListItem outlawsListItem = new ListItem(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value);
+                ListItem dragonSlayersListItem = new ListItem(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value);
+                ListItem chieftainsListItem = new ListItem(RainMeadow.rainMeadowOptions.ChieftainTeamName.Value);
 
 
                 List<ListItem> teamNameListItems = new List<ListItem>();
                 teamNameListItems.Add(martyrListItem);
+                teamNameListItems.Add(outlawsListItem);
+                teamNameListItems.Add(dragonSlayersListItem);
+                teamNameListItems.Add(chieftainsListItem);
 
                 var arenaGameModeLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team:"), new Vector2(50, 380f), new Vector2(0, 20), false);
-                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(RainMeadow.rainMeadowOptions.MartyrTeamName.Value), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
+                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
                 arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
                 {
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
                     {
-                        if (System.Enum.TryParse<TeamBattleMode.TeamMappings>(value, out var parsedTeam))
-                        {
-                            tb.team = (int)parsedTeam;
-                            RainMeadow.Debug(tb.team);
+                        var alListItems = arenaTeamComboBox.GetItemList();
+                        for (int i = 0; i < alListItems.Length; i++) {
+                            if (alListItems[i].name == value)
+                            {
+                                tb.team = i;
+                            }
                         }
+
                     }
                 };
 
-                var martyrTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 1 Name:"), new Vector2(arenaGameModeLabel.pos.x, arenaTeamComboBox.pos.y - 45), new Vector2(0, 20), false);
+                var martyrTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 1:"), new Vector2(arenaGameModeLabel.pos.x, arenaTeamComboBox.pos.y - 45), new Vector2(0, 20), false);
 
                 martyrsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.MartyrTeamName.Value), new(martyrTeamLabel.pos.x + 50, martyrTeamLabel.pos.y), 150);
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    martyrsTeamNameUpdate.Deactivate();
+                }
+
+                martyrsTeamNameUpdate.allowSpace = true;
                 martyrsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
                 {
-                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = value;
                     var alListItems = arenaTeamComboBox.GetItemList();
-                    // TODO: Don't update all of them
-                    for (int i = 0; i < alListItems.Length; i++)
-                    {
-                        alListItems[i].name = value;
-                        alListItems[i].desc = value;
-                        alListItems[i].displayName = value;
-                    }
-                    arenaTeamComboBox.value = value;
+                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = value;
+                    alListItems[0].name = value;
+                    alListItems[0].desc = value;
+                    alListItems[0].displayName = value;
                     tb.martyrsTeamName = value;
+                };
 
+                var outlawTeamlabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 2:"), new Vector2(arenaGameModeLabel.pos.x, martyrsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
+
+                outlawsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value), new(outlawTeamlabel.pos.x + 50, outlawTeamlabel.pos.y), 150);
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    outlawsTeamNameUpdate.Deactivate();
+                }
+
+                outlawsTeamNameUpdate.allowSpace = true;
+                outlawsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
+                {
+                    var alListItems = arenaTeamComboBox.GetItemList();
+                    RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = value;
+                    alListItems[1].name = value;
+                    alListItems[1].desc = value;
+                    alListItems[1].displayName = value;
+                    tb.outlawTeamNames = value;
+                };
+///
+                var dragonSlayersLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 3:"), new Vector2(arenaGameModeLabel.pos.x, outlawsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
+
+                dragonsSlayersTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value), new(dragonSlayersLabel.pos.x + 50, dragonSlayersLabel.pos.y), 150);
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    dragonsSlayersTeamNameUpdate.Deactivate();
+                }
+
+                dragonsSlayersTeamNameUpdate.allowSpace = true;
+                dragonsSlayersTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
+                {
+                    var alListItems = arenaTeamComboBox.GetItemList();
+                    RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = value;
+                    alListItems[2].name = value;
+                    alListItems[2].desc = value;
+                    alListItems[2].displayName = value;
+                    tb.dragonslayersTeamName = value;
                 };
 
 
-                //OpTextBox outlawsTeamName
-                //OpTextBox dragonslayersTeamName
-                //OpTextBox chieftainsTeamName
+                ///
+                var chifetainTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 4:"), new Vector2(arenaGameModeLabel.pos.x, dragonsSlayersTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
+
+                chieftainsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.ChieftainTeamName.Value), new(chifetainTeamLabel.pos.x + 50, chifetainTeamLabel.pos.y), 150);
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    chieftainsTeamNameUpdate.Deactivate();
+                }
+
+                chieftainsTeamNameUpdate.allowSpace = true;
+                chieftainsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
+                {
+                    var alListItems = arenaTeamComboBox.GetItemList();
+                    RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = value;
+                    alListItems[3].name = value;
+                    alListItems[3].desc = value;
+                    alListItems[3].displayName = value;
+                    tb.chieftainsTeamName = value;
+                };
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
                 UIelementWrapper martyrWrapper = new UIelementWrapper(tabWrapper, martyrsTeamNameUpdate);
+                UIelementWrapper outlawWrapper = new UIelementWrapper(tabWrapper, outlawsTeamNameUpdate);
+                UIelementWrapper dragonSlayerWrapper = new UIelementWrapper(tabWrapper, dragonsSlayersTeamNameUpdate);
+                UIelementWrapper chiefTainWrapper = new UIelementWrapper(tabWrapper, chieftainsTeamNameUpdate);
 
 
 
 
-                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel);
+                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
             }
         }
 
