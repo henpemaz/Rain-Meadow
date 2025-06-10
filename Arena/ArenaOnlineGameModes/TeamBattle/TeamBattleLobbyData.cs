@@ -29,6 +29,13 @@ namespace RainMeadow
             public int chieftains;
             [OnlineField]
             public string martyrsName;
+            [OnlineField]
+            public string chieftainsName;
+            [OnlineField]
+            public string dragonslayersName;
+            [OnlineField]
+            public string outlawsName;
+
 
             [OnlineField]
             public int roundSpawnPointCycler;
@@ -44,8 +51,14 @@ namespace RainMeadow
                     outlaws = teamBattleMode.outlawsSpawn;
                     dragonslayers = teamBattleMode.dragonslayersSpawn;
                     chieftains = teamBattleMode.chieftainsSpawn;
+
                     roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
+
                     martyrsName = teamBattleMode.martyrsTeamName;
+                    chieftainsName = teamBattleMode.chieftainsTeamNames;
+                    dragonslayersName = teamBattleMode.dragonSlayersTeamNames;
+                    outlawsName = teamBattleMode.outlawTeamNames;
+
                 }
             }
 
@@ -61,8 +74,13 @@ namespace RainMeadow
                     teamBattleMode.outlawsSpawn = outlaws;
                     teamBattleMode.dragonslayersSpawn = dragonslayers;
                     teamBattleMode.outlawsSpawn = outlaws;
+
                     teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
                     teamBattleMode.martyrsTeamName = martyrsName;
+                    teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+                    teamBattleMode.chieftainsTeamNames = chieftainsName;
+                    teamBattleMode.outlawTeamNames = outlawsName;
+
                 }
 
 

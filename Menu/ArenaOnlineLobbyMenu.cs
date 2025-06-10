@@ -141,6 +141,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
+        if (Arena.onlineArenaGameMode != null)
+        {
+            RainMeadow.Debug(Arena.onlineArenaGameMode.GetGameModeId.value);
+        }
+
     }
     public override void GrafUpdate(float timeStacker)
     {

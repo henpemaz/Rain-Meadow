@@ -57,8 +57,10 @@ namespace RainMeadow.UI.Components
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
-
+                if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
+                {
+                    arena.onlineArenaGameMode = extGameMode;
+                }
             };
 
 

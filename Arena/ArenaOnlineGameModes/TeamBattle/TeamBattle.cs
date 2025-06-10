@@ -68,9 +68,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public UIelementWrapper externalModeWrapper;
 
-        public string dragonslayersTeamName = "Dragonslayers";
-        public string chieftainsTeamName = "Chieftains";
-
         public OpComboBox? arenaTeamComboBox;
         public OpTextBox? martyrsTeamNameUpdate;
         public OpTextBox? outlawsTeamNameUpdate;
@@ -639,7 +636,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     alListItems[2].name = value;
                     alListItems[2].desc = value;
                     alListItems[2].displayName = value;
-                    tb.dragonslayersTeamName = value;
+                    tb.dragonSlayersTeamNames = value;
                 };
 
 
@@ -660,7 +657,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     alListItems[3].name = value;
                     alListItems[3].desc = value;
                     alListItems[3].displayName = value;
-                    tb.chieftainsTeamName = value;
+                    tb.chieftainsTeamNames = value;
                 };
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
