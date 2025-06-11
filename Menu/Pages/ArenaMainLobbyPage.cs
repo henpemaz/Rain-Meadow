@@ -64,15 +64,34 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-        ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
+        // ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
+        ArenaOnlineLobbyMenu arenaOnlineMenu = (ArenaOnlineLobbyMenu)menu;
+        var changeCharacterLambda = () =>
+        {
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
+                if (index == -1) index = 0;
+                else
+                {
+                    index += 1;
+                    index = index % ArenaHelpers.selectableSlugcats.Count;
+                }
+
+                arenaOnlineMenu.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+            }
+            else
+            {
+                arenaOnlineMenu?.MovePage(new Vector2(-1500f, 0f), 1);
+            }
+        };
 
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
             if (player.isMe)
             {
-                playerBox.slugcatButton.OnClick += _ =>
-                    dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
+                playerBox.slugcatButton.OnClick += _ => changeCharacterLambda();
                 playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
             }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
@@ -83,7 +102,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += _ => dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
+            playerSmallBox.slugcatButton.OnClick += _ => changeCharacterLambda();
             playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
 
