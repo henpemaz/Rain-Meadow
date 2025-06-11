@@ -440,6 +440,14 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                foreach (var selectable in self.pages[0].selectables)
+                {
+                    if (selectable is Menu.SimpleButton && (selectable as Menu.SimpleButton).signalText == "QUIT")
+                    {
+                        (selectable as Menu.SimpleButton).buttonBehav.greyedOut = self.counter < 120;
+                    }
+                }
+
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
@@ -1637,8 +1645,9 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                self.continueButton.menuLabel.text = "TO LOBBY";
 
-                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
+                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("QUIT"), "QUIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
 
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
@@ -1668,7 +1677,7 @@ namespace RainMeadow
 
                     }
 
-                    if (message == "EXIT")
+                    if (message == "QUIT")
                     {
 
                         self.manager.rainWorld.options.DeleteArenaSitting();
