@@ -119,13 +119,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             dragonslayersSpawn = 0;
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
+
+        }
+
+        public void ResetNextLevel()
+        {
+            winningTeam = -1;
             aliveTeams.Clear();
         }
 
         public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
         {
             base.ArenaSessionNextLevel(arena, orig, self, process);
-            this.ResetOnSessionEnd();
+            this.ResetNextLevel();
         }
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
