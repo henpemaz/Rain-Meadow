@@ -139,7 +139,7 @@ namespace Menu
                     {
                         if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
                         {
-                            roundedRect.borderColor = TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)team.team].ToHSL();
+                            roundedRect.borderColor = TeamBattleMode.TeamColors[team.team].ToHSL();
                         }
                     }
 

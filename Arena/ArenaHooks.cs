@@ -1563,7 +1563,7 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                         {
-                            self.playerNameLabel.text += $" -- {((TeamBattleMode.TeamMappings)td.team).ToString().ToUpper()}";
+                            self.playerNameLabel.text += $" -- { team.teamNameDictionary[td.team].ToUpper()}";
                         }
                     }
                 }
@@ -1643,9 +1643,10 @@ namespace RainMeadow
 
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
+
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{((TeamBattleMode.TeamMappings)tb.winningTeam).ToString().ToUpper()} WIN!");
+                        self.headingLabel.text = Utils.Translate($"{tb.teamNameDictionary[tb.winningTeam].ToUpper()} WIN!");
                     }
                 }
             }

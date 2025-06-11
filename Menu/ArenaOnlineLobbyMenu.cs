@@ -141,9 +141,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
-        if (Arena.onlineArenaGameMode != null)
+
+        // TODO: Why does selecting the page proc the update and that's it?
+        if (Arena.onlineArenaGameMode != null && Arena.currentGameMode != Arena.onlineArenaGameMode.GetGameModeId.value)
         {
-            RainMeadow.Debug(Arena.onlineArenaGameMode.GetGameModeId.value);
+
+            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
+            {
+                Arena.onlineArenaGameMode = extGameMode;
+            }
         }
 
     }

@@ -27,14 +27,14 @@ namespace RainMeadow
             public int dragonslayers;
             [OnlineField]
             public int chieftains;
-            [OnlineField]
-            public string martyrsName;
-            [OnlineField]
-            public string chieftainsName;
-            [OnlineField]
-            public string dragonslayersName;
-            [OnlineField]
-            public string outlawsName;
+            //[OnlineField]
+            //public string martyrsName;
+            //[OnlineField]
+            //public string chieftainsName;
+            //[OnlineField]
+            //public string dragonslayersName;
+            //[OnlineField]
+            //public string outlawsName;
 
 
             [OnlineField]
@@ -54,10 +54,10 @@ namespace RainMeadow
 
                     roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
 
-                    martyrsName = teamBattleMode.martyrsTeamName;
-                    chieftainsName = teamBattleMode.chieftainsTeamNames;
-                    dragonslayersName = teamBattleMode.dragonSlayersTeamNames;
-                    outlawsName = teamBattleMode.outlawTeamNames;
+                    //martyrsName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
+                    //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
+                    //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
+                    //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
 
                 }
             }
@@ -76,10 +76,11 @@ namespace RainMeadow
                     teamBattleMode.outlawsSpawn = outlaws;
 
                     teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
-                    teamBattleMode.martyrsTeamName = martyrsName;
-                    teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
-                    teamBattleMode.chieftainsTeamNames = chieftainsName;
-                    teamBattleMode.outlawTeamNames = outlawsName;
+
+                    //teamBattleMode.martyrsTeamName = martyrsName;
+                    //teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+                    //teamBattleMode.chieftainsTeamNames = chieftainsName;
+                    //teamBattleMode.outlawTeamNames = outlawsName;
 
                 }
 

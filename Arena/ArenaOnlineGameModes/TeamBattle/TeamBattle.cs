@@ -63,8 +63,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
         public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-        public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-        public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+        public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
+        public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public UIelementWrapper externalModeWrapper;
 
@@ -78,6 +78,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public HashSet<int> aliveTeams = new HashSet<int>();
         public List<string> teamNameList;
+
+        public Dictionary<int, string> teamNameDictionary = new Dictionary<int, string>
+        {
+            { 0, RainMeadow.rainMeadowOptions.MartyrTeamName.Value },
+            { 1, RainMeadow.rainMeadowOptions.OutlawsTeamName.Value },
+            { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value },
+            { 3, RainMeadow.rainMeadowOptions.ChieftainTeamName.Value }
+        };
         public enum TeamMappings
         {
             martyrsTeamName,
@@ -86,29 +94,20 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsTeamName
         }
 
-
-        public static List<TeamMappings> teamMappingsList = new List<TeamMappings>
-    {
-        TeamMappings.martyrsTeamName,
-        TeamMappings.outlawTeamName,
-        TeamMappings.dragonslayersTeamName,
-        TeamMappings.chieftainsTeamName
+        public static Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
+        {
+            { 0, "SaintA" },
+            { 1, "OutlawA" },
+            { 2, "DragonSlayerA" },
+            { 3, "ChieftainA" }
     };
 
-        public static Dictionary<TeamMappings, string> TeamMappingsDictionary = new Dictionary<TeamMappings, string>
+        public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
-            { TeamMappings.martyrsTeamName, "SaintA" },
-            { TeamMappings.outlawTeamName, "OutlawA" },
-            { TeamMappings.dragonslayersTeamName, "DragonSlayerA" },
-            { TeamMappings.chieftainsTeamName, "ChieftainA" }
-    };
-
-        public static Dictionary<TeamMappings, Color> TeamColors = new Dictionary<TeamMappings, Color>
-        {
-            { TeamMappings.martyrsTeamName, Color.red },
-            { TeamMappings.outlawTeamName, Color.yellow },
-            { TeamMappings.dragonslayersTeamName, Color.magenta },
-            { TeamMappings.chieftainsTeamName, Color.blue }
+            { 0, Color.red },
+            { 1, Color.yellow },
+            { 2, Color.magenta },
+            { 3, Color.blue }
     };
 
         public override void ResetOnSessionEnd()
@@ -150,7 +149,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return true;
             }
 
-            // TODO: Check players aliev per team
             if (playersStillStanding > 1 && arena.setupTime == 0)
             {
                 if (self.gameSession.Players != null)
@@ -243,7 +241,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)t.team], 0.5f);
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[t.team], 0.5f);
                 }
             }
 
@@ -550,7 +548,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
-                return TeamMappingsDictionary[(TeamMappings)tb2.team];
+                return TeamMappingsDictionary[tb2.team];
             }
             return "";
         }
@@ -578,7 +576,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
                     {
                         var alListItems = arenaTeamComboBox.GetItemList();
-                        for (int i = 0; i < alListItems.Length; i++) {
+                        for (int i = 0; i < alListItems.Length; i++)
+                        {
                             if (alListItems[i].name == value)
                             {
                                 tb.team = i;
@@ -625,7 +624,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     alListItems[1].displayName = value;
                     tb.outlawTeamNames = value;
                 };
-///
+                ///
                 var dragonSlayersLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 3:"), new Vector2(arenaGameModeLabel.pos.x, outlawsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
 
                 dragonsSlayersTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value), new(dragonSlayersLabel.pos.x + 50, dragonSlayersLabel.pos.y), 150);
@@ -706,7 +705,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                         else
                         {
-                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[(TeamBattleMode.TeamMappings)team.team];
+                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[team.team];
                         }
                     }
 
