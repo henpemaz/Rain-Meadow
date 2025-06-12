@@ -120,17 +120,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
-        public void ResetNextLevel()
-        {
-            winningTeam = -1;
-        }
-
-        public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
-        {
-            base.ArenaSessionNextLevel(arena, orig, self, process);
-            this.ResetNextLevel();
-        }
-
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {
             int playersStillStanding = self.gameSession.Players?.Count(player =>
