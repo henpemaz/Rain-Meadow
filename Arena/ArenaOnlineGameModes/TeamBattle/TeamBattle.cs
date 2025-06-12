@@ -76,7 +76,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public bool teamComboBoxLastHeld;
 
-        public Dictionary<string, int> aliveTeams = new Dictionary<string, int>();
         public List<string> teamNameList;
 
         public Dictionary<int, string> teamNameDictionary = new Dictionary<int, string>
@@ -124,7 +123,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public void ResetNextLevel()
         {
             winningTeam = -1;
-            aliveTeams.Clear();
         }
 
         public override void ArenaSessionNextLevel(ArenaMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
@@ -151,6 +149,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (playersStillStanding > 1 && arena.setupTime == 0)
             {
+                HashSet<int> aliveTeams = new HashSet<int>();
                 if (self.gameSession.Players != null)
                 {
                     foreach (var acPlayer in self.gameSession.Players)
@@ -168,30 +167,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                                         if (acPlayer.realizedCreature.State.alive)
                                         {
-                                            if (!aliveTeams.ContainsKey(onlineP.owner.id.name))
-                                            {
-                                                aliveTeams.Add(onlineP.owner.id.name, playerTeam.team);
-                                            }
-
+                                            aliveTeams.Add(playerTeam.team);
                                         }
-                                        if (acPlayer.realizedCreature.State.dead)
-                                        {
-                                            if (aliveTeams.ContainsKey(onlineP.owner.id.name))
-                                            {
-                                                aliveTeams.Remove(onlineP.owner.id.name);
-                                            }
-
-                                        }
-
                                     }
                                 }
                             }
+
                         }
                     }
-                }
-                if (aliveTeams.Values.Distinct().Count() == 1)
-                {
-                    return true;
+                    if (aliveTeams.Count == 1)
+                        return true;
                 }
             }
 
