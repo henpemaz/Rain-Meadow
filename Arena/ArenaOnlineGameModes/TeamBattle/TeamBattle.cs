@@ -163,7 +163,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                                 bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP.owner].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
                                 if (gotPlayerTeam)
                                 {
-                                    if (acPlayer.state.alive)
+                                    if (acPlayer.realizedCreature != null && acPlayer.realizedCreature.State.alive)
                                     {
                                         aliveTeams.Add(playerTeam.team);
                                     }
