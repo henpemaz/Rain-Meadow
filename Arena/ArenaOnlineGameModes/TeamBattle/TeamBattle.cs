@@ -93,7 +93,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsTeamName
         }
 
-        public static Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
+        public  Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
         {
             { 0, "SaintA" },
             { 1, "OutlawA" },
@@ -101,7 +101,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, "ChieftainA" }
     };
 
-        public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
+        public  Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
             { 0, Color.red },
             { 1, Color.yellow },
@@ -118,6 +118,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
 
+        }
+
+        public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
+        {
+            return this.TeamMappingsDictionary.Select(v => new ListItem(v.Value.ToString())).ToList();
         }
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
@@ -223,11 +228,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
             base.ArenaSessionCtor(arena, orig, self, game);
-            if (TeamBattleMode.isTeamBattleMode(arena, out _))
+            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[t.team], 0.5f);
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, tb.TeamColors[t.team], 0.5f);
                 }
             }
 
@@ -691,7 +696,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                         else
                         {
-                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[team.team];
+                            slugcatButton.secondaryColor = tb.TeamColors[team.team];
                         }
                     }
 

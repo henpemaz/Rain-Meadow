@@ -76,12 +76,12 @@ namespace RainMeadow
 
             if (RainMeadow.isArenaMode(out var a))
             {
-                if (isTeamBattleMode(a, out var _))
+                if (isTeamBattleMode(a, out var tb))
                 {
 
                     if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
                     {
-                        this.color = TeamBattleMode.TeamColors[tb2.team];
+                        this.color = tb.TeamColors[tb2.team];
                         this.lighter_color = this.color;
                     }
                 }

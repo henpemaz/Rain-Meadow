@@ -38,7 +38,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
 
 
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, TeamBattleMode.TeamMappingsDictionary[0], [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
@@ -141,7 +141,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             externalTabContainer = tabContainer.AddTab(Arena.onlineArenaGameMode.AddGameSettingsTab());
 
-            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. TeamBattleMode.TeamMappingsDictionary.Select(v => new ListItem(v.Value.ToString()))]);
+            
+            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. Arena.onlineArenaGameMode.ArenaOnlineInterfaceListItems(Arena)]);
 
             externalTabContainer.AddObjects(externalInterface);
         }

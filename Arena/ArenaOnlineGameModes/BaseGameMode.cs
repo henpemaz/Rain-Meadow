@@ -6,6 +6,7 @@ using Steamworks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Menu.Remix.MixedUI;
 
 
 namespace RainMeadow
@@ -123,6 +124,11 @@ namespace RainMeadow
         public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
         {
             return "";
+        }
+
+        public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
+        {
+            return null;
         }
 
         public virtual void SpawnPlayer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, List<int> suggestedDens)
