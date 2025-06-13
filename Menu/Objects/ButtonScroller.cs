@@ -21,8 +21,8 @@ namespace RainMeadow
             // startEndSpacing is true, then it will add spacing to the start and end instead of button height
             return startEndSpacing ? amtOfButtonsView * (buttonHeight + spacing) + spacing : buttonHeight + Mathf.Max(amtOfButtonsView - 1, 0) * (buttonHeight + spacing);
         }
-        public float MaxVisibleItemsShown => (UpperBound - LowerBound) / ButtonHeightAndSpacing;
-        public float MaxDownScroll => Mathf.Max(0, (buttons.Count - MaxVisibleItemsShown));
+        public virtual float MaxVisibleItemsShown => (UpperBound - LowerBound) / ButtonHeightAndSpacing;
+        public virtual float MaxDownScroll => Mathf.Max(0, (buttons.Count - MaxVisibleItemsShown));
         public virtual float DownScrollOffset
         {
             get => desiredScrollOffset;
@@ -37,32 +37,28 @@ namespace RainMeadow
         public float UpperBound => size.y;
         public float ButtonHeightAndSpacing => buttonHeight + buttonSpacing;
         public float ScrollOffsetPos => scrollOffset * ButtonHeightAndSpacing;
-        public bool CanScrollUp => desiredScrollOffset > 0;
-        public bool CanScrollDown => desiredScrollOffset < MaxDownScroll;
+        public bool CanScrollUp => DownScrollOffset > 0;
+        public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
         public bool IsHidden { get; set; }
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, (float, float) buttonHeightSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0, bool startEndWithSpacing = false) : 
             this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, buttonHeightSpacing.Item1, buttonHeightSpacing.Item2, startEndWithSpacing)), sliderOnRight, sliderPosOffset, sliderSizeYOffset)
         {
-            this.startEndWithSpacing = startEndWithSpacing;
             buttonHeight = buttonHeightSpacing.Item1;
             buttonSpacing = buttonHeightSpacing.Item2;
+            this.startEndWithSpacing = startEndWithSpacing;
         }
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0) : base(menu, owner, pos, size)
         {
-            myContainer = new();
-            (owner?.Container ?? menu.container).AddChild(myContainer);
+            (owner?.Container ?? menu.container).AddChild(myContainer = new());
             sliderIsOnRightSide = sliderOnRight;
-            desiredScrollOffset = 0;
             //slider sprite xoffset is 15
             scrollSlider = new(menu, this, "Scroller", sliderPosOffset + new Vector2(sliderOnRight? size.x : -32, 0), new Vector2(30, size.y + sliderSizeYOffset), new("BUTTONSCROLLER_SCROLLSLIDER"), true);
             subObjects.Add(scrollSlider);
         }
         public override void RemoveSprites()
         {
-            myContainer?.RemoveFromContainer();
-            sideButtonLines.Do(x => x.RemoveFromContainer());
+            myContainer.RemoveFromContainer();
             base.RemoveSprites();
-            RemoveAllButtons();
         }
         public override void Update()
         {
@@ -82,7 +78,7 @@ namespace RainMeadow
             floatScrollSpeed = Mathf.Clamp(floatScrollSpeed, -maxScrollSpeed, maxScrollSpeed);
             scrollOffset += floatScrollSpeed;
 
-            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, buttons.Count / 30);
+            scrollSliderValueCap = Custom.LerpAndTick(scrollSliderValueCap, MaxDownScroll, scrollSliderCapLerp, buttons.Count / 40f);
 
             if (MaxDownScroll == 0) scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, sliderDefaultIsDown? 1 : 0, scrollSliderCapLerp, scrollSliderCapTick);
             else scrollSliderValue = Custom.LerpAndTick(scrollSliderValue, Mathf.InverseLerp(0f, scrollSliderValueCap, scrollOffset), isScrolling?  Mathf.Max(0.9f, scrollSliderCapLerp) : scrollSliderCapLerp, scrollSliderCapTick);
@@ -106,7 +102,7 @@ namespace RainMeadow
                 sideButtonLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
             }
         }
-        public virtual float GetCurrentScrollOffset() => desiredScrollOffset;
+        public virtual float GetCurrentScrollOffset() => DownScrollOffset;
         public void SliderSetValue(Slider slider, float f)
         {
             if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER")
@@ -145,15 +141,13 @@ namespace RainMeadow
                 if (button is MenuObject menuObj) this.ClearMenuObject(menuObj);
                 buttons.Remove(button);
             }
-            if (constrainScroll)
-                ConstrainScroll();
+            if (constrainScroll) ConstrainScroll();
         }
         public void RemoveAllButtons(bool constrainScroll = true)
         {
             this.ClearMenuObjectIList(buttons.Where(x => x is MenuObject).Cast<MenuObject>());
             buttons.Clear();
-            if (constrainScroll)
-                ConstrainScroll();
+            if (constrainScroll) ConstrainScroll();
         }
         public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons) => AddScrollObjects(scrollBoxButtons, true, true);
         public void AddScrollObjects(IPartOfButtonScroller[]? scrollBoxButtons, bool addToSubobjects, bool bindToSlider)

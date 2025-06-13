@@ -118,18 +118,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
-            arenaMainLobbyPage.SaveInterfaceOptions();
             GetArenaSetup.SaveToFile();
+            arenaMainLobbyPage.SaveInterfaceOptions();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
         manager.rainWorld.progression.SaveProgression(true, true);
+        base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
             OnlineManager.LeaveLobby();
             manager.arenaSetup = null;
         }
-        base.ShutDownProcess();
+
     }
     public override void Update()
     {
@@ -181,7 +182,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"{value} wildlife");
             }
         }
-        if (selectedObject is VerticalScrollSelector.SideButton sideBtn)
+        if (selectedObject is ButtonScroller.SideButton sideBtn)
         {
             string id = sideBtn.signalText;
             if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)

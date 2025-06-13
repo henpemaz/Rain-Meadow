@@ -20,6 +20,15 @@ namespace RainMeadow.UI.Components
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
         public bool SelectionActive => selectionStartPos != -1 ;
         public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
+        public bool Focused
+        {
+            get => focused;
+            set
+            {
+                focused = value;
+                forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
+            }
+        }
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
@@ -60,29 +69,29 @@ namespace RainMeadow.UI.Components
         public override void Clicked()
         {
             base.Clicked();
-            if (dontGetPressed)
+            if (previouslySubmittedText)
             {
-                dontGetPressed = false;
+                previouslySubmittedText = false;
                 if (!menu.manager.menuesMouseMode) return;
             }
             if (IgnoreSelect) return;
             if (!buttonBehav.clicked) return;
-            focused = !focused;
+            Focused = !Focused;
         }
         public override void Update()
         {
             base.Update();
-            if (dontGetPressed) dontGetPressed = dontGetPressed && menu.selectedObject == this;
-             buttonBehav.Update();
-            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) focused = false;
-            if (menu.allowSelectMove) menu.allowSelectMove = !focused;
+            if (previouslySubmittedText) previouslySubmittedText = previouslySubmittedText && menu.selectedObject == this;
+            buttonBehav.Update();
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) Focused = false;
+            if (menu.allowSelectMove) menu.allowSelectMove = !Focused;
             UpdateSelection();
             roundedRect.fillAlpha = 1.0f;
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
             cursorIsInMiddle = cursorPos < currentMessage.Length;
             maxVisibleLength = VisibleTextLimit;
-            lastMenuMouseMode = menu.manager.menuesMouseMode;
-
+            forceMenuMouseMode = (menu.holdButton || menu.modeSwitch || focused) && forceMenuMouseMode;
+            menu.manager.menuesMouseMode = forceMenuMouseMode || menu.manager.menuesMouseMode;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -116,8 +125,8 @@ namespace RainMeadow.UI.Components
                 cursorSprite.height = 6;
             }
             cursorSprite.y = screenPos.y + size.y / 2;
-            cursorSprite.alpha = focused ? Mathf.PingPong(Time.time * 4, 1) : 0;
-            selectionSprite.alpha = focused ? 1 : 0;
+            cursorSprite.alpha = Focused ? Mathf.PingPong(Time.time * 4, 1) : 0;
+            selectionSprite.alpha = Focused ? 1 : 0;
 
             if (selectionStartPos == -1)
             {
@@ -139,7 +148,7 @@ namespace RainMeadow.UI.Components
         }
         public void CaptureInputs(char input)
         {
-            if (!focused) return;
+            if (!Focused) return;
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = currentMessage;
@@ -196,7 +205,7 @@ namespace RainMeadow.UI.Components
         }
         public void UpdateSelection()
         {
-            ChatTextBox.ShouldCapture(focused);
+            ChatTextBox.ShouldCapture(Focused);
             string msg = currentMessage;
             int len = msg.Length;
             if (len > 0)
@@ -327,12 +336,12 @@ namespace RainMeadow.UI.Components
         }
         public void HandleTextSubmit()
         {
-            focused = false;
+            Focused = false;
             currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
             ChatTextBox.blockInput = false;
-            dontGetPressed = !menu.manager.menuesMouseMode;
+            previouslySubmittedText = !menu.manager.menuesMouseMode;
             OnTextSubmit?.Invoke();
         }
         public void DelayedUnload(float delay)
@@ -341,7 +350,7 @@ namespace RainMeadow.UI.Components
             cursorPos = 0;
             isUnloading = true;
             typingHandler.StartCoroutine(Unload(delay));
-
+            ChatTextBox.blockInput = false;
         }
         private IEnumerator Unload(float delay)
         {
@@ -350,14 +359,14 @@ namespace RainMeadow.UI.Components
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-                ChatTextBox.blockInput = false;
             }
         }
 
         private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld, maxVisibleLength; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
         public int? visibleTextLimit;
         public int textLimit = 75;
-        public bool focused, dontGetPressed, cursorIsInMiddle, isUnloading, lastMenuMouseMode;
+        public bool focused, previouslySubmittedText, cursorIsInMiddle, isUnloading, chatPressed, lastChatPressed;
+        public bool forceMenuMouseMode;
         public string currentMessage = "";
         public HSLColor? labelColor;
         public FSprite cursorSprite, selectionSprite;

@@ -22,10 +22,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     {
         playButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
+        BuildPlayerDisplay();
+        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
-
+        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
         arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
@@ -37,17 +39,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugcatAbilitiesInterface.CallForSync();
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
-        BuildPlayerDisplay();
-        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f))); //container stuff
         this.SafeAddSubobjects(playButton, tabContainer, chatMenuBox);
 
     }
 
     public void BuildPlayerDisplay()
     {
-        if (playerDisplayer != null) return;
-
         playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
         subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
@@ -55,10 +52,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
-        if (!RainMeadow.isArenaMode(out _)) return;
-
         RainMeadow.DebugMe();
-        BuildPlayerDisplay();
         playerDisplayer?.UpdatePlayerList(OnlineManager.players);
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
