@@ -47,8 +47,6 @@ namespace RainMeadow
                 return true;
             }
 
-            orig(self);
-
             return orig(self);
         }
 

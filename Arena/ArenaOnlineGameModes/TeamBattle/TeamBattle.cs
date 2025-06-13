@@ -174,8 +174,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
             }
 
-            orig(self);
-
             return orig(self);
         }
 
