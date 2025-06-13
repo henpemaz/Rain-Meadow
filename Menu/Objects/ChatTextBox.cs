@@ -48,7 +48,6 @@ namespace RainMeadow
                 typingHandler.StartCoroutine(Unload(delay));
             }
         }
-
         private IEnumerator Unload(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -63,6 +62,7 @@ namespace RainMeadow
         private void CaptureInputs(char input)
         {
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
+            if (isUnloading) return;
             if (input == '\u007F') return;
             string msg = lastSentMessage;
             blockInput = false;
