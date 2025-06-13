@@ -141,17 +141,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
-
-        // TODO: Why does selecting the page proc the update and that's it?
-        if (Arena.onlineArenaGameMode != null && Arena.currentGameMode != Arena.onlineArenaGameMode.GetGameModeId.value)
+        if (Arena.onlineArenaGameMode == null || (Arena.onlineArenaGameMode != null && Arena.currentGameMode != Arena.onlineArenaGameMode.GetGameModeId.value));
         {
-
-            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
-            {
-                Arena.onlineArenaGameMode = extGameMode;
-            }
+            Arena.onlineArenaGameMode = (Arena.registeredGameModes.FirstOrDefault(x => x.Key == Arena.currentGameMode).Value);
         }
-
     }
     public override void GrafUpdate(float timeStacker)
     {
