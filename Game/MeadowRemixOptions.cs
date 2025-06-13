@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow;
+
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -28,6 +29,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
 
@@ -42,6 +44,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
     public readonly Configurable<string> PrivateLobbyPassword;
+
+    public readonly Configurable<string> MartyrTeamName;
+    public readonly Configurable<string> OutlawsTeamName;
+    public readonly Configurable<string> DragonSlayersTeamName;
+    public readonly Configurable<string> ChieftainTeamName;
+
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -83,6 +91,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
@@ -101,6 +110,12 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
+
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+
     }
 
     public override void Initialize()
@@ -270,9 +285,11 @@ public class RainMeadowOptions : OptionInterface
            };
             storyTab.AddItems(OnlineStorySettings);
 
+            OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
+            OpHoldButton arenaSpoilerButton;
+            OpCheckBox slugpupHellBackgroundCheckbox;
 
-
-            OnlineArenaSettings = new UIelement[19]
+            OnlineArenaSettings = new UIelement[23]
 
             {
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
@@ -310,12 +327,28 @@ public class RainMeadowOptions : OptionInterface
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
                 },
-                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
+                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25)),
 
 
-
-        };
+                arenaSpoilerLabel = new OpLabel(225f, 505, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
+                {
+                    color = new Color(0.85f, 0.35f, 0.4f)
+                },
+                arenaSpoilerButton = new OpHoldButton(new Vector2(225f, 470f), new Vector2(110, 30), "OKIE DOKIE")
+                {
+                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
+                },
+                slugpupHellBackgroundLabel = new OpLabel(225f, 505, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
+                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(225f, 480)),
+            };
+            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
+            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
+            arenaSpoilerButton.OnPressDone += btn =>
+            {
+                OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
+                for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
+            };
 
             OnlineLANSettings = new UIelement[7]
             {

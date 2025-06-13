@@ -10,9 +10,11 @@ namespace RainMeadow
         protected ProcessManager.ProcessID backTarget;
         protected Page mainPage;
         public MenuTabWrapper tabWrapper;
+        public MenuDarkSprite menuDarkSprite;
         private bool isExiting;
         private bool isInit = true;
 
+        public virtual bool CanEscExit => manager.dialog == null;
         public abstract MenuScene.SceneID GetScene { get; }
 
         protected SmartMenu(ProcessManager manager, ProcessManager.ProcessID ID) : base(manager, ID)
@@ -20,7 +22,7 @@ namespace RainMeadow
             backTarget = manager.oldProcess.ID;
             this.pages.Add(this.mainPage = new Page(this, null, "main", 0));
             if (this.GetScene != null) mainPage.subObjects.Add(this.scene = new InteractiveMenuScene(this, mainPage, this.GetScene));
-            mainPage.subObjects.Add(new MenuDarkSprite(this, mainPage));
+            mainPage.subObjects.Add(menuDarkSprite = new MenuDarkSprite(this, mainPage));
             mainPage.subObjects.Add(this.tabWrapper = new MenuTabWrapper(this, mainPage));
             // what the fuck why the fuck are these added
             tabWrapper.myContainer._childNodes.ToList().ForEach(c => mainPage.Container.AddChild(c));
@@ -58,8 +60,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
-            if (RWInput.CheckPauseButton(0) && !isExiting)
+            if (RWInput.CheckPauseButton(0) && !isExiting && CanEscExit)
             {
                 manager.RequestMainProcessSwitch(this.backTarget);
                 base.PlaySound(SoundID.MENU_Switch_Page_Out);
@@ -70,6 +71,7 @@ namespace RainMeadow
                 isExiting = false;
                 isInit = false;
             }
+
         }
     }
 }
