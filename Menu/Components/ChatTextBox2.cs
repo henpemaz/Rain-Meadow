@@ -29,6 +29,7 @@ namespace RainMeadow.UI.Components
                 forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
             }
         }
+        public bool DontGetInputs => isUnloading || !focused;
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
@@ -148,7 +149,7 @@ namespace RainMeadow.UI.Components
         }
         public void CaptureInputs(char input)
         {
-            if (!Focused) return;
+            if (DontGetInputs) return;
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = currentMessage;
@@ -349,7 +350,6 @@ namespace RainMeadow.UI.Components
             if (isUnloading) return;
             cursorPos = 0;
             isUnloading = true;
-            Focused = false;
             typingHandler.StartCoroutine(Unload(delay));
             ChatTextBox.blockInput = false;
         }
