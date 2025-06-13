@@ -189,7 +189,7 @@ namespace RainMeadow.UI.Components
         }
         public void UpdateSelection()
         {
-            ChatTextBox.ShouldCapture(focused);
+            //ChatTextBox.ShouldCapture(focused);
             string msg = currentMessage;
             int len = msg.Length;
             if (len > 0)
