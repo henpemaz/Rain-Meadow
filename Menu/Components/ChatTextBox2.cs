@@ -349,6 +349,7 @@ namespace RainMeadow.UI.Components
             if (isUnloading) return;
             cursorPos = 0;
             isUnloading = true;
+            Focused = false;
             typingHandler.StartCoroutine(Unload(delay));
             ChatTextBox.blockInput = false;
         }
