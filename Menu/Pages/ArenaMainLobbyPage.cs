@@ -137,12 +137,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (!RainMeadow.isArenaMode(out _)) return;
         ChatLogManager.UpdatePlayerColors();
 
-        if (Arena.onlineArenaGameMode != null && Arena.currentGameMode == Arena.onlineArenaGameMode.GetGameModeId.value && Arena.onlineArenaGameMode.AddGameSettingsTab() != "" && externalTabContainer == null)
+        if (Arena.externalArenaGameMode != null && Arena.currentGameMode == Arena.externalArenaGameMode.GetGameModeId.value && Arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalTabContainer == null)
         {
-            externalTabContainer = tabContainer.AddTab(Arena.onlineArenaGameMode.AddGameSettingsTab());
+            externalTabContainer = tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
 
             
-            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. Arena.onlineArenaGameMode.ArenaOnlineInterfaceListItems(Arena)]);
+            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. Arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(Arena)]);
 
             externalTabContainer.AddObjects(externalInterface);
         }

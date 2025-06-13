@@ -131,9 +131,9 @@ namespace RainMeadow
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             arena.ResetGameTimer();
-            if (arena.onlineArenaGameMode != null)
+            if (arena.externalArenaGameMode != null)
             {
-                arena.onlineArenaGameMode.ResetOnSessionEnd();
+                arena.externalArenaGameMode.ResetOnSessionEnd();
             }
             arena.currentLevel = 0;
             arena.arenaSittingOnlineOrder.Clear();

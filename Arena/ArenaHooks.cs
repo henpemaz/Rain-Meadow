@@ -128,7 +128,7 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-                return arena.onlineArenaGameMode.PlayerSittingResultSort(arena, orig, self, A, B);
+                return arena.externalArenaGameMode.PlayerSittingResultSort(arena, orig, self, A, B);
 
             }
             else
@@ -142,7 +142,7 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-                return arena.onlineArenaGameMode.PlayerSessionResultSort(arena, orig, self, A, B);
+                return arena.externalArenaGameMode.PlayerSessionResultSort(arena, orig, self, A, B);
 
             }
             else
@@ -838,7 +838,7 @@ namespace RainMeadow
                     {
                         continue;
                     }
-                    arena.onlineArenaGameMode.LandSpear(arena, self, player, target, self.arenaSitting.players[i]);
+                    arena.externalArenaGameMode.LandSpear(arena, self, player, target, self.arenaSitting.players[i]);
 
                 }
 
@@ -1225,7 +1225,7 @@ namespace RainMeadow
 
                 if (self.gameTypeSetup.gameType == ArenaSetup.GameTypeID.Competitive)
                 {
-                    arena.onlineArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
+                    arena.externalArenaGameMode.ArenaSessionEnded(arena, orig, self, session, list);
                 }
 
                 for (int num2 = 0; num2 < list.Count; num2++)
@@ -1294,7 +1294,7 @@ namespace RainMeadow
                     self.characterStats = new SlugcatStats(arena.avatarSettings.playingAs, false); // limited support for fun stuff outside MSC
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
-                arena.onlineArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
+                arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
                 On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
 
@@ -1404,7 +1404,7 @@ namespace RainMeadow
                 {
                     if (absPlayerCreature.owner == ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.arenaSitting.players[i].playerNumber))
                     {
-                        arena.onlineArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
+                        arena.externalArenaGameMode.Killing(arena, orig, self, player, killedCrit, i);
 
                         if (CreatureSymbol.DoesCreatureEarnATrophy(killedCrit.Template.type))
                         {
@@ -1706,7 +1706,7 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Spawning creature");
 
-                    arena.onlineArenaGameMode.ArenaCreatureSpawner_SpawnCreatures(arena, orig, game, wildLifeSetting, ref availableCreatures, ref unlocks);
+                    arena.externalArenaGameMode.ArenaCreatureSpawner_SpawnCreatures(arena, orig, game, wildLifeSetting, ref availableCreatures, ref unlocks);
 
                     orig(game, wildLifeSetting, ref availableCreatures, ref unlocks);
                 }
@@ -1749,7 +1749,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                arena.onlineArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
+                arena.externalArenaGameMode.HUD_InitMultiplayerHud(arena, self, session);
             }
             else
             {
@@ -1884,7 +1884,7 @@ namespace RainMeadow
                         }
                     }
                 }
-                arena.onlineArenaGameMode.ArenaSessionUpdate(arena, self);
+                arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
 
                 if (!self.sessionEnded)
                 {
@@ -1992,7 +1992,7 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
-                return arena.onlineArenaGameMode.IsExitsOpen(arena, orig, self);
+                return arena.externalArenaGameMode.IsExitsOpen(arena, orig, self);
 
             }
 
@@ -2007,7 +2007,7 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
 
-                arena.onlineArenaGameMode.SpawnPlayer(arena, self, room, suggestedDens);
+                arena.externalArenaGameMode.SpawnPlayer(arena, self, room, suggestedDens);
 
             }
 

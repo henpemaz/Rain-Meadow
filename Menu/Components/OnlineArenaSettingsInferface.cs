@@ -59,7 +59,7 @@ namespace RainMeadow.UI.Components
                 arena.currentGameMode = value;
                 if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
                 {
-                    arena.onlineArenaGameMode = extGameMode;
+                    arena.externalArenaGameMode = extGameMode;
                 }
             };
 

@@ -116,9 +116,9 @@ namespace RainMeadow
             {
                 this.iconString = "ChieftainA";
             }
-            else if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+            else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
             {
-                this.iconString = arena.onlineArenaGameMode.AddCustomIcon(arena, owner);
+                this.iconString = arena.externalArenaGameMode.AddCustomIcon(arena, owner);
             }
 
             else
@@ -204,9 +204,9 @@ namespace RainMeadow
                             slugIcon.SetElementByName("Multiplayer_Star");
                             slugIcon.color = owner.PlayerConsideredDead ? lighter_color : Color.yellow;
                         }
-                        else if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
+                        else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
                         {
-                            slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
+                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddCustomIcon(arena, owner));
                         }
 
                         if (TeamBattleMode.isTeamBattleMode(arena, out _)  && owner.PlayerConsideredDead) slugIcon.color = Color.gray;

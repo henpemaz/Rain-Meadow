@@ -21,7 +21,7 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
 
-            arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_ctor(arena, this, menu, owner, tabWrapper, pos);
+            arena.externalArenaGameMode.ArenaExternalGameModeSettingsInterface_ctor(arena, this, menu, owner, tabWrapper, pos);
 
         }
         public override void RemoveSprites()
@@ -40,7 +40,7 @@ namespace RainMeadow.UI.Components
             base.Update();
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                arena.onlineArenaGameMode.ArenaExternalGameModeSettingsInterface_Update(arena, this, menu, owner, tabWrapper, pos);
+                arena.externalArenaGameMode.ArenaExternalGameModeSettingsInterface_Update(arena, this, menu, owner, tabWrapper, pos);
 
             }
         }

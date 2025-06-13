@@ -21,7 +21,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+                arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
                 if (OnlineManager.lobby.isOwner)
                 {

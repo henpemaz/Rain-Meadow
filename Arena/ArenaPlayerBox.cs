@@ -128,9 +128,9 @@ namespace RainMeadow.UI.Components
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            if (RainMeadow.isArenaMode(out var arena) && arena.onlineArenaGameMode != null)
+            if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode != null)
             {
-                arena.onlineArenaGameMode.ArenaPlayerBox_GrafUpdate(arena, timeStacker, showRainbow, rainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton);
+                arena.externalArenaGameMode.ArenaPlayerBox_GrafUpdate(arena, timeStacker, showRainbow, rainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton);
             }
 
         }

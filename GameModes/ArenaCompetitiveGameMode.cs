@@ -12,7 +12,7 @@ namespace RainMeadow
     public class ArenaOnlineGameMode : OnlineGameMode
     {
         public ArenaOnlineSetup myArenaSetup;
-        public ExternalArenaGameMode onlineArenaGameMode;
+        public ExternalArenaGameMode externalArenaGameMode;
         public string currentGameMode;
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
@@ -455,7 +455,7 @@ namespace RainMeadow
                     {
                         if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
                         {
-                            setupTime = onlineArenaGameMode.TimerDirection(this, setupTime);
+                            setupTime = externalArenaGameMode.TimerDirection(this, setupTime);
 
                         }
                     }
@@ -504,7 +504,7 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-            return onlineArenaGameMode.SpawnBatflies(self, spawnRoom);
+            return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
 
 
         }
