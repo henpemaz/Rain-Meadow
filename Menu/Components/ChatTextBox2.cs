@@ -149,11 +149,11 @@ namespace RainMeadow.UI.Components
         }
         public void CaptureInputs(char input)
         {
-            if (DontGetInputs) return;
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
             if (input == '\u007F') return;
             string msg = currentMessage;
             ChatTextBox.blockInput = false;
+            if (DontGetInputs) return;
             //u0008 backspace in unicode
             if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
             {
