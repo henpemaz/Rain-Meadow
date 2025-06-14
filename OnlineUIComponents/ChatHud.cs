@@ -65,7 +65,7 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (chatInputOverlay is null && Input.GetKeyUp(RainMeadow.rainMeadowOptions.ChatLogKey.Value))
+            if (chatInputOverlay is null && Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatLogKey.Value))
             {
                 if (chatLogOverlay is not null)
                 {
@@ -81,13 +81,13 @@ namespace RainMeadow
                     isLogToggled = true;
                 }
             }
-            if (Input.GetKeyUp(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
+            if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
             {
-                /*if (chatInputOverlay is not null) remove this cuz blockInput kinda makes this obsolete
+                if (chatInputOverlay is not null)
                 {
                     ShutDownChatInput();
                     if (!showChatLog && chatLogOverlay is not null) ShutDownChatLog();
-                }*/
+                }
                 if (chatInputOverlay == null && !textPrompt.pausedMode && !ShouldForceCloseChat)
                 {
                     RainMeadow.Debug("creating input");

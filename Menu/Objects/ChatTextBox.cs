@@ -56,13 +56,12 @@ namespace RainMeadow
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-
+                blockInput = false;
             }
         }
         private void CaptureInputs(char input)
         {
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
-            if (isUnloading) return;
             if (input == '\u007F') return;
             string msg = lastSentMessage;
             blockInput = false;
@@ -107,7 +106,7 @@ namespace RainMeadow
                 lastSentMessage = "";
                 return;
             }
-            else
+            else if (!isUnloading)
             {
                 if(selectionPos != -1)
                 {
@@ -128,7 +127,7 @@ namespace RainMeadow
                     cursorPos++;
                 }
             }
-            blockInput = true;
+            if (!isUnloading) blockInput = true;
             menuLabel.text = lastSentMessage;
         }
 
