@@ -83,11 +83,6 @@ namespace RainMeadow
             }
             if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value))
             {
-                if (chatInputOverlay is not null)
-                {
-                    ShutDownChatInput();
-                    if (!showChatLog && chatLogOverlay is not null) ShutDownChatLog();
-                }
                 if (chatInputOverlay == null && !textPrompt.pausedMode && !ShouldForceCloseChat)
                 {
                     RainMeadow.Debug("creating input");
