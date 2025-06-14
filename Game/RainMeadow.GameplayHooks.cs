@@ -449,7 +449,7 @@ namespace RainMeadow
 
             if (WeaponOnline.HittingRemotely) {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
-				if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
+		if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
                 {
                     self.thrownClosestToCreature = null;
                     self.closestCritDist = float.MaxValue;
