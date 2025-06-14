@@ -545,11 +545,11 @@ namespace RainMeadow
         {
             Unreliable = 0,
             UnreliableBroadcast,
-            Reliable,
+            Reliable, // and ordered!
             Acknowledgement,
             HeartBeat,
         }
-        
+
 
         public class RemotePeer {
             public IPEndPoint PeerEndPoint { get; set; } = new IPEndPoint(IPAddress.Any, 0);
@@ -560,7 +560,8 @@ namespace RainMeadow
             public Queue<byte[]> outgoingpacket = new Queue<byte[]>();
             public ulong wanted_acknowledgement = 0;
             public ulong remote_acknowledgement = 0;
-            
+            public bool need_begin_conversation_ack = true;
+
         }
         public const int DEFAULT_PORT = 8720;
         public const int FIND_PORT_ATTEMPTS = 8; // 8 players somehow hosting from the same machine is ridiculous.
@@ -572,7 +573,7 @@ namespace RainMeadow
                 port = DEFAULT_PORT;
                 var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
                 bool alreadyinuse = false;
-                for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) { 
+                for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
                     port = DEFAULT_PORT + i;
                     alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
                     if (!alreadyinuse)
@@ -589,7 +590,7 @@ namespace RainMeadow
                 RainMeadow.Error(except.SocketErrorCode);
                 throw except;
             }
-            
+
         }
 
         List<RemotePeer> peers = new();
@@ -653,6 +654,7 @@ namespace RainMeadow
                 if (addressbytes[0] == 192)
                 if (addressbytes[1] == 168) return true;
 
+                if (addressbytes[0] == 127) return true;
                 if (endpoint.Address.Equals(IPAddress.Loopback)) return true;
             }
             return false;
@@ -660,8 +662,8 @@ namespace RainMeadow
 
         public delegate void OnPeerForgotten_t(IPEndPoint endPoint);
         public event OnPeerForgotten_t OnPeerForgotten = delegate { };
-        
-        
+
+
         public void ForgetPeer(RemotePeer peer) {
             OnPeerForgotten.Invoke(peer.PeerEndPoint);
             peers.Remove(peer);
@@ -707,7 +709,7 @@ namespace RainMeadow
                 RainMeadow.Debug("Invalid port format: " + parts[1]);
                 return null;
             }
-            
+
             return new IPEndPoint(address, port);
         }
 
@@ -716,8 +718,12 @@ namespace RainMeadow
             if (GetRemotePeer(endPoint, true) is RemotePeer peer) {
                 if (packet_type == PacketType.Reliable) {
                     peer.wanted_acknowledgement += 1;
+                    if (begin_conversation && !peer.need_begin_conversation_ack) {
+                        RainMeadow.Error("double start of conversation? flagging next reliable packet sent as conversation start even if it's not this one");
+                        peer.need_begin_conversation_ack = true;
+                    }
                     peer.outgoingpacket.Enqueue(packet);
-                    if (peer.outgoingpacket.Count > 0) {
+                    if (peer.outgoingpacket.Count == 1) {  // only send now if this is the only enqueued packet (Reliable packets are ordered!)
                         SendRaw(peer.outgoingpacket.Peek(), peer, packet_type, begin_conversation);
                     }
                 } else {
@@ -727,14 +733,24 @@ namespace RainMeadow
         }
 
         public void SendRaw(byte[] packet, RemotePeer peer, PacketType packet_type, bool begin_conversation = false) {
-            using (MemoryStream stream = new(packet.Length + 1)) 
+            int extraLength = 1;
+            switch (packet_type) {
+            case PacketType.Reliable:
+                extraLength = 2 + sizeof(ulong);
+                break;
+            case PacketType.Acknowledgement:
+                extraLength = 1 + sizeof(ulong);
+                break;
+            };
+
+            using (MemoryStream stream = new(packet.Length + extraLength))
             using (BinaryWriter writer = new(stream)) {
                 writer.Write((byte)packet_type);
                 if (packet_type == PacketType.Reliable)  {
                     writer.Write(begin_conversation);
                     writer.Write(peer.wanted_acknowledgement);
                 }
-                    
+
 
                 if (packet_type == PacketType.Acknowledgement)
                     writer.Write(peer.remote_acknowledgement);
@@ -761,15 +777,19 @@ namespace RainMeadow
 
                 peer.OutgoingPacketAcummulator += (ulong)elapsedTime;
                 ulong sendAmount; sendAmount = peer.OutgoingPacketAcummulator / heartbeatTime;
-                if (sendAmount > 1)  {
+                if (sendAmount >= 1)  {
                     peer.OutgoingPacketAcummulator -= sendAmount * heartbeatTime;
                     peer.OutgoingPacketAcummulator = Math.Max(peer.OutgoingPacketAcummulator, 0); // just to be sure
 
                     for (ulong j = 0; j < sendAmount; j++) {
                         if (peer.outgoingpacket.Count > 0) {
-                            SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable);
+                            SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable, peer.need_begin_conversation_ack);
                         } else if (peer.TicksSinceLastIncomingPacket > heartbeatTime) {
-                            SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                            SendRaw(
+                                Enumerable.Repeat((byte)0, 1).ToArray(),
+                                peer,
+                                PacketType.HeartBeat
+                            );
                         }
                     }
 
@@ -791,7 +811,9 @@ namespace RainMeadow
                 }
 
                 writer.Write(sendpoint.Address.MapToIPv4().GetAddressBytes()); // writes 4 bytes.
-                writer.Write((int)sendpoint.Port);
+                // IPEndPoint.Port is an Int32 but that's only because .NET doesn't want unsigned ints in public APIs.
+                // so let's unwaste 2 bytes of bandwidth
+                writer.Write((UInt16)sendpoint.Port);
             }
         }
 
@@ -806,7 +828,7 @@ namespace RainMeadow
 
             for (; i != ret.Length; i++) {
                 byte[] address_bytes = reader.ReadBytes(4);
-                int port = reader.ReadInt32();
+                int port = (int)reader.ReadUInt16();
                 ret[i] = new IPEndPoint(new IPAddress(address_bytes), port);
             }
 
@@ -818,10 +840,10 @@ namespace RainMeadow
 
             if (socket.Available != 0) {
                 sender = new IPEndPoint(IPAddress.Loopback, 8720);
-                
+
                 byte[] buffer;
                 int len = 0;
-                
+
                 try {
                     buffer = new byte[socket.Available];
                     len = socket.ReceiveFrom(buffer, ref sender);
@@ -829,18 +851,18 @@ namespace RainMeadow
                     RainMeadow.Error(except);
                     return null;
                 }
-                
+
 
                 IPEndPoint? ipsender = sender as IPEndPoint;
-                if (ipsender == null) return null; 
+                if (ipsender == null) return null;
 
                 RemotePeer? peer = GetRemotePeer(ipsender);
-                
-                using (MemoryStream stream = new(buffer, 0, len, false)) 
+
+                using (MemoryStream stream = new(buffer, 0, len, false))
                 using (BinaryReader reader = new(stream)) {
                     try {
                         PacketType type = (PacketType)reader.ReadByte();
-                        
+
                         if (type == PacketType.Reliable) {
                             bool begin_conversation = reader.ReadBoolean();
                             if (begin_conversation && peer == null) {
@@ -868,27 +890,35 @@ namespace RainMeadow
 
                                 ulong wanted_ack = reader.ReadUInt64();
                                 byte[]? new_data = null;
-                                
+
                                 if (EventMath.IsNewer(wanted_ack, peer.remote_acknowledgement)) {
                                     peer.remote_acknowledgement = wanted_ack;
-                                    new_data = reader.ReadBytes(len - 1);
+                                    new_data = reader.ReadBytes(len - 2 - sizeof(ulong));
                                 }
                                 SendRaw(Array.Empty<byte>(), peer, PacketType.Acknowledgement);
                                 return new_data;
                             case PacketType.Acknowledgement:
                                 if (peer == null) return null;
+                                peer.need_begin_conversation_ack = false;
                                 ulong remote_ack = reader.ReadUInt64();
                                 if (EventMath.IsNewerOrEqual(remote_ack, peer.wanted_acknowledgement)) {
                                     ++peer.wanted_acknowledgement;
                                     if (peer.outgoingpacket.Count > 0) {
-                                        peer.outgoingpacket.Dequeue();
+                                        peer.outgoingpacket.Dequeue();  // TODO recheck this logic because it looks full of holes
                                     }
                                 }
                                 return null;
 
                             case PacketType.HeartBeat:
                                 if (peer == null) return null;
-                                SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                                bool is_response = reader.ReadBoolean();
+                                if (!is_response)
+                                    SendRaw(
+                                        Enumerable.Repeat((byte)1, 1).ToArray(),
+                                        peer,
+                                        PacketType.HeartBeat
+                                    );
+
                                 return null;
 
                             default:
@@ -903,10 +933,6 @@ namespace RainMeadow
             }
             return null;
         }
-
-
-
-        
 
         void IDisposable.Dispose() {
             socket.Dispose();
