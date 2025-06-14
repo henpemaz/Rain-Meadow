@@ -33,8 +33,8 @@ namespace RainMeadow
             lanids = lanids.Where(x => x.endPoint != null);
 
             bool includeme = lanids.FirstOrDefault(x => x.isLoopback()) is not null;
-
-            lanids = lanids.Where(x => !x.isLoopback());
+            if (includeme)
+                lanids = lanids.Where(x => !x.isLoopback());
             var processinglanid = (LANMatchmakingManager.LANPlayerId)processingPlayer.id;
             UDPPeerManager.SerializeEndPoints(writer, lanids.Select(x => x.endPoint).ToArray(), processinglanid.endPoint, includeme);
 
@@ -62,7 +62,7 @@ namespace RainMeadow
                     players[i].id.name = reader.ReadNullTerminatedString();
                 }
             }
-                
+
             else if (modifyOperation == Operation.Remove)
                 players = endpoints.Select(x => lanmatchmaker.GetPlayerLAN(x)).ToArray();
 
@@ -79,7 +79,7 @@ namespace RainMeadow
                     {
                         if (((LANMatchmakingManager.LANPlayerId)players[i].id).isLoopback()) {
                             // That's me
-                            // Put me where I belong.
+                            // Put me where I belong. (...at the end of the player list?)
                             OnlineManager.players.Remove(OnlineManager.mePlayer);
                             OnlineManager.players.Add(OnlineManager.mePlayer);
                             continue;

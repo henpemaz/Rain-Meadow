@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace RainMeadow
 {
-    
+
 
     public class LANNetIO : NetIO {
         public readonly UDPPeerManager manager;
@@ -29,7 +29,7 @@ namespace RainMeadow
                                 (OnlineManager.lobby?.isOwner ?? true)
                             ) {
                                 playerstoRemove.Add(player);
-                                
+
                             }
                         }
                     }
@@ -41,8 +41,8 @@ namespace RainMeadow
 
         public void SendBroadcast(Packet packet) {
             RainMeadow.DebugMe();
-            for (int broadcast_port = UDPPeerManager.DEFAULT_PORT; 
-                broadcast_port < (UDPPeerManager.FIND_PORT_ATTEMPTS + UDPPeerManager.DEFAULT_PORT); 
+            for (int broadcast_port = UDPPeerManager.DEFAULT_PORT;
+                broadcast_port < (UDPPeerManager.FIND_PORT_ATTEMPTS + UDPPeerManager.DEFAULT_PORT);
                 broadcast_port++) {
                 IPEndPoint point = new(IPAddress.Broadcast, broadcast_port);
 
@@ -59,7 +59,7 @@ namespace RainMeadow
                     Packet.Encode(packet, writer, player);
 
                     for (int i = 0; i < 4; i++)
-                    manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint, 
+                    manager.Send(memory.GetBuffer(), ((LANMatchmakingManager.LANPlayerId)player.id).endPoint,
                         UDPPeerManager.PacketType.UnreliableBroadcast, true);
                     }
                 }
@@ -130,7 +130,7 @@ namespace RainMeadow
                 return;
             }
 
-            
+
             while (manager.IsPacketAvailable())
             {
                 try
@@ -140,14 +140,14 @@ namespace RainMeadow
                     if (data == null) continue;
                     IPEndPoint? iPEndPoint = remoteEndpoint as IPEndPoint;
                     if (iPEndPoint is null) continue;
-                    
+
                     using (MemoryStream netStream = new MemoryStream(data))
                     using (BinaryReader netReader = new BinaryReader(netStream)) {
                         if (netReader.BaseStream.Position == ((MemoryStream)netReader.BaseStream).Length) continue; // nothing to read somehow?
                         var player = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.LAN] as LANMatchmakingManager).GetPlayerLAN(iPEndPoint);
                         if (player == null)
                         {
-                            RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint.Port);
+                            RainMeadow.Debug("Player not found! Instantiating new at: " + iPEndPoint);
                             var playerid = new LANMatchmakingManager.LANPlayerId(iPEndPoint);
                             player = new OnlinePlayer(playerid);
                         }

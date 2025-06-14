@@ -654,6 +654,7 @@ namespace RainMeadow
                 if (addressbytes[0] == 192)
                 if (addressbytes[1] == 168) return true;
 
+                if (addressbytes[0] == 127) return true;
                 if (endpoint.Address.Equals(IPAddress.Loopback)) return true;
             }
             return false;
@@ -784,7 +785,11 @@ namespace RainMeadow
                         if (peer.outgoingpacket.Count > 0) {
                             SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable, peer.need_begin_conversation_ack);
                         } else if (peer.TicksSinceLastIncomingPacket > heartbeatTime) {
-                            SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                            SendRaw(
+                                Enumerable.Repeat((byte)0, 1).ToArray(),
+                                peer,
+                                PacketType.HeartBeat
+                            );
                         }
                     }
 
@@ -806,7 +811,9 @@ namespace RainMeadow
                 }
 
                 writer.Write(sendpoint.Address.MapToIPv4().GetAddressBytes()); // writes 4 bytes.
-                writer.Write((int)sendpoint.Port);
+                // IPEndPoint.Port is an Int32 but that's only because .NET doesn't want unsigned ints in public APIs.
+                // so let's unwaste 2 bytes of bandwidth
+                writer.Write((UInt16)sendpoint.Port);
             }
         }
 
@@ -821,7 +828,7 @@ namespace RainMeadow
 
             for (; i != ret.Length; i++) {
                 byte[] address_bytes = reader.ReadBytes(4);
-                int port = reader.ReadInt32();
+                int port = (int)reader.ReadUInt16();
                 ret[i] = new IPEndPoint(new IPAddress(address_bytes), port);
             }
 
@@ -897,14 +904,21 @@ namespace RainMeadow
                                 if (EventMath.IsNewerOrEqual(remote_ack, peer.wanted_acknowledgement)) {
                                     ++peer.wanted_acknowledgement;
                                     if (peer.outgoingpacket.Count > 0) {
-                                        peer.outgoingpacket.Dequeue();
+                                        peer.outgoingpacket.Dequeue();  // TODO recheck this logic because it looks full of holes
                                     }
                                 }
                                 return null;
 
                             case PacketType.HeartBeat:
                                 if (peer == null) return null;
-                                SendRaw(Array.Empty<byte>(), peer, PacketType.HeartBeat);
+                                bool is_response = reader.ReadBoolean();
+                                if (!is_response)
+                                    SendRaw(
+                                        Enumerable.Repeat((byte)1, 1).ToArray(),
+                                        peer,
+                                        PacketType.HeartBeat
+                                    );
+
                                 return null;
 
                             default:
