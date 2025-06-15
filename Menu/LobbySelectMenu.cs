@@ -291,13 +291,17 @@ namespace RainMeadow
                 RainMeadow.Debug($"{lobbyInfo.name}, {lobbyInfo.maxPlayerCount}, {lobbyInfo.mode}, {lobbyInfo.playerCount}, {lobbyInfo.hasPassword}");
             }
 
-            if (lobbyInfo.hasPassword)
+            // If has password, we show the dialog, otherwise we only let them join when the dialog is no longer present
+            if (popupDialog is null)
             {
-                ShowPasswordRequestDialog();
-            }
-            else
-            {
-                StartJoiningLobby(lobbyInfo);
+                if (lobbyInfo.hasPassword)
+                {
+                    ShowPasswordRequestDialog();
+                }
+                else
+                {
+                    StartJoiningLobby(lobbyInfo);
+                }
             }
         }
 
