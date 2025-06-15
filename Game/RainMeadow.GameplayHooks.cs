@@ -449,7 +449,7 @@ namespace RainMeadow
 
             if (WeaponOnline.HittingRemotely) {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
-		if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
+				if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
                 {
                     self.thrownClosestToCreature = null;
                     self.closestCritDist = float.MaxValue;
@@ -473,9 +473,10 @@ namespace RainMeadow
 
 
                 BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
-                AppendageRef? appendageRef = result.onAppendagePos is null? null : new AppendageRef(result.onAppendagePos);
+                AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
-                if (!onlineHit.owner.isMe) {
+                if (!onlineHit.owner.isMe)
+                {
                     onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
                         onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
                     ));

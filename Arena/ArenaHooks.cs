@@ -1246,6 +1246,8 @@ namespace RainMeadow
                     return;
                 }
 
+                if (!killedCrit.IsLocal()) return;
+
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
 
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
