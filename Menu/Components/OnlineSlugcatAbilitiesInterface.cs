@@ -13,9 +13,9 @@ namespace RainMeadow.UI.Components
         public OnlineSlugcatAbilitiesInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 spacing, string painCatName, float textSpacing = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
-            blockMaulCheckBox = new(menu, this, this, Vector2.zero, textSpacing, menu.Translate("Disable Mauling:"), DISABLEMAUL, false, menu.Translate($"Block Artificer and {painCatName} to maul held creatures"));
-            blockArtiStunCheckBox = new(menu, this, this, -spacing, textSpacing, menu.Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, menu.Translate("Block Artificer to stun other players"));
-            sainotCheckBox = new(menu, this, this, -spacing * 2, textSpacing, menu.Translate("Sain't:"), SAINOT, false, menu.Translate("Disable Saint ascendance ability"));
+            blockMaulCheckBox = new(menu, this, this, Vector2.zero, textSpacing, menu.Translate("Disable Mauling:"), DISABLEMAUL, false, menu.Translate($"Prevent Artificer and {painCatName} from mauling"));
+            blockArtiStunCheckBox = new(menu, this, this, -spacing, textSpacing, menu.Translate("Disable Artificer Stun:"), DISABLEARTISTUN, false, menu.Translate("Prevent Artificer from stunning other players"));
+            sainotCheckBox = new(menu, this, this, -spacing * 2, textSpacing, menu.Translate("Sain't:"), SAINOT, false, menu.Translate("Disable Saint ascendance ability, but allow it to throw spears"));
             saintAscendanceTimerLabel = new(menu, this, menu.Translate("Saint Ascendance Duration:"), (-spacing * 3) - new Vector2(300, -2), new(151, 20), false);
             saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), new(saintAscendanceTimerLabel.pos.x + 292.5f, saintAscendanceTimerLabel.pos.y - 2), 40)
             {

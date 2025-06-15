@@ -159,6 +159,5 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (OnlineManager.lobby.isOwner)
             levelSelector.LoadNewPlaylist(Arena.playList, false);
         else levelSelector.LoadNewPlaylist(Arena.playList, true);
-
     }
 }

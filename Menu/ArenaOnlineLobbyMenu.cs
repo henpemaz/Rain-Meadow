@@ -42,11 +42,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             throw new InvalidOperationException("lobby is null");
 
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
+        if (backObject is SimplerButton btn) btn.description = "Exit to Lobby Select";
+
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
         Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
-
 
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = Competitive.CompetitiveMode.value;
@@ -144,6 +145,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
+        UpdateElementBindings();
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -159,6 +161,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
             if (idString == "EVILAI")
                 return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
+            if (idString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena))
+                return arena.itemSteal ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -188,7 +192,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
-        return selectedObject is IHaveADescription descObj? descObj.Description : base.UpdateInfoText();
+        return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
@@ -215,7 +219,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             var newpos = oldPagesPos[i] + newPagePos;
             pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
         }
+    }
 
-        
+    public void UpdateElementBindings()
+    {
+        MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.playButton);
+        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
+        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[1]?.wrapper);
+        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[0].wrapper);
     }
 }

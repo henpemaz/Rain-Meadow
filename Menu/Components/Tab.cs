@@ -28,6 +28,7 @@ public class TabContainer : RectangularMenuObject
             _label.alignment = FLabelAlignment.Left;
             _label.rotation = -90f;
             _label.text = name;
+            description = $"Click to open {name} tab";
 
             OnClick += _ => container.SwitchTab(tabIndex);
         }
@@ -175,7 +176,7 @@ public class TabContainer : RectangularMenuObject
         public MenuTabWrapper tabWrapper;
         public SimplerSymbolButton? topArrowButton, bottomArrowButton;
         public List<string> registeredTabButtons;
-        private List<TabButton> activeTabButtons;
+        public readonly List<TabButton> activeTabButtons;
         public TabContainer container;
     }
     public class Tab : PositionedMenuObject
