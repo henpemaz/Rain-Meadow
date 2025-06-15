@@ -6,6 +6,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using UnityEngine;
 
 namespace RainMeadow.UI.Components;
@@ -191,6 +192,7 @@ public class TabContainer : RectangularMenuObject
         {
             if (IsHidden)
             {
+                UpdateHiddenObjects(this);
                 return;
             }
             base.Update();
@@ -199,6 +201,7 @@ public class TabContainer : RectangularMenuObject
         {
             if (IsHidden)
             {
+                GrafUpdateHiddenObjects(this, timeStacker);
                 return;
             }
             base.GrafUpdate(timeStacker);
@@ -224,6 +227,7 @@ public class TabContainer : RectangularMenuObject
         public void ShowObject(MenuObject? obj)
         {
             if (obj is SelectableMenuObject selectableObj && !obj.page.selectables.Contains(selectableObj)) obj.page.selectables.Add(selectableObj);
+            if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = false;
             for (int i = 0; i < obj?.subObjects?.Count; i++)
             {
                 ShowObject(obj.subObjects[i]);
@@ -232,6 +236,26 @@ public class TabContainer : RectangularMenuObject
         public void HideObject(MenuObject? obj)
         {
             if (obj != null) RecursiveRemoveSelectables(obj);
+            if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = true;
+        }
+        public void UpdateHiddenObjects(MenuObject obj)
+        {
+            for (int i = 0; i < obj.subObjects.Count; i++)
+            {
+                MenuObject subObj = obj.subObjects[i];
+                if (subObj is IPLEASEUPDATEME) subObj.Update(); //assuming you update all subobjects as well
+                else UpdateHiddenObjects(subObj);
+            }
+        }
+        public void GrafUpdateHiddenObjects(MenuObject obj, float timeStacker)
+        {
+            for (int i = 0; i < obj.subObjects.Count; i++)
+            {
+                MenuObject subObj = obj.subObjects[i];
+                if (subObj is IPLEASEUPDATEME) subObj.GrafUpdate(timeStacker);
+                else GrafUpdateHiddenObjects(subObj, timeStacker);
+
+            }
         }
         public void AddObjects(params MenuObject[] objects)
         {

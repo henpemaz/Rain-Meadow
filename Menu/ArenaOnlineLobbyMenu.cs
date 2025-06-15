@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -11,6 +12,7 @@ using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
+using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI;
 
@@ -21,9 +23,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Vector2 newPagePos = Vector2.zero;
     public Vector2[] oldPagesPos = [];
     public MenuIllustration competitiveTitle, competitiveShadow;
-    public MenuScene.SceneID slugcatScene;
     public Page slugcatSelectPage;
-    public bool pagesMoving = false, pendingBgChange = false;
+    public bool pagesMoving = false;
+    public MenuScene.SceneID? pendingScene;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
@@ -64,17 +66,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
     }
 
-    public void ChangeScene(MenuScene.SceneID sceneID)
+    public void ChangeScene()
     {
-        RainMeadow.Debug($"Scene wanted to switch: {sceneID.value}");
-        slugcatScene = sceneID;
-        pendingBgChange = false;
+        if (pendingScene == null) return;
 
-        if (scene.sceneID == sceneID) return;
-
-        scene.ClearMenuObject(scene);
-        scene = new InteractiveMenuScene(this, pages[0], sceneID);
-        mainPage.subObjects.Add(scene);
+        mainPage.ClearMenuObject(scene);
+        scene = new InteractiveMenuScene(this, pages[0], pendingScene);
+        mainPage.SafeAddSubobjects(scene);
         if (scene.depthIllustrations != null && scene.depthIllustrations.Count > 0)
         {
             int count = scene.depthIllustrations.Count;
@@ -87,6 +85,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             while (count2-- > 0)
                 scene.flatIllustrations[count2].sprite.MoveToBack();
         }
+
+        pendingScene = null;
     }
 
     public void MovePage(Vector2 direction, int index)
@@ -108,8 +108,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         GetArenaSetup.playerClass[0] = slugcat;
-        slugcatScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
-        pendingBgChange = true;
+        pendingScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
     }
     public override void ShutDownProcess()
     {
@@ -117,18 +116,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
-            arenaMainLobbyPage.SaveInterfaceOptions();
             GetArenaSetup.SaveToFile();
+            arenaMainLobbyPage.SaveInterfaceOptions();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
         manager.rainWorld.progression.SaveProgression(true, true);
+        base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
             OnlineManager.LeaveLobby();
             manager.arenaSetup = null;
         }
-        base.ShutDownProcess();
+
     }
     public override void Update()
     {
@@ -137,11 +137,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         {
             if (currentPage == 1) MovePage(new Vector2(1500f, 0f), 0);
         }
-        lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
-        desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + (pendingBgChange ? 0.01f : -0.01f), 0.8f, 1.1f);
-        pendingBgChange = pendingBgChange || slugcatScene != scene.sceneID;
 
-        if (pendingBgChange && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene(slugcatScene);
+        if (pendingScene == scene.sceneID) pendingScene = null;
+        lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
+        desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
+        if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
     }
@@ -180,7 +180,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"{value} wildlife");
             }
         }
-        return base.UpdateInfoText();
+        if (selectedObject is ButtonScroller.SideButton sideBtn)
+        {
+            string id = sideBtn.signalText;
+            if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)
+                return Translate(playSelector.ShowThumbsStatus ? "Showing level thumbnails" : "Showing level names");
+            if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
+                return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
+        }
+        return selectedObject is IHaveADescription descObj? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
@@ -195,20 +203,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void UpdateMovingPage()
     {
-        pageMovementProgress += 0.35f;
-        float baseMoveSpeed = Mathf.Lerp(8f, 125f, Custom.SCurve(pageMovementProgress, 0.85f));
+        pageMovementProgress = Mathf.MoveTowards(pageMovementProgress, 1f, 1f / 35f);
+        if (Mathf.Approximately(pageMovementProgress, 1f))
+        {
+            pageMovementProgress = 1f;
+            pagesMoving = false;
+        }
+
         for (int i = 0; i < pages.Count; i++)
         {
-            float totalTravelDistance = Vector2.Distance(oldPagesPos[i], oldPagesPos[i] + newPagePos);
-            float distanceToTravel = Vector2.Distance(pages[i].pos, oldPagesPos[i] + newPagePos);
-            float easing = Mathf.Lerp(1f, 0.01f, Mathf.InverseLerp(totalTravelDistance, 0.1f, distanceToTravel));
-
-            pages[i].pos = Custom.MoveTowards(pages[i].pos, oldPagesPos[i] + newPagePos, baseMoveSpeed * easing);
-
-            if (pages[i].pos == oldPagesPos[i] + newPagePos)
-            {
-                pagesMoving = false;
-            }
+            var newpos = oldPagesPos[i] + newPagePos;
+            pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
         }
+
+        
     }
 }

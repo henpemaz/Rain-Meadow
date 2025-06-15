@@ -19,7 +19,7 @@ namespace RainMeadow
             selectedObject = null;
             Vector2 pos = new(1180, 553);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
-            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
+            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, new(ButtonSize, ButtonSpacingOffset));
             pages[0].subObjects.Add(playerScroller);
         }
         private bool UpdateList()
