@@ -11,6 +11,7 @@ using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
+using static RainMeadow.UI.Components.ArenaLevelSelector;
 
 namespace RainMeadow.UI;
 
@@ -117,18 +118,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
         {
-            arenaMainLobbyPage.SaveInterfaceOptions();
             GetArenaSetup.SaveToFile();
+            arenaMainLobbyPage.SaveInterfaceOptions();
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
         manager.rainWorld.progression.SaveProgression(true, true);
+        base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
             OnlineManager.LeaveLobby();
             manager.arenaSetup = null;
         }
-        base.ShutDownProcess();
+
     }
     public override void Update()
     {
@@ -180,7 +182,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"{value} wildlife");
             }
         }
-        return base.UpdateInfoText();
+        if (selectedObject is ButtonScroller.SideButton sideBtn)
+        {
+            string id = sideBtn.signalText;
+            if (id == "THUMBS" && sideBtn.owner is PlaylistSelector playSelector)
+                return Translate(playSelector.ShowThumbsStatus ? "Showing level thumbnails" : "Showing level names");
+            if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
+                return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
+        }
+        return selectedObject is IHaveADescription descObj? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
     {
