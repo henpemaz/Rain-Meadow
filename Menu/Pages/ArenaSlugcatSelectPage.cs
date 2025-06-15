@@ -15,6 +15,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
+
+    public MenuIllustration painCatPortrait;
+    public EventfulSelectOneButton painCatButton;
+
     public int selectedSlugcatIndex = 0;
     public string painCatName;
     public string? painCatDescription, painCatPortraitFileString;
@@ -35,9 +39,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         int buttonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - buttonsInTopRow;
         float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
-
-        MenuIllustration portrait2 = null;
-        EventfulSelectOneButton painCatButton = null;
         for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
         {
             int index = i;
@@ -47,45 +48,19 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
             string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
-            portrait2 = portrait;
             btn.subObjects.Add(portrait);
 
             if (ArenaHelpers.selectableSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
             {
                 painCatButton = btn;
-                painCatPortraitFileString = portraitFileString;
-
-                if (ArenaMenu is not null)
-                    painCatDescription = GetPainCatDescription();
+                painCatPortrait = portrait;
+                RandomizeInvDetails();
             }
 
             subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
-
-        SimplerButton randomizePainCat = new(menu, this, $"Randomize {painCatName} select data", new Vector2(1056f, 50f), new Vector2(300f, 30f));
-        randomizePainCat.OnClick += _ =>
-            {
-                bool seenIt = true;
-                int timer = 0;
-                while (seenIt && timer < 10000)
-                {
-                    this.ClearMenuObject(portrait2);
-                    painCatPortraitFileString = SlugcatColorableButton.GetFileForSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel, false);
-                    subObjects.Add(portrait2 = new MenuIllustration(menu, painCatButton, "", painCatPortraitFileString, painCatButton.size / 2, true, true));
-                    this.painCatName = Arena.slugcatSelectPainCatNames[UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count)];
-                    painCatDescription = GetPainCatDescription();
-                    seenIt = count.ContainsKey(painCatDescription);
-                    if (seenIt) count[painCatDescription]++;
-                    else count[painCatDescription] = 1;
-
-                    timer++;
-                }
-                if (timer >= 10000) RainMeadow.Debug("Broke loop after 10000 cycles");
-
-                SwitchSelectedSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
-            };
-
+            
         MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
@@ -110,15 +85,24 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Container.AddChild(descriptionGradients[i]);
         }
 
-        this.SafeAddSubobjects(backButton, chooseYourSlugcatLabel, slugcatNameLabel, descriptionLabel, randomizePainCat);
+        this.SafeAddSubobjects(backButton, chooseYourSlugcatLabel, slugcatNameLabel, descriptionLabel);
         if (ArenaMenu != null)
         {
             SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
             RainMeadow.Debug($"Saved Slugcat: {savedSlugcat?.value ?? "NULL"}");
             SwitchSelectedSlugcat(savedSlugcat);
-            ArenaMenu.ChangeScene(ArenaMenu.slugcatScene);
         }
     }
+
+    public void RandomizeInvDetails()
+    {
+        this.ClearMenuObject(painCatPortrait);
+        painCatPortraitFileString = SlugcatColorableButton.GetFileForSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel, false);
+        subObjects.Add(painCatPortrait = new MenuIllustration(menu, painCatButton, "", painCatPortraitFileString, painCatButton.size / 2, true, true));
+        this.painCatName = Arena.slugcatSelectPainCatNames[UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count)];
+        painCatDescription = GetPainCatDescription();
+    }
+
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
@@ -130,6 +114,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
+            RandomizeInvDetails();
             descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
@@ -181,9 +166,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     {
         base.Update();
 
-        if (ArenaMenu is not null)
-            for (int i = 0; i < slugcatSelectButtons.Length; i++)
-                slugcatSelectButtons[i].buttonBehav.greyedOut = ArenaMenu.pendingBgChange;
+        // if (ArenaMenu is not null)
+        //     for (int i = 0; i < slugcatSelectButtons.Length; i++)
+        //         slugcatSelectButtons[i].buttonBehav.greyedOut = ArenaMenu.pendingBgChange;
     }
 
     public override void GrafUpdate(float timeStacker)
