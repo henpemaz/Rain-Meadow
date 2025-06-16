@@ -230,7 +230,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, tb.TeamColors[t.team], 0.5f);
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, tb.TeamColors[t.team], 0.7f);
                 }
             }
 

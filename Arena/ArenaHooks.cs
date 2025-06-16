@@ -119,8 +119,26 @@ namespace RainMeadow
             IL.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
             On.ArenaSitting.PlayerSessionResultSort += ArenaSitting_PlayerSessionResultSort;
             On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
+            On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
+           
 
 
+        }
+
+        private void ArenaOverlay_ctor(On.Menu.ArenaOverlay.orig_ctor orig, ArenaOverlay self, ProcessManager manager, ArenaSitting ArenaSitting, List<ArenaSitting.ArenaPlayer> result)
+        {
+            orig(self, manager, ArenaSitting, result);
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+
+                    if (tb.winningTeam != -1)
+                    {
+                        self.headingLabel.text = Utils.Translate($"{tb.teamNameDictionary[tb.winningTeam].ToUpper()} WIN!");
+                    }
+                }
+            }
         }
 
         private bool ArenaSitting_PlayerSittingResultSort(On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
