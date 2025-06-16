@@ -27,8 +27,8 @@ namespace RainMeadow
             public int dragonslayers;
             [OnlineField]
             public int chieftains;
-            //[OnlineField]
-            //public string martyrsName;
+            [OnlineField]
+            public string martyrsName;
             //[OnlineField]
             //public string chieftainsName;
             //[OnlineField]
@@ -43,22 +43,25 @@ namespace RainMeadow
             public State(TeamBattleLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
-                if (isTb && teamBattleMode != null)
+                if (arena != null)
                 {
-                    winningTeam = teamBattleMode.winningTeam;
-                    martyrs = teamBattleMode.martyrsSpawn;
-                    outlaws = teamBattleMode.outlawsSpawn;
-                    dragonslayers = teamBattleMode.dragonslayersSpawn;
-                    chieftains = teamBattleMode.chieftainsSpawn;
+                    bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
+                    if (isTb && teamBattleMode != null)
+                    {
+                        winningTeam = teamBattleMode.winningTeam;
+                        martyrs = teamBattleMode.martyrsSpawn;
+                        outlaws = teamBattleMode.outlawsSpawn;
+                        dragonslayers = teamBattleMode.dragonslayersSpawn;
+                        chieftains = teamBattleMode.chieftainsSpawn;
 
-                    roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
+                        roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
 
-                    //martyrsName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
-                    //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
-                    //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
-                    //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+                        martyrsName = teamBattleMode.martyrsTeamName;
+                        //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
+                        //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
+                        //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
 
+                    }
                 }
             }
 
@@ -66,26 +69,25 @@ namespace RainMeadow
             {
                 var lobby = (resource as Lobby);
                 var arena = (lobby.gameMode as ArenaOnlineGameMode);
-                bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
-                if (cachedTb && teamBattleMode != null)
+                if (arena != null)
                 {
-                    teamBattleMode.winningTeam = winningTeam;
-                    teamBattleMode.martyrsSpawn = martyrs;
-                    teamBattleMode.outlawsSpawn = outlaws;
-                    teamBattleMode.dragonslayersSpawn = dragonslayers;
-                    teamBattleMode.outlawsSpawn = outlaws;
+                    bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
+                    if (cachedTb && teamBattleMode != null)
+                    {
+                        teamBattleMode.winningTeam = winningTeam;
+                        teamBattleMode.martyrsSpawn = martyrs;
+                        teamBattleMode.outlawsSpawn = outlaws;
+                        teamBattleMode.dragonslayersSpawn = dragonslayers;
 
-                    teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
+                        teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
 
-                    //teamBattleMode.martyrsTeamName = martyrsName;
-                    //teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
-                    //teamBattleMode.chieftainsTeamNames = chieftainsName;
-                    //teamBattleMode.outlawTeamNames = outlawsName;
+                        //teamBattleMode.martyrsTeamName = martyrsName;
+                        //teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+                        //teamBattleMode.chieftainsTeamNames = chieftainsName;
+                        //teamBattleMode.outlawTeamNames = outlawsName;
 
+                    }
                 }
-
-
-
             }
 
             public override Type GetDataType() => typeof(TeamBattleLobbyData);

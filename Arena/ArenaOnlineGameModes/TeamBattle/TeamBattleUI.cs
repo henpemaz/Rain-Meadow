@@ -103,6 +103,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 dragonslayersSpawn = 0;
                 chieftainsSpawn = 0;
                 roundSpawnPointCycler = 0;
+                
 
                 ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
                 ListItem outlawsListItem = new ListItem(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value);
