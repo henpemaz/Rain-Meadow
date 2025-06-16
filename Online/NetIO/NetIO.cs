@@ -30,6 +30,20 @@ namespace RainMeadow
 
         }
 
+        public virtual void SendCustomData(OnlinePlayer toPlayer, CustomPacket customPacket, SendType sendType)
+        {
+            try
+            {
+                SendP2P(toPlayer, customPacket, sendType);
+            }
+            catch (Exception e)
+            {
+                RainMeadow.Error(e);
+                throw;
+            }
+
+        }
+
         public virtual void ForgetPlayer(OnlinePlayer player) {}
         public virtual void ForgetEverything() {}
 

@@ -5,31 +5,28 @@ namespace RainMeadow
     public class CustomPacket : Packet
     {
         public string key = "";
-        public int size;
         public byte[] data;
         public override Type type => Type.CustomPacket;
 
         public CustomPacket() { }
-        public CustomPacket(string key, byte[] data)
+        public CustomPacket(string key, byte[] data, ushort size)
         {
             this.key = key;
-            this.size = data.Length;
             this.data = data;
+            this.size = size;
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
             writer.Write(this.key);
-            writer.Write(this.size);
-            writer.Write(this.data);
+            writer.Write(this.data, 0, this.size);
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             this.key = reader.ReadString();
-            this.size = reader.ReadInt32();
             this.data = reader.ReadBytes(this.size);
         }
 
@@ -45,6 +42,13 @@ namespace RainMeadow
                 return;
             }
             MatchmakingManager.currentInstance.RecieveCustomPacket(processingPlayer, this);
+        }
+
+        public void SteamEncode(MemoryStream ms, BinaryWriter writer)
+        {
+            writer.Write(this.key);
+            writer.Write(this.size);
+            writer.Write(this.data, 0, this.size);
         }
     }
 }
