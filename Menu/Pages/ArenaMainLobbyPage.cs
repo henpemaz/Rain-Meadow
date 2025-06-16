@@ -17,6 +17,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public PlayerDisplayer? playerDisplayer;
     public Dialog? slugcatDialog;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+    public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
     {
@@ -57,9 +58,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-        // ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
-        ArenaOnlineLobbyMenu arenaOnlineMenu = (ArenaOnlineLobbyMenu)menu;
-        var changeCharacterLambda = () =>
+        void changeCharacter()
         {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
@@ -68,23 +67,23 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 else
                 {
                     index += 1;
-                    index = index % ArenaHelpers.selectableSlugcats.Count;
+                    index %= ArenaHelpers.selectableSlugcats.Count;
                 }
 
-                arenaOnlineMenu.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+                ArenaMenu?.arenaSlugcatSelectPage.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
             }
             else
             {
-                arenaOnlineMenu?.MovePage(new Vector2(-1500f, 0f), 1);
+                ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
             }
-        };
+        }
 
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
             if (player.isMe)
             {
-                playerBox.slugcatButton.OnClick += _ => changeCharacterLambda();
+                playerBox.slugcatButton.OnClick += _ => changeCharacter();
                 playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
             }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
@@ -95,7 +94,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += _ => changeCharacterLambda();
+            playerSmallBox.slugcatButton.OnClick += _ => changeCharacter();
             playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
 
