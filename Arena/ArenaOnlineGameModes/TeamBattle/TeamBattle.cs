@@ -275,14 +275,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     {
                         if (teamsRemaining.Count == 1)
                         {
+                            tb.winningTeam = teamsRemaining.First();
+
                             OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                             if (onlineP != null)
                             {
                                 bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
                                 if (gotPlayerTeam)
                                 {
-                                    player.winner = teamsRemaining.TryGetValue(playerTeam.team, out var winningTeam);
-                                    tb.winningTeam = winningTeam;
+                                    player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
                                 }
                             }
                         }
