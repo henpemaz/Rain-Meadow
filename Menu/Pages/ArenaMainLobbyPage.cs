@@ -11,6 +11,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 {
     public SimplerButton readyButton;
     public SimplerButton? startButton;
+    public MenuLabel activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel;
+    public FSprite chatLobbyStateDivider;
     public TabContainer tabContainer;
     public ArenaLevelSelector levelSelector;
     public ChatMenuBox chatMenuBox;
@@ -31,7 +33,21 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             btn.menuLabel.text = Utils.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         };
 
-        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
+        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
+        chatMenuBox.roundedRect.size.y = 475f;
+
+        float chatRectPosSizeY = chatMenuBox.pos.y + chatMenuBox.roundedRect.size.y;
+        activeGameModeLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 2, chatRectPosSizeY - 15), Vector2.zero, false);
+        readyPlayerCounterLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 4, chatRectPosSizeY - 35), Vector2.zero, false);
+        playlistProgressLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 4 * 3 - 20, chatRectPosSizeY - 35), Vector2.zero, false);
+
+        chatLobbyStateDivider = new FSprite("pixel")
+        {
+            color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey),
+            scaleX = chatMenuBox.size.x - 40,
+            scaleY = 2,
+        };
+        Container.AddChild(chatLobbyStateDivider);
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
@@ -54,7 +70,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
 
-        this.SafeAddSubobjects(readyButton, tabContainer, chatMenuBox);
+        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox);
     }
 
     public void BuildPlayerDisplay()
@@ -170,6 +186,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
 
+        activeGameModeLabel.text = LabelTest.TrimText($"Current Mode: {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
+        readyPlayerCounterLabel.text = $"Ready: {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
+        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * ArenaMenu?.GetGameTypeSetup.levelRepeats) ?? 0)}";
+
         if (OnlineManager.lobby.isOwner)
         {
             levelSelector.LoadNewPlaylist(Arena.playList, false);
@@ -191,5 +211,13 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 startButton = null;
             }
         }
+    }
+
+    public override void GrafUpdate(float timeStacker)
+    {
+        base.GrafUpdate(timeStacker);
+
+        chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
+        chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
     }
 }
