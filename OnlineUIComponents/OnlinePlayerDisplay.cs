@@ -210,6 +210,8 @@ namespace RainMeadow
                         }
 
                         if (TeamBattleMode.isTeamBattleMode(arena, out _)  && owner.PlayerConsideredDead) slugIcon.color = Color.gray;
+
+                        else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
