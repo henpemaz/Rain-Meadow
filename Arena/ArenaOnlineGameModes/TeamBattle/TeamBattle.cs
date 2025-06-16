@@ -64,7 +64,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public List<string> teamNameList;
 
+        public override void ResetOnSessionEnd()
+        {
+            winningTeam = -1;
+            martyrsSpawn = 0;
+            outlawsSpawn = 0;
+            dragonslayersSpawn = 0;
+            chieftainsSpawn = 0;
+            roundSpawnPointCycler = 0;
 
+        }
 
         public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
         {

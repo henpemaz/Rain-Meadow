@@ -66,16 +66,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, Color.blue }
     };
 
-        public override void ResetOnSessionEnd()
-        {
-            winningTeam = -1;
-            martyrsSpawn = 0;
-            outlawsSpawn = 0;
-            dragonslayersSpawn = 0;
-            chieftainsSpawn = 0;
-            roundSpawnPointCycler = 0;
-
-        }
         public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
         {
             ListItem martyrListItem = new ListItem(TeamMappingsDictionary[0]);
@@ -260,7 +250,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 UIelementWrapper dragonSlayerWrapper = new UIelementWrapper(tabWrapper, dragonsSlayersTeamNameUpdate);
                 UIelementWrapper chiefTainWrapper = new UIelementWrapper(tabWrapper, chieftainsTeamNameUpdate);
 
-                martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
+                //martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
 
 
                 extComp.SafeAddSubobjects(tabWrapper, martyrColorsWrapper, dragonSlayerColorsWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
