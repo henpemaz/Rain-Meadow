@@ -13,3 +13,4 @@
 [ADD]HiHat : HiHat
 [ADD]Perc1 : Perc1
 [ADD]OpenHat : OpenHat
+[ADD]Fartificer/rangeFac=2.5 : fartificerfartwithreverb/vol=0.8/pitch=0.75

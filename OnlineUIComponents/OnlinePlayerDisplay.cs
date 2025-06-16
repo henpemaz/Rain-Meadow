@@ -1,9 +1,11 @@
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
+using static RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle.TeamBattleMode;
 
 namespace RainMeadow
 {
@@ -61,6 +63,8 @@ namespace RainMeadow
 
             Color.RGBToHSV(color, out H, out S, out V);
 
+
+            // FIX THIS
             if (V < 0.8f)
             {
                 this.lighter_color = Color.HSVToRGB(H, S, 0.8f);
@@ -68,6 +72,19 @@ namespace RainMeadow
             else
             {
                 this.lighter_color = color;
+            }
+
+            if (RainMeadow.isArenaMode(out var a))
+            {
+                if (isTeamBattleMode(a, out var tb))
+                {
+
+                    if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    {
+                        this.color = tb.TeamColors[tb2.team];
+                        this.lighter_color = this.color;
+                    }
+                }
             }
 
             this.pos = new Vector2(-1000f, -1000f);
@@ -99,11 +116,10 @@ namespace RainMeadow
             {
                 this.iconString = "ChieftainA";
             }
-
-            //if (arena.onlineArenaGameMode.AddCustomIcon(arena, owner) != "")
-            //{
-            //    slugIcon.SetElementByName(arena.onlineArenaGameMode.AddCustomIcon(arena, owner));
-            //}
+            else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
+            {
+                this.iconString = arena.externalArenaGameMode.AddCustomIcon(arena, owner);
+            }
 
             else
             {
@@ -114,6 +130,8 @@ namespace RainMeadow
             owner.hud.fContainers[0].AddChild(this.slugIcon);
             this.slugIcon.alpha = 0f;
             this.slugIcon.x = -1000f;
+
+
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
@@ -128,8 +146,8 @@ namespace RainMeadow
             this.pingLabel = new FLabel(Custom.GetFont(), $"({realPing}ms)"); //{System.Math.Max(1, player.ping - 16)})
             owner.hud.fContainers[0].AddChild(this.pingLabel);
             this.pingLabel.color = lighter_color;
-            this.pingLabel.alpha = showPing ? 1 :0;
-           
+            this.pingLabel.alpha = showPing ? 1 : 0;
+
 
             this.arrowSprite = new FSprite("Multiplayer_Arrow", true);
             owner.hud.fContainers[0].AddChild(this.arrowSprite);
@@ -166,7 +184,7 @@ namespace RainMeadow
 
                 if (owner.found)
                 {
-                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe )//
+                    if (RainMeadow.rainMeadowOptions.ShowPing.Value && !player.isMe)//
                     {
                         this.pingLabel.alpha = Custom.LerpAndTick(this.alpha, owner.needed && show ? 1 : 0, 0.08f, 0.033333335f);
                     }
@@ -179,10 +197,21 @@ namespace RainMeadow
                     if (owner.PlayerConsideredDead) this.alpha = Mathf.Min(this.alpha, 0.5f);
 
                     if (onlineTimeSinceSpawn < 135 && owner.clientSettings.isMine) slugIcon.SetElementByName("Kill_Slugcat");
-                    else if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+                    else if (RainMeadow.isArenaMode(out var arena))
                     {
-                        slugIcon.SetElementByName("Multiplayer_Star");
-                        slugIcon.color = owner.PlayerConsideredDead ? lighter_color : Color.yellow;
+                        if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+                        {
+                            slugIcon.SetElementByName("Multiplayer_Star");
+                            slugIcon.color = owner.PlayerConsideredDead ? lighter_color : Color.yellow;
+                        }
+                        else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
+                        {
+                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddCustomIcon(arena, owner));
+                        }
+
+                        if (TeamBattleMode.isTeamBattleMode(arena, out _)  && owner.PlayerConsideredDead) slugIcon.color = Color.gray;
+
+                        else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");
