@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 using UnityEngine;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -318,6 +319,7 @@ namespace RainMeadow
             }
         }
 
+        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) => players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
     }
 
 }

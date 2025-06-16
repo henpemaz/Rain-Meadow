@@ -59,9 +59,9 @@ namespace RainMeadow.UI.Components
             slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
-            selectingStatusLabel = new(menu, slugcatButton, Custom.ReplaceLineDelimeters(menu.Translate("Selecting<LINE>Slugcat")), Vector2.zero, slugcatButton.size, false);
+            textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
             InitButtons(canKick);
-            this.SafeAddSubobjects(slugcatButton, nameLabel, selectingStatusLabel, colorInfoButton, infoKickButton);
+            this.SafeAddSubobjects(slugcatButton, nameLabel, textOverlayLabel, colorInfoButton, infoKickButton);
             subObjects.AddRange(lines);
 
         }
@@ -93,9 +93,9 @@ namespace RainMeadow.UI.Components
             rainbowColor.hue = GetLerpedRainbowHue();
             slugcatButton.portraitSecondaryLerpFactor = GetLerpedRainbowHue(0.75f);
             realPing = Math.Max(1, profileIdentifier.ping - 16);
-            lastSelectingStatusLabelFade = selectingStatusLabelFade;
-            selectingStatusLabelFade = isSelectingSlugcat ? Custom.LerpAndTick(selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(selectingStatusLabelFade, 0f, 0.12f, 0.1f);
-            slugcatButton.isBlackPortrait = isSelectingSlugcat;
+            lastTextOverlayFade = textOverlayFade;
+            textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
+            slugcatButton.isBlackPortrait = enabledTextOverlay;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -121,7 +121,7 @@ namespace RainMeadow.UI.Components
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             lines.Do(x => x.lineConnector.alpha = 0.5f);
-            selectingStatusLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastSelectingStatusLabelFade, selectingStatusLabelFade, timeStacker), 0.3f);
+            textOverlayLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastTextOverlayFade, textOverlayFade, timeStacker), 0.3f);
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
@@ -154,7 +154,7 @@ namespace RainMeadow.UI.Components
                 {
                     profileIdentifier.id.OpenProfileLink();
                 };
-                infoKickButton = new(menu, this, canKick? "Menu_Symbol_Clear_All" : GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), canKick ? "KICKPLAYER" : "MUTEPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
+                infoKickButton = new(menu, this, canKick ? "Menu_Symbol_Clear_All" : GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), canKick ? "KICKPLAYER" : "MUTEPLAYER", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, colorInfoButton.pos.y));
                 UiLineConnector connector = new(menu, colorInfoButton, infoKickButton, false);
                 connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
                 lines.Add(connector);
@@ -174,14 +174,20 @@ namespace RainMeadow.UI.Components
             return Color.Lerp((ping > 200 ? Color.red : ping > 100 ? Color.yellow : Color.green), MenuColorEffect.rgbVeryDarkGrey, 0.65f);
         }
 
-        public float selectingStatusLabelFade = 0, lastSelectingStatusLabelFade = 0;
+        public void ToggleTextOverlay(string text, bool enable)
+        {
+            textOverlayLabel.text = text;
+            enabledTextOverlay = enable;
+        }
+
+        public float textOverlayFade = 0, lastTextOverlayFade = 0;
         public int realPing;
-        public bool showRainbow, isSelectingSlugcat;
+        public bool showRainbow, enabledTextOverlay;
         public HSLColor? baseColor;
         public HSLColor rainbowColor;
         public FSprite[] sprites;
         public FLabel pingLabel;
-        public MenuLabel selectingStatusLabel;
+        public MenuLabel textOverlayLabel;
         public List<UiLineConnector> lines;
         public ScrollSymbolButton? infoKickButton;
         public ScrollSymbolButton colorInfoButton;

@@ -1,14 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
-using MoreSlugcats;
-using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
@@ -24,8 +17,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Vector2[] oldPagesPos = [];
     public MenuIllustration competitiveTitle, competitiveShadow;
     public Page slugcatSelectPage;
-    public bool pagesMoving = false;
     public MenuScene.SceneID? pendingScene;
+    public bool pagesMoving = false, pushClientIntoGame;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
@@ -65,6 +58,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
+
+        ResetReadyUp();
+
+        Arena.ResetGameTimer();
+        Arena.currentLevel = 0;
+        Arena.arenaSittingOnlineOrder.Clear();
+        Arena.playerNumberWithDeaths.Clear();
+        Arena.playerNumberWithKills.Clear();
+        Arena.playerNumberWithWins.Clear();
     }
 
     public void ChangeScene()
@@ -103,6 +105,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         currentPage = index;
 
+        if (currentPage == 1)
+        {
+            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready;
+            Arena.arenaClientSettings.ready = false;
+        }
+        else
+            Arena.arenaClientSettings.ready = arenaSlugcatSelectPage.readyWarning;
+
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
 
@@ -111,6 +121,94 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         GetArenaSetup.playerClass[0] = slugcat;
         pendingScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
     }
+
+    public void StartGame()
+    {
+        if (arenaMainLobbyPage.slugcatDialog != null) manager.StopSideProcess(arenaMainLobbyPage.slugcatDialog); //force getting rid of dialog
+
+        Arena.InitializeSlugcat();
+        InitializeNewOnlineSitting();
+        ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
+        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+        // temp
+        // UserInput.SetUserCount(OnlineManager.players.Count);
+        // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
+        PlaySound(SoundID.MENU_Start_New_Game);
+        manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+    }
+
+    public void InitializeNewOnlineSitting()
+    {
+        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) { levelPlaylist = [] };
+
+        if (GetGameTypeSetup.shufflePlaylist)
+        {
+            List<string> playlist = GetGameTypeSetup.playList;
+
+            while (playlist.Count > 0)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, playlist.Count);
+                for (int i = 0; i < GetGameTypeSetup.levelRepeats; i++)
+                    manager.arenaSitting.levelPlaylist.Add(playlist[randomIndex]);
+
+                playlist.RemoveAt(randomIndex);
+            }
+        }
+        else
+            for (int i = 0; i < GetGameTypeSetup.playList.Count; i++)
+                for (int j = 0; j < GetGameTypeSetup.levelRepeats; j++)
+                    manager.arenaSitting.levelPlaylist.Add(GetGameTypeSetup.playList[i]);
+
+        // Host dictates playlist
+        if (OnlineManager.lobby.isOwner)
+        {
+            Arena.playList = manager.arenaSitting.levelPlaylist;
+
+            for (int i = 0; i < OnlineManager.players.Count; i++)
+                if (!Arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
+                    Arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
+
+            Arena.totalLevelCount = manager.arenaSitting.levelPlaylist.Count;
+        }
+        else // Client retrieves playlist
+        {
+            manager.arenaSitting.levelPlaylist = Arena.playList;
+            manager.arenaSitting.currentLevel = Arena.currentLevel;
+        }
+
+        ArenaHelpers.SetProfileColor(Arena);
+        if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
+        {
+            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Arena.currentGameMode).Key;
+            RainMeadow.Debug($"Playing GameMode: {Arena.onlineArenaGameMode}");
+        }
+        else
+        {
+            RainMeadow.Error("Could not find game mode in list! Setting to Competitive as a fallback");
+            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
+        }
+        Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+    }
+
+    public void ResetReadyUp()
+    {
+        arenaMainLobbyPage.readyButton.menuLabel.text = Utils.Translate("READY?");
+
+        if (OnlineManager.lobby.isOwner)
+        {
+            Arena.allPlayersReadyLockLobby = Arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
+            Arena.isInGame = false;
+            Arena.leaveForNextLevel = false;
+        }
+        if (Arena.returnToLobby)
+        {
+            Arena.arenaClientSettings.ready = false;
+            Arena.returnToLobby = false;
+        }
+
+        manager.rainWorld.options.DeleteArenaSitting();
+    }
+
     public override void ShutDownProcess()
     {
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
@@ -135,9 +233,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         base.Update();
         if (!CanEscExit && RWInput.CheckPauseButton(0))
-        {
-            if (currentPage == 1) MovePage(new Vector2(1500f, 0f), 0);
-        }
+            MovePage(new Vector2(1500f, 0f), 0);
 
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
@@ -146,6 +242,18 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
+
+        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
+        {
+            pushClientIntoGame = true;
+            StartGame();
+        }
+        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.hasPermissionToRejoin && Arena.arenaClientSettings.ready)
+        {
+            RainMeadow.Debug("Client was late but given permission to rejoin!");
+            pushClientIntoGame = true;
+            StartGame();
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -202,8 +310,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
-
-
     }
     public void UpdateMovingPage()
     {
@@ -223,7 +329,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void UpdateElementBindings()
     {
-        MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.playButton);
+        MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[1]?.wrapper);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[0].wrapper);

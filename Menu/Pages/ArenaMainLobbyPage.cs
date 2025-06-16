@@ -2,13 +2,15 @@ using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow.UI.Pages;
 
 public class ArenaMainLobbyPage : PositionedMenuObject
 {
-    public SimplerButton playButton;
+    public SimplerButton readyButton;
+    public SimplerButton? startButton;
     public TabContainer tabContainer;
     public ArenaLevelSelector levelSelector;
     public ChatMenuBox chatMenuBox;
@@ -21,14 +23,25 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
     {
-        playButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        readyButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        readyButton.OnClick += btn =>
+        {
+            if (!RainMeadow.isArenaMode(out var _)) return;
+            Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
+            btn.menuLabel.text = Utils.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
+        };
+
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
+
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
+
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
+
         arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
@@ -40,8 +53,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugcatAbilitiesInterface.CallForSync();
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
-        this.SafeAddSubobjects(playButton, tabContainer, chatMenuBox);
 
+        this.SafeAddSubobjects(readyButton, tabContainer, chatMenuBox);
     }
 
     public void BuildPlayerDisplay()
@@ -60,7 +73,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     {
         void changeCharacter()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && !Arena.arenaClientSettings.ready)
             {
                 var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
                 if (index == -1) index = 0;
@@ -146,7 +159,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 {
                     ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
                     playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
-                    playerBox.isSelectingSlugcat = clientSettings?.selectingSlugcat ?? false;
+                    playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
+                    if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay(Custom.ReplaceLineDelimeters("Selecting<LINE>Slugcat"), true);
 
                     if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
                     else playerBox.slugcatButton.portraitColor = Color.white;
@@ -155,8 +169,27 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
+
         if (OnlineManager.lobby.isOwner)
+        {
             levelSelector.LoadNewPlaylist(Arena.playList, false);
-        else levelSelector.LoadNewPlaylist(Arena.playList, true);
+            if (startButton is null)
+            {
+                startButton = new SimplerButton(menu, this, "START MATCH!", new Vector2(936f, 50f), new Vector2(110f, 30f));
+                startButton.OnClick += btn => ArenaMenu?.StartGame();
+                subObjects.Add(startButton);
+            }
+
+            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
+        }
+        else
+        {
+            levelSelector.LoadNewPlaylist(Arena.playList, true);
+            if (startButton is not null)
+            {
+                this.ClearMenuObject(startButton);
+                startButton = null;
+            }
+        }
     }
 }
