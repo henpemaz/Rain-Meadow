@@ -171,7 +171,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     }
                     if (aliveTeams.Count == 1)
                     {
-                        self.gameSession.game.world.rainCycle.ArenaEndSessionRain();
+                        if (self.gameSession.game.world.rainCycle.speedUpToRain == false)
+                        {
+                            self.gameSession.game.world.rainCycle.ArenaEndSessionRain();
+
+                        }
                         return true;
                     }
                 }
