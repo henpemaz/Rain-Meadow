@@ -78,7 +78,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
         public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
         {
-            return this.TeamMappingsDictionary.Select(v => new ListItem(v.Value.ToString())).ToList();
+            ListItem martyrListItem = new ListItem(TeamMappingsDictionary[0]);
+            ListItem outlawsListItem = new ListItem(TeamMappingsDictionary[1]);
+            ListItem dragonSlayersListItem = new ListItem(TeamMappingsDictionary[2]);
+            ListItem chieftainsListItem = new ListItem(TeamMappingsDictionary[3]);
+
+
+            List<ListItem> teamNameListItems = new List<ListItem>();
+            teamNameListItems.Add(martyrListItem);
+            teamNameListItems.Add(outlawsListItem);
+            teamNameListItems.Add(dragonSlayersListItem);
+            teamNameListItems.Add(chieftainsListItem);
+
+            return teamNameListItems;
         }
 
         public override void ArenaExternalGameModeSettingsInterface_ctor(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
@@ -135,9 +147,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     var alListItems = arenaTeamComboBox.GetItemList();
                     RainMeadow.rainMeadowOptions.MartyrTeamName.Value = value;
-                    alListItems[0].name = value;
-                    alListItems[0].desc = value;
-                    alListItems[0].displayName = value;
+                    for (int i = 0; i < alListItems.Length; i++)
+                    {
+                        if (alListItems[i].displayName == lastValue)
+                        {
+                            alListItems[i].name = value;
+                            alListItems[i].desc = value;
+                            alListItems[i].displayName = value;
+                        }
+
+
+                    }
                     tb.martyrsTeamName = value;
                 };
 
@@ -154,9 +174,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     var alListItems = arenaTeamComboBox.GetItemList();
                     RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = value;
-                    alListItems[1].name = value;
-                    alListItems[1].desc = value;
-                    alListItems[1].displayName = value;
+                    for (int i = 0; i < alListItems.Length; i++)
+                    {
+                        if (alListItems[i].displayName == lastValue)
+                        {
+                            alListItems[i].name = value;
+                            alListItems[i].desc = value;
+                            alListItems[i].displayName = value;
+                        }
+
+
+                    }
                     tb.outlawTeamNames = value;
                 };
                 ///
@@ -173,9 +201,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     var alListItems = arenaTeamComboBox.GetItemList();
                     RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = value;
-                    alListItems[2].name = value;
-                    alListItems[2].desc = value;
-                    alListItems[2].displayName = value;
+                    for (int i = 0; i < alListItems.Length; i++)
+                    {
+                        if (alListItems[i].displayName == lastValue)
+                        {
+                            alListItems[i].name = value;
+                            alListItems[i].desc = value;
+                            alListItems[i].displayName = value;
+                        }
+
+
+                    }
                     tb.dragonSlayersTeamNames = value;
                 };
 
@@ -194,9 +230,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     var alListItems = arenaTeamComboBox.GetItemList();
                     RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = value;
-                    alListItems[3].name = value;
-                    alListItems[3].desc = value;
-                    alListItems[3].displayName = value;
+                    for (int i = 0; i < alListItems.Length; i++)
+                    {
+                        if (alListItems[i].displayName == lastValue)
+                        {
+                            alListItems[i].name = value;
+                            alListItems[i].desc = value;
+                            alListItems[i].displayName = value;
+                        }
+
+
+                    }
                     tb.chieftainsTeamNames = value;
                 };
 
