@@ -408,7 +408,7 @@ namespace RainMeadow
         private void Player_ctor_SynchronizeFoodBarForActualPlayers(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
         {
             orig(self, creature, world);
-            if (isStoryMode(out var storyGameMode) && !self.isNPC)
+            if (isStoryMode(out var storyGameMode) && !self.isNPC && storyGameMode.syncFoodBars)
             {
                 IntVector2 intVector = SlugcatStats.SlugcatFoodMeter(storyGameMode.currentCampaign);
                 self.slugcatStats.maxFood = intVector.x;
