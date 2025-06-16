@@ -93,7 +93,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsTeamName
         }
 
-        public  Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
+        public Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
         {
             { 0, "SaintA" },
             { 1, "OutlawA" },
@@ -101,7 +101,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, "ChieftainA" }
     };
 
-        public  Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
+        public Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
             { 0, Color.red },
             { 1, Color.yellow },
@@ -170,10 +170,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                     }
                     if (aliveTeams.Count == 1)
+                    {
+                        self.gameSession.game.world.rainCycle.ArenaEndSessionRain();
                         return true;
+                    }
                 }
             }
-
             return orig(self);
         }
 
