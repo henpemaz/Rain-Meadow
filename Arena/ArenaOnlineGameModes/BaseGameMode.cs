@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Menu.Remix.MixedUI;
+using HarmonyLib;
+using System.Xml;
 
 
 namespace RainMeadow
@@ -380,8 +382,35 @@ namespace RainMeadow
         }
 
 
-        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, float timestacker, bool showRainbow, Color rainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
         {
+            Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
+            Color pingColor = self.GetPingColor(self.realPing);
+            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{self.realPing}ms";
+            pingLabel.x = pos.x + size.x;
+            pingLabel.y = pos.y + 7;
+            pingLabel.color = pingColor;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == 2)
+                {
+                    sprites[i].x = pingLabel.x - pingLabel.textRect.width;
+                    sprites[i].y = pingLabel.y - 2.5f;
+                    sprites[i].color = pingColor;
+                    continue;
+                }
+                sprites[i].scaleX = size.x;
+                sprites[i].x = pos.x;
+                sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
+                sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
+            }
+            lines.Do(x => x.lineConnector.alpha = 0.5f);
+            selectingStatusLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(self.lastSelectingStatusLabelFade, self.selectingStatusLabelFade, timeStacker), 0.3f);
+
+            lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
+            Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
+            HSLColor basecolor = self.MyBaseColor();
+            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
             slugcatButton.secondaryColor = showRainbow ? rainbow : null;
         }
 
@@ -389,6 +418,16 @@ namespace RainMeadow
         {
             return "";
         }
+        public virtual void ArenaPlayerBox_Update(ArenaOnlineGameMode arena, ArenaPlayerBox self)
+        {
+            self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
+            self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(0.75f);
+            self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
+            self.lastSelectingStatusLabelFade = self.selectingStatusLabelFade;
+            self.selectingStatusLabelFade = self.isSelectingSlugcat ? RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 0f, 0.12f, 0.1f);
+            self.slugcatButton.isBlackPortrait = self.isSelectingSlugcat;
+        }
 
     }
+
 }

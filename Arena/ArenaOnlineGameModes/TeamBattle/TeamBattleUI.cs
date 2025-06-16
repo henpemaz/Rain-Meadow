@@ -239,9 +239,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
 
-        public override void ArenaPlayerBox_GrafUpdate(ArenaMode arena, float timestacker, bool showRainbow, Color rainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public override void ArenaPlayerBox_GrafUpdate(ArenaMode arena, ArenaPlayerBox self, float timestacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
         {
-
+            base.ArenaPlayerBox_GrafUpdate(arena, self, timestacker, showRainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton);
+            Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
                 if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
@@ -262,6 +263,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
             }
 
+        }
+
+        public override void ArenaPlayerBox_Update(ArenaMode arena, ArenaPlayerBox self)
+        {
+            self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
+            self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(self.showRainbow ? 0.75f : 0f);
+            self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
+            self.lastSelectingStatusLabelFade = self.selectingStatusLabelFade;
+            self.selectingStatusLabelFade = self.isSelectingSlugcat ? RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 0f, 0.12f, 0.1f);
+            self.slugcatButton.isBlackPortrait = self.isSelectingSlugcat;
         }
 
         public override string AddGameSettingsTab()
