@@ -19,6 +19,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame;
+    public int painCatIndex;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
@@ -52,9 +53,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
         painCatName = Arena.slugcatSelectPainCatNames.GetValueOrDefault(UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count), "")!;
+        painCatIndex = UnityEngine.Random.Range(0, 5);
 
-        arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName);
-        arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName);
+        arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName, painCatIndex);
+        arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName, painCatIndex);
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);

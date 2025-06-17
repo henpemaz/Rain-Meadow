@@ -20,11 +20,14 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
     public Dialog? slugcatDialog;
+    public int painCatIndex;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
-    public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
+    public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
     {
+        this.painCatIndex = painCatIndex;
+
         readyButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
         readyButton.OnClick += btn =>
         {
@@ -174,7 +177,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 if (button is ArenaPlayerBox playerBox)
                 {
                     ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
-                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
+
+                    int painCatIndex = playerBox.profileIdentifier == OnlineManager.mePlayer ? this.painCatIndex : Random.Range(0, 5);
+                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false, painCatIndex);
                     playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
                     if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay(Custom.ReplaceLineDelimeters("Selecting<LINE>Slugcat"), true);
 

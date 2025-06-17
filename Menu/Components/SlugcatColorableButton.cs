@@ -13,22 +13,22 @@ namespace RainMeadow.UI.Components
 {
     public class SlugcatColorableButton : IllustrationButton
     {
-        public static string GetFileForSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead = false)
+        public static string GetFileForSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead = false, int painCatIndex = 0)
         {
             if (slugcat == null || slugcat == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat || isColored)
-                return GetFileForSlugcatIndex(slugcat, 0, isDead);
+                return GetFileForSlugcatIndex(slugcat, 0, isDead, painCatIndex);
             if (slugcat == SlugcatStats.Name.White || slugcat == SlugcatStats.Name.Yellow || slugcat == SlugcatStats.Name.Red)
-                return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2);
-            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4, isDead);
+                return GetFileForSlugcatIndex(slugcat, slugcat == SlugcatStats.Name.White ? 0 : slugcat == SlugcatStats.Name.Yellow ? 1 : 2, isDead, painCatIndex);
+            if (IsMSCSlugcat(slugcat)) return GetFileForSlugcatIndex(slugcat, 4, isDead, painCatIndex);
             for (int i = 4; i > 0; i--)
             {
-                string txt = GetFileForSlugcatIndex(slugcat, i, isDead);
+                string txt = GetFileForSlugcatIndex(slugcat, i, isDead, painCatIndex);
                 if (File.Exists(AssetManager.ResolveFilePath($"illustrations/{txt}.png")))
                     return txt;
             }
-            return GetFileForSlugcatIndex(slugcat, 0, isDead);
+            return GetFileForSlugcatIndex(slugcat, 0, isDead, painCatIndex);
         }
-        public static string GetFileForSlugcatIndex(SlugcatStats.Name? slugcat, int colorIndex, bool isDead = false)
+        public static string GetFileForSlugcatIndex(SlugcatStats.Name? slugcat, int colorIndex, bool isDead = false, int sofanthielIndex = 0)
         {
             if ((slugcat is null) || (slugcat == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
             {
@@ -40,11 +40,8 @@ namespace RainMeadow.UI.Components
                 return $"Multiplayerportrait3{deadIndex}"; //no multi color support for night portrait yet
             }
             if (ModManager.MSC && slugcat == MSCScugs.Sofanthiel)
-            {
-                int randomChoice = UnityEngine.Random.Range(0, 5);
-                return $"Multiplayerportrait{randomChoice}{deadIndex}-{slugcat.value}";
-            }
-            
+                return $"Multiplayerportrait{sofanthielIndex}{deadIndex}-{slugcat.value}";
+
             return $"Multiplayerportrait{(ModManager.MSC && slugcat == MSCScugs.Slugpup ? 4 : colorIndex)}{deadIndex}-{slugcat.value}";
         }
         public static bool IsMSCSlugcat(SlugcatStats.Name slugcat)
@@ -87,17 +84,19 @@ namespace RainMeadow.UI.Components
             HSLColor sec = secondaryColor.Value.ToHSL();
             return new HSLColor(Mathf.Lerp(hslCol.hue, sec.hue, lerpFactor), Mathf.Lerp(hslCol.saturation, sec.saturation, actualLerpFactor), Mathf.Lerp(hslCol.lightness, sec.lightness, actualLerpFactor)).rgb;
         }
-        public void LoadNewSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead)
+        public void LoadNewSlugcat(SlugcatStats.Name? slugcat, bool isColored, bool isDead, int sofanthielIndex)
         {
-            if (this.slugcat != slugcat || this.isColored != isColored || this.isDead != isDead)
+            if (this.slugcat != slugcat || this.isColored != isColored || this.isDead != isDead || this.sofanthielIndex != sofanthielIndex)
             {
                 this.slugcat = slugcat;
                 this.isColored = isColored;
                 this.isDead = isDead;
-                SetNewImage("", GetFileForSlugcat(this.slugcat, this.isColored, this.isDead));
+                this.sofanthielIndex = sofanthielIndex;
+                SetNewImage("", GetFileForSlugcat(this.slugcat, this.isColored, this.isDead, this.sofanthielIndex));
             }
         }
         public float portraitSecondaryLerpFactor = 1;
+        public int sofanthielIndex;
         public bool isColored, isDead, keepSecondaryHuePortrait = true, keepSecondaryHueBase;
         public Color? secondaryColor;
         public SlugcatStats.Name? slugcat;

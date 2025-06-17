@@ -15,19 +15,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
-    public MenuIllustration painCatPortrait;
-    public EventfulSelectOneButton painCatButton;
     public bool readyWarning;
-    public int selectedSlugcatIndex = 0;
-    public string painCatName;
-    public string? painCatDescription, painCatPortraitFileString;
+    public int selectedSlugcatIndex = 0, painCatIndex;
+    public string painCatName, painCatDescription;
     public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
-    private Dictionary<string, int> count = [];
 
-    public ArenaSlugcatSelectPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
+    public ArenaSlugcatSelectPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
     {
         this.painCatName = painCatName;
+        this.painCatIndex = painCatIndex;
 
         backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), "Go back to main lobby");
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
@@ -45,20 +42,15 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
 
-            string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false);
+            string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false, painCatIndex: painCatIndex);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
-
-            if (ArenaHelpers.selectableSlugcats[i] == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-                painCatButton = btn;
-                painCatPortrait = portrait;
-                RandomizeInvDetails();
-            }
 
             subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
+
+        painCatDescription = GetPainCatDescription();
 
         MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
@@ -97,16 +89,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         }
     }
 
-    public void RandomizeInvDetails()
-    {
-        this.ClearMenuObject(painCatPortrait);
-        painCatPortraitFileString = SlugcatColorableButton.GetFileForSlugcat(MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel, false);
-        subObjects.Add(painCatPortrait = new MenuIllustration(menu, painCatButton, "", painCatPortraitFileString, painCatButton.size / 2, true, true));
-        this.painCatName = Arena.slugcatSelectPainCatNames[UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count)];
-        painCatDescription = GetPainCatDescription();
-    }
-
-
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
         selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat ?? SlugcatStats.Name.White);
@@ -116,7 +98,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            RandomizeInvDetails();
             descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
@@ -140,25 +121,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         if (painCatName == "Inv") descriptionCategories.Add(["inv? like invalidunits?"], 0.01f);
 
-        // should in theory never fail but I don't trust that
-        try
-        {
-            List<string>? invPortraitDescriptions = null;
-            char? painCatPortraitIdentifier = painCatPortraitFileString?[19];
-            if (painCatPortraitIdentifier is not null)
-            {
-                if (painCatPortraitIdentifier == '0') invPortraitDescriptions = Arena.slugcatSelectPainCatSmileyDescriptions;
-                else if (painCatPortraitIdentifier == '1') invPortraitDescriptions = Arena.slugcatSelectPainCatUwUDescriptions;
-                else if (painCatPortraitIdentifier == '2') invPortraitDescriptions = Arena.slugcatSelectPainCatWaveDescriptions;
-                else if (painCatPortraitIdentifier == '3') invPortraitDescriptions = Arena.slugcatSelectPainCatDeadDescriptions;
+        List<string>? invPortraitDescriptions = null;
 
-                if (invPortraitDescriptions is not null) descriptionCategories.Add(invPortraitDescriptions, 0.3f);
-            }
-        }
-        catch (Exception e)
-        {
-            RainMeadow.Error($"Unable to properly access identifier character from PainCat portrait string. Perhaps the file format changed?\n{e}");
-        }
+        if (painCatIndex == 0) invPortraitDescriptions = Arena.slugcatSelectPainCatSmileyDescriptions;
+        else if (painCatIndex == 1) invPortraitDescriptions = Arena.slugcatSelectPainCatUwUDescriptions;
+        else if (painCatIndex == 2) invPortraitDescriptions = Arena.slugcatSelectPainCatWaveDescriptions;
+        else if (painCatIndex == 3) invPortraitDescriptions = Arena.slugcatSelectPainCatDeadDescriptions;
+
+        if (invPortraitDescriptions is not null) descriptionCategories.Add(invPortraitDescriptions, 0.3f);
 
         List<string> descriptions = descriptionCategories.GetRandom();
         return Custom.ReplaceLineDelimeters(descriptions[UnityEngine.Random.Range(0, descriptions.Count)]).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
