@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
@@ -78,15 +79,24 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
     public void BuildPlayerDisplay()
     {
-        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
+        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), GetOrderedPlayerList(), GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
         subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
+    }
+
+    public List<OnlinePlayer> GetOrderedPlayerList()
+    {
+        OnlinePlayer mePlayer = OnlineManager.players.Find(player => player.isMe);
+        List<OnlinePlayer> playerList = OnlineManager.players;
+        playerList.Remove(mePlayer);
+        playerList.Insert(0, mePlayer);
+        return playerList;
     }
 
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
         RainMeadow.DebugMe();
-        playerDisplayer?.UpdatePlayerList(OnlineManager.players);
+        playerDisplayer?.UpdatePlayerList(GetOrderedPlayerList());
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
