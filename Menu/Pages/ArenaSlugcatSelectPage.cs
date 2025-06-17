@@ -50,7 +50,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             slugcatSelectButtons[i] = btn;
         }
 
-        painCatDescription = GetPainCatDescription();
+        painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
         MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
