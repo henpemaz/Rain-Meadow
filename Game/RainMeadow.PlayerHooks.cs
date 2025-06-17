@@ -1114,7 +1114,7 @@ public partial class RainMeadow
                 {
                     RainMeadow.Debug("no SlugcatCustomization for " + oe);
                 }
-                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
+                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats?.malnourished ?? false));
                 RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
             else
