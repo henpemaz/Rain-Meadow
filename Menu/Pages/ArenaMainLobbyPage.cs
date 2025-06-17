@@ -92,8 +92,14 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     {
         void changeCharacter()
         {
-            if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && !Arena.arenaClientSettings.ready)
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
             {
+                if (Arena.arenaClientSettings.ready)
+                {
+                    menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                    return;
+                }
+
                 var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
                 if (index == -1) index = 0;
                 else
@@ -103,11 +109,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 }
 
                 ArenaMenu?.arenaSlugcatSelectPage.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+
+                menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+                return;
             }
-            else
-            {
-                ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
-            }
+
+            ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
         }
 
         if (isLargeDisplay)
