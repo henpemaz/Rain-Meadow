@@ -1088,17 +1088,6 @@ public partial class RainMeadow
                 RainMeadow.Error("player entity not found for " + self + " " + self.abstractCreature);
             }
 
-            if (oe is not null && oe.TryGetData<SlugcatCustomization>(out var custom) && !self.isNPC)
-            {
-                slugcatStatsPerPlayer.Add(self, new SlugcatStats(custom.playingAs, self.slugcatStats.malnourished));
-            }
-            else
-            {
-                RainMeadow.Error("No customizations for player");
-            }
-            
-                
-
             // Allow glow for any non-watcher in watcher campaign
             if (ModManager.Watcher && self.room.game.session is StoryGameSession storyGameSession && self.rippleLevel > 0f && self.room != null && self.AI == null)
             {
@@ -1118,7 +1107,8 @@ public partial class RainMeadow
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
-                {
+                { 
+                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats.malnourished));
                     self.SlugCatClass = customization.playingAs;
                 }
                 else
