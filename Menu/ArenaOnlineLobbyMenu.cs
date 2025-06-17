@@ -234,7 +234,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Update()
     {
         base.Update();
-        if (!CanEscExit && RWInput.CheckPauseButton(0))
+        if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
 
         if (pendingScene == scene.sceneID) pendingScene = null;
