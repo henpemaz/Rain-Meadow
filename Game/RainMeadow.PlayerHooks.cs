@@ -1107,15 +1107,14 @@ public partial class RainMeadow
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
-                {
+                { 
+                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats.malnourished));
                     self.SlugCatClass = customization.playingAs;
                 }
                 else
                 {
                     RainMeadow.Debug("no SlugcatCustomization for " + oe);
                 }
-                slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, self.slugcatStats.malnourished));
-                RainMeadow.Debug($"slugcatstats:{self.SlugCatClass} owner:{oe.owner}");
             }
             else
             {
