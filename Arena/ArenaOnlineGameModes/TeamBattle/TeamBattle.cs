@@ -252,7 +252,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                     }
                 }
-                
+
                 foreach (var player in self.players)
                 {
                     if (teamsRemaining.Count == 1)
@@ -307,15 +307,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
         {
-            if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
-            {
-                if (list.Count == 1)
-                {
-                    list[0].winner = list[0].alive;
-                }
-            }
-
-            if (OnlineManager.lobby.isOwner)
+            if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
                 tb.roundSpawnPointCycler = tb.roundSpawnPointCycler + 1;
             }
@@ -568,7 +560,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
             return "";
         }
-       
+
 
     }
 }
