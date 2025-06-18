@@ -195,8 +195,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 {
                     ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
 
-                    int painCatIndex = playerBox.profileIdentifier == OnlineManager.mePlayer ? this.painCatIndex : Random.Range(0, 5);
-                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false, painCatIndex);
+                    if (ModManager.MSC && clientSettings?.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                    {
+                        if (playerBox.profileIdentifier.isMe)
+                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, painCatIndex, false);
+
+                        else if (playerBox.slugcatButton.slugcat != clientSettings?.playingAs)
+                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, Random.Range(0, 5), false);
+                    }
+                    else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
+
                     playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
                     if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay(Custom.ReplaceLineDelimeters("Selecting<LINE>Slugcat"), true);
 

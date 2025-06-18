@@ -41,8 +41,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-
-            string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false, painCatIndex: painCatIndex);
+            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
 
@@ -91,10 +91,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat ?? SlugcatStats.Name.White);
-        // I mean technically selectableSlugcats[0] should never be null but idk just in case
-        slugcat = ArenaHelpers.selectableSlugcats.GetValueOrDefault(selectedSlugcatIndex, ArenaHelpers.selectableSlugcats[0]) ?? SlugcatStats.Name.White;
-
+        slugcat = ArenaHelpers.selectableSlugcats.Contains(slugcat) ? slugcat : ArenaHelpers.selectableSlugcats[0]; //selectableSlugcats[0] should never be null! this is punishment >:D
+        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat); //this is to fix start index not working PLEASE DONT CHANGE THIS
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {

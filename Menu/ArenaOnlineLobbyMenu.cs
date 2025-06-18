@@ -126,7 +126,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void StartGame()
     {
-        if (arenaMainLobbyPage.slugcatDialog != null) manager.StopSideProcess(arenaMainLobbyPage.slugcatDialog); //force getting rid of dialog
+        while (manager.dialog != null)
+            manager.StopSideProcess(manager.dialog);
 
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
@@ -311,7 +312,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
     }
     public void UpdateMovingPage()
     {
