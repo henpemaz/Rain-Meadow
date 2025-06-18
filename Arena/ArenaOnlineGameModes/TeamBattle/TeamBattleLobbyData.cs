@@ -27,8 +27,8 @@ namespace RainMeadow
             public int dragonslayers;
             [OnlineField]
             public int chieftains;
-            [OnlineField]
-            public string martyrsName;
+            //[OnlineField]
+            //public string martyrsName;
             //[OnlineField]
             //public string chieftainsName;
             //[OnlineField]
@@ -56,7 +56,7 @@ namespace RainMeadow
 
                         roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
 
-                        martyrsName = teamBattleMode.martyrsTeamName;
+                        //martyrsName = teamBattleMode.martyrsTeamName;
                         //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
                         //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
                         //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
