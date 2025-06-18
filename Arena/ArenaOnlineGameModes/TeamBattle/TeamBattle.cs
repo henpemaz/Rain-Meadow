@@ -234,6 +234,47 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (isTeamBattleMode(arena, out var tb))
             {
+                tb.winningTeam = -1;
+                HashSet<int> teamsRemaining = new HashSet<int>();
+                foreach (var player in self.players)
+                {
+                    if (player.alive)
+                    {
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (onlineP != null)
+                        {
+                            bool getPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                            if (getPlayerTeam)
+                            {
+                                teamsRemaining.Add(playerTeam.team);
+                            }
+
+                        }
+                    }
+                }
+                
+                foreach (var player in self.players)
+                {
+                    if (teamsRemaining.Count == 1)
+                    {
+                        tb.winningTeam = teamsRemaining.First();
+
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (onlineP != null)
+                        {
+                            bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                            if (gotPlayerTeam)
+                            {
+                                player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        player.winner = false; // everyone's a loser. Kill your enemies!
+                    }
+                }
+
                 OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
                 OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
 
@@ -268,52 +309,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                tb.winningTeam = -1;
                 if (list.Count == 1)
                 {
                     list[0].winner = list[0].alive;
-                }
-                else if (list.Count > 1)
-                {
-                    HashSet<int> teamsRemaining = new HashSet<int>();
-                    foreach (var player in list)
-                    {
-                        if (player.alive)
-                        {
-                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                            if (onlineP != null)
-                            {
-                                bool getPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                                if (getPlayerTeam)
-                                {
-                                    teamsRemaining.Add(playerTeam.team);
-                                }
-
-                            }
-                        }
-                    }
-
-                    foreach (var player in list)
-                    {
-                        if (teamsRemaining.Count == 1)
-                        {
-                            tb.winningTeam = teamsRemaining.First();
-
-                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                            if (onlineP != null)
-                            {
-                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
-                                if (gotPlayerTeam)
-                                {
-                                    player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            player.winner = false; // everyone's a loser. Kill your enemies!
-                        }
-                    }
                 }
             }
 
