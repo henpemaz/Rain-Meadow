@@ -43,7 +43,6 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
-    public readonly Configurable<string> PrivateLobbyPassword;
 
     public readonly Configurable<string> MartyrTeamName;
     public readonly Configurable<string> OutlawsTeamName;

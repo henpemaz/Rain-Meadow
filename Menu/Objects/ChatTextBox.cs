@@ -48,7 +48,6 @@ namespace RainMeadow
                 typingHandler.StartCoroutine(Unload(delay));
             }
         }
-
         private IEnumerator Unload(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -57,7 +56,7 @@ namespace RainMeadow
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-
+                blockInput = false;
             }
         }
         private void CaptureInputs(char input)
@@ -107,7 +106,7 @@ namespace RainMeadow
                 lastSentMessage = "";
                 return;
             }
-            else
+            else if (!isUnloading)
             {
                 if (selectionPos != -1)
                 {
@@ -128,7 +127,7 @@ namespace RainMeadow
                     cursorPos++;
                 }
             }
-            blockInput = true;
+            if (!isUnloading) blockInput = true;
             menuLabel.text = lastSentMessage;
         }
 
