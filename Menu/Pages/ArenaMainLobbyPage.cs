@@ -79,60 +79,25 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
     public void BuildPlayerDisplay()
     {
-        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), GetOrderedPlayerList(), GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
+        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), [..OnlineManager.players.OrderByDescending(x => x.isMe)], GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
         subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
-    }
-
-    public List<OnlinePlayer> GetOrderedPlayerList()
-    {
-        OnlinePlayer mePlayer = OnlineManager.players.Find(player => player.isMe);
-        List<OnlinePlayer> playerList = OnlineManager.players;
-        playerList.Remove(mePlayer);
-        playerList.Insert(0, mePlayer);
-        return playerList;
     }
 
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
         RainMeadow.DebugMe();
-        playerDisplayer?.UpdatePlayerList(GetOrderedPlayerList());
+        playerDisplayer?.UpdatePlayerList([.. OnlineManager.players.OrderByDescending(x => x.isMe)]);
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-        void changeCharacter()
-        {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-            {
-                if (Arena.arenaClientSettings.ready)
-                {
-                    menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
-                    return;
-                }
-
-                var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
-                if (index == -1) index = 0;
-                else
-                {
-                    index += 1;
-                    index %= ArenaHelpers.selectableSlugcats.Count;
-                }
-
-                ArenaMenu?.arenaSlugcatSelectPage.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
-
-                menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-                return;
-            }
-
-            ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
-        }
 
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
             if (player.isMe)
             {
-                playerBox.slugcatButton.OnClick += _ => changeCharacter();
+                playerBox.slugcatButton.OnClick += _ => ChangeCharacter();
                 playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
             }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
@@ -143,12 +108,35 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         if (player.isMe)
         {
-            playerSmallBox.slugcatButton.OnClick += _ => changeCharacter();
+            playerSmallBox.slugcatButton.OnClick += _ => ChangeCharacter();
             playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
         }
 
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
+    }
+    public void ChangeCharacter()
+    {
+        if (!RainMeadow.isArenaMode(out _)) return;
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            if (Arena.arenaClientSettings.ready)
+            {
+                menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                return;
+            }
+            var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
+            if (index == -1) index = 0;
+            else
+            {
+                index += 1;
+                index %= ArenaHelpers.selectableSlugcats.Count;
+            }
+            ArenaMenu?.arenaSlugcatSelectPage?.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+            menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+            return;
+        }
+        ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
@@ -164,7 +152,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         slugcatDialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { }, ArenaHelpers.allSlugcats, slugcat);
         menu.manager.ShowDialog(slugcatDialog);
     }
-
     public void SaveInterfaceOptions()
     {
         RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
@@ -218,7 +205,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         activeGameModeLabel.text = LabelTest.TrimText($"Current Mode: {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"Ready: {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
-        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * ArenaMenu?.GetGameTypeSetup.levelRepeats) ?? 0)}";
+        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * (arenaSettingsInterface?.roomRepeatArray?.CheckedButton + 1)) ?? 0)}";
 
         if (OnlineManager.lobby.isOwner)
         {
