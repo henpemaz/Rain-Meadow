@@ -108,8 +108,6 @@ public class RainMeadowOptions : OptionInterface
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
-        PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
-
         MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
         OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
         DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
