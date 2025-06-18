@@ -237,11 +237,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
 
-                martyrColor = new OpTinyColorPicker(menu, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
-                UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
+                //martyrColor = new OpTinyColorPicker(menu, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
+                //UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
-                dragonSlayerColor = new OpTinyColorPicker(menu, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[1]);
-                UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
+                //dragonSlayerColor = new OpTinyColorPicker(menu, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[1]);
+                //UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
 
 
 
@@ -253,7 +253,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 //martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
 
 
-                extComp.SafeAddSubobjects(tabWrapper, martyrColorsWrapper, dragonSlayerColorsWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
+                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
             }
         }
 
