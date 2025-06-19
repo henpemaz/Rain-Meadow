@@ -56,8 +56,9 @@ namespace RainMeadow
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
             On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
-
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
+
+            On.ArenaSitting.FinalSittingResult += ArenaSitting_FinalSittingResult;
 
             On.ArenaBehaviors.ExitManager.ExitsOpen += ExitManager_ExitsOpen;
             On.ArenaBehaviors.ExitManager.Update += ExitManager_Update;
@@ -122,6 +123,38 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
            
 
+
+        }
+
+
+        private List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
+        {
+            if (isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    ArenaSitting.ArenaPlayer winningPlayer = null;
+                    int winDetermination = 0;
+                    foreach (var player in self.players)
+                    {
+                        OnlinePlayer? winPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (winPlayer != null) // check the online player early so we can be assured whowever we have is actually in-game
+                        {
+                            if (player.wins > winDetermination)
+                            {
+                                winDetermination = player.wins;
+
+                                if (OnlineManager.lobby.clientSettings[winPlayer].TryGetData<ArenaTeamClientSettings>(out var winningTeam))
+                                {
+                                    tb.winningTeam = winningTeam.team;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+            return orig(self);
 
         }
 
