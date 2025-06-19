@@ -346,9 +346,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         public override void Update()
         {
-            if (this is PlaylistHolder) RainMeadow.Debug($"CurrentScrollPos before buttonScroller update: {DownScrollOffset}");
             base.Update();
-            if (this is PlaylistHolder) RainMeadow.Debug($"CurrentScrollPos after buttonScroller update: {DownScrollOffset}");
             lastShowThumbsTransitionState = showThumbsTransitionState;
             showThumbsTransitionState = Custom.LerpAndTick(showThumbsTransitionState, ShowThumbsStatus ? 1f : 0f, 0.015f, 1f / 30f);
 

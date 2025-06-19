@@ -56,7 +56,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-        arenaInfoButton = new(menu, this, "Menu_InfoI", "", new Vector2(playerDisplayer!.pos.x + playerDisplayer.size.x - 24, playerDisplayer.pos.y + playerDisplayer.scrollUpButton!.pos.y), "");
+        arenaInfoButton = new(menu, this, "Meadow_Menu_SmallQuestionMark", "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 2 - 12, playerDisplayer!.pos.y + playerDisplayer.scrollUpButton!.pos.y), "");
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
@@ -98,53 +98,17 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
-            if (player.isMe)
-            {
-                playerBox.slugcatButton.OnClick += _ => ChangeCharacter();
-                playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
-            }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
             return playerBox;
         }
-
         ArenaPlayerSmallBox playerSmallBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
-
-        if (player.isMe)
-        {
-            playerSmallBox.slugcatButton.OnClick += _ => ChangeCharacter();
-            playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
-        }
-
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
-    }
-    public void ChangeCharacter()
-    {
-        if (!RainMeadow.isArenaMode(out _)) return;
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
-            if (Arena.arenaClientSettings.ready)
-            {
-                menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
-                return;
-            }
-            var index = ArenaHelpers.selectableSlugcats.IndexOf(Arena.arenaClientSettings.playingAs);
-            if (index == -1) index = 0;
-            else
-            {
-                index += 1;
-                index %= ArenaHelpers.selectableSlugcats.Count;
-            }
-            ArenaMenu?.arenaSlugcatSelectPage?.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
-            menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-            return;
-        }
-        ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
     }
     public void OpenInfoDialog()
     {
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = new DialogNotify(menu.Translate("THIS IS A PLACEHOLDER"), "", new Vector2(500f, 200f), menu.manager, () => { }, true);
+        dialog = new DialogNotify(Custom.ReplaceLineDelimeters(menu.Translate("Do some wacky stuff around here!")), new Vector2(500f, 400f), menu.manager, () => { });
         menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
@@ -177,6 +141,17 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
+    public override void Singal(MenuObject sender, string message)
+    {
+        base.Singal(sender, message);
+        if (message == "CHANGE_SLUGCAT")
+            ArenaMenu?.GoToChangeCharacter();
+        if (message == "COLOR_SLUGCAT")
+        {
+            SlugcatStats.Name? slug = sender?.owner is ArenaPlayerBox playerBox ? playerBox.slugcatButton.slugcat : sender?.owner is ArenaPlayerSmallBox smallPlayerBox ? smallPlayerBox.slugcatButton.slug : null;
+            OpenColorConfig(slug);
+        }
+    }
     public override void Update()
     {
         base.Update();
@@ -201,7 +176,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
 
                     playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
-                    if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay(Custom.ReplaceLineDelimeters("Selecting<LINE>Slugcat"), true);
+                    if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
 
                     if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
                     else playerBox.slugcatButton.portraitColor = Color.white;
@@ -213,7 +188,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         activeGameModeLabel.text = LabelTest.TrimText($"Current Mode: {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"Ready: {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
-        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * (arenaSettingsInterface?.roomRepeatArray?.CheckedButton + 1)) ?? 0)}";
+        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * (arenaSettingsInterface.roomRepeatArray.CheckedButton + 1)) ?? 0)}";
 
         if (OnlineManager.lobby.isOwner)
         {
@@ -237,7 +212,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
     }
-
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);

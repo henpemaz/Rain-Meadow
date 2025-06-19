@@ -56,7 +56,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false);
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false, signal: "CHANGE_SLUGCAT");
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
@@ -134,7 +134,7 @@ namespace RainMeadow.UI.Components
             Vector2 basePos = new(nameLabel.pos.x + 10, slugcatButton.pos.y + 10);
             if (profileIdentifier.isMe)
             {
-                colorInfoButton = new(menu, this, "Meadow_Menu_BigColorBucket", "Color_Slugcat", basePos, new(45, 45));
+                colorInfoButton = new(menu, this, "Meadow_Menu_BigColorBucket", "COLOR_SLUGCAT", basePos, new(45, 45));
                 infoKickButton = new(menu, this, "Menu_InfoI", "Info_Player", new(colorInfoButton.pos.x + colorInfoButton.size.x + 30, basePos.y + 21));
                 infoKickButton.OnClick += (_) =>
                 {
@@ -176,7 +176,7 @@ namespace RainMeadow.UI.Components
 
         public void ToggleTextOverlay(string text, bool enable)
         {
-            textOverlayLabel.text = text;
+            textOverlayLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(text));
             enabledTextOverlay = enable;
         }
 

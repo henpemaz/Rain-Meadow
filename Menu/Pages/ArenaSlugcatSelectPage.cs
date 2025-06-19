@@ -86,6 +86,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
             RainMeadow.Debug($"Saved Slugcat: {savedSlugcat?.value ?? "NULL"}");
             SwitchSelectedSlugcat(savedSlugcat);
+            ArenaMenu.ChangeScene();
         }
     }
 
