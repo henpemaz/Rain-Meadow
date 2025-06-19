@@ -20,6 +20,7 @@ namespace RainMeadow
         public class Ext_SlugcatStatsName
         {
             public static SlugcatStats.Name OnlineSessionPlayer = new("MeadowOnline", true);
+            public static SlugcatStats.Name OnlineRandomSlugcat = new("MeadowRandom", true);
             //public static SlugcatStats.Name OnlineSessionRemotePlayer = new("MeadowOnlineRemote", true);
         }
 
@@ -53,6 +54,7 @@ namespace RainMeadow
             internal static SoundID RM_SmallNoot_Call = new("RM_SmallNoot_Call", true);
             internal static SoundID RM_Eggbug_Call = new("RM_Eggbug_Call", true);
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
+            internal static SoundID Fartificer = new("Fartificer", true);
         }
     }
 }

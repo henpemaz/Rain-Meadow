@@ -16,11 +16,15 @@ namespace RainMeadow
             [OnlineField]
             private CreatureTemplate.Type creatureType;
 
+            [OnlineField]
+            public bool isAvatar;
+
             public OnlineCreatureDefinition() { }
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
                 this.creatureType = onlineCreature.creature.creatureTemplate.type;
+                isAvatar = onlineCreature.isAvatar;
             }
 
             protected void CreatureSaveExtras(string extras)
@@ -90,18 +94,19 @@ namespace RainMeadow
         }
 
         public bool enteringShortCut;
+        public bool isAvatar { get; private set; }
         public AbstractCreature creature => apo as AbstractCreature;
         public Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
         public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
         {
-
+            if (RainMeadow.sSpawningAvatar) isAvatar = true;
         }
 
         public OnlineCreature(OnlineCreatureDefinition onlineCreatureDefinition, OnlineResource inResource, AbstractCreatureState initialState) : base(onlineCreatureDefinition, inResource, initialState)
         {
-
+            isAvatar = onlineCreatureDefinition.isAvatar;
         }
 
         internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)

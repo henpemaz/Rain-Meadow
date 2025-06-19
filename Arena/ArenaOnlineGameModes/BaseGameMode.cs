@@ -1,19 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using HUD;
+﻿using Menu.Remix;
 using Menu;
-using MoreSlugcats;
-using RainMeadow;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Components;
+using Steamworks;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static RainMeadow.OnlineEntity;
+using Menu.Remix.MixedUI;
+using HarmonyLib;
+using System.Xml;
+
+
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
+        public virtual ArenaSetup.GameTypeID GetGameModeId
+        {
+            get
+            {
+                return FFA.FFAMode;
+            }
+            set { GetGameModeId = value; }
+            
+        }
+
+        public virtual void ResetOnSessionEnd()
+        {
+
+        }
 
         public abstract bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self);
         public abstract bool SpawnBatflies(FliesWorldAI self, int spawnRoom);
@@ -28,6 +44,12 @@ namespace RainMeadow
         public virtual void ArenaSessionNextLevel(ArenaOnlineGameMode arena, On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager process)
         {
             arena.ResetAtNextLevel();
+        }
+
+        /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
+        public virtual void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
+        {
+
         }
 
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
@@ -63,6 +85,8 @@ namespace RainMeadow
         {
             return --timer;
         }
+
+        /// <summary> This is ran on the victim's end, not the killer's! </summary>
         public virtual void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
         }
@@ -102,6 +126,11 @@ namespace RainMeadow
         public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
         {
             return "";
+        }
+
+        public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
+        {
+            return null;
         }
 
         public virtual void SpawnPlayer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, List<int> suggestedDens)
@@ -279,8 +308,7 @@ namespace RainMeadow
             arena.playerEnteredGame++;
             foreach (var player in arena.arenaSittingOnlineOrder)
             {
-
-                var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
                 if (getPlayer != null)
                 {
                     if (!getPlayer.isMe)
@@ -289,21 +317,43 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
+            if (OnlineManager.lobby.isOwner)
             {
-                arena.isInGame = true;
-                foreach (var p in arena.arenaSittingOnlineOrder)
+                arena.isInGame = true; // used for readied players at the beginning
+                arena.leaveForNextLevel = false;
+                if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
                 {
-                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (onlineP != null)
+                    foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
                     {
-                        if (onlineP.isMe) continue;
-                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                        if (onlineP != null)
+                        {
+                            onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
+                        }
                     }
-
                 }
-                arena.initiatedStartGameForClient = true; // set this so we don't notify again
+                foreach (var arenaPlayer in self.arenaSitting.players)
+                {
+                    if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
+                    {
+                        arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
+                    }
+                    if (!arena.playerNumberWithDeaths.ContainsKey(arenaPlayer.playerNumber))
+                    {
+                        arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
+                    }
+                    if (!arena.playerNumberWithWins.ContainsKey(arenaPlayer.playerNumber))
+                    {
+                        arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
+                    }
+                }
+                arena.playersLateWaitingInLobbyForNextRound.Clear();
+
+
             }
+            arena.hasPermissionToRejoin = false;
+
+
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
@@ -311,5 +361,73 @@ namespace RainMeadow
 
         }
 
+        public virtual bool PlayerSessionResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            return orig(self, A, B);
+        }
+
+        public virtual bool PlayerSittingResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        {
+            return orig(self, A, B);
+        }
+
+        public virtual void ArenaExternalGameModeSettingsInterface_ctor(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, Menu.MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        {
+
+        }
+
+        public virtual void ArenaExternalGameModeSettingsInterface_Update(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        {
+
+        }
+
+
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        {
+            Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
+            Color pingColor = self.GetPingColor(self.realPing);
+            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{self.realPing}ms";
+            pingLabel.x = pos.x + size.x;
+            pingLabel.y = pos.y + 7;
+            pingLabel.color = pingColor;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i == 2)
+                {
+                    sprites[i].x = pingLabel.x - pingLabel.textRect.width;
+                    sprites[i].y = pingLabel.y - 2.5f;
+                    sprites[i].color = pingColor;
+                    continue;
+                }
+                sprites[i].scaleX = size.x;
+                sprites[i].x = pos.x;
+                sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
+                sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
+            }
+            lines.Do(x => x.lineConnector.alpha = 0.5f);
+            selectingStatusLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(self.lastSelectingStatusLabelFade, self.selectingStatusLabelFade, timeStacker), 0.3f);
+
+            lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
+            Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
+            HSLColor basecolor = self.MyBaseColor();
+            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
+            slugcatButton.secondaryColor = showRainbow ? rainbow : null;
+        }
+
+        public virtual string AddGameSettingsTab()
+        {
+            return "";
+        }
+        public virtual void ArenaPlayerBox_Update(ArenaOnlineGameMode arena, ArenaPlayerBox self)
+        {
+            self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
+            self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(0.75f);
+            self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
+            self.lastSelectingStatusLabelFade = self.selectingStatusLabelFade;
+            self.selectingStatusLabelFade = self.isSelectingSlugcat ? RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 0f, 0.12f, 0.1f);
+            self.slugcatButton.isBlackPortrait = self.isSelectingSlugcat;
+        }
+
     }
+
 }

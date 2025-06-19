@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+using Menu;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 using UnityEngine;
 
 namespace RainMeadow
@@ -9,7 +13,8 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> baseGameSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> vanillaSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
-        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowOnlineRemote" };
+        public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name?>();
+        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowRandom" };
 
         public static void RecreateSlugcatCache()
         {
@@ -18,6 +23,7 @@ namespace RainMeadow
             baseGameSlugcats.Clear();
             mscSlugcats.Clear();
             allSlugcats.Clear();
+            selectableSlugcats.Clear();
             //
             vanillaSlugcats.Add(SlugcatStats.Name.White);
             vanillaSlugcats.Add(SlugcatStats.Name.Yellow);
@@ -27,13 +33,14 @@ namespace RainMeadow
             baseGameSlugcats.AddRange(vanillaSlugcats);
             if (ModManager.MSC)
             {
-                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
-                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
-                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Gourmand);
-                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
+                
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
+                mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                 baseGameSlugcats.AddRange(mscSlugcats);
             }
             if (ModManager.Watcher)
@@ -41,6 +48,9 @@ namespace RainMeadow
                 baseGameSlugcats.Remove(SlugcatStats.Name.Night);
                 baseGameSlugcats.Add(Watcher.WatcherEnums.SlugcatStatsName.Watcher);
             }
+
+            allSlugcats.AddRange(baseGameSlugcats);
+
             // all slugcats
             for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
             {
@@ -62,6 +72,11 @@ namespace RainMeadow
                         RainMeadow.Debug("Filtered out Night slugcat");
                         continue; // Skip the Night slugcat if Watcher mod is active
                     }
+
+                    if (allSlugcats.Contains(slugcatStatSlug)) {
+                        continue;
+                    }
+
                     allSlugcats.Add(slugcatStatSlug);
                     if (SlugcatStats.HiddenOrUnplayableSlugcat(slugcatStatSlug))
                     {
@@ -76,23 +91,27 @@ namespace RainMeadow
                     }
                 }
             }
-        }
 
+            selectableSlugcats.AddRange(allSlugcats);
+            selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
+        }
         public static void SetProfileColor(ArenaOnlineGameMode arena)
         {
             int profileColor = 0;
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
                 var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+
                 if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
                 {
-                    profileColor = Random.Range(0, 4);
+                    profileColor = UnityEngine.Random.Range(0, 4);
                     arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
                 else
                 {
                     arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
                 }
+
             }
         }
 
@@ -111,10 +130,19 @@ namespace RainMeadow
         }
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
-            arena.arenaSittingOnlineOrder = new List<ushort>();
             arena.ResetGameTimer();
+            if (arena.externalArenaGameMode != null)
+            {
+                arena.externalArenaGameMode.ResetOnSessionEnd();
+            }
             arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+
 
         }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
@@ -129,12 +157,11 @@ namespace RainMeadow
             {
                 arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
                 arena.isInGame = false;
-                arena.initiatedStartGameForClient = false;
+                arena.leaveForNextLevel = false;
             }
             if (arena.returnToLobby)
             {
                 arena.playersReadiedUp.list.Clear();
-
                 arena.returnToLobby = false;
             }
 
@@ -244,6 +271,76 @@ namespace RainMeadow
 
             }
 
+        }
+        public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
+        {
+            if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
+            {
+                if (typeof(T) == typeof(bool) && arena.onlineArenaSettingsInterfaceeBool.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceeBool[ID];
+                }
+                if (typeof(T) == typeof(int) && arena.onlineArenaSettingsInterfaceMultiChoice.ContainsKey(ID))
+                {
+                    return (T)(object)arena.onlineArenaSettingsInterfaceMultiChoice[ID];
+                }
+            }
+            return defaultIfNonExistant;
+        }
+        public static void SaveOptionToArena(string ID, object obj)
+        {
+            if (!RainMeadow.isArenaMode(out ArenaOnlineGameMode arena)) return;
+            if (!OnlineManager.lobby.isOwner) return;
+            if (obj is bool c)
+            {
+                arena.onlineArenaSettingsInterfaceeBool[ID] = c;
+            }
+            if (obj is int i)
+            {
+                arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
+            }
+        }
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                RainMeadow.Error("Lobby is null!");
+                return null;
+            }
+            if (player == null) return null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
+        }
+        public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
+        {
+            if (text == null) return;
+            string[] array = Regex.Split(text, "<msuA>");
+            for (int i = 0; i < array.Length; i++)
+            {
+                string[] array2 = Regex.Split(array[i], "<msuB>");
+                action.Invoke(array2[0], array[1]);
+
+            }
+        }
+
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)
+        {
+            if (A is not null && B is not null)
+            {
+                if (OnlineManager.lobby.clientSettings[A].TryGetData<ArenaTeamClientSettings>(out var tb1))
+                {
+                    if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    {
+                        if (tb1.team == tb2.team)
+                        {
+                            RainMeadow.Debug("Same team! No hits");
+                        }
+                        return tb1.team == tb2.team;
+                    }
+                }         
+            }
+
+            RainMeadow.Debug("Different teams or Player is null");
+            return false;
         }
 
     }

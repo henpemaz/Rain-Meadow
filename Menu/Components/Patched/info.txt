@@ -1,0 +1,3 @@
+Elements in this directory should be fine to completely replace their base class with NO compromises, as they should only be fixing bugs.
+
+Do not place reworks, bonus features, or refactors of menu elements in this directory.
