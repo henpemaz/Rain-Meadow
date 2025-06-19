@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
+using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
@@ -18,8 +19,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public MenuIllustration competitiveTitle, competitiveShadow;
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
+    public SceneLoader sceneBumpLoader;
     public bool pagesMoving = false, pushClientIntoGame;
-    public int painCatIndex;
+    public int painCatIndex, numOfTicksSceneNotLoad;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
@@ -34,7 +36,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
-
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         if (backObject is SimplerButton btn) btn.description = "Exit to Lobby Select";
 
@@ -58,7 +59,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName, painCatIndex);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName, painCatIndex);
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
-        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
+        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage, sceneBumpLoader = new(this, null, startLoadingScenes: false));
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
 
         ResetReadyUp();
@@ -237,15 +238,25 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         base.Update();
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
-
         if (pendingScene == scene.sceneID) pendingScene = null;
+        sceneBumpLoader.BumpUpSceneLoad(pendingScene);
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
         if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
-
+        if (!sceneBumpLoader.startLoadingScenes)
+        {
+            numOfTicksSceneNotLoad++;
+            if (numOfTicksSceneNotLoad == 25)
+            {
+                sceneBumpLoader.startLoadingScenes = true;
+                numOfTicksSceneNotLoad = 0;
+            }
+        }
+        if (pagesMoving) sceneBumpLoader.startLoadingScenes = false;
+        if (Mathf.InverseLerp(0, 100, Custom.Dist(mousePosition, lastMousePos)) == 1) sceneBumpLoader.startLoadingScenes = false;
         if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
         {
             pushClientIntoGame = true;
@@ -313,6 +324,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        sceneBumpLoader.AddScenesToLoad([..Arena.slugcatSelectMenuScenes.Values]);
     }
     public void UpdateMovingPage()
     {

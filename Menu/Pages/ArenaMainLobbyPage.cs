@@ -12,6 +12,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 {
     public SimplerButton readyButton;
     public SimplerButton? startButton;
+    public SimplerSymbolButton arenaInfoButton;
     public MenuLabel activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel;
     public FSprite chatLobbyStateDivider;
     public TabContainer tabContainer;
@@ -20,7 +21,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
-    public Dialog? slugcatDialog;
+    public Dialog? dialog;
     public int painCatIndex;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
@@ -55,6 +56,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         BuildPlayerDisplay();
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        arenaInfoButton = new(menu, this, "Menu_InfoI", "", new Vector2(playerDisplayer!.pos.x + playerDisplayer.size.x - 24, playerDisplayer.pos.y + playerDisplayer.scrollUpButton!.pos.y), "");
+        arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
@@ -74,7 +77,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
 
-        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox);
+        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton);
     }
 
     public void BuildPlayerDisplay()
@@ -138,19 +141,25 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
         ArenaMenu?.MovePage(new Vector2(-1500f, 0f), 1);
     }
+    public void OpenInfoDialog()
+    {
+        menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        dialog = new DialogNotify(menu.Translate("THIS IS A PLACEHOLDER"), "", new Vector2(500f, 200f), menu.manager, () => { }, true);
+        menu.manager.ShowDialog(dialog);
+    }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (!ModManager.MMF)
         {
             menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            slugcatDialog = new DialogNotify(menu.Translate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
-            menu.manager.ShowDialog(slugcatDialog);
+            dialog = new DialogNotify(menu.Translate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
+            menu.manager.ShowDialog(dialog);
             return;
         }
 
         menu.PlaySound(SoundID.MENU_Checkbox_Check);
-        slugcatDialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { }, ArenaHelpers.allSlugcats, slugcat);
-        menu.manager.ShowDialog(slugcatDialog);
+        dialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { }, ArenaHelpers.allSlugcats, slugcat);
+        menu.manager.ShowDialog(dialog);
     }
     public void SaveInterfaceOptions()
     {
@@ -168,7 +177,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
-
     public override void Update()
     {
         base.Update();
