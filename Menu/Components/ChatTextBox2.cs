@@ -182,9 +182,9 @@ namespace RainMeadow.UI.Components
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
-                    currentMessage = "";
+                    HandleTextSubmit();
                 }
-                HandleTextSubmit();
+                else HandleDeselect();
             }
             else  //any other character, lets type
             {
@@ -338,12 +338,17 @@ namespace RainMeadow.UI.Components
         }
         public void HandleTextSubmit()
         {
-            Focused = false;
+            currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
+            HandleDeselect();
+            OnTextSubmit?.Invoke();
+        }
+        public void HandleDeselect()
+        {
+            Focused = false;
             ChatTextBox.blockInput = false;
             previouslySubmittedText = !menu.manager.menuesMouseMode;
-            OnTextSubmit?.Invoke();
         }
         public void DelayedUnload(float delay)
         {
