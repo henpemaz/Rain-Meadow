@@ -30,6 +30,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> WearingCape;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> WeaponCollisionFix;
 
 
     public readonly Configurable<float> ScrollSpeed;
@@ -82,6 +83,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
