@@ -92,8 +92,12 @@ namespace RainMeadow
         // meant to fix spears going in between body chunks in arena mode, but could also be useful for other potential pvp-focused gamemodes
         public static SharedPhysics.CollisionResult SharedPhysics_TraceProjectileAgainstBodyChunks(On.SharedPhysics.orig_TraceProjectileAgainstBodyChunks orig, SharedPhysics.IProjectileTracer projTracer, Room room, Vector2 lastPos, ref Vector2 pos, float rad, int collisionLayer, PhysicalObject exemptObject, bool hitAppendages)
         {
+            if (OnlineManager.lobby == null || !(RainMeadow.isArenaMode(out var arena) ? arena.weaponCollisionFix : RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value))
+            {
+                return orig(projTracer, room, lastPos, ref pos, rad, collisionLayer, exemptObject, hitAppendages);
+            }
             var result = orig(projTracer, room, lastPos, ref pos, rad, collisionLayer, exemptObject, hitAppendages);
-            if (OnlineManager.lobby != null && result.chunk == null && result.onAppendagePos == null && exemptObject is Player)
+            if (result.chunk == null && result.onAppendagePos == null && exemptObject is Player)
             {
                 // only need to check the collision layer that slugcats occupy
                 foreach (var obj in room.physicalObjects[1])
@@ -105,7 +109,6 @@ namespace RainMeadow
                         var chunk2 = obj.bodyChunks[1];
                         var p = Custom.LineIntersection(lastPos, pos, chunk1.pos, chunk2.pos);
                         if (Custom.DistLess(p, lastPos, Vector2.Distance(lastPos, pos)) && Custom.DistLess(p, pos, Vector2.Distance(lastPos, pos)) && Custom.DistLess(p, chunk1.pos, Vector2.Distance(chunk1.pos, chunk2.pos)) && Custom.DistLess(p, chunk2.pos, Vector2.Distance(chunk1.pos, chunk2.pos)))
-
                         {
                             if (Custom.Dist(chunk1.pos, pos) < Custom.Dist(chunk2.pos, pos))
                             {
@@ -124,7 +127,7 @@ namespace RainMeadow
 
         private static void Weapon_Thrown(On.Weapon.orig_Thrown orig, Weapon self, Creature thrownBy, Vector2 thrownPos, Vector2? firstFrameTraceFromPos, IntVector2 throwDir, float frc, bool eu)
         {
-            if (OnlineManager.lobby != null && thrownBy is Player && firstFrameTraceFromPos != null)
+            if (OnlineManager.lobby != null && (RainMeadow.isArenaMode(out var arena) ? arena.weaponCollisionFix : RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value) && thrownBy is Player && firstFrameTraceFromPos != null)
             {
                 // move back last position, so that the spear traces starting from the throw chunk
                 self.firstChunk.lastPos = firstFrameTraceFromPos.Value;
