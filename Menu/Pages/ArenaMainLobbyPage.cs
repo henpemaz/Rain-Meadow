@@ -108,7 +108,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void OpenInfoDialog()
     {
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = new DialogNotify(Custom.ReplaceLineDelimeters(menu.Translate("Do some wacky stuff around here!")), new Vector2(500f, 400f), menu.manager, () => { });
+        dialog = new DialogNotify(menu.LongTranslate("Do some wacky stuff around here!"), new Vector2(500f, 400f), menu.manager, () => { });
         menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
@@ -116,7 +116,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (!ModManager.MMF)
         {
             menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            dialog = new DialogNotify(menu.Translate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
+            dialog = new DialogNotify(menu.LongTranslate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
             menu.manager.ShowDialog(dialog);
             return;
         }
@@ -186,16 +186,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
 
-        activeGameModeLabel.text = LabelTest.TrimText($"Current Mode: {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
-        readyPlayerCounterLabel.text = $"Ready: {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
-        playlistProgressLabel.text = $"Playlist Progress: {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * (arenaSettingsInterface.roomRepeatArray.CheckedButton + 1)) ?? 0)}";
+        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
+        readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
+        playlistProgressLabel.text = $"{menu.Translate("Playlist Progress:")} {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (ArenaMenu?.GetGameTypeSetup.playList.Count * (arenaSettingsInterface.roomRepeatArray.CheckedButton + 1)) ?? 0)}";
 
         if (OnlineManager.lobby.isOwner)
         {
             levelSelector.LoadNewPlaylist(Arena.playList, false);
             if (startButton is null)
             {
-                startButton = new SimplerButton(menu, this, "START MATCH!", new Vector2(936f, 50f), new Vector2(110f, 30f));
+                startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f));
                 startButton.OnClick += btn => ArenaMenu?.StartGame();
                 subObjects.Add(startButton);
             }
@@ -205,11 +205,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         else
         {
             levelSelector.LoadNewPlaylist(Arena.playList, true);
-            if (startButton is not null)
-            {
-                this.ClearMenuObject(startButton);
-                startButton = null;
-            }
+            this.ClearMenuObject(ref startButton);
         }
     }
     public override void GrafUpdate(float timeStacker)

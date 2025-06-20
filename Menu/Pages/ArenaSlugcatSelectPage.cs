@@ -97,11 +97,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
+            descriptionLabel.text = menu.LongTranslate(painCatDescription);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
+        descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {

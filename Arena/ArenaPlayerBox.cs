@@ -102,7 +102,7 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
             Vector2 size = DrawSize(timeStacker), pos = DrawPos(timeStacker);
             Color pingColor = GetPingColor(realPing);
-            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{realPing}ms";
+            pingLabel.text = profileIdentifier.isMe ? menu.Translate("ME") : $"{realPing}ms";
             pingLabel.x = pos.x + size.x;
             pingLabel.y = pos.y + 7;
             pingLabel.color = pingColor;
@@ -176,7 +176,7 @@ namespace RainMeadow.UI.Components
 
         public void ToggleTextOverlay(string text, bool enable)
         {
-            textOverlayLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(text));
+            textOverlayLabel.text = menu.LongTranslate(text);
             enabledTextOverlay = enable;
         }
 
