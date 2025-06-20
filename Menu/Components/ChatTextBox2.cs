@@ -182,8 +182,9 @@ namespace RainMeadow.UI.Components
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
-                    HandleTextSubmit();
+                    currentMessage = "";
                 }
+                HandleTextSubmit();
             }
             else  //any other character, lets type
             {
@@ -338,7 +339,6 @@ namespace RainMeadow.UI.Components
         public void HandleTextSubmit()
         {
             Focused = false;
-            currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
             ChatTextBox.blockInput = false;
