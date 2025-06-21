@@ -36,7 +36,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             throw new InvalidOperationException("lobby is null");
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         forceFlatIllu = !manager.rainWorld.flatIllustrations;
-        if (backObject is SimplerButton btn) btn.description = "Exit to Lobby Select";
+        if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
