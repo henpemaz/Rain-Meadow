@@ -77,21 +77,21 @@ namespace RainMeadow.UI.Components
             }
             if (IgnoreSelect) return;
             if (!buttonBehav.clicked) return;
-            Focused = !Focused;
+            SetFocused(!Focused);
         }
         public override void Update()
         {
             base.Update();
             if (previouslySubmittedText) previouslySubmittedText = previouslySubmittedText && menu.selectedObject == this;
             buttonBehav.Update();
-            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) Focused = false;
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ?  null : SoundID.None);
             if (menu.allowSelectMove) menu.allowSelectMove = !Focused;
             UpdateSelection();
             roundedRect.fillAlpha = 1.0f;
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
             cursorIsInMiddle = cursorPos < currentMessage.Length;
             maxVisibleLength = VisibleTextLimit;
-            forceMenuMouseMode = (menu.holdButton || menu.modeSwitch || focused) && forceMenuMouseMode;
+            forceMenuMouseMode = (menu.holdButton || menu.modeSwitch || Focused) && forceMenuMouseMode;
             menu.manager.menuesMouseMode = forceMenuMouseMode || menu.manager.menuesMouseMode;
         }
         public override void GrafUpdate(float timeStacker)
@@ -346,9 +346,15 @@ namespace RainMeadow.UI.Components
         }
         public void HandleDeselect()
         {
-            Focused = false;
+            SetFocused(false);
             ChatTextBox.blockInput = false;
             previouslySubmittedText = !menu.manager.menuesMouseMode;
+        }
+        public void SetFocused(bool focused, SoundID? overrideSoundID = null)
+        {
+            if (Focused != focused)
+                menu.PlaySound(overrideSoundID ?? (focused ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Checkbox_Uncheck));
+            Focused = focused;
         }
         public void DelayedUnload(float delay)
         {

@@ -94,7 +94,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void MovePage(Vector2 direction, int index)
     {
-        if (pagesMoving) return;
+        if (pagesMoving || currentPage == index) return;
 
         pagesMoving = true;
         pageMovementProgress = 0f;

@@ -32,6 +32,7 @@ namespace RainMeadow.UI.Components
             playerButton = new(menu, this, player.id.name, new(0, yPos), new(100, 30));
             playerButton.OnClick += (_) =>
             {
+                menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 profileIdentifier.id.OpenProfileLink();
             };
             slugcatButton = new(menu, this, null, null, new(120, 30), new(playerButton.pos.x + playerButton.size.x + 15, yPos))
