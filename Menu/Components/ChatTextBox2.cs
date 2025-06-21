@@ -29,7 +29,7 @@ namespace RainMeadow.UI.Components
                 forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
             }
         }
-        public bool DontGetInputs => menu.FreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
+        public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
@@ -151,14 +151,13 @@ namespace RainMeadow.UI.Components
         }
         public void CaptureInputs(char input)
         {
+            if (isUnloading || DontGetInputs) return;
             ChatTextBox.blockInput = false;
-            if (isUnloading) return;
-            if (DontGetInputs) return;
             if (!Focused)
             {
                 Player.InputPackage currentInput = RWInput.PlayerUIInput(-1); //race conditions when update isnt called on time
                 bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && page == menu.pages.GetValueOrDefault(menu.currentPage) && !menu.FreezeMenuFunctions && !lastFreezeMenuFunctions && shouldActuallyGetInput)
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput)
                 {
                     SetFocused(true);
                     forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
