@@ -9,26 +9,24 @@ namespace RainMeadow.UI.Components
 {
     public class PlayerDisplayer : ButtonDisplayer
     {
-        public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton, int numOfLargeButtonsToView, float xListSize, float largeButtonHeight, float largeButtonSpacing, float smallButtonHeight, float smallButtonSpacing) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeight, largeButtonSpacing)
+        public PlayerDisplayer(Menu.Menu menu, MenuObject owner, Vector2 pos, List<OnlinePlayer> players, Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton, int numOfLargeButtonsToView, float xListSize, (float, float) largeButtonHeightSpacing, (float, float) smallButtonHeightSpacing, float scrollSliderSizeYOffset = -40) : base(menu, owner, pos, numOfLargeButtonsToView, xListSize, largeButtonHeightSpacing)
         {
             this.getPlayerButton = getPlayerButton;
             onlinePlayers = players;
-            this.largeButtonHeight = largeButtonHeight;
-            this.largeButtonSpacing = largeButtonSpacing;
-            this.smallButtonHeight = smallButtonHeight;
-            this.smallButtonSpacing = smallButtonSpacing;
+            this.largeButtonHeightSpacing = largeButtonHeightSpacing;
+            this.smallButtonHeightSpacing = smallButtonHeightSpacing;
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(onlinePlayers);
         }
         public void UpdatePlayerList(List<OnlinePlayer> lobbyOnlinePlayers)
         {
             onlinePlayers = lobbyOnlinePlayers;
-            CallForRefresh(false);
+            CallForRefresh();
         }
         public IPartOfButtonScroller[] PopulatePlayerDisplays(ButtonDisplayer buttonDisplayer, bool isLargeDisplay)
         {
-            buttonHeight = isLargeDisplay ? largeButtonHeight : smallButtonHeight;
-            buttonSpacing = isLargeDisplay ? largeButtonSpacing : smallButtonSpacing;
+            buttonHeight = isLargeDisplay ? largeButtonHeightSpacing.Item1 : smallButtonHeightSpacing.Item1;
+            buttonSpacing = isLargeDisplay ? largeButtonHeightSpacing.Item2 : smallButtonHeightSpacing.Item2;
             List<IPartOfButtonScroller> scrollButtons = [];
             for (int i = 0; i < onlinePlayers?.Count; i++)
             {
@@ -42,8 +40,9 @@ namespace RainMeadow.UI.Components
             }
             return [.. scrollButtons];
         }
+        public override string DescriptionOfDisplayButton() => isCurrentlyLargeDisplay ? "Showing players in thumbnail view" : "Showing players in list view";
 
-        public float largeButtonHeight, smallButtonHeight, largeButtonSpacing, smallButtonSpacing;
+        public (float, float) largeButtonHeightSpacing, smallButtonHeightSpacing;
         public List<OnlinePlayer> onlinePlayers;
         public Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton;
     }

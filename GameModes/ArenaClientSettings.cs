@@ -7,7 +7,7 @@ namespace RainMeadow
     {
         public SlugcatStats.Name playingAs = SlugcatStats.Name.White;
         public SlugcatStats.Name? randomPlayingAs;
-        public bool selectingSlugcat;
+        public bool selectingSlugcat, ready;
         public Color slugcatColor = Color.black;
 
         public ArenaClientSettings() { }
@@ -28,6 +28,8 @@ namespace RainMeadow
 
             [OnlineField(group = "arenaClientData")]
             public bool selectingSlugcat;
+            [OnlineField(group = "arenaClientData")]
+            public bool ready;
 
             [OnlineField]
             public int team;
@@ -39,6 +41,7 @@ namespace RainMeadow
                 randomPlayingAs = onlineEntity.randomPlayingAs;
                 selectingSlugcat = onlineEntity.selectingSlugcat;
                 slugcatColor = onlineEntity.slugcatColor;
+                ready = onlineEntity.ready;
             }
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
@@ -50,6 +53,7 @@ namespace RainMeadow
                 clientSettings.randomPlayingAs = randomPlayingAs;
                 clientSettings.selectingSlugcat = selectingSlugcat;
                 clientSettings.slugcatColor = slugcatColor;
+                clientSettings.ready = ready;
             }
 
             public override Type GetDataType() => typeof(ArenaClientSettings);

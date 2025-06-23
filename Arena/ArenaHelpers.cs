@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using MSCScene = MoreSlugcats.MoreSlugcatsEnums.MenuSceneID;
 using UnityEngine;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -38,7 +39,7 @@ namespace RainMeadow
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Rivulet);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint);
-                
+
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel);
                 mscSlugcats.Add(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                 baseGameSlugcats.AddRange(mscSlugcats);
@@ -73,7 +74,8 @@ namespace RainMeadow
                         continue; // Skip the Night slugcat if Watcher mod is active
                     }
 
-                    if (allSlugcats.Contains(slugcatStatSlug)) {
+                    if (allSlugcats.Contains(slugcatStatSlug))
+                    {
                         continue;
                     }
 
@@ -244,7 +246,7 @@ namespace RainMeadow
                     {
                         if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
                         {
-                            player.maxGodTime = arena.arenaSaintAscendanceTimer;
+                            player.maxGodTime = arena.arenaSaintAscendanceTimer * 40;
                             player.ActivateAscension();
                         }
                         if (player.wantToJump > 0 && player.monkAscension)
@@ -310,11 +312,12 @@ namespace RainMeadow
             if (player == null) return null;
             return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
         }
-        public static void ParseArenaSetupSaveString(string text, Action<string, string> action)
+        public static void ParseArenaSetupSaveString(string text, Action<string[]> action)
         {
             if (text == null) return;
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
+                action.Invoke(Regex.Split(array[i], "<msuB>"));
             {
                 string[] array2 = Regex.Split(array[i], "<msuB>");
                 action.Invoke(array2[0], array[1]);
@@ -343,6 +346,7 @@ namespace RainMeadow
             return false;
         }
 
+        public static int GetReadiedPlayerCount(List<OnlinePlayer> players) => players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
     }
 
 }

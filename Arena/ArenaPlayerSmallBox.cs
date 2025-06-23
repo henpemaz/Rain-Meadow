@@ -32,9 +32,13 @@ namespace RainMeadow.UI.Components
             playerButton = new(menu, this, player.id.name, new(0, yPos), new(100, 30));
             playerButton.OnClick += (_) =>
             {
+                menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 profileIdentifier.id.OpenProfileLink();
             };
-            slugcatButton = new(menu, this, null, null, new(120, 30), new(playerButton.pos.x + playerButton.size.x + 15, yPos));
+            slugcatButton = new(menu, this, null, null, new(120, 30), new(playerButton.pos.x + playerButton.size.x + 15, yPos))
+            {
+                signalText = "CHANGE_SLUGCAT"
+            };
             InitButtons(canKick);
             this.SafeAddSubobjects(playerButton, slugcatButton, colorKickButton);
 
@@ -87,7 +91,7 @@ namespace RainMeadow.UI.Components
         {
             float yPosDefaultSymbol = MiddleOfY(24);
             string sprite = profileIdentifier.isMe ? "Meadow_Menu_ColorBucket" : canKick? "Menu_Symbol_Clear_All" : ArenaPlayerBox.GetMuteSymbol(OnlineManager.lobby?.gameMode?.mutedPlayers?.Contains(profileIdentifier.id.name) == true), 
-                signal = profileIdentifier.isMe ? "Color_Slugcat" : canKick ? "KICKPLAYER" : "MUTEPLAYER";
+                signal = profileIdentifier.isMe ? "COLOR_SLUGCAT" : canKick ? "KICKPLAYER" : "MUTEPLAYER";
             colorKickButton = new(menu, this, sprite, signal, new(slugcatButton.pos.x + slugcatButton.size.x + 15, yPosDefaultSymbol));
         }
         public HSLColor MyBaseColor()

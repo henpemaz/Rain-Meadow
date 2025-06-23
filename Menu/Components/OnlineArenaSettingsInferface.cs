@@ -39,8 +39,10 @@ namespace RainMeadow.UI.Components
             rainTimerArray = new(menu, this, this, new(0, 305), menu.Translate("Rain Timer:"), "SESSIONLENGTH", InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f, settingsWidth, 6, false, menu.CurrLang == InGameTranslator.LanguageID.French || menu.CurrLang == InGameTranslator.LanguageID.Spanish || menu.CurrLang == InGameTranslator.LanguageID.Portuguese);
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
-            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, 171), new Vector2(0, 20), false);
-            countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(countdownTimerLabel.pos.x + countdownTimerLabel.label.textRect.width + 10, countdownTimerLabel.pos.y - 6), 50)
+            stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
+
+            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, stealItemCheckBox.pos.y - 38), new Vector2(0, 20), false);
+            countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(55, countdownTimerLabel.pos.y - 6), 50)
             {
                 alignment = FLabelAlignment.Center,
                 description = menu.Translate("How long the grace timer at the beginning of rounds lasts for. Default 5s."),
@@ -52,7 +54,7 @@ namespace RainMeadow.UI.Components
             };
 
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(arenaGameModeLabel.pos.x + arenaGameModeLabel.label.textRect.width + 10, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes);
+            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
@@ -67,7 +69,7 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel);
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox);
         }
         public override void RemoveSprites()
         {
@@ -113,26 +115,21 @@ namespace RainMeadow.UI.Components
         }
         public bool GetChecked(CheckBox box)
         {
-            if (box.IDString == "SPEARSHIT")
-            {
-                return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
-            }
-            if (box.IDString == "EVILAI")
-            {
-                return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
-            }
+            if (box.IDString == "SPEARSHIT") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
+            if (box.IDString == "EVILAI") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
+            if (box.IDString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena)) return arena.itemSteal;
             return false;
         }
         public void SetChecked(CheckBox box, bool c)
         {
-            if (box.IDString == "SPEARSHIT")
+            if (box.IDString == "SPEARSHIT") GetGameTypeSetup.spearsHitPlayers = c;
+            if (box.IDString == "EVILAI") GetGameTypeSetup.evilAI = c;
+            if (box.IDString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena))
             {
-                GetGameTypeSetup.spearsHitPlayers = c;
+                arena.itemSteal = c;
+                return;
             }
-            if (box.IDString == "EVILAI")
-            {
-                GetGameTypeSetup.evilAI = c;
-            }
+
             ArenaHelpers.SaveOptionToArena(box.IDString, c);
         }
         public int GetSelected(MultipleChoiceArray array)
@@ -196,6 +193,8 @@ namespace RainMeadow.UI.Components
 
         public CheckBox spearsHitCheckbox, evilAICheckBox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel;
+        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox;
+        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;

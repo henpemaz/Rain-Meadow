@@ -1,8 +1,10 @@
+using System.Collections.Generic;
 using System.Linq;
 using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
+using RWCustom;
 using UnityEngine;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -13,7 +15,11 @@ namespace RainMeadow.UI.Pages;
 
 public class ArenaMainLobbyPage : PositionedMenuObject
 {
-    public SimplerButton playButton;
+    public SimplerButton readyButton;
+    public SimplerButton? startButton;
+    public SimplerSymbolButton arenaInfoButton;
+    public MenuLabel activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel;
+    public FSprite chatLobbyStateDivider;
     public TabContainer tabContainer;
     public ArenaLevelSelector levelSelector;
     public ChatMenuBox chatMenuBox;
@@ -24,17 +30,49 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public TabContainer.Tab? externalTabContainer;
 
 
+    public Dialog? dialog;
+    public int painCatIndex;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+    public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
-    public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
+    public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
     {
-        playButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
-        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 475));
+        this.painCatIndex = painCatIndex;
+
+        readyButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
+        readyButton.OnClick += btn =>
+        {
+            if (!RainMeadow.isArenaMode(out var _)) return;
+            Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
+            btn.menuLabel.text = Utils.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
+        };
+
+        chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
+        chatMenuBox.roundedRect.size.y = 475f;
+
+        float chatRectPosSizeY = chatMenuBox.pos.y + chatMenuBox.roundedRect.size.y;
+        activeGameModeLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 2, chatRectPosSizeY - 15), Vector2.zero, false);
+        readyPlayerCounterLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 4, chatRectPosSizeY - 35), Vector2.zero, false);
+        playlistProgressLabel = new MenuLabel(menu, this, "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 4 * 3 - 20, chatRectPosSizeY - 35), Vector2.zero, false);
+
+        chatLobbyStateDivider = new FSprite("pixel")
+        {
+            color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey),
+            scaleX = chatMenuBox.size.x - 40,
+            scaleY = 2,
+        };
+        Container.AddChild(chatLobbyStateDivider);
+
+        BuildPlayerDisplay();
+        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
+        arenaInfoButton = new(menu, this, "Meadow_Menu_SmallQuestionMark", "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 2 - 12, playerDisplayer!.pos.y + playerDisplayer.scrollUpButton!.pos.y), "");
+        arenaInfoButton.OnClick += _ => OpenInfoDialog();
+
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
             matchSettingsTab = tabContainer.AddTab("Match Settings");
 
-        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f), false));
+        playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
 
 
@@ -51,74 +89,58 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
 
-        BuildPlayerDisplay();
-        MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
-        this.SafeAddSubobjects(playButton, tabContainer, chatMenuBox);
+        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton);
     }
 
     public void BuildPlayerDisplay()
     {
-        if (playerDisplayer != null) return;
-
-        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), OnlineManager.players, GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x + 30, ArenaPlayerBox.DefaultSize.y, 0, ArenaPlayerSmallBox.DefaultSize.y, 10);
+        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), [.. OnlineManager.players.OrderByDescending(x => x.isMe)], GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
         subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
     }
 
     public void OnlineManager_OnPlayerListReceived(PlayerInfo[] players)
     {
-        if (!RainMeadow.isArenaMode(out _)) return;
-
         RainMeadow.DebugMe();
-        BuildPlayerDisplay();
-        playerDisplayer?.UpdatePlayerList(OnlineManager.players);
+        playerDisplayer?.UpdatePlayerList([.. OnlineManager.players.OrderByDescending(x => x.isMe)]);
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-        ArenaOnlineLobbyMenu? dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether = menu as ArenaOnlineLobbyMenu;
-
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
-            if (player.isMe)
-            {
-                playerBox.slugcatButton.OnClick += _ =>
-                    dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
-                playerBox.colorInfoButton.OnClick += _ => OpenColorConfig(playerBox.slugcatButton.slugcat);
-            }
             playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
             return playerBox;
         }
-
         ArenaPlayerSmallBox playerSmallBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
-
-        if (player.isMe)
-        {
-            playerSmallBox.slugcatButton.OnClick += _ => dustySaidThatThisWouldStopTheCompilerFromComplainingAboutVariablesInEachBranchBeingNamedTheSameThingEvenThoughTheyWouldNeverBeInitializedTogether?.MovePage(new Vector2(-1500f, 0f), 1);
-            playerSmallBox.colorKickButton!.OnClick += _ => OpenColorConfig(playerSmallBox.slugcatButton.slug);
-        }
-
         playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
+    }
+    public void OpenInfoDialog()
+    {
+        menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        dialog = new DialogNotify(menu.LongTranslate("Do some wacky stuff around here!"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+        menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
     {
         if (!ModManager.MMF)
         {
             menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-            slugcatDialog = new DialogNotify(menu.Translate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { });
-            menu.manager.ShowDialog(slugcatDialog);
+            dialog = new DialogNotify(menu.LongTranslate("You cant color without Remix on!"), new Vector2(500f, 200f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+            menu.manager.ShowDialog(dialog);
             return;
         }
 
         menu.PlaySound(SoundID.MENU_Checkbox_Check);
-        slugcatDialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { }, ArenaHelpers.allSlugcats, slugcat);
-        menu.manager.ShowDialog(slugcatDialog);
+        dialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); }, ArenaHelpers.allSlugcats, slugcat);
+        menu.manager.ShowDialog(dialog);
     }
-
     public void SaveInterfaceOptions()
     {
         RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
+        RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
+
         if (slugcatAbilitiesInterface != null)
         {
             RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;
@@ -130,7 +152,17 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
-
+    public override void Singal(MenuObject sender, string message)
+    {
+        base.Singal(sender, message);
+        if (message == "CHANGE_SLUGCAT")
+            ArenaMenu?.GoToChangeCharacter();
+        if (message == "COLOR_SLUGCAT")
+        {
+            SlugcatStats.Name? slug = sender?.owner is ArenaPlayerBox playerBox ? playerBox.slugcatButton.slugcat : sender?.owner is ArenaPlayerSmallBox smallPlayerBox ? smallPlayerBox.slugcatButton.slug : null;
+            OpenColorConfig(slug);
+        }
+    }
     public override void Update()
     {
         base.Update();
@@ -154,8 +186,19 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 if (button is ArenaPlayerBox playerBox)
                 {
                     ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
-                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
-                    playerBox.isSelectingSlugcat = clientSettings?.selectingSlugcat ?? false;
+
+                    if (ModManager.MSC && clientSettings?.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+                    {
+                        if (playerBox.profileIdentifier.isMe)
+                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, painCatIndex, false);
+
+                        else if (playerBox.slugcatButton.slugcat != clientSettings?.playingAs)
+                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, Random.Range(0, 5), false);
+                    }
+                    else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
+
+                    playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
+                    if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
 
                     if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
                     else playerBox.slugcatButton.portraitColor = Color.white;
@@ -165,5 +208,43 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
 
+        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
+        readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
+        int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
+            amtOfRoomsRepeat = arenaSettingsInterface?.roomRepeatArray != null ? arenaSettingsInterface.roomRepeatArray.CheckedButton + 1 : 0;
+        playlistProgressLabel.text = $"{menu.Translate("Playlist Progress:")} {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (amtOfRooms * amtOfRoomsRepeat))}";
+
+        if (OnlineManager.lobby.isOwner)
+        {
+            levelSelector.LoadNewPlaylist(Arena.playList, false);
+            if (startButton is null)
+            {
+                startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f));
+                startButton.OnClick += btn => ArenaMenu?.StartGame();
+                subObjects.Add(startButton);
+            }
+
+            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
+        }
+        else
+        {
+            levelSelector.LoadNewPlaylist(Arena.playList, true);
+            this.ClearMenuObject(ref startButton);
+        }
+    }
+    public override void GrafUpdate(float timeStacker)
+    {
+        base.GrafUpdate(timeStacker);
+
+        chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
+        chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
+
+        if (playerDisplayer is null) return;
+
+        for (int i = 0; i < playerDisplayer.buttons.Count; i++)
+        {
+            if (playerDisplayer.buttons[i] is not ArenaPlayerBox arenaPlayerBox) continue;
+            arenaPlayerBox.showRainbow = Arena.reigningChamps.list.Contains(arenaPlayerBox.profileIdentifier.id);
+        }
     }
 }

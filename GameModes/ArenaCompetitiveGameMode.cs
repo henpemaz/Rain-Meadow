@@ -254,7 +254,7 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("MeadowRandom", "Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.");
             }
 
-            slugcatSelectDisplayNames.Add("MeadowRandom", "The Unknown");
+            slugcatSelectDisplayNames.Add("MeadowRandom", "THE UNKNOWN");
 
 
 
