@@ -19,9 +19,9 @@ namespace RainMeadow
             this.customization = customization;
 
             this.subObjects.Add(new MenuLabel(menu, this, "Eye color", Vector2.zero, new Vector2(100, 18), false));
-            this.eyeColorSelector = new OpTinyColorPicker(menu, pos + new Vector2(100, 0), customization.eyeColor);
+            this.eyeColorSelector = new OpTinyColorPicker(menu, menu.tabWrapper, pos + new Vector2(100, 0), customization.eyeColor);
             this.subObjects.Add(new MenuLabel(menu, this, "Body color", new Vector2(0, 30), new Vector2(100, 18), false));
-            this.bodyColorSelector = new OpTinyColorPicker(menu, pos + new Vector2(100, 30), customization.bodyColor);
+            this.bodyColorSelector = new OpTinyColorPicker(menu, menu.tabWrapper, pos + new Vector2(100, 30), customization.bodyColor);
             new UIelementWrapper(menu.tabWrapper, bodyColorSelector);
             new UIelementWrapper(menu.tabWrapper, eyeColorSelector);
             this.slugcatSelector = new OpComboBox2(

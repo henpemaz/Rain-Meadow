@@ -6,14 +6,15 @@ using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
-using Newtonsoft.Json.Linq;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
     public partial class TeamBattleMode : ExternalArenaGameMode
     {
         OpTinyColorPicker martyrColor;
+        OpTinyColorPicker chieftainColor;
         OpTinyColorPicker dragonSlayerColor;
+        OpTinyColorPicker outlawColor;
 
         public int winningTeam;
         public int martyrsSpawn;
@@ -61,10 +62,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
-            { 0, Color.red },
-            { 1, Color.yellow },
-            { 2, Color.magenta },
-            { 3, Color.blue }
+    { 0, GetColorFromHex("#FF7F7F") }, 
+    { 1, GetColorFromHex("#FFFF7F") }, 
+    { 2, GetColorFromHex("#7FFF7F") }, 
+    { 3,  GetColorFromHex("#7F7FFF") } 
     };
 
         public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
@@ -238,11 +239,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
 
-                martyrColor = new OpTinyColorPicker(menu, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
+                martyrColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
                 UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
-                dragonSlayerColor = new OpTinyColorPicker(menu, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[1]);
+                chieftainColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(chieftainsTeamNameUpdate.pos.x + chieftainsTeamNameUpdate.rect.size.x + 50, chieftainsTeamNameUpdate.pos.y), TeamColors[1]);
+                UIelementWrapper chieftainColorWrapper = new UIelementWrapper(tabWrapper, chieftainColor);
+
+                dragonSlayerColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + dragonsSlayersTeamNameUpdate.rect.size.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[2]);
                 UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
+
+                outlawColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(outlawsTeamNameUpdate.pos.x + outlawsTeamNameUpdate.rect.size.x + 50, outlawsTeamNameUpdate.pos.y), TeamColors[3]);
+                UIelementWrapper outlawColorWrapper = new UIelementWrapper(tabWrapper, outlawColor);
 
 
 
@@ -364,6 +371,21 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override DialogNotify AddGameModeInfo(Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+        }
+
+        public static Color GetColorFromHex(string hexCode)
+        {
+            Color color;
+            // TryParseHtmlString returns true if the conversion was successful
+            if (ColorUtility.TryParseHtmlString(hexCode, out color))
+            {
+                return color;
+            }
+            else
+            {
+                Debug.LogError("Invalid hex code: " + hexCode + ". Returning default color.");
+                return Color.magenta; // Or any default/error color you prefer
+            }
         }
     }
 }

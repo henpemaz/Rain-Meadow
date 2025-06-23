@@ -30,14 +30,20 @@ namespace RainMeadow
             public int chieftains;
             [OnlineField]
             public string martyrsName;
-            [OnlineFieldColorRgb]
-            public Color martyrColors;
             [OnlineField]
             public string chieftainsName;
             [OnlineField]
             public string dragonslayersName;
             [OnlineField]
             public string outlawsName;
+            [OnlineFieldColorRgb]
+            public Color martyrColors;
+            [OnlineFieldColorRgb]
+            public Color chieftainColors;
+            [OnlineFieldColorRgb]
+            public Color dragonslayerColors;
+            [OnlineFieldColorRgb]
+            public Color outlawColors;
 
 
             [OnlineField]
@@ -52,7 +58,11 @@ namespace RainMeadow
                     chieftainsName = TeamBattleMode.chieftainsTeamNames;
                     dragonslayersName = TeamBattleMode.dragonSlayersTeamNames;
                     outlawsName = TeamBattleMode.outlawTeamNames;
+
                     martyrColors = TeamBattleMode.TeamColors[0];
+                    outlawColors = TeamBattleMode.TeamColors[1];
+                    dragonslayerColors = TeamBattleMode.TeamColors[2];
+                    chieftainColors = TeamBattleMode.TeamColors[3];
 
                     bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
@@ -84,12 +94,16 @@ namespace RainMeadow
                     TeamBattleMode.chieftainsTeamNames = chieftainsName;
                     TeamBattleMode.outlawTeamNames = outlawsName;
                     TeamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+
                     TeamBattleMode.TeamColors[0] = martyrColors;
+                    TeamBattleMode.TeamColors[1] = outlawColors;
+                    TeamBattleMode.TeamColors[2] = dragonslayerColors;
+                    TeamBattleMode.TeamColors[3] = chieftainColors;
+
 
                     bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (cachedTb && teamBattleMode != null)
                     {
-
                         teamBattleMode.winningTeam = winningTeam;
                         teamBattleMode.martyrsSpawn = martyrs;
                         teamBattleMode.outlawsSpawn = outlaws;
