@@ -1050,12 +1050,21 @@ public partial class RainMeadow
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
         
-        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
+            if (self.redsIllness != null)
             {
-                // refreshes malnourished and red's illness state.
-                p.AddFood(0);
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
             }
         }
     }
@@ -1088,13 +1097,22 @@ public partial class RainMeadow
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
-
-        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+        
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
+            if (self.redsIllness != null)
             {
-                // refreshes malnourished and red's illness state.
-                p.AddFood(0);
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
             }
         }
     }
@@ -1127,13 +1145,22 @@ public partial class RainMeadow
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
-        
-        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
+            if (self.redsIllness != null)
             {
-                // refreshes malnourished and red's illness state.
-                p.AddFood(0);
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
             }
         }
     }

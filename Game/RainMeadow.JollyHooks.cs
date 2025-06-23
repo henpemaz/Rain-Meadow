@@ -563,7 +563,6 @@ namespace RainMeadow
                     {
                         self.MoveCamera(self.followAbstractCreature.Room.realizedRoom, -1);
                     }
-                    self.GetCameraBestIndex();
                 }
             }
 
