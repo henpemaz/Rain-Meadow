@@ -82,7 +82,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
     public void BuildPlayerDisplay()
     {
-        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), [..OnlineManager.players.OrderByDescending(x => x.isMe)], GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
+        playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), [.. OnlineManager.players.OrderByDescending(x => x.isMe)], GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
         subObjects.Add(playerDisplayer);
         playerDisplayer.CallForRefresh();
     }
@@ -94,7 +94,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public ButtonScroller.IPartOfButtonScroller GetPlayerButton(PlayerDisplayer playerDisplay, bool isLargeDisplay, OnlinePlayer player, Vector2 pos)
     {
-
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
@@ -188,7 +187,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
-        int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
+        int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
             amtOfRoomsRepeat = arenaSettingsInterface?.roomRepeatArray != null ? arenaSettingsInterface.roomRepeatArray.CheckedButton + 1 : 0;
         playlistProgressLabel.text = $"{menu.Translate("Playlist Progress:")} {Arena.currentLevel}/{(Arena.isInGame ? Arena.totalLevelCount : (amtOfRooms * amtOfRoomsRepeat))}";
 
@@ -216,5 +215,13 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
         chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
+
+        if (playerDisplayer is null) return;
+
+        for (int i = 0; i < playerDisplayer.buttons.Count; i++)
+        {
+            if (playerDisplayer.buttons[i] is not ArenaPlayerBox arenaPlayerBox) continue;
+            arenaPlayerBox.showRainbow = Arena.reigningChamps.list.Contains(arenaPlayerBox.profileIdentifier.id);
+        }
     }
 }
