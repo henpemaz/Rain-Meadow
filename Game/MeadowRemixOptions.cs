@@ -49,6 +49,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> OutlawsTeamName;
     public readonly Configurable<string> DragonSlayersTeamName;
     public readonly Configurable<string> ChieftainTeamName;
+    public readonly Configurable<float> TeamColorLerp;
 
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
@@ -113,7 +114,7 @@ public class RainMeadowOptions : OptionInterface
         OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
         DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
         ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
-
+        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
     }
 
     public override void Initialize()

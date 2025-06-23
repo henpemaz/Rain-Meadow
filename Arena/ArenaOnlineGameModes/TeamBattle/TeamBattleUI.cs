@@ -22,6 +22,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int dragonslayersSpawn;
         public int chieftainsSpawn;
         public int roundSpawnPointCycler;
+        public ProperlyAlignedMenuLabel teamColorLerpLabel;
+        public OpTextBox teamColorBox;
 
         public static string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
         public static string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
@@ -62,10 +64,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
-    { 0, GetColorFromHex("#FF7F7F") }, 
-    { 1, GetColorFromHex("#FFFF7F") }, 
-    { 2, GetColorFromHex("#7FFF7F") }, 
-    { 3,  GetColorFromHex("#7F7FFF") } 
+    { 0, GetColorFromHex("#FF7F7F") },
+    { 1, GetColorFromHex("#FFFF7F") },
+    { 2, GetColorFromHex("#7FFF7F") },
+    { 3,  GetColorFromHex("#7F7FFF") }
     };
 
         public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
@@ -96,7 +98,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 chieftainsSpawn = 0;
                 roundSpawnPointCycler = 0;
 
-
                 ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
                 ListItem outlawsListItem = new ListItem(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value);
                 ListItem dragonSlayersListItem = new ListItem(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value);
@@ -110,7 +111,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 teamNameListItems.Add(chieftainsListItem);
 
                 var arenaGameModeLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team:"), new Vector2(50, 380f), new Vector2(0, 20), false);
-                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
+                bool defaultTeamNameString = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t);
+                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(defaultTeamNameString ? teamNameDictionary[t.team]: ""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
                 arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
                 {
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
@@ -242,26 +244,36 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 martyrColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
                 UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
-                chieftainColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(chieftainsTeamNameUpdate.pos.x + chieftainsTeamNameUpdate.rect.size.x + 50, chieftainsTeamNameUpdate.pos.y), TeamColors[1]);
-                UIelementWrapper chieftainColorWrapper = new UIelementWrapper(tabWrapper, chieftainColor);
-
                 dragonSlayerColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + dragonsSlayersTeamNameUpdate.rect.size.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[2]);
                 UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
 
                 outlawColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(outlawsTeamNameUpdate.pos.x + outlawsTeamNameUpdate.rect.size.x + 50, outlawsTeamNameUpdate.pos.y), TeamColors[3]);
                 UIelementWrapper outlawColorWrapper = new UIelementWrapper(tabWrapper, outlawColor);
 
+                chieftainColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(chieftainsTeamNameUpdate.pos.x + chieftainsTeamNameUpdate.rect.size.x + 50, chieftainsTeamNameUpdate.pos.y), TeamColors[1]);
+                UIelementWrapper chieftainColorWrapper = new UIelementWrapper(tabWrapper, chieftainColor);
 
-
+                teamColorLerpLabel = new(menu, tabWrapper, menu.Translate("Team Color Lerp Factor:"), new Vector2(chifetainTeamLabel.pos.x, chifetainTeamLabel.pos.y - 38), new Vector2(0, 20), false);
+                teamColorBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.TeamColorLerp.Value), new(teamColorLerpLabel.pos.x, teamColorLerpLabel.pos.y - 38), 50)
+                {
+                    alignment = FLabelAlignment.Center,
+                    description = menu.Translate("How strongly the team color mixes with your color"),
+                    accept = OpTextBox.Accept.Float
+                };
+                teamColorBox.OnValueUpdate += (config, value, lastValue) =>
+                {
+                    RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamColorBox.valueFloat;
+                };
                 UIelementWrapper martyrWrapper = new UIelementWrapper(tabWrapper, martyrsTeamNameUpdate);
                 UIelementWrapper outlawWrapper = new UIelementWrapper(tabWrapper, outlawsTeamNameUpdate);
                 UIelementWrapper dragonSlayerWrapper = new UIelementWrapper(tabWrapper, dragonsSlayersTeamNameUpdate);
                 UIelementWrapper chiefTainWrapper = new UIelementWrapper(tabWrapper, chieftainsTeamNameUpdate);
+                UIelementWrapper teamColorBoxWrapper = new UIelementWrapper(tabWrapper, teamColorBox);
 
                 martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
 
 
-                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
+                extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel, teamColorBoxWrapper, teamColorLerpLabel);
             }
         }
 
@@ -386,6 +398,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 Debug.LogError("Invalid hex code: " + hexCode + ". Returning default color.");
                 return Color.magenta; // Or any default/error color you prefer
             }
+        }
+
+        public float SetTeamLerp()
+        {
+            return RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
         }
     }
 }
