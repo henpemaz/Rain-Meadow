@@ -1052,7 +1052,7 @@ public partial class RainMeadow
         
         for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
             {
                 // refreshes malnourished and red's illness state.
                 p.AddFood(0);
@@ -1091,7 +1091,7 @@ public partial class RainMeadow
 
         for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
             {
                 // refreshes malnourished and red's illness state.
                 p.AddFood(0);
@@ -1130,7 +1130,7 @@ public partial class RainMeadow
         
         for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
         {
-            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p && p != self)
             {
                 // refreshes malnourished and red's illness state.
                 p.AddFood(0);

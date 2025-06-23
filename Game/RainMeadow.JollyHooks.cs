@@ -326,8 +326,10 @@ namespace RainMeadow
                     if (self.manager.currentMainLoop is StoryOnlineMenu story_menu)
                     {
                         var currentslugcat = story_menu.playerSelectedSlugcats[i];
+                        
                         if (currentslugcat != self.slidingMenu.playerSelector[i].slugName)
                             self.slidingMenu.playerSelector[i].dirty = true;
+                        
                         if (currentslugcat is null)
                         {
                             currentslugcat = story.currentCampaign;
