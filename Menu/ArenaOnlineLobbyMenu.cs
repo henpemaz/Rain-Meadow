@@ -61,12 +61,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ResetReadyUp();
 
-        Arena.ResetGameTimer();
-        Arena.currentLevel = 0;
-        Arena.arenaSittingOnlineOrder.Clear();
-        Arena.playerNumberWithDeaths.Clear();
-        Arena.playerNumberWithKills.Clear();
-        Arena.playerNumberWithWins.Clear();
+        if (OnlineManager.lobby.isOwner)
+            ArenaHelpers.ResetOnReturnMenu(Arena);
     }
 
     public void ChangeScene()
@@ -147,6 +143,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
+        if (OnlineManager.lobby.isOwner)
+            ArenaHelpers.ResetOnStartGame(Arena);
 
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
@@ -161,7 +159,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void InitializeNewOnlineSitting()
     {
-        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) { levelPlaylist = [] };
+        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) 
+        { levelPlaylist = [] };
 
         if (GetGameTypeSetup.shufflePlaylist)
         {
@@ -184,21 +183,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         // Host dictates playlist
         if (OnlineManager.lobby.isOwner)
         {
-            Arena.playList = manager.arenaSitting.levelPlaylist;
+            Arena.playList.Clear();
+            Arena.playList.AddRange(manager.arenaSitting.levelPlaylist);
 
             for (int i = 0; i < OnlineManager.players.Count; i++)
-                if (!Arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
+            {
+                if (ArenaHelpers.GetArenaClientSettings(OnlineManager.players[i])?.ready == true  && !Arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
                     Arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
+            }
 
             Arena.totalLevelCount = manager.arenaSitting.levelPlaylist.Count;
         }
         else // Client retrieves playlist
-        {
-            manager.arenaSitting.levelPlaylist = Arena.playList;
-            manager.arenaSitting.currentLevel = Arena.currentLevel;
-        }
-
-        ArenaHelpers.SetProfileColor(Arena);
+            manager.arenaSitting.levelPlaylist.AddRange(Arena.playList);
         if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
         {
             Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Arena.currentGameMode).Key;
@@ -210,6 +207,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
         }
         Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        manager.arenaSitting.currentLevel = Arena.currentLevel;
     }
 
     public void ResetReadyUp()
@@ -262,17 +260,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
-        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
-        {
-            pushClientIntoGame = true;
-            StartGame();
-        }
-        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.hasPermissionToRejoin && Arena.arenaClientSettings.ready)
-        {
-            RainMeadow.Debug("Client was late but given permission to rejoin!");
-            pushClientIntoGame = true;
-            StartGame();
-        }
+        UpdateGameState();
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -345,7 +333,22 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
         }
     }
+    public void UpdateGameState()
+    {
+        if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready && Arena.arenaSittingOnlineOrder.Contains(OnlineManager.mePlayer.inLobbyId))
+        {
+            pushClientIntoGame = true;
+            StartGame();
+        }
+        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready && Arena.hasPermissionToRejoin)
+        {
+            RainMeadow.Debug("Client was late but given permission to rejoin!");
+            pushClientIntoGame = true;
+            StartGame();
+        }
 
+    }
     public void UpdateElementBindings()
     {
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);

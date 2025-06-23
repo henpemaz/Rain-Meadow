@@ -194,7 +194,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         if (OnlineManager.lobby.isOwner)
         {
-            levelSelector.LoadNewPlaylist(Arena.playList, false);
+            if (menu.Active) levelSelector.LoadNewPlaylist(Arena.playList, false);
             if (startButton is null)
             {
                 startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f));
