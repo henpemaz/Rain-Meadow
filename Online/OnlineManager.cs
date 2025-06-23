@@ -341,7 +341,7 @@ namespace RainMeadow
             // Last failsafe for any modded region
             var split = rid.Split('_');
             lobby.worldSessions.TryGetValue(split[0], out var ws);
-            if(split.Length == 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
+            if(split.Length == 2 && ws != null && ws.roomSessions.TryGetValue(split[1], out var rs))
                 return rs;
             return ws;
         }
