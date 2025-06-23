@@ -6,6 +6,7 @@ using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
+using Newtonsoft.Json.Linq;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
@@ -21,10 +22,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public int chieftainsSpawn;
         public int roundSpawnPointCycler;
 
-        public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
-        public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-        public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
-        public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
+        public static string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
+        public static string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+        public static string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
+        public static string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public UIelementWrapper externalModeWrapper;
 
@@ -58,7 +59,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, "ChieftainA" }
     };
 
-        public Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
+        public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
         {
             { 0, Color.red },
             { 1, Color.yellow },
@@ -93,7 +94,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 dragonslayersSpawn = 0;
                 chieftainsSpawn = 0;
                 roundSpawnPointCycler = 0;
-                
+
 
                 ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
                 ListItem outlawsListItem = new ListItem(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value);
@@ -149,7 +150,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    tb.martyrsTeamName = value;
+                    TeamBattleMode.martyrsTeamName = value;
                 };
 
                 var outlawTeamlabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 2:"), new Vector2(arenaGameModeLabel.pos.x, martyrsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
@@ -176,7 +177,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    tb.outlawTeamNames = value;
+                    TeamBattleMode.outlawTeamNames = value;
                 };
                 ///
                 var dragonSlayersLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 3:"), new Vector2(arenaGameModeLabel.pos.x, outlawsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
@@ -203,7 +204,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    tb.dragonSlayersTeamNames = value;
+                    TeamBattleMode.dragonSlayersTeamNames = value;
                 };
 
 
@@ -232,16 +233,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    tb.chieftainsTeamNames = value;
+                    TeamBattleMode.chieftainsTeamNames = value;
                 };
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
 
-                //martyrColor = new OpTinyColorPicker(menu, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
-                //UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
+                martyrColor = new OpTinyColorPicker(menu, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
+                UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
-                //dragonSlayerColor = new OpTinyColorPicker(menu, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[1]);
-                //UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
+                dragonSlayerColor = new OpTinyColorPicker(menu, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[1]);
+                UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
 
 
 
@@ -250,7 +251,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 UIelementWrapper dragonSlayerWrapper = new UIelementWrapper(tabWrapper, dragonsSlayersTeamNameUpdate);
                 UIelementWrapper chiefTainWrapper = new UIelementWrapper(tabWrapper, chieftainsTeamNameUpdate);
 
-                //martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
+                martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
 
 
                 extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel);
@@ -265,6 +266,51 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     if (!arenaTeamComboBox.held && !teamComboBoxLastHeld) arenaTeamComboBox.value = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaTeamClientSettings>().team.ToString();
             }
 
+            if (arenaTeamComboBox != null)
+            {
+                var alListItems = arenaTeamComboBox.GetItemList();
+
+                for (int i = 0; i < alListItems.Length; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            if (alListItems[i] != null && alListItems[i].name != martyrsTeamName)
+                            {
+                                alListItems[i].name = martyrsTeamName;
+                                alListItems[i].desc = martyrsTeamName;
+                                alListItems[i].displayName = martyrsTeamName;
+                            }
+                            break;
+                        case 1:
+                            if (alListItems[i] != null && alListItems[i].name != chieftainsTeamNames)
+                            {
+                                alListItems[i].name = chieftainsTeamNames;
+                                alListItems[i].desc = chieftainsTeamNames;
+                                alListItems[i].displayName = chieftainsTeamNames;
+                            }
+                            break;
+                        case 2:
+                            if (alListItems[i] != null && alListItems[i].name != dragonSlayersTeamNames)
+                            {
+                                alListItems[i].name = dragonSlayersTeamNames;
+                                alListItems[i].desc = dragonSlayersTeamNames;
+                                alListItems[i].displayName = dragonSlayersTeamNames;
+                            }
+                            break;
+                        case 3:
+                            if (alListItems[i] != null && alListItems[i].name != outlawTeamNames)
+                            {
+                                alListItems[i].name = outlawTeamNames;
+                                alListItems[i].desc = outlawTeamNames;
+                                alListItems[i].displayName = outlawTeamNames;
+                            }
+                            break;
+                    }
+
+                }
+
+            }
         }
 
         private void ColorSelector_OnValueChangedEvent()
@@ -291,7 +337,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                         else
                         {
-                            slugcatButton.secondaryColor = tb.TeamColors[team.team];
+                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[team.team];
                         }
                     }
 

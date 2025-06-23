@@ -81,7 +81,7 @@ namespace RainMeadow
 
                     if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
                     {
-                        this.color = tb.TeamColors[tb2.team];
+                        this.color = TeamBattleMode.TeamColors[tb2.team];
                         this.lighter_color = this.color;
                     }
                 }

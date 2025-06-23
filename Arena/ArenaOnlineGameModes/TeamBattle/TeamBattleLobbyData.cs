@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -27,14 +28,16 @@ namespace RainMeadow
             public int dragonslayers;
             [OnlineField]
             public int chieftains;
-            //[OnlineField]
-            //public string martyrsName;
-            //[OnlineField]
-            //public string chieftainsName;
-            //[OnlineField]
-            //public string dragonslayersName;
-            //[OnlineField]
-            //public string outlawsName;
+            [OnlineField]
+            public string martyrsName;
+            [OnlineFieldColorRgb]
+            public Color martyrColors;
+            [OnlineField]
+            public string chieftainsName;
+            [OnlineField]
+            public string dragonslayersName;
+            [OnlineField]
+            public string outlawsName;
 
 
             [OnlineField]
@@ -45,6 +48,12 @@ namespace RainMeadow
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 if (arena != null)
                 {
+                    martyrsName = TeamBattleMode.martyrsTeamName;
+                    chieftainsName = TeamBattleMode.chieftainsTeamNames;
+                    dragonslayersName = TeamBattleMode.dragonSlayersTeamNames;
+                    outlawsName = TeamBattleMode.outlawTeamNames;
+                    martyrColors = TeamBattleMode.TeamColors[0];
+
                     bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
                     {
@@ -56,7 +65,7 @@ namespace RainMeadow
 
                         roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
 
-                        //martyrsName = teamBattleMode.martyrsTeamName;
+                        //
                         //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
                         //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
                         //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
@@ -71,20 +80,22 @@ namespace RainMeadow
                 var arena = (lobby.gameMode as ArenaOnlineGameMode);
                 if (arena != null)
                 {
+                    TeamBattleMode.martyrsTeamName = martyrsName;
+                    TeamBattleMode.chieftainsTeamNames = chieftainsName;
+                    TeamBattleMode.outlawTeamNames = outlawsName;
+                    TeamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+                    TeamBattleMode.TeamColors[0] = martyrColors;
+
                     bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (cachedTb && teamBattleMode != null)
                     {
+
                         teamBattleMode.winningTeam = winningTeam;
                         teamBattleMode.martyrsSpawn = martyrs;
                         teamBattleMode.outlawsSpawn = outlaws;
                         teamBattleMode.dragonslayersSpawn = dragonslayers;
 
                         teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
-
-                        //teamBattleMode.martyrsTeamName = martyrsName;
-                        //teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
-                        //teamBattleMode.chieftainsTeamNames = chieftainsName;
-                        //teamBattleMode.outlawTeamNames = outlawsName;
 
                     }
                 }
