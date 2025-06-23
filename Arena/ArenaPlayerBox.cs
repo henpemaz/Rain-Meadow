@@ -106,7 +106,7 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
             if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode != null)
             {
-                arena.externalArenaGameMode.ArenaPlayerBox_GrafUpdate(arena, this, timeStacker, showRainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton);
+                arena.externalArenaGameMode.ArenaPlayerBox_GrafUpdate(arena, this, timeStacker, showRainbow, pingLabel, sprites, lines, textOverlayLabel, nameLabel, profileIdentifier, slugcatButton);
             }
 
         }

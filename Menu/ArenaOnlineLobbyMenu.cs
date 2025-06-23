@@ -21,7 +21,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
     public Vector2[] oldPagesPos = [];
-    public MenuIllustration competitiveTitle, competitiveShadow;
+    public MenuIllustration FFATitle, FFAShadow;
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
@@ -49,9 +49,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
-        competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
-        competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
-        competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
+        FFAShadow = new(this, scene, "", "FFAShadow", new Vector2(-2.99f, 265.01f), true, false);
+        FFATitle = new(this, scene, "", "FFATitle", new Vector2(-2.99f, 265.01f), true, false);
+        FFATitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
         painCatName = Arena.slugcatSelectPainCatNames.GetValueOrDefault(UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count), "")!;
         painCatIndex = UnityEngine.Random.Range(0, 5);
@@ -59,7 +59,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName, painCatIndex);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName, painCatIndex);
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
-        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
+        mainPage.SafeAddSubobjects(FFAShadow, FFATitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ResetReadyUp();
 
@@ -201,17 +201,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
 
         ArenaHelpers.SetProfileColor(Arena);
-        if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
+        if (Arena.registeredGameModes.Keys.Contains(Arena.currentGameMode))
         {
-            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Arena.currentGameMode).Key;
-            RainMeadow.Debug($"Playing GameMode: {Arena.onlineArenaGameMode}");
+            Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Arena.currentGameMode).Value;
+            RainMeadow.Debug($"Playing GameMode: {Arena.externalArenaGameMode}");
         }
         else
         {
-            RainMeadow.Error("Could not find game mode in list! Setting to Competitive as a fallback");
-            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
+            RainMeadow.Error("Could not find game mode in list! Setting to FFA as a fallback");
+            Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
         }
-        Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
     }
 
     public void ResetReadyUp()
@@ -257,16 +257,16 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         base.Update();
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
+        if (Arena.externalArenaGameMode == null || (Arena.externalArenaGameMode != null && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value))
+        {
+            Arena.externalArenaGameMode = (Arena.registeredGameModes.FirstOrDefault(x => x.Key == Arena.currentGameMode).Value);
+        }
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
         if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
-        if (Arena.externalArenaGameMode == null || (Arena.externalArenaGameMode != null && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value));
-        {
-            Arena.externalArenaGameMode = (Arena.registeredGameModes.FirstOrDefault(x => x.Key == Arena.currentGameMode).Value);
-        }
         UpdateElementBindings();
         if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
         {
@@ -356,7 +356,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[1]?.wrapper);
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[0].wrapper);
+        //MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[1]?.wrapper);
+        //MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[0].wrapper);
     }
 }

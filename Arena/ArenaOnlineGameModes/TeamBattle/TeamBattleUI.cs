@@ -305,14 +305,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
             self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(self.showRainbow ? 0.75f : 0f);
             self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
-            self.lastSelectingStatusLabelFade = self.selectingStatusLabelFade;
-            self.selectingStatusLabelFade = self.isSelectingSlugcat ? RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 0f, 0.12f, 0.1f);
-            self.slugcatButton.isBlackPortrait = self.isSelectingSlugcat;
+            self.lastTextOverlayFade = self.textOverlayFade;
+            self.textOverlayFade = self.enabledTextOverlay ? RWCustom.Custom.LerpAndTick(self.textOverlayFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.textOverlayFade, 0f, 0.12f, 0.1f);
+            self.slugcatButton.isBlackPortrait = self.enabledTextOverlay;
         }
 
         public override string AddGameSettingsTab()
         {
             return "Team Settings";
+        }
+
+        public override DialogNotify AddGameModeInfo(Menu.Menu menu)
+        {
+            return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
     }
 }

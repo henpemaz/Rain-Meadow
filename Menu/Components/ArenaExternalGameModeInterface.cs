@@ -18,7 +18,7 @@ namespace RainMeadow.UI.Components
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
             {
-                RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
+                RainMeadow.Error("THIS IS NOT FFA MODE!");
             }
 
             arena.externalArenaGameMode.ArenaExternalGameModeSettingsInterface_ctor(arena, this, menu, owner, tabWrapper, pos);

@@ -318,11 +318,6 @@ namespace RainMeadow
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
-            {
-                string[] array2 = Regex.Split(array[i], "<msuB>");
-                action.Invoke(array2[0], array[1]);
-
-            }
         }
 
         public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)

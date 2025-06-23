@@ -191,10 +191,8 @@ namespace RainMeadow.UI.Components
         public OpComboBox arenaGameModeComboBox;
         public OpComboBox arenaTeamComboBox;
 
-        public CheckBox spearsHitCheckbox, evilAICheckBox;
-        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel;
         public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox;
-        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
+        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;

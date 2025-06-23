@@ -119,7 +119,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void OpenInfoDialog()
     {
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = new DialogNotify(menu.LongTranslate("Do some wacky stuff around here!"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+        dialog = Arena.externalArenaGameMode.AddGameModeInfo(menu);
         menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
@@ -173,7 +173,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             externalTabContainer = tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
 
-            
             var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. Arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(Arena)]);
 
             externalTabContainer.AddObjects(externalInterface);
@@ -193,7 +192,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                             playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, painCatIndex, false);
 
                         else if (playerBox.slugcatButton.slugcat != clientSettings?.playingAs)
-                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, Random.Range(0, 5), false);
+                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, UnityEngine.Random.Range(0, 5), false);
                     }
                     else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
 

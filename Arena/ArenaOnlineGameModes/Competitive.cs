@@ -1,4 +1,5 @@
-﻿using RainMeadow;
+﻿using Menu;
+using RainMeadow;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System.Collections.Generic;
 using System.Linq;
@@ -123,6 +124,11 @@ namespace RainMeadow
                     list[0].winner = true;
                 }
             }
+        }
+
+        public override DialogNotify AddGameModeInfo(Menu.Menu menu)
+        {
+            return new DialogNotify(menu.LongTranslate("Trust no one. Last scug standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
     }

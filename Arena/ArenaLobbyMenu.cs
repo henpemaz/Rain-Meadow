@@ -488,7 +488,7 @@ namespace RainMeadow
             }
             else
             {
-                RainMeadow.Error("Could not find gamemode in list! Setting to Competitive as a fallback");
+                RainMeadow.Error("Could not find gamemode in list! Setting to FFA as a fallback");
                 arena.externalArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
             }
             arena.externalArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);

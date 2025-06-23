@@ -382,7 +382,7 @@ namespace RainMeadow
         }
 
 
-        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
         {
             Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
             Color pingColor = self.GetPingColor(self.realPing);
@@ -405,7 +405,7 @@ namespace RainMeadow
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             lines.Do(x => x.lineConnector.alpha = 0.5f);
-            selectingStatusLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(self.lastSelectingStatusLabelFade, self.selectingStatusLabelFade, timeStacker), 0.3f);
+            textOverlayLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(self.lastTextOverlayFade, self.textOverlayFade, timeStacker), 0.3f);
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
@@ -423,9 +423,14 @@ namespace RainMeadow
             self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
             self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(0.75f);
             self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
-            self.lastSelectingStatusLabelFade = self.selectingStatusLabelFade;
-            self.selectingStatusLabelFade = self.isSelectingSlugcat ? RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.selectingStatusLabelFade, 0f, 0.12f, 0.1f);
-            self.slugcatButton.isBlackPortrait = self.isSelectingSlugcat;
+            self.lastTextOverlayFade = self.textOverlayFade;
+            self.textOverlayFade = self.enabledTextOverlay ? RWCustom.Custom.LerpAndTick(self.textOverlayFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.textOverlayFade, 0f, 0.12f, 0.1f);
+            self.slugcatButton.isBlackPortrait = self.enabledTextOverlay;
+        }
+
+        public virtual DialogNotify AddGameModeInfo(Menu.Menu menu)
+        {
+            return new DialogNotify(menu.LongTranslate("Add your gamemode info here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
     }
