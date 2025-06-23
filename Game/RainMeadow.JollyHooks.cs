@@ -326,6 +326,8 @@ namespace RainMeadow
                     if (self.manager.currentMainLoop is StoryOnlineMenu story_menu)
                     {
                         var currentslugcat = story_menu.playerSelectedSlugcats[i];
+                        if (currentslugcat != self.slidingMenu.playerSelector[i].slugName)
+                            self.slidingMenu.playerSelector[i].dirty = true;
                         if (currentslugcat is null)
                         {
                             currentslugcat = story.currentCampaign;
@@ -348,16 +350,8 @@ namespace RainMeadow
                         }
 
 
-
-
-
-                        if (currentslugcat != self.slidingMenu.playerSelector[i].slugName)
-                            self.slidingMenu.playerSelector[i].dirty = true;
                     }
                 }
-
-
-
 
                 // self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
                 // self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
@@ -367,7 +361,7 @@ namespace RainMeadow
                 // self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
 
                 if (self.slidingMenu.friendlyToggle.isToggled == story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
-                if (self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
+                if (!self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
                 // if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
                 if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
                 if (self.slidingMenu.friendlySteal.isToggled) self.slidingMenu.friendlySteal.Toggle();

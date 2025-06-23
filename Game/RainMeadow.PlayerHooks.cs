@@ -1028,7 +1028,7 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        
+
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
         {
             RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
@@ -1049,6 +1049,15 @@ public partial class RainMeadow
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
         }
+        
+        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+        {
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            {
+                // refreshes malnourished and red's illness state.
+                p.AddFood(0);
+            }
+        }
     }
 
     private void Player_AddFood(On.Player.orig_AddFood orig, Player self, int add)
@@ -1059,7 +1068,7 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
         {
             RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
             orig(self, add);
@@ -1078,6 +1087,15 @@ public partial class RainMeadow
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
+        }
+
+        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+        {
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            {
+                // refreshes malnourished and red's illness state.
+                p.AddFood(0);
+            }
         }
     }
 
@@ -1089,7 +1107,7 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) 
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
         {
             RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
             orig(self, add);
@@ -1108,6 +1126,15 @@ public partial class RainMeadow
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
+        }
+        
+        for (int i = 0; i < self.abstractCreature.world.game.StoryPlayerCount; i++)
+        {
+            if (self.abstractCreature.world.game.Players[i].realizedCreature is Player p)
+            {
+                // refreshes malnourished and red's illness state.
+                p.AddFood(0);
+            }
         }
     }
 

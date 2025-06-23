@@ -86,9 +86,7 @@ namespace RainMeadow
                 else if (colorChecked)
                 {
                     AddColorButtons();
-                }
-                
-                
+                } 
             }
 
 
@@ -144,6 +142,16 @@ namespace RainMeadow
             var jollyallowed = ModManager.JollyCoop && base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
             storyGameMode.avatarCount = jollyallowed ? manager.rainWorld.options.JollyPlayerCount : 1;
             if (jollyallowed) PlayerGraphics.PopulateJollyColorArray(PlayerSelectedSlugcat);
+
+            for (int i = 1; i < storyGameMode.avatarCount; i++)
+            {
+                manager.rainWorld.ActivatePlayer(i);
+            }
+            for (int j = storyGameMode.avatarCount; j < 4; j++)
+            {
+                manager.rainWorld.DeactivatePlayer(j);
+            }
+
             for (int i = 0; i < storyGameMode.avatarSettings.Length; i++)
             {
                 storyGameMode.avatarSettings[i].playingAs = storyGameMode.currentCampaign;
@@ -152,15 +160,10 @@ namespace RainMeadow
                     storyGameMode.avatarSettings[i].playingAs = name;
                 }
 
-
-
-
                 if ((storyGameMode.avatarCount > 1) && jollyallowed)
                 {
                     storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
                 }
-
-
 
                 if (jollyallowed)
                 {
@@ -176,7 +179,6 @@ namespace RainMeadow
                     }
                     else if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.AUTO)
                     {
-
                         if (i == 0)
                         {
                             storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
@@ -190,7 +192,6 @@ namespace RainMeadow
                                 PlayerGraphics.JollyColor(i, 2)
                             };
                         }
-
                     }
                     else
                     {
