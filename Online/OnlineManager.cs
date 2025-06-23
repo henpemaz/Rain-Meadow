@@ -334,6 +334,18 @@ namespace RainMeadow
             feeds.RemoveAll(f => f.resource == resource);
         }
 
+        /// Support routine for rooms like OWO_04 or OWO/BUS
+        /// Only called as a last resort after the other lookups fail 
+        private static OnlineResource? ParseModdedWorldOrRoomID(string rid)
+        {
+            // Last failsafe for any modded region
+            var split = rid.Split('_');
+            lobby.worldSessions.TryGetValue(split[0], out var ws);
+            if(split.Length == 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
+                return rs;
+            return ws;
+        }
+
         // this smells
         public static OnlineResource ResourceFromIdentifier(string rid)
         {
@@ -352,6 +364,7 @@ namespace RainMeadow
                         return roomSession;
                     }
                 }
+
                 if (rid.Length >= 4)
                 {
                     if (rid.Length >= 8)
@@ -366,6 +379,10 @@ namespace RainMeadow
                 }
                 if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
                 if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+
+                var altRes = ParseModdedWorldOrRoomID(rid);
+                if(altRes != null)
+                    return altRes;
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;
