@@ -12,7 +12,7 @@ namespace RainMeadow.UI.Components
     {
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainer, TabContainer.Tab externalGameModeTab, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -59,9 +59,23 @@ namespace RainMeadow.UI.Components
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
+                // doesn't work for multiple attempts
                 if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
                 {
+                    if (arena.externalArenaGameMode != null)
+                    {
+                        tabContainer.RemoveTab(arena.externalArenaGameMode.AddGameSettingsTab());
+                    }
                     arena.externalArenaGameMode = extGameMode;
+                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "" )
+                    {
+                        externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
+
+                        var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f), [.. arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(arena)]);
+
+                        externalGameModeTab.AddObjects(externalInterface);
+
+                    }
                 }
             };
 

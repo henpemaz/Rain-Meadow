@@ -8,6 +8,7 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using UnityEngine;
+using static RainMeadow.UI.Components.TabContainer;
 
 namespace RainMeadow.UI.Components;
 
@@ -89,6 +90,16 @@ public class TabContainer : RectangularMenuObject
         public void AddNewTabButton(string name)
         {
             registeredTabButtons.Add(name);
+            if (PagesOn)
+            {
+                DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
+            }
+            PopulatePages(CurrentOffset);
+        }
+
+        public void RemoveTabButton(string name)
+        {
+            registeredTabButtons.Remove(name);
             if (PagesOn)
             {
                 DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
@@ -305,6 +316,22 @@ public class TabContainer : RectangularMenuObject
             SwitchTab(0);
         }
         return tab;
+    }
+
+    public void RemoveTab(string name)
+    {
+        int index = tabButtonContainer.registeredTabButtons.IndexOf(name);
+        if (index != -1)
+        {
+            tabButtonContainer.RemoveTabButton(name);
+            tabs[index].RemoveSprites();
+            tabButtonContainer.RemoveSubObject(tabs[index]);
+        }
+        // idk why but if this isn't run on every single object that is added everything just breaks so don't exclude the first set of tab elements added
+        if (index == 0)
+        {
+            SwitchTab(0);
+        }
     }
     public void SwitchTab(int tabIndex)
     {

@@ -76,7 +76,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
 
 
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, tabContainer, externalTabContainer, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
@@ -168,15 +168,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         base.Update();
         if (!RainMeadow.isArenaMode(out _)) return;
         ChatLogManager.UpdatePlayerColors();
-
-        if (Arena.externalArenaGameMode != null && Arena.currentGameMode == Arena.externalArenaGameMode.GetGameModeId.value && Arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalTabContainer == null)
-        {
-            externalTabContainer = tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
-
-            var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, menu, externalTabContainer, new Vector2(0f, 0f), [.. Arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(Arena)]);
-
-            externalTabContainer.AddObjects(externalInterface);
-        }
 
         if (playerDisplayer != null)
         {
