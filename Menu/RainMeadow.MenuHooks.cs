@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using RainMeadow.UI;
 using MonoMod.RuntimeDetour;
+using RainMeadow.UI.Components;
 
 namespace RainMeadow
 {
@@ -43,9 +44,8 @@ namespace RainMeadow
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
+
         }
-
-
         void IL_Menu_Update(ILContext il)
         {
             try

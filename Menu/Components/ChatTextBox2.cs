@@ -29,7 +29,7 @@ namespace RainMeadow.UI.Components
                 forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
             }
         }
-        public bool DontGetInputs => isUnloading || !focused;
+        public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
         public Action<char> OnKeyDown { get; set; }
         public ChatTextBox2(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
@@ -77,22 +77,24 @@ namespace RainMeadow.UI.Components
             }
             if (IgnoreSelect) return;
             if (!buttonBehav.clicked) return;
-            Focused = !Focused;
+            SetFocused(!Focused);
         }
         public override void Update()
         {
             base.Update();
             if (previouslySubmittedText) previouslySubmittedText = previouslySubmittedText && menu.selectedObject == this;
             buttonBehav.Update();
-            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) Focused = false;
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ?  null : SoundID.None);
             if (menu.allowSelectMove) menu.allowSelectMove = !Focused;
             UpdateSelection();
             roundedRect.fillAlpha = 1.0f;
             roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
             cursorIsInMiddle = cursorPos < currentMessage.Length;
             maxVisibleLength = VisibleTextLimit;
-            forceMenuMouseMode = (menu.holdButton || menu.modeSwitch || focused) && forceMenuMouseMode;
+            forceMenuMouseMode = (menu.holdButton || menu.pressButton || menu.modeSwitch || Focused) && forceMenuMouseMode;
             menu.manager.menuesMouseMode = forceMenuMouseMode || menu.manager.menuesMouseMode;
+            lastMenuMouseMode = menu.manager.menuesMouseMode;
+            lastFreezeMenuFunctions = menu.FreezeMenuFunctions;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -149,57 +151,72 @@ namespace RainMeadow.UI.Components
         }
         public void CaptureInputs(char input)
         {
-            // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
-            if (input == '\u007F') return;
-            string msg = currentMessage;
+            if (isUnloading || DontGetInputs) return;
             ChatTextBox.blockInput = false;
-            if (DontGetInputs) return;
-            //u0008 backspace in unicode
-            if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
+            if (!Focused)
             {
-                if (cursorPos > 0 || selectionStartPos != -1)
+                Player.InputPackage currentInput = RWInput.PlayerUIInput(-1); //race conditions when update isnt called on time
+                bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput)
                 {
-                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                    if (selectionStartPos != -1)  //delete selected text
+                    SetFocused(true);
+                    forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
+                    if (!forceMenuMouseMode) menu.selectedObject = this;
+                }
+                return;
+            }
+            // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
+            if (input != '\u007F')
+            {
+                string msg = currentMessage;
+                //u0008 backspace in unicode
+                if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
+                {
+                    if (cursorPos > 0 || selectionStartPos != -1)
                     {
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        if (selectionStartPos != -1)  //delete selected text
+                        {
+                            DeleteSelectedText();
+                            if (cursorPos == currentMessage.Length) cursorIsInMiddle = false;
+                        }
+                        else
+                        {
+                            currentMessage = msg.Remove(cursorPos - 1, 1);
+                            cursorPos--;
+                        }
+                    }
+                }
+                else if ((input == '\n' || input == '\r'))
+                {
+                    if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
+                    {
+                        // /n is type a new line, not supported and usually its ENTER, so we sending message. sending to players if messg has one letter
+                        MatchmakingManager.currentInstance.SendChatMessage(msg);
+                        foreach (var player in OnlineManager.players)
+                        {
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
+                        }
+                        HandleTextSubmit();
+                    }
+                    else HandleDeselect();
+                }
+                else  //any other character, lets type
+                {
+                    if (selectionStartPos != -1) // replaces the selected text with the emitted character
+                    {
+                        menu.PlaySound(SoundID.MENU_Checkbox_Check);
                         DeleteSelectedText();
+                        currentMessage = currentMessage.Insert(cursorPos, input.ToString());
+                        cursorPos++;
                         if (cursorPos == currentMessage.Length) cursorIsInMiddle = false;
                     }
-                    else
+                    else if (msg.Length < textLimit)
                     {
-                        currentMessage = msg.Remove(cursorPos - 1, 1);
-                        cursorPos--;
+                        menu.PlaySound(SoundID.MENU_Checkbox_Check);
+                        currentMessage = msg.Insert(cursorPos, input.ToString());
+                        cursorPos++;
                     }
-                }
-            }
-            else if ((input == '\n' || input == '\r'))
-            {
-                if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
-                {
-                    // /n is type a new line, not supported and usually its ENTER, so we sending message. sending to players if messg has one letter
-                    MatchmakingManager.currentInstance.SendChatMessage(msg);
-                    foreach (var player in OnlineManager.players)
-                    {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
-                    }
-                    HandleTextSubmit();
-                }
-            }
-            else  //any other character, lets type
-            {
-                if (selectionStartPos != -1) // replaces the selected text with the emitted character
-                {
-                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    DeleteSelectedText();
-                    currentMessage = currentMessage.Insert(cursorPos, input.ToString());
-                    cursorPos++;
-                    if (cursorPos == currentMessage.Length) cursorIsInMiddle = false;
-                }
-                else if (msg.Length < textLimit)
-                {
-                    menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                    currentMessage = msg.Insert(cursorPos, input.ToString());
-                    cursorPos++;
                 }
             }
             ChatTextBox.blockInput = true;
@@ -337,13 +354,23 @@ namespace RainMeadow.UI.Components
         }
         public void HandleTextSubmit()
         {
-            Focused = false;
             currentMessage = "";
             cursorPos = 0;
             selectionStartPos = -1;
+            HandleDeselect();
+            OnTextSubmit?.Invoke();
+        }
+        public void HandleDeselect()
+        {
+            SetFocused(false);
             ChatTextBox.blockInput = false;
             previouslySubmittedText = !menu.manager.menuesMouseMode;
-            OnTextSubmit?.Invoke();
+        }
+        public void SetFocused(bool focused, SoundID? overrideSoundID = null)
+        {
+            if (Focused != focused)
+                menu.PlaySound(overrideSoundID ?? (focused ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Checkbox_Uncheck));
+            Focused = focused;
         }
         public void DelayedUnload(float delay)
         {
@@ -366,8 +393,7 @@ namespace RainMeadow.UI.Components
         private int cursorPos, selectionStartPos = -1, backspaceHeld, arrowHeld, maxVisibleLength; //cursorPos follows exact num of letters not the num of letters viewed, selection position is -1 when nothing is selected
         public int? visibleTextLimit;
         public int textLimit = 75;
-        public bool focused, previouslySubmittedText, cursorIsInMiddle, isUnloading, chatPressed, lastChatPressed;
-        public bool forceMenuMouseMode;
+        public bool focused, previouslySubmittedText, cursorIsInMiddle, isUnloading, lastMenuMouseMode, lastFreezeMenuFunctions, forceMenuMouseMode;
         public string currentMessage = "";
         public HSLColor? labelColor;
         public FSprite cursorSprite, selectionSprite;

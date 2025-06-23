@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Menu;
+using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using UnityEngine;
@@ -18,7 +19,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public MenuIllustration competitiveTitle, competitiveShadow;
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
-    public bool pagesMoving = false, pushClientIntoGame;
+    public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
     public int painCatIndex;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
@@ -31,13 +32,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public ArenaOnlineLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
-
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
-
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
-        if (backObject is SimplerButton btn) btn.description = "Exit to Lobby Select";
-
+        forceFlatIllu = !manager.rainWorld.flatIllustrations;
+        if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
 
@@ -60,7 +59,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-
         ResetReadyUp();
 
         Arena.ResetGameTimer();
@@ -74,7 +72,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void ChangeScene()
     {
         if (pendingScene == null) return;
-
+        manager.rainWorld.flatIllustrations = manager.rainWorld.flatIllustrations || forceFlatIllu;
         mainPage.ClearMenuObject(scene);
         scene = new InteractiveMenuScene(this, pages[0], pendingScene);
         mainPage.SafeAddSubobjects(scene);
@@ -90,13 +88,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             while (count2-- > 0)
                 scene.flatIllustrations[count2].sprite.MoveToBack();
         }
-
         pendingScene = null;
+        manager.rainWorld.flatIllustrations = !forceFlatIllu;
     }
 
     public void MovePage(Vector2 direction, int index)
     {
-        if (pagesMoving) return;
+        if (pagesMoving || currentPage == index) return;
 
         pagesMoving = true;
         pageMovementProgress = 0f;
@@ -123,10 +121,32 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         GetArenaSetup.playerClass[0] = slugcat;
         pendingScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
     }
-
+    public void GoToChangeCharacter()
+    {
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        {
+            if (RainMeadow.isArenaMode(out _) && Arena.arenaClientSettings.ready)
+            {
+                PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                return;
+            }
+            var index = ArenaHelpers.selectableSlugcats.IndexOf(GetArenaSetup.playerClass[0]); //supposed to be ArenaSetup.playerclass -> arena client settings >:(
+            if (index == -1) index = 0;
+            else
+            {
+                index += 1;
+                index %= ArenaHelpers.selectableSlugcats.Count;
+            }
+            arenaSlugcatSelectPage?.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+            PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+            return;
+        }
+        MovePage(new Vector2(-1500f, 0f), 1);
+    }
     public void StartGame()
     {
-        if (arenaMainLobbyPage.slugcatDialog != null) manager.StopSideProcess(arenaMainLobbyPage.slugcatDialog); //force getting rid of dialog
+        while (manager.dialog != null)
+            manager.StopSideProcess(manager.dialog);
 
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
@@ -210,7 +230,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         manager.rainWorld.options.DeleteArenaSitting();
     }
-
     public override void ShutDownProcess()
     {
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
@@ -236,7 +255,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         base.Update();
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
-
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
@@ -244,7 +262,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
-
         if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
         {
             pushClientIntoGame = true;
@@ -311,7 +328,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = this.manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(this.manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
     }
     public void UpdateMovingPage()
     {

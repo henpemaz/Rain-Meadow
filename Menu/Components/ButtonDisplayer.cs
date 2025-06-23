@@ -22,6 +22,7 @@ namespace RainMeadow.UI.Components
                 if (isCurrentlyLargeDisplay != value)
                 {
                     isCurrentlyLargeDisplay = value;
+                    menu.PlaySound(isCurrentlyLargeDisplay ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
                     displayToggleButton.symbolSprite.SetElementByName(GetDisplayButtonSprite);
                     displayToggleButton.description = DescriptionOfDisplayButton();
                     CallForRefresh();

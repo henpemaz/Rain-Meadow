@@ -12,8 +12,9 @@ namespace RainMeadow.UI.Components
         public float Alpha { get; set; } = 1;
         public Vector2 Pos { get => pos; set => pos = value; }
         public Vector2 Size { get => size; set => size = value; }
-        public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName) : base(menu, owner, pos, Vector2.zero)
+        public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName, string signal = "") : base(menu, owner, pos, Vector2.zero)
         {
+            signalText = signal;
             portrait = new(menu, this, folderName, fileName, Vector2.zero, true, true);
             size = portrait.size;
             portrait.pos = size / 2;
@@ -59,6 +60,7 @@ namespace RainMeadow.UI.Components
         public override void Clicked()
         {
             base.Clicked();
+            Singal(this, signalText);
             OnClick?.Invoke(this);
         }
         public void SetNewImage(string folderName, string fileName)
@@ -69,6 +71,7 @@ namespace RainMeadow.UI.Components
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 
+        public string signalText;
         public event Action<IllustrationButton>? OnClick;
         public float portraitBlack = 0, lastPortraitBlack = 0;
         public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;

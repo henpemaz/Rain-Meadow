@@ -11,9 +11,12 @@ namespace RainMeadow
 {
     public class ArenaOnlineSetup : ArenaSetup
     {
-        public static string SetIntoSaveString(string name, string value)
+        public static string SetIntoSaveString(string[] array)
         {
-            return name + "<msuB>" + value + "<msuA>";
+            string saveString = "";
+            for (int i = 0; i < array.Length; i++)
+                saveString += array[i] + (i < array.Length - 1 ? "<msuB>" : "<msuA>");
+            return saveString;
         }
         public ArenaOnlineSetup(ProcessManager manager) : base(manager)
         {
@@ -21,12 +24,10 @@ namespace RainMeadow
         public string GetSessionSaveString()
         {
             string saveString = "";
-            ArenaHelpers.ParseArenaSetupSaveString(manager.rainWorld.options.LoadArenaSetup(savFilePath), (name, value) =>
+            ArenaHelpers.ParseArenaSetupSaveString(manager.rainWorld.options.LoadArenaSetup(savFilePath), (array) =>
             {
-                if (name != null && sessionSaveIdentifiableStrings.Contains(name))
-                {
-                    saveString += SetIntoSaveString(name, value);
-                }
+                if (array.Length > 0 && sessionSaveIdentifiableStrings.Contains(array[0]))
+                    saveString += SetIntoSaveString(array);
             });
             return saveString;
         }
@@ -39,13 +40,10 @@ namespace RainMeadow
             }
             string newSaveString = "";
             string SessionSaveString = GetSessionSaveString();
-            ArenaHelpers.ParseArenaSetupSaveString(origText, (name, value) =>
+            ArenaHelpers.ParseArenaSetupSaveString(origText, (array) =>
             {
-                if (name != null && !sessionSaveIdentifiableStrings.Contains(name))
-                {
-                    RainMeadow.Debug($"Saving: {name}");
-                    newSaveString += SetIntoSaveString(name, value);
-                }
+                if (array.Length > 0 && !sessionSaveIdentifiableStrings.Contains(array[0]))
+                    newSaveString += SetIntoSaveString(array);
             });
             newSaveString += SessionSaveString;
             return newSaveString;

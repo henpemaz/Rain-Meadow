@@ -16,7 +16,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
     public bool readyWarning;
-    public int selectedSlugcatIndex = 0, painCatIndex;
+    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
     public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
@@ -26,7 +26,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), "Go back to main lobby");
+        backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
@@ -37,15 +37,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
         for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
         {
-            int index = i;
-
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-
-            string portraitFileString = SlugcatColorableButton.GetFileForSlugcat(ArenaHelpers.selectableSlugcats[i], false, painCatIndex: painCatIndex);
+            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
-
+            if (i >= buttonsInTopRow)
+                btn.TryBind(backButton, right: i + 1 == buttonsInBottomRow, bottom: true);
             subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
@@ -56,8 +55,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
 
-        readyWarningLabel = new MenuLabel(menu, this, "You have been unreadied. Switch back to re-ready yourself automatically", new Vector2(680f, 620f), Vector2.zero, true);
-        readyWarningLabel.label.color = new Color(0.85f, 0.35f, 0.4f);
+        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate("You have been unreadied. Switch back to re-ready yourself automatically"), new Vector2(680f, 620f), Vector2.zero, true);
 
         slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310f), default, true);
         slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
@@ -86,23 +84,22 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
             RainMeadow.Debug($"Saved Slugcat: {savedSlugcat?.value ?? "NULL"}");
             SwitchSelectedSlugcat(savedSlugcat);
+            ArenaMenu.ChangeScene();
         }
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat ?? SlugcatStats.Name.White);
-        // I mean technically selectableSlugcats[0] should never be null but idk just in case
-        slugcat = ArenaHelpers.selectableSlugcats.GetValueOrDefault(selectedSlugcatIndex, ArenaHelpers.selectableSlugcats[0]) ?? SlugcatStats.Name.White;
-
+        slugcat = ArenaHelpers.selectableSlugcats.Contains(slugcat) ? slugcat : ArenaHelpers.selectableSlugcats[0]; //selectableSlugcats[0] should never be null! this is punishment >:D
+        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat); //this is to fix start index not working PLEASE DONT CHANGE THIS
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(painCatDescription));
+            descriptionLabel.text = menu.LongTranslate(painCatDescription);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-        descriptionLabel.text = Custom.ReplaceLineDelimeters(menu.Translate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]));
+        descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
@@ -133,7 +130,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         List<string> descriptions = descriptionCategories.GetRandom();
         return Custom.ReplaceLineDelimeters(descriptions[UnityEngine.Random.Range(0, descriptions.Count)]).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
     }
-
+    public override void Update()
+    {
+        base.Update();
+        if (warningCounter >= 0) warningCounter++;
+        if (readyWarning)
+            warningCounter = Mathf.Max(warningCounter, 0);
+        else warningCounter = -1;
+    }
     public override void GrafUpdate(float timeStacker)
     {
         base.GrafUpdate(timeStacker);
@@ -148,8 +152,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             gradientSprite.x = positionedOwner.DrawX(timeStacker) + gradientSpritePos.x;
             gradientSprite.y = positionedOwner.DrawY(timeStacker) + gradientSpritePos.y;
         }
-
-        readyWarningLabel.label.alpha = readyWarning ? 1 : 0;
+        if (readyWarning)
+        {
+            readyWarningLabel.label.color = Color.Lerp(MenuColorEffect.rgbWhite, new Color(0.85f, 0.35f, 0.4f), 0.5f - 0.5f * Mathf.Sin((timeStacker + warningCounter) / 30 * Mathf.PI * 2));
+            readyWarningLabel.label.alpha = 1;
+        }
+        else readyWarningLabel.label.alpha = 0;
     }
 
     public int GetCurrentlySelectedOfSeries(string series) => selectedSlugcatIndex; // no need to check series (for now) since there is only one SelectOneButton in this menu

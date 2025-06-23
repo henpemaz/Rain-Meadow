@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public static class MenuHelpers
     {
+        public static string LongTranslate(this Menu.Menu menu, string s) => Custom.ReplaceLineDelimeters(menu.Translate(s));
         public static void SafeAddSubobjects(this MenuObject container, params MenuObject?[] subObjectsToAdd)
         {
             if (container == null || subObjectsToAdd == null)
