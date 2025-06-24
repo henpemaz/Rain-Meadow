@@ -58,7 +58,7 @@ namespace RainMeadow
 
         public override string Id()
         {
-            return super.Id() + absroom.name;
+            return super.Id() + "." + absroom.name;
         }
 
         public override ushort ShortId()

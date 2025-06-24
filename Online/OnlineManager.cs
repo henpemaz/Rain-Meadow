@@ -2,6 +2,7 @@
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -334,18 +335,6 @@ namespace RainMeadow
             feeds.RemoveAll(f => f.resource == resource);
         }
 
-        /// Support routine for rooms like OWO_04 or OWO/BUS
-        /// Only called as a last resort after the other lookups fail 
-        private static OnlineResource? ParseModdedWorldOrRoomID(string rid)
-        {
-            // Last failsafe for any modded region
-            var split = rid.Split('_');
-            lobby.worldSessions.TryGetValue(split[0], out var ws);
-            if(split.Length == 2 && ws != null && ws.roomSessions.TryGetValue(split[1], out var rs))
-                return rs;
-            return ws;
-        }
-
         // this smells
         public static OnlineResource ResourceFromIdentifier(string rid)
         {
@@ -365,24 +354,12 @@ namespace RainMeadow
                     }
                 }
 
-                if (rid.Length >= 4)
-                {
-                    if (rid.Length >= 8)
-                    {
-                        // stuff like WARFWARF like wtf is that
-                        if (rid.Length == 8 && lobby.worldSessions.TryGetValue(rid, out var r5)) return r5;
-                        if (rid.Length > 8 && lobby.worldSessions.TryGetValue(rid.Substring(0, 8), out var r6) && r6.roomSessions.TryGetValue(rid.Substring(8), out var wa2Room)) return wa2Room;
-                    }
-                    // For watcher, which needs 4-letter worlds
-                    if (rid.Length == 4 && lobby.worldSessions.TryGetValue(rid, out var r3)) return r3;
-                    if (rid.Length > 4 && lobby.worldSessions.TryGetValue(rid.Substring(0, 4), out var r4) && r4.roomSessions.TryGetValue(rid.Substring(4), out var waRoom)) return waRoom;
+                var split = rid.Split('.');
+                if (lobby.worldSessions.TryGetValue(split[0], out var ws)) {
+                    if (split.Length >= 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
+                        return rs;
+                    return ws;
                 }
-                if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
-                if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
-
-                var altRes = ParseModdedWorldOrRoomID(rid);
-                if(altRes != null)
-                    return altRes;
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;
