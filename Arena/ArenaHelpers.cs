@@ -328,11 +328,11 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
                     {
-                        if (tb1.team == tb2.team && creature.State.alive && friend.State.alive)
+                        if (tb1.team == tb2.team)
                         {
                             RainMeadow.Debug("Same team! No hits");
                         }
-                        return tb1.team == tb2.team;
+                        return tb1.team == tb2.team && creature.State.alive && friend.State.alive;
                     }
                 }         
             }
