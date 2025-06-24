@@ -74,8 +74,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
-
-
         arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, tabContainer, externalTabContainer, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);

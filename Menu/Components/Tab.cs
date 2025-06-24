@@ -304,6 +304,7 @@ public class TabContainer : RectangularMenuObject
     public Tab AddTab(string name)
     {
         int index = tabs.Count;
+        RainMeadow.Debug($"Adding {name} Tab");
         tabButtonContainer.AddNewTabButton(name);
         Tab tab = new(menu, this);
         subObjects.Add(tab);
@@ -320,17 +321,23 @@ public class TabContainer : RectangularMenuObject
 
     public void RemoveTab(string name)
     {
-        int index = tabButtonContainer.registeredTabButtons.IndexOf(name);
-        if (index != -1)
+        int indexToRemove = tabButtonContainer.registeredTabButtons.IndexOf(name);
+
+        if (indexToRemove != -1)
         {
+            RainMeadow.Debug($"Removing {name} Tab at index {indexToRemove}");
+
+            Tab tabToRemove = tabs[indexToRemove];
             tabButtonContainer.RemoveTabButton(name);
-            tabs[index].RemoveSprites();
-            tabButtonContainer.RemoveSubObject(tabs[index]);
+            tabToRemove.RemoveSprites();
+            subObjects.Remove(tabToRemove);
+            tabs[indexToRemove].RemoveSprites();
+            tabs.RemoveAt(indexToRemove);
+            SwitchTab(1);
         }
-        // idk why but if this isn't run on every single object that is added everything just breaks so don't exclude the first set of tab elements added
-        if (index == 0)
+        else
         {
-            SwitchTab(0);
+            RainMeadow.Debug($"Tab with name '{name}' not found for removal.");
         }
     }
     public void SwitchTab(int tabIndex)

@@ -320,7 +320,7 @@ namespace RainMeadow
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
         }
 
-        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B)
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B, Creature creature, Creature friend)
         {
             if (A is not null && B is not null)
             {
@@ -328,7 +328,7 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
                     {
-                        if (tb1.team == tb2.team)
+                        if (tb1.team == tb2.team && creature.State.alive && friend.State.alive)
                         {
                             RainMeadow.Debug("Same team! No hits");
                         }
