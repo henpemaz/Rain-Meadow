@@ -74,12 +74,6 @@ namespace RainMeadow
                         chieftains = teamBattleMode.chieftainsSpawn;
 
                         roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
-
-                        //
-                        //chieftainsName = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
-                        //dragonslayersName = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
-                        //outlawsName = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-
                     }
                 }
             }

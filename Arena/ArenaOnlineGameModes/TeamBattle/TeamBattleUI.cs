@@ -244,14 +244,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 martyrColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
                 UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
-                dragonSlayerColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + dragonsSlayersTeamNameUpdate.rect.size.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[2]);
-                UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
-
-                outlawColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(outlawsTeamNameUpdate.pos.x + outlawsTeamNameUpdate.rect.size.x + 50, outlawsTeamNameUpdate.pos.y), TeamColors[3]);
-                UIelementWrapper outlawColorWrapper = new UIelementWrapper(tabWrapper, outlawColor);
 
                 chieftainColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(chieftainsTeamNameUpdate.pos.x + chieftainsTeamNameUpdate.rect.size.x + 50, chieftainsTeamNameUpdate.pos.y), TeamColors[1]);
                 UIelementWrapper chieftainColorWrapper = new UIelementWrapper(tabWrapper, chieftainColor);
+
+                dragonSlayerColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + dragonsSlayersTeamNameUpdate.rect.size.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[2]);
+                UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
+
+
+                outlawColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(outlawsTeamNameUpdate.pos.x + outlawsTeamNameUpdate.rect.size.x + 50, outlawsTeamNameUpdate.pos.y), TeamColors[3]);
+                UIelementWrapper outlawColorWrapper = new UIelementWrapper(tabWrapper, outlawColor);
 
                 teamColorLerpLabel = new(menu, tabWrapper, menu.Translate("Team Color Lerp Factor:"), new Vector2(chifetainTeamLabel.pos.x, chifetainTeamLabel.pos.y - 38), new Vector2(0, 20), false);
                 teamColorBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.TeamColorLerp.Value), new(teamColorLerpLabel.pos.x, teamColorLerpLabel.pos.y - 38), 50)
@@ -335,6 +337,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         private void ColorSelector_OnValueChangedEvent()
         {
             TeamColors[0] = Extensions.SafeColorRange(martyrColor.valuecolor);
+            TeamColors[1] = Extensions.SafeColorRange(outlawColor.valuecolor);
+            TeamColors[2] = Extensions.SafeColorRange(dragonSlayerColor.valuecolor);
+            TeamColors[3] = Extensions.SafeColorRange(chieftainColor.valuecolor);
+
         }
 
 
