@@ -107,23 +107,28 @@ namespace RainMeadow
                 label.x = -1000f;
             }
 
-            if (RainMeadow.isArenaMode(out var arena) && arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
-            {
-                this.iconString = "Multiplayer_Star";
-            }
 
-            else if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
                 this.iconString = "ChieftainA";
             }
-            else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
-            {
-                this.iconString = arena.externalArenaGameMode.AddCustomIcon(arena, owner);
-            }
+
 
             else
             {
                 this.iconString = "Kill_Slugcat";
+            }
+
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+                {
+                    this.iconString = "Multiplayer_Star";
+                }
+                else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
+                {
+                    this.iconString = arena.externalArenaGameMode.AddCustomIcon(arena, owner);
+                }
             }
 
             this.slugIcon = new FSprite(iconString, true);
@@ -209,7 +214,7 @@ namespace RainMeadow
                             slugIcon.SetElementByName(arena.externalArenaGameMode.AddCustomIcon(arena, owner));
                         }
 
-                        if (TeamBattleMode.isTeamBattleMode(arena, out _)  && owner.PlayerConsideredDead) slugIcon.color = Color.gray;
+                        if (TeamBattleMode.isTeamBattleMode(arena, out _) && owner.PlayerConsideredDead) slugIcon.color = Color.gray;
 
                         else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     }
