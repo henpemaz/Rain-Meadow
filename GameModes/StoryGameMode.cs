@@ -300,7 +300,7 @@ namespace RainMeadow
                 {
                     if (TeamBattleMode.isTeamBattleMode(arena, out _))
                     {
-                        return ArenaHelpers.CheckSameTeam(oc.owner, friend.abstractCreature.GetOnlineCreature()?.owner);
+                        return ArenaHelpers.CheckSameTeam(oc.owner, friend.abstractCreature.GetOnlineCreature()?.owner, creature, friend);
                     }
                 }
 
