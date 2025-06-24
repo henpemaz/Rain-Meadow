@@ -141,7 +141,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-
+        ArenaHelpers.OnStartGame(Arena);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -247,13 +247,16 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (selectedObject is CheckBox checkBox)
         {
+            bool check = checkBox.Checked;
             string idString = checkBox.IDString;
             if (idString == "SPEARSHIT")
-                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
+                return check ? Translate("Player vs player deathmatch") : Translate("Eating contest");
             if (idString == "EVILAI")
-                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
-            if (idString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena))
-                return arena.itemSteal ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
+                return check ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
+            if (idString == "ITEMSTEAL")
+                return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
+            if (idString == "MIDGAMEJOIN")
+                return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -265,9 +268,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-            {
                 return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
-            }
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);
@@ -313,7 +314,5 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[1]?.wrapper);
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.tabButtonContainer.activeTabButtons[0].wrapper);
     }
 }

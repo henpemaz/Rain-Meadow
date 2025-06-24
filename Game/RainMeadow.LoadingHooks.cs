@@ -174,19 +174,22 @@ namespace RainMeadow
                         }
                     }
                     // Add waiting players
-                    foreach (OnlinePlayer player in waitingPlayers)
+                    if (arena.allowJoiningMidRound)
                     {
-                        if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
-                            arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
-                        ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
+                        foreach (OnlinePlayer player in waitingPlayers)
                         {
-                            playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                            playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
-                            hasEnteredGameArea = true
-                        };
-                        Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                            if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
+                                arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
+                            {
+                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
+                                hasEnteredGameArea = true
+                            };
+                            Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
 
-                        self.players.Add(newArenaPlayer);
+                            self.players.Add(newArenaPlayer);
+                        }
                     }
                     if (OnlineManager.lobby.isOwner)
                     {

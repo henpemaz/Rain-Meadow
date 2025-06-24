@@ -151,6 +151,11 @@ namespace RainMeadow
             arena.leaveForNextLevel = false;
             arena.ResetGameTimer();
             arena.currentLevel = 0;
+        
+        }
+        public static void OnStartGame(ArenaOnlineGameMode arena)
+        {
+            if (!OnlineManager.lobby.isOwner) return;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playerNumberWithDeaths.Clear();
             arena.playerNumberWithKills.Clear();

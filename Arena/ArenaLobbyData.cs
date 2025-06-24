@@ -60,6 +60,8 @@ namespace RainMeadow
             public string currentGameMode; // maybe not use string
             [OnlineField(group = "arenaSetup")]
             public bool arenaItemSteal;
+            [OnlineField(group = "arenaSetup")]
+            public bool allowJoiningMidRound;
 
 
             // Group: arenaGameplay
@@ -118,6 +120,7 @@ namespace RainMeadow
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
                 arenaItemSteal = arena.itemSteal;
+                allowJoiningMidRound = arena.allowJoiningMidRound;
 
                 leaveForNextLevel = arena.leaveForNextLevel;
             }
@@ -157,6 +160,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
+                (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;

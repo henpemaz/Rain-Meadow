@@ -35,6 +35,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             if (!RainMeadow.isArenaMode(out var _)) return;
             Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
+            btn.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         };
 
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
@@ -127,7 +128,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     {
         RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
         RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
-
+        RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
         if (slugcatAbilitiesInterface != null)
         {
             RainMeadow.rainMeadowOptions.BlockMaul.Value = slugcatAbilitiesInterface.blockMaulCheckBox.Checked;
@@ -173,9 +174,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     }
                     else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
 
-                    playerBox.ToggleTextOverlay(Arena.isInGame? "Joining<LINE>soon!": "Ready!", clientSettings?.ready == true);
+                    playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound? "Joining<LINE>soon!": "Ready!", clientSettings?.ready == true);
                     if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
-                    if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId)) playerBox.ToggleTextOverlay("In Game!", true);
+                    if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
 
                     if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
                     else playerBox.slugcatButton.portraitColor = Color.white;
@@ -187,7 +188,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
 
-        readyButton.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
         int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,

@@ -296,7 +296,15 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public LevelPreview levelPreviewer;
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
         public override float MaxVisibleItemsShown => (int)base.MaxVisibleItemsShown;
-        public override float DownScrollOffset { get => SavedScrollPos; set => SavedScrollPos = Mathf.Clamp((int)value, 0, (int)MaxDownScroll); }
+        public override float DownScrollOffset 
+        { 
+            get => base.DownScrollOffset;
+            set
+            {
+                base.DownScrollOffset = value;
+                SavedScrollPos = Mathf.Clamp(Mathf.RoundToInt(value), 0, (int)MaxDownScroll);
+            }
+        }
         public virtual bool ShowThumbsStatus
         {
             get => MyLevelSelector?.GetGameTypeSetup?.allLevelsThumbs == true;
@@ -321,6 +329,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public List<LevelItem> LevelItems => [.. buttons.Cast<LevelItem>()];
         public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, 5, 120, new(80, 10), sliderPosOffset: new(0, 9), sliderSizeYOffset: - 40, startEndWithSpacing: true)
         {
+            greyOutWhenNoScroll = true;
             showThumbsTransitionState = ShowThumbsStatus ? 1 : 0;
             AddScrollUpDownButtons(upButtonYPosOffset: 20, downButtonYPosOffset: -44);
             dividerContainer = new();
@@ -337,6 +346,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                  menu.PlaySound(ShowThumbsStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
              };
             LoadLevelsInit();
+            DownScrollOffset = SavedScrollPos;
         }
         public override void RemoveSprites()
         {
@@ -366,7 +376,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             float scrollPos = base.GetCurrentScrollOffset();
             int intScrollPos = (int)scrollPos;
-            if (intScrollPos > 0 && intScrollPos == Math.Max(0, buttons.Count - (MaxVisibleItemsShown - 1)))
+            if (intScrollPos > 0 && intScrollPos == Math.Max(0, buttons.Count - MaxVisibleItemsShown))
             {
                 for (int i = intScrollPos; i < buttons.Count; i++)
                 {

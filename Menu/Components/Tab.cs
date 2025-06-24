@@ -216,7 +216,6 @@ public class TabContainer : RectangularMenuObject
         }
         public void Show()
         {
-            if (!IsHidden) return;
             myContainer.isVisible = true;
             IsHidden = false;
             for (int i = 0; i < subObjects.Count; i++)
@@ -226,7 +225,6 @@ public class TabContainer : RectangularMenuObject
         }
         public void Hide()
         {
-            if (IsHidden) return;
             myContainer.isVisible = false;
             IsHidden = true;
             for (int i = 0; i < subObjects.Count; i++)
