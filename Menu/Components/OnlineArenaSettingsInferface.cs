@@ -42,6 +42,7 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
+            allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
 
             countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, stealItemCheckBox.pos.y - 38), new Vector2(0, 20), false);
             countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(55, countdownTimerLabel.pos.y - 6), 50)
@@ -66,7 +67,7 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox);
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox);
         }
         public override void RemoveSprites()
         {
@@ -113,17 +114,29 @@ namespace RainMeadow.UI.Components
         {
             if (box.IDString == "SPEARSHIT") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
             if (box.IDString == "EVILAI") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
-            if (box.IDString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena)) return arena.itemSteal;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (box.IDString == "ITEMSTEAL") return arena.itemSteal;
+                if (box.IDString == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
+            }
             return false;
         }
         public void SetChecked(CheckBox box, bool c)
         {
             if (box.IDString == "SPEARSHIT") GetGameTypeSetup.spearsHitPlayers = c;
             if (box.IDString == "EVILAI") GetGameTypeSetup.evilAI = c;
-            if (box.IDString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena))
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                arena.itemSteal = c;
-                return;
+                if (box.IDString == "ITEMSTEAL")
+                {
+                    arena.itemSteal = c;
+                    return;
+                }
+                if (box.IDString == "MIDGAMEJOIN")
+                {
+                    arena.allowJoiningMidRound = c;
+                    return;
+                }
             }
 
             ArenaHelpers.SaveOptionToArena(box.IDString, c);
@@ -165,13 +178,9 @@ namespace RainMeadow.UI.Components
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is CheckBox checkBox)
-                {
                     checkBox.Checked = checkBox.Checked;
-                }
                 if (obj is MultipleChoiceArray array)
-                {
                     array.CheckedButton = array.CheckedButton;
-                }
             }
             if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
             arena.setupTime = countdownTimerTextBox.valueInt;
@@ -183,7 +192,7 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox;
+        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper;

@@ -1,11 +1,21 @@
 using Menu;
+using RainMeadow.UI;
+using System.Net;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+        [RPCMethod]
+        public static void Arena_CallPlayerInMenuToJoin()
+        {
+            if (!RainMeadow.isArenaMode(out _)) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not ArenaOnlineLobbyMenu lobby) return;
+            RainMeadow.Debug("Start game for player");
+            lobby.StartGame();
 
+        }
         [RPCMethod]
         public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
         {
@@ -49,7 +59,7 @@ namespace RainMeadow
                 lobby.StartGame();
             }
         }
-
+        [RPCMethod]
         public static void Arena_EndSessionEarly()
         {
             if (RainMeadow.isArenaMode(out var arena))

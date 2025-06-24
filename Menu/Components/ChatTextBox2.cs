@@ -170,7 +170,7 @@ namespace RainMeadow.UI.Components
             {
                 string msg = currentMessage;
                 //u0008 backspace in unicode
-                if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
+                if (input == '\b')
                 {
                     if (cursorPos > 0 || selectionStartPos != -1)
                     {

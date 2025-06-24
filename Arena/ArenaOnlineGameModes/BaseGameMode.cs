@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -174,7 +175,6 @@ namespace RainMeadow
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
-
             }
             else
             {
@@ -284,17 +284,8 @@ namespace RainMeadow
             {
                 arena.isInGame = true; // used for readied players at the beginning
                 arena.leaveForNextLevel = false;
-                if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
-                {
-                    foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
-                    {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                        if (onlineP != null)
-                        {
-                            onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
-                        }
-                    }
-                }
+                foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
                 foreach (var arenaPlayer in self.arenaSitting.players)
                 {
                     if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))

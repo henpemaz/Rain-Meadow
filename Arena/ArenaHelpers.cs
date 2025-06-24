@@ -143,6 +143,24 @@ namespace RainMeadow
 
 
         }
+        public static void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+            manager.rainWorld.options.DeleteArenaSitting();
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.isInGame = false;
+            arena.leaveForNextLevel = false;
+            arena.ResetGameTimer();
+            arena.currentLevel = 0;
+        
+        }
+        public static void OnStartGame(ArenaOnlineGameMode arena)
+        {
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.arenaSittingOnlineOrder.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+        }
         public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             if (lobby.playButton != null)
@@ -211,19 +229,16 @@ namespace RainMeadow
         public static void SetupOnlineArenaStting(ArenaOnlineGameMode arena, ProcessManager manager)
         {
 
-            manager.arenaSitting.players = new List<ArenaSitting.ArenaPlayer>();
+            manager.arenaSitting.players = [];
             for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
             {
-
-                var currentPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
-                ArenaSitting.ArenaPlayer newPlayer = new ArenaSitting.ArenaPlayer(i)
+                var currentPlayer = FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                ArenaSitting.ArenaPlayer newPlayer = new(i)
                 {
                     playerNumber = i,
-                    playerClass = ((OnlineManager.lobby.clientSettings[currentPlayer].GetData<ArenaClientSettings>()).playingAs), // Set the playerClass to the OnlinePlayer. This is for the PlayerResult profile pics
+                    playerClass = GetArenaClientSettings(currentPlayer)!.playingAs, // Set the playerClass to the OnlinePlayer. This is for the PlayerResult profile pics
                     hasEnteredGameArea = true
                 };
-
-
                 manager.arenaSitting.players.Add(newPlayer);
 
             }
