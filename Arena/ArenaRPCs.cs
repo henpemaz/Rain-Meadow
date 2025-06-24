@@ -1,4 +1,5 @@
 using Menu;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI;
 using System.Net;
 using UnityEngine;
@@ -7,6 +8,22 @@ namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+        [RPCMethod]
+        public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+
+                    tb.martyrsSpawn = martyrs;
+                    tb.outlawsSpawn = outlaws;
+                    tb.dragonslayersSpawn = dragonslayers;
+                    tb.chieftainsSpawn = chieftains;
+                }
+            }
+        }
+
         [RPCMethod]
         public static void Arena_CallPlayerInMenuToJoin()
         {
