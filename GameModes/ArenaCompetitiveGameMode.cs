@@ -35,6 +35,7 @@ namespace RainMeadow
         public bool disableMaul = RainMeadow.rainMeadowOptions.BlockMaul.Value;
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
+        public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
 
         public string paincatName;
@@ -435,7 +436,7 @@ namespace RainMeadow
                 return false;
             }
 
-            return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
+            return true;
         }
         private int previousSecond = -1;
         public override void LobbyTick(uint tick)

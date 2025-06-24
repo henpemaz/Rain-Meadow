@@ -33,6 +33,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> WeaponCollisionFix;
 
 
     public readonly Configurable<float> ScrollSpeed;
@@ -85,6 +86,8 @@ public class RainMeadowOptions : OptionInterface
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
+        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 120);
+        ArenaSAINOT = config.Bind("ArenaSAINOT", true);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
@@ -93,6 +96,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);

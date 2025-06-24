@@ -194,7 +194,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             manager.arenaSitting.currentLevel = Arena.currentLevel;
         }
 
-        if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
+        if (Arena.registeredGameModes.Keys.Contains(Arena.currentGameMode))
         {
             Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Arena.currentGameMode).Value;
             RainMeadow.Debug($"Playing GameMode: {Arena.externalArenaGameMode}");
@@ -205,7 +205,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
         }
 
-        Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
     }
     public override void ShutDownProcess()
     {

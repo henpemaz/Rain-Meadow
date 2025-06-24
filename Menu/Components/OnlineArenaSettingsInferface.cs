@@ -65,10 +65,10 @@ namespace RainMeadow.UI.Components
                 {
                     if (arena.externalArenaGameMode != null)
                     {
-                        tabContainer.RemoveTab(arena.externalArenaGameMode.AddGameSettingsTab());
+                        tabContainer.RemoveTab(externalGameModeTab);
                     }
                     arena.externalArenaGameMode = extGameMode;
-                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "" )
+                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
                     {
                         externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
 
@@ -216,8 +216,6 @@ namespace RainMeadow.UI.Components
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
         public OpComboBox arenaTeamComboBox;
 
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox;
-        public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel, arenaTeamLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;
