@@ -118,7 +118,7 @@ namespace RainMeadow
                         return;
                     }
 
-                    List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true)];
+                    List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe)];
 
                     // Remove gone players
 
@@ -187,7 +187,6 @@ namespace RainMeadow
                                 hasEnteredGameArea = true
                             };
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-
                             self.players.Add(newArenaPlayer);
                         }
                     }
