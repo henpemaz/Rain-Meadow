@@ -273,6 +273,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 UIelementWrapper teamColorBoxWrapper = new UIelementWrapper(tabWrapper, teamColorBox);
 
                 martyrColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
+                outlawColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
+                dragonSlayerColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
+                chieftainColor.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
 
 
                 extComp.SafeAddSubobjects(tabWrapper, externalModeWrapper, arenaGameModeLabel, martyrWrapper, martyrTeamLabel, outlawWrapper, outlawTeamlabel, dragonSlayerWrapper, dragonSlayersLabel, chiefTainWrapper, chifetainTeamLabel, teamColorBoxWrapper, teamColorLerpLabel);
