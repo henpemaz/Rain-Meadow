@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -61,14 +62,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(FFAShadow, FFATitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        ResetReadyUp();
-
-        Arena.ResetGameTimer();
-        Arena.currentLevel = 0;
-        Arena.arenaSittingOnlineOrder.Clear();
-        Arena.playerNumberWithDeaths.Clear();
-        Arena.playerNumberWithKills.Clear();
-        Arena.playerNumberWithWins.Clear();
+        ArenaHelpers.ResetOnReturnMenu(Arena, manager);
     }
 
     public void ChangeScene()
@@ -93,7 +87,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         pendingScene = null;
         manager.rainWorld.flatIllustrations = !forceFlatIllu;
     }
-
     public void MovePage(Vector2 direction, int index)
     {
         if (pagesMoving || currentPage == index) return;
@@ -117,7 +110,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
-
     public void SwitchSelectedSlugcat(SlugcatStats.Name slugcat)
     {
         GetArenaSetup.playerClass[0] = slugcat;
@@ -147,9 +139,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void StartGame()
     {
+        if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-
+        ArenaHelpers.OnStartGame(Arena);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -159,22 +153,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+        Arena.arenaClientSettings.ready = false;
     }
-
-    public void InitializeNewOnlineSitting()
+    public void SetPlaylistFromSetupToSitting()
     {
-        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) { levelPlaylist = [] };
-
         if (GetGameTypeSetup.shufflePlaylist)
         {
-            List<string> playlist = GetGameTypeSetup.playList;
+            List<string> playlist = new(GetGameTypeSetup.playList);
 
             while (playlist.Count > 0)
             {
                 int randomIndex = UnityEngine.Random.Range(0, playlist.Count);
                 for (int i = 0; i < GetGameTypeSetup.levelRepeats; i++)
                     manager.arenaSitting.levelPlaylist.Add(playlist[randomIndex]);
-
                 playlist.RemoveAt(randomIndex);
             }
         }
@@ -182,26 +173,28 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             for (int i = 0; i < GetGameTypeSetup.playList.Count; i++)
                 for (int j = 0; j < GetGameTypeSetup.levelRepeats; j++)
                     manager.arenaSitting.levelPlaylist.Add(GetGameTypeSetup.playList[i]);
+    }
+    public void InitializeNewOnlineSitting()
+    {
+        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) 
+        { levelPlaylist = [] };
 
         // Host dictates playlist
         if (OnlineManager.lobby.isOwner)
         {
-            Arena.playList = manager.arenaSitting.levelPlaylist;
-
-            for (int i = 0; i < OnlineManager.players.Count; i++)
-                if (!Arena.arenaSittingOnlineOrder.Contains(OnlineManager.players[i].inLobbyId))
-                    Arena.arenaSittingOnlineOrder.Add(OnlineManager.players[i].inLobbyId);
-
+            SetPlaylistFromSetupToSitting();
+            Arena.playList.Clear();
+            Arena.playList.AddRange(manager.arenaSitting.levelPlaylist);
+            Arena.arenaSittingOnlineOrder.AddRange(OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true).Select(x => x.inLobbyId));
             Arena.totalLevelCount = manager.arenaSitting.levelPlaylist.Count;
         }
-        else // Client retrieves playlist
+        else
         {
-            manager.arenaSitting.levelPlaylist = Arena.playList;
+            manager.arenaSitting.levelPlaylist.AddRange(Arena.playList);
             manager.arenaSitting.currentLevel = Arena.currentLevel;
         }
 
-        ArenaHelpers.SetProfileColor(Arena);
-        if (Arena.registeredGameModes.Keys.Contains(Arena.currentGameMode))
+        if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
         {
             Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Arena.currentGameMode).Value;
             RainMeadow.Debug($"Playing GameMode: {Arena.externalArenaGameMode}");
@@ -211,26 +204,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             RainMeadow.Error("Could not find game mode in list! Setting to FFA as a fallback");
             Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
         }
-        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
-    }
 
-    public void ResetReadyUp()
-    {
-        arenaMainLobbyPage.readyButton.menuLabel.text = Utils.Translate("READY?");
-
-        if (OnlineManager.lobby.isOwner)
-        {
-            Arena.allPlayersReadyLockLobby = Arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
-            Arena.isInGame = false;
-            Arena.leaveForNextLevel = false;
-        }
-        if (Arena.returnToLobby)
-        {
-            Arena.arenaClientSettings.ready = false;
-            Arena.returnToLobby = false;
-        }
-
-        manager.rainWorld.options.DeleteArenaSitting();
+        Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
     }
     public override void ShutDownProcess()
     {
@@ -268,17 +243,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
-        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.arenaClientSettings.ready)
-        {
-            pushClientIntoGame = true;
-            StartGame();
-        }
-        if (!pushClientIntoGame && Arena.isInGame && !Arena.clientWantsToLeaveGame && Arena.hasPermissionToRejoin && Arena.arenaClientSettings.ready)
-        {
-            RainMeadow.Debug("Client was late but given permission to rejoin!");
-            pushClientIntoGame = true;
-            StartGame();
-        }
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -289,13 +253,16 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (selectedObject is CheckBox checkBox)
         {
+            bool check = checkBox.Checked;
             string idString = checkBox.IDString;
             if (idString == "SPEARSHIT")
-                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.spearsHitPlayers ? Translate("Player vs player deathmatch") : Translate("Eating contest");
+                return check ? Translate("Player vs player deathmatch") : Translate("Eating contest");
             if (idString == "EVILAI")
-                return arenaMainLobbyPage.arenaSettingsInterface.GetGameTypeSetup.evilAI ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
-            if (idString == "ITEMSTEAL" && RainMeadow.isArenaMode(out var arena))
-                return arena.itemSteal ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
+                return check ? Translate("Creatures are vicious and aggressive") : Translate("Normal Rain World AI");
+            if (idString == "ITEMSTEAL")
+                return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
+            if (idString == "MIDGAMEJOIN")
+                return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -307,9 +274,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-            {
                 return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
-            }
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);
@@ -330,11 +295,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void UpdateOnlineUI() //for future online ui stuff
     {
         if (!RainMeadow.isArenaMode(out _)) return;
-
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+
     }
     public void UpdateMovingPage()
     {
@@ -351,7 +316,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
         }
     }
-
     public void UpdateElementBindings()
     {
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);

@@ -1,27 +1,21 @@
 using Menu;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI;
+using System.Net;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
-
         [RPCMethod]
-        public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
+        public static void Arena_CallPlayerInMenuToJoin()
         {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (TeamBattleMode.isTeamBattleMode(arena, out var tb)) { 
-                
-                    tb.martyrsSpawn = martyrs;
-                    tb.outlawsSpawn = outlaws;
-                    tb.dragonslayersSpawn = dragonslayers;
-                    tb.chieftainsSpawn = chieftains;
-                }
-            }
-        }
+            if (!RainMeadow.isArenaMode(out _)) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not ArenaOnlineLobbyMenu lobby) return;
+            RainMeadow.Debug("Start game for player");
+            lobby.StartGame();
 
+        }
         [RPCMethod]
         public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
         {

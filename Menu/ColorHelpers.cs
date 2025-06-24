@@ -73,7 +73,7 @@ namespace RainMeadow
         }
         public static Vector3 RWJollyPicRange(Vector3 hsl)
         {
-            return new(hsl.x, hsl.y, Mathf.Clamp(hsl.z, 0.01f, 1));
+            return new(hsl.x, hsl.y, Mathf.Clamp(hsl.z, 0.25f, 1));
         }
         public static Color HSL2RGB(Vector3 hsl)
         {

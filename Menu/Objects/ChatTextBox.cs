@@ -108,14 +108,14 @@ namespace RainMeadow
             }
             else if (!isUnloading)
             {
-                if (selectionPos != -1)
+                if(selectionPos != -1)
                 {
                     // replaces the selected text with the emitted character
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
                     DeleteSelection();
                     lastSentMessage = lastSentMessage.Insert(cursorPos, input.ToString());
                     cursorPos++;
-                    if (cursorPos == lastSentMessage.Length)
+                    if(cursorPos == lastSentMessage.Length)
                     {
                         SetCursorSprite(false);
                     }
@@ -178,7 +178,7 @@ namespace RainMeadow
                             int space = msg.Substring(cursorPos, len - cursorPos).IndexOf(' ');
                             lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = len - cursorPos) : space + 1);
                             menuLabel.text = lastSentMessage;
-
+                            
                         }
                         else
                         {
@@ -242,7 +242,7 @@ namespace RainMeadow
                                     if (newPos < 0 || newPos > len) newPos = 0;
                                 }
                                 else newPos--;
-                                if (shiftHeld)
+                                if(shiftHeld)
                                 {
                                     // stops the selection if it's on the same index as the anchor
                                     selectionPos = (newPos == cursorPos) ? -1 : newPos;
@@ -292,7 +292,7 @@ namespace RainMeadow
                                     else
                                     {
                                         cursorPos = newPos;
-                                        if (newPos == len) SetCursorSprite(false);
+                                        if(newPos == len) SetCursorSprite(false);
                                     }
                                 }
                             }
@@ -380,13 +380,13 @@ namespace RainMeadow
         {
             if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
 
-            return blockInput ? false : orig(code);
+            return blockInput? false : orig(code);
         }
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.Return) return orig(code);
-
+            
             return blockInput ? false : orig(code);
         }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);

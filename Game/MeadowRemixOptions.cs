@@ -28,7 +28,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> BlockMaul;
-    public readonly Configurable<bool> BlockArtiStun;
+    public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
     public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
@@ -87,6 +87,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);

@@ -37,7 +37,7 @@ namespace RainMeadow.UI.Components
             };
             slugcatButton = new(menu, this, null, null, new(120, 30), new(playerButton.pos.x + playerButton.size.x + 15, yPos))
             {
-                signalText = "CHANGE_SLUGCAT"
+                signalText = profileIdentifier.isMe ? "CHANGE_SLUGCAT" : ""
             };
             InitButtons(canKick);
             this.SafeAddSubobjects(playerButton, slugcatButton, colorKickButton);

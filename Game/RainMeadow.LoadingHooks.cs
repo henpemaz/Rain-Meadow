@@ -114,7 +114,7 @@ namespace RainMeadow
                         return;
                     }
 
-
+                    List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe)];
 
                     // Remove gone players
 
@@ -150,71 +150,41 @@ namespace RainMeadow
                         }
                         else
                         {
-                            if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                            for (int p = waitingPlayers.Count - 1; p >= 0; p--)
                             {
-                                RainMeadow.Debug("Found a late client");
-
-                                // Iterate backwards to safely remove from self.players
-                                for (int p = arena.playersLateWaitingInLobbyForNextRound.Count - 1; p >= 0; p--)
+                                OnlinePlayer lateClient = waitingPlayers[p];
+                                Debug($"Late client: {lateClient}");
+                                if (lateClient != null && lateClient == onlineArenaSittingPlayer)
                                 {
-                                    OnlinePlayer? lateClient = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[p]);
-                                    RainMeadow.Debug($"Late client: {lateClient}");
-
-                                    if (lateClient != null && lateClient == onlineArenaSittingPlayer)
+                                    Debug("Found a late client who matches a sitting player in-game");
+                                    if (OnlineManager.lobby.isOwner)
                                     {
-                                        RainMeadow.Debug("Found a late client who matches a sitting player in-game");
-
-                                        if (OnlineManager.lobby.isOwner)
-                                        {
-                                            if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
-                                            {
-                                                RainMeadow.Debug("Arena: Removing late player from sitting");
-                                                arena.arenaSittingOnlineOrder.RemoveAt(i);
-                                                RainMeadow.Debug("Arena: Removed late player from sitting");
-                                            }
-                                        }
-                                        RainMeadow.Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
-                                        self.players.RemoveAt(i); // Remove from the outer loop's current index
+                                        Debug("Arena: Removing late player from sitting");
+                                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        Debug("Arena: Removed late player from sitting");
                                     }
+                                    Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
+                                    self.players.RemoveAt(i);
                                 }
                             }
                         }
                     }
                     // Add waiting players
-
-                    if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
+                    if (arena.allowJoiningMidRound)
                     {
-                        foreach (var player in arena.playersLateWaitingInLobbyForNextRound)
+                        foreach (OnlinePlayer player in waitingPlayers)
                         {
-                            if (!arena.arenaSittingOnlineOrder.Contains(player))
-                            {
-                                RainMeadow.Debug($"Arena: Adding pending player inLobbyId: {player}");
-                                // normally this is host only but we need this to happen fast
-                                arena.arenaSittingOnlineOrder.Add(player);
-                            }
-                        }
-
-                        for (int y = 0; y < arena.playersLateWaitingInLobbyForNextRound.Count; y++)
-                        {
-                            RainMeadow.Debug($"Arena: Looking thourgh latercomers");
-                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.playersLateWaitingInLobbyForNextRound[y]);
-                            if (onlineP == null)
-                            {
-                                continue;
-                            }
-                            RainMeadow.Debug($"Arena: Found a latecomer to add: {onlineP}");
-
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new ArenaSitting.ArenaPlayer(arena.arenaSittingOnlineOrder.Count - 1)
+                            if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
+                                arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
                             {
                                 playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
-                                playerClass = ((OnlineManager.lobby.clientSettings[onlineP].GetData<ArenaClientSettings>()).playingAs),
+                                playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
                                 hasEnteredGameArea = true
                             };
-                            RainMeadow.Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-
+                            Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
                             self.players.Add(newArenaPlayer);
                         }
-
                     }
                     if (OnlineManager.lobby.isOwner)
                     {

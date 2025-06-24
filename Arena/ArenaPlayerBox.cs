@@ -57,7 +57,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false, signal: "CHANGE_SLUGCAT");
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
@@ -149,7 +149,8 @@ namespace RainMeadow.UI.Components
 
         public void ToggleTextOverlay(string text, bool enable)
         {
-            textOverlayLabel.text = menu.LongTranslate(text);
+            if (enable)
+                textOverlayLabel.text = menu.LongTranslate(text);
             enabledTextOverlay = enable;
         }
 

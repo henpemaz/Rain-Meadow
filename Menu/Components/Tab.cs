@@ -16,14 +16,14 @@ public class TabContainer : RectangularMenuObject
 {
     public class TabButton : OpSimpleButton
     {
-        bool Active => container.activeIndex == index;
-        public readonly int index;
-        TabContainer container;
-        public TabButton(string name, TabContainer container, MenuTabWrapper myTabWrapper, Vector2 pos, int tabIndex, float ySize = 125) : base(pos, new(30, ySize))
+        public bool Active => container.activeTab == myTab;
+        public readonly Tab myTab;
+        public TabContainer container;
+        public TabButton(string name, Tab myTab, TabContainer container, MenuTabWrapper myTabWrapper, Vector2 pos, float ySize = 125) : base(pos, new(30, ySize))
         {
             this.container = container;
             wrapper = new PatchedUIelementWrapper(myTabWrapper, this);
-            index = tabIndex;
+            this.myTab = myTab;
             _rect.hiddenSide = DyeableRect.HiddenSide.Right;
             _rectH.hiddenSide = DyeableRect.HiddenSide.Right;
             _label.alignment = FLabelAlignment.Left;
@@ -31,7 +31,7 @@ public class TabContainer : RectangularMenuObject
             _label.text = name;
             description = $"Click to open {name} tab";
 
-            OnClick += _ => container.SwitchTab(tabIndex);
+            OnClick += _ => container.SwitchTab(myTab);
         }
 
         public override void Update()
@@ -62,7 +62,7 @@ public class TabContainer : RectangularMenuObject
         public int PerPage => Mathf.Max((int)((container.size.y - 5) / (DefaultTabButtonYSize + 5)), 1);
         public bool PagesOn => registeredTabButtons.Count > PerPage;
         public float DefaultTabButtonYSize { get => tabButtonYSize; set => tabButtonYSize = Mathf.Max(value, LabelTest.GetWidth(LongestName) + 20); }
-        public string LongestName => registeredTabButtons.Find(x => x.Length == registeredTabButtons.Max(str => str == null ? 0 : str.Length));
+        public string LongestName => registeredTabButtons.Select(x => x.Item2).FirstOrDefault(s => s.Length == registeredTabButtons.Max(str => str.Item2 == null ? 0 : str.Item2.Length));
         public TabButtonsContainer(Menu.Menu menu, TabContainer container) : base(menu, container, new(-23, 0))
         {
             registeredTabButtons = [];
@@ -87,14 +87,26 @@ public class TabContainer : RectangularMenuObject
                 bottomArrowButton.pos.y = (bottomTabBtn != null ? bottomTabBtn.pos.y : 0) - 34;
             }
         }
-        public void AddNewTabButton(string name)
+        public void AddNewTabButton(string name, Tab tab)
         {
-            registeredTabButtons.Add(name);
+            registeredTabButtons.Add(new(tab, name));
             if (PagesOn)
-            {
                 DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
-            }
             PopulatePages(CurrentOffset);
+        }
+        public void RemoveTabButton(Tab tab)
+        {
+            int index = registeredTabButtons.FindIndex(x => x.Item1 == tab);
+            if (index < 0)
+            {
+                RainMeadow.Error("Unable to find specific tab");
+                return;
+            }
+            int previousOffset = CurrentOffset;
+            registeredTabButtons.RemoveAt(index);
+            if (PagesOn) DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
+            PopulatePages(CurrentOffset);
+            if (tab == container.activeTab) container.SwitchTab(activeTabButtons.Last().myTab);
         }
 
         public void RemoveTabButton(string name)
@@ -112,7 +124,7 @@ public class TabContainer : RectangularMenuObject
             {
                 menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 PopulatePages(CurrentOffset - 1);
-                container.SwitchTab(activeTabButtons.Last().index);
+                container.SwitchTab(activeTabButtons.Last().myTab);
             }
         }
         public void GoNextPage()
@@ -121,7 +133,7 @@ public class TabContainer : RectangularMenuObject
             {
                 menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 PopulatePages(CurrentOffset + 1);
-                container.SwitchTab(activeTabButtons.First().index);
+                container.SwitchTab(activeTabButtons.First().myTab);
             }
         }
         public void PopulatePages(int offset)
@@ -132,7 +144,7 @@ public class TabContainer : RectangularMenuObject
             while (num < registeredTabButtons.Count && num < (CurrentOffset + 1) * PerPage)
             {
                 float sizeY = DefaultTabButtonYSize, posY = container.size.y - (sizeY + 15) + (-(sizeY + 5) * (num % PerPage));
-                TabButton tabButton = new(registeredTabButtons[num], container, tabWrapper, new(0, posY), num, DefaultTabButtonYSize);
+                TabButton tabButton = new(registeredTabButtons[num].Item2, registeredTabButtons[num].Item1, container, tabWrapper, new(0, posY), DefaultTabButtonYSize);
                 activeTabButtons.Add(tabButton);
                 num++;
             }
@@ -159,20 +171,14 @@ public class TabContainer : RectangularMenuObject
             if (topArrowButton == null)
             {
                 topArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveUp", new(-5, container.size.y));
-                topArrowButton.OnClick += (_) =>
-                {
-                    GoPrevPage();
-                };
+                topArrowButton.OnClick += _ => GoPrevPage();
                 subObjects.Add(topArrowButton);
             }
             if (bottomArrowButton == null)
             {
                 bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveDown", new(-5, -24));
                 bottomArrowButton.symbolSprite.rotation = 180f;
-                bottomArrowButton.OnClick += (_) =>
-                {
-                    GoNextPage();
-                };
+                bottomArrowButton.OnClick += _ => GoNextPage();
                 subObjects.Add(bottomArrowButton);
             }
         }
@@ -186,7 +192,7 @@ public class TabContainer : RectangularMenuObject
         private float tabButtonYSize = 125;
         public MenuTabWrapper tabWrapper;
         public SimplerSymbolButton? topArrowButton, bottomArrowButton;
-        public List<string> registeredTabButtons;
+        public List<ValueTuple<Tab, string>> registeredTabButtons;
         public readonly List<TabButton> activeTabButtons;
         public TabContainer container;
     }
@@ -278,16 +284,13 @@ public class TabContainer : RectangularMenuObject
         public MenuTabWrapper myTabWrapper;
     }
 
-    public int activeIndex = 0;
     public Tab? activeTab;
-    public List<Tab> tabs;
     public TabButtonsContainer tabButtonContainer;
     public RoundedRect background;
     public MenuTabWrapper tabWrapper;
 
     public TabContainer(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
     {
-        tabs = [];
         background = new(menu, this, new(0, 0), this.size, true)
         {
             fillAlpha = 0.3f
@@ -298,54 +301,29 @@ public class TabContainer : RectangularMenuObject
         subObjects.AddRange([background, tabWrapper, tabButtonContainer]);
     }
     /// <summary>
-    /// Elements added MUST implement IRestorableMenuObjects, else your menu objects that are not restorable will be invisible forever.
-    /// Subobjects will be turned invisible as well, so make sure they are restorable or called explicitly
+    /// Objects will not be called for Update/GrafUpdate if they are hidden
     /// </summary>
     public Tab AddTab(string name)
     {
-        int index = tabs.Count;
-        RainMeadow.Debug($"Adding {name} Tab");
-        tabButtonContainer.AddNewTabButton(name);
         Tab tab = new(menu, this);
         subObjects.Add(tab);
-        tabs.Add(tab);
-
-        tabs[index].Hide();
-        // idk why but if this isn't run on every single object that is added everything just breaks so don't exclude the first set of tab elements added
-        if (index == 0)
-        {
-            SwitchTab(0);
-        }
+        tabButtonContainer.AddNewTabButton(name, tab);
+        tab.Hide();
+        if (activeTab == null) SwitchTab(tab);
         return tab;
     }
-
-    public void RemoveTab(string name)
+    public void RemoveTab(params Tab[] tabsToRemove)
     {
-        int indexToRemove = tabButtonContainer.registeredTabButtons.IndexOf(name);
-
-        if (indexToRemove != -1)
+        for (int i = 0; i < tabsToRemove.Length; i++)
         {
-            RainMeadow.Debug($"Removing {name} Tab at index {indexToRemove}");
-
-            Tab tabToRemove = tabs[indexToRemove];
-            tabButtonContainer.RemoveTabButton(name);
-            tabToRemove.RemoveSprites();
-            subObjects.Remove(tabToRemove);
-            tabs[indexToRemove].RemoveSprites();
-            tabs.RemoveAt(indexToRemove);
-            SwitchTab(1);
-        }
-        else
-        {
-            RainMeadow.Debug($"Tab with name '{name}' not found for removal.");
+            tabButtonContainer.RemoveTabButton(tabsToRemove[i]);
+            this.ClearMenuObject(tabsToRemove[i]);
         }
     }
-    public void SwitchTab(int tabIndex)
+    public void SwitchTab(Tab tab)
     {
         activeTab?.Hide();
-        activeIndex = tabIndex;
-        activeTab = tabs[activeIndex];
+        activeTab = tab;
         activeTab.Show();
     }
-
 }
