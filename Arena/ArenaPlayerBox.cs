@@ -173,7 +173,8 @@ namespace RainMeadow.UI.Components
 
         public void ToggleTextOverlay(string text, bool enable)
         {
-            textOverlayLabel.text = menu.LongTranslate(text);
+            if (enable)
+                textOverlayLabel.text = menu.LongTranslate(text);
             enabledTextOverlay = enable;
         }
 

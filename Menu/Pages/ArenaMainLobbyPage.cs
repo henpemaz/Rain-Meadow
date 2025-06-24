@@ -35,7 +35,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             if (!RainMeadow.isArenaMode(out var _)) return;
             Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
-            btn.menuLabel.text = Utils.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         };
 
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
@@ -174,17 +173,21 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     }
                     else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
 
-                    playerBox.ToggleTextOverlay("Ready!", clientSettings?.ready ?? false);
-                    if (clientSettings?.selectingSlugcat ?? false) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
+                    playerBox.ToggleTextOverlay(Arena.isInGame? "Joining<LINE>soon!": "Ready!", clientSettings?.ready == true);
+                    if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
+                    if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId)) playerBox.ToggleTextOverlay("In Game!", true);
 
                     if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
                     else playerBox.slugcatButton.portraitColor = Color.white;
+
+                    playerBox.showRainbow = Arena.reigningChamps.list.Contains(playerBox.profileIdentifier.id);
                 }
                 if (button is ArenaPlayerSmallBox smallPlayerBox)
                     smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
             }
         }
 
+        readyButton.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
         int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
@@ -193,7 +196,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         if (OnlineManager.lobby.isOwner)
         {
-            if (menu.Active) levelSelector.LoadNewPlaylist(Arena.playList, false);
+            if (menu.manager.upcomingProcess == null) levelSelector.LoadNewPlaylist(Arena.playList, false); //dont replace playlist when starting game
             if (startButton is null)
             {
                 startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f));
@@ -215,13 +218,5 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
         chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
-
-        if (playerDisplayer is null) return;
-
-        for (int i = 0; i < playerDisplayer.buttons.Count; i++)
-        {
-            if (playerDisplayer.buttons[i] is not ArenaPlayerBox arenaPlayerBox) continue;
-            arenaPlayerBox.showRainbow = Arena.reigningChamps.list.Contains(arenaPlayerBox.profileIdentifier.id);
-        }
     }
 }
