@@ -269,7 +269,7 @@ Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Op
 Am I Warrior from the past, or a Messiah from the future?|¿Soy un guerrero del pasado o un mesías del futuro?
 Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscando muchos o un ratón buscando uno?
 <LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>¿Soy un samaritano condenado o una anomalía entre el tiempo y el espacio?
-<LINE>Am I a doomed Samaritan, or am I forever stuck in your shadow?|<LINE>¿Soy un samaritano condenado o estoy atrapado por siempre en tu sombra?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>¿Estoy condenado a ser un samaritano o estoy atrapado por siempre en tu sombra?
 <LINE>I do not know, for I am not one. I am many.|<LINE>Yo no lo sé puesto que no soy uno. Soy muchos.
 Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar el gran tesoro.<LINE>Aquellos que deambulen muchos de ellos encontrarán la gran verdad.
 
