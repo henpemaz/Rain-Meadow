@@ -7,7 +7,7 @@ using static RainMeadow.OnlineEntity.EntityData;
 
 namespace RainMeadow
 {
-    public abstract partial class OnlineEntity
+    public abstract partial class OnlineEntity : IChunkDestination
     {
         [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
         public abstract class EntityDefinition : OnlineState, IIdentifiable<OnlineEntity.EntityId>
@@ -501,5 +501,13 @@ namespace RainMeadow
         {
             return $"{id} from {owner.id}";
         }
+
+        void IChunkDestination.ProcessEntireChunk(IncomingDataChunk chunk) => ProcessEntireChunkImpl(chunk);
+        void IChunkDestination.ProcessSlice(IncomingDataChunk chunk, Slice slice) => ProcessSliceImpl(chunk, slice);
+        void IChunkDestination.ProcessOrderedSlice(IncomingDataChunk chunk, Slice slice, bool newest) => ProcessOrderedSliceImpl(chunk, slice, newest);
+
+        public virtual void ProcessEntireChunkImpl(IncomingDataChunk chunk) { }
+        public virtual void ProcessSliceImpl(IncomingDataChunk chunk, Slice slice) { }
+        public virtual void ProcessOrderedSliceImpl(IncomingDataChunk chunk, Slice slice, bool newest) { }
     }
 }

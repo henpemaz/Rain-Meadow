@@ -1,6 +1,7 @@
 ﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -146,6 +147,12 @@ namespace RainMeadow
                     subresources.Add(ws);
                 }
                 RainMeadow.Debug(subresources.Count);
+            }
+
+            if (!isOwner)
+            {
+                var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("abcdefg"));
+                owner.QueueChunk(this, true, stream, 6);
             }
         }
 
@@ -314,10 +321,10 @@ namespace RainMeadow
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
         }
-
-        public void OnNewLobbyData(byte[] thedata)
+        
+        override public void ProcessEntireChunkImpl(IncomingDataChunk chunk)
         {
-            RainMeadow.Debug(System.Text.Encoding.UTF8.GetString(thedata));
+            RainMeadow.Debug(System.Text.Encoding.UTF8.GetString(chunk.GetData()));
         }
 
         protected override void ParticipantLeftImpl(OnlinePlayer player)
