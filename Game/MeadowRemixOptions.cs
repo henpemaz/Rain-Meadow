@@ -287,7 +287,7 @@ public class RainMeadowOptions : OptionInterface
                 {
                     color = new Color(0.85f, 0.35f, 0.4f)
                 },
-                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), "OKIE DOKIE")
+                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), Translate("OKIE DOKIE"))
                 {
                     colorEdge = new Color(0.85f, 0.35f, 0.4f),
                 },

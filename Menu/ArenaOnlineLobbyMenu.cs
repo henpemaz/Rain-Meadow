@@ -268,7 +268,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+                return index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? Translate("No rain") : ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index] + " " + Translate($"minute{(index == 1 ? "" : "s")} until rain");
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);

@@ -402,7 +402,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             if (MyLevelSelector == null) return;
             for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
-                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], AddOnClick));
+                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], menu.Translate(AddOnClick)));
             for (int i = 0; i < buttons.Count - 1; i++)
             {
                 if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem) 
@@ -460,11 +460,11 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 clearAllCounter = 1;
                 menu.PlaySound(_.buttonBehav.greyedOut ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Greyed_Out_Button_Clicked);
             };
-            shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order"), "", "SHUFFLE");
+            shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order"), "", "SHUFFLE");
             shuffleButton.OnClick += _ =>
             {
                 ShuffleStatus = !ShuffleStatus;
-                _.label.text = menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order");
+                _.label.text = menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order");
                 _.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
                 menu.PlaySound(ShuffleStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             };
@@ -512,7 +512,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
             for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], "Remove level from playlist"));
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
         }
         public void UpdatePlaylist()
         {
@@ -549,7 +549,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             for (int i = LevelItems.Count - 1; i >= 0; i--)
                 RemoveLevelItem(LevelItems[i], false);
             for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], "Remove level from playlist"));
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
             ConstrainScroll();
             mismatchCounter = 0;
 
@@ -649,7 +649,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public void AddItemToSelectedList(string name)
     {
         SelectedPlayList.Add(name);
-        LevelItem item = new(menu, selectedLevelsPlaylist, name, "Remove level from playlist");
+        LevelItem item = new(menu, selectedLevelsPlaylist, name, menu.Translate("Remove level from playlist"));
         selectedLevelsPlaylist.AddLevelItem(item);
         selectedLevelsPlaylist.DownScrollOffset = selectedLevelsPlaylist.MaxDownScroll;
         selectedLevelsPlaylist.ConstrainScroll();

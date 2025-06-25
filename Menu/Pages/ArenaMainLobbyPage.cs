@@ -60,19 +60,19 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
-        TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
-            matchSettingsTab = tabContainer.AddTab("Match Settings");
+        TabContainer.Tab playListTab = tabContainer.AddTab(menu.Translate("Arena Playlist")),
+            matchSettingsTab = tabContainer.AddTab(menu.Translate("Match Settings"));
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v))]);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(menu.Translate(v)))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
         if (ModManager.MSC)
         {
-            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab("Slugcat Abilities");
-            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new Vector2(360f, 380f), new Vector2(0f, 50f), painCatName);
+            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab(menu.Translate("Slugcat Abilities"));
+            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new Vector2(360f, 380f), new Vector2(0f, 50f), menu.Translate(painCatName));
             slugcatAbilitiesInterface.CallForSync();
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }

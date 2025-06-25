@@ -26,7 +26,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
+        backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
@@ -95,7 +95,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = menu.LongTranslate(painCatDescription);
+            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
@@ -128,7 +128,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (invPortraitDescriptions is not null) descriptionCategories.Add(invPortraitDescriptions, 0.3f);
 
         List<string> descriptions = descriptionCategories.GetRandom();
-        return Custom.ReplaceLineDelimeters(descriptions[UnityEngine.Random.Range(0, descriptions.Count)]).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+        return descriptions[UnityEngine.Random.Range(0, descriptions.Count)];
     }
     public override void Update()
     {
