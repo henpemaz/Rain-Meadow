@@ -22,11 +22,10 @@ namespace RainMeadow
 
     public class Slice : Serializer.ICustomSerializable
     {
-        public byte index = default;
-        public byte[] data = Array.Empty<byte>();
-
+        public byte index;
+        public ArraySegment<byte> data;
         public Slice() { }
-        public Slice(byte index, byte[] data)
+        public Slice(byte index, ArraySegment<byte> data)
         {
             this.index = index;
             this.data = data;
@@ -35,7 +34,17 @@ namespace RainMeadow
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref index);
-            serializer.SerializeLongArray(ref data);
+            if (serializer.IsWriting)
+            {
+                serializer.writer.Write((ushort)data.Count);
+                serializer.stream.Write(data.Array, data.Offset, data.Count);
+            }
+            else if (serializer.IsReading)
+            {
+                var size = serializer.reader.ReadUInt16();
+                data = new ArraySegment<byte>(new byte[size], 0, size);
+                serializer.stream.Read(data.Array, 0, data.Count);
+            }
         }
     }
 
@@ -54,7 +63,7 @@ namespace RainMeadow
         public bool reliable => chunkId != 0;
         
 
-        public OutgoingDataChunk(byte chunkId, IChunkDestination destination, Stream stream, int length, OnlinePlayer toPlayer)
+        public OutgoingDataChunk(byte chunkId, IChunkDestination destination, ArraySegment<byte> data, OnlinePlayer toPlayer)
         {
 
             this.destination = destination;
@@ -63,8 +72,8 @@ namespace RainMeadow
             if (reliable)
             {
                 // todo gzip data and keep track of gzip status
-                if (stream.Length > maxData) throw new InvalidProgrammerException("Too much data!");
-                outgoingSlices = new SliceMessage[(stream.Length + sliceSize - 1) / sliceSize];
+                if (data.Count > maxData) throw new InvalidProgrammerException("Too much data!");
+                outgoingSlices = new SliceMessage[(data.Count + sliceSize - 1) / sliceSize];
 
                 checked
                 {
@@ -72,13 +81,10 @@ namespace RainMeadow
                     int readData = 0;
                     for (byte i = 0; i < outgoingSlices.Length; i++)
                     {
-                        var len = Math.Min(sliceSize, length - readData);
+                        var len = Math.Min(sliceSize, outgoingSlices.Length - readData);
                         if (len <= 0) break;
-
-                        byte[] buffer = new byte[len];
-                        readData += stream.Read(buffer, 0, len);
-
-                        var slice = new Slice(i, buffer);
+                        var slice = new Slice(i, new ArraySegment<byte>(data.Array, readData, len));
+                        readData += len;
                         outgoingSlices[i] = new SliceMessage(slice);
                     }
 
@@ -90,9 +96,7 @@ namespace RainMeadow
             else
             {
                 outgoingSlices = new SliceMessage[1];
-                byte[] buffer = new byte[length];
-                stream.Read(buffer, 0, length);
-                outgoingSlices[0] = new SliceMessage(new Slice(0, buffer));
+                outgoingSlices[0] = new SliceMessage(new Slice(0, data));
             }
         }
 
@@ -240,12 +244,12 @@ namespace RainMeadow
             {
                 checked
                 {
-                    entireDataCache = new byte[incomingSlices.Aggregate<Slice, int>(0, (int size, Slice slice) => { return size + slice.data.Length; })];
+                    entireDataCache = new byte[incomingSlices.Aggregate<Slice, int>(0, (int size, Slice slice) => { return size + slice.data.Count; })];
                     int copiedData = 0;
                     foreach (Slice slice in incomingSlices)
                     {
-                        var totalcopied = Mathf.Max(slice.data.Length, entireDataCache.Length - copiedData);
-                        Buffer.BlockCopy(slice.data, 0, entireDataCache, copiedData, totalcopied);
+                        var totalcopied = Mathf.Min(slice.data.Count, entireDataCache.Length - copiedData);
+                        Buffer.BlockCopy(slice.data.Array, slice.data.Offset, entireDataCache, copiedData, totalcopied);
                         copiedData += totalcopied;
                     }
                     RainMeadow.Debug(copiedData);

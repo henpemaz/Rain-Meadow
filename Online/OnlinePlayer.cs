@@ -267,9 +267,9 @@ namespace RainMeadow
         }
 
 
-        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, Stream stream, int length)
+        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data)
         {
-            var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, stream, length, this);
+            var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, data, this);
             if (reliable && OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
             {
                 PendingOutgoingChunks.Add(chunk);
@@ -278,7 +278,7 @@ namespace RainMeadow
             {
                 OutgoingChunks.Add(chunk);
             }
-            RainMeadow.Debug($"New outgoing chunk: id {OutgoingChunks.Last().chunkId}, destination {destination}, reliable {reliable}, sliceCount {OutgoingChunks.Last().totalSlices}, len {length}");
+            RainMeadow.Debug($"New outgoing chunk: id {OutgoingChunks.Last().chunkId}, destination {destination}, reliable {reliable}, sliceCount {OutgoingChunks.Last().totalSlices}, len {data.Count}");
             return chunk;
         }
 
