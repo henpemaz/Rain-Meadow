@@ -203,6 +203,7 @@ Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido a
 Click to open <TABNAME> tab|Haz clic para abrir la pestaña <TABNAME>
 Exit to Lobby Select|Salir a la selección de sala
 Arena Playlist|Lista de arena
+Spears Hit:|Golpes de lanza:
 Repeat Rooms:|Repetir niveles:
 Match Settings|Ajustes de partida
 Allow Item Stealing:|Permitir robar objetos:
@@ -254,7 +255,7 @@ THE SLUGPUP|LA CRÍA DE GATO-BABOSA
 THE NIGHTCAT|EL GATO NOCTURNO
 THE UNKNOWN|LO DESCONOCIDO
 THE FARTIFICER|EL FARTÍFICE
-Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock.|Tus enemigos se ciernen sobre ti, pero no es como tu primera vez.<LINE>Agarra tu lanza y roca.
+Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock.|Los enemigos se acercan a tu alrededor, pero no es como tu primera vez.<LINE>Agarra tu lanza y roca.
 Remember: they struck first, so you'll need to hit back harder.|Recuerda: ellos atacaron primero, así que<LINE>necesitarás devolver más fuerte el golpe.
 Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering.|Afligido desde el inicio y un luchador hasta el final.<LINE>Demuéstrales el significado del sufrimiento.
 Observe all weakness - then strike while cloaked in shadows.|Observa toda debilidad; luego ataca oculto en las sombras.
@@ -270,7 +271,7 @@ Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscand
 <LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>¿Soy un samaritano condenado o una anomalía entre el tiempo y el espacio?
 <LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>¿Soy un samaritano condenado o estoy atrapado por siempre en tu sombra?
 <LINE>I do not know, for I am not one. I am many.|<LINE>Yo no lo sé puesto que no soy uno. Soy muchos.
-Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar un gran tesoro.<LINE>Aquellos que deambulen varios de ellos encontrarán la gran verdad.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar el gran tesoro.<LINE>Aquellos que deambulen muchos de ellos encontrarán la gran verdad.
 
 // Paincat's Names & Descriptions
 Paincat|Gato-dolor
@@ -287,7 +288,7 @@ GORBO|GORBO
 You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Has atravesado el infierno y has sobrevivido, pero ahora es<LINE>el momento de expiar tus pecados de tus ciclos pasados.
 ...why are you here|... ¿Por qué estás aquí?
 Thanks, Andrew.|Gracias, Andrew.
-.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA<LINE>.zev aremirp ut omoc se on erop ,it erbos nenreic es sogimene suT
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA<LINE>.zev aremirp ut omoc se on erop ,rodederla ut a nacreca es sogimene soL
 Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Bienvenido a la torre de esfuerzos: donde harás trabajo pesado por la<LINE>duración de tu estadía. ¡Espero que hayas traído agua, <USERNAME>!
 $5 to unlock this description.|$5 para desbloquear esta descripción.
 egg|huevo
@@ -306,7 +307,7 @@ Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?
 Be careful when selecting the Fartificer|Ten cuidado seleccionando a Fartífice
 am getting "among us potion at 3 am" vibes<LINE>add that /lh|me están llegando vibras de «poción de among us de las 3 am»<LINE>añade eso /lh
 "hiiii!"|«¡Holiiii!».
-"i'm ded"|«Me morí».
+"i'm ded"|«Estoy muelto».
 bleh|bleh
 inv? like invalidunits?|¿inv?, o sea, ¿invalidunits?
 
