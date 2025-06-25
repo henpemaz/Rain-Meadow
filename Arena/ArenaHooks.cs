@@ -1763,10 +1763,6 @@ namespace RainMeadow
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac) && ac.state.alive)
                         {
                             self.Players.Add(ac);
-                            if (!self.room.abstractRoom.creatures.Contains(ac))
-                            {
-                                self.room.abstractRoom.creatures.Add(ac);
-                            }
                         }
                     }
                 }

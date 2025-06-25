@@ -269,6 +269,10 @@ namespace RainMeadow
                     RainMeadow.Debug($"topos Node defined? {topos.NodeDefined}");
 
                     newRoom.absroom.AddEntity(apo);
+                    if (apo is AbstractCreature abc)
+                    {
+                        newRoom.absroom.creatures.Add(abc);
+                    }
 
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
                                                               // room == -1 signals swallowed item which shouldn't be in room
