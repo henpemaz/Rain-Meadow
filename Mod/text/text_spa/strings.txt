@@ -155,9 +155,11 @@ New emote unlocked|Nuevo emote desbloqueado
 New skin unlocked|Nuevo aspecto desbloqueado
 
 // Story Mode
- - New Game| - Juego nuevo
-Current Campaign: |Campaña actual: 
 Selected Slugcat|Gato-babosa<LINE>seleccionado
+Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gato-babosa
+Current Campaign: |Campaña actual: 
+ - New Game| - Juego nuevo
+Unknonw Region|Región desconocida
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
 Require Campaign Slugcat|Gato-babosa de la campaña
@@ -167,13 +169,15 @@ Press again to ban player!|¡Pulsa otra vez para banear al jugador!
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 
  to spectate, or press PAUSE BUTTON to dismiss message| para espectear o el BOTÓN DE PAUSA para quitar este mensaje
 READY|LISTO
-Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gato-babosa
 Prev|Ant.
 Next|Sig.
 
 // Arena Mode
 ME|YO
+Joining<LINE>soon!|¡Uniéndose<LINE>pronto!
 Ready!|¡Listo!
+Selecting<LINE>Slugcat|Seleccionando<LINE>Gato-babosa
+In Game!|¡Dentro de<LINE>la partida!
 Showing players in thumbnail view|Mostrando jugadores en forma de miniatura
 Showing players in list view|Mostrando jugadores en forma de lista
 Current Mode:|Modo actual:
@@ -181,6 +185,7 @@ Free For All|Todos contra todos
 Trust no one. Last scug standing wins.|No confíes en nadie. El último babogato en pie gana.
 Team Battle|Batalla por equipos
 Choose a faction. Last team standing wins.|Elige una facción. El último equipo en pie gana.
+Do some wacky stuff around here!|¡Haz alguna locura por aquí!
 Add your gamemode info here|Añade la información de tu modo de juego aquí
 Ready:|Listos:
 Playlist Progress:|Progreso de la lista:
@@ -195,17 +200,22 @@ START MATCH!|¡INICIAR PARTIDA!
 Waiting for others...|Espera a los demás
 Waiting for host...|Espera al anfitrión
 Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
+Click to open <TABNAME> tab|Haz clic para abrir la pestaña <TABNAME>
+Exit to Lobby Select|Salir a la selección de sala
 Arena Playlist|Lista de arena
+Repeat Rooms:|Repetir niveles:
 Match Settings|Ajustes de partida
 Allow Item Stealing:|Permitir robar objetos:
 Players can steal items from each other|Los jugadores pueden robarse objetos
 Players cannot steal items from each other|Los jugadores no pueden robarse objetos
-Exit to Lobby Select|Salir a la selección de sala
+Allow Mid-Game Join:|Permitir unirse más tarde:
+Players can join each round|Los jugadores pueden unirse en cada ronda
+Players can only join at the first round|Los jugadores solamente pueden unirse en la primera ronda
 Countdown Timer:|Tiempo de la cuenta atrás:
 How long the grace timer at the beginning of rounds lasts for. Default 5s.|Cuánto dura el temporizador de gracia al comienzo de las rondas. Predeterminado: 5 s
 Arena Game Mode:|Modo de juego de arena:
 The game mode for this match|El modo de juego de esta partida
-Slugcat Settings|Ajustes de Gato-babosa
+Slugcat Abilities|Ajustar habilidades
 Disable Mauling:|Desactivar mordeduras:
 Prevent Artificer and <PAINCATNAME> from mauling|Impedir que Artífice y <PAINCATNAME> muerdan
 Disable Artificer Stun:|Desactivar aturdimientos de Artífice:
@@ -214,11 +224,11 @@ Sain't:|Santon't:
 Disable Saint ascendance ability, but allow it to throw spears|Desactivar la habilidad ascendente del Santo, pero permitirle usar lanzas
 Saint Ascendance Duration:|Duración del ascendiente del Santo:
 How long Saint's ascendance ability lasts for. Default 3s.|Cuánto dura la habilidad ascendente del Santo. Predeterminado: 3 s
-<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> obtiene huevo en habilidad de lanzamiento 0:
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME> obtiene un huevo al tener<LINE>habilidad de lanzamiento 0:
 If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATNAME> aparece con habilidad de lanzamiento 0, también aparecer con Huevocer0
 <PAINCATNAME> can always throw spears:|<PAINCATNAME> siempre puede usar lanzas:
 Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permitir que <PAINCATNAME> siempre use lanzas, incluso si la habilidad de lanzamiento es 0
-<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> a veces obtiene un amigo.
+<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> a veces obtiene un amigo:
 Allow <PAINCATNAME> to rarely spawn with a little friend|Permitir que <PAINCATNAME> aparezca con un amigo en raras ocasiones
 Team Settings|Ajustes de equipo
 Team:|Equipo:
@@ -228,13 +238,12 @@ Team 3:|Equipo 3:
 Team 4:|Equipo 4:
 Team Color Lerp Factor:|Divisor de interpolación lineal del color del equipo:
 How strongly the team color mixes with your color|Cuán fuerte el color del equipo se mezcla con el tuyo
-Do some wacky stuff around here!|¡Haz alguna locura por aquí!
 You cant color without Remix on!|¡No puedes colorear sin el Remix activado!
 Waiting|Esperando
 Prepare for combat,|Prepárate para el combate,
 Prepare for war,|Prepárate para la guerra,
 Winner!|¡Ganador!
-<TEAM> WIN!|¡<TEAM> SON LOS GANADORES!
+<TEAMNAME> WIN!|¡EL EQUIPO <TEAMNAME> HA GANADO!
 Unknown user|Usuario desconocido
 
 // Arena Slugcat Select
@@ -261,6 +270,7 @@ Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscand
 <LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>¿Soy un samaritano condenado o una anomalía entre el tiempo y el espacio?
 <LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>¿Soy un samaritano condenado o estoy atrapado por siempre en tu sombra?
 <LINE>I do not know, for I am not one. I am many.|<LINE>Yo no lo sé puesto que no soy uno. Soy muchos.
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|Aquellos que recorran un solo camino podrán hallar un gran tesoro.<LINE>Aquellos que deambulen varios de ellos encontrarán la gran verdad.
 
 // Paincat's Names & Descriptions
 Paincat|Gato-dolor
@@ -277,14 +287,14 @@ GORBO|GORBO
 You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Has atravesado el infierno y has sobrevivido, pero ahora es<LINE>el momento de expiar tus pecados de tus ciclos pasados.
 ...why are you here|... ¿Por qué estás aquí?
 Thanks, Andrew.|Gracias, Andrew.
-.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA<LINE>.zev aremirp ut omoc se on erop ,it ed rodederla nacreca es sogimene suT
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA<LINE>.zev aremirp ut omoc se on erop ,it erbos nenreic es sogimene suT
 Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Bienvenido a la torre de esfuerzos: donde harás trabajo pesado por la<LINE>duración de tu estadía. ¡Espero que hayas traído agua, <USERNAME>!
 $5 to unlock this description.|$5 para desbloquear esta descripción.
 egg|huevo
-Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|La búsqueda del amor te llevará al<LINE>precioso camino de los despojos desgarradores.
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|La búsqueda del amor te llevará al<LINE>precioso camino de despojos desgarradores.
 How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|Tres tristes tigres tragaban trigo en un trigal,<LINE>en tres tristes trastos tragaban trigo tres tristes tigres.
 "<USERNAME>, youre gonna get us both killed"|«<USERNAME>, vas a hacer que nos maten».
-"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess..."|«Tengo que usar 2 lanzas para matar, es estúpido.<LINE>Al menos me añadieron en el modo arena, supongo...».
+"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess..."|«Tengo que usar 2 lanzas para matar, es simplemente estúpido.<LINE>Al menos me añadieron en el modo arena, supongo...».
 "u dont need 2 be alone, bby."|«No tienes por qué estar sin compañía, bebé».
 "sometimes i wake up with a friend ive never met b4"|«A veces me despierto con un amigo que nunca había conocido».
 "i luv u <3"|«Te amo <3».
@@ -294,10 +304,11 @@ Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What th
 "I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER"<LINE>- Dusty|«ESCUCHÉ QUE SI DICES “GAYETA” 5 VECES EN EL BAÑO A LAS 4 AM.<LINE>CONVOCARÁS AL MONSTRUO DE LAS GAYETAS».<LINE>- Dusty
 Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|¿Alguna vez pensaste en contribuir a<LINE>https://github.com/henpemaz/Rain-Meadow?
 Be careful when selecting the Fartificer|Ten cuidado seleccionando a Fartífice
-am getting "among us potion at 3 am" vibes<LINE>add that /lh|me están llegando vibras de «poción de among us de las 3 am»<LINE>agrega eso /lh
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|me están llegando vibras de «poción de among us de las 3 am»<LINE>añade eso /lh
 "hiiii!"|«¡Holiiii!».
 "i'm ded"|«Me morí».
-bleh|Bleh.
+bleh|bleh
+inv? like invalidunits?|¿inv?, o sea, ¿invalidunits?
 
 // Chat Tutorial
 Press '|Pulsa «
