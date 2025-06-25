@@ -148,12 +148,6 @@ namespace RainMeadow
                 }
                 RainMeadow.Debug(subresources.Count);
             }
-
-            if (!isOwner)
-            {
-                var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("abcdefg"));
-                owner.QueueChunk(this, true, stream, 6);
-            }
         }
 
         protected override void AvailableImpl()
@@ -320,11 +314,6 @@ namespace RainMeadow
 
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
-        }
-        
-        override public void ProcessEntireChunkImpl(IncomingDataChunk chunk)
-        {
-            RainMeadow.Debug(System.Text.Encoding.UTF8.GetString(chunk.GetData()));
         }
 
         protected override void ParticipantLeftImpl(OnlinePlayer player)
