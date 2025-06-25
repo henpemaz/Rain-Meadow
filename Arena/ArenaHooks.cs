@@ -114,6 +114,7 @@ namespace RainMeadow
             On.Watcher.CamoMeter.Draw += CamoMeter_Draw;
         }
 
+
         private void CamoMeter_Draw(On.Watcher.CamoMeter.orig_Draw orig, Watcher.CamoMeter self, float timeStacker)
         {
             if (isArenaMode(out var _))
@@ -1762,6 +1763,10 @@ namespace RainMeadow
                         if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac) && ac.state.alive)
                         {
                             self.Players.Add(ac);
+                            if (!self.room.abstractRoom.creatures.Contains(ac))
+                            {
+                                self.room.abstractRoom.creatures.Add(ac);
+                            }
                         }
                     }
                 }
