@@ -197,7 +197,7 @@ namespace RainMeadow
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
             shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
 
-            shortCutVessel.room.creatures.Add(abstractCreature);
+            room.abstractRoom.creatures.Add(abstractCreature);
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
