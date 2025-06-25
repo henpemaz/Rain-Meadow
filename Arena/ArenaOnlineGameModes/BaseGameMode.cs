@@ -197,9 +197,9 @@ namespace RainMeadow
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
             shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
 
-            room.abstractRoom.creatures.Add(abstractCreature);
-
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
+
+            room.abstractRoom.creatures.Add(abstractCreature);
             self.AddPlayer(abstractCreature);
             if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Night)
             {
