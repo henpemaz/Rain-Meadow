@@ -172,7 +172,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0 || toPlayer.OutgoingChunks.Count > 0 || toPlayer.PendingOutgoingChunks.Count > 0)
             {
                 netIO?.SendSessionData(toPlayer);
             }
@@ -302,21 +302,6 @@ namespace RainMeadow
                     RainMeadow.Error(ent);
                 }
                 RainMeadow.Error(e);
-            }
-        }
-
-        internal static void ProcessDataChunk(OnlinePlayer fromPlayer, DataChunk incomingChunk)
-        {
-            try
-            {
-                if (incomingChunk.chunkType == DataChunk.ChunkType.LobbyData)
-                {
-                    if (lobby != null) lobby.OnNewLobbyData(incomingChunk.GetData());
-                }
-            }
-            catch (Exception e)
-            {
-                RainMeadow.Error($"Error reading data chunk {incomingChunk} from {fromPlayer}");
             }
         }
 

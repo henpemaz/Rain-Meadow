@@ -6,7 +6,7 @@ namespace RainMeadow
 {
     // OnlineResources are transferible, non-dynamic resources, that others can consume (lobby, world, room)
     // The owner of the resource coordinates states, distributes subresources and solves conflicts
-    public abstract partial class OnlineResource
+    public abstract partial class OnlineResource : IChunkDestination
     {
         public readonly OnlineResource super; // the resource above this (ie lobby for a world, world for a room)
         public readonly List<OnlineResource> chain; // cached tree chain
@@ -549,5 +549,13 @@ namespace RainMeadow
         }
 
         public abstract OnlineResource SubresourceFromShortId(ushort shortId);
+
+        void IChunkDestination.ProcessEntireChunk(IncomingDataChunk chunk) => ProcessEntireChunkImpl(chunk);
+        void IChunkDestination.ProcessSlice(IncomingDataChunk chunk, Slice slice) => ProcessSliceImpl(chunk, slice);
+        void IChunkDestination.ProcessOrderedSlice(IncomingDataChunk chunk, Slice slice, bool newest) => ProcessOrderedSliceImpl(chunk, slice, newest);
+
+        public virtual void ProcessEntireChunkImpl(IncomingDataChunk chunk) { }
+        public virtual void ProcessSliceImpl(IncomingDataChunk chunk, Slice slice) { }
+        public virtual void ProcessOrderedSliceImpl(IncomingDataChunk chunk, Slice slice, bool newest) { }
     }
 }
