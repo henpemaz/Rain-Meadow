@@ -271,7 +271,10 @@ namespace RainMeadow
                     newRoom.absroom.AddEntity(apo);
                     if (apo is AbstractCreature abc)
                     {
-                        newRoom.absroom.creatures.Add(abc);
+                        if (!newRoom.absroom.creatures.Contains(abc))
+                        {
+                            newRoom.absroom.creatures.Add(abc);
+                        }
                     }
 
                     if (!poState.inDen && apo.pos.room != -1) // inden entities are basically abstracted so not added to the room
