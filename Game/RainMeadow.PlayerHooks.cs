@@ -93,6 +93,10 @@ public partial class RainMeadow
         On.Player.CamoUpdate += Player_CamoUpdate;
 
 
+        
+        On.Player.SetMalnourished += Player_SetMalnourished;
+        new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
+        
         // IL.Player.GrabUpdate += Player_SynchronizeSocialEventDrop;
         // IL.Player.TossObject += Player_SynchronizeSocialEventDrop;
         // IL.Player.ReleaseObject += Player_SynchronizeSocialEventDrop;
@@ -292,6 +296,28 @@ public partial class RainMeadow
                 self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
             }
         }
+    }
+    delegate bool orig_get_Malnourished(Player self);
+
+    bool Player_get_Malnourished(orig_get_Malnourished orig, Player self) {
+        if (OnlineManager.lobby != null && !self.isNPC) {
+            if (slugcatStatsPerPlayer.TryGetValue(self, out var stats)) {
+                return stats.malnourished;
+            }
+        }
+
+        return orig(self);
+
+    }
+
+
+
+    void Player_SetMalnourished(On.Player.orig_SetMalnourished orig, Player self, bool m) {
+        orig(self, m);
+        if (OnlineManager.lobby != null && !self.isNPC) {
+            slugcatStatsPerPlayer.Remove(self);
+            slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, m));
+    }
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -788,6 +814,52 @@ public partial class RainMeadow
             }
         }
 
+        if (OnlineManager.lobby != null && self.IsLocal() && ModManager.JollyCoop)
+        {
+            if (self.cameraSwitchDelay > 0) self.cameraSwitchDelay--;
+
+            if (self.input[0].mp)
+            {
+                if (!self.input[1].mp)
+                {
+                    self.jollyButtonDown = false;
+                    for (int i = 2; i < self.input.Length - 1; i++)
+                    {
+                        if (self.input[i].mp && !self.input[i + 1].mp)
+                        {
+                            self.jollyButtonDown = true;
+                            self.cameraSwitchDelay = -1;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                self.jollyButtonDown = false;
+            }
+
+            if (!self.input[0].mp && self.input[1].mp && self.cameraSwitchDelay == -1)
+            {
+                int num = 0;
+                self.jollyButtonDown = false;
+                for (int j = 2; j < self.input.Length && self.input[j].mp; j++)
+                {
+                    num++;
+                }
+
+                if (num <= self.CameraInputDelay)
+                {
+                    self.cameraSwitchDelay = 5;
+                }
+            }
+
+            if (self.cameraSwitchDelay == 0)
+            {
+                self.TriggerCameraSwitch();
+                self.cameraSwitchDelay = -1;
+            }
+        }
+
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
@@ -956,10 +1028,17 @@ public partial class RainMeadow
             orig(self);
             return;
         }
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self);
@@ -969,6 +1048,24 @@ public partial class RainMeadow
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
+        }
+        
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
+        {
+            if (self.redsIllness != null)
+            {
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
+            }
         }
     }
 
@@ -980,10 +1077,16 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self, add);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self, add);
@@ -993,6 +1096,24 @@ public partial class RainMeadow
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
+        }
+        
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
+        {
+            if (self.redsIllness != null)
+            {
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
+            }
         }
     }
 
@@ -1004,10 +1125,16 @@ public partial class RainMeadow
             return;
         }
 
-        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity)) throw new InvalidProgrammerException("Player doesn't have OnlineEntity counterpart!!");
+        if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
+        {
+            RainMeadow.Error("Player doesn't have OnlineEntity counterpart!!");
+            orig(self, add);
+            return;
+        }
+
         if (!onlineEntity.isMine) return;
 
-        var state = (PlayerState)self.State;
+        var state = (isStoryMode(out _) && !self.isNPC) ? (PlayerState)self.abstractCreature.world.game.Players[0].state : (PlayerState)self.State;
         var origFood = state.foodInStomach * 4 + state.quarterFoodPoints;
 
         orig(self, add);
@@ -1017,6 +1144,24 @@ public partial class RainMeadow
         {
             var newFood = state.foodInStomach * 4 + state.quarterFoodPoints;
             if (newFood != origFood) OnlineManager.lobby.owner.InvokeRPC(StoryRPCs.ChangeFood, (short)(newFood - origFood));
+        }
+
+        // hack
+        if (self.slugcatStats.malnourished && state.foodInStomach >= ((self.redsIllness != null) ? self.redsIllness.FoodToBeOkay : self.slugcatStats.maxFood))
+        {
+            if (self.redsIllness != null)
+            {
+                self.redsIllness.GetBetter();
+                return;
+            }
+            if (!self.isSlugpup)
+            {
+                self.SetMalnourished(false);
+            }
+            if (self.playerState is MoreSlugcats.PlayerNPCState)
+            {
+                (self.playerState as MoreSlugcats.PlayerNPCState).Malnourished = false;
+            }
         }
     }
 
@@ -1107,7 +1252,10 @@ public partial class RainMeadow
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
-                { 
+                {
+                    bool malnourished = false;
+                    if (self.isNPC) malnourished = self.State is MoreSlugcats.PlayerNPCState state && state.Malnourished;
+                    else malnourished = self.abstractCreature.world.game.GetStorySession.saveState.malnourished;
                     slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats.malnourished));
                     self.SlugCatClass = customization.playingAs;
                 }
@@ -1187,6 +1335,16 @@ public partial class RainMeadow
     private Player.ObjectGrabability PlayerOnGrabability(On.Player.orig_Grabability orig, Player self, PhysicalObject obj)
     {
         if (!self.abstractPhysicalObject.IsLocal()) return Player.ObjectGrabability.CantGrab;
+
+        if (isStoryMode(out var story))
+        {
+            if (obj is Player p && (p.playerState?.isPup ?? false) && (!(self.playerState?.isPup ?? false)) && p != self)
+            {
+                return Player.ObjectGrabability.OneHand; // pick up jolly pups
+            }
+        }
+
+
         return orig(self, obj);
     }
 
