@@ -21,7 +21,7 @@ namespace RainMeadow.UI
         public HSLColor rainbowColor = new(0, 1, 0.5f);
         public bool rolling, hasAlreadyRolled, isClosing, queuedToClose, showRainbow;
         public int myRollingCounter, showResultsCounter, resultShownCounter, matchingCounter = -1, startEndRollingOrderCounter = 40, endRollingCounter = 120;
-        public float desiredSelectPagePosY;
+        public float desiredSelectPagePosY, congratsLabelAlpha = 0;
         public bool FinishedShowingResults => slugcatRandomizers.All(x => !x.rolling && x.desiredResultPosY == x.resultPosY);
         public bool IsMatching => slugcatRandomizers.All(x => x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat);
         public bool IsCloseMatching => slugcatRandomizers.GroupBy(x => x.slugcatButton.slugcat).OrderByDescending(x => x.Count()).FirstOrDefault()?.Count() == slugcatRandomizers.Length - 1;
@@ -40,11 +40,11 @@ namespace RainMeadow.UI
             {
                  anchorY = 1,
                  alpha = 0,
-                 shader = manager.rainWorld.Shaders["MenuTextCustom"],
+                shader = manager.rainWorld.Shaders["MenuTextCustom"],
             };
             selectPage.Container.AddChild(titleName);
             selectPage.Container.AddChild(congratsLabel);
-            continueButton = new(this, selectPage, Translate("ROLL"), new(manager.rainWorld.options.ScreenSize.x / 2 - 60, PopulateSlugcatRandomiers(currentSlugcats, currentlySelectableSlugcats, perRow, desiredPortraitScale)), new(120, 30))
+            continueButton = new(this, selectPage, Translate("LET'S ROLL!"), new(manager.rainWorld.options.ScreenSize.x / 2 - 60, PopulateSlugcatRandomiers(currentSlugcats, currentlySelectableSlugcats, perRow, desiredPortraitScale)), new(120, 30))
             {
                 Alpha = 0,
                 signalText = "ROLL"
@@ -85,7 +85,7 @@ namespace RainMeadow.UI
             if (!hasAlreadyRolled)
             {
                 if (RWInput.CheckPauseButton(0))
-                    Close(SoundID.MENU_Remove_Level);
+                    Close(SoundID.MENU_Remove_Level, false);
                 return;
             }
             QueueToStopRollingUpdate();
@@ -99,6 +99,7 @@ namespace RainMeadow.UI
             titleName.y = selectPagepos.y + manager.rainWorld.options.ScreenSize.y - 20;
             congratsLabel.x = titleName.x;
             congratsLabel.y = titleName.y - 30;
+            congratsLabel.alpha = congratsLabelAlpha > 0 ? 1 : 0;
             if (!showRainbow) return;
             Color rB = MyRainbowColor();
             titleName.color = Color.Lerp(Color.white, rB, rB.a);
@@ -118,12 +119,12 @@ namespace RainMeadow.UI
                 rolling = false;
             }
             if (message == "CONTINUE")
-                Close(SoundID.MENU_Remove_Level);
+                Close(SoundID.MENU_Remove_Level, true);
         }
-        public void Close(SoundID id)
+        public void Close(SoundID id, bool recieveSlugcat)
         {
             if (isClosing || queuedToClose) return;
-            RecieveSlugcat?.Invoke([.. slugcatRandomizers.Select(x => x.slugcatButton.slugcat)], this);
+            if (recieveSlugcat) RecieveSlugcat?.Invoke([.. slugcatRandomizers.Select(x => x.slugcatButton.slugcat)], this);
             desiredSelectPagePosY = -1500;
             queuedToClose = true;
             PlaySound(id);
@@ -166,9 +167,9 @@ namespace RainMeadow.UI
                 slugcatRandomizer.resultsColor = showRainbow ? MyRainbowColor() : Color.yellow;
                 slugcatRandomizer.flash = !showRainbow;
             }
-            if (congratsLabel.alpha != 1)
+            if (congratsLabelAlpha != 1)
             {
-                congratsLabel.alpha = Custom.LerpAndTick(congratsLabel.alpha, 1, 0.1f, 0.01f);
+                congratsLabelAlpha = Custom.LerpAndTick(congratsLabel.alpha, 1, 0.1f, 0.01f);
                 return;
             }
             resultShownCounter++;

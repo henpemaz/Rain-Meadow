@@ -156,10 +156,11 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
             else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
 
-            playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!", clientSettings?.ready == true);
+            playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", slugSlots);
+            if (clientSettings?.ready == true) playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!", true);
             if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
             if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
-            if (slugSlots) playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", true);
+          
 
             if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
             else playerBox.slugcatButton.portraitColor = Color.white;

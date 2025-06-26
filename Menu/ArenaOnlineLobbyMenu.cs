@@ -100,11 +100,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (currentPage == 1)
         {
-            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready;
-            Arena.arenaClientSettings.ready = false;
+            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready && Arena.allowJoiningMidRound;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready && !Arena.allowJoiningMidRound;
         }
         else
-            Arena.arenaClientSettings.ready = arenaSlugcatSelectPage.readyWarning;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready || arenaSlugcatSelectPage.readyWarning;
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
@@ -115,9 +115,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void GoToChangeCharacter()
     {
+        bool arenaMode = RainMeadow.isArenaMode(out _);
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            if (RainMeadow.isArenaMode(out _) && Arena.arenaClientSettings.ready)
+            if (arenaMode && Arena.arenaClientSettings.ready)
             {
                 PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
                 return;
@@ -134,7 +135,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             return;
         }
         MovePage(new Vector2(-1500f, 0f), 1);
-
     }
     public void GoToSlugcatSelector()
     {
@@ -143,7 +143,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
             (slugcats, selector) =>
             {
-                GetArenaSetup.playerClass[0] = slugcats[UnityEngine.Random.Range(0, slugcats.Length)];
+                arenaSlugcatSelectPage.SwitchSelectedSlugcat(slugcats[UnityEngine.Random.Range(0, slugcats.Length)]);
                 if (RainMeadow.isArenaMode(out _)) Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
             }
         );
