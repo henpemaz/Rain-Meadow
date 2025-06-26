@@ -65,7 +65,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(menu.Translate(v)))]);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Values.Select(v => new ListItem(v, menu.Translate(v)))]);
         arenaSettingsInterface.CallForSync();
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
@@ -188,7 +188,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             }
         }
 
-        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
+        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {menu.Translate(Arena.currentGameMode)}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
         int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
             amtOfRoomsRepeat = arenaSettingsInterface?.roomRepeatArray != null ? arenaSettingsInterface.roomRepeatArray.CheckedButton + 1 : 0;
