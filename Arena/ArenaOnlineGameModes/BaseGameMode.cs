@@ -199,7 +199,7 @@ namespace RainMeadow
             AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
             abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
             abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(randomExitIndex).destNode;
-
+            abstractCreature.Room.AddEntity(abstractCreature);
 
             RainMeadow.Debug("assigned ac, registering");
 
