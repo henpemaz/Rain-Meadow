@@ -268,7 +268,7 @@ namespace RainMeadow.UI
                     slugcatButton.secondaryColor = resultsColor;
                     if (slugcatResult.text == "")
                     {
-                        slugcatResult.text = $"{menu.Translate("You got a ")}{menu.Translate(SlugcatStats.getSlugcatName(slugcatButton.slugcat))}!";
+                        slugcatResult.text = menu.Translate("You got a <SLUGCATNAME>!").Replace("<SLUGCATNAME>", menu.Translate(SlugcatStats.getSlugcatName(slugcatButton.slugcat)));
                         desiredResultPosY = slugcatButton.pos.y - 10;
                     }
                     if (resultPosY != desiredResultPosY)
