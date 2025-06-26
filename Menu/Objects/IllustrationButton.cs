@@ -67,7 +67,9 @@ namespace RainMeadow.UI.Components
         {
             portrait.folderName = folderName;
             portrait.fileName = fileName;
-            portrait.LoadFile();
+            if (portrait.folderName == "")
+                portrait.LoadFile();
+            else portrait.LoadFile(portrait.folderName);
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 

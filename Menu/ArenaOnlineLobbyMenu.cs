@@ -134,6 +134,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             return;
         }
         MovePage(new Vector2(-1500f, 0f), 1);
+
+    }
+    public void GoToSlugcatSelector()
+    {
+        PlaySound(SoundID.MENU_Next_Slugcat);
+        SlugcatSelector selector = new(manager, [GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
+
+            (slugcats, selector) =>
+            {
+                GetArenaSetup.playerClass[0] = slugcats[UnityEngine.Random.Range(0, slugcats.Length)];
+                if (RainMeadow.isArenaMode(out _)) Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+            }
+        );
+        manager.ShowDialog(selector);
     }
     public void StartGame()
     {
@@ -315,4 +329,5 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
     }
+
 }

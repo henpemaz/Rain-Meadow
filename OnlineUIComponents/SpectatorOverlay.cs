@@ -56,7 +56,7 @@ namespace RainMeadow
             {
                 AbstractCreature? ac = button.opo?.apo as AbstractCreature;
                 button.toggled = ac != null && ac == spectatee;
-                button.forceGreyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
+                button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
             if (forceNonMouseSelectFreeze && !manager.menuesMouseMode)
             {
@@ -181,7 +181,7 @@ namespace RainMeadow
                 base.Update();
                 BanClickedOnce = menu.selectedObject == kickbutton && BanClickedOnce;
                 if (kickbutton != null)
-                    kickbutton.forceGreyOut = forceKickGreyOut;
+                    kickbutton.buttonBehav.greyedOut = forceKickGreyOut;
             }
 
             public bool banClickedOnce, forceKickGreyOut;

@@ -22,7 +22,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
     public PlayerDisplayer? playerDisplayer;
     public Dialog? dialog;
-    public int painCatIndex;
+    public int painCatIndex, holdSlugcatBtnCounter;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -35,7 +35,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         {
             if (!RainMeadow.isArenaMode(out var _)) return;
             Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
-            btn.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? "UNREADY" : "READY?");
         };
 
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
@@ -140,6 +139,57 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value = slugcatAbilitiesInterface.saintAscendDurationTimerTextBox.valueInt;
         }
     }
+    public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
+    {
+        if (button is ArenaPlayerBox playerBox)
+        {
+            ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
+            bool slugSlots = clientSettings?.gotSlugcat == true;
+
+            if (ModManager.MSC && clientSettings?.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            {
+                if (playerBox.profileIdentifier.isMe)
+                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, painCatIndex, false);
+
+                else if (playerBox.slugcatButton.slugcat != clientSettings?.playingAs)
+                    playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, Random.Range(0, 5), false);
+            }
+            else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
+
+            playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!", clientSettings?.ready == true);
+            if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
+            if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
+            if (slugSlots) playerBox.ToggleTextOverlay("Got All<LINE>ScugSlots!!", true);
+
+            if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
+            else playerBox.slugcatButton.portraitColor = Color.white;
+
+            playerBox.showRainbow = Arena.reigningChamps.list.Contains(playerBox.profileIdentifier.id) || slugSlots;
+        }
+        if (button is ArenaPlayerSmallBox smallPlayerBox)
+            smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
+    }
+    public void UpdateMatchButtons()
+    {
+
+        readyButton.buttonBehav.greyedOut = !Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready;
+        readyButton.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? !Arena.allowJoiningMidRound ? "WAITING" : "UNREADY" : "READY?");
+
+        if (startButton == null) return;
+
+        startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
+        if (!Arena.allowJoiningMidRound)
+        {
+            bool forceReadyFirst = ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players) != OnlineManager.players.Count;
+            startButton.signalText = forceReadyFirst ? "FORCE_READY" : "START_MATCH";
+            startButton.menuLabel.text = forceReadyFirst ? menu.Translate("FORCE READY") : menu.Translate("START MATCH!");
+        }
+        else
+        {
+            startButton.menuLabel.text = menu.Translate("START MATCH!");
+            startButton.signalText = "START_MATCH";
+        }
+    }
     public override void Singal(MenuObject sender, string message)
     {
         base.Singal(sender, message);
@@ -150,42 +200,40 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             SlugcatStats.Name? slug = sender?.owner is ArenaPlayerBox playerBox ? playerBox.slugcatButton.slugcat : sender?.owner is ArenaPlayerSmallBox smallPlayerBox ? smallPlayerBox.slugcatButton.slug : null;
             OpenColorConfig(slug);
         }
+        if (message == "START_MATCH")
+            ArenaMenu?.StartGame();
+        if (message == "FORCE_READY")
+        {
+            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !(ArenaHelpers.GetArenaClientSettings(x)?.ready == true)))
+            {
+                if (player.isMe) Arena.arenaClientSettings.ready = true;
+                else player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReady, []);
+            }
+        }
     }
     public override void Update()
     {
         base.Update();
+        if (menu.holdButton && menu.lastHoldButton && menu.selectedObject != null)
+        {
+            if (menu.selectedObject.Selected && ((menu.selectedObject is SimpleButton btn && btn.signalText == "CHANGE_SLUGCAT") || (menu.selectedObject is SlugcatColorableButton col && col.signalText == "CHANGE_SLUGCAT")))
+                holdSlugcatBtnCounter = Mathf.Max(holdSlugcatBtnCounter, 0);
+            else holdSlugcatBtnCounter = -1;
+        }
+        else holdSlugcatBtnCounter = -1;
+        if (holdSlugcatBtnCounter >= 0) holdSlugcatBtnCounter++;
+        if (holdSlugcatBtnCounter >= 40)
+        {
+            ArenaMenu?.GoToSlugcatSelector();
+            holdSlugcatBtnCounter = -1;
+        }
+
         if (!RainMeadow.isArenaMode(out _)) return;
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
             foreach (ButtonScroller.IPartOfButtonScroller button in playerDisplayer.buttons)
-            {
-                if (button is ArenaPlayerBox playerBox)
-                {
-                    ArenaClientSettings? clientSettings = ArenaHelpers.GetArenaClientSettings(playerBox.profileIdentifier);
-
-                    if (ModManager.MSC && clientSettings?.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-                    {
-                        if (playerBox.profileIdentifier.isMe)
-                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, painCatIndex, false);
-
-                        else if (playerBox.slugcatButton.slugcat != clientSettings?.playingAs)
-                            playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, Random.Range(0, 5), false);
-                    }
-                    else playerBox.slugcatButton.LoadNewSlugcat(clientSettings?.playingAs, clientSettings != null && clientSettings.slugcatColor != Color.black, false);
-
-                    playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound? "Joining<LINE>soon!": "Ready!", clientSettings?.ready == true);
-                    if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
-                    if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
-
-                    if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
-                    else playerBox.slugcatButton.portraitColor = Color.white;
-
-                    playerBox.showRainbow = Arena.reigningChamps.list.Contains(playerBox.profileIdentifier.id);
-                }
-                if (button is ArenaPlayerSmallBox smallPlayerBox)
-                    smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;
-            }
+                UpdatePlayerButtons(button);
         }
 
         activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
@@ -199,18 +247,19 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (menu.manager.upcomingProcess == null) levelSelector.LoadNewPlaylist(Arena.playList, false); //dont replace playlist when starting game
             if (startButton is null)
             {
-                startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f));
-                startButton.OnClick += btn => ArenaMenu?.StartGame();
+                startButton = new SimplerButton(menu, this, menu.Translate("START MATCH!"), new Vector2(936f, 50f), new Vector2(110f, 30f))
+                {
+                    signalText = "START_MATCH"
+                };
                 subObjects.Add(startButton);
             }
-
-            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
         }
         else
         {
             levelSelector.LoadNewPlaylist(Arena.playList, true);
             this.ClearMenuObject(ref startButton);
         }
+        UpdateMatchButtons();
     }
     public override void GrafUpdate(float timeStacker)
     {
