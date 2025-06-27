@@ -84,9 +84,6 @@ public class RainMeadowOptions : OptionInterface
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
 
-        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 120);
-        ArenaSAINOT = config.Bind("ArenaSAINOT", true);
-
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
