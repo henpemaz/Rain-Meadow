@@ -20,7 +20,7 @@ namespace RainMeadow.UI
         public ButtonScroller.ScrollerButton continueButton;
         public HSLColor rainbowColor = new(0, 1, 0.5f);
         public bool rolling, hasAlreadyRolled, isClosing, queuedToClose, showRainbow;
-        public int myRollingCounter, showResultsCounter, resultShownCounter, matchingCounter = -1, startEndRollingOrderCounter = 40, endRollingCounter = 120;
+        public int myRollingCounter, showResultsCounter, resultShownCounter = -1, startEndRollingOrderCounter = 40, endRollingCounter = 120;
         public float desiredSelectPagePosY, congratsLabelAlpha = 0;
         public bool FinishedShowingResults => slugcatRandomizers.All(x => !x.rolling && x.desiredResultPosY == x.resultPosY);
         public bool IsMatching => slugcatRandomizers.All(x => x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat);
@@ -156,23 +156,35 @@ namespace RainMeadow.UI
         }
         public void StopRollingUpdate()
         {
-            if (IsMatching) matchingCounter++;
+            resultShownCounter++;
             if (congratsLabel.text == "")
             {
-                congratsLabel.text = Translate(IsMatching ? "Congratulations! You have achieved the ultimate gamble skill!!!" : IsCloseMatching? "Almost there!": "Oops, better luck next time!");
-                showRainbow = IsMatching;
+                if (IsMatching)
+                {
+                    showRainbow = true;
+                    congratsLabel.text = Translate("Congratulations! You have achieved the ultimate gamble skill!!!");
+                }
+                else
+                {
+                    congratsLabel.text = Translate(IsCloseMatching ? "Almost there!" : "Oops, better luck next time!");
+                    PlaySound(SoundID.UI_Multiplayer_Game_Over, 0, 1, 1);
+                }
             }
             foreach (SlugcatRandomizer slugcatRandomizer in slugcatRandomizers)
             {
-                slugcatRandomizer.resultsColor = showRainbow ? MyRainbowColor() : Color.yellow;
-                slugcatRandomizer.flash = !showRainbow;
+                if (IsMatching)
+                {
+                    slugcatRandomizer.resultsColor = MyRainbowColor();
+                    slugcatRandomizer.flash = false;
+                    continue;
+                }
+                slugcatRandomizer.Lost();
             }
             if (congratsLabelAlpha != 1)
             {
                 congratsLabelAlpha = Custom.LerpAndTick(congratsLabel.alpha, 1, 0.1f, 0.01f);
                 return;
             }
-            resultShownCounter++;
             if (resultShownCounter >= 10 && continueButton.signalText != "CONTINUE")
             {
                 RainMeadow.Debug("Changed continue button to CONTINUE");
@@ -184,8 +196,10 @@ namespace RainMeadow.UI
         }
         public void PlayQueuedSounds()
         {
-            if (matchingCounter == 0 || matchingCounter == 3)
+            if (!IsMatching) return;
+            if (resultShownCounter == 0 || resultShownCounter == 3)
                 PlaySound(SoundID.Small_Needle_Worm_Intense_Trumpet_Scream, 0, 2, 1);
+
         }
         public void StartRandomizer(SlugcatRandomizer randomizer)
         {
@@ -235,7 +249,7 @@ namespace RainMeadow.UI
         {
             public float desiredResultPosY, lastResultPosY, resultPosY;
             public int resultsCounter, rollingCounter, desiredFlipPortraitCounter = 3;
-            public bool rolling, hasAlreadyRolled, flash = true;
+            public bool rolling, hasAlreadyRolled, flash = true, lost;
             public Color resultsColor = Color.yellow;
             public SlugcatStats.Name[] slugcatList;
             public SlugcatColorableButton slugcatButton;
@@ -245,7 +259,10 @@ namespace RainMeadow.UI
                 this.slugcatList = slugcatList;
                 desiredResultPosY = lastResultPosY = resultPosY = -150;
                 float scaleOffset = 100 * desiredScale, offset = scaleOffset * 0.5f, sizeOffset = scaleOffset - 84;
-                slugcatButton = new(menu, this, new(-offset, -offset), new(sizeOffset, sizeOffset), slugcatList.IndexOf(name) == -1 ? slugcatList[0] : name, false);
+                slugcatButton = new(menu, this, new(-offset, -offset), new(sizeOffset, sizeOffset), slugcatList.IndexOf(name) == -1 ? slugcatList[0] : name, false)
+                {
+                    size = new(scaleOffset, scaleOffset) //cuz inv portraits are not scaled properly
+                };
                 slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
                 slugcatButton.portrait.sprite.scale = desiredScale;
                 slugcatResult = new(Custom.GetDisplayFont(), "")
@@ -284,7 +301,7 @@ namespace RainMeadow.UI
                 {
                     int index = slugcatList.IndexOf(slugcatButton.slugcat) + 1;
                     if (index >= slugcatList.Length) index = 0;
-                    slugcatButton.LoadNewSlugcat(slugcatList[index], false, false);
+                    LoadNewSlugcat(slugcatList[index], false);
                     slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
                     menu.PlaySound(SoundID.MENU_Scroll_Tick);
                 }
@@ -299,13 +316,31 @@ namespace RainMeadow.UI
                 slugcatButton.portraitSecondaryLerpFactor = flash? flashLerp : lerp;
                 slugcatResult.x = screenPos.x;
                 slugcatResult.y = screenPos.y + resultPos;
-                slugcatResult.color = Color.Lerp(Color.white, resultsColor, flashLerp);
+                slugcatResult.color = Color.Lerp(Color.white, resultsColor == Color.clear? MenuColorEffect.rgbVeryDarkGrey : resultsColor, flashLerp);
                 slugcatResult.alpha = hasAlreadyRolled ? Mathf.InverseLerp(desiredResultPosY - 100, desiredResultPosY, resultPos) : 0;
+            }
+            public void LoadNewSlugcat(SlugcatStats.Name? name, bool isDead)
+            {
+                slugcatButton.LoadNewSlugcat(name, false, isDead);
+                slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
+            }
+            public void Lost()
+            {
+                if (lost) return;
+                lost = true;
+                LoadNewSlugcat(slugcatButton.slugcat, true);
+                slugcatButton.isBlackPortrait = true;
+                resultsColor = Color.clear;
             }
             public void StopRolling(int index = -1)
             {
                 rolling = false;
-                slugcatButton.LoadNewSlugcat(slugcatList[index < 0? UnityEngine.Random.Range(0, slugcatList.Length) : index], false, false);
+                if (index == -1)
+                {
+                    System.Random random = new();
+                    slugcatButton.LoadNewSlugcat(slugcatList[random.Next(slugcatList.Length)], false, false);
+                }
+                else slugcatButton.LoadNewSlugcat(slugcatList[index < 0? UnityEngine.Random.Range(0, slugcatList.Length) : index], false, false);
             }
             public void StopRolling(SlugcatStats.Name? desiredSlugcat) => StopRolling(slugcatList.IndexOf(desiredSlugcat));
         }
