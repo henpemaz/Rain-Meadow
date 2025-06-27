@@ -53,7 +53,6 @@ namespace RainMeadow.UI.Components
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
-
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
             arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
@@ -66,15 +65,16 @@ namespace RainMeadow.UI.Components
                     if (arena.externalArenaGameMode != null)
                     {
                         tabContainer.RemoveTab(externalGameModeTab);
+                        onlineArenaExternalGameModeSettingsInterface = null;
+                        externalGameModeTab = null;
+
                     }
                     arena.externalArenaGameMode = extGameMode;
                     if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
                     {
                         externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-
-                        var externalInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f), [.. arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(arena)]);
-
-                        externalGameModeTab.AddObjects(externalInterface);
+                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f), [.. arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(arena)]);
+                        externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
 
                     }
                 }
@@ -219,5 +219,6 @@ namespace RainMeadow.UI.Components
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;
+        public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
     }
 }
