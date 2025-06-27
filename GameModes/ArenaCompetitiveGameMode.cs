@@ -35,6 +35,7 @@ namespace RainMeadow
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
+        public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
 
         public string paincatName;
         public int lizardEvent;

@@ -63,7 +63,6 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool allowJoiningMidRound;
 
-
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -85,6 +84,9 @@ namespace RainMeadow
             public int playerEnteredGame;
             [OnlineField(group = "arenaGameplay")]
             public bool leaveForNextLevel;
+            [OnlineField]
+            public bool weaponCollisionFix;
+            
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -123,6 +125,7 @@ namespace RainMeadow
                 allowJoiningMidRound = arena.allowJoiningMidRound;
 
                 leaveForNextLevel = arena.leaveForNextLevel;
+                weaponCollisionFix = arena.weaponCollisionFix;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -165,6 +168,7 @@ namespace RainMeadow
 
                 (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
 
+                (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
 
             }
 
