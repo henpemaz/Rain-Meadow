@@ -192,19 +192,23 @@ namespace RainMeadow
                     }
                     if (OnlineManager.lobby.isOwner)
                     {
-                        foreach (var arenaPlayer in self.players)
+                        foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                         {
-                            if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
+                            OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                            if (getPlayer != null)
                             {
-                                arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
-                            }
-                            if (!arena.playerNumberWithDeaths.ContainsKey(arenaPlayer.playerNumber))
-                            {
-                                arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
-                            }
-                            if (!arena.playerNumberWithWins.ContainsKey(arenaPlayer.playerNumber))
-                            {
-                                arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
+                                if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                                }
+                                if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                                }
+                                if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+                                }
                             }
                         }
                     }
