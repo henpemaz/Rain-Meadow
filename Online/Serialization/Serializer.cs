@@ -19,10 +19,13 @@ namespace RainMeadow
         public BinaryWriter writer;
         public BinaryReader reader;
         public OnlinePlayer currPlayer;
-        private uint eventCount;
+        private uint eventCount; // todo make me ushort
         private long eventHeader;
-        private uint stateCount;
+        private uint stateCount;  // todo make me ushort
         private long stateHeader;
+        private byte sliceCount;
+        private long sliceHeader;
+
         public int zipTreshold = 4000;
 
         static Serializer scratchpad;
@@ -157,6 +160,39 @@ namespace RainMeadow
             stream.Position = temp;
         }
 
+        private void BeginWriteChunk(OnlinePlayer toPlayer, OutgoingDataChunk chunk)
+        {
+            writer.Write(chunk.chunkId);
+            IChunkDestination destination = chunk.destination;
+            SerializeChunkDestination(ref destination);
+            writer.Write(chunk.totalSlices);
+
+
+            sliceCount = 0;
+            sliceHeader = stream.Position;
+            writer.Write(sliceCount); // fake write, we'll overwrite this later
+        }
+
+        private bool WriteSlice(OutgoingDataChunk.SliceMessage sliceMessage)
+        {
+            if (sliceMessage.sent) return false;
+            if ((capacity - stream.Position) < (sliceMessage.slice.data.Count + 16)) return false;
+        
+            sliceMessage.slice.CustomSerialize(this); // they're written one by one with indexes and array lenght, not suuuper optimal
+            sliceCount++;
+            return true;
+        }
+
+        private void EndWriteChunk()
+        {
+            if (sliceCount == 0) return; // no slice data
+            var temp = stream.Position;
+            stream.Position = sliceHeader;
+            writer.Write(sliceCount);
+            stream.Position = temp;
+        }
+
+
         public void EndWrite()
         {
             //RainMeadow.Debug($"serializer wrote: {eventCount} events; {stateCount} states; total {stream.Position} bytes");
@@ -219,6 +255,33 @@ namespace RainMeadow
             return s;
         }
 
+        private byte BeginReadChunkData(OnlinePlayer fromPlayer, out IncomingDataChunk? chunk)
+        {
+            byte chunkId = 0, totalSlices = 0, sliceCount = 0;
+            chunkId = reader.ReadByte();
+
+            chunk = null;
+            IChunkDestination? destination = null; SerializeChunkDestination(ref destination);
+            RainMeadow.Debug(destination);
+            if (destination == null)
+            {
+                return 0;
+            } 
+
+            
+            totalSlices = reader.ReadByte();
+            sliceCount = reader.ReadByte();
+            chunk = fromPlayer.IncomingChunk(chunkId, destination, totalSlices);
+            return chunk != null? sliceCount : (byte)0;
+        }
+
+        private Slice ReadSlice()
+        {
+            var slice = new Slice();
+            slice.CustomSerialize(this);
+            return slice;
+        }
+
         public void EndRead()
         {
             currPlayer = null;
@@ -255,7 +318,18 @@ namespace RainMeadow
             {
                 OnlineManager.ProcessIncomingState(ReadState());
             }
-
+            
+            byte nc = reader.ReadByte();
+            for (byte i = 0; i < nc; i++)
+            {
+                var nss = BeginReadChunkData(fromPlayer, out var incomingChunk);
+                RainMeadow.Debug(nss);
+                for (byte j = 0; j < nss; j++)
+                {
+                    var slice = ReadSlice();
+                    incomingChunk?.NewSlice(slice);
+                }
+            }
             EndRead();
         }
 
@@ -304,10 +378,104 @@ namespace RainMeadow
 
             EndWriteStates();
 
+            if (toPlayer.OutgoingChunks.Count > 0)
+            {
+                byte chunkAmount = 0;
+                var chunksHeader = stream.Position;
+                writer.Write(chunkAmount); // fake write 
+
+                foreach (OutgoingDataChunk chunk in toPlayer.OutgoingChunks)
+                {
+                    bool done = false;
+
+                    BeginWriteChunk(toPlayer, chunk);
+                    while (chunk.GetNextSlice() is OutgoingDataChunk.SliceMessage sliceMessage) // sends until can no longer fit any // there might be a sweet spot on size
+                    {
+                        if (WriteSlice(sliceMessage))
+                        {
+                            sliceMessage.Sent();
+                        }
+                        else
+                        {
+                            done = true;
+                            sliceMessage.Unsent();
+                            break;
+                        }
+                    }
+                    EndWriteChunk();
+
+                    ++chunkAmount;
+                    if (done) break;
+                    continue;
+                }
+
+                var temp = stream.Position;
+                stream.Position = chunksHeader;
+                writer.Write(chunkAmount);
+                stream.Position = temp;
+            }
+            else
+            {
+                writer.Write(0); 
+            }
+
+
             EndWrite();
 
             toPlayer.bytesOut[toPlayer.bytesSnapIndex] = (int)Position;
             return Position;
+        }
+
+        public void SerializeChunkDestination(ref IChunkDestination? destination)
+        {
+            if (IsWriting)
+            {
+                if (destination is OnlineResource res)
+                {
+                    writer.Write((byte)IChunkDestination.DestinationType.Resource);
+                    SerializeResourceByReference(ref res);
+                }
+                else if (destination is OnlineEntity entity)
+                {
+                    writer.Write((byte)IChunkDestination.DestinationType.Entity);
+                    SerializeEntityById(ref entity);
+                }
+                else
+                {
+                    throw new InvalidProgrammerException("Writing an unknown chunk destination");
+                }
+            }
+            else if (IsReading)
+            {
+                destination = null;
+                var destination_type = (IChunkDestination.DestinationType)reader.ReadByte();
+                if (destination_type == IChunkDestination.DestinationType.Resource)
+                {
+                    OnlineResource? res = null!;
+                    SerializeResourceByReference(ref res);
+                    if (res == null)
+                    {
+                        RainMeadow.Error("Read a chunk destination for a resource doesn't exist in online space!");
+                    }
+                    destination = res;
+                }
+                else if (destination_type == IChunkDestination.DestinationType.Entity)
+                {
+                    OnlineEntity? entity = null!;
+                    SerializeEntityById(ref entity);
+                    if (entity == null)
+                    {
+                        RainMeadow.Error("Read a chunk destination for an entity doesn't exist in online space!");
+                    }
+                    destination = entity;
+                }
+                else
+                {
+                    RainMeadow.Error("Reading an unknown chunk destination");
+                    return;
+                }
+            }
+            
         }
 
         // serializes resource.id and finds reference
