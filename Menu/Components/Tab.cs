@@ -129,7 +129,6 @@ public class TabContainer : RectangularMenuObject
         public void PopulatePages(int offset)
         {
             ClearVisibleTabButtons();
-            ClearArrows();
             CurrentOffset = offset;
             int num = CurrentOffset * PerPage;
             while (num < registeredTabButtons.Count && num < (CurrentOffset + 1) * PerPage)
@@ -157,12 +156,6 @@ public class TabContainer : RectangularMenuObject
             }
             activeTabButtons.Clear();
         }
-
-        public void ClearArrows()
-        {
-            topArrowButton = null;
-            bottomArrowButton = null;
-        }
         public void AddPageButtons()
         {
             if (topArrowButton == null)
@@ -181,8 +174,8 @@ public class TabContainer : RectangularMenuObject
         }
         public void RemovePageButtons()
         {
-            this.ClearMenuObject(topArrowButton);
-            this.ClearMenuObject(bottomArrowButton);
+            this.ClearMenuObject(ref topArrowButton);
+            this.ClearMenuObject(ref bottomArrowButton);
         }
 
         private int currentOffset = 0;
