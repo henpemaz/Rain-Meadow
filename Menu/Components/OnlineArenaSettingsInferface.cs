@@ -73,7 +73,7 @@ namespace RainMeadow.UI.Components
                     if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
                     {
                         externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f), [.. arena.externalArenaGameMode.ArenaOnlineInterfaceListItems(arena)]);
+                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
                         externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
 
                     }

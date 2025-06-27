@@ -70,22 +70,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     { 3,  GetColorFromHex("#7F7FFF") }
     };
 
-        public override List<ListItem> ArenaOnlineInterfaceListItems(ArenaMode arena)
-        {
-            ListItem martyrListItem = new ListItem(TeamMappingsDictionary[0]);
-            ListItem outlawsListItem = new ListItem(TeamMappingsDictionary[1]);
-            ListItem dragonSlayersListItem = new ListItem(TeamMappingsDictionary[2]);
-            ListItem chieftainsListItem = new ListItem(TeamMappingsDictionary[3]);
-
-
-            List<ListItem> teamNameListItems = new List<ListItem>();
-            teamNameListItems.Add(martyrListItem);
-            teamNameListItems.Add(outlawsListItem);
-            teamNameListItems.Add(dragonSlayersListItem);
-            teamNameListItems.Add(chieftainsListItem);
-
-            return teamNameListItems;
-        }
 
         public override void ArenaExternalGameModeSettingsInterface_ctor(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
         {
@@ -97,6 +81,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 dragonslayersSpawn = 0;
                 chieftainsSpawn = 0;
                 roundSpawnPointCycler = 0;
+
 
                 ListItem martyrListItem = new ListItem(RainMeadow.rainMeadowOptions.MartyrTeamName.Value);
                 ListItem outlawsListItem = new ListItem(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value);
