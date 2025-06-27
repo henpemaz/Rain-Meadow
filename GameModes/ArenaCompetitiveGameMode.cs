@@ -81,7 +81,8 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
-
+        string mind = "mind";
+        string spear = "spear";
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
             ArenaHelpers.RecreateSlugcatCache();
@@ -116,10 +117,10 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock." },
+                { "White", "Your enemies close in around you, but it won't be like the first time" },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
                 { "Red", "Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering." },
-                { "Night", "Observe all weakness - then strike while cloaked in shadows." },
+                { "Night", "Nobody loves me." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
@@ -143,17 +144,16 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Artificer", "An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.");
                 slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
                 slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.");
-                slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.");
+                slugcatSelectDescriptions.Add("Saint", $"The {(sainot ? mind : spear)} is a weak vessel. Shape the world<LINE>from the markings of your {(sainot ? spear : mind)}.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
 
-                slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo"]; // not using "???" cause it might cause some confusion to players who don't know Inv
+                slugcatSelectPainCatNames = ["Inv", "Enot", "Paincat", "Sofanthiel", "Gorbo", "???"]; 
 
                 slugcatSelectPainCatNormalDescriptions =
                 [
                     "You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.",
                     "...",
-                    "...why are you here",
                     "Thanks, Andrew.",
                 ];
                 slugcatSelectPainCatJokeDescriptions =
@@ -165,24 +165,30 @@ namespace RainMeadow
                     "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
                     "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
                     "7",
+                    "Did you know:<LINE>Meadow was released this Friday",
+                    "Did you know:<LINE>You're bad at Arena",
+                    "Did you know:<LINE>There's more \"Did you know\"s.",
+                    "Did you know:<LINE>This is the only \"Did you know\".",
+                    "You will lose this round<LINE>Your body will not be found<LINE>6 feet underground"
                 ];
                 slugcatSelectPainCatQuoteDescriptions =
                 [
-                    "\"<USERNAME>, youre gonna get us both killed\"",
-                    "\"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess...\"",
+                    "\"<USERNAME>, you're gonna get us both killed!\"",
+                    "\"No seriously, has anyone seen my egg?\"",
                     "\"u dont need 2 be alone, bby.\"",
-                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"Sometimes, I wake up with a friend I've never met b4\"",
                     "\"i luv u <3\"",
                 ];
                 slugcatSelectPainCatDevJokeDescriptions =
                 [
                     "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Don't Care<LINE>Nuh<LINE>Yuh",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
-                    "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
+                    "Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>",
                     "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
                     "Be careful when selecting the Fartificer",
-                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh"
+                    "I'm getting \"among us potion at 3 am\" vibes<LINE>.",
+                    "Playtesters<LINE>are<LINE>replaceable",
+                    "There's enough inv descriptions.<LINE> DOESNT FILL MY EMPTY STOMACH"
                 ];
                 slugcatSelectPainCatSmileyDescriptions =
                 [
