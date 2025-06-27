@@ -384,8 +384,6 @@ namespace RainMeadow
                 var chunksHeader = stream.Position;
                 writer.Write(chunkAmount); // fake write 
 
-                chunkDataSentThisFrame = 0;
-
                 foreach (OutgoingDataChunk chunk in toPlayer.OutgoingChunks)
                 {
                     bool done = false;
@@ -411,7 +409,6 @@ namespace RainMeadow
                     continue;
                 }
 
-                currPlayer.chunkDataSentRate += chunkDataSentThisFrame;
                 var temp = stream.Position;
                 stream.Position = chunksHeader;
                 writer.Write(chunkAmount);
