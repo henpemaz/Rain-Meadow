@@ -52,18 +52,16 @@ namespace RainMeadow
 
     public class OutgoingDataChunk
     {
-        public readonly OnlinePlayer toPlayer;
+        public readonly OnlinePlayer? toPlayer;
         public readonly byte chunkId;
         public readonly IChunkDestination destination;
-        const int sliceSize = 4096;
-        const int maxData = byte.MaxValue * sliceSize;
         private SliceMessage[] outgoingSlices;
 
         public byte totalSlices => (byte)outgoingSlices.Length;
         public bool reliable => chunkId != 0;
         
 
-        public OutgoingDataChunk(byte chunkId, IChunkDestination destination, ArraySegment<byte> data, OnlinePlayer toPlayer)
+        public OutgoingDataChunk(byte chunkId, IChunkDestination destination, ArraySegment<byte> data, OnlinePlayer? toPlayer, int sliceSize)
         {
 
             this.destination = destination;
@@ -71,23 +69,26 @@ namespace RainMeadow
             this.chunkId = chunkId;
             if (reliable)
             {
-                // todo gzip data and keep track of gzip status
-                if (data.Count > maxData) throw new InvalidProgrammerException("Too much data!");
-                outgoingSlices = new SliceMessage[(data.Count + sliceSize - 1) / sliceSize];
-
                 checked
                 {
+                    // todo gzip data and keep track of gzip status
+                    int sliceCount = (data.Count + sliceSize - 1) / sliceSize;
+                    if (sliceCount > (int)byte.MaxValue) throw new InvalidProgrammerException("Too much data! Try increasing the slice count");
+                    outgoingSlices = new SliceMessage[sliceCount];
+
+                    
                     byte sliceIndex = 0;
                     int readData = 0;
                     for (byte i = 0; i < outgoingSlices.Length; i++)
                     {
-                        var len = Math.Min(sliceSize, outgoingSlices.Length - readData);
+                        var len = Math.Min(sliceSize, data.Count - readData);
                         if (len <= 0) break;
                         var slice = new Slice(i, new ArraySegment<byte>(data.Array, readData, len));
                         readData += len;
                         outgoingSlices[i] = new SliceMessage(slice);
                     }
 
+                    RainMeadow.Debug(data.Count);
                     RainMeadow.Debug(readData);
                     RainMeadow.Debug(outgoingSlices.Length);
                     RainMeadow.Debug(sliceIndex);
@@ -97,6 +98,18 @@ namespace RainMeadow
             {
                 outgoingSlices = new SliceMessage[1];
                 outgoingSlices[0] = new SliceMessage(new Slice(0, data));
+            }
+        }
+
+        public OutgoingDataChunk(OutgoingDataChunk template, OnlinePlayer toPlayer, byte chunkId)
+        {
+            this.chunkId = chunkId;
+            if (this.reliable != template.reliable) throw new InvalidProgrammerException("Reliability should match template (Wrong chunk ID?)");
+            this.toPlayer = toPlayer;
+            outgoingSlices = new SliceMessage[template.outgoingSlices.Length];
+            for (byte i = 0; i < outgoingSlices.Length; i++)
+            {
+                outgoingSlices[i] = new SliceMessage(template.outgoingSlices[i].slice);
             }
         }
 
@@ -112,12 +125,14 @@ namespace RainMeadow
 
         public void Update() // sender logic for processing ackd slices
         {
-            if (reliable) ReliableUpdate(); 
+            if (toPlayer is null) throw new InvalidProgrammerException("You provided null as toPlayer (was this a template?)");
+            if (reliable) ReliableUpdate();
             else UnreliableUpdate();
         }
 
         public void ReliableUpdate()
         {
+            if (toPlayer is null) throw new InvalidProgrammerException("You provided null as toPlayer (was this a template?)");
             bool allAckd = true;
             foreach (SliceMessage slice in outgoingSlices)
             {

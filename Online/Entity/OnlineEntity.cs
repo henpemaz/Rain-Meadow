@@ -509,5 +509,21 @@ namespace RainMeadow
         public virtual void ProcessEntireChunkImpl(IncomingDataChunk chunk) { }
         public virtual void ProcessSliceImpl(IncomingDataChunk chunk, Slice slice) { }
         public virtual void ProcessOrderedSliceImpl(IncomingDataChunk chunk, Slice slice, bool newest) { }
+        
+        public void BroadcastChunk(bool reliable, ArraySegment<byte> data, int sliceSize = 4096)
+        {
+            OutgoingDataChunk chunktemplate = new OutgoingDataChunk(reliable ? (byte)1 : (byte)0, this, data, null, sliceSize);
+            BroadcastChunk(chunktemplate);
+        }
+        public void BroadcastChunk(OutgoingDataChunk template)
+        {
+            if (currentlyJoinedResource is OnlineResource resource)
+            {
+                foreach (OnlinePlayer p in resource.participants)
+                {
+                    p.QueueChunk(new OutgoingDataChunk(template, p, template.reliable ? p.NextChunkId() : (byte)0));
+                } 
+            }
+        }
     }
 }

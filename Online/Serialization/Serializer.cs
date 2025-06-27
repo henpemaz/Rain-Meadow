@@ -173,10 +173,12 @@ namespace RainMeadow
             writer.Write(sliceCount); // fake write, we'll overwrite this later
         }
 
-        private bool WriteSlice(Slice sliceMessage)
+        private bool WriteSlice(OutgoingDataChunk.SliceMessage sliceMessage)
         {
-            scratchpad.stream.Seek(0, SeekOrigin.Begin);
-            sliceMessage.CustomSerialize(this); // they're written one by one with indexes and array lenght, not suuuper optimal
+            if (sliceMessage.sent) return false;
+            if ((capacity - stream.Position) < (sliceMessage.slice.data.Count + 16)) return false;
+        
+            sliceMessage.slice.CustomSerialize(this); // they're written one by one with indexes and array lenght, not suuuper optimal
             sliceCount++;
             return true;
         }
@@ -382,6 +384,8 @@ namespace RainMeadow
                 var chunksHeader = stream.Position;
                 writer.Write(chunkAmount); // fake write 
 
+                chunkDataSentThisFrame = 0;
+
                 foreach (OutgoingDataChunk chunk in toPlayer.OutgoingChunks)
                 {
                     bool done = false;
@@ -389,7 +393,7 @@ namespace RainMeadow
                     BeginWriteChunk(toPlayer, chunk);
                     while (chunk.GetNextSlice() is OutgoingDataChunk.SliceMessage sliceMessage) // sends until can no longer fit any // there might be a sweet spot on size
                     {
-                        if (WriteSlice(sliceMessage.slice))
+                        if (WriteSlice(sliceMessage))
                         {
                             sliceMessage.Sent();
                         }
@@ -407,6 +411,7 @@ namespace RainMeadow
                     continue;
                 }
 
+                currPlayer.chunkDataSentRate += chunkDataSentThisFrame;
                 var temp = stream.Position;
                 stream.Position = chunksHeader;
                 writer.Write(chunkAmount);
