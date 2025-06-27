@@ -139,7 +139,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void GoToSlugcatSelector()
     {
         PlaySound(SoundID.MENU_Next_Slugcat);
-        SlugcatSelector selector = new(manager, [GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
+        SlugcatSelector selector = new(manager,[GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
 
             (slugcats, selector) =>
             {

@@ -245,7 +245,7 @@ namespace RainMeadow.UI
                 this.slugcatList = slugcatList;
                 desiredResultPosY = lastResultPosY = resultPosY = -150;
                 float scaleOffset = 100 * desiredScale, offset = scaleOffset * 0.5f, sizeOffset = scaleOffset - 84;
-                slugcatButton = new(menu, this, new(-offset, -offset), new(sizeOffset, sizeOffset), slugcatList.Contains(name) ? name : slugcatList[0], false);
+                slugcatButton = new(menu, this, new(-offset, -offset), new(sizeOffset, sizeOffset), slugcatList.IndexOf(name) == -1 ? slugcatList[0] : name, false);
                 slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
                 slugcatButton.portrait.sprite.scale = desiredScale;
                 slugcatResult = new(Custom.GetDisplayFont(), "")
@@ -283,7 +283,7 @@ namespace RainMeadow.UI
                 if (rollingCounter % desiredFlipPortraitCounter == 0)
                 {
                     int index = slugcatList.IndexOf(slugcatButton.slugcat) + 1;
-                    index = index >= slugcatList.Length ? 0 : index;
+                    if (index >= slugcatList.Length) index = 0;
                     slugcatButton.LoadNewSlugcat(slugcatList[index], false, false);
                     slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
                     menu.PlaySound(SoundID.MENU_Scroll_Tick);
