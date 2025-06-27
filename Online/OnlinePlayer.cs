@@ -259,7 +259,7 @@ namespace RainMeadow
         }
 
         byte _nextChunkId;
-        byte NextChunkId()
+        public byte NextChunkId()
         {
             _nextChunkId++;
             if (_nextChunkId == 0) _nextChunkId = 1;
@@ -267,10 +267,15 @@ namespace RainMeadow
         }
 
 
-        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data)
+        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data, int sliceSize = 4096)
         {
-            var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, data, this);
-            if (reliable && OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
+            var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, data, this, sliceSize);
+            return QueueChunk(chunk);
+        }
+
+        internal OutgoingDataChunk QueueChunk(OutgoingDataChunk chunk)
+        {
+            if (chunk.reliable && OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
             {
                 PendingOutgoingChunks.Add(chunk);
             }
@@ -278,7 +283,7 @@ namespace RainMeadow
             {
                 OutgoingChunks.Add(chunk);
             }
-            RainMeadow.Debug($"New outgoing chunk: id {OutgoingChunks.Last().chunkId}, destination {destination}, reliable {reliable}, sliceCount {OutgoingChunks.Last().totalSlices}, len {data.Count}");
+            RainMeadow.Debug($"New outgoing chunk: id {OutgoingChunks.Last().chunkId}, destination {chunk.destination}, reliable {chunk.reliable}, sliceCount {chunk.totalSlices}");
             return chunk;
         }
 
