@@ -22,19 +22,22 @@ namespace RainMeadow.UI
         public bool rolling, hasAlreadyRolled, isClosing, queuedToClose, showRainbow;
         public int myRollingCounter, showResultsCounter, resultShownCounter = -1, startEndRollingOrderCounter = 40, endRollingCounter = 120;
         public float desiredSelectPagePosY, congratsLabelAlpha = 0;
+        public List<string> losingDescriptions = ["Oops, better luck next time!", "Try your luck again!", "99% of gamblers quit before they win big"],
+            closeDesriptions = ["So Close! Keep trying!", "Almost there!"],
+            winningDescriptions = ["Congratulations! You have achieved the ultimate gamble skill!!!", "Gahh?? Impossible?!"];
         public bool FinishedShowingResults => slugcatRandomizers.All(x => !x.rolling && x.desiredResultPosY == x.resultPosY);
         public bool IsMatching => slugcatRandomizers.All(x => x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat);
         public bool IsCloseMatching => slugcatRandomizers.GroupBy(x => x.slugcatButton.slugcat).OrderByDescending(x => x.Count()).FirstOrDefault()?.Count() == slugcatRandomizers.Length - 1;
         public SlugcatSelector(ProcessManager manager, SlugcatStats.Name[] currentSlugcats, SlugcatStats.Name[] currentlySelectableSlugcats, Action<SlugcatStats.Name[], SlugcatSelector> recieveSlugcats, int perRow = 3, float desiredPortraitScale = 1.2f) : base(manager)
         {
-            darkSprite.alpha = 0.75f;
+            darkSprite.alpha = 0.85f;
             RecieveSlugcat = recieveSlugcats;
             pages.Add(selectPage = new(this, null, "SlugcatSelect", 1));
             selectPage.pos.y = -1500;
             titleName = new(Custom.GetDisplayFont(), Translate("SCUGSLOTS"))
             {
-                anchorY = 1,
-                shader = manager.rainWorld.Shaders["MenuTextCustom"]
+                scale = 1.7f,
+                shader = manager.rainWorld.Shaders["MenuTextCustom"],
             };
             congratsLabel = new(Custom.GetDisplayFont(), "")
             {
@@ -96,9 +99,9 @@ namespace RainMeadow.UI
             base.GrafUpdate(timeStacker);
             Vector2 selectPagepos = selectPage.DrawPos(timeStacker);
             titleName.x = selectPagepos.x + manager.rainWorld.options.ScreenSize.x / 2;
-            titleName.y = selectPagepos.y + manager.rainWorld.options.ScreenSize.y - 20;
+            titleName.y = selectPagepos.y + manager.rainWorld.options.ScreenSize.y - 80;
             congratsLabel.x = titleName.x;
-            congratsLabel.y = titleName.y - 30;
+            congratsLabel.y = titleName.y - 20;
             congratsLabel.alpha = congratsLabelAlpha > 0 ? 1 : 0;
             if (!showRainbow) return;
             Color rB = MyRainbowColor();
@@ -120,6 +123,15 @@ namespace RainMeadow.UI
             }
             if (message == "CONTINUE")
                 Close(SoundID.MENU_Remove_Level, true);
+        }
+        public string GetDescription()
+        {
+            System.Random random = new();
+            if (IsMatching)
+                return winningDescriptions[random.Next(winningDescriptions.Count)];
+            if (IsCloseMatching)
+                return closeDesriptions[random.Next(closeDesriptions.Count)];
+            return losingDescriptions[random.Next(losingDescriptions.Count)];
         }
         public void Close(SoundID id, bool recieveSlugcat)
         {
@@ -159,16 +171,10 @@ namespace RainMeadow.UI
             resultShownCounter++;
             if (congratsLabel.text == "")
             {
+                congratsLabel.text = Translate(GetDescription());
                 if (IsMatching)
-                {
                     showRainbow = true;
-                    congratsLabel.text = Translate("Congratulations! You have achieved the ultimate gamble skill!!!");
-                }
-                else
-                {
-                    congratsLabel.text = Translate(IsCloseMatching ? "Almost there!" : "Oops, better luck next time!");
-                    PlaySound(SoundID.UI_Multiplayer_Game_Over, 0, 1, 1);
-                }
+                else PlaySound(SoundID.UI_Multiplayer_Game_Over, 0, 1, 1);
             }
             foreach (SlugcatRandomizer slugcatRandomizer in slugcatRandomizers)
             {
@@ -340,7 +346,7 @@ namespace RainMeadow.UI
                     System.Random random = new();
                     slugcatButton.LoadNewSlugcat(slugcatList[random.Next(slugcatList.Length)], false, false);
                 }
-                else slugcatButton.LoadNewSlugcat(slugcatList[index < 0? UnityEngine.Random.Range(0, slugcatList.Length) : index], false, false);
+                else slugcatButton.LoadNewSlugcat(slugcatList[index], false, false);
             }
             public void StopRolling(SlugcatStats.Name? desiredSlugcat) => StopRolling(slugcatList.IndexOf(desiredSlugcat));
         }
