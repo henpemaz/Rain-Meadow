@@ -32,9 +32,10 @@ namespace RainMeadow
             var lanids = players.Select(x => (LANMatchmakingManager.LANPlayerId)x.id);
             lanids = lanids.Where(x => x.endPoint != null);
 
-            bool includeme = lanids.FirstOrDefault(x => x.isLoopback()) is not null;
 
-            lanids = lanids.Where(x => !x.isLoopback());
+            bool includeme = lanids.FirstOrDefault(x => x == (LANMatchmakingManager.LANPlayerId)OnlineManager.mePlayer.id) is not null;
+            if (includeme)
+                lanids = lanids.Where(x => x != (LANMatchmakingManager.LANPlayerId)OnlineManager.mePlayer.id);
             var processinglanid = (LANMatchmakingManager.LANPlayerId)processingPlayer.id;
             UDPPeerManager.SerializeEndPoints(writer, lanids.Select(x => x.endPoint).ToArray(), processinglanid.endPoint, includeme);
 
@@ -62,7 +63,7 @@ namespace RainMeadow
                     players[i].id.name = reader.ReadNullTerminatedString();
                 }
             }
-                
+
             else if (modifyOperation == Operation.Remove)
                 players = endpoints.Select(x => lanmatchmaker.GetPlayerLAN(x)).ToArray();
 
@@ -77,9 +78,9 @@ namespace RainMeadow
                     RainMeadow.Debug("Adding players...\n\t" + string.Join<OnlinePlayer>("\n\t", players));
                     for (int i = 0; i < players.Length; i++)
                     {
-                        if (((LANMatchmakingManager.LANPlayerId)players[i].id).isLoopback()) {
+                        if (((LANMatchmakingManager.LANPlayerId)players[i].id) == OnlineManager.mePlayer.id) {
                             // That's me
-                            // Put me where I belong.
+                            // Put me where I belong. (...at the end of the player list?)
                             OnlineManager.players.Remove(OnlineManager.mePlayer);
                             OnlineManager.players.Add(OnlineManager.mePlayer);
                             continue;
