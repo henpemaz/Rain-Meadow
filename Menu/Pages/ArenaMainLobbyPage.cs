@@ -171,8 +171,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public void UpdateMatchButtons()
     {
-
-        readyButton.buttonBehav.greyedOut = (!Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready) || Arena.initiateLobbyCountdown;
+        readyButton.buttonBehav.greyedOut = (!Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready) || (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown);
         readyButton.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? !Arena.allowJoiningMidRound ? "WAITING" : "UNREADY" : "READY?");
 
         if (startButton == null) return;
