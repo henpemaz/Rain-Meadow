@@ -115,12 +115,21 @@ namespace RainMeadow
                     self.illustrations[i].sprite.isVisible = false;
                 }
             }
-            else if (manager.rainWorld.dlcVersion != 0 && RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Downpour)
+            else if (ModManager.MSC && RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Downpour)
             {
                 self.illustrations[2].RemoveSprites();
                 self.pages[0].subObjects.Remove(self.illustrations[2]);
                 string[] array = new string[] { "gourmand", "rivulet", "spear", "artificer", "saint" };
                 self.illustrations[2] = new MenuIllustration(self, self.pages[0], "", "Intro_Roll_C_" + array[Random.Range(0, array.Length)], new Vector2(0f, 0f), true, false);
+                self.pages[0].subObjects.Add(self.illustrations[2]);
+                self.illustrations[2].sprite.isVisible = false;
+            }
+            else if (ModManager.Watcher && RainMeadow.rainMeadowOptions.PickedIntroRoll.Value == RainMeadowOptions.IntroRoll.Watcher)
+            {
+                self.illustrations[2].RemoveSprites();
+                self.pages[0].subObjects.Remove(self.illustrations[2]);
+                string[] array = new string[] { "0", "1", "2", "3", "4" };
+                self.illustrations[2] = new MenuIllustration(self, self.pages[0], "", "Intro_Roll_C_Watcher" + array[Random.Range(0, array.Length)], new Vector2(0f, 0f), true, false);
                 self.pages[0].subObjects.Add(self.illustrations[2]);
                 self.illustrations[2].sprite.isVisible = false;
             }
