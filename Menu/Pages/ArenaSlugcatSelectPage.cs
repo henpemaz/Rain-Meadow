@@ -18,6 +18,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public bool readyWarning;
     public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
+    public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
+    public string countdownText;
     public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -55,7 +57,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
 
-        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate("You have been unreadied. Switch back to re-ready yourself automatically"), new Vector2(680f, 620f), Vector2.zero, true);
+        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
 
         slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310f), default, true);
         slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
@@ -64,6 +66,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         descriptionGradients = new FSprite[4];
         descriptionGradientsPos = new Vector2[4];
+        countdownText = $"The match is starting in {Arena.lobbyCountDown}! Ready up!!";
 
         for (int i = 0; i < descriptionGradients.Length; i++)
         {
@@ -86,6 +89,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             SwitchSelectedSlugcat(savedSlugcat);
             ArenaMenu.ChangeScene();
         }
+
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
@@ -137,6 +141,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (readyWarning)
             warningCounter = Mathf.Max(warningCounter, 0);
         else warningCounter = -1;
+        if (readyWarningLabel != null)
+        {
+            readyWarningLabel.text = Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in {Arena.lobbyCountDown}! Ready up!!") : defaultReadyWarningText;
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {

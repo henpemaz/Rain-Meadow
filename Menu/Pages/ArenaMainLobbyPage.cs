@@ -203,8 +203,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 startButton.OnClick += btn => ArenaMenu?.StartGame();
                 subObjects.Add(startButton);
             }
+            if (startButton != null && Arena.initiateLobbyCountdown)
+            {
+                startButton.menuLabel.text  = Arena.lobbyCountDown.ToString();
+            }
 
-            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
+            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
         }
         else
         {

@@ -24,6 +24,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public int painCatIndex;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
+    public bool initiateStartGameAfterCountDown;
+    private int lastCountdownSoundPlayed;
+
+
+
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
@@ -61,6 +66,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+        initiateStartGameAfterCountDown = false;
+        lastCountdownSoundPlayed = -1;
+
     }
 
     public void ChangeScene()
@@ -115,6 +123,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void GoToChangeCharacter()
     {
+        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown)
+        {
+            return;
+        }
+
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
             if (RainMeadow.isArenaMode(out _) && Arena.arenaClientSettings.ready)
@@ -138,6 +151,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void StartGame()
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
+
+        if (Arena.lobbyCountDown > 0)
+        {
+            Arena.initiateLobbyCountdown = true;
+            return;
+        }
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
@@ -174,7 +193,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void InitializeNewOnlineSitting()
     {
-        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) 
+        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels))
         { levelPlaylist = [] };
 
         // Host dictates playlist
@@ -237,6 +256,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
+
+        if (OnlineManager.lobby.isOwner)
+        {
+            if (Arena.lobbyCountDown <= 0 && !initiateStartGameAfterCountDown)
+            {
+                initiateStartGameAfterCountDown = true;
+                StartGame();
+            }
+        }
+
+        if (Arena.initiateLobbyCountdown)
+        {
+            PlayStartGameCountdown();
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -308,6 +341,16 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         {
             var newpos = oldPagesPos[i] + newPagePos;
             pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
+        }
+    }
+
+    public void PlayStartGameCountdown()
+    {
+        if (Arena.lobbyCountDown != lastCountdownSoundPlayed &&
+            (Arena.lobbyCountDown == 3 || Arena.lobbyCountDown == 2 || Arena.lobbyCountDown == 1))
+        {
+            PlaySound(SoundID.MENU_Player_Join_Game);
+            lastCountdownSoundPlayed = Arena.lobbyCountDown;
         }
     }
     public void UpdateElementBindings()
