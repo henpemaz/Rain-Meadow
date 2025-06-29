@@ -182,8 +182,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (!Arena.allowJoiningMidRound)
         {
             bool forceReadyFirst = ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players) != OnlineManager.players.Count;
+            string forceReadyText = "FORCE_READY";
+            string startMatchText = "START MATCH!";
             startButton.signalText = forceReadyFirst ? "FORCE_READY" : "START_MATCH";
-            startButton.menuLabel.text = forceReadyFirst ? menu.Translate("FORCE READY") : menu.Translate("START MATCH!");
+            startButton.menuLabel.text = forceReadyFirst ? menu.Translate(forceReadyText) : (Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate(startMatchText));
         }
         else
         {
@@ -254,6 +256,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 };
                 subObjects.Add(startButton);
             }
+            if (startButton != null && Arena.initiateLobbyCountdown)
+            {
+                startButton.menuLabel.text  = Arena.lobbyCountDown.ToString();
+            }
+
+            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
         }
         else
         {

@@ -43,6 +43,10 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int arenaSetupTime;
             [OnlineField(group = "arenaSetup")]
+            public int lobbyCountDown;
+            [OnlineField(group = "arenaSetup")]
+            public bool initiatedLobbyCountDown;
+            [OnlineField(group = "arenaSetup")]
             public int saintAscendanceTimer;
             [OnlineField(group = "arenaSetup")]
             public bool sainot;
@@ -111,6 +115,8 @@ namespace RainMeadow
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
                 arenaSetupTime = arena.setupTime;
+                lobbyCountDown = arena.lobbyCountDown;
+                initiatedLobbyCountDown = arena.initiateLobbyCountdown;
                 sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
                 currentGameMode = arena.currentGameMode;
@@ -152,6 +158,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
+                (lobby.gameMode as ArenaOnlineGameMode).lobbyCountDown = lobbyCountDown;
+                (lobby.gameMode as ArenaOnlineGameMode).initiateLobbyCountdown = initiatedLobbyCountDown;
+
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;

@@ -68,6 +68,8 @@ namespace RainMeadow
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int lobbyCountDown;
+        public bool initiateLobbyCountdown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
 
@@ -106,6 +108,8 @@ namespace RainMeadow
             clientWantsToLeaveGame = false;
             hasPermissionToRejoin = false;
             leaveForNextLevel = false;
+            lobbyCountDown = 5;
+            initiateLobbyCountdown = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -446,6 +450,10 @@ namespace RainMeadow
                     if (forceReadyCountdownTimer > 0)
                     {
                         forceReadyCountdownTimer--;
+                    }
+                    if (lobbyCountDown > 0 && initiateLobbyCountdown)
+                    {
+                        lobbyCountDown--;
                     }
 
                     if (arenaPrepTimer != null)
