@@ -26,15 +26,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public string painCatName;
     public bool initiateStartGameAfterCountDown;
     private int lastCountdownSoundPlayed;
-
-
-
+    public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+
     public ArenaOnlineLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
@@ -152,7 +151,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void GoToSlugcatSelector()
     {
         PlaySound(SoundID.MENU_Next_Slugcat);
-        SlugcatSelector selector = new(manager,[GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
+        SlugcatSelector selector = new(manager, [GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
 
             (slugcats, selector) =>
             {
