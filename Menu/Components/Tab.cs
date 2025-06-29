@@ -174,8 +174,8 @@ public class TabContainer : RectangularMenuObject
         }
         public void RemovePageButtons()
         {
-            this.ClearMenuObject(topArrowButton);
-            this.ClearMenuObject(bottomArrowButton);
+            this.ClearMenuObject(ref topArrowButton);
+            this.ClearMenuObject(ref bottomArrowButton);
         }
 
         private int currentOffset = 0;

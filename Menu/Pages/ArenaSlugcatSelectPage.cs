@@ -94,8 +94,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        slugcat = ArenaHelpers.selectableSlugcats.Contains(slugcat) ? slugcat : ArenaHelpers.selectableSlugcats[0]; //selectableSlugcats[0] should never be null! this is punishment >:D
-        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat); //this is to fix start index not working PLEASE DONT CHANGE THIS
+        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(slugcat), 0);
+        slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
         ArenaMenu?.SwitchSelectedSlugcat(slugcat);
         if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
