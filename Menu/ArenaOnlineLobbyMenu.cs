@@ -168,7 +168,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         // temp
         // UserInput.SetUserCount(OnlineManager.players.Count);
         // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
-        PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
     }
@@ -346,11 +345,19 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
     public void PlayStartGameCountdown()
     {
-        if (Arena.lobbyCountDown != lastCountdownSoundPlayed &&
-            (Arena.lobbyCountDown == 3 || Arena.lobbyCountDown == 2 || Arena.lobbyCountDown == 1))
+        if (Arena.lobbyCountDown != lastCountdownSoundPlayed)
         {
-            PlaySound(SoundID.MENU_Player_Join_Game);
+
+            if (Arena.lobbyCountDown == 3 || Arena.lobbyCountDown == 2 || Arena.lobbyCountDown == 1)
+            {
+                PlaySound(SoundID.MENU_Player_Join_Game);
+            }
+            if (Arena.lobbyCountDown == 0)
+            {
+                PlaySound(SoundID.MENU_Start_New_Game);
+            }
             lastCountdownSoundPlayed = Arena.lobbyCountDown;
+
         }
     }
     public void UpdateElementBindings()
