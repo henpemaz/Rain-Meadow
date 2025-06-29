@@ -32,6 +32,13 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
 
+    public readonly Configurable<string> MartyrTeamName;
+    public readonly Configurable<string> OutlawsTeamName;
+    public readonly Configurable<string> DragonSlayersTeamName;
+    public readonly Configurable<string> ChieftainTeamName;
+    public readonly Configurable<float> TeamColorLerp;
+    public readonly Configurable<bool> ArenaAllowMidJoin;
+    public readonly Configurable<bool> SlugpupHellBackground;
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
@@ -92,7 +99,13 @@ public class RainMeadowOptions : OptionInterface
         StoryItemSteal = config.Bind("StoryItemSteal", false);
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
 
-
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
+        ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
+        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
         UdpTimeout = config.Bind("UdpTimeout", 3000);

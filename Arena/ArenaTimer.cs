@@ -30,7 +30,7 @@ namespace RainMeadow
         {
             arena.arenaPrepTimer = this;
             session = arenaGameSession;
-            arena.trackSetupTime = arena.onlineArenaGameMode.SetTimer(arena);
+            arena.trackSetupTime = arena.externalArenaGameMode.SetTimer(arena);
             matchMode = TimerMode.Waiting;
 
             timerLabel = new FLabel("font", FormatTime(0))
@@ -88,13 +88,13 @@ namespace RainMeadow
                     showMode = TimerMode.Countdown;
                 };
 
-                arena.onlineArenaGameMode.HoldFireWhileTimerIsActive(arena);
+                arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
 
 
                 if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
                 {
                     matchMode = TimerMode.Countdown;
-                    modeLabel.text = arena.onlineArenaGameMode.TimerText();
+                    modeLabel.text = arena.externalArenaGameMode.TimerText();
                 }
 
                 if (arena.setupTime <= 0 && !countdownInitiated)
