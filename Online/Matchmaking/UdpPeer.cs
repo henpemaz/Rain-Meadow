@@ -546,8 +546,7 @@ namespace RainMeadow
             Unreliable = 0,
             UnreliableBroadcast,
             Reliable, // and ordered!
-            Acknowledgement,
-            HeartBeat,
+            HeartBeat,  // also serves as acknowledgement
         }
 
 
@@ -558,8 +557,8 @@ namespace RainMeadow
 
 
             public Queue<byte[]> outgoingpacket = new Queue<byte[]>();
-            public ulong wanted_acknowledgement = 0;
-            public ulong remote_acknowledgement = 0;
+            public ulong wanted_acknowledgement = 0;  // the 'packet ID' of the last reliable packet ack'd by peer (1-indexed)
+            public ulong remote_acknowledgement = 0;  // the 'packet ID' of the last reliable packet recv'd by us  (1-indexed)
             public bool need_begin_conversation_ack = true;
 
         }
@@ -583,7 +582,6 @@ namespace RainMeadow
                 if (alreadyinuse) {
                     throw new Exception("Failed to claim a socket port");
                 }
-
 
                 socket.Bind(new IPEndPoint(IPAddress.Any, port));
             } catch (SocketException except) {
@@ -717,7 +715,6 @@ namespace RainMeadow
         public void Send(byte[] packet, IPEndPoint endPoint, PacketType packet_type = PacketType.Reliable, bool begin_conversation = false) {
             if (GetRemotePeer(endPoint, true) is RemotePeer peer) {
                 if (packet_type == PacketType.Reliable) {
-                    peer.wanted_acknowledgement += 1;
                     if (begin_conversation && !peer.need_begin_conversation_ack) {
                         RainMeadow.Debug("redundant begin_conversation flag? adding this flag to the next Reliable packet sent, which might not be the one currently queued.");
                         peer.need_begin_conversation_ack = true;
@@ -738,7 +735,7 @@ namespace RainMeadow
             case PacketType.Reliable:
                 extraLength = 2 + sizeof(ulong);
                 break;
-            case PacketType.Acknowledgement:
+            case PacketType.HeartBeat:
                 extraLength = 1 + sizeof(ulong);
                 break;
             };
@@ -748,11 +745,11 @@ namespace RainMeadow
                 writer.Write((byte)packet_type);
                 if (packet_type == PacketType.Reliable)  {
                     writer.Write(begin_conversation);
-                    writer.Write(peer.wanted_acknowledgement);
+                    writer.Write(peer.wanted_acknowledgement+1);
                 }
 
 
-                if (packet_type == PacketType.Acknowledgement)
+                if (packet_type == PacketType.HeartBeat)
                     writer.Write(peer.remote_acknowledgement);
                 writer.Write(packet);
                 socket.SendTo(stream.GetBuffer().Take((int)stream.Position).ToArray(), peer.PeerEndPoint);
@@ -786,13 +783,12 @@ namespace RainMeadow
                             SendRaw(peer.outgoingpacket.Peek(), peer, PacketType.Reliable, peer.need_begin_conversation_ack);
                         } else if (peer.TicksSinceLastIncomingPacket > heartbeatTime) {
                             SendRaw(
-                                Enumerable.Repeat((byte)0, 1).ToArray(),
+                                Enumerable.Repeat((byte)1, 1).ToArray(),
                                 peer,
                                 PacketType.HeartBeat
                             );
                         }
                     }
-
 
                 }
 
@@ -892,29 +888,42 @@ namespace RainMeadow
                                 byte[]? new_data = null;
 
                                 if (EventMath.IsNewer(wanted_ack, peer.remote_acknowledgement)) {
-                                    peer.remote_acknowledgement = wanted_ack;
+                                    peer.remote_acknowledgement++ ;
+                                    if (EventMath.IsNewer(wanted_ack, peer.remote_acknowledgement)) {
+                                        RainMeadow.Error("Reliable Packet too advanced! We have skipped a packet in an ordered stream of packets!");
+                                        peer.remote_acknowledgement = wanted_ack;
+                                    }
                                     new_data = reader.ReadBytes(len - 2 - sizeof(ulong));
                                 }
-                                SendRaw(Array.Empty<byte>(), peer, PacketType.Acknowledgement);
+                                SendRaw(
+                                    Enumerable.Repeat((byte)0, 1).ToArray(),
+                                    peer,
+                                    PacketType.HeartBeat
+                                );
                                 return new_data;
-                            case PacketType.Acknowledgement:
-                                if (peer == null) return null;
-                                peer.need_begin_conversation_ack = false;
-                                ulong remote_ack = reader.ReadUInt64();
-                                if (EventMath.IsNewerOrEqual(remote_ack, peer.wanted_acknowledgement)) {
-                                    ++peer.wanted_acknowledgement;
-                                    if (peer.outgoingpacket.Count > 0) {
-                                        peer.outgoingpacket.Dequeue();  // TODO recheck this logic because it looks full of holes
-                                    }
-                                }
-                                return null;
 
                             case PacketType.HeartBeat:
                                 if (peer == null) return null;
-                                bool is_response = reader.ReadBoolean();
-                                if (!is_response)
+                                peer.need_begin_conversation_ack = false;
+                                ulong remote_ack = reader.ReadUInt64();
+                                if (EventMath.IsNewer(remote_ack, peer.wanted_acknowledgement)) {
+                                    ++peer.wanted_acknowledgement;
+                                    if (EventMath.IsNewer(remote_ack, peer.wanted_acknowledgement)) {
+                                        RainMeadow.Error("Reliable Packet Acknowledgement too advanced! We might have sent a packet too early?");
+                                        // we can make packet delivery recover from this, by just... skipping numbers in the next packets IDs sent
+                                        peer.wanted_acknowledgement = remote_ack;
+                                    }
+                                    if (peer.outgoingpacket.Count > 0) {
+                                        peer.outgoingpacket.Dequeue();
+                                    } else {
+                                        RainMeadow.Error("Reliable Packet Acknowledgement without corresponding queued message! Expect more problems in ordered communications.");
+                                    }
+                                } // else, this is a delayed copy of an already ack'd packet. no problem.
+
+                                bool wants_response = reader.ReadBoolean();
+                                if (wants_response)
                                     SendRaw(
-                                        Enumerable.Repeat((byte)1, 1).ToArray(),
+                                        Enumerable.Repeat((byte)0, 1).ToArray(),
                                         peer,
                                         PacketType.HeartBeat
                                     );
