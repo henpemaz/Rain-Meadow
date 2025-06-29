@@ -160,7 +160,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (clientSettings?.ready == true) playerBox.ToggleTextOverlay(Arena.isInGame && Arena.allowJoiningMidRound ? "Joining<LINE>soon!" : "Ready!", true);
             if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
             if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
-          
 
             if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
             else playerBox.slugcatButton.portraitColor = Color.white;
@@ -173,23 +172,23 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void UpdateMatchButtons()
     {
 
-        readyButton.buttonBehav.greyedOut = !Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready;
+        readyButton.buttonBehav.greyedOut = (!Arena.allowJoiningMidRound && Arena.arenaClientSettings.ready) || Arena.initiateLobbyCountdown;
         readyButton.menuLabel.text = menu.Translate(Arena.arenaClientSettings.ready ? !Arena.allowJoiningMidRound ? "WAITING" : "UNREADY" : "READY?");
 
         if (startButton == null) return;
 
-        startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0;
+        startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
         if (!Arena.allowJoiningMidRound)
         {
             bool forceReadyFirst = ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players) != OnlineManager.players.Count;
-            string forceReadyText = "FORCE_READY";
+            string forceReadyText = "FORCE READY";
             string startMatchText = "START MATCH!";
             startButton.signalText = forceReadyFirst ? "FORCE_READY" : "START_MATCH";
             startButton.menuLabel.text = forceReadyFirst ? menu.Translate(forceReadyText) : (Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate(startMatchText));
         }
         else
         {
-            startButton.menuLabel.text = menu.Translate("START MATCH!");
+            startButton.menuLabel.text = Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate("START MATCH!");
             startButton.signalText = "START_MATCH";
         }
     }
@@ -256,12 +255,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 };
                 subObjects.Add(startButton);
             }
-            if (startButton != null && Arena.initiateLobbyCountdown)
-            {
-                startButton.menuLabel.text  = Arena.lobbyCountDown.ToString();
-            }
-
-            startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
         }
         else
         {
