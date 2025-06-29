@@ -254,10 +254,14 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 };
                 subObjects.Add(startButton);
             }
+            Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
         }
         else
         {
             levelSelector.LoadNewPlaylist(Arena.playList, true);
+            levelSelector.selectedLevelsPlaylist.ShuffleStatus = Arena.shufflePlayList;
+            levelSelector.selectedLevelsPlaylist.shuffleButton.label.text = menu.Translate(levelSelector.selectedLevelsPlaylist.ShuffleStatus ? "Shuffling Levels" : "Playing in order");
+            levelSelector.selectedLevelsPlaylist.shuffleButton.UpdateSymbol(levelSelector.selectedLevelsPlaylist.ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
             this.ClearMenuObject(ref startButton);
         }
         UpdateMatchButtons();
