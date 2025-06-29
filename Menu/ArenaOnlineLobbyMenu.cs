@@ -155,11 +155,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena);
+        ArenaHelpers.OnStartGame(Arena, manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
-        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
         // temp
         // UserInput.SetUserCount(OnlineManager.players.Count);
         // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
@@ -230,7 +229,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
-        manager.rainWorld.progression.SaveProgression(true, true);
         base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
