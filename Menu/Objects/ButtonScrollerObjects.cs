@@ -19,18 +19,12 @@ namespace RainMeadow.UI.Components
         {
             this.size = size == default ? this.size : size;
         }
-        public override void Update()
-        {
-            base.Update();
-            buttonBehav.greyedOut = forceGreyOut;
-        }
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
             roundedRect.size = size;
         }
 
-        public bool forceGreyOut;
     }
     public class AlignedMenuLabel(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool bigText, FTextParams txtParams = null) : MenuLabel(menu, owner, text, pos, size, bigText, txtParams), ButtonScroller.IPartOfButtonScroller
     {

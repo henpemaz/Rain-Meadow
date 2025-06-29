@@ -165,6 +165,7 @@ namespace RainMeadow
                     "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
                     "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
                     "7",
+                    "Feeling Lucky?<LINE>Try holding your slugcat over there",
                 ];
                 slugcatSelectPainCatQuoteDescriptions =
                 [

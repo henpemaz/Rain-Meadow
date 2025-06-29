@@ -100,11 +100,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (currentPage == 1)
         {
-            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready;
-            Arena.arenaClientSettings.ready = false;
+            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready && Arena.allowJoiningMidRound;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready && !Arena.allowJoiningMidRound;
         }
         else
-            Arena.arenaClientSettings.ready = arenaSlugcatSelectPage.readyWarning;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready || arenaSlugcatSelectPage.readyWarning;
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
@@ -115,9 +115,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void GoToChangeCharacter()
     {
+        bool arenaMode = RainMeadow.isArenaMode(out _);
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            if (RainMeadow.isArenaMode(out _) && Arena.arenaClientSettings.ready)
+            if (arenaMode && Arena.arenaClientSettings.ready)
             {
                 PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
                 return;
@@ -135,17 +136,29 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
         MovePage(new Vector2(-1500f, 0f), 1);
     }
+    public void GoToSlugcatSelector()
+    {
+        PlaySound(SoundID.MENU_Next_Slugcat);
+        SlugcatSelector selector = new(manager,[GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
+
+            (slugcats, selector) =>
+            {
+                arenaSlugcatSelectPage.SwitchSelectedSlugcat(slugcats[UnityEngine.Random.Range(0, slugcats.Length)]);
+                if (RainMeadow.isArenaMode(out _)) Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+            }
+        );
+        manager.ShowDialog(selector);
+    }
     public void StartGame()
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena);
+        ArenaHelpers.OnStartGame(Arena, manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
-        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
         // temp
         // UserInput.SetUserCount(OnlineManager.players.Count);
         // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
@@ -216,7 +229,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
-        manager.rainWorld.progression.SaveProgression(true, true);
         base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
@@ -315,4 +327,5 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
     }
+
 }

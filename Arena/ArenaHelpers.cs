@@ -153,8 +153,10 @@ namespace RainMeadow
             arena.currentLevel = 0;
         
         }
-        public static void OnStartGame(ArenaOnlineGameMode arena)
+        public static void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
         {
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.rainWorld.progression.SaveProgression(true, true);
             if (!OnlineManager.lobby.isOwner) return;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playerNumberWithDeaths.Clear();

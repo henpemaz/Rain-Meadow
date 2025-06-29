@@ -8,6 +8,17 @@ namespace RainMeadow
     public static class ArenaRPCs
     {
         [RPCMethod]
+        public static void Arena_ForceReady()
+        {
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
+            {
+                resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                ArenaHelpers.ResetOnReturnMenu(arena, resl.manager);
+            }
+           arena.arenaClientSettings.ready = true;
+        }
+        [RPCMethod]
         public static void Arena_CallPlayerInMenuToJoin()
         {
             if (!RainMeadow.isArenaMode(out _)) return;

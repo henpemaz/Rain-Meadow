@@ -66,7 +66,7 @@ namespace RainMeadow.UI.Components
         public override Color MyPortraitColor(Color? portraitColor, float timeStacker)
         {
             Color basePortraitColor = base.MyPortraitColor(portraitColor, timeStacker);
-            return keepSecondaryHueBase ? LerpedSecondaryHSLColor(basePortraitColor.ToHSL(), portraitSecondaryLerpFactor) : LerpedSecondaryColor(basePortraitColor, portraitSecondaryLerpFactor);
+            return keepSecondaryHuePortrait ? LerpedSecondaryHSLColor(basePortraitColor.ToHSL(), portraitSecondaryLerpFactor) : LerpedSecondaryColor(basePortraitColor, portraitSecondaryLerpFactor);
         }
         public virtual Color LerpedSecondaryColor(Color color, float lerpFactor = 1)
         {
@@ -106,7 +106,7 @@ namespace RainMeadow.UI.Components
         }
         public float portraitSecondaryLerpFactor = 1;
         public int colorIndex = 0;
-        public bool isColored, isDead, keepSecondaryHuePortrait = true, keepSecondaryHueBase;
+        public bool isColored, isDead, keepSecondaryHuePortrait, keepSecondaryHueBase;
         public Color? secondaryColor;
         public SlugcatStats.Name? slugcat;
     }
