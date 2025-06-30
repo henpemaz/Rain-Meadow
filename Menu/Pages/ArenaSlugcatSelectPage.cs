@@ -42,7 +42,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
-            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
             if (i >= buttonsInTopRow)
@@ -94,10 +94,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(slugcat), 0);
+        SlugcatStats.Name nonNullSlugcat = slugcat ?? SlugcatStats.Name.White;
+        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(nonNullSlugcat), 0);
         slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
-        ArenaMenu?.SwitchSelectedSlugcat(slugcat);
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+        ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
+        if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
             descriptionLabel.text = menu.LongTranslate(painCatDescription);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
