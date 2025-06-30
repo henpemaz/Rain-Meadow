@@ -1,11 +1,75 @@
 using Menu;
+using RainMeadow.UI;
+using System.Net;
 using UnityEngine;
 
 namespace RainMeadow
 {
     public static class ArenaRPCs
     {
+        [RPCMethod]
+        public static void Arena_ForceReady()
+        {
+            if (!RainMeadow.isArenaMode(out var arena)) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
+            {
+                resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                ArenaHelpers.ResetOnReturnMenu(arena, resl.manager);
+            }
+           arena.arenaClientSettings.ready = true;
+        }
+        [RPCMethod]
+        public static void Arena_CallPlayerInMenuToJoin()
+        {
+            if (!RainMeadow.isArenaMode(out _)) return;
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not ArenaOnlineLobbyMenu lobby) return;
+            RainMeadow.Debug("Start game for player");
+            lobby.StartGame();
 
+        }
+        [RPCMethod]
+        public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (arena.arenaSittingOnlineOrder.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.arenaSittingOnlineOrder.Remove(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_AddPlayerWaiting(OnlinePlayer earlyQuitterOrLatecomer)
+        {
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (!arena.playersLateWaitingInLobbyForNextRound.Contains(earlyQuitterOrLatecomer.inLobbyId))
+                {
+                    arena.playersLateWaitingInLobbyForNextRound.Add(earlyQuitterOrLatecomer.inLobbyId); // you'll add them in NextLevel
+                }
+
+            }
+        }
+
+        [RPCMethod]
+        public static void Arena_NotifyRejoinAllowed(bool hasPermission)
+        {
+            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (lobby == null)
+                {
+                    RainMeadow.Debug("Could not start player");
+                    return;
+                }
+                RainMeadow.Debug("Starting game for player");
+                arena.isInGame = true; // state might be too late
+                arena.hasPermissionToRejoin = hasPermission;
+                RainMeadow.Debug("Start game immediately");
+                lobby.StartGame();
+            }
+        }
         [RPCMethod]
         public static void Arena_EndSessionEarly()
         {
@@ -18,6 +82,7 @@ namespace RainMeadow
                     return;
                 }
                 game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+
 
 
             }
@@ -126,6 +191,10 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 arena.setupTime = setupTime;
+                // I don't think this is used so I'm not sure if the param here is 
+                // retrieved from host's meadow remix settings or host's actual 
+                // Player.maxGodTime. I'll leave it be but if this is causing issues
+                // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
             }
 
@@ -165,11 +234,13 @@ namespace RainMeadow
 
         }
 
+
         [RPCMethod]
-        public static void Arena_ReadyForNextLevel(string userIsReady)
+        public static void Arena_ReadyForNextLevel()
         {
             if (RainMeadow.isArenaMode(out var arena))
             {
+                var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
                 if (game.manager.upcomingProcess != null)
                 {
@@ -177,11 +248,10 @@ namespace RainMeadow
                 }
                 for (int i = 0; i < game.arenaOverlay.resultBoxes.Count; i++)
                 {
-                    if (game.arenaOverlay.resultBoxes[i].playerNameLabel.text == userIsReady)
-                    {
-                        game.arenaOverlay.result[i].readyForNextRound = true;
-                    }
+                    game.arenaOverlay.result[i].readyForNextRound = true;
                 }
+                game.arenaOverlay.nextLevelCall = true;
+
             }
 
         }
@@ -229,46 +299,8 @@ namespace RainMeadow
                 }
 
             }
-
-        }
-        [RPCMethod]
-        public static void Arena_NotifyStartGame()
-        {
-            var lobby = RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu;
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (lobby == null)
-                {
-                    RainMeadow.Debug("Could not start player");
-                    return;
-                }
-                RainMeadow.Debug("Starting game for player");
-                arena.isInGame = true; // state might be too late
-                lobby.StartGame();
-            }
         }
 
-
-
-
-        [RPCMethod]
-        public static void Arena_NextLevelCall()
-        {
-            var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
-            var lobby = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as ArenaLobbyMenu);
-
-            if (lobby != null)
-            {
-                return;
-            }
-
-            if (game.manager.upcomingProcess != null)
-            {
-                return;
-            }
-            game.GetArenaGameSession.arenaSitting.NextLevel(game.manager);
-            game.arenaOverlay.nextLevelCall = true;
-        }
 
         [RPCMethod]
         public static void AddShortCutVessel(RWCustom.IntVector2 pos, OnlinePhysicalObject crit, RoomSession roomSess, int wait)
