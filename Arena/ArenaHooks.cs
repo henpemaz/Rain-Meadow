@@ -1847,6 +1847,12 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
+                {
+                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                    arena.currentLobbyOwner = OnlineManager.lobby.owner;
+
+                }
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
