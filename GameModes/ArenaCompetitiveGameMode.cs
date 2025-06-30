@@ -121,9 +121,9 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it's not like your first time.<LINE>Snatch your spear and rock." },
+                { "White", "Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering." },
+                { "Red", "Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering." },
                 { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
@@ -170,12 +170,18 @@ namespace RainMeadow
                     "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
                     "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
                     "7",
-                    "Feeling Lucky?<LINE>Try holding your slugcat over there",
+                    "Feeling Lucky?<LINE>Try holding your slugcat portrait ;)",
+                    "Did you know:<LINE>Meadow was released this Friday",
+                    "Did you know:<LINE>You're bad at Arena",
+                    "Did you know:<LINE>There's more \"Did you know\"s.",
+                    "Did you know:<LINE>This is the only \"Did you know\".",
+                    "You will lose this round<LINE>Your body will not be found<LINE>6 feet underground"
+
                 ];
                 slugcatSelectPainCatQuoteDescriptions =
                 [
                     "\"<USERNAME>, youre gonna get us both killed\"",
-                    "\"i gotta throw 2 spears to kill, its just dumb.<LINE>at least they added me to arena mode i guess...\"",
+                    "\"no srsly wheres my egg\"",
                     "\"u dont need 2 be alone, bby.\"",
                     "\"sometimes i wake up with a friend ive never met b4\"",
                     "\"i luv u <3\"",
@@ -184,11 +190,12 @@ namespace RainMeadow
                 [
                     "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Don't Care<LINE>Nuh<LINE>Yuh",
-                    "Suddenly the result rectangle failed to appear, you are softlocked.<LINE>What the hell. I thought that glitch was fixed a while ago...",
-                    "\"I HEARD WHEN YOU CHANT 'COOCHIE' 5 TIMES IN THE TOILET AT 4AM.<LINE>IT WILL SUMMON THE COOCHIE MONSTER\"<LINE>- Dusty",
+                    "Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...",
                     "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
                     "Be careful when selecting the Fartificer",
-                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh"
+                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh",
+                    "Playtesters<LINE>Are<LINE>Replaceable",
+                    "There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH"
                 ];
                 slugcatSelectPainCatSmileyDescriptions =
                 [
