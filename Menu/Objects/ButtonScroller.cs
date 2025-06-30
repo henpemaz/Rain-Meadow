@@ -103,7 +103,7 @@ namespace RainMeadow
             }
         }
         public virtual float GetCurrentScrollOffset() => DownScrollOffset;
-        public void SliderSetValue(Slider slider, float f)
+        public  void SliderSetValue(Slider slider, float f)
         {
             if (slider?.ID?.value == "BUTTONSCROLLER_SCROLLSLIDER")
             {
@@ -257,12 +257,6 @@ namespace RainMeadow
             public float Alpha { get; set; } = 1;
             public Vector2 Pos { get => pos; set => pos = value; }
             public Vector2 Size { get => size; set => size = value; }
-            public override void Update()
-            {
-                base.Update();
-                buttonBehav.greyedOut = forceGreyedOut;
-            }
-            public bool forceGreyedOut;
         }
         public interface IPartOfButtonScroller //allows other derived objects to be part of the button scroller
         {

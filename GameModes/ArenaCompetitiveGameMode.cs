@@ -35,6 +35,7 @@ namespace RainMeadow
         public bool disableArtiStun = RainMeadow.rainMeadowOptions.BlockArtiStun.Value;
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
+        public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -67,6 +68,8 @@ namespace RainMeadow
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int lobbyCountDown;
+        public bool initiateLobbyCountdown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
 
@@ -77,6 +80,7 @@ namespace RainMeadow
         public ArenaClientSettings arenaClientSettings;
         public SlugcatCustomization avatarSettings;
 
+        public bool shufflePlayList;
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
@@ -105,6 +109,8 @@ namespace RainMeadow
             clientWantsToLeaveGame = false;
             hasPermissionToRejoin = false;
             leaveForNextLevel = false;
+            lobbyCountDown = 5;
+            initiateLobbyCountdown = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -164,6 +170,7 @@ namespace RainMeadow
                     "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
                     "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
                     "7",
+                    "Feeling Lucky?<LINE>Try holding your slugcat over there",
                 ];
                 slugcatSelectPainCatQuoteDescriptions =
                 [
@@ -444,6 +451,10 @@ namespace RainMeadow
                     if (forceReadyCountdownTimer > 0)
                     {
                         forceReadyCountdownTimer--;
+                    }
+                    if (lobbyCountDown > 0 && initiateLobbyCountdown)
+                    {
+                        lobbyCountDown--;
                     }
 
                     if (arenaPrepTimer != null)

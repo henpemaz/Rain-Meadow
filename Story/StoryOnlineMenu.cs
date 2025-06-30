@@ -53,7 +53,7 @@ namespace RainMeadow
             }
             set
             {
-                playerSelectedSlugcat = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                playerSelectedSlugcat = value == storyGameMode.currentCampaign? null : value;
                 CurrentSlugcat = PlayerSelectedSlugcat;
             }
         }

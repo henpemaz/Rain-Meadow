@@ -414,6 +414,14 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
+                foreach (var selectable in self.pages[0].selectables)
+                {
+                    if (selectable is Menu.SimpleButton && (selectable as Menu.SimpleButton).signalText == "QUIT")
+                    {
+                        (selectable as Menu.SimpleButton).buttonBehav.greyedOut = self.counter < 120;
+                    }
+                }
+
                 self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
@@ -1381,6 +1389,8 @@ namespace RainMeadow
                     return;
                 }
 
+                if (!killedCrit.IsLocal()) return;
+
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(killedCrit.abstractCreature);
 
                 for (int i = 0; i < self.arenaSitting.players.Count; i++)
@@ -1509,29 +1519,38 @@ namespace RainMeadow
             {
                 OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
-                if (OnlineManager.lobby.isOwner)
+                if (currentName == null)
                 {
-
-                    // what host observed
-                    arena.playerNumberWithKills[player.playerNumber] = player.score;
-                    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
-                    arena.playerNumberWithWins[player.playerNumber] = player.wins;
+                    player.wins = 0;
+                    player.deaths = 0;
+                    player.score = 0;
                 }
                 else
                 {
-
-                    if (arena.playerNumberWithKills.ContainsKey(player.playerNumber))
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        player.score = arena.playerNumberWithKills[player.playerNumber];
-                        // You should also check if the key exists in the other dictionaries
-                        if (arena.playerNumberWithDeaths.ContainsKey(player.playerNumber))
-                        {
-                            player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
-                        }
 
-                        if (arena.playerNumberWithWins.ContainsKey(player.playerNumber))
+                        // what host observed
+                        arena.playerNumberWithKills[currentName.inLobbyId] = player.score;
+                        arena.playerNumberWithDeaths[currentName.inLobbyId] = player.deaths;
+                        arena.playerNumberWithWins[currentName.inLobbyId] = player.wins;
+                    }
+                    else
+                    {
+
+                        if (arena.playerNumberWithKills.ContainsKey(currentName.inLobbyId))
                         {
-                            player.wins = arena.playerNumberWithWins[player.playerNumber];
+                            player.score = arena.playerNumberWithKills[currentName.inLobbyId];
+                            // You should also check if the key exists in the other dictionaries
+                            if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
+                            }
+
+                            if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
+                            }
                         }
                     }
                 }
@@ -1615,8 +1634,9 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
+                self.continueButton.menuLabel.text = "TO LOBBY";
 
-                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("EXIT"), "EXIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
+                var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("QUIT"), "QUIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
             }
         }
@@ -1637,7 +1657,7 @@ namespace RainMeadow
 
                     }
 
-                    if (message == "EXIT")
+                    if (message == "QUIT")
                     {
 
                         self.manager.rainWorld.options.DeleteArenaSitting();

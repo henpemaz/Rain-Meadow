@@ -46,7 +46,6 @@ namespace RainMeadow.UI.Components
             roundedRect.fillAlpha = Mathf.Lerp(0.3f, 0.6f, buttonBehav.col);
             roundedRect.addSize = new Vector2(10f, 6f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
             selectRect.addSize = new Vector2(2f, -2f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.1415927f)) * (buttonBehav.clicked ? 0f : 1f);
-            buttonBehav.greyedOut = forceGreyedOut;
         }
         public override void GrafUpdate(float timeStacker)
         {
@@ -67,14 +66,16 @@ namespace RainMeadow.UI.Components
         {
             portrait.folderName = folderName;
             portrait.fileName = fileName;
-            portrait.LoadFile();
+            if (portrait.folderName == "")
+                portrait.LoadFile();
+            else portrait.LoadFile(portrait.folderName);
             portrait.sprite.SetElementByName(portrait.fileName);
         }
 
         public string signalText;
         public event Action<IllustrationButton>? OnClick;
         public float portraitBlack = 0, lastPortraitBlack = 0;
-        public bool forceGreyedOut, borderIgnorePortraitBlack, isBlackPortrait;
+        public bool borderIgnorePortraitBlack, isBlackPortrait;
         public Color? portraitColor;
         public MenuIllustration portrait;
         public RoundedRect roundedRect, selectRect;
