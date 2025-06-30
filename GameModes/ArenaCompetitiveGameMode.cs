@@ -15,6 +15,8 @@ namespace RainMeadow
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
 
+        public OnlinePlayer currentLobbyOwner;
+
         public bool registeredNewGameModes = false;
 
         public bool isInGame;

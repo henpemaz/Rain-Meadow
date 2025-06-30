@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.EnterpriseServices.CompensatingResourceManager;
 using System.Linq;
 using System.Linq.Expressions;
 using Menu;
@@ -39,6 +40,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RainMeadow.DebugMe();
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
+        Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         forceFlatIllu = !manager.rainWorld.flatIllustrations;
         if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
@@ -165,7 +167,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-        if (Arena.lobbyCountDown > 0)
+        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
         {
             Arena.initiateLobbyCountdown = true;
             return;
@@ -183,6 +185,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
+        
     }
     public void SetPlaylistFromSetupToSitting()
     {
@@ -267,6 +270,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
+
+        if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
+        {
+            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.currentLobbyOwner = OnlineManager.lobby.owner;
+        }
 
         if (OnlineManager.lobby.isOwner)
         {
