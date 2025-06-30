@@ -1108,7 +1108,8 @@ public partial class RainMeadow
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
                 { 
-                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats.malnourished));
+
+                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats?.malnourished ?? false));
                     self.SlugCatClass = customization.playingAs;
                 }
                 else
