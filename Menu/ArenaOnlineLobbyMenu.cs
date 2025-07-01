@@ -336,7 +336,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
     }
     public void UpdateMovingPage()

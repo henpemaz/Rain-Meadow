@@ -360,8 +360,8 @@ namespace RainMeadow
             {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
-
             avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
+            arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
         public void ResetGameTimer()
