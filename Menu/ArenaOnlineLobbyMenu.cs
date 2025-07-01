@@ -262,12 +262,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Update()
     {
         base.Update();
+
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
-        if (Arena.externalArenaGameMode == null || (Arena.externalArenaGameMode != null && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value))
-        {
-            Arena.externalArenaGameMode = (Arena.registeredGameModes.FirstOrDefault(x => x.Key == Arena.currentGameMode).Value);
-        }
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);

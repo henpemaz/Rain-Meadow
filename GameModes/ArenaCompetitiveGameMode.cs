@@ -499,6 +499,7 @@ namespace RainMeadow
             if (onlineResource is Lobby lobby)
             {
                 lobby.AddData(new ArenaLobbyData());
+                lobby.AddData(new TeamBattleLobbyData());
             }
         }
 

@@ -240,6 +240,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
 
         if (!RainMeadow.isArenaMode(out _)) return;
+        
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {

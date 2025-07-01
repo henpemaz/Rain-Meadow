@@ -14,7 +14,7 @@ namespace RainMeadow.UI.Components
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
 
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainer, TabContainer.Tab externalGameModeTab, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainerr, TabContainer.Tab externalGameModeTabb, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -22,6 +22,9 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
             float textWidthOfSpearHit = 95;
+            externalGameModeTab = externalGameModeTabb;
+            tabContainer = tabContainerr;
+
             spearsHitCheckbox = new(menu, this, this, new(0, 425), textWidthOfSpearHit, menu.Translate("Spears Hit:"), "SPEARSHIT", false);
             evilAICheckBox = new(menu, this, this, new(settingsWidth - 24, spearsHitCheckbox.pos.y), InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100, menu.Translate("Aggressive AI:"), "EVILAI", false);
             divSprites = [new("pixel"), new("pixel")];
@@ -57,11 +60,11 @@ namespace RainMeadow.UI.Components
             };
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
             arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
+            arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
-                // doesn't work for multiple attempts
                 if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
                 {
                     if (arena.externalArenaGameMode != null)
@@ -82,11 +85,32 @@ namespace RainMeadow.UI.Components
                 }
             };
 
-
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox);
+
+            if (RainMeadow.isArenaMode(out ArenaMode arena))
+            {
+                if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
+                {
+                    if (arena.externalArenaGameMode != null)
+                    {
+                        tabContainer.RemoveTab(externalGameModeTab);
+                        onlineArenaExternalGameModeSettingsInterface = null;
+                        externalGameModeTab = null;
+
+                    }
+                    arena.externalArenaGameMode = extGameMode;
+                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalGameModeTab == null)
+                    {
+                        externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
+                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
+                        externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
+
+                    }
+                }
+            }
         }
         public override void RemoveSprites()
         {
@@ -127,8 +151,29 @@ namespace RainMeadow.UI.Components
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
+                if (!OnlineManager.lobby.isOwner && arena.currentGameMode != arena.externalArenaGameMode.GetGameModeId.value)
+                {
+                    if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
+                    {
+                        if (arena.externalArenaGameMode != null)
+                        {
+                            tabContainer.RemoveTab(externalGameModeTab);
+                            onlineArenaExternalGameModeSettingsInterface = null;
+                            externalGameModeTab = null;
 
+                        }
+                        arena.externalArenaGameMode = extGameMode;
+                        if (arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalGameModeTab == null)
+                        {
+                            externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
+                            onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
+                            externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
+
+                        }
+                    }
+                }
             }
+
         }
         public bool GetChecked(CheckBox box)
         {
@@ -222,5 +267,7 @@ namespace RainMeadow.UI.Components
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;
         public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
+        public TabContainer tabContainer;
+        public TabContainer.Tab externalGameModeTab;
     }
 }

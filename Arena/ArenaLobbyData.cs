@@ -131,6 +131,7 @@ namespace RainMeadow
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
+                leaveForNextLevel = arena.leaveForNextLevel;
 
             }
 
@@ -175,6 +176,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
+                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
 
             }
 

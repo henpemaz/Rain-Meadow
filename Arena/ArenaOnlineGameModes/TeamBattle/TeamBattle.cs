@@ -515,17 +515,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     arena.isInGame = true; // used for readied players at the beginning
                     arena.leaveForNextLevel = false;
-                    if (arena.playersLateWaitingInLobbyForNextRound.Count > 0)
-                    {
-                        foreach (var p in arena.playersLateWaitingInLobbyForNextRound)
-                        {
-                            OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                            if (onlineP != null)
-                            {
-                                onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyRejoinAllowed, true);
-                            }
-                        }
-                    }
+                    foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
+                        player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
+
                     foreach (var arenaPlayer in self.arenaSitting.players)
                     {
                         if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))

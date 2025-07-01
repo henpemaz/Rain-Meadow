@@ -117,10 +117,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 var martyrTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 1:"), new Vector2(arenaGameModeLabel.pos.x, arenaTeamComboBox.pos.y - 45), new Vector2(0, 20), false);
 
                 martyrsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.MartyrTeamName.Value), new(martyrTeamLabel.pos.x + 50, martyrTeamLabel.pos.y), 150);
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    martyrsTeamNameUpdate.Deactivate();
-                }
+
                 martyrsTeamNameUpdate.greyedOut = !OnlineManager.lobby.isOwner;
                 martyrsTeamNameUpdate.allowSpace = true;
                 martyrsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
@@ -144,10 +141,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 var outlawTeamlabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 2:"), new Vector2(arenaGameModeLabel.pos.x, martyrsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
 
                 outlawsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value), new(outlawTeamlabel.pos.x + 50, outlawTeamlabel.pos.y), 150);
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    outlawsTeamNameUpdate.Deactivate();
-                }
+
                 outlawsTeamNameUpdate.greyedOut = !OnlineManager.lobby.isOwner;
                 outlawsTeamNameUpdate.allowSpace = true;
                 outlawsTeamNameUpdate.OnValueUpdate += (config, value, lastValue) =>
@@ -171,10 +165,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 var dragonSlayersLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 3:"), new Vector2(arenaGameModeLabel.pos.x, outlawsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
 
                 dragonsSlayersTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value), new(dragonSlayersLabel.pos.x + 50, dragonSlayersLabel.pos.y), 150);
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    dragonsSlayersTeamNameUpdate.Deactivate();
-                }
+
 
                 dragonsSlayersTeamNameUpdate.greyedOut = !OnlineManager.lobby.isOwner;
                 dragonsSlayersTeamNameUpdate.allowSpace = true;
@@ -201,10 +192,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 var chifetainTeamLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 4:"), new Vector2(arenaGameModeLabel.pos.x, dragonsSlayersTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
 
                 chieftainsTeamNameUpdate = new(new Configurable<string>(RainMeadow.rainMeadowOptions.ChieftainTeamName.Value), new(chifetainTeamLabel.pos.x + 50, chifetainTeamLabel.pos.y), 150);
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    chieftainsTeamNameUpdate.Deactivate();
-                }
+
 
                 chieftainsTeamNameUpdate.greyedOut = !OnlineManager.lobby.isOwner;
                 chieftainsTeamNameUpdate.allowSpace = true;
