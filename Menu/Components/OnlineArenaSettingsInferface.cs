@@ -12,10 +12,9 @@ namespace RainMeadow.UI.Components
     {
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainer, TabContainer.Tab externalGameModeTab, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
 
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainer, TabContainer.Tab externalGameModeTab, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)

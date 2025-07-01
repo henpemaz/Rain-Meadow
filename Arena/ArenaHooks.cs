@@ -818,17 +818,17 @@ namespace RainMeadow
             }
         }
 
-        private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
-        {
-            if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
-            {
-                arena.AddExternalGameModes(FFA.FFAMode, new FFA());
-                arena.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
-            }
+        //private void MultiplayerMenu_ctor(On.Menu.MultiplayerMenu.orig_ctor orig, Menu.MultiplayerMenu self, ProcessManager manager)
+        //{
+        //    if (isArenaMode(out var arena)) // normally we would work this into a new arena game type but we need the instance for all the goodies inside it each time we back out of the menu and come back
+        //    {
+        //        arena.AddExternalGameModes(FFA.FFAMode, new FFA());
+        //        arena.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+        //    }
 
-            orig(self, manager);
+        //    orig(self, manager);
 
-        }
+        //}
 
         private string MultiplayerMenu_ArenaImage(On.Menu.MultiplayerMenu.orig_ArenaImage orig, Menu.MultiplayerMenu self, SlugcatStats.Name classID, int color)
         {

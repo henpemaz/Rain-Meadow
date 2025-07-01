@@ -1,8 +1,9 @@
+using Menu;
+using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Menu;
-using MoreSlugcats;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
 
@@ -11,7 +12,7 @@ namespace RainMeadow
     public class ArenaOnlineGameMode : OnlineGameMode
     {
         public ArenaOnlineSetup myArenaSetup;
-        public ExternalArenaGameMode externalOnlineGameMode;
+        public ExternalArenaGameMode externalArenaGameMode;
         public string currentGameMode;
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
@@ -80,6 +81,8 @@ namespace RainMeadow
 
 
         public ArenaClientSettings arenaClientSettings;
+        public ArenaTeamClientSettings arenaTeamClientSettings;
+
         public SlugcatCustomization avatarSettings;
 
         public bool shufflePlayList;
@@ -92,6 +95,8 @@ namespace RainMeadow
             ArenaHelpers.RecreateSlugcatCache();
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
+            arenaTeamClientSettings = new ArenaTeamClientSettings();
+
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
             playerEnteredGame = 0;
@@ -270,6 +275,8 @@ namespace RainMeadow
 
             slugcatSelectDisplayNames.Add("MeadowRandom", "THE UNKNOWN");
 
+            this.AddExternalGameModes(FFA.FFAMode, new FFA());
+            this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
 
         }
 
@@ -302,7 +309,7 @@ namespace RainMeadow
 
         }
 
-        public void AddExternalGameModes(ExternalArenaGameMode externMode, ArenaSetup.GameTypeID gametypeID) // external mods will hook and insert
+        public void AddExternalGameModes( ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
         {
 
             if (!this.registeredGameModes.ContainsKey(gametypeID.value))
@@ -470,7 +477,7 @@ namespace RainMeadow
                     {
                         if (setupTime > 0 && arenaPrepTimer.showMode == TimerMode.Countdown)
                         {
-                            setupTime = externalOnlineGameMode.TimerDirection(this, setupTime);
+                            setupTime = externalArenaGameMode.TimerDirection(this, setupTime);
 
                         }
                     }
@@ -498,6 +505,8 @@ namespace RainMeadow
         public override void AddClientData()
         {
             clientSettings.AddData(arenaClientSettings);
+            clientSettings.AddData(arenaTeamClientSettings);
+
         }
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
@@ -516,7 +525,7 @@ namespace RainMeadow
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
         {
-            return onlineArenaGameMode.SpawnBatflies(self, spawnRoom);
+            return externalArenaGameMode.SpawnBatflies(self, spawnRoom);
 
 
         }

@@ -92,8 +92,6 @@ namespace RainMeadow
             [OnlineField]
             public bool weaponCollisionFix;
 
->>>>>>>>> Temporary merge branch 2
->>>>>>>>> Temporary merge branch 2
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -133,9 +131,7 @@ namespace RainMeadow
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
->>>>>>>>> Temporary merge branch 2
-                weaponCollisionFix = arena.weaponCollisionFix;
->>>>>>>>> Temporary merge branch 2
+
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -179,10 +175,6 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
-
-=========
-                (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
->>>>>>>>> Temporary merge branch 2
 
             }
 

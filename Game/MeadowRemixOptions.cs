@@ -1,10 +1,12 @@
 using Menu.Remix.MixedUI;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow;
+
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -26,8 +28,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> BlockMaul;
-    public readonly Configurable<bool> BlockArtiStun;
+    public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
@@ -37,8 +40,6 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> DragonSlayersTeamName;
     public readonly Configurable<string> ChieftainTeamName;
     public readonly Configurable<float> TeamColorLerp;
-    public readonly Configurable<bool> ArenaAllowMidJoin;
-    public readonly Configurable<bool> SlugpupHellBackground;
 
     public readonly Configurable<float> ScrollSpeed;
     public readonly Configurable<bool> ShowPing;
@@ -94,6 +95,15 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
 
+
+
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
+
+
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
 
         WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
@@ -106,13 +116,7 @@ public class RainMeadowOptions : OptionInterface
         StoryItemSteal = config.Bind("StoryItemSteal", false);
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
 
-        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
-        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
-        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
-        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
-        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
-        ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
-        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
+
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
         LanUserName = config.Bind("LanUserName", "");
         UdpTimeout = config.Bind("UdpTimeout", 3000);
@@ -289,52 +293,33 @@ public class RainMeadowOptions : OptionInterface
            };
             storyTab.AddItems(OnlineStorySettings);
 
+            OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
+            OpHoldButton arenaSpoilerButton;
+            OpCheckBox slugpupHellBackgroundCheckbox;
 
-
-            OnlineArenaSettings = new UIelement[19]
-
-            {
+            OnlineArenaSettings =
+            [
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
-                new OpLabel(10f, 505, Translate("Countdown timer. Default: 5s"), bigText: false),
-                new OpTextBox(ArenaCountDownTimer, new Vector2(10, 480), 160f)
+                new OpLabel(10f, 520, Custom.ReplaceLineDelimeters(Translate("Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs."))),
+                arenaSpoilerLabel = new OpLabel(10f, 480, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
                 {
-                    accept = OpTextBox.Accept.Int
+                    color = new Color(0.85f, 0.35f, 0.4f)
                 },
-
-                new OpLabel(10f, 455, Translate("Sain't: Disable Saint ascendance"), bigText: false),
-                new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
-
-                new OpLabel(10f, 410, Translate("Saint ascendance duration timer. Default: 120"), bigText: false),
-                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
+                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), "OKIE DOKIE")
                 {
-                    accept = OpTextBox.Accept.Int
+                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
                 },
-                new OpLabel(10f, 350, Translate("Inv: Enable spear throws at 0 throw skill"), bigText: false),
-                new OpCheckBox(PainCatThrows, new Vector2(10f, 315)),
-
-                new OpLabel(10f, 285, Translate("Inv: Enable egg at 0 throw skill"), bigText: false),
-                new OpCheckBox(PainCatEgg, new Vector2(10f, 250)),
-
-
-                new OpLabel(10f, 215, Translate("Inv: Enable ???"), bigText: false),
-                new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
-
-                new OpLabel(10f, 160, Translate("Artificer: Disable Stun"), bigText: false),
-                new OpCheckBox(BlockArtiStun, new Vector2(10f, 125)),
-
-                new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
-                new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
-
-                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
-                {
-                    verticalAlignment = OpLabel.LabelVAlignment.Center
-                },
-                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
-
-
-
-        };
+                slugpupHellBackgroundLabel = new OpLabel(10f, 480, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
+                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 455)),
+            ];
+            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
+            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
+            arenaSpoilerButton.OnPressDone += btn =>
+            {
+                OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
+                for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
+            };
 
             OnlineLANSettings = new UIelement[7]
             {
