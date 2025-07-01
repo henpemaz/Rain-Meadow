@@ -37,13 +37,13 @@ namespace RainMeadow.UI.Components
         {
             if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-            bool isNotOwner = !(OnlineManager.lobby?.isOwner == true);
+
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is ButtonTemplate btn)
-                    btn.buttonBehav.greyedOut = isNotOwner;
+                    btn.buttonBehav.greyedOut = SettingsDisabled;
             }
-            saintAscendDurationTimerTextBox.greyedOut = isNotOwner;
+            saintAscendDurationTimerTextBox.greyedOut = SettingsDisabled;
             saintAscendDurationTimerTextBox.held = saintAscendDurationTimerTextBox._KeyboardOn;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
@@ -99,5 +99,6 @@ namespace RainMeadow.UI.Components
         public OpTextBox saintAscendDurationTimerTextBox;
         public MenuLabel saintAscendanceTimerLabel;
         public RestorableCheckbox blockMaulCheckBox, blockArtiStunCheckBox, sainotCheckBox, painCatEggCheckBox, painCatThrowsCheckBox, painCatLizardCheckBox;
+        public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
     }
 }

@@ -83,14 +83,21 @@ public class RainMeadowOptions : OptionInterface
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
-        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 120);
-        ArenaSAINOT = config.Bind("ArenaSAINOT", true);
+
+        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
+        ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
+
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+
+        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
+
         WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
+
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);

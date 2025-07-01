@@ -1585,29 +1585,38 @@ namespace RainMeadow
             {
                 OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
                 ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
-                if (OnlineManager.lobby.isOwner)
+                if (currentName == null)
                 {
-
-                    // what host observed
-                    arena.playerNumberWithKills[player.playerNumber] = player.score;
-                    arena.playerNumberWithDeaths[player.playerNumber] = player.deaths;
-                    arena.playerNumberWithWins[player.playerNumber] = player.wins;
+                    player.wins = 0;
+                    player.deaths = 0;
+                    player.score = 0;
                 }
                 else
                 {
-
-                    if (arena.playerNumberWithKills.ContainsKey(player.playerNumber))
+                    if (OnlineManager.lobby.isOwner)
                     {
-                        player.score = arena.playerNumberWithKills[player.playerNumber];
-                        // You should also check if the key exists in the other dictionaries
-                        if (arena.playerNumberWithDeaths.ContainsKey(player.playerNumber))
-                        {
-                            player.deaths = arena.playerNumberWithDeaths[player.playerNumber];
-                        }
 
-                        if (arena.playerNumberWithWins.ContainsKey(player.playerNumber))
+                        // what host observed
+                        arena.playerNumberWithKills[currentName.inLobbyId] = player.score;
+                        arena.playerNumberWithDeaths[currentName.inLobbyId] = player.deaths;
+                        arena.playerNumberWithWins[currentName.inLobbyId] = player.wins;
+                    }
+                    else
+                    {
+
+                        if (arena.playerNumberWithKills.ContainsKey(currentName.inLobbyId))
                         {
-                            player.wins = arena.playerNumberWithWins[player.playerNumber];
+                            player.score = arena.playerNumberWithKills[currentName.inLobbyId];
+                            // You should also check if the key exists in the other dictionaries
+                            if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
+                            }
+
+                            if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
+                            }
                         }
                     }
                 }
@@ -1920,6 +1929,12 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
+                {
+                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                    arena.currentLobbyOwner = OnlineManager.lobby.owner;
+
+                }
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");

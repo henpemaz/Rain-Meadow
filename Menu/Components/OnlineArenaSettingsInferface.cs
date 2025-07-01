@@ -13,6 +13,9 @@ namespace RainMeadow.UI.Components
         public ArenaSetup GetArenaSetup => menu.manager.arenaSetup;
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainer, TabContainer.Tab externalGameModeTab, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
+
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -111,16 +114,16 @@ namespace RainMeadow.UI.Components
         {
             if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-            bool isNotOwner = !(OnlineManager.lobby?.isOwner == true);
+
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is ButtonTemplate btn)
-                    btn.buttonBehav.greyedOut = isNotOwner;
+                    btn.buttonBehav.greyedOut = SettingsDisabled;
                 if (obj is MultipleChoiceArray array)
-                    array.greyedOut = isNotOwner;
+                    array.greyedOut = SettingsDisabled;
             }
-            if (countdownTimerTextBox != null) countdownTimerTextBox.greyedOut = isNotOwner;
-            if (arenaTeamComboBox != null) arenaGameModeComboBox.greyedOut = isNotOwner;
+            countdownTimerTextBox.greyedOut = SettingsDisabled;
+            arenaGameModeComboBox.greyedOut = SettingsDisabled;
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
