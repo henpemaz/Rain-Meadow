@@ -32,9 +32,6 @@ namespace RainMeadow
             public bool ready;
             [OnlineField(group = "arenaClientData")]
             public bool gotSlugcat;
-
-            [OnlineField]
-            public int team;
             public State() { }
 
             public State(ArenaClientSettings onlineEntity) : base()
