@@ -317,7 +317,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null && !self.isNPC) {
             slugcatStatsPerPlayer.Remove(self);
             slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, m));
-    }
+        }
     }
 
     private Vector2 Player_GetHeldItemDirection(On.Player.orig_GetHeldItemDirection orig, Player self, int hand)
@@ -1253,10 +1253,10 @@ public partial class RainMeadow
             {
                 if (oe.TryGetData<SlugcatCustomization>(out var customization))
                 {
-                    bool malnourished = false;
+                    bool malnourished;
                     if (self.isNPC) malnourished = self.State is MoreSlugcats.PlayerNPCState state && state.Malnourished;
                     else malnourished = self.abstractCreature.world.game.GetStorySession.saveState.malnourished;
-                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, self.slugcatStats.malnourished));
+                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, malnourished));
                     self.SlugCatClass = customization.playingAs;
                 }
                 else
