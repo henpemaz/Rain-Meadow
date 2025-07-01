@@ -22,7 +22,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public ArenaSlugcatSelectPage arenaSlugcatSelectPage;
     public Vector2 newPagePos = Vector2.zero;
     public Vector2[] oldPagesPos = [];
-    public MenuIllustration FFATitle, FFAShadow;
+    public MenuIllustration competitiveTitle, competitiveShadow;
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
@@ -55,9 +55,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
-        FFAShadow = new(this, scene, "", "FFAShadow", new Vector2(-2.99f, 265.01f), true, false);
-        FFATitle = new(this, scene, "", "FFATitle", new Vector2(-2.99f, 265.01f), true, false);
-        FFATitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
+        competitiveShadow = new(this, scene, "", "CompetitiveShadow", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveTitle = new(this, scene, "", "CompetitiveTitle", new Vector2(-2.99f, 265.01f), true, false);
+        competitiveTitle.sprite.shader = manager.rainWorld.Shaders["MenuText"];
 
         painCatName = Arena.slugcatSelectPainCatNames.GetValueOrDefault(UnityEngine.Random.Range(0, Arena.slugcatSelectPainCatNames.Count), "")!;
         painCatIndex = UnityEngine.Random.Range(0, 5);
@@ -65,7 +65,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         arenaMainLobbyPage = new ArenaMainLobbyPage(this, mainPage, default, painCatName, painCatIndex);
         arenaSlugcatSelectPage = new ArenaSlugcatSelectPage(this, slugcatSelectPage, default, painCatName, painCatIndex);
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
-        mainPage.SafeAddSubobjects(FFAShadow, FFATitle, arenaMainLobbyPage);
+        mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
         initiateStartGameAfterCountDown = false;
