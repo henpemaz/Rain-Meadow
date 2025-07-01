@@ -19,7 +19,7 @@ namespace RainMeadow
         public bool PagesOn => bodyNames?.Count > PerPage;
         public ColorSlugcatBodyButtons(Menu.Menu menu, MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors) : base(menu, owner, pos)
         {
-            PerPage = 2;
+            PerPage = 3;
             CurrentOffset = 0;
             bodyNames = names;
             this.slugcatID = slugcatID;
