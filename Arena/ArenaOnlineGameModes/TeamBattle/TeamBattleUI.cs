@@ -6,6 +6,7 @@ using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
+using HarmonyLib;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
@@ -354,8 +355,24 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
+        public FSprite martyrTeamLabelRedux;
+
         public override void ArenaPlayerBox_Update(ArenaMode arena, ArenaPlayerBox self)
         {
+            if (martyrTeamLabelRedux == null)
+            {
+                bool foundTeam = OnlineManager.lobby.clientSettings.TryGetValue(self.profileIdentifier, out var clientSettings);
+                bool foundTeamClient = clientSettings.TryGetData<ArenaTeamClientSettings>(out var team);
+                if (foundTeam && foundTeamClient)
+                {
+                    martyrTeamLabelRedux = new FSprite(TeamMappingsDictionary[team.team]);
+                    martyrTeamLabelRedux.x = 0;
+                    martyrTeamLabelRedux.y = 0;
+                    martyrTeamLabelRedux.color = TeamColors[team.team];
+                    self.Container.AddChild(this.martyrTeamLabelRedux);
+                }
+            }
+
             self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
             self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(self.showRainbow ? 0.75f : 0f);
             self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
