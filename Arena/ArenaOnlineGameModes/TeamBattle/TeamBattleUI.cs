@@ -217,22 +217,22 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
 
                 martyrColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
-                martyrColor.colorPicker.bumpBehav.greyedOut = true;
+                martyrColor.colorPicker.greyedOut = !OnlineManager.lobby.isOwner;
 
                 UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
 
                 chieftainColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(chieftainsTeamNameUpdate.pos.x + chieftainsTeamNameUpdate.rect.size.x + 50, chieftainsTeamNameUpdate.pos.y), TeamColors[1]);
-                chieftainColor.greyedOut = !OnlineManager.lobby.isOwner;
+                chieftainColor.colorPicker.greyedOut = !OnlineManager.lobby.isOwner;
                 UIelementWrapper chieftainColorWrapper = new UIelementWrapper(tabWrapper, chieftainColor);
 
                 dragonSlayerColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(dragonsSlayersTeamNameUpdate.pos.x + dragonsSlayersTeamNameUpdate.rect.size.x + 50, dragonsSlayersTeamNameUpdate.pos.y), TeamColors[2]);
-                dragonSlayerColor.greyedOut = !OnlineManager.lobby.isOwner;
+                dragonSlayerColor.colorPicker.greyedOut = !OnlineManager.lobby.isOwner;
                 UIelementWrapper dragonSlayerColorsWrapper = new UIelementWrapper(tabWrapper, dragonSlayerColor);
 
 
                 outlawColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(outlawsTeamNameUpdate.pos.x + outlawsTeamNameUpdate.rect.size.x + 50, outlawsTeamNameUpdate.pos.y), TeamColors[3]);
-                outlawColor.greyedOut = !OnlineManager.lobby.isOwner;
+                outlawColor.colorPicker.greyedOut = !OnlineManager.lobby.isOwner;
                 UIelementWrapper outlawColorWrapper = new UIelementWrapper(tabWrapper, outlawColor);
 
                 teamColorLerpLabel = new(menu, tabWrapper, menu.Translate("Team Color Lerp Factor:"), new Vector2(chifetainTeamLabel.pos.x, chifetainTeamLabel.pos.y - 38), new Vector2(0, 20), false);

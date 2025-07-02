@@ -65,24 +65,8 @@ namespace RainMeadow.UI.Components
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
-                if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
-                {
-                    if (arena.externalArenaGameMode != null)
-                    {
-                        tabContainer.RemoveTab(externalGameModeTab);
-                        onlineArenaExternalGameModeSettingsInterface = null;
-                        externalGameModeTab = null;
+                SetupExternalTab(arena);
 
-                    }
-                    arena.externalArenaGameMode = extGameMode;
-                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
-                    {
-                        externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
-                        externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-
-                    }
-                }
             };
 
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
@@ -92,23 +76,29 @@ namespace RainMeadow.UI.Components
 
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
-                if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
+                SetupExternalTab(arena);
+            }
+        }
+
+        public void SetupExternalTab(ArenaOnlineGameMode arena)
+        {
+           
+            if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
+            {
+                if (arena.externalArenaGameMode != null)
                 {
-                    if (arena.externalArenaGameMode != null)
-                    {
-                        tabContainer.RemoveTab(externalGameModeTab);
-                        onlineArenaExternalGameModeSettingsInterface = null;
-                        externalGameModeTab = null;
+                    tabContainer.RemoveTab(externalGameModeTab);
+                    onlineArenaExternalGameModeSettingsInterface = null;
+                    externalGameModeTab = null;
 
-                    }
-                    arena.externalArenaGameMode = extGameMode;
-                    if (arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalGameModeTab == null)
-                    {
-                        externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-                        onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
-                        externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
+                }
+                arena.externalArenaGameMode = extGameMode;
+                if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
+                {
+                    externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
+                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
+                    externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
 
-                    }
                 }
             }
         }
