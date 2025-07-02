@@ -25,10 +25,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public ProperlyAlignedMenuLabel teamColorLerpLabel;
         public OpTextBox teamColorBox;
 
-        public static string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
-        public static string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-        public static string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
-        public static string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
+        public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
+        public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
+        public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
+        public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public UIelementWrapper externalModeWrapper;
 
@@ -97,7 +97,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                 var arenaGameModeLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team:"), new Vector2(50, 380f), new Vector2(0, 20), false);
                 bool defaultTeamNameString = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t);
-                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(defaultTeamNameString ? teamNameDictionary[t.team]: ""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
+                arenaTeamComboBox = new OpComboBox2(new Configurable<string>(defaultTeamNameString ? teamNameDictionary[t.team] : ""), new Vector2(arenaGameModeLabel.pos.x + 50, arenaGameModeLabel.pos.y), 175f, teamNameListItems);
                 arenaTeamComboBox.OnValueChanged += (config, value, lastValue) =>
                 {
                     if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var tb))
@@ -135,7 +135,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    TeamBattleMode.martyrsTeamName = value;
+                    tb.martyrsTeamName = value;
                 };
 
                 var outlawTeamlabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 2:"), new Vector2(arenaGameModeLabel.pos.x, martyrsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
@@ -159,7 +159,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    TeamBattleMode.outlawTeamNames = value;
+                    tb.outlawTeamNames = value;
                 };
                 ///
                 var dragonSlayersLabel = new ProperlyAlignedMenuLabel(menu, owner, menu.Translate("Team 3:"), new Vector2(arenaGameModeLabel.pos.x, outlawsTeamNameUpdate.pos.y - 45), new Vector2(0, 20), false);
@@ -184,7 +184,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    TeamBattleMode.dragonSlayersTeamNames = value;
+                    tb.dragonSlayersTeamNames = value;
                 };
 
 
@@ -211,13 +211,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                     }
-                    TeamBattleMode.chieftainsTeamNames = value;
+                    tb.chieftainsTeamNames = value;
                 };
 
                 externalModeWrapper = new UIelementWrapper(tabWrapper, arenaTeamComboBox);
 
                 martyrColor = new OpTinyColorPicker(menu, externalModeWrapper.tabWrapper, new Vector2(martyrsTeamNameUpdate.pos.x + martyrsTeamNameUpdate.rect.size.x + 50, martyrsTeamNameUpdate.pos.y), TeamColors[0]);
-                martyrColor.greyedOut = !OnlineManager.lobby.isOwner;
+                martyrColor.colorPicker.bumpBehav.greyedOut = true;
+
                 UIelementWrapper martyrColorsWrapper = new UIelementWrapper(tabWrapper, martyrColor);
 
 
