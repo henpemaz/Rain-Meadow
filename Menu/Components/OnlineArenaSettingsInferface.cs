@@ -151,27 +151,7 @@ namespace RainMeadow.UI.Components
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
                 if (!arenaGameModeComboBox.held && !gameModeComboBoxLastHeld) arenaGameModeComboBox.value = arena.currentGameMode;
-                if (!OnlineManager.lobby.isOwner && arena.currentGameMode != arena.externalArenaGameMode.GetGameModeId.value)
-                {
-                    if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
-                    {
-                        if (arena.externalArenaGameMode != null)
-                        {
-                            tabContainer.RemoveTab(externalGameModeTab);
-                            onlineArenaExternalGameModeSettingsInterface = null;
-                            externalGameModeTab = null;
-
-                        }
-                        arena.externalArenaGameMode = extGameMode;
-                        if (arena.externalArenaGameMode.AddGameSettingsTab() != "" && externalGameModeTab == null)
-                        {
-                            externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-                            onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
-                            externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-
-                        }
-                    }
-                }
+               
             }
 
         }

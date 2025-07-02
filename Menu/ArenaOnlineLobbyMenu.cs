@@ -30,6 +30,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public bool initiateStartGameAfterCountDown;
+    public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
     private int lastCountdownSoundPlayed;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
@@ -285,6 +286,28 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             {
                 initiateStartGameAfterCountDown = true;
                 StartGame();
+            }
+        }
+
+        if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)
+        {
+            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
+            {
+                if (Arena.externalArenaGameMode != null)
+                {
+                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.RemoveTab(arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab);
+                    arenaMainLobbyPage.arenaSettingsInterface.onlineArenaExternalGameModeSettingsInterface = null;
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = null;
+
+                }
+                Arena.externalArenaGameMode = extGameMode;
+                if (Arena.externalArenaGameMode.AddGameSettingsTab() != "" && arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab == null)
+                {
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = arenaMainLobbyPage.arenaSettingsInterface.tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
+                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.owner, new Vector2(0f, 0f));
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
+
+                }
             }
         }
 
