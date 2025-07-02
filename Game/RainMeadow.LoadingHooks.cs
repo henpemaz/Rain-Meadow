@@ -193,9 +193,9 @@ namespace RainMeadow
                         {
                             if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
                                 arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new(self.players.Count -1)
                             {
-                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                playerNumber = self.players.Count - 1,
                                 playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
                                 hasEnteredGameArea = true
                             };
