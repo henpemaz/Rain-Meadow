@@ -1596,7 +1596,6 @@ namespace RainMeadow
                         {
                             player.score = arena.playerNumberWithKills[currentName.inLobbyId];
                         }
-                        // You should also check if the key exists in the other dictionaries
                         if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
                         {
                             player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];

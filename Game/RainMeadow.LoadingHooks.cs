@@ -130,115 +130,35 @@ namespace RainMeadow
                             };
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                            ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
                             self.players.Add(newArenaPlayer);
                         }
                     }
 
-
-                    //for (int i = self.players.Count - 1; i >= 0; i--)
-                    //{
-                    //    RainMeadow.Debug($"Arena: Local Sitting Data: {self.players[i].playerNumber}: {self.players[i].playerClass}");
-
-                    //    OnlinePlayer? onlineArenaSittingPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber);
-                    //    if (onlineArenaSittingPlayer == null)
-                    //    {
-                    //        if (OnlineManager.lobby.isOwner)
-                    //        {
-                    //            // Find the index of the missing player's inLobbyId in arenaSittingOnlineOrder
-                    //            // Safely check if the index 'i' is within the bounds of arena.arenaSittingOnlineOrder
-                    //            if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
-                    //            {
-                    //                //// Now it's safe to access arena.arenaSittingOnlineOrder[i]
-                    //                //if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
-                    //                //{
-                    //                    RainMeadow.Debug("Arena: Removing missing player from sitting");
-                    //                    arena.arenaSittingOnlineOrder.RemoveAt(i);
-                    //                    RainMeadow.Debug("Arena: Removed missing player from sitting");
-                    //                //}
-                    //            }
-                    //            else
-                    //            {
-                    //                RainMeadow.Debug($"Warning: Index {i} is out of bounds for arena.arenaSittingOnlineOrder.");
-                    //            }
-                    //        }
-                    //        RainMeadow.Debug("Arena: Removing missing player from local sitting");
-                    //        self.players.RemoveAt(i);
-                    //        RainMeadow.Debug("Arena: Removed missing player from local sitting");
-                    //    }
-                    //    else
-                    //    {
-                    //        for (int p = waitingPlayers.Count - 1; p >= 0; p--)
-                    //        {
-                    //            OnlinePlayer lateClient = waitingPlayers[p];
-                    //            Debug($"Late client: {lateClient}");
-                    //            if (lateClient != null && lateClient == onlineArenaSittingPlayer)
-                    //            {
-                    //                Debug("Found a late client who matches a sitting player in-game");
-                    //                if (OnlineManager.lobby.isOwner)
-                    //                {
-                    //                    Debug("Arena: Removing late player from sitting");
-                    //                    arena.arenaSittingOnlineOrder.RemoveAt(i);
-                    //                    Debug("Arena: Removed late player from sitting");
-                    //                }
-                    //                Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
-                    //                self.players.RemoveAt(i);
-                    //            }
-                    //        }
-                    //    }
-                    //}
                     // Add waiting players
                     if (arena.allowJoiningMidRound)
                     {
                         foreach (OnlinePlayer player in waitingPlayers)
                         {
-                            if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
-                                arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
-                            ArenaSitting.ArenaPlayer newArenaPlayer = new(self.players.Count -1)
+                            if (player != null) // always gotta check in case something happened to them
                             {
-                                playerNumber = self.players.Count - 1,
-                                playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
-                                hasEnteredGameArea = true
-                            };
-                            Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                            self.players.Add(newArenaPlayer);
-                        }
-                    }
-                    if (OnlineManager.lobby.isOwner)
-                    {
-                        foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
-                        {
-                            // inLobbyId starts at 1, playerNumber starts at 0
-                            // TODO: Test this
-                            // TODO: Does not work when quitting and rejoining
-                            OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
-                            if (getPlayer != null)
-                            {
-                                
-                                if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                                if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
                                 {
-                                    arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                                    arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
                                 }
-                                if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                                ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
                                 {
-                                    arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId , 0);
-                                }
-                                if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
-                                {
-                                    arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
-                                }
+                                    playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                    playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
+                                    hasEnteredGameArea = true
+                                };
+                                Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                                ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+                                self.players.Add(newArenaPlayer);
                             }
                         }
                     }
 
-                    foreach (var localp in self.players)
-                    {
-
-                        localp.wins = arena.playerNumberWithWins[localp.playerNumber + 1];
-                        localp.deaths = arena.playerNumberWithDeaths[localp.playerNumber + 1];
-                        localp.score = arena.playerNumberWithKills[localp.playerNumber + 1];
-
-
-                    }
 
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 

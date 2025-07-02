@@ -130,6 +130,29 @@ namespace RainMeadow
 
             return null;
         }
+
+        public static void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
+        {
+            if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
+            {
+                newArenaPlayer.wins = wins;
+                newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
+                newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+
+                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+            }
+            else
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
+                    RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
+
+                }
+            }
+        }
         public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {
             arena.ResetGameTimer();
@@ -144,9 +167,6 @@ namespace RainMeadow
             arena.playerNumberWithKills.Clear();
             arena.playerNumberWithWins.Clear();
             arena.playersLateWaitingInLobbyForNextRound.Clear();
-
-
-
         }
         public static void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
         {
