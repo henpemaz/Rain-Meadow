@@ -207,16 +207,20 @@ namespace RainMeadow
                     {
                         foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                         {
+                            // inLobbyId starts at 1, playerNumber starts at 0
+                            // TODO: Test this
+                            // TODO: Does not work when quitting and rejoining
                             OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
                             if (getPlayer != null)
                             {
+                                
                                 if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
                                 {
                                     arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
                                 }
                                 if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
                                 {
-                                    arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                                    arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId , 0);
                                 }
                                 if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
                                 {

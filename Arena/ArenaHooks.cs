@@ -120,7 +120,7 @@ namespace RainMeadow
             On.ArenaSitting.PlayerSessionResultSort += ArenaSitting_PlayerSessionResultSort;
             On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
-           
+
 
 
         }
@@ -1595,17 +1595,18 @@ namespace RainMeadow
                         if (arena.playerNumberWithKills.ContainsKey(currentName.inLobbyId))
                         {
                             player.score = arena.playerNumberWithKills[currentName.inLobbyId];
-                            // You should also check if the key exists in the other dictionaries
-                            if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
-                            {
-                                player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
-                            }
-
-                            if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
-                            {
-                                player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
-                            }
                         }
+                        // You should also check if the key exists in the other dictionaries
+                        if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
+                        {
+                            player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
+                        }
+
+                        if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
+                        {
+                            player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
+                        }
+
                     }
                 }
 
@@ -1621,7 +1622,7 @@ namespace RainMeadow
                     {
                         if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                         {
-                            self.playerNameLabel.text += $" -- { team.teamNameDictionary[td.team].ToUpper()}";
+                            self.playerNameLabel.text += $" -- {team.teamNameDictionary[td.team].ToUpper()}";
                         }
                     }
                 }
