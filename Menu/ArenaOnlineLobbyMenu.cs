@@ -301,6 +301,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
             if (idString == "MIDGAMEJOIN")
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
+            if (idString == "WEAPONCOLLISIONFIX")
+                return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
