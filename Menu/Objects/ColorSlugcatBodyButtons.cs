@@ -114,7 +114,7 @@ namespace RainMeadow
             }
             if (nextButton == null)
             {
-                nextButton = new(menu, this, "Menu_Symbol_Arrow", NEXTSINGAL, new Vector2(prevButton.pos.x + 54 + (perPage * 80), prevButton.pos.y));
+                nextButton = new(menu, this, "Menu_Symbol_Arrow", NEXTSINGAL, new Vector2(prevButton.pos.x + 64 + (perPage * 80), prevButton.pos.y));
                 subObjects.Add(nextButton);
                 nextButton.symbolSprite.rotation = 90;
             }
