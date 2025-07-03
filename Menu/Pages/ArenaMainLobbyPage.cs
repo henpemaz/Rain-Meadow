@@ -29,6 +29,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
     {
         this.painCatIndex = painCatIndex;
+        var scugslotsHint = UnityEngine.Random.Range(0, 21);
+
 
         readyButton = new SimplerButton(menu, this, Utils.Translate("READY?"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
         readyButton.OnClick += btn =>
@@ -36,6 +38,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (!RainMeadow.isArenaMode(out var _)) return;
             Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
         };
+        readyButton.description = Utils.Translate(scugslotsHint == 20 ? SlugcatSelector.slugcatSelectorHints[Random.Range(0, SlugcatSelector.slugcatSelectorHints.Count)]: "Ready up to join the host when the match begins");
 
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
         chatMenuBox.roundedRect.size.y = 475f;
