@@ -71,6 +71,10 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             sprites.Do(x => x.RemoveFromContainer());
             pingLabel.RemoveFromContainer();
+            if (externalSprite != null)
+            {
+                externalSprite.RemoveFromContainer();
+            }
         }
         public override void Singal(MenuObject sender, string message)
         {
