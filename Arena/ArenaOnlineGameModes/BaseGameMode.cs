@@ -370,13 +370,17 @@ namespace RainMeadow
 
         }
 
+        public virtual void ArenaExternalGameModeSettingsInterface_GrafUpdate(ArenaOnlineGameMode arena, float timeStacker)
+        {
+
+        }
+
         public virtual void ArenaExternalGameModeSettingsInterface_Update(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
         {
 
         }
 
-
-        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, ref List<FSprite> sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
         {
             Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
             Color pingColor = self.GetPingColor(self.realPing);
@@ -384,6 +388,7 @@ namespace RainMeadow
             pingLabel.x = pos.x + size.x;
             pingLabel.y = pos.y + 7;
             pingLabel.color = pingColor;
+
             for (int i = 0; i < 3; i++)
             {
                 if (i == 2)

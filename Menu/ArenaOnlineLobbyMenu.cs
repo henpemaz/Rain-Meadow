@@ -291,6 +291,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)
         {
+
             if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
             {
                 if (Arena.externalArenaGameMode != null)
@@ -304,9 +305,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 if (Arena.externalArenaGameMode.AddGameSettingsTab() != "" && arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab == null)
                 {
                     arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = arenaMainLobbyPage.arenaSettingsInterface.tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
-                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.owner, new Vector2(0f, 0f));
+                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.arenaSettingsInterface.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab, new Vector2(0f, 0f));
                     arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-
+                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.tabButtonContainer.GoPrevPage();
                 }
             }
         }

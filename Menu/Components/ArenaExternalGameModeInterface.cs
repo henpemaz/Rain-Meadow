@@ -31,7 +31,10 @@ namespace RainMeadow.UI.Components
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            Vector2 pos = DrawPos(timeStacker);
+            if (RainMeadow.isArenaMode(out ArenaMode arena))
+            {
+                arena.externalArenaGameMode.ArenaExternalGameModeSettingsInterface_GrafUpdate(arena, timeStacker);
+            }
 
         }
         public override void Update()
