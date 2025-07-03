@@ -361,6 +361,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                         else
                         {
+                            
                             externalSprite.color = TeamColors[team.team];
                             externalSprite.SetElementByName(TeamMappingsDictionary[team.team]);
                         }
@@ -371,15 +372,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         }
 
-        public override void ArenaPlayerBox_Update(ArenaMode arena, ArenaPlayerBox self)
-        {
-            self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
-            self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(self.showRainbow ? 0.75f : 0f);
-            self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
-            self.lastTextOverlayFade = self.textOverlayFade;
-            self.textOverlayFade = self.enabledTextOverlay ? RWCustom.Custom.LerpAndTick(self.textOverlayFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.textOverlayFade, 0f, 0.12f, 0.1f);
-            self.slugcatButton.isBlackPortrait = self.enabledTextOverlay;
-        }
 
         public override string AddGameSettingsTab()
         {
