@@ -11,14 +11,13 @@ namespace RainMeadow
         private TextPrompt textPrompt;
         private RoomCamera camera;
         private RainWorldGame game;
-        public int currentLogIndex = 0;
-
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
         public bool chatInputActive => chatInputOverlay is not null;
         public bool showChatLog = false;
 
         public List<(string, string)> chatLog = new();
+        public float logScrollPos;
 
         public bool Active => game.processActive;
         public bool ShouldForceCloseChat => game.pauseMenu != null || camera.hud?.map?.visible == true || game.manager.upcomingProcess != null || slatedForDeletion;
@@ -58,8 +57,12 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             chatLog.Add((user, message));
-            if (chatInputActive) currentLogIndex = 0;
-            chatLogOverlay?.UpdateLogDisplay();
+            if (chatLogOverlay != null)
+            {
+                bool shouldGoDown = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll;
+                chatLogOverlay.UpdateLogDisplay();
+                if (shouldGoDown) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
+            }
         }
 
         public override void Draw(float timeStacker)
@@ -96,21 +99,17 @@ namespace RainMeadow
             }
             if (chatInputActive)
             {
-                if (Input.GetKey(KeyCode.UpArrow))
+                if (chatLogOverlay != null)
                 {
-                    if (currentLogIndex < chatLog.Count - 1)
+                    if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
                     {
-                        currentLogIndex++;
-                        chatLogOverlay?.UpdateLogDisplay();
+                        chatLogOverlay.scroller.AddScroll(-1);
+                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
                     }
-                }
-
-                if (Input.GetKey(KeyCode.DownArrow))
-                {
-                    if (currentLogIndex > 0)
+                    else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollDown)
                     {
-                        currentLogIndex--;
-                        chatLogOverlay?.UpdateLogDisplay();
+                        chatLogOverlay.scroller.AddScroll(1);
+                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
                     }
                 }
             }
@@ -123,6 +122,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatLogOverlay != null)
             {
+                logScrollPos = chatLogOverlay.scroller.DownScrollOffset == chatLogOverlay.scroller.MaxDownScroll? -1 : chatLogOverlay.scroller.DownScrollOffset;
                 chatLogOverlay.ShutDownProcess();
                 chatLogOverlay = null;
             }
@@ -132,6 +132,7 @@ namespace RainMeadow
             RainMeadow.DebugMe();
             if (chatInputOverlay != null)
             {
+                if (!string.IsNullOrEmpty(ChatTextBox.lastSentMessage) && chatLogOverlay != null) chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset = chatLogOverlay.scroller.MaxDownScroll;
                 chatInputOverlay.chat.DelayedUnload(0.1f);
                 chatInputOverlay.ShutDownProcess();
                 chatInputOverlay = null;
