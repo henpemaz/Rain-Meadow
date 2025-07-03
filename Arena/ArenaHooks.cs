@@ -1451,6 +1451,7 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+
                             for (int p = 0; p < OnlineManager.players.Count; p++)
                             {
                                 if (OnlineManager.players[p].isMe)
@@ -1923,6 +1924,7 @@ namespace RainMeadow
                     arena.currentLobbyOwner = OnlineManager.lobby.owner;
 
                 }
+
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
@@ -1941,6 +1943,10 @@ namespace RainMeadow
                     }
                 }
                 arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
+                }
 
                 if (!self.sessionEnded)
                 {

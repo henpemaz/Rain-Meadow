@@ -6,7 +6,6 @@ using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
-using HarmonyLib;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
@@ -30,6 +29,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
         public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
         public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
+        public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
 
         public UIelementWrapper externalModeWrapper;
 
@@ -243,9 +243,11 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     description = menu.Translate("How strongly the team color mixes with your color"),
                     accept = OpTextBox.Accept.Float
                 };
+                teamColorBox.greyedOut = !OnlineManager.lobby.isOwner;
                 teamColorBox.OnValueUpdate += (config, value, lastValue) =>
                 {
                     RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamColorBox.valueFloat;
+                    lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
                 };
                 UIelementWrapper martyrWrapper = new UIelementWrapper(tabWrapper, martyrsTeamNameUpdate);
                 UIelementWrapper outlawWrapper = new UIelementWrapper(tabWrapper, outlawsTeamNameUpdate);
@@ -396,11 +398,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 Debug.LogError("Invalid hex code: " + hexCode + ". Returning default color.");
                 return Color.magenta; // Or any default/error color you prefer
             }
-        }
-
-        public float SetTeamLerp()
-        {
-            return RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
         }
     }
 }

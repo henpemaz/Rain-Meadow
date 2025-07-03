@@ -26,10 +26,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
+    public bool initiateStartGameAfterCountDown;
     public int painCatIndex;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
-    public bool initiateStartGameAfterCountDown;
     public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
     private int lastCountdownSoundPlayed;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
@@ -169,10 +169,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
+        if (OnlineManager.lobby.isOwner)
         {
-            Arena.initiateLobbyCountdown = true;
-            return;
+            if (Arena.lobbyCountDown > 0)
+            {
+                Arena.initiateLobbyCountdown = true;
+                return;
+            }
         }
 
         while (manager.dialog != null)
@@ -187,7 +190,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
-        
+
     }
     public void SetPlaylistFromSetupToSitting()
     {
@@ -283,6 +286,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (OnlineManager.lobby.isOwner)
         {
             if (Arena.lobbyCountDown <= 0 && !initiateStartGameAfterCountDown)
+            {
+                initiateStartGameAfterCountDown = true;
+                StartGame();
+            }
+        }
+        else
+        {
+            if (Arena.hasPermissionToRejoin && !initiateStartGameAfterCountDown)
             {
                 initiateStartGameAfterCountDown = true;
                 StartGame();

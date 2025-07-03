@@ -34,16 +34,6 @@ namespace RainMeadow
                 }
             }
         }
-
-        [RPCMethod]
-        public static void Arena_CallPlayerInMenuToJoin()
-        {
-            if (!RainMeadow.isArenaMode(out _)) return;
-            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not ArenaOnlineLobbyMenu lobby) return;
-            RainMeadow.Debug("Start game for player");
-            lobby.StartGame();
-
-        }
         [RPCMethod]
         public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
         {
@@ -213,40 +203,6 @@ namespace RainMeadow
                 // Player.maxGodTime. I'll leave it be but if this is causing issues
                 // just slap on a * 40 or / 40
                 arena.arenaSaintAscendanceTimer = saintMaxTime;
-            }
-
-        }
-
-
-        [RPCMethod]
-        public static void Arena_IncrementPlayersLeftt()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerLeftGame = arena.playerLeftGame + 1;
-
-            }
-
-        }
-
-        [RPCMethod]
-        public static void Arena_IncrementPlayersJoined()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerEnteredGame = arena.playerEnteredGame + 1;
-
-            }
-
-        }
-
-        [RPCMethod]
-        public static void Arena_ResetPlayersLeft()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerLeftGame = 0;
-
             }
 
         }

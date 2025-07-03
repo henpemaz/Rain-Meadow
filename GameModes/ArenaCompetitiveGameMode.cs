@@ -63,16 +63,17 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
 
 
-        public int playerEnteredGame;
+        public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
         public bool addedChampstoList;
         public bool hasPermissionToRejoin;
+        public bool initiateLobbyCountdown;
+
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int lobbyCountDown;
-        public bool initiateLobbyCountdown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
 
@@ -99,11 +100,10 @@ namespace RainMeadow
 
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
-            playerEnteredGame = 0;
+            playersEqualToOnlineSitting = false;
             painCatThrowingSkill = 0;
             totalLevelCount = 0;
             currentLevel = 0;
-            playerLeftGame = 0;
             isInGame = false;
             lizardEvent = 0;
             paincatName = "";
@@ -345,6 +345,7 @@ namespace RainMeadow
             ResetScrollTimer();
             ResetInvDetails();
             ResetChampAddition();
+            AllowRejoin();
         }
 
         public void ResetAtNextLevel()
@@ -373,6 +374,10 @@ namespace RainMeadow
             avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
         }
 
+        public void AllowRejoin()
+        {
+            hasPermissionToRejoin = true;
+        }
         public void ResetGameTimer()
         {
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -381,7 +386,7 @@ namespace RainMeadow
 
         public void ResetPlayersEntered()
         {
-            playerEnteredGame = 0;
+            playersEqualToOnlineSitting = true;
         }
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)

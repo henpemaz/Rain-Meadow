@@ -30,21 +30,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="Assembly-CSharp">
-			<HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
-		</Reference>
-		<Reference Include="Assembly-CSharp-firstpass">
-			<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
-		</Reference>
-		<Reference Include="mscorlib">
-			<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\mscorlib.dll</HintPath>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>..\..\..\..\Downloads\AssetStudio.net472.v0.16.47\Newtonsoft.Json.dll</HintPath>
-		</Reference>
-		<Reference Include="Rewired.Runtime">
-			<HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Rewired.Runtime.dll</HintPath>
-		</Reference>
+	  <Reference Include="Assembly-CSharp">
+	    <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Rain World\BepInEx\utils\PUBLIC-Assembly-CSharp.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Assembly-CSharp-firstpass">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+	  </Reference>
+	  <Reference Include="mscorlib">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\mscorlib.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Newtonsoft.Json">
+	    <HintPath>..\..\..\..\Downloads\AssetStudio.net472.v0.16.47\Newtonsoft.Json.dll</HintPath>
+	  </Reference>
+	  <Reference Include="Rewired.Runtime">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Rain World\RainWorld_Data\Managed\Rewired.Runtime.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>

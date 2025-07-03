@@ -86,10 +86,6 @@ namespace RainMeadow
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
-                            if (!OnlineManager.lobby.isOwner)
-                            {
-                                OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
-                            }
                             self.players.Clear();
                             return;
                         }
@@ -105,12 +101,6 @@ namespace RainMeadow
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-                        if (!OnlineManager.lobby.isOwner)
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
-                        }
-
                         return;
                     }
 
