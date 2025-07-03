@@ -76,9 +76,7 @@ namespace RainMeadow.UI.Components
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox);
-        }
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox);
-
+        
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
                 SetupExternalTab(arena);
