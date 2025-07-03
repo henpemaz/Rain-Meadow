@@ -132,6 +132,7 @@ namespace RainMeadow
             {
                 bodyInterface = GetColorInterface(id, new Vector2(size.x, size.y + 90f));
                 pages[0].subObjects.Add(bodyInterface);
+                UpdateColorBinds();
             }
         }
         public void AddColorInterface()
@@ -170,15 +171,7 @@ namespace RainMeadow
         }
         public void RemoveColorInterface()
         {
-            for (int i = 0; i < bodyInterface?.bodyButtons?.Length; i++)
-            {
-                if (i == 0)
-                {
-                    MutualVerticalButtonBind(colorCheckbox, bodyInterface.bodyButtons[i]);
-                    continue;
-                }
-                bodyInterface.bodyButtons[i].TryBind(colorCheckbox, bottom: true);
-            }
+            UpdateColorBinds();
             pages[0].ClearMenuObject(ref hueSlider);
             pages[0].ClearMenuObject(ref satSlider);
             pages[0].ClearMenuObject(ref litSlider);
@@ -188,6 +181,18 @@ namespace RainMeadow
         public ColorSlugcatBodyButtons GetColorInterface(SlugcatStats.Name slugcatID, Vector2 pos)
         {
              return new ColorSlugcatBodyButtons(this, pages[0], pos, slugcatID, PlayerGraphics.ColoredBodyPartList(slugcatID), [.. PlayerGraphics.DefaultBodyPartColorHex(slugcatID).Select(Custom.hexToColor).Select(Custom.RGB2HSL).Select(ColorHelpers.SetHSLString)]);
+        }
+        public void UpdateColorBinds()
+        {
+            for (int i = 0; i < bodyInterface?.bodyButtons?.Length; i++)
+            {
+                if (i == 0)
+                {
+                    MutualVerticalButtonBind(colorCheckbox, bodyInterface.bodyButtons[i]);
+                    continue;
+                }
+                bodyInterface.bodyButtons[i].TryBind(colorCheckbox, bottom: true);
+            }
         }
 
         public const string COLORCHECKBOXID = "COLORCHECKED";

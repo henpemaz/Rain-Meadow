@@ -39,9 +39,15 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public List<string> playList;
             [OnlineField(group = "arenaSetup")]
+            public bool shufflePlayList;
+            [OnlineField(group = "arenaSetup")]
             public int totalLevels;
             [OnlineField(group = "arenaSetup")]
             public int arenaSetupTime;
+            [OnlineField(group = "arenaSetup")]
+            public int lobbyCountDown;
+            [OnlineField(group = "arenaSetup")]
+            public bool initiatedLobbyCountDown;
             [OnlineField(group = "arenaSetup")]
             public int saintAscendanceTimer;
             [OnlineField(group = "arenaSetup")]
@@ -86,13 +92,14 @@ namespace RainMeadow
             public bool leaveForNextLevel;
             [OnlineField]
             public bool weaponCollisionFix;
-            
+
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
                 playList = new(arena.playList);
+                shufflePlayList = arena.shufflePlayList;
                 arenaSittingOnlineOrder = new(arena.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
@@ -104,13 +111,14 @@ namespace RainMeadow
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
-               
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
                 arenaSetupTime = arena.setupTime;
+                lobbyCountDown = arena.lobbyCountDown;
+                initiatedLobbyCountDown = arena.initiateLobbyCountdown;
                 sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
                 currentGameMode = arena.currentGameMode;
@@ -133,6 +141,7 @@ namespace RainMeadow
                 var lobby = (resource as Lobby);
                 (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
+                (lobby.gameMode as ArenaOnlineGameMode).shufflePlayList = shufflePlayList;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaOnlineGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaOnlineGameMode).returnToLobby = returnToLobby;
@@ -152,6 +161,9 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
+                (lobby.gameMode as ArenaOnlineGameMode).lobbyCountDown = lobbyCountDown;
+                (lobby.gameMode as ArenaOnlineGameMode).initiateLobbyCountdown = initiatedLobbyCountDown;
+
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;

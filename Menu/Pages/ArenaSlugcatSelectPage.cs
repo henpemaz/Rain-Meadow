@@ -18,6 +18,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public bool readyWarning;
     public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
+    public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
+    public string countdownText;
     public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -26,7 +28,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
+        backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
@@ -40,7 +42,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
-            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
             if (i >= buttonsInTopRow)
@@ -55,7 +57,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
 
-        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate("You have been unreadied. Switch back to re-ready yourself automatically"), new Vector2(680f, 620f), Vector2.zero, true);
+        readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
 
         slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310f), default, true);
         slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
@@ -64,6 +66,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         descriptionGradients = new FSprite[4];
         descriptionGradientsPos = new Vector2[4];
+        countdownText = $"The match is starting in {Arena.lobbyCountDown}! Ready up!!";
 
         for (int i = 0; i < descriptionGradients.Length; i++)
         {
@@ -86,16 +89,18 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             SwitchSelectedSlugcat(savedSlugcat);
             ArenaMenu.ChangeScene();
         }
+
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        slugcat = ArenaHelpers.selectableSlugcats.Contains(slugcat) ? slugcat : ArenaHelpers.selectableSlugcats[0]; //selectableSlugcats[0] should never be null! this is punishment >:D
-        selectedSlugcatIndex = ArenaHelpers.selectableSlugcats.IndexOf(slugcat); //this is to fix start index not working PLEASE DONT CHANGE THIS
-        ArenaMenu?.SwitchSelectedSlugcat(slugcat);
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+        SlugcatStats.Name nonNullSlugcat = slugcat ?? SlugcatStats.Name.White;
+        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(nonNullSlugcat), 0);
+        slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
+        ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
+        if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = menu.LongTranslate(painCatDescription);
+            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
@@ -128,7 +133,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (invPortraitDescriptions is not null) descriptionCategories.Add(invPortraitDescriptions, 0.3f);
 
         List<string> descriptions = descriptionCategories.GetRandom();
-        return Custom.ReplaceLineDelimeters(descriptions[UnityEngine.Random.Range(0, descriptions.Count)]).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+        return descriptions[UnityEngine.Random.Range(0, descriptions.Count)];
     }
     public override void Update()
     {
@@ -137,6 +142,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (readyWarning)
             warningCounter = Mathf.Max(warningCounter, 0);
         else warningCounter = -1;
+        if (readyWarningLabel != null)
+        {
+            readyWarningLabel.text = Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in {Arena.lobbyCountDown}! Ready up!!") : defaultReadyWarningText;
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {

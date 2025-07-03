@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Menu;
@@ -14,6 +14,8 @@ namespace RainMeadow
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
+
+        public OnlinePlayer currentLobbyOwner;
 
         public bool registeredNewGameModes = false;
 
@@ -68,6 +70,8 @@ namespace RainMeadow
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
+        public int lobbyCountDown;
+        public bool initiateLobbyCountdown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
 
@@ -78,6 +82,7 @@ namespace RainMeadow
         public ArenaClientSettings arenaClientSettings;
         public SlugcatCustomization avatarSettings;
 
+        public bool shufflePlayList;
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
@@ -107,6 +112,8 @@ namespace RainMeadow
             clientWantsToLeaveGame = false;
             hasPermissionToRejoin = false;
             leaveForNextLevel = false;
+            lobbyCountDown = 5;
+            initiateLobbyCountdown = false;
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -117,10 +124,11 @@ namespace RainMeadow
             };
             slugcatSelectDescriptions = new Dictionary<string, string>()
             {
-                { "White", "Your enemies close in around you, but it won't be like the first time" },
+
+                { "White", "Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock." },
                 { "Yellow", "Remember: they struck first, so you'll need to hit back harder." },
-                { "Red", "Afflicted from the beginning, and a figher to the end.<LINE>Show them the meaning of suffering." },
-                { "Night", "Nobody loves me." },
+                { "Red", "Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering." },
+                { "Night", "Observe all weakness - then strike while cloaked in shadows." },
             };
             slugcatSelectDisplayNames = new Dictionary<string, string>()
             {
@@ -165,16 +173,16 @@ namespace RainMeadow
                     "Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.",
                     "How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?",
                     "7",
+                    "Feeling Lucky?<LINE>Try holding your slugcat portrait ;)",
                     "Did you know:<LINE>Meadow was released this Friday",
                     "Did you know:<LINE>You're bad at Arena",
                     "Did you know:<LINE>There's more \"Did you know\"s.",
                     "Did you know:<LINE>This is the only \"Did you know\".",
                     "You will lose this round<LINE>Your body will not be found<LINE>6 feet underground"
-                ];
                 slugcatSelectPainCatQuoteDescriptions =
                 [
-                    "\"<USERNAME>, you're gonna get us both killed!\"",
-                    "\"No seriously, has anyone seen my egg?\"",
+                    "\"<USERNAME>, youre gonna get us both killed\"",
+                    "\"no srsly wheres my egg\"",
                     "\"u dont need 2 be alone, bby.\"",
                     "\"Sometimes, I wake up with a friend I've never met b4\"",
                     "\"i luv u <3\"",
@@ -183,12 +191,12 @@ namespace RainMeadow
                 [
                     "WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0",
                     "Don't Care<LINE>Nuh<LINE>Yuh",
-                    "Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>",
+                    "Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...",
                     "Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?",
                     "Be careful when selecting the Fartificer",
-                    "I'm getting \"among us potion at 3 am\" vibes<LINE>.",
-                    "Playtesters<LINE>are<LINE>replaceable",
-                    "There's enough inv descriptions.<LINE> DOESNT FILL MY EMPTY STOMACH"
+                    "am getting \"among us potion at 3 am\" vibes<LINE>add that /lh",
+                    "Playtesters<LINE>Are<LINE>Replaceable",
+                    "There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH"
                 ];
                 slugcatSelectPainCatSmileyDescriptions =
                 [
@@ -247,11 +255,11 @@ namespace RainMeadow
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
             {
                 StringBuilder randomDescBuilder = new();
-                if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
-                else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
+                if (ModManager.MSC) randomDescBuilder.Append(Utils.Translate("Am I Warrior from the past, or a Messiah from the future?"));
+                else randomDescBuilder.Append(Utils.Translate("Am I Cat Searching for many, or a Mouse searching for one?"));
+                if (ModManager.Watcher) randomDescBuilder.Append(Utils.Translate("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?"));
+                else randomDescBuilder.Append(Utils.Translate("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?"));
+                randomDescBuilder.Append(Utils.Translate("<LINE>I do not know, for I am not one. I am many."));
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else
@@ -353,8 +361,8 @@ namespace RainMeadow
             {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
-
             avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
+            arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
         public void ResetGameTimer()
@@ -451,6 +459,10 @@ namespace RainMeadow
                     if (forceReadyCountdownTimer > 0)
                     {
                         forceReadyCountdownTimer--;
+                    }
+                    if (lobbyCountDown > 0 && initiateLobbyCountdown)
+                    {
+                        lobbyCountDown--;
                     }
 
                     if (arenaPrepTimer != null)

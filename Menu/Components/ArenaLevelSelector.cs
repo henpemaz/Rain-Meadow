@@ -22,10 +22,9 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public RoundedRect roundedRect;
         public FSprite imageSprite;
         public string levelName;
-        public float toFade, lastToFade, yPos,goalYPos;
+        public float toFade, lastToFade, yPos, goalYPos;
         public int sleepCounter, awakeCounter;
         public PlaylistSelector? MyPlaylistSelector => owner as PlaylistSelector;
-        public LevelItem[]? LevelItems => [..MyPlaylistSelector?.LevelItems];
         public LevelPreview(Menu.Menu menu, MenuObject owner, bool rightFacing, float xoffset = 20) : base(menu, owner, default, new(ThumbWidth + 20, ThumbHeight + 20))
         {
             roundedRect = new(menu, this, new Vector2(0.01f, 0.01f), size, true);
@@ -75,7 +74,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             toFade = (levelItem != null && (awakeCounter > 60 || toFade > 0) && sleepCounter < 200) ? Custom.LerpAndTick(toFade, 1f, 0.03f, 0.033333335f) : Custom.LerpAndTick(toFade, 0f, 0.015f, 0.016666668f);
             Vector2 posOfOwner = (owner as PositionedMenuObject)?.ScreenPos ?? Vector2.zero, sizeOfOwner = (owner as RectangularMenuObject)?.size ?? Vector2.zero;
             if (menu.manager.menuesMouseMode)
-            { 
+            {
                 yPos = goalYPos = Mathf.Clamp(Futile.mousePosition.y, posOfOwner.y + size.y * 0.5f, posOfOwner.y + sizeOfOwner.y - size.y * 0.5f);
             }
             else
@@ -95,8 +94,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             base.GrafUpdate(timeStacker);
             for (int i = 0; i < 17; i++)
             {
-                roundedRect.sprites[i].color = i < 9? Color.black : MenuRGB(MenuColors.VeryDarkGrey);
-                roundedRect.sprites[i].alpha = i < 9? 0.5f * Mathf.Pow(num, 1.5f) : num;
+                roundedRect.sprites[i].color = i < 9 ? Color.black : MenuRGB(MenuColors.VeryDarkGrey);
+                roundedRect.sprites[i].alpha = i < 9 ? 0.5f * Mathf.Pow(num, 1.5f) : num;
                 roundedRect.sprites[i].isVisible = true;
             }
         }
@@ -120,7 +119,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public bool ShowThumbDivider => ShowThumbsTransitionState(1f) > 0.5f;
         public float Alpha { get; set; }
         public Vector2 Pos { get => pos; set => pos = value; }
-        public Vector2 Size { get => size; set => size = new(value.x, thumbLoaded? value.y : size.y); }
+        public Vector2 Size { get => size; set => size = new(value.x, thumbLoaded ? value.y : size.y); }
         public string Description => description;
         public FContainer MyLevelContainer => MyPlaylistSelector?.levelContainer ?? Container;
         public FContainer MyDividerContainer => MyPlaylistSelector?.dividerContainer ?? Container;
@@ -166,7 +165,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             if (Selected)
             {
-                if (!lastSelected) labelSelectedBlink = 0; 
+                if (!lastSelected) labelSelectedBlink = 0;
                 labelSelectedBlink = Mathf.Max(0, labelSelectedBlink - 1 / Mathf.Lerp(10, 40, labelSelectedBlink));
             }
             else labelSelectedBlink = 0f;
@@ -220,7 +219,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             Vector2 myPos = DrawPos(timeStacker);
             float fadeFactor = Custom.SCurve(Mathf.Lerp(lastFade, fade, timeStacker), 0.3f),
                 thumbTransitionState = ShowThumbsTransitionState(timeStacker),
-                alphaThumbFactor = thumbTransitionState * Mathf.InverseLerp(0, 0.8f, fadeFactor); 
+                alphaThumbFactor = thumbTransitionState * Mathf.InverseLerp(0, 0.8f, fadeFactor);
 
             thumbnailSprite.x = myPos.x + size.x / 2;
             thumbnailSprite.y = myPos.y + 20 + ThumbHeight * alphaThumbFactor / 2;
@@ -296,8 +295,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public LevelPreview levelPreviewer;
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
         public override float MaxVisibleItemsShown => (int)base.MaxVisibleItemsShown;
-        public override float DownScrollOffset 
-        { 
+        public override float DownScrollOffset
+        {
             get => base.DownScrollOffset;
             set
             {
@@ -327,7 +326,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         public ArenaLevelSelector? MyLevelSelector => owner as ArenaLevelSelector;
         public List<LevelItem> LevelItems => [.. buttons.Cast<LevelItem>()];
-        public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, 5, 120, new(80, 10), sliderPosOffset: new(0, 9), sliderSizeYOffset: - 40, startEndWithSpacing: true)
+        public PlaylistSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos, 5, 120, new(80, 10), sliderPosOffset: new(0, 9), sliderSizeYOffset: -40, startEndWithSpacing: true)
         {
             greyOutWhenNoScroll = true;
             showThumbsTransitionState = ShowThumbsStatus ? 1 : 0;
@@ -338,7 +337,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             Container.AddChild(levelContainer);
 
             subObjects.Add(levelPreviewer = new LevelPreview(menu, this, this is PlaylistHolder));
-            showThumbsButton = AddSideButton(ShowThumbsStatus? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List", signal: "THUMBS");
+            showThumbsButton = AddSideButton(ShowThumbsStatus ? "Menu_Symbol_Show_Thumbs" : "Menu_Symbol_Show_List", signal: "THUMBS");
             showThumbsButton.OnClick += btn =>
              {
                  ShowThumbsStatus = !ShowThumbsStatus;
@@ -370,7 +369,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             float scrollPos = StepsDownOfItem(elementIndex) - scrollOffset;
             float idealScrollPos = UpperBound - scrollPos * ButtonHeightAndSpacing;
             LevelItem? lvlItem = buttons.GetValueOrDefault(elementIndex) as LevelItem;
-            return idealScrollPos + (((lvlItem?.levelItemBelow != null)? 3 : 0) - (lvlItem?.levelItemAbove != null? 3 : 0) * showThumbsTransitionState);
+            return idealScrollPos + (((lvlItem?.levelItemBelow != null) ? 3 : 0) - (lvlItem?.levelItemAbove != null ? 3 : 0) * showThumbsTransitionState);
         }
         public override float GetCurrentScrollOffset()
         {
@@ -396,18 +395,18 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             float y = combinedPos.y;
             float elementUpperBound = y + buttonHeight;
-            return y < LowerBound? 1 - Math.Min(1, (LowerBound - y) / buttonHeight) : elementUpperBound > UpperBound ? 1 - Math.Min(1, (elementUpperBound - UpperBound) / buttonHeight) : 1;
+            return y < LowerBound ? 1 - Math.Min(1, (LowerBound - y) / buttonHeight) : elementUpperBound > UpperBound ? 1 - Math.Min(1, (elementUpperBound - UpperBound) / buttonHeight) : 1;
         }
         public virtual void LoadLevelsInit()
         {
             if (MyLevelSelector == null) return;
             for (int i = 0; i < MyLevelSelector.allLevels.Count; i++)
-                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], AddOnClick));
+                AddLevelItem(new(menu, this, MyLevelSelector.allLevels[i], menu.Translate(AddOnClick)));
             for (int i = 0; i < buttons.Count - 1; i++)
             {
-                if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem) 
+                if (buttons[i] is not LevelItem levelItem || buttons[i + 1] is not LevelItem nextLevelItem)
                     continue;
-                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name)) 
+                if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
                     levelItem.AddDividers(nextLevelItem);
             }
         }
@@ -455,17 +454,17 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             clearButton = AddSideButton("Menu_Symbol_Clear_All", menu.Translate("Clear playlist"), menu.Translate("Clear playlist"), "");
             clearButton.maintainOutlineColorWhenGreyedOut = true;
-            clearButton.OnClick += _ =>
+            clearButton.OnClick += btn =>
             {
                 clearAllCounter = 1;
-                menu.PlaySound(_.buttonBehav.greyedOut ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Greyed_Out_Button_Clicked);
+                menu.PlaySound(btn.buttonBehav.greyedOut ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Greyed_Out_Button_Clicked);
             };
-            shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order"), "", "SHUFFLE");
-            shuffleButton.OnClick += _ =>
+            shuffleButton = AddSideButton(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle", menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order"), "", "SHUFFLE");
+            shuffleButton.OnClick += btn =>
             {
                 ShuffleStatus = !ShuffleStatus;
-                _.label.text = menu.Translate(ShuffleStatus ? "Shuffling Levels" : "Playing in order");
-                _.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
+                btn.label.text = menu.Translate(ShuffleStatus ? "Shuffling levels" : "Playing in order");
+                btn.UpdateSymbol(ShuffleStatus ? "Menu_Symbol_Shuffle" : "Menu_Symbol_Dont_Shuffle");
                 menu.PlaySound(ShuffleStatus ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             };
         }
@@ -512,11 +511,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         {
             if (MyLevelSelector?.SelectedPlayList == null) return;
             for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], "Remove level from playlist"));
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
         }
         public void UpdatePlaylist()
         {
             clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true;
+            shuffleButton.buttonBehav.greyedOut = MyLevelSelector?.ForceGreyOutAll == true;
             if (clearAllCounter > 0)
             {
                 clearAllCounter--;
@@ -549,7 +549,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             for (int i = LevelItems.Count - 1; i >= 0; i--)
                 RemoveLevelItem(LevelItems[i], false);
             for (int j = 0; j < MyLevelSelector.SelectedPlayList.Count; j++)
-                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], "Remove level from playlist"));
+                AddLevelItem(new LevelItem(menu, this, MyLevelSelector.SelectedPlayList[j], menu.Translate(RemoveOnClick)));
             ConstrainScroll();
             mismatchCounter = 0;
 
@@ -582,7 +582,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public ArenaSetup.GameTypeID CurrentGameType => GetArenaSetup.currentGameType;
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     public List<string> SelectedPlayList => GetGameTypeSetup.playList;
-    public bool ForceGreyOutAll => !(OnlineManager.lobby?.isOwner == true);
+    public bool ForceGreyOutAll => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
     public bool IsHidden { get; set; }
     public ArenaLevelSelector(Menu.Menu menu, MenuObject owner, Vector2 pos) : base(menu, owner, pos)
     {
@@ -618,7 +618,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
         allLevelsPlaylist = new(menu, this, default);
         selectedLevelsPlaylist = new(menu, this, new Vector2(200, 0));
-     
+
         this.SafeAddSubobjects(allLevelsPlaylist, selectedLevelsPlaylist);
     }
     public override void Update()
@@ -649,7 +649,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
     public void AddItemToSelectedList(string name)
     {
         SelectedPlayList.Add(name);
-        LevelItem item = new(menu, selectedLevelsPlaylist, name, "Remove level from playlist");
+        LevelItem item = new(menu, selectedLevelsPlaylist, name, menu.Translate("Remove level from playlist"));
         selectedLevelsPlaylist.AddLevelItem(item);
         selectedLevelsPlaylist.DownScrollOffset = selectedLevelsPlaylist.MaxDownScroll;
         selectedLevelsPlaylist.ConstrainScroll();

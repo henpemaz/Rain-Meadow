@@ -24,17 +24,22 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public int painCatIndex;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
+    public bool initiateStartGameAfterCountDown;
+    private int lastCountdownSoundPlayed;
+    public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
     public ArenaSetup GetArenaSetup => manager.arenaSetup;
     public ArenaSetup.GameTypeID CurrentGameType { get => GetArenaSetup.currentGameType; set => GetArenaSetup.currentGameType = value; }
     public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(CurrentGameType);
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+
     public ArenaOnlineLobbyMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ArenaLobbyMenu)
     {
         RainMeadow.DebugMe();
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
+        Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         forceFlatIllu = !manager.rainWorld.flatIllustrations;
         if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
@@ -61,6 +66,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+        initiateStartGameAfterCountDown = false;
+        lastCountdownSoundPlayed = -1;
+
     }
 
     public void ChangeScene()
@@ -100,11 +108,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (currentPage == 1)
         {
-            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready;
-            Arena.arenaClientSettings.ready = false;
+            arenaSlugcatSelectPage.readyWarning = Arena.arenaClientSettings.ready && Arena.allowJoiningMidRound;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready && !Arena.allowJoiningMidRound;
         }
         else
-            Arena.arenaClientSettings.ready = arenaSlugcatSelectPage.readyWarning;
+            Arena.arenaClientSettings.ready = Arena.arenaClientSettings.ready || arenaSlugcatSelectPage.readyWarning;
 
         PlaySound(SoundID.MENU_Next_Slugcat);
     }
@@ -115,9 +123,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void GoToChangeCharacter()
     {
+        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown)
+        {
+            return;
+        }
+
+        bool arenaMode = RainMeadow.isArenaMode(out _);
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
-            if (RainMeadow.isArenaMode(out _) && Arena.arenaClientSettings.ready)
+            if (arenaMode && Arena.arenaClientSettings.ready)
             {
                 PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
                 return;
@@ -135,23 +149,42 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
         MovePage(new Vector2(-1500f, 0f), 1);
     }
+    public void GoToSlugcatSelector()
+    {
+        PlaySound(SoundID.MENU_Next_Slugcat);
+        SlugcatSelector selector = new(manager, [GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0], GetArenaSetup.playerClass[0]], [.. ArenaHelpers.selectableSlugcats],
+
+            (slugcats, selector) =>
+            {
+                arenaSlugcatSelectPage.SwitchSelectedSlugcat(slugcats[UnityEngine.Random.Range(0, slugcats.Length)]);
+                if (RainMeadow.isArenaMode(out _)) Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+            }
+        );
+        manager.ShowDialog(selector);
+    }
     public void StartGame()
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
+        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
+        {
+            Arena.initiateLobbyCountdown = true;
+            return;
+        }
+
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena);
+        ArenaHelpers.OnStartGame(Arena, manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
-        manager.rainWorld.progression.ClearOutSaveStateFromMemory();
         // temp
         // UserInput.SetUserCount(OnlineManager.players.Count);
         // UserInput.SetForceDisconnectControllers(forceDisconnect: false);
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
+        
     }
     public void SetPlaylistFromSetupToSitting()
     {
@@ -174,7 +207,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void InitializeNewOnlineSitting()
     {
-        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels)) 
+        manager.arenaSitting = new ArenaSitting(GetGameTypeSetup, new MultiplayerUnlocks(manager.rainWorld.progression, arenaMainLobbyPage.levelSelector.allLevels))
         { levelPlaylist = [] };
 
         // Host dictates playlist
@@ -216,7 +249,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             RainMeadow.rainMeadowOptions._SaveConfigFile();
         }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
-        manager.rainWorld.progression.SaveProgression(true, true);
         base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
@@ -237,6 +269,26 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
+
+        if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
+        {
+            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.currentLobbyOwner = OnlineManager.lobby.owner;
+        }
+
+        if (OnlineManager.lobby.isOwner)
+        {
+            if (Arena.lobbyCountDown <= 0 && !initiateStartGameAfterCountDown)
+            {
+                initiateStartGameAfterCountDown = true;
+                StartGame();
+            }
+        }
+
+        if (Arena.initiateLobbyCountdown)
+        {
+            PlayStartGameCountdown();
+        }
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -257,6 +309,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
             if (idString == "MIDGAMEJOIN")
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
+            if (idString == "WEAPONCOLLISIONFIX")
+                return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -268,7 +322,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+                return index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? Translate("No rain") : ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index] + " " + Translate($"minute{(index == 1 ? "" : "s")} until rain");
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);
@@ -292,7 +346,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
     }
     public void UpdateMovingPage()
@@ -310,9 +364,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             pages[i].pos.x = Custom.LerpSinEaseInOut(oldPagesPos[i].x, newpos.x, pageMovementProgress);
         }
     }
+
+    public void PlayStartGameCountdown()
+    {
+        if (Arena.lobbyCountDown != lastCountdownSoundPlayed &&
+            (Arena.lobbyCountDown == 3 || Arena.lobbyCountDown == 2 || Arena.lobbyCountDown == 1))
+        {
+            PlaySound(SoundID.MENU_Player_Join_Game);
+            lastCountdownSoundPlayed = Arena.lobbyCountDown;
+        }
+    }
     public void UpdateElementBindings()
     {
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
     }
+
 }
