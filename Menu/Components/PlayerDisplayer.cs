@@ -40,7 +40,7 @@ namespace RainMeadow.UI.Components
             }
             return [.. scrollButtons];
         }
-        public override string DescriptionOfDisplayButton() => isCurrentlyLargeDisplay ? "Showing players in thumbnail view" : "Showing players in list view";
+        public override string DescriptionOfDisplayButton() => menu.Translate(isCurrentlyLargeDisplay ? "Showing players in thumbnail view" : "Showing players in list view");
 
         public (float, float) largeButtonHeightSpacing, smallButtonHeightSpacing;
         public List<OnlinePlayer> onlinePlayers;
