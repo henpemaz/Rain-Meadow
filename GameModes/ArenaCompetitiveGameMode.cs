@@ -184,8 +184,8 @@ namespace RainMeadow
                     "\"<USERNAME>, youre gonna get us both killed\"",
                     "\"no srsly wheres my egg\"",
                     "\"u dont need 2 be alone, bby.\"",
-                    "\"Sometimes, I wake up with a friend I've never met b4\"",
-                    "\"i luv u <3\"",
+                    "\"sometimes i wake up with a friend ive never met b4\"",
+                    "\"i luv u <3\""
                 ];
                 slugcatSelectPainCatDevJokeDescriptions =
                 [
