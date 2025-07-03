@@ -329,50 +329,50 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
 
-        public override void ArenaPlayerBox_GrafUpdate(ArenaMode arena, ArenaPlayerBox self, float timestacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public override void ArenaPlayerBox_GrafUpdate(ArenaMode arena, ArenaPlayerBox self, float timestacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, MenuLabel selectingStatusLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton, ref FSprite externalSprite)
         {
-            base.ArenaPlayerBox_GrafUpdate(arena, self, timestacker, showRainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton);
+            base.ArenaPlayerBox_GrafUpdate(arena, self, timestacker, showRainbow, pingLabel, sprites, lines, selectingStatusLabel, nameLabel, profileIdentifier, slugcatButton, ref externalSprite);
             Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                if (OnlineManager.lobby.clientSettings.TryGetValue(profileIdentifier, out var clientSettings))
+                bool foundTeam = OnlineManager.lobby.clientSettings.TryGetValue(self.profileIdentifier, out var clientSettings);
+                if (foundTeam)
                 {
-
-                    if (clientSettings.TryGetData<ArenaTeamClientSettings>(out var team))
+                    bool foundTeamClient = clientSettings.TryGetData<ArenaTeamClientSettings>(out var team);
+                    if (foundTeamClient)
                     {
                         if (team.team == tb.winningTeam && tb.winningTeam != -1)
                         {
                             slugcatButton.secondaryColor = rainbow;
                         }
+
+                        if (externalSprite == null)
+                        {
+
+                            if (foundTeam && foundTeamClient && self.infoKickButton != null)
+                            {
+                                var namePos = self.infoKickButton.DrawPos(timestacker);
+                                externalSprite = new FSprite(TeamMappingsDictionary[team.team]);
+                                externalSprite.x = namePos.x + 55;
+                                externalSprite.y = namePos.y + 15;
+                                externalSprite.color = TeamColors[team.team];
+                                self.Container.AddChild(externalSprite);
+                            }
+                        }
                         else
                         {
-                            slugcatButton.secondaryColor = TeamBattleMode.TeamColors[team.team];
+                            externalSprite.color = TeamColors[team.team];
+                            externalSprite.SetElementByName(TeamMappingsDictionary[team.team]);
                         }
-                    }
 
+                    }
                 }
             }
 
         }
 
-        public FSprite martyrTeamLabelRedux;
-
         public override void ArenaPlayerBox_Update(ArenaMode arena, ArenaPlayerBox self)
         {
-            if (martyrTeamLabelRedux == null)
-            {
-                bool foundTeam = OnlineManager.lobby.clientSettings.TryGetValue(self.profileIdentifier, out var clientSettings);
-                bool foundTeamClient = clientSettings.TryGetData<ArenaTeamClientSettings>(out var team);
-                if (foundTeam && foundTeamClient)
-                {
-                    martyrTeamLabelRedux = new FSprite(TeamMappingsDictionary[team.team]);
-                    martyrTeamLabelRedux.x = 0;
-                    martyrTeamLabelRedux.y = 0;
-                    martyrTeamLabelRedux.color = TeamColors[team.team];
-                    self.Container.AddChild(this.martyrTeamLabelRedux);
-                }
-            }
-
             self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
             self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(self.showRainbow ? 0.75f : 0f);
             self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);

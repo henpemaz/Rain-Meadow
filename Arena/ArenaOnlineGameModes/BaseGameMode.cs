@@ -380,7 +380,7 @@ namespace RainMeadow
 
         }
 
-        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton)
+        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton, ref FSprite externalSprite)
         {
             Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
             Color pingColor = self.GetPingColor(self.realPing);
