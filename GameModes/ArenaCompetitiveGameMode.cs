@@ -1,4 +1,4 @@
-using Menu;
+﻿using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
@@ -261,11 +261,11 @@ namespace RainMeadow
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
             {
                 StringBuilder randomDescBuilder = new();
-                if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
-                else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
+                if (ModManager.MSC) randomDescBuilder.Append(Utils.Translate("Am I Warrior from the past, or a Messiah from the future?"));
+                else randomDescBuilder.Append(Utils.Translate("Am I Cat Searching for many, or a Mouse searching for one?"));
+                if (ModManager.Watcher) randomDescBuilder.Append(Utils.Translate("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?"));
+                else randomDescBuilder.Append(Utils.Translate("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?"));
+                randomDescBuilder.Append(Utils.Translate("<LINE>I do not know, for I am not one. I am many."));
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else
@@ -370,8 +370,8 @@ namespace RainMeadow
             {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
-
             avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
+            arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
         public void AllowRejoin()

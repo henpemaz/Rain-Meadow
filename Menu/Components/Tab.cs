@@ -29,7 +29,7 @@ public class TabContainer : RectangularMenuObject
             _label.alignment = FLabelAlignment.Left;
             _label.rotation = -90f;
             _label.text = name;
-            description = $"Click to open {name} tab";
+            description = Menu.Translate("Click to open <TABNAME> tab").Replace("<TABNAME>", name);
 
             OnClick += _ => container.SwitchTab(myTab);
         }
