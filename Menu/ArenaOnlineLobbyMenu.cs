@@ -309,6 +309,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
             if (idString == "MIDGAMEJOIN")
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
+            if (idString == "WEAPONCOLLISIONFIX")
+                return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -344,7 +346,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
     }
     public void UpdateMovingPage()

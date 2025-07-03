@@ -58,6 +58,8 @@ namespace RainMeadow.UI.Components
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
 
+            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.PosY), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
             arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
@@ -69,7 +71,7 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox);
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox);
         }
         public override void RemoveSprites()
         {
@@ -114,29 +116,37 @@ namespace RainMeadow.UI.Components
         }
         public bool GetChecked(CheckBox box)
         {
-            if (box.IDString == "SPEARSHIT") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.spearsHitPlayers);
-            if (box.IDString == "EVILAI") return ArenaHelpers.GetOptionFromArena(box.IDString, GetGameTypeSetup.evilAI);
+            string id = box.IDString;
+            if (id == "SPEARSHIT") return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.spearsHitPlayers);
+            if (id == "EVILAI") return ArenaHelpers.GetOptionFromArena(id, GetGameTypeSetup.evilAI);
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (box.IDString == "ITEMSTEAL") return arena.itemSteal;
-                if (box.IDString == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
+                if (id == "ITEMSTEAL") return arena.itemSteal;
+                if (id == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
+                if (id == "WEAPONCOLLISIONFIX") return arena.weaponCollisionFix;
             }
             return false;
         }
         public void SetChecked(CheckBox box, bool c)
         {
-            if (box.IDString == "SPEARSHIT") GetGameTypeSetup.spearsHitPlayers = c;
-            if (box.IDString == "EVILAI") GetGameTypeSetup.evilAI = c;
+            string id = box.IDString;
+            if (id == "SPEARSHIT") GetGameTypeSetup.spearsHitPlayers = c;
+            if (id == "EVILAI") GetGameTypeSetup.evilAI = c;
             if (RainMeadow.isArenaMode(out var arena))
             {
-                if (box.IDString == "ITEMSTEAL")
+                if (id == "ITEMSTEAL")
                 {
                     arena.itemSteal = c;
                     return;
                 }
-                if (box.IDString == "MIDGAMEJOIN")
+                if (id == "MIDGAMEJOIN")
                 {
                     arena.allowJoiningMidRound = c;
+                    return;
+                }
+                if (id == "WEAPONCOLLISIONFIX")
+                {
+                    arena.weaponCollisionFix = c;
                     return;
                 }
             }
@@ -146,33 +156,21 @@ namespace RainMeadow.UI.Components
         public int GetSelected(MultipleChoiceArray array)
         {
             if (array.IDString == "ROOMREPEAT")
-            {
                 return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.levelRepeats - 1);
-            }
             if (array.IDString == "SESSIONLENGTH")
-            {
                 return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.sessionTimeLengthIndex);
-            }
             if (array.IDString == "WILDLIFE" && GetGameTypeSetup.wildLifeSetting.Index != -1)
-            {
                 return ArenaHelpers.GetOptionFromArena(array.IDString, GetGameTypeSetup.wildLifeSetting.Index);
-            }
             return 0;
         }
         public void SetSelected(MultipleChoiceArray array, int i)
         {
             if (array.IDString == "ROOMREPEAT")
-            {
                 GetGameTypeSetup.levelRepeats = i + 1;
-            }
             if (array.IDString == "SESSIONLENGTH")
-            {
                 GetGameTypeSetup.sessionTimeLengthIndex = i;
-            }
             if (array.IDString == "WILDLIFE")
-            {
                 GetGameTypeSetup.wildLifeSetting = new ArenaSetup.GameTypeSetup.WildLifeSetting(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(i), false);
-            }
             ArenaHelpers.SaveOptionToArena(array.IDString, i);
         }
         public void CallForSync() //call this after ctor if needed for sync at start
@@ -194,7 +192,7 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox;
+        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper;
