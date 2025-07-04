@@ -1,14 +1,15 @@
-﻿using Menu.Remix;
+﻿using BepInEx;
+using HarmonyLib;
 using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using Steamworks;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using Menu.Remix.MixedUI;
-using HarmonyLib;
 using System.Xml;
+using UnityEngine;
 
 
 namespace RainMeadow
@@ -23,7 +24,7 @@ namespace RainMeadow
                 return FFA.FFAMode;
             }
             set { GetGameModeId = value; }
-            
+
         }
 
         public virtual void ResetOnSessionEnd()
@@ -333,9 +334,9 @@ namespace RainMeadow
                     OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
                     if (getPlayer != null)
                     {
-                        if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                        if (!arena.playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
                         {
-                            arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                            arena.playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
                         }
                         if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
                         {
@@ -446,23 +447,43 @@ namespace RainMeadow
         {
 
             var statsReport = menu.Translate("Post-Game Stats <LINE>");
-            if (arena.playerNumberWithKills.Count > 0)
+
+            statsReport += "WINS<LINE>";
+            foreach (var entry in arena.playerNumberWithWins)
             {
-                statsReport +=  "Player report: <LINE>";
-                foreach (var entry in arena.playerNumberWithWins)
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+                if (pl != null)
                 {
+                    statsReport += $"{pl.id.name} - {(arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w) ? w : 0)}";
                     statsReport += "<LINE>";
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
-                    if (pl != null)
-                    {
-                        statsReport += $"{pl.id.name} - Wins: {arena.playerNumberWithKills[pl.inLobbyId]} - Kills: {arena.playerNumberWithKills[pl.inLobbyId]} - Deaths: {arena.playerNumberWithDeaths[pl.inLobbyId]} - Total Score: {arena.playerTotScore[pl.inLobbyId]}";
-                    }
                 }
+            }
+            statsReport += "<LINE>";
+            statsReport += "KILLS<LINE>";
+            foreach (var entry in arena.localAllKills)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+                if (pl != null)
+                {
+                    statsReport += $"{pl.id.name} - {(arena.localAllKills.TryGetValue(pl.inLobbyId, out var k) ? k.Count : 0)}";
+                    statsReport += "<LINE>";
+                }
+            }
+            statsReport += "<LINE>";
+            statsReport += "DEATHS<LINE>";
+            foreach (var entry in arena.playerNumberWithDeaths)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+                if (pl != null)
+                {
+                    statsReport += $"{pl.id.name} - {(arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d) ? d : 0)}";
+                    statsReport += "<LINE>";
+                }
+
             }
 
             return new DialogNotify(menu.LongTranslate(statsReport), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
     }
-
 }

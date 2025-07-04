@@ -133,11 +133,47 @@ namespace RainMeadow
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                 if (pl != null)
                 {
-                    if (arena.localAllKills.ContainsKey(pl.inLobbyId))
+
+                    if (arena.localAllKills.TryGetValue(pl.inLobbyId, out var kills))
                     {
-                        RainMeadow.Debug($"Arena: All Local Kills Count for player: {pl.inLobbyId} End Before Assignment: {arena.localAllKills[pl.inLobbyId].Count}");
-                        player.allKills = arena.localAllKills[pl.inLobbyId];
-                        RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills[pl.inLobbyId].Count}");
+                        player.allKills = kills;
+                    }
+                    else
+                    {
+                        player.allKills = new List<IconSymbol.IconSymbolData>();
+                    }
+                    if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
+                    {
+                        player.deaths = d;
+                    }
+                    else
+                    {
+                        player.deaths = 0;
+                    }
+
+                    if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w))
+                    {
+                        player.wins = w;
+                    }
+                    else
+                    {
+                        player.wins = 0;
+                    }
+                    if (arena.playerNumberWithScore.TryGetValue(pl.inLobbyId, out var s))
+                    {
+                        player.score = s;
+                    }
+                    else
+                    {
+                        player.score = 0;
+                    }
+                    if (arena.playerTotScore.TryGetValue(pl.inLobbyId, out var t))
+                    {
+                        player.totScore = s;
+                    }
+                    else
+                    {
+                        player.totScore = 0;
                     }
                 }
             }
@@ -1309,25 +1345,7 @@ namespace RainMeadow
                         OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[num2].playerNumber);
                         if (pl != null)
                         {
-                            if (arena.playerNumberWithKills.ContainsKey(pl.inLobbyId))
-                            {
-                                arena.playerNumberWithKills[pl.inLobbyId] += self.players[num2].score;
-                            }
-                            if (arena.playerNumberWithDeaths.ContainsKey(pl.inLobbyId))
-                            {
-                                arena.playerNumberWithDeaths[pl.inLobbyId] += self.players[num2].deaths;
-                            }
-
-                            if (arena.playerNumberWithWins.ContainsKey(pl.inLobbyId))
-                            {
-                                arena.playerNumberWithWins[pl.inLobbyId] += self.players[num2].wins;
-                            }
-
-                            if (!arena.playerTotScore.ContainsKey(pl.inLobbyId))
-                            {
-                                arena.playerTotScore.Add(pl.inLobbyId, 0);
-                            }
-                            arena.playerTotScore[pl.inLobbyId] += self.players[num2].totScore;
+                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
                         }
 
                     }

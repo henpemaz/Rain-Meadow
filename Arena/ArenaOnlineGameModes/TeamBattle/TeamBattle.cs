@@ -480,9 +480,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
                         if (getPlayer != null)
                         {
-                            if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                            if (!arena.playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
                             {
-                                arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                                arena.playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
                             }
                             if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
                             {
