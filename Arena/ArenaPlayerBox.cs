@@ -101,8 +101,8 @@ namespace RainMeadow.UI.Components
         {
             base.Update();
             rainbowColor.hue = GetLerpedRainbowHue();
-            slugcatButton.portraitSecondaryLerpFactor = showRainbow? GetLerpedRainbowHue(0.75f) : 0;
-            realPing = System.Math.Max(1, profileIdentifier.ping - 16);
+            slugcatButton.portraitSecondaryLerpFactor = showRainbow? GetLerpedRainbowHue(0.75f) : desiredPortraitSecondaryLerpFactor;
+            realPing = Math.Max(1, profileIdentifier.ping - 16);
             lastTextOverlayFade = textOverlayFade;
             textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
             slugcatButton.isBlackPortrait = enabledTextOverlay;
@@ -185,7 +185,7 @@ namespace RainMeadow.UI.Components
             enabledTextOverlay = enable;
         }
 
-        public float textOverlayFade = 0, lastTextOverlayFade = 0;
+        public float textOverlayFade = 0, lastTextOverlayFade = 0, desiredPortraitSecondaryLerpFactor = 0;
         public int realPing;
         public bool showRainbow, enabledTextOverlay;
         public HSLColor? baseColor;
