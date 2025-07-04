@@ -61,6 +61,7 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithKills = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
+        public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
 
 
         public bool playersEqualToOnlineSitting;
@@ -403,8 +404,14 @@ namespace RainMeadow
                 newArenaPlayer.wins = wins;
                 newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
                 newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+                newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
 
                 RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer.wins} from online player: {pl}");
+                RainMeadow.Debug($"Player assigned witih score stats: {newArenaPlayer.score} from online player: {pl}");
+                RainMeadow.Debug($"Player assigned witih death stats: {newArenaPlayer.deaths} from online player: {pl}");
+                RainMeadow.Debug($"Player assigned witih totScore stats: {newArenaPlayer.totScore} from online player: {pl}");
+
             }
             else
             {
@@ -413,6 +420,7 @@ namespace RainMeadow
                     arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
                     arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
                     arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
+                    arena.playerTotScore.Add(pl.inLobbyId, 0);
                     RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
 
                 }
@@ -428,9 +436,6 @@ namespace RainMeadow
             arena.currentLevel = 0;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
             arena.playersLateWaitingInLobbyForNextRound.Clear();
         }
         public void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
@@ -455,6 +460,7 @@ namespace RainMeadow
             arena.playerNumberWithKills.Clear();
             arena.playerNumberWithWins.Clear();
             arena.localAllKills.Clear();
+            arena.playerTotScore.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {

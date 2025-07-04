@@ -135,7 +135,7 @@ namespace RainMeadow
                 {
                     if (arena.localAllKills.ContainsKey(pl.inLobbyId))
                     {
-                        RainMeadow.Debug($"Arena: All Local Kills Count End Before Assignment: {arena.localAllKills[pl.inLobbyId].Count}");
+                        RainMeadow.Debug($"Arena: All Local Kills Count for player: {pl.inLobbyId} End Before Assignment: {arena.localAllKills[pl.inLobbyId].Count}");
                         player.allKills = arena.localAllKills[pl.inLobbyId];
                         RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills[pl.inLobbyId].Count}");
                     }
@@ -169,6 +169,11 @@ namespace RainMeadow
 
                         }
                     }
+                }
+                var list = orig(self);
+                foreach (var e in list)
+                {
+                    RainMeadow.Debug($"{e.playerNumber} - {e.wins} - {e.winner}");
                 }
             }
             return orig(self);
@@ -1298,6 +1303,34 @@ namespace RainMeadow
                     }
 
                     self.players[num2].totScore += self.players[num2].score;
+
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[num2].playerNumber);
+                        if (pl != null)
+                        {
+                            if (arena.playerNumberWithKills.ContainsKey(pl.inLobbyId))
+                            {
+                                arena.playerNumberWithKills[pl.inLobbyId] += self.players[num2].score;
+                            }
+                            if (arena.playerNumberWithDeaths.ContainsKey(pl.inLobbyId))
+                            {
+                                arena.playerNumberWithDeaths[pl.inLobbyId] += self.players[num2].deaths;
+                            }
+
+                            if (arena.playerNumberWithWins.ContainsKey(pl.inLobbyId))
+                            {
+                                arena.playerNumberWithWins[pl.inLobbyId] += self.players[num2].wins;
+                            }
+
+                            if (!arena.playerTotScore.ContainsKey(pl.inLobbyId))
+                            {
+                                arena.playerTotScore.Add(pl.inLobbyId, 0);
+                            }
+                            arena.playerTotScore[pl.inLobbyId] += self.players[num2].totScore;
+                        }
+
+                    }
                 }
 
                 session.game.arenaOverlay = new Menu.ArenaOverlay(session.game.manager, self, list);
@@ -1587,86 +1620,49 @@ namespace RainMeadow
                 }
                 else RainMeadow.Error("no online object");
                 if (player.playerClass == null) player.playerClass = SlugcatStats.Name.White; // prevent crash from null
-            }
 
-            orig(self, menu, owner, pos, size, player, index); // stupid rectangle
+                orig(self, menu, owner, pos, size, player, index); // stupid rectangle
 
-            if (self.backgroundRect == null)
-            {
-                Debug("Rectangle went missing. Bringing it back");
-                self.backgroundRect = new(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
-                self.subObjects.Add(self.backgroundRect);
-            }
-            if (isArenaMode(out var arena) && self.backgroundRect != null)
-            {
-                OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
-                ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
-                if (currentName == null)
+                if (self.backgroundRect == null)
                 {
-                    player.wins = 0;
-                    player.deaths = 0;
-                    player.score = 0;
+                    Debug("Rectangle went missing. Bringing it back");
+                    self.backgroundRect = new(menu, self, new Vector2(0.01f, 0.01f), size, filled: true);
+                    self.subObjects.Add(self.backgroundRect);
                 }
-                else
+                if (isArenaMode(out var arena) && self.backgroundRect != null)
                 {
-                    if (OnlineManager.lobby.isOwner)
+                    self.portrait.RemoveSprites();
+                    menu.pages[0].RemoveSubObject(self.portrait);
+                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(aren, self.player.playerNumber);
+                    ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(currentName);
+                    var userNameBackup = "Unknown user";
+                    try
                     {
-
-                        // what host observed
-                        arena.playerNumberWithKills[currentName.inLobbyId] = player.score;
-                        arena.playerNumberWithDeaths[currentName.inLobbyId] = player.deaths;
-                        arena.playerNumberWithWins[currentName.inLobbyId] = player.wins;
-                    }
-                    else
-                    {
-
-                        if (arena.playerNumberWithKills.ContainsKey(currentName.inLobbyId))
+                        userNameBackup = currentName.id.name;
+                        self.playerNameLabel.text = userNameBackup;
+                        if (TeamBattleMode.isTeamBattleMode(arena, out var team))
                         {
-                            player.score = arena.playerNumberWithKills[currentName.inLobbyId];
-                        }
-                        if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
-                        {
-                            player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
-                        }
-
-                        if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
-                        {
-                            player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
-                        }
-
-                    }
-                }
-
-                self.portrait.RemoveSprites();
-                menu.pages[0].RemoveSubObject(self.portrait);
-
-                var userNameBackup = "Unknown user";
-                try
-                {
-                    userNameBackup = currentName.id.name;
-                    self.playerNameLabel.text = userNameBackup;
-                    if (TeamBattleMode.isTeamBattleMode(arena, out var team))
-                    {
-                        if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
-                        {
-                            self.playerNameLabel.text += $" -- {team.teamNameDictionary[td.team].ToUpper()}";
+                            if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
+                            {
+                                self.playerNameLabel.text += $" -- {team.teamNameDictionary[td.team].ToUpper()}";
+                            }
                         }
                     }
-                }
-                catch
-                {
-                    self.playerNameLabel.text = Utils.Translate(userNameBackup);
-                }
+                    catch
+                    {
+                        self.playerNameLabel.text = Utils.Translate(userNameBackup);
+                    }
 
-                var portraitcat = player.playerClass;
-                if (self is FinalResultbox && playingAsRandom)
-                {
-                    portraitcat = RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat;
+                    var portraitcat = player.playerClass;
+                    if (self is FinalResultbox && playingAsRandom)
+                    {
+                        portraitcat = RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat;
+                    }
+
+
+                    self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(portraitcat, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
+                    self.subObjects.Add(self.portrait);
                 }
-
-
-                self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(portraitcat, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
-                self.subObjects.Add(self.portrait);
             }
 
         }

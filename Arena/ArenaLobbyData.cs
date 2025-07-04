@@ -86,6 +86,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithWins;
             [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerTotScore;
+            [OnlineField(group = "arenaGameplay")]
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
             public int playerEnteredGame;
@@ -111,6 +113,7 @@ namespace RainMeadow
                 reigningChamps = new(arena.reigningChamps.list.ToList());
                 playerNumberWithKills = new(arena.playerNumberWithKills);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
+                playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
@@ -155,6 +158,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
+                (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 

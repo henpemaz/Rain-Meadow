@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 namespace RainMeadow
 {
 
@@ -26,6 +27,39 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.leaveForNextLevel = true;
+                }
+
+                foreach (var player in self.players)
+                {
+                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    if (currentName != null)
+                    {
+
+                        if (!OnlineManager.lobby.isOwner)
+                        {
+
+                            if (arena.playerNumberWithKills.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.score = arena.playerNumberWithKills[currentName.inLobbyId];
+                            }
+                            if (arena.playerNumberWithDeaths.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
+                            }
+
+                            if (arena.playerNumberWithWins.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.wins = arena.playerNumberWithWins[currentName.inLobbyId];
+                            }
+                            if (arena.playerTotScore.ContainsKey(currentName.inLobbyId))
+                            {
+                                player.totScore = arena.playerTotScore[currentName.inLobbyId];
+                            }
+
+                        }
+
+
+                    }
                 }
 
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
