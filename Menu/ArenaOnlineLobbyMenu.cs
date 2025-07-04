@@ -70,7 +70,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         Arena.ResetOnReturnMenu(Arena, manager);
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
-
+>>>>>>>>> Temporary merge branch 2
     }
 
     public void ChangeScene()
@@ -387,6 +387,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+
+
+        if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
+        {
+            if (!Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode)) return;
+            RemoveAndAddNewExtGameModeTab(extGameMode);
+        }
+        Arena.externalArenaGameMode?.OnUIUpdate(this);
 
 
         if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
