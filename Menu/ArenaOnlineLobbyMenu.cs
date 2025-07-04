@@ -68,7 +68,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
-
     }
 
     public void ChangeScene()
@@ -184,7 +183,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
-        
     }
     public void SetPlaylistFromSetupToSitting()
     {
@@ -256,6 +254,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             manager.arenaSetup = null;
         }
 
+    }
+    public override void Init()
+    {
+        base.Init();
+        selectedObject = arenaMainLobbyPage.chatMenuBox.chatTypingBox;
     }
     public override void Update()
     {
