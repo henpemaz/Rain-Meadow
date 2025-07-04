@@ -95,6 +95,7 @@ namespace RainMeadow.UI.Components
             teamLerpColorBox.OnValueUpdate += (config, value, lastValue) =>
             {
                 RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamLerpColorBox.valueFloat;
+                teamBattleMode.lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
             };
 
             gameTeamWrapper = new(tabWrapper, arenaTeamComboBox);

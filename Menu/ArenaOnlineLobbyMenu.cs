@@ -30,7 +30,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public bool initiateStartGameAfterCountDown;
-    public OnlineTeamBattleSettingsInterface onlineArenaExternalGameModeSettingsInterface;
     private int lastCountdownSoundPlayed = -1;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;

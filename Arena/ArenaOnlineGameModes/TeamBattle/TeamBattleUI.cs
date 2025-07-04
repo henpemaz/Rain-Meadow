@@ -24,7 +24,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
         public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
-
+        public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
         public bool teamComboBoxLastHeld;
         public Dictionary<int, string> teamNameDictionary = new Dictionary<int, string>
         {
