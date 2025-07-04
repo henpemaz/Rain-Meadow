@@ -14,7 +14,7 @@ namespace RainMeadow.UI.Components
         public ArenaSetup.GameTypeSetup GetGameTypeSetup => GetArenaSetup.GetOrInitiateGameTypeSetup(GetArenaSetup.currentGameType);
         public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
 
-        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, TabContainer tabContainerr, TabContainer.Tab externalGameModeTabb, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
+        public OnlineArenaSettingsInferface(Menu.Menu menu, MenuObject owner, Vector2 pos, string currentGameMode, List<ListItem> gameModes, float settingsWidth = 300) : base(menu, owner, pos)
         {
             tabWrapper = new(menu, this);
             if (GetGameTypeSetup.gameType != ArenaSetup.GameTypeID.Competitive)
@@ -22,8 +22,6 @@ namespace RainMeadow.UI.Components
                 RainMeadow.Error("THIS IS NOT COMPETITIVE MODE!");
             }
             float textWidthOfSpearHit = 95;
-            externalGameModeTab = externalGameModeTabb;
-            tabContainer = tabContainerr;
 
             spearsHitCheckbox = new(menu, this, this, new(0, 425), textWidthOfSpearHit, menu.Translate("Spears Hit:"), "SPEARSHIT", false);
             evilAICheckBox = new(menu, this, this, new(settingsWidth - 24, spearsHitCheckbox.pos.y), InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 120 : 100, menu.Translate("Aggressive AI:"), "EVILAI", false);
@@ -65,8 +63,6 @@ namespace RainMeadow.UI.Components
             {
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.currentGameMode = value;
-                SetupExternalTab(arena);
-
             };
 
             countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
@@ -74,33 +70,6 @@ namespace RainMeadow.UI.Components
 
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox);
 
-            if (RainMeadow.isArenaMode(out ArenaMode arena))
-            {
-                SetupExternalTab(arena);
-            }
-        }
-
-        public void SetupExternalTab(ArenaOnlineGameMode arena)
-        {
-           
-            if (arena.registeredGameModes.TryGetValue(arena.currentGameMode, out var extGameMode))
-            {
-                if (arena.externalArenaGameMode != null)
-                {
-                    tabContainer.RemoveTab(externalGameModeTab);
-                    onlineArenaExternalGameModeSettingsInterface = null;
-                    externalGameModeTab = null;
-
-                }
-                arena.externalArenaGameMode = extGameMode;
-                if (arena.externalArenaGameMode.AddGameSettingsTab() != "")
-                {
-                    externalGameModeTab = tabContainer.AddTab(arena.externalArenaGameMode.AddGameSettingsTab());
-                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(arena, menu, externalGameModeTab, new Vector2(0f, 0f));
-                    externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-
-                }
-            }
         }
         public override void RemoveSprites()
         {
@@ -223,7 +192,6 @@ namespace RainMeadow.UI.Components
         }
 
         public bool gameModeComboBoxLastHeld;
-        public bool teamComboBoxLastHeld;
 
         public Vector2[] divSpritePos;
         public FSprite[] divSprites;
@@ -236,8 +204,5 @@ namespace RainMeadow.UI.Components
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
         public MenuTabWrapper tabWrapper;
-        public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
-        public TabContainer tabContainer;
-        public TabContainer.Tab externalGameModeTab;
     }
 }

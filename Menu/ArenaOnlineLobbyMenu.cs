@@ -30,8 +30,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
     public string painCatName;
     public bool initiateStartGameAfterCountDown;
-    public OnlineArenaExternalGameModeSettingsInterface onlineArenaExternalGameModeSettingsInterface;
-    private int lastCountdownSoundPlayed;
+    public OnlineTeamBattleSettingsInterface onlineArenaExternalGameModeSettingsInterface;
+    private int lastCountdownSoundPlayed = -1;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -69,9 +69,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
-        initiateStartGameAfterCountDown = false;
-        lastCountdownSoundPlayed = -1;
-
+        RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
     }
 
     public void ChangeScene()
@@ -126,10 +124,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void GoToChangeCharacter()
     {
-        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown)
-        {
-            return;
-        }
+        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown) return;
 
         bool arenaMode = RainMeadow.isArenaMode(out _);
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
@@ -289,29 +284,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             }
         }
 
-        if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)
-        {
-
-            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
-            {
-                if (Arena.externalArenaGameMode != null)
-                {
-                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.RemoveTab(arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab);
-                    arenaMainLobbyPage.arenaSettingsInterface.onlineArenaExternalGameModeSettingsInterface = null;
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = null;
-
-                }
-                Arena.externalArenaGameMode = extGameMode;
-                if (Arena.externalArenaGameMode.AddGameSettingsTab() != "" && arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab == null)
-                {
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = arenaMainLobbyPage.arenaSettingsInterface.tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
-                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.arenaSettingsInterface.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab, new Vector2(0f, 0f));
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.tabButtonContainer.GoPrevPage();
-                }
-            }
-        }
-
         if (Arena.initiateLobbyCountdown)
         {
             PlayStartGameCountdown();
@@ -373,6 +345,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
+
+        if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
+        {
+            if (!Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode)) return;
+            RemoveAndAddNewExtGameModeTab(extGameMode);
+        }
+        Arena.externalArenaGameMode?.OnUIUpdate(this);
+
     }
     public void UpdateMovingPage()
     {
@@ -404,5 +384,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
     }
+    public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
+    {
+        if (gameMode == null) return;
+        Arena.externalArenaGameMode?.OnUIDisabled(this);
+        Arena.externalArenaGameMode = gameMode;
+        Arena.externalArenaGameMode.OnUIEnabled(this);
 
+    }
 }

@@ -1,6 +1,7 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components.Patched;
 using UnityEngine;
 
 namespace RainMeadow
@@ -15,7 +16,7 @@ namespace RainMeadow
         public OpTinyColorPicker(Menu.Menu menu, MenuTabWrapper tabWrapper, Vector2 pos, Color defaultColor) : base(pos, new Vector2(30, 30))
         {
             this.colorPicker = new OpColorPicker(new Configurable<Color>(defaultColor), pos);
-            UIelementWrapper wrapper = new UIelementWrapper(tabWrapper, colorPicker);
+            PatchedUIelementWrapper wrapper = new PatchedUIelementWrapper(tabWrapper, colorPicker);
             colorPicker.Hide();
 
             this.currentlyPicking = false;
@@ -26,7 +27,21 @@ namespace RainMeadow
             OnClick += Signal;
             OnReactivate += Reactivated;
         }
+        public OpTinyColorPicker(Menu.Menu menu, Vector2 pos, Color defaultColor, MenuTabWrapper tabWrapper) : base(pos, new Vector2(30, 30))
+        {
+            this.colorPicker = new OpColorPicker(new Configurable<Color>(defaultColor), pos);
+            PatchedUIelementWrapper wrapper = new(tabWrapper, colorPicker), myWrapper = new(tabWrapper, this);
+            colorPicker.Hide();
 
+            this.currentlyPicking = false;
+
+            this.colorFill = colorPicker.valueColor;
+            this._rect.fillAlpha = 1f;
+
+            OnClick += Signal;
+            OnReactivate += Reactivated;
+
+        }
         public void Signal(UIfocusable trigger)
         {
             if (!currentlyPicking)

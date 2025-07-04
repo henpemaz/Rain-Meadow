@@ -100,18 +100,45 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
-            if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode != null)
-            {
-                arena.externalArenaGameMode.ArenaPlayerBox_Update(arena, this);
-            }
+            rainbowColor.hue = GetLerpedRainbowHue();
+            slugcatButton.portraitSecondaryLerpFactor = showRainbow? GetLerpedRainbowHue(0.75f) : 0;
+            realPing = System.Math.Max(1, profileIdentifier.ping - 16);
+            lastTextOverlayFade = textOverlayFade;
+            textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
+            slugcatButton.isBlackPortrait = enabledTextOverlay;
         }
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
-            if (RainMeadow.isArenaMode(out var arena) && arena.externalArenaGameMode != null)
+            Vector2 size = DrawSize(timeStacker), pos = DrawPos(timeStacker);
+            Color pingColor = GetPingColor(realPing);
+            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{realPing}ms";
+            pingLabel.x = pos.x + size.x;
+            pingLabel.y = pos.y + 7;
+            pingLabel.color = pingColor;
+
+            for (int i = 0; i < 3; i++)
             {
-                arena.externalArenaGameMode.ArenaPlayerBox_GrafUpdate(arena, this, timeStacker, showRainbow, pingLabel, sprites, lines, textOverlayLabel, nameLabel, profileIdentifier, slugcatButton, ref externalSprite);
+                if (i == 2)
+                {
+                    sprites[i].x = pingLabel.x - pingLabel.textRect.width;
+                    sprites[i].y = pingLabel.y - 2.5f;
+                    sprites[i].color = pingColor;
+                    continue;
+                }
+                sprites[i].scaleX = size.x;
+                sprites[i].x = pos.x;
+                sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
+                sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
+            lines.Do(x => x.lineConnector.alpha = 0.5f);
+            textOverlayLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(lastTextOverlayFade, textOverlayFade, timeStacker), 0.3f);
+
+            lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
+            Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
+            HSLColor basecolor = MyBaseColor();
+            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
+            slugcatButton.secondaryColor = showRainbow ? rainbow : desiredSlugcatButtonSecondaryColor;
 
         }
         public void InitButtons(bool canKick)

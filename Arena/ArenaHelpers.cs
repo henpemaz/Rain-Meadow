@@ -341,7 +341,8 @@ namespace RainMeadow
                 arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
             }
         }
-        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player)
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) => GetDataSettings<ArenaClientSettings>(player);
+        public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)
             {
@@ -349,7 +350,7 @@ namespace RainMeadow
                 return null;
             }
             if (player == null) return null;
-            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<T>() : null;
         }
         public static void ParseArenaSetupSaveString(string text, Action<string[]> action)
         {

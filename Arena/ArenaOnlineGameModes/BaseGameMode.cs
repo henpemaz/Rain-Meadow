@@ -9,6 +9,7 @@ using UnityEngine;
 using Menu.Remix.MixedUI;
 using HarmonyLib;
 using System.Xml;
+using RainMeadow.UI;
 
 
 namespace RainMeadow
@@ -16,6 +17,7 @@ namespace RainMeadow
     public abstract class ExternalArenaGameMode
     {
         private int _timerDuration;
+
         public virtual ArenaSetup.GameTypeID GetGameModeId
         {
             get
@@ -365,68 +367,18 @@ namespace RainMeadow
             return orig(self, A, B);
         }
 
-        public virtual void ArenaExternalGameModeSettingsInterface_ctor(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, Menu.MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        public virtual void OnUIEnabled(ArenaOnlineLobbyMenu menu)
         {
 
         }
-
-        public virtual void ArenaExternalGameModeSettingsInterface_GrafUpdate(ArenaOnlineGameMode arena, float timeStacker)
+        public virtual void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {
 
         }
-
-        public virtual void ArenaExternalGameModeSettingsInterface_Update(ArenaOnlineGameMode arena, OnlineArenaExternalGameModeSettingsInterface extComp, Menu.Menu menu, MenuObject owner, MenuTabWrapper tabWrapper, Vector2 pos, float settingsWidth = 300)
+        public virtual void OnUIUpdate(ArenaOnlineLobbyMenu menu)
         {
 
         }
-
-        public virtual void ArenaPlayerBox_GrafUpdate(ArenaOnlineGameMode arena, ArenaPlayerBox self, float timeStacker, bool showRainbow, FLabel pingLabel, FSprite[] sprites, List<UiLineConnector> lines, Menu.MenuLabel textOverlayLabel, ProperlyAlignedMenuLabel nameLabel, OnlinePlayer profileIdentifier, SlugcatColorableButton slugcatButton, ref FSprite externalSprite)
-        {
-            Vector2 size = self.DrawSize(timeStacker), pos = self.DrawPos(timeStacker);
-            Color pingColor = self.GetPingColor(self.realPing);
-            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{self.realPing}ms";
-            pingLabel.x = pos.x + size.x;
-            pingLabel.y = pos.y + 7;
-            pingLabel.color = pingColor;
-
-            for (int i = 0; i < 3; i++)
-            {
-                if (i == 2)
-                {
-                    sprites[i].x = pingLabel.x - pingLabel.textRect.width;
-                    sprites[i].y = pingLabel.y - 2.5f;
-                    sprites[i].color = pingColor;
-                    continue;
-                }
-                sprites[i].scaleX = size.x;
-                sprites[i].x = pos.x;
-                sprites[i].y = pos.y + (size.y * i); //first sprite is bottomLine, second sprite is topLine
-                sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
-            }
-            lines.Do(x => x.lineConnector.alpha = 0.5f);
-            textOverlayLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(self.lastTextOverlayFade, self.textOverlayFade, timeStacker), 0.3f);
-
-            lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
-            Color rainbow = ArenaPlayerBox.MyRainbowColor(self.rainbowColor, showRainbow);
-            HSLColor basecolor = self.MyBaseColor();
-            nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
-            slugcatButton.secondaryColor = showRainbow ? rainbow : null;
-        }
-
-        public virtual string AddGameSettingsTab()
-        {
-            return "";
-        }
-        public virtual void ArenaPlayerBox_Update(ArenaOnlineGameMode arena, ArenaPlayerBox self)
-        {
-            self.rainbowColor.hue = ArenaPlayerBox.GetLerpedRainbowHue();
-            self.slugcatButton.portraitSecondaryLerpFactor = ArenaPlayerBox.GetLerpedRainbowHue(0.75f);
-            self.realPing = System.Math.Max(1, self.profileIdentifier.ping - 16);
-            self.lastTextOverlayFade = self.textOverlayFade;
-            self.textOverlayFade = self.enabledTextOverlay ? RWCustom.Custom.LerpAndTick(self.textOverlayFade, 1f, 0.02f, 1f / 60f) : RWCustom.Custom.LerpAndTick(self.textOverlayFade, 0f, 0.12f, 0.1f);
-            self.slugcatButton.isBlackPortrait = self.enabledTextOverlay;
-        }
-
         public virtual DialogNotify AddGameModeInfo(Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Add your gamemode info here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
