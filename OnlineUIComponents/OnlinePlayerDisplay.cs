@@ -207,7 +207,7 @@ namespace RainMeadow
                         if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
                         {
                             slugIcon.SetElementByName("Multiplayer_Star");
-                            slugIcon.color = owner.PlayerConsideredDead ? lighter_color : Color.yellow;
+                            slugIcon.color = owner.PlayerConsideredDead ? lighter_color : arena.externalArenaGameMode.CustomIconColor(arena, customization, player);
                         }
                         else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
                         {

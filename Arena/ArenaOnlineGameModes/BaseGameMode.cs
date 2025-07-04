@@ -128,6 +128,11 @@ namespace RainMeadow
             return "";
         }
 
+        public virtual Color CustomIconColor(ArenaOnlineGameMode arena, SlugcatCustomization customization, OnlinePlayer player)
+        {
+            return customization.bodyColor;
+        }
+
         public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
         {
             return null;

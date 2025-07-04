@@ -511,6 +511,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return "";
         }
 
+        public override Color CustomIconColor(ArenaOnlineGameMode arena, SlugcatCustomization customization, OnlinePlayer player)
+        {
+            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            {
+                return TeamColors[tb2.team];
+            }
+            return customization.bodyColor;
+        }
+
+
 
     }
 }
