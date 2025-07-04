@@ -293,11 +293,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
         else
         {
-            if (Arena.hasPermissionToRejoin && !initiateStartGameAfterCountDown)
+            
+            if (Arena.hasPermissionToRejoin && !initiateStartGameAfterCountDown && Arena.arenaClientSettings.ready)
             {
                 initiateStartGameAfterCountDown = true;
                 StartGame();
             }
+        }
+
+        if (!Arena.allowJoiningMidRound)
+        {
+            Arena.arenaClientSettings.ready = true;
         }
 
         if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)

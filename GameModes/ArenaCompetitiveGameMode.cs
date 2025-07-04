@@ -309,7 +309,7 @@ namespace RainMeadow
 
         }
 
-        public void AddExternalGameModes( ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
+        public void AddExternalGameModes(ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
         {
 
             if (!this.registeredGameModes.ContainsKey(gametypeID.value))
@@ -345,7 +345,7 @@ namespace RainMeadow
             ResetScrollTimer();
             ResetInvDetails();
             ResetChampAddition();
-            AllowRejoin();
+            AllowJoinOrRejoin();
         }
 
         public void ResetAtNextLevel()
@@ -374,9 +374,15 @@ namespace RainMeadow
             arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
-        public void AllowRejoin()
+        public void AllowJoinOrRejoin()
         {
-            hasPermissionToRejoin = true;
+            if (allowJoiningMidRound)
+            {
+                hasPermissionToRejoin = true;
+            } else
+            {
+                hasPermissionToRejoin = currentLevel == 0;
+            }
         }
         public void ResetGameTimer()
         {

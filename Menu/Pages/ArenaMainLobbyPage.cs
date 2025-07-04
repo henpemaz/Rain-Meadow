@@ -187,19 +187,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (startButton == null) return;
 
         startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
-        if (!Arena.allowJoiningMidRound)
-        {
-            bool forceReadyFirst = ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players) != OnlineManager.players.Count;
-            string forceReadyText = "FORCE READY";
-            string startMatchText = "START MATCH!";
-            startButton.signalText = forceReadyFirst ? "FORCE_READY" : "START_MATCH";
-            startButton.menuLabel.text = forceReadyFirst ? menu.Translate(forceReadyText) : (Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate(startMatchText));
-        }
-        else
-        {
-            startButton.menuLabel.text = Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate("START MATCH!");
-            startButton.signalText = "START_MATCH";
-        }
+        startButton.menuLabel.text = Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate("START MATCH!");
+        startButton.signalText = "START_MATCH";
+
     }
     public override void Singal(MenuObject sender, string message)
     {
@@ -213,14 +203,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
         if (message == "START_MATCH")
             ArenaMenu?.StartGame();
-        if (message == "FORCE_READY")
-        {
-            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !(ArenaHelpers.GetArenaClientSettings(x)?.ready == true)))
-            {
-                if (player.isMe) Arena.arenaClientSettings.ready = true;
-                else player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReady, []);
-            }
-        }
     }
     public override void Update()
     {
@@ -240,7 +222,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
 
         if (!RainMeadow.isArenaMode(out _)) return;
-        
+
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
