@@ -68,7 +68,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+        Arena.ResetOnReturnMenu(Arena, manager);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
 
@@ -180,7 +180,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena, manager);
+        Arena.OnStartGame(Arena, manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -279,7 +279,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
-            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.ResetOnReturnMenu(Arena, manager);
             Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         }
 

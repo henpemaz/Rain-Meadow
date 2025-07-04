@@ -153,6 +153,11 @@ namespace RainMeadow
                     }
                 }
             }
+            foreach (var player in self.players)
+            {
+                player.roundKills = arena.localRoundKills[player.playerNumber];
+                player.allKills = arena.localAllKills[player.playerNumber];
+            }
             return orig(self);
 
         }

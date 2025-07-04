@@ -120,7 +120,7 @@ namespace RainMeadow
                             };
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                            ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
                             self.players.Add(newArenaPlayer);
                         }
                     }
@@ -143,7 +143,7 @@ namespace RainMeadow
                                     hasEnteredGameArea = true
                                 };
                                 Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                                ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
                                 self.players.Add(newArenaPlayer);
                             }
                         }

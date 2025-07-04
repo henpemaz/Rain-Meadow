@@ -90,6 +90,9 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> localRoundKills;
+
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -118,6 +121,9 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
+            localRoundKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
+            localAllKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
+
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -374,12 +380,118 @@ namespace RainMeadow
             arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
+        public void SetProfileColor(ArenaOnlineGameMode arena)
+        {
+            int profileColor = 0;
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+
+                if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
+                {
+                    profileColor = UnityEngine.Random.Range(0, 4);
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
+                }
+                else
+                {
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
+                }
+
+            }
+        }
+        public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
+        {
+            if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
+            {
+                newArenaPlayer.wins = wins;
+                newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
+                newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+
+                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+            }
+            else
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
+                    RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
+
+                }
+            }
+        }
+        public void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            arena.ResetGameTimer();
+            if (arena.externalArenaGameMode != null)
+            {
+                arena.externalArenaGameMode.ResetOnSessionEnd();
+            }
+            arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
+            arena.playersReadiedUp.list.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+        }
+        public void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+            manager.rainWorld.options.DeleteArenaSitting();
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.isInGame = false;
+            arena.leaveForNextLevel = false;
+            arena.ResetGameTimer();
+            arena.currentLevel = 0;
+            arena.lobbyCountDown = 5;
+            arena.initiateLobbyCountdown = false;
+            arena.playersEqualToOnlineSitting = false;
+        }
+        public void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.rainWorld.progression.SaveProgression(true, true);
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.arenaSittingOnlineOrder.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+        }
+        public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            if (lobby.playButton != null)
+            {
+                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
+                lobby.playButton.inactive = false;
+
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
+                arena.isInGame = false;
+                arena.leaveForNextLevel = false;
+            }
+            if (arena.returnToLobby)
+            {
+                arena.playersReadiedUp.list.Clear();
+                arena.returnToLobby = false;
+            }
+
+
+            lobby.manager.rainWorld.options.DeleteArenaSitting();
+            //Nightcat.ResetNightcat();
+
+
+        }
+
         public void AllowJoinOrRejoin()
         {
             if (allowJoiningMidRound)
             {
                 hasPermissionToRejoin = true;
-            } else
+            }
+            else
             {
                 hasPermissionToRejoin = currentLevel == 0;
             }
@@ -392,7 +504,7 @@ namespace RainMeadow
 
         public void ResetPlayersEntered()
         {
-            playersEqualToOnlineSitting = true;
+            playersEqualToOnlineSitting = false;
         }
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)

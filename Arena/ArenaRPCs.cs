@@ -15,7 +15,7 @@ namespace RainMeadow
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
             {
                 resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                ArenaHelpers.ResetOnReturnMenu(arena, resl.manager);
+                arena.ResetOnReturnMenu(arena, resl.manager);
             }
            arena.arenaClientSettings.ready = true;
         }
@@ -253,7 +253,8 @@ namespace RainMeadow
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-
+                            arena.localRoundKills.Add(game.GetArenaGameSession.arenaSitting.players[i].playerNumber, game.GetArenaGameSession.arenaSitting.players[i].allKills);
+                            arena.localAllKills.Add(game.GetArenaGameSession.arenaSitting.players[i].playerNumber, game.GetArenaGameSession.arenaSitting.players[i].allKills);
                         }
 
                     }
