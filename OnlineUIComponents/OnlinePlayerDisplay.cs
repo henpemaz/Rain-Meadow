@@ -197,15 +197,14 @@ namespace RainMeadow
                         if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
                         {
                             slugIcon.SetElementByName("Multiplayer_Star");
-                            slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
                         }
                         else if (arena.externalArenaGameMode.AddIcon(arena, owner, customization, player) != "")
                         {
                             slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, owner, customization, player));
-                            slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
-
                         }
                         else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
+                        slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
+
                     }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");
                     else if (owner.PlayerInShelter) slugIcon.SetElementByName("ShortcutShelter");

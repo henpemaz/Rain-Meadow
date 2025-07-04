@@ -133,14 +133,15 @@ namespace RainMeadow
 
         public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
-            {
-                return Color.yellow;
-            }
             if (owner.PlayerConsideredDead)
             {
                 return Color.grey;
             }
+            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                return Color.yellow;
+            }
+
             return base.IconColor(arena, owner, customization, player);
         }
 
