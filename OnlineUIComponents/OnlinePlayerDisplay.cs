@@ -60,7 +60,10 @@ namespace RainMeadow
             this.owner = owner;
 
             this.color = customization.SlugcatColor();
-
+            if (RainMeadow.isArenaMode(out var a))
+            {
+                this.color = a.externalArenaGameMode.IconColor(a, owner, customization, player);
+            }
             Color.RGBToHSV(color, out H, out S, out V);
 
 
@@ -72,19 +75,6 @@ namespace RainMeadow
             else
             {
                 this.lighter_color = color;
-            }
-
-            if (RainMeadow.isArenaMode(out var a))
-            {
-                if (isTeamBattleMode(a, out var tb))
-                {
-
-                    if (OnlineManager.lobby.clientSettings[owner.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
-                    {
-                        this.color = TeamBattleMode.TeamColors[tb2.team];
-                        this.lighter_color = this.color;
-                    }
-                }
             }
 
             this.pos = new Vector2(-1000f, -1000f);
@@ -125,9 +115,9 @@ namespace RainMeadow
                 {
                     this.iconString = "Multiplayer_Star";
                 }
-                else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
+                else if (arena.externalArenaGameMode.AddIcon(arena, owner, customization, player) != "")
                 {
-                    this.iconString = arena.externalArenaGameMode.AddCustomIcon(arena, owner);
+                    this.iconString = arena.externalArenaGameMode.AddIcon(arena, owner, customization, player);
                 }
             }
 
@@ -207,15 +197,14 @@ namespace RainMeadow
                         if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
                         {
                             slugIcon.SetElementByName("Multiplayer_Star");
-                            slugIcon.color = owner.PlayerConsideredDead ? lighter_color : arena.externalArenaGameMode.CustomIconColor(arena, customization, player);
+                            slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
                         }
-                        else if (arena.externalArenaGameMode.AddCustomIcon(arena, owner) != "")
+                        else if (arena.externalArenaGameMode.AddIcon(arena, owner, customization, player) != "")
                         {
-                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddCustomIcon(arena, owner));
+                            slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, owner, customization, player));
+                            slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
+
                         }
-
-                        if (TeamBattleMode.isTeamBattleMode(arena, out _) && owner.PlayerConsideredDead) slugIcon.color = Color.gray;
-
                         else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
                     }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");

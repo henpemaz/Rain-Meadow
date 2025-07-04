@@ -123,13 +123,14 @@ namespace RainMeadow
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        public virtual string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             return "";
         }
 
-        public virtual Color CustomIconColor(ArenaOnlineGameMode arena, SlugcatCustomization customization, OnlinePlayer player)
+        public virtual Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
+
             return customization.bodyColor;
         }
 

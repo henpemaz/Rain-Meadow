@@ -131,5 +131,18 @@ namespace RainMeadow
             return new DialogNotify(menu.LongTranslate("Trust no one. Last scug standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
+        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        {
+            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                return Color.yellow;
+            }
+            if (owner.PlayerConsideredDead)
+            {
+                return Color.grey;
+            }
+            return base.IconColor(arena, owner, customization, player);
+        }
+
     }
 }

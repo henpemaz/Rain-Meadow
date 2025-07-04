@@ -501,22 +501,29 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
 
 
-        public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
 
-            if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
+                
                 return TeamMappingsDictionary[tb2.team];
             }
             return "";
         }
 
-        public override Color CustomIconColor(ArenaOnlineGameMode arena, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner,  SlugcatCustomization customization, OnlinePlayer player)
         {
+            if (owner.PlayerConsideredDead)
+            {
+                return Color.grey;
+            }
+
             if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
                 return TeamColors[tb2.team];
             }
+ 
             return customization.bodyColor;
         }
 
