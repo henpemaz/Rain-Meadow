@@ -146,35 +146,23 @@ namespace RainMeadow
                     {
                         player.deaths = d;
                     }
-                    else
-                    {
-                        player.deaths = 0;
-                    }
+
 
                     if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w))
                     {
                         player.wins = w;
                     }
-                    else
-                    {
-                        player.wins = 0;
-                    }
+
                     if (arena.playerNumberWithScore.TryGetValue(pl.inLobbyId, out var s))
                     {
                         player.score = s;
                     }
-                    else
-                    {
-                        player.score = 0;
-                    }
+
                     if (arena.playerTotScore.TryGetValue(pl.inLobbyId, out var t))
                     {
                         player.totScore = s;
                     }
-                    else
-                    {
-                        player.totScore = 0;
-                    }
+
                 }
             }
             orig(self, resultPage, owner, player, index);
