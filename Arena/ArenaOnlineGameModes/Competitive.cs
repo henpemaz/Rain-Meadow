@@ -107,6 +107,17 @@ namespace RainMeadow
 
         }
 
+        public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        {
+
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
+            {
+                return "ChieftainA";
+            }
+            return base.AddIcon(arena, owner, customization, player);
+
+        }
+
         public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)

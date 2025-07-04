@@ -452,10 +452,10 @@ namespace RainMeadow
                 foreach (var entry in arena.playerNumberWithWins)
                 {
                     statsReport += "<LINE>";
-                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, entry.Key);
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
                     if (pl != null)
                     {
-                        statsReport += $"{pl.id.name} - Wins: {entry.Value} - Kills: {arena.playerNumberWithKills[pl.inLobbyId]} - Deaths: {arena.playerNumberWithDeaths[pl.inLobbyId]} - Total Score: {arena.playerTotScore[pl.inLobbyId]}";
+                        statsReport += $"{pl.id.name} - Wins: {arena.playerNumberWithKills[pl.inLobbyId]} - Kills: {arena.playerNumberWithKills[pl.inLobbyId]} - Deaths: {arena.playerNumberWithDeaths[pl.inLobbyId]} - Total Score: {arena.playerTotScore[pl.inLobbyId]}";
                     }
                 }
             }
