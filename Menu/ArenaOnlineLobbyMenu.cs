@@ -70,7 +70,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
         Arena.ResetOnReturnMenu(Arena, manager);
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
->>>>>>>>> Temporary merge branch 2
     }
 
     public void ChangeScene()
@@ -302,29 +301,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             Arena.arenaClientSettings.ready = true;
         }
 
-        if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)
-        {
-
-            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
-            {
-                if (Arena.externalArenaGameMode != null)
-                {
-                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.RemoveTab(arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab);
-                    arenaMainLobbyPage.arenaSettingsInterface.onlineArenaExternalGameModeSettingsInterface = null;
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = null;
-
-                }
-                Arena.externalArenaGameMode = extGameMode;
-                if (Arena.externalArenaGameMode.AddGameSettingsTab() != "" && arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab == null)
-                {
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = arenaMainLobbyPage.arenaSettingsInterface.tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
-                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.arenaSettingsInterface.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab, new Vector2(0f, 0f));
-                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
-                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.tabButtonContainer.GoPrevPage();
-                }
-            }
-        }
-
         if (Arena.initiateLobbyCountdown)
         {
             PlayStartGameCountdown();
@@ -387,15 +363,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
-
-
-        if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
-        {
-            if (!Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode)) return;
-            RemoveAndAddNewExtGameModeTab(extGameMode);
-        }
-        Arena.externalArenaGameMode?.OnUIUpdate(this);
-
 
         if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
         {
