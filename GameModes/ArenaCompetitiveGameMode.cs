@@ -91,8 +91,6 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
-        public Dictionary<int, List<IconSymbol.IconSymbolData>> localRoundKills;
-
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -121,7 +119,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            localRoundKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
             localAllKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
 
 
@@ -457,6 +454,7 @@ namespace RainMeadow
             arena.playerNumberWithDeaths.Clear();
             arena.playerNumberWithKills.Clear();
             arena.playerNumberWithWins.Clear();
+            arena.localAllKills.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {

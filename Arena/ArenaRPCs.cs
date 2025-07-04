@@ -17,7 +17,7 @@ namespace RainMeadow
                 resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
                 arena.ResetOnReturnMenu(arena, resl.manager);
             }
-           arena.arenaClientSettings.ready = true;
+            arena.arenaClientSettings.ready = true;
         }
         [RPCMethod]
         public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
@@ -247,14 +247,24 @@ namespace RainMeadow
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
                     if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
                     {
                         if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            arena.localRoundKills.Add(game.GetArenaGameSession.arenaSitting.players[i].playerNumber, game.GetArenaGameSession.arenaSitting.players[i].allKills);
-                            arena.localAllKills.Add(game.GetArenaGameSession.arenaSitting.players[i].playerNumber, game.GetArenaGameSession.arenaSitting.players[i].allKills);
+                            if (pl != null)
+                            {
+                                if (!arena.localAllKills.ContainsKey(pl.inLobbyId))
+                                {
+                                    arena.localAllKills.Add(pl.inLobbyId, game.GetArenaGameSession.arenaSitting.players[i].allKills);
+                                }
+                                else
+                                {
+                                    arena.localAllKills[pl.inLobbyId].Add(iconSymbolData);
+                                }
+                            }
                         }
 
                     }

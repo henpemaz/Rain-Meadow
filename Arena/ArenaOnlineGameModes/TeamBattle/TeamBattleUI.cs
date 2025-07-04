@@ -346,27 +346,30 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         if (team.team == tb.winningTeam && tb.winningTeam != -1)
                         {
                             slugcatButton.secondaryColor = rainbow;
+                        } else
+                        {
+                            slugcatButton.secondaryColor = TeamColors[team.team];
                         }
 
-                        if (externalSprite == null)
-                        {
+                        //if (externalSprite == null)
+                        //{
 
-                            if (foundTeam && foundTeamClient && self.infoKickButton != null)
-                            {
-                                var namePos = self.infoKickButton.DrawPos(timestacker);
-                                externalSprite = new FSprite(TeamMappingsDictionary[team.team]);
-                                externalSprite.x = namePos.x + 55;
-                                externalSprite.y = namePos.y + 15;
-                                externalSprite.color = TeamColors[team.team];
-                                self.Container.AddChild(externalSprite);
-                            }
-                        }
-                        else
-                        {
+                        //    if (foundTeam && foundTeamClient && self.infoKickButton != null)
+                        //    {
+                        //        var namePos = self.infoKickButton.DrawPos(timestacker);
+                        //        externalSprite = new FSprite(TeamMappingsDictionary[team.team]);
+                        //        externalSprite.x = namePos.x + 55;
+                        //        externalSprite.y = namePos.y + 15;
+                        //        externalSprite.color = TeamColors[team.team];
+                        //        self.Container.AddChild(externalSprite);
+                        //    }
+                        //}
+                        //else
+                        //{
                             
-                            externalSprite.color = TeamColors[team.team];
-                            externalSprite.SetElementByName(TeamMappingsDictionary[team.team]);
-                        }
+                        //    externalSprite.color = TeamColors[team.team];
+                        //    externalSprite.SetElementByName(TeamMappingsDictionary[team.team]);
+                        //}
 
                     }
                 }
