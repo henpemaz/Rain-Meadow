@@ -60,7 +60,7 @@
             return asp;
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlineSpearDefinition(this, onlineResource);
         }

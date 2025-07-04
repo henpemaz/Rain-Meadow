@@ -68,7 +68,7 @@ namespace RainMeadow
             creature.Grab(obj, graspUsed, chunkGrabbed, new Creature.Grasp.Shareability(Creature.Grasp.Shareability.values.GetEntry(shareability)), dominance, false, pacifying);
         }
 
-        internal void Release(Creature.Grasp grasp)
+        public void Release(Creature.Grasp grasp)
         {
             RainMeadow.Debug(this);
             grasp.grabber.ReleaseGrasp(grasp.graspUsed);
