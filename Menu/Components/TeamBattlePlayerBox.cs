@@ -21,7 +21,6 @@ namespace RainMeadow.UI.Components
         }
         public override void RemoveSprites()
         {
-            if (PlayerBox != null) PlayerBox.desiredSlugcatButtonSecondaryColor = null;
             teamSymbol.RemoveFromContainer();
             base.RemoveSprites();
         }
@@ -35,11 +34,6 @@ namespace RainMeadow.UI.Components
                 teamSymbol.x = pos.x + 55;
                 teamSymbol.y = pos.y + 15;
             }
-        }
-        public override void Update()
-        {
-            base.Update();
-            if (PlayerBox != null) PlayerBox.desiredSlugcatButtonSecondaryColor = teamColor;
         }
     }
 }
