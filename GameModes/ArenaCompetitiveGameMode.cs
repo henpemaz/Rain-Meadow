@@ -241,7 +241,7 @@ namespace RainMeadow
                 return false;
             }
 
-            return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
+            return true;
         }
         private int previousSecond = -1;
         public override void LobbyTick(uint tick)
