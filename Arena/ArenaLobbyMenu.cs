@@ -54,10 +54,10 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
             if (OnlineManager.lobby.isOwner)
             {
-                ArenaHelpers.ResetOnReturnToMenu(arena, this);
+                arena.ResetOnReturnToMenu(arena, this);
                 arena.ResetForceReadyCountDown();
             }
-            ArenaHelpers.ResetReadyUpLogic(arena, this);
+            arena.ResetReadyUpLogic(arena, this);
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
@@ -384,7 +384,7 @@ namespace RainMeadow
                 }
                 if (this != null)
                 {
-                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                    arena.ResetReadyUpLogic(arena, this);
                 }
             }
 
@@ -480,7 +480,7 @@ namespace RainMeadow
 
             }
 
-            ArenaHelpers.SetProfileColor(arena);
+            arena.SetProfileColor(arena);
             if (arena.registeredGameModes.Keys.Contains(arena.currentGameMode))
             {
                 arena.externalArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
@@ -700,7 +700,7 @@ namespace RainMeadow
             }
             if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
             {
-                ArenaHelpers.ResetReadyUpLogic(arena, this);
+                arena.ResetReadyUpLogic(arena, this);
                 flushArenaSittingForWaitingClients = true;
             }
 

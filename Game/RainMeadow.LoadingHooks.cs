@@ -86,10 +86,6 @@ namespace RainMeadow
                         if (ModManager.MSC && getArenaGameSession.challengeCompleted)
                         {
                             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerMenu);
-                            if (!OnlineManager.lobby.isOwner)
-                            {
-                                OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
-                            }
                             self.players.Clear();
                             return;
                         }
@@ -105,12 +101,6 @@ namespace RainMeadow
                     if (self.currentLevel >= arena.playList.Count && !self.gameTypeSetup.repeatSingleLevelForever)
                     {
                         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-
-                        if (!OnlineManager.lobby.isOwner)
-                        {
-                            OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_ResetPlayersLeft);
-                        }
-
                         return;
                     }
 
@@ -130,7 +120,7 @@ namespace RainMeadow
                             };
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                            ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
                             self.players.Add(newArenaPlayer);
                         }
                     }
@@ -153,7 +143,7 @@ namespace RainMeadow
                                     hasEnteredGameArea = true
                                 };
                                 Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                                ArenaHelpers.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
                                 self.players.Add(newArenaPlayer);
                             }
                         }

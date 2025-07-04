@@ -68,8 +68,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+        Arena.ResetOnReturnMenu(Arena, manager);
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
+
     }
 
     public void ChangeScene()
@@ -164,15 +165,18 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
+        if (OnlineManager.lobby.isOwner)
         {
-            Arena.initiateLobbyCountdown = true;
-            return;
+            if (Arena.lobbyCountDown > 0)
+            {
+                Arena.initiateLobbyCountdown = true;
+                return;
+            }
         }
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena, manager);
+        Arena.OnStartGame(Arena, manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -182,7 +186,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         PlaySound(SoundID.MENU_Start_New_Game);
         manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         Arena.arenaClientSettings.ready = false;
-        
+
     }
     public void SetPlaylistFromSetupToSitting()
     {
@@ -271,7 +275,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
-            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.ResetOnReturnMenu(Arena, manager);
             Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         }
 
@@ -281,6 +285,43 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             {
                 initiateStartGameAfterCountDown = true;
                 StartGame();
+            }
+        }
+        else
+        {
+            
+            if (Arena.hasPermissionToRejoin && !initiateStartGameAfterCountDown && Arena.arenaClientSettings.ready)
+            {
+                initiateStartGameAfterCountDown = true;
+                StartGame();
+            }
+        }
+
+        if (!Arena.allowJoiningMidRound)
+        {
+            Arena.arenaClientSettings.ready = true;
+        }
+
+        if (!OnlineManager.lobby.isOwner && Arena.currentGameMode != Arena.externalArenaGameMode.GetGameModeId.value && arenaMainLobbyPage?.arenaSettingsInterface != null)
+        {
+
+            if (Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode))
+            {
+                if (Arena.externalArenaGameMode != null)
+                {
+                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.RemoveTab(arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab);
+                    arenaMainLobbyPage.arenaSettingsInterface.onlineArenaExternalGameModeSettingsInterface = null;
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = null;
+
+                }
+                Arena.externalArenaGameMode = extGameMode;
+                if (Arena.externalArenaGameMode.AddGameSettingsTab() != "" && arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab == null)
+                {
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab = arenaMainLobbyPage.arenaSettingsInterface.tabContainer.AddTab(Arena.externalArenaGameMode.AddGameSettingsTab());
+                    onlineArenaExternalGameModeSettingsInterface = new OnlineArenaExternalGameModeSettingsInterface(Arena, arenaMainLobbyPage.arenaSettingsInterface.menu, arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab, new Vector2(0f, 0f));
+                    arenaMainLobbyPage.arenaSettingsInterface.externalGameModeTab.AddObjects(onlineArenaExternalGameModeSettingsInterface);
+                    arenaMainLobbyPage.arenaSettingsInterface.tabContainer.tabButtonContainer.GoPrevPage();
+                }
             }
         }
 
@@ -308,6 +349,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can steal items from each other") : Translate("Players cannot steal items from each other");
             if (idString == "MIDGAMEJOIN")
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
+            if (idString == "WEAPONCOLLISIONFIX")
+                return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -319,7 +362,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+                return index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? Translate("No rain") : ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index] + " " + Translate($"minute{(index == 1 ? "" : "s")} until rain");
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);
@@ -343,7 +386,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         SlugcatStats.Name slugcat = GetArenaSetup.playerClass[0];
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
-        Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+        if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
 
 
         if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))

@@ -5,13 +5,6 @@ using ArenaMode = RainMeadow.ArenaOnlineGameMode;
 
 namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
-
-    public class Team
-    {
-        public string teamName = "";
-        public Color teamColor;
-
-    }
     public partial class TeamBattleMode : ExternalArenaGameMode
     {
 
@@ -39,28 +32,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
         private int _timerDuration;
-
-        //public int winningTeam = -1;
-        //public int martyrsSpawn = 0;
-        //public int outlawsSpawn = 0;
-        //public int dragonslayersSpawn = 0;
-        //public int chieftainsSpawn = 0;
-        //public int roundSpawnPointCycler = 0;
-
-        //public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
-        //public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
-        //public string dragonSlayersTeamNames = RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value;
-        //public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
-
-        //public UIelementWrapper externalModeWrapper;
-
-        //public OpComboBox? arenaTeamComboBox;
-        //public OpTextBox? martyrsTeamNameUpdate;
-        //public OpTextBox? outlawsTeamNameUpdate;
-        //public OpTextBox? dragonsSlayersTeamNameUpdate;
-        //public OpTextBox? chieftainsTeamNameUpdate;
-
-        //public bool teamComboBoxLastHeld;
 
         public List<string> teamNameList;
 
@@ -187,7 +158,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[t.team], tb.SetTeamLerp());
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[t.team], tb.lerp);
                 }
             }
 
@@ -499,24 +470,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
 
                 self.playersSpawned = true;
-                arena.playerEnteredGame++;
-                foreach (var player in arena.arenaSittingOnlineOrder)
-                {
-                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                    if (getPlayer != null)
-                    {
-                        if (!getPlayer.isMe)
-                        {
-                            getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
-                        }
-                    }
-                }
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.isInGame = true; // used for readied players at the beginning
                     arena.leaveForNextLevel = false;
-                    foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
-                        player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
 
                     foreach (var arenaPlayer in self.arenaSitting.players)
                     {
@@ -534,10 +491,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         }
                     }
                     arena.playersLateWaitingInLobbyForNextRound.Clear();
-
-
+                    arena.hasPermissionToRejoin = false;
                 }
-                arena.hasPermissionToRejoin = false;
+
+
             }
 
 

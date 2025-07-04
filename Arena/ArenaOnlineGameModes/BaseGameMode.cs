@@ -306,24 +306,10 @@ namespace RainMeadow
 
 
             self.playersSpawned = true;
-            arena.playerEnteredGame++;
-            foreach (var player in arena.arenaSittingOnlineOrder)
-            {
-                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
-                if (getPlayer != null)
-                {
-                    if (!getPlayer.isMe)
-                    {
-                        getPlayer.InvokeOnceRPC(ArenaRPCs.Arena_IncrementPlayersJoined);
-                    }
-                }
-            }
             if (OnlineManager.lobby.isOwner)
             {
                 arena.isInGame = true; // used for readied players at the beginning
                 arena.leaveForNextLevel = false;
-                foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
-                    player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
                 foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                 {
                     OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
@@ -344,10 +330,11 @@ namespace RainMeadow
                     }
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
-
+                arena.hasPermissionToRejoin = false;
 
             }
-            arena.hasPermissionToRejoin = false;
+
+
 
 
         }

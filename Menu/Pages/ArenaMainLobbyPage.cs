@@ -68,16 +68,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
-        TabContainer.Tab playListTab = tabContainer.AddTab("Arena Playlist"),
-            matchSettingsTab = tabContainer.AddTab("Match Settings");
+        TabContainer.Tab playListTab = tabContainer.AddTab(menu.Translate("Arena Playlist")),
+            matchSettingsTab = tabContainer.AddTab(menu.Translate("Match Settings"));
 
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
 
         if (ModManager.MSC)
         {
-            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab("Slugcat Abilities");
-            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new Vector2(360f, 380f), new Vector2(0f, 50f), painCatName);
+            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab(menu.Translate("Slugcat Abilities"));
+            slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new Vector2(360f, 380f), new Vector2(0f, 50f), menu.Translate(painCatName));
             slugcatAbilitiesInterface.CallForSync();
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
         }
@@ -187,19 +187,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (startButton == null) return;
 
         startButton.buttonBehav.greyedOut = !Arena.arenaClientSettings.ready || levelSelector.SelectedPlayList.Count == 0 || Arena.initiateLobbyCountdown;
-        if (!Arena.allowJoiningMidRound)
-        {
-            bool forceReadyFirst = ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players) != OnlineManager.players.Count;
-            string forceReadyText = "FORCE READY";
-            string startMatchText = "START MATCH!";
-            startButton.signalText = forceReadyFirst ? "FORCE_READY" : "START_MATCH";
-            startButton.menuLabel.text = forceReadyFirst ? menu.Translate(forceReadyText) : (Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate(startMatchText));
-        }
-        else
-        {
-            startButton.menuLabel.text = Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate("START MATCH!");
-            startButton.signalText = "START_MATCH";
-        }
+        startButton.menuLabel.text = Arena.initiateLobbyCountdown ? menu.Translate(Arena.lobbyCountDown.ToString()) : menu.Translate("START MATCH!");
+        startButton.signalText = "START_MATCH";
+
     }
     public override void Singal(MenuObject sender, string message)
     {
@@ -213,14 +203,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
         if (message == "START_MATCH")
             ArenaMenu?.StartGame();
-        if (message == "FORCE_READY")
-        {
-            foreach (OnlinePlayer player in OnlineManager.players.Where(x => !(ArenaHelpers.GetArenaClientSettings(x)?.ready == true)))
-            {
-                if (player.isMe) Arena.arenaClientSettings.ready = true;
-                else player.InvokeOnceRPC(ArenaRPCs.Arena_ForceReady, []);
-            }
-        }
     }
     public override void Update()
     {
@@ -240,7 +222,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         }
 
         if (!RainMeadow.isArenaMode(out _)) return;
-        
+
         ChatLogManager.UpdatePlayerColors();
         if (playerDisplayer != null)
         {
@@ -248,7 +230,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 UpdatePlayerButtons(button);
         }
 
-        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {Arena.currentGameMode}", chatMenuBox.size.x - 10, true);
+        activeGameModeLabel.text = LabelTest.TrimText($"{menu.Translate("Current Mode:")} {menu.Translate(Arena.currentGameMode)}", chatMenuBox.size.x - 10, true);
         readyPlayerCounterLabel.text = $"{menu.Translate("Ready:")} {ArenaHelpers.GetReadiedPlayerCount(OnlineManager.players)}/{OnlineManager.players.Count}";
         int amtOfRooms = ArenaMenu?.GetGameTypeSetup?.playList != null ? ArenaMenu.GetGameTypeSetup.playList.Count : 0,
             amtOfRoomsRepeat = arenaSettingsInterface?.roomRepeatArray != null ? arenaSettingsInterface.roomRepeatArray.CheckedButton + 1 : 0;

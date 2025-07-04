@@ -1,4 +1,4 @@
-using Menu;
+﻿using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
@@ -63,16 +63,17 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
 
 
-        public int playerEnteredGame;
+        public bool playersEqualToOnlineSitting;
         public bool clientWantsToLeaveGame;
         public bool countdownInitiatedHoldFire;
         public bool addedChampstoList;
         public bool hasPermissionToRejoin;
+        public bool initiateLobbyCountdown;
+
 
         public ArenaPrepTimer arenaPrepTimer;
         public int setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         public int lobbyCountDown;
-        public bool initiateLobbyCountdown;
         public int trackSetupTime;
         public int scrollInitiatedTimer;
 
@@ -89,6 +90,7 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
+        public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -99,11 +101,10 @@ namespace RainMeadow
 
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
-            playerEnteredGame = 0;
+            playersEqualToOnlineSitting = false;
             painCatThrowingSkill = 0;
             totalLevelCount = 0;
             currentLevel = 0;
-            playerLeftGame = 0;
             isInGame = false;
             lizardEvent = 0;
             paincatName = "";
@@ -118,6 +119,8 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
+            localAllKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
+
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
@@ -261,11 +264,11 @@ namespace RainMeadow
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
             {
                 StringBuilder randomDescBuilder = new();
-                if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
-                else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
+                if (ModManager.MSC) randomDescBuilder.Append(Utils.Translate("Am I Warrior from the past, or a Messiah from the future?"));
+                else randomDescBuilder.Append(Utils.Translate("Am I Cat Searching for many, or a Mouse searching for one?"));
+                if (ModManager.Watcher) randomDescBuilder.Append(Utils.Translate("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?"));
+                else randomDescBuilder.Append(Utils.Translate("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?"));
+                randomDescBuilder.Append(Utils.Translate("<LINE>I do not know, for I am not one. I am many."));
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else
@@ -309,7 +312,7 @@ namespace RainMeadow
 
         }
 
-        public void AddExternalGameModes( ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
+        public void AddExternalGameModes(ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
         {
 
             if (!this.registeredGameModes.ContainsKey(gametypeID.value))
@@ -345,6 +348,7 @@ namespace RainMeadow
             ResetScrollTimer();
             ResetInvDetails();
             ResetChampAddition();
+            AllowJoinOrRejoin();
         }
 
         public void ResetAtNextLevel()
@@ -369,10 +373,127 @@ namespace RainMeadow
             {
                 avatarSettings.playingAs = arenaClientSettings.playingAs;
             }
-
             avatarSettings.currentColors = OnlineManager.instance.manager.rainWorld.progression.GetCustomColors(avatarSettings.playingAs);
+            arenaClientSettings.slugcatColor = OnlineManager.instance.manager.rainWorld.progression.IsCustomColorEnabled(avatarSettings.playingAs) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(OnlineManager.instance.manager.rainWorld.progression.GetCustomColorHSL(avatarSettings.playingAs, 0))) : Color.black;
         }
 
+        public void SetProfileColor(ArenaOnlineGameMode arena)
+        {
+            int profileColor = 0;
+            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
+            {
+                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
+
+                if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
+                {
+                    profileColor = UnityEngine.Random.Range(0, 4);
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
+                }
+                else
+                {
+                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
+                }
+
+            }
+        }
+        public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
+        {
+            if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
+            {
+                newArenaPlayer.wins = wins;
+                newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
+                newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+
+                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+            }
+            else
+            {
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
+                    arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
+                    RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
+
+                }
+            }
+        }
+        public void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            arena.ResetGameTimer();
+            if (arena.externalArenaGameMode != null)
+            {
+                arena.externalArenaGameMode.ResetOnSessionEnd();
+            }
+            arena.currentLevel = 0;
+            arena.arenaSittingOnlineOrder.Clear();
+            arena.playersReadiedUp.list.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.playersLateWaitingInLobbyForNextRound.Clear();
+        }
+        public void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+            manager.rainWorld.options.DeleteArenaSitting();
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.isInGame = false;
+            arena.leaveForNextLevel = false;
+            arena.ResetGameTimer();
+            arena.currentLevel = 0;
+            arena.lobbyCountDown = 5;
+            arena.initiateLobbyCountdown = false;
+            arena.playersEqualToOnlineSitting = false;
+        }
+        public void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
+        {
+            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
+            manager.rainWorld.progression.SaveProgression(true, true);
+            if (!OnlineManager.lobby.isOwner) return;
+            arena.arenaSittingOnlineOrder.Clear();
+            arena.playerNumberWithDeaths.Clear();
+            arena.playerNumberWithKills.Clear();
+            arena.playerNumberWithWins.Clear();
+            arena.localAllKills.Clear();
+        }
+        public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        {
+            if (lobby.playButton != null)
+            {
+                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
+                lobby.playButton.inactive = false;
+
+            }
+            if (OnlineManager.lobby.isOwner)
+            {
+                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
+                arena.isInGame = false;
+                arena.leaveForNextLevel = false;
+            }
+            if (arena.returnToLobby)
+            {
+                arena.playersReadiedUp.list.Clear();
+                arena.returnToLobby = false;
+            }
+
+
+            lobby.manager.rainWorld.options.DeleteArenaSitting();
+            //Nightcat.ResetNightcat();
+
+
+        }
+
+        public void AllowJoinOrRejoin()
+        {
+            if (allowJoiningMidRound)
+            {
+                hasPermissionToRejoin = true;
+            }
+            else
+            {
+                hasPermissionToRejoin = currentLevel == 0;
+            }
+        }
         public void ResetGameTimer()
         {
             setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
@@ -381,7 +502,7 @@ namespace RainMeadow
 
         public void ResetPlayersEntered()
         {
-            playerEnteredGame = 0;
+            playersEqualToOnlineSitting = false;
         }
 
         public override bool ShouldLoadCreatures(RainWorldGame game, WorldSession worldSession)

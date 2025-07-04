@@ -15,9 +15,9 @@ namespace RainMeadow
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
             {
                 resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                ArenaHelpers.ResetOnReturnMenu(arena, resl.manager);
+                arena.ResetOnReturnMenu(arena, resl.manager);
             }
-           arena.arenaClientSettings.ready = true;
+            arena.arenaClientSettings.ready = true;
         }
         [RPCMethod]
         public static void Arena_NotifySpawnPoint(int martyrs, int outlaws, int dragonslayers, int chieftains)
@@ -33,16 +33,6 @@ namespace RainMeadow
                     tb.chieftainsSpawn = chieftains;
                 }
             }
-        }
-
-        [RPCMethod]
-        public static void Arena_CallPlayerInMenuToJoin()
-        {
-            if (!RainMeadow.isArenaMode(out _)) return;
-            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not ArenaOnlineLobbyMenu lobby) return;
-            RainMeadow.Debug("Start game for player");
-            lobby.StartGame();
-
         }
         [RPCMethod]
         public static void Arena_RemovePlayerWhoQuit(OnlinePlayer earlyQuitterOrLatecomer)
@@ -219,40 +209,6 @@ namespace RainMeadow
 
 
         [RPCMethod]
-        public static void Arena_IncrementPlayersLeftt()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerLeftGame = arena.playerLeftGame + 1;
-
-            }
-
-        }
-
-        [RPCMethod]
-        public static void Arena_IncrementPlayersJoined()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerEnteredGame = arena.playerEnteredGame + 1;
-
-            }
-
-        }
-
-        [RPCMethod]
-        public static void Arena_ResetPlayersLeft()
-        {
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                arena.playerLeftGame = 0;
-
-            }
-
-        }
-
-
-        [RPCMethod]
         public static void Arena_ReadyForNextLevel()
         {
             if (RainMeadow.isArenaMode(out var arena))
@@ -291,13 +247,24 @@ namespace RainMeadow
                 IconSymbol.IconSymbolData iconSymbolData = CreatureSymbol.SymbolDataFromCreature(crit.abstractCreature);
                 for (int i = 0; i < game.GetArenaGameSession.arenaSitting.players.Count; i++)
                 {
+                    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, playerNum);
                     if (game.GetArenaGameSession.arenaSitting.players[i].playerNumber == playerNum)
                     {
                         if (CreatureSymbol.DoesCreatureEarnATrophy(crit.Template.type))
                         {
                             game.GetArenaGameSession.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
-
+                            if (pl != null)
+                            {
+                                if (!arena.localAllKills.ContainsKey(pl.inLobbyId))
+                                {
+                                    arena.localAllKills.Add(pl.inLobbyId, game.GetArenaGameSession.arenaSitting.players[i].allKills);
+                                }
+                                else
+                                {
+                                    arena.localAllKills[pl.inLobbyId].Add(iconSymbolData);
+                                }
+                            }
                         }
 
                     }

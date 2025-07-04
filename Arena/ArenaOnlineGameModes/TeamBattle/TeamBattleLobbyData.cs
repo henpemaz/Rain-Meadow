@@ -18,6 +18,8 @@ namespace RainMeadow
 
         internal class State : ResourceDataState
         {
+            [OnlineFieldHalf]
+            public float lerp;
             [OnlineField]
             public int winningTeam;
             [OnlineField]
@@ -71,8 +73,9 @@ namespace RainMeadow
                         outlaws = teamBattleMode.outlawsSpawn;
                         dragonslayers = teamBattleMode.dragonslayersSpawn;
                         chieftains = teamBattleMode.chieftainsSpawn;
-
                         roundSpawnPointCycler = teamBattleMode.roundSpawnPointCycler;
+                        lerp = teamBattleMode.lerp;
+
                     }
                 }
             }
@@ -102,6 +105,8 @@ namespace RainMeadow
                         teamBattleMode.dragonslayersSpawn = dragonslayers;
 
                         teamBattleMode.roundSpawnPointCycler = roundSpawnPointCycler;
+                        teamBattleMode.lerp = lerp;
+
 
                     }
                 }

@@ -97,25 +97,7 @@ namespace RainMeadow
             selectableSlugcats.AddRange(allSlugcats);
             selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
         }
-        public static void SetProfileColor(ArenaOnlineGameMode arena)
-        {
-            int profileColor = 0;
-            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-            {
-                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
 
-                if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
-                {
-                    profileColor = UnityEngine.Random.Range(0, 4);
-                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
-                }
-                else
-                {
-                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
-                }
-
-            }
-        }
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
         public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
@@ -131,90 +113,6 @@ namespace RainMeadow
             return null;
         }
 
-        public static void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
-        {
-            if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
-            {
-                newArenaPlayer.wins = wins;
-                newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
-                newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
-
-                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
-            }
-            else
-            {
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
-                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
-                    arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
-                    RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
-
-                }
-            }
-        }
-        public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
-        {
-            arena.ResetGameTimer();
-            if (arena.externalArenaGameMode != null)
-            {
-                arena.externalArenaGameMode.ResetOnSessionEnd();
-            }
-            arena.currentLevel = 0;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playersReadiedUp.list.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
-            arena.playersLateWaitingInLobbyForNextRound.Clear();
-        }
-        public static void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
-        {
-            manager.rainWorld.options.DeleteArenaSitting();
-            if (!OnlineManager.lobby.isOwner) return;
-            arena.isInGame = false;
-            arena.leaveForNextLevel = false;
-            arena.ResetGameTimer();
-            arena.currentLevel = 0;
-            arena.lobbyCountDown = 5;
-            arena.initiateLobbyCountdown = false;
-        }
-        public static void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
-        {
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.rainWorld.progression.SaveProgression(true, true);
-            if (!OnlineManager.lobby.isOwner) return;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
-        }
-        public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
-        {
-            if (lobby.playButton != null)
-            {
-                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
-                lobby.playButton.inactive = false;
-
-            }
-            if (OnlineManager.lobby.isOwner)
-            {
-                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
-                arena.isInGame = false;
-                arena.leaveForNextLevel = false;
-            }
-            if (arena.returnToLobby)
-            {
-                arena.playersReadiedUp.list.Clear();
-                arena.returnToLobby = false;
-            }
-
-
-            lobby.manager.rainWorld.options.DeleteArenaSitting();
-            //Nightcat.ResetNightcat();
-
-
-        }
         public static OnlinePlayer FindOnlinePlayerByStringUsername(string username)
         {
             foreach (var player in OnlineManager.players)

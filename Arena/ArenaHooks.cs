@@ -74,6 +74,7 @@ namespace RainMeadow
 
             On.Menu.ArenaOverlay.PlayerPressedContinue += ArenaOverlay_PlayerPressedContinue;
             On.Menu.ArenaOverlay.Update += ArenaOverlay_Update;
+            On.Menu.FinalResultbox.ctor += FinalResultbox_ctor;
             On.Menu.PlayerResultBox.ctor += PlayerResultBox_ctor;
             IL.Menu.PlayerResultBox.GrafUpdate += IL_PlayerResultBox_GrafUpdate;
 
@@ -125,6 +126,23 @@ namespace RainMeadow
 
         }
 
+        private void FinalResultbox_ctor(On.Menu.FinalResultbox.orig_ctor orig, FinalResultbox self, MultiplayerResults resultPage, MenuObject owner, ArenaSitting.ArenaPlayer player, int index)
+        {
+            if (isArenaMode(out var arena))
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                if (pl != null)
+                {
+                    if (arena.localAllKills.ContainsKey(pl.inLobbyId))
+                    {
+                        RainMeadow.Debug($"Arena: All Local Kills Count End Before Assignment: {arena.localAllKills[pl.inLobbyId].Count}");
+                        player.allKills = arena.localAllKills[pl.inLobbyId];
+                        RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills[pl.inLobbyId].Count}");
+                    }
+                }
+            }
+            orig(self, resultPage, owner, player, index);
+        }
 
         private List<ArenaSitting.ArenaPlayer> ArenaSitting_FinalSittingResult(On.ArenaSitting.orig_FinalSittingResult orig, ArenaSitting self)
         {
@@ -1451,6 +1469,16 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
+                            if (!arena.localAllKills.ContainsKey(absPlayerCreature.owner.inLobbyId))
+                            {
+                                arena.localAllKills.Add(absPlayerCreature.owner.inLobbyId, self.arenaSitting.players[i].allKills);
+                            }
+                            else
+                            {
+                                arena.localAllKills[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData);
+                            }
+                            RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
+
                             for (int p = 0; p < OnlineManager.players.Count; p++)
                             {
                                 if (OnlineManager.players[p].isMe)
@@ -1923,6 +1951,7 @@ namespace RainMeadow
                     arena.currentLobbyOwner = OnlineManager.lobby.owner;
 
                 }
+
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
@@ -1941,6 +1970,10 @@ namespace RainMeadow
                     }
                 }
                 arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
+                }
 
                 if (!self.sessionEnded)
                 {
