@@ -119,7 +119,7 @@ namespace RainMeadow
             }
         }
 
-        internal override void Tick(uint tick)
+        public override void Tick(uint tick)
         {
             clientSettings = activeEntities.Where(e => e is ClientSettings).ToDictionary(e => e.owner, e => e as ClientSettings);
             playerAvatars = clientSettings.SelectMany(e => e.Value.avatars.Select(a => new KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>(e.Key, a))).ToList();

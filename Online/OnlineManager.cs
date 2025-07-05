@@ -371,7 +371,7 @@ namespace RainMeadow
             return null;
         }
 
-        internal static void QuitWithError(string v)
+        public static void QuitWithError(string v)
         {
             RainMeadow.Error(v);
             if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)
