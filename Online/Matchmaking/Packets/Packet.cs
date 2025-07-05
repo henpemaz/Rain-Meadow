@@ -16,6 +16,7 @@ namespace RainMeadow
             RequestLobby,
             InformLobby,
             ChatMessage,
+            CustomPacket,
         }
 
         public abstract Type type { get; }
@@ -60,7 +61,8 @@ namespace RainMeadow
                 Type.RequestLobby => new RequestLobbyPacket(),
                 Type.InformLobby => new InformLobbyPacket(),
                 Type.ChatMessage => new ChatMessagePacket(),
-                
+                Type.CustomPacket => new CustomPacket(),
+
                 _ => null
             };
 
