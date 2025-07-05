@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace RainMeadow
@@ -13,6 +14,10 @@ namespace RainMeadow
         public Queue<OnlineEvent> OutgoingEvents = new(8);
         public List<OnlineEvent> recentlyAckedEvents = new(4);
         public Queue<OnlineStateMessage> OutgoingStates = new(16);
+
+        public List<OutgoingDataChunk> PendingOutgoingChunks = new(2);
+        public List<OutgoingDataChunk> OutgoingChunks = new(2);
+        public List<IncomingDataChunk> IncomingChunks = new();
 
         public ushort nextOutgoingEvent = 1; // outgoing, event id
         public ushort lastEventFromRemote; // incoming, the last event I've received from them, I'll write it back on headers as an ack
@@ -183,7 +188,105 @@ namespace RainMeadow
 
             // clear out aborted events
             if (OutgoingEvents.Any(e => e.aborted)) OutgoingEvents = new Queue<OnlineEvent>(OutgoingEvents.Where(e => !e.aborted));
+
+            // update sending chunk
+            if (OutgoingChunks.Count > 0)
+            {
+                foreach (OutgoingDataChunk chunk in OutgoingChunks)
+                {
+                    chunk.Update();
+                    if (chunk.doneSending)
+                    {
+                        if (EventMath.IsNewer(chunk.chunkId, lastCompletedOutgoingChunk) && chunk.reliable)
+                        {
+                            lastCompletedOutgoingChunk = chunk.chunkId;
+                        }
+                    }
+                }
+                OutgoingChunks.RemoveAll(x => x.doneSending);
+
+                foreach (OutgoingDataChunk chunk in PendingOutgoingChunks)
+                {
+                    if (!OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
+                    {
+                        OutgoingChunks.Add(chunk);
+                    }
+                }
+                PendingOutgoingChunks.RemoveAll(x => OutgoingChunks.Contains(x));
+            }
         }
+
+        byte lastCompletedIncomingChunk = 0;
+        byte lastCompletedOutgoingChunk = 0;
+        internal IncomingDataChunk IncomingChunk(byte chunkId, IChunkDestination destination, byte totalSlices)
+        {
+            // unreliable chunk
+            if (chunkId == 0)
+            {
+                RainMeadow.Debug($"New unreliable chunk: destination: {destination}, sliceCount {totalSlices}");
+                return new IncomingDataChunk(chunkId, destination, totalSlices, this);
+            }
+
+
+            if (!EventMath.IsNewer(chunkId, lastCompletedIncomingChunk))
+            {
+                RainMeadow.Error($"Recieved slice from already discarded chunk ({chunkId} < {lastCompletedIncomingChunk})");
+                return null; // ignore chunk
+            }
+            else if (IncomingChunks.Where(x => x.chunkId == chunkId).FirstOrDefault() is IncomingDataChunk chunk)
+            {
+                if (chunk.destination != destination)
+                {
+                    RainMeadow.Error($"Datachunk mismatch, destination: {chunk.destination} != {destination}");
+                }
+                else if (chunk.totalSlices != totalSlices)
+                {
+                    RainMeadow.Error($"Datachunk mismatch, totalSlices: {chunk.totalSlices} != {totalSlices}");
+                }
+                else
+                {
+                    return chunk;
+                }
+
+                IncomingChunks.Remove(chunk);
+            }
+
+            // new chunk!
+            RainMeadow.Debug($"New chunk: id {chunkId}, destination: {destination}, sliceCount {totalSlices}");
+            var chunk2 = new IncomingDataChunk(chunkId, destination, totalSlices, this);
+            IncomingChunks.Add(chunk2);
+            return chunk2;
+        }
+
+        byte _nextChunkId;
+        public byte NextChunkId()
+        {
+            _nextChunkId++;
+            if (_nextChunkId == 0) _nextChunkId = 1;
+            return _nextChunkId;
+        }
+
+
+        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data, int sliceSize = 4096)
+        {
+            var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, data, this, sliceSize);
+            return QueueChunk(chunk);
+        }
+
+        internal OutgoingDataChunk QueueChunk(OutgoingDataChunk chunk)
+        {
+            if (chunk.reliable && OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
+            {
+                PendingOutgoingChunks.Add(chunk);
+            }
+            else
+            {
+                OutgoingChunks.Add(chunk);
+            }
+            RainMeadow.Debug($"New outgoing chunk: id {OutgoingChunks.Last().chunkId}, destination {chunk.destination}, reliable {chunk.reliable}, sliceCount {chunk.totalSlices}");
+            return chunk;
+        }
+
         public TickReference MakeTickReference()
         {
             return new TickReference(this);
