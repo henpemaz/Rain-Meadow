@@ -5,6 +5,7 @@ using Menu.Remix;
 using Menu.Remix.MixedUI;
 using UnityEngine;
 using System.Linq;
+using RainMeadow.UI.Components.Patched;
 
 namespace RainMeadow.UI.Components
 {
@@ -68,8 +69,8 @@ namespace RainMeadow.UI.Components
                 arena.currentGameMode = value;
             };
 
-            countdownWrapper = new UIelementWrapper(tabWrapper, countdownTimerTextBox);
-            gameModeWrapper = new UIelementWrapper(tabWrapper, arenaGameModeComboBox);
+            countdownWrapper = new(tabWrapper, countdownTimerTextBox);
+            gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
 
             this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox);
 
@@ -201,7 +202,7 @@ namespace RainMeadow.UI.Components
         public OpComboBox arenaTeamComboBox;
 
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
-        public UIelementWrapper countdownWrapper, gameModeWrapper, teamWrapper;
+        public PatchedUIelementWrapper countdownWrapper, gameModeWrapper;
         public MenuTabWrapper tabWrapper;
     }
 }

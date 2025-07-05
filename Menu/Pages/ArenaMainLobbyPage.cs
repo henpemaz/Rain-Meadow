@@ -7,7 +7,6 @@ using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
 using Menu.Remix;
-using Menu.Remix.MixedUI;
 using System;
 
 
@@ -17,7 +16,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 {
     public SimplerButton readyButton;
     public SimplerButton? startButton;
-    public SimplerSymbolButton arenaInfoButton;
+    public SimplerSymbolButton arenaInfoButton, arenaGameStatsButton;
     public MenuLabel activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel;
     public FSprite chatLobbyStateDivider;
     public TabContainer tabContainer;
@@ -45,7 +44,12 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (!RainMeadow.isArenaMode(out var _)) return;
             Arena.arenaClientSettings.ready = !Arena.arenaClientSettings.ready;
         };
-
+        arenaGameStatsButton = new(menu, this, "Multiplayer_Bones", "", new(readyButton.pos.x + readyButton.size.x + 10, readyButton.pos.y))
+        {
+            size = new(30, 30)
+        };
+        arenaGameStatsButton.roundedRect.size = arenaGameStatsButton.size;
+        arenaGameStatsButton.OnClick += _ => OpenGameStatsDialog();
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
         chatMenuBox.roundedRect.size.y = 475f;
 
@@ -86,7 +90,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         matchSettingsTab.AddObjects(arenaSettingsInterface);
 
 
-        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton);
+        this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
     }
 
     public void BuildPlayerDisplay()
@@ -115,8 +119,15 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public void OpenInfoDialog()
     {
+        if (!RainMeadow.isArenaMode(out _)) return;
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = Arena.externalArenaGameMode.AddGameModeInfo(Arena, menu);
+        dialog = Arena.externalArenaGameMode?.AddGameModeInfo(Arena, menu);
+        menu.manager.ShowDialog(dialog);
+    }
+    public void OpenGameStatsDialog()
+    {
+        if (!RainMeadow.isArenaMode(out _)) return;
+        dialog = Arena.externalArenaGameMode?.AddPostGameStatsFeed(Arena, menu);
         menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)

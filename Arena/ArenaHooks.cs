@@ -211,7 +211,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{tb.teamNameDictionary[tb.winningTeam].ToUpper()} WIN!");
+                        self.headingLabel.text = Utils.Translate($"{tb.teamNames[tb.winningTeam].ToUpper()} WIN!");
                     }
                 }
             }
@@ -1647,7 +1647,7 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                             {
-                                self.playerNameLabel.text += $" -- {team.teamNameDictionary[td.team].ToUpper()}";
+                                self.playerNameLabel.text += $" -- {team.teamNames[td.team].ToUpper()}";
                             }
                         }
                     }
@@ -1732,7 +1732,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{tb.teamNameDictionary[tb.winningTeam].ToUpper()} WIN!");
+                        self.headingLabel.text = Utils.Translate($"{tb.teamNames[tb.winningTeam].ToUpper()} WIN!");
                     }
                 }
             }

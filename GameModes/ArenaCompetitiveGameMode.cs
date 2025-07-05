@@ -446,40 +446,41 @@ namespace RainMeadow
                 }
             }
         }
-        public void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
+        public void ResetOnReturnToMenu(ArenaLobbyMenu lobby)
         {
-            arena.ResetGameTimer();
-            if (arena.externalArenaGameMode != null)
+            ResetGameTimer();
+            if (externalArenaGameMode != null)
             {
-                arena.externalArenaGameMode.ResetOnSessionEnd();
+                externalArenaGameMode.ResetOnSessionEnd();
             }
-            arena.currentLevel = 0;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playersReadiedUp.list.Clear();
-            arena.playersLateWaitingInLobbyForNextRound.Clear();
+            currentLevel = 0;
+            arenaSittingOnlineOrder.Clear();
+            playersReadiedUp.list.Clear();
+            playersLateWaitingInLobbyForNextRound.Clear();
         }
-        public void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
+        public void ResetOnReturnMenu(ProcessManager manager)
         {
             manager.rainWorld.options.DeleteArenaSitting();
             if (!OnlineManager.lobby.isOwner) return;
-            arena.isInGame = false;
-            arena.leaveForNextLevel = false;
-            arena.ResetGameTimer();
-            arena.currentLevel = 0;
-            arena.lobbyCountDown = 5;
-            arena.initiateLobbyCountdown = false;
-            arena.playersEqualToOnlineSitting = false;
+            isInGame = false;
+            leaveForNextLevel = false;
+            ResetGameTimer();
+            currentLevel = 0;
+            lobbyCountDown = 5;
+            initiateLobbyCountdown = false;
+            playersEqualToOnlineSitting = false;
         }
-        public void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
+        public void OnStartGame(ProcessManager manager)
         {
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.SaveProgression(true, true);
-            arena.localAllKills.Clear();
+            localAllKills.Clear();
             if (!OnlineManager.lobby.isOwner) return;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithScore.Clear();
-            arena.playerTotScore.Clear();
+            arenaSittingOnlineOrder.Clear();
+            playerNumberWithWins.Clear();
+            playerNumberWithDeaths.Clear();
+            playerNumberWithScore.Clear();
+            playerTotScore.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {

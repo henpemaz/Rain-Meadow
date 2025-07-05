@@ -401,47 +401,13 @@ namespace RainMeadow
         {
 
         }
-        public virtual DialogNotify AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public virtual Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
-
-            //var statsReport = menu.Translate("Post-Game Stats");
-            //statsReport += "<LINE>";
-            //statsReport += "WINS<LINE>";
-            //foreach (var entry in arena.playerNumberWithWins)
-            //{
-            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
-            //    if (pl != null)
-            //    {
-            //        statsReport += $"{pl.id.name} - {(arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w) ? w : 0)}";
-            //        statsReport += "<LINE>";
-            //    }
-            //}
-            //statsReport += "<LINE>";
-            //statsReport += "KILLS<LINE>";
-            //foreach (var entry in arena.localAllKills)
-            //{
-            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
-            //    if (pl != null)
-            //    {
-            //        statsReport += $"{pl.id.name} - {(arena.localAllKills.TryGetValue(pl.inLobbyId, out var k) ? k.Count : 0)}";
-            //        statsReport += "<LINE>";
-            //    }
-            //}
-            //statsReport += "<LINE>";
-            //statsReport += "DEATHS<LINE>";
-            //foreach (var entry in arena.playerNumberWithDeaths)
-            //{
-            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
-            //    if (pl != null)
-            //    {
-            //        statsReport += $"{pl.id.name} - {(arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d) ? d : 0)}";
-            //        statsReport += "<LINE>";
-            //    }
-
-            //}
-
             return new DialogNotify(menu.LongTranslate("Your Game Mode Info Here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
-
+        public virtual Dialog AddPostGameStatsFeed(ArenaOnlineGameMode arena, Menu.Menu menu)
+        {
+            return new ArenaPostGameStatsDialog(menu.manager, arena);
+        }
     }
 }

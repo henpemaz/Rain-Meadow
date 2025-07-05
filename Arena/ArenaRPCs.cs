@@ -15,7 +15,7 @@ namespace RainMeadow
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is MultiplayerResults resl)
             {
                 resl.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                arena.ResetOnReturnMenu(arena, resl.manager);
+                arena.ResetOnReturnMenu(resl.manager);
             }
             arena.arenaClientSettings.ready = true;
         }

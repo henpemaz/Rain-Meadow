@@ -56,10 +56,10 @@ namespace RainMeadow
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 if (arena != null)
                 {
-                    martyrColors = TeamBattleMode.TeamColors[0];
-                    outlawColors = TeamBattleMode.TeamColors[1];
-                    dragonslayerColors = TeamBattleMode.TeamColors[2];
-                    chieftainColors = TeamBattleMode.TeamColors[3];
+                    martyrColors = TeamBattleMode.teamColors[0];
+                    outlawColors = TeamBattleMode.teamColors[1];
+                    dragonslayerColors = TeamBattleMode.teamColors[2];
+                    chieftainColors = TeamBattleMode.teamColors[3];
 
                     bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
@@ -86,10 +86,10 @@ namespace RainMeadow
                 var arena = (lobby.gameMode as ArenaOnlineGameMode);
                 if (arena != null)
                 {
-                    TeamBattleMode.TeamColors[0] = martyrColors;
-                    TeamBattleMode.TeamColors[1] = outlawColors;
-                    TeamBattleMode.TeamColors[2] = dragonslayerColors;
-                    TeamBattleMode.TeamColors[3] = chieftainColors;
+                    TeamBattleMode.teamColors[0] = martyrColors;
+                    TeamBattleMode.teamColors[1] = outlawColors;
+                    TeamBattleMode.teamColors[2] = dragonslayerColors;
+                    TeamBattleMode.teamColors[3] = chieftainColors;
 
 
                     bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);

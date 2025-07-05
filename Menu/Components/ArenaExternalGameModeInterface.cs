@@ -32,11 +32,11 @@ namespace RainMeadow.UI.Components
         public TeamBattleMode teamBattleMode;
         public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
-        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNameDictionary.All(x => TeamBattleMode.TeamColors.ContainsKey(x.Key) && teamBattleMode.TeamMappingsDictionary.ContainsKey(x.Key)) || 
-            !(teamBattleMode.teamNameDictionary.Count == teamBattleMode.TeamMappingsDictionary.Count && teamBattleMode.teamNameDictionary.Count == TeamBattleMode.TeamColors.Count);
-        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (teamBattleMode.teamNameDictionary.Count > 0) ? ((teamBattleMode.teamNameDictionary.Count - 1) / 4) : 0); }
-        public int MaxOffset => Mathf.Max(teamBattleMode.teamNameDictionary.Count - 1, 0) / 4;
-        public bool IsPagesOn => teamBattleMode.teamNameDictionary.Count > 4;
+        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => TeamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
+            !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == TeamBattleMode.teamColors.Count);
+        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (teamBattleMode.teamNames.Count > 0) ? ((teamBattleMode.teamNames.Count - 1) / 4) : 0); }
+        public int MaxOffset => Mathf.Max(teamBattleMode.teamNames.Count - 1, 0) / 4;
+        public bool IsPagesOn => teamBattleMode.teamNames.Count > 4;
         public OnlineTeamBattleSettingsInterface(ArenaMode arena, TeamBattleMode team, Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             arenaMode = arena;
@@ -69,28 +69,29 @@ namespace RainMeadow.UI.Components
             int num = CurrentOffset * 4;
             float posXMultipler = size.x / 4;
             if (IsTeamsAddedInCorrectly) throw new NotImplementedException("teamNames, teamMappings and teamColors do not have all their keys");
-            KeyValuePair<int, string>[] actualMappings = [.. teamBattleMode.TeamMappingsDictionary];
-            teamButtons = new TeamButton[Mathf.Min(teamBattleMode.TeamMappingsDictionary.Count - num, 4)];
+            KeyValuePair<int, string>[] actualMappings = [.. teamBattleMode.teamIcons];
+            teamButtons = new TeamButton[Mathf.Min(teamBattleMode.teamIcons.Count - num, 4)];
             teamNameBoxes = new OpTextBox[teamButtons.Length];
             teamColorPickers = new OpTinyColorPicker[teamButtons.Length];
             for (int i = 0; i < teamButtons.Length; i++)
             {
                 KeyValuePair<int, string> mapping = actualMappings[num + i];
-                string name = teamBattleMode.teamNameDictionary[mapping.Key];
-                Color teamColor = TeamBattleMode.TeamColors[mapping.Key];
+                string name = teamBattleMode.teamNames[mapping.Key];
+                Color teamColor = TeamBattleMode.teamColors[mapping.Key];
 
                 Vector2 btnpos = i == 0 ? new(posXMultipler - 50, size.y - 125) : i % 2 == 0 ? new(teamButtons[0].pos.x, teamButtons[0].pos.y - 140) : new(posXMultipler * 3 - 50, teamButtons[i - 1].pos.y);
                 teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, name, mapping.Value);
 
-                Vector2 namePickerPos = i == 0 ? new(posXMultipler - 70, dividerY - 40) : i % 2 == 0 ? new(teamNameBoxes[0].pos.x, teamNameBoxes[0].pos.y - 40) : new(posXMultipler * 3 - 90, teamNameBoxes[i - 1].pos.y);
-                teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 140)
+                Vector2 namePickerPos = i == 0 ? new(posXMultipler - 75, dividerY - 40) : i % 2 == 0 ? new(teamNameBoxes[0].pos.x, teamNameBoxes[0].pos.y - 40) : new(posXMultipler * 3 - 95, teamNameBoxes[i - 1].pos.y);
+                OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 150)
                 {
                     allowSpace = true,
                 };
-                teamNameBoxes[i].OnValueUpdate += (config, value, oldValue) => NameTextBox_OnValueUpdated(mapping.Key, value);
-                new PatchedUIelementWrapper(tabWrapper, teamNameBoxes[i]);
-                teamColorPickers[i] = new(menu, namePickerPos + new Vector2(150, 0), teamColor, tabWrapper);
-                teamColorPickers[i].OnValueChangedEvent += () => ColorPicker_OnValueChangedEvent(mapping.Key, teamColorPickers[i].valuecolor.SafeColorRange());
+                textBox.OnValueUpdate += (config, value, oldValue) => NameTextBox_OnValueUpdated(mapping.Key, value);
+                new PatchedUIelementWrapper(tabWrapper, textBox);
+
+                OpTinyColorPicker tinyPicker = teamColorPickers[i] = new(menu, new(namePickerPos.x + 10 + textBox.size.x, namePickerPos.y), teamColor, tabWrapper);
+                tinyPicker.OnValueChangedEvent += () => ColorPicker_OnValueChangedEvent(mapping.Key, tinyPicker.valuecolor.SafeColorRange());
             }
             this.SafeAddSubobjects(teamButtons);
             if (IsPagesOn) CreatePageButtons();
@@ -119,35 +120,35 @@ namespace RainMeadow.UI.Components
         }
         public void ColorPicker_OnValueChangedEvent(int value, Color newColor)
         {
-            if (!TeamBattleMode.TeamColors.ContainsKey(value))
+            if (!TeamBattleMode.teamColors.ContainsKey(value))
             {
                 RainMeadow.Error($"Key,{value} is not stored in team colors");
                 return;
             }
-            TeamBattleMode.TeamColors[value] = Extensions.SafeColorRange(newColor);
+            TeamBattleMode.teamColors[value] = Extensions.SafeColorRange(newColor);
         }
         public void NameTextBox_OnValueUpdated(int value, string newName)
         {
-            if (!teamBattleMode.teamNameDictionary.ContainsKey(value))
+            if (!teamBattleMode.teamNames.ContainsKey(value))
             {
                 RainMeadow.Error($"Key,{value} is not stored in team names");
                 return;
             }
-            teamBattleMode.teamNameDictionary[value] = newName;
+            teamBattleMode.teamNames[value] = newName;
         }
         public void OnShutdown()
         {
             if (OnlineManager.lobby?.isOwner == true)
             {
                 RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamBattleMode.lerp;
-                if (teamBattleMode.teamNameDictionary.ContainsKey(0))
-                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = teamBattleMode.teamNameDictionary[0];
-                if (teamBattleMode.teamNameDictionary.ContainsKey(1))
-                    RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = teamBattleMode.teamNameDictionary[1];
-                if (teamBattleMode.teamNameDictionary.ContainsKey(2))
-                    RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = teamBattleMode.teamNameDictionary[2];
-                if (teamBattleMode.teamNameDictionary.ContainsKey(3))
-                    RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = teamBattleMode.teamNameDictionary[3];
+                if (teamBattleMode.teamNames.ContainsKey(0))
+                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = teamBattleMode.teamNames[0];
+                if (teamBattleMode.teamNames.ContainsKey(1))
+                    RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = teamBattleMode.teamNames[1];
+                if (teamBattleMode.teamNames.ContainsKey(2))
+                    RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = teamBattleMode.teamNames[2];
+                if (teamBattleMode.teamNames.ContainsKey(3))
+                    RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = teamBattleMode.teamNames[3];
             }
         }
         public void PrevPage()
@@ -215,10 +216,10 @@ namespace RainMeadow.UI.Components
             for (int i = 0; i < teamButtons.Length; i++)
             {
                 int index = teamButtons[i].buttonArrayIndex;
-                string name = teamBattleMode.teamNameDictionary[index];
-                Color color = TeamBattleMode.TeamColors[index];
+                string name = teamBattleMode.teamNames[index];
+                Color color = TeamBattleMode.teamColors[index];
                 teamButtons[i].teamColor = color;
-                teamButtons[i].teamName = teamBattleMode.teamNameDictionary[index];
+                teamButtons[i].teamName = teamBattleMode.teamNames[index];
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].colorPicker.held) teamColorPickers[i].valuecolor = color;
@@ -233,6 +234,7 @@ namespace RainMeadow.UI.Components
         public class TeamButton : EventfulSelectOneButton
         {
             public string teamName;
+            public float widthOfText = 190;
             public FSprite symbol;
             public MenuLabel teamLabel;
             public Color teamColor = Color.white;
@@ -255,7 +257,7 @@ namespace RainMeadow.UI.Components
                 symbol.x = drawPos.x + drawSize.x * 0.5f;
                 symbol.y = drawPos.y + drawSize.y * 0.5f;
                 symbol.color = teamColor;
-                teamLabel.text = teamName;
+                teamLabel.text = LabelTest.TrimText(teamName, widthOfText, true, true);
                 teamLabel.label.color = teamColor;
             }
             public override void RemoveSprites()

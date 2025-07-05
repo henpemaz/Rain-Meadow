@@ -158,7 +158,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.TeamColors[t.team], tb.lerp);
+                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, TeamBattleMode.teamColors[t.team], tb.lerp);
                 }
             }
 
@@ -313,23 +313,23 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                 if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var teamSettings))
                 {
-                    teamBattleMode.martyrsSpawn = ((int)TeamMappings.martyrsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.outlawsSpawn = ((int)TeamMappings.outlawTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.dragonslayersSpawn = ((int)TeamMappings.dragonslayersTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.chieftainsSpawn = ((int)TeamMappings.chieftainsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.martyrsSpawn = ((int)TeamSpawnPoints.martyrsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.outlawsSpawn = ((int)TeamSpawnPoints.outlawTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.dragonslayersSpawn = ((int)TeamSpawnPoints.dragonslayersTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.chieftainsSpawn = ((int)TeamSpawnPoints.chieftainsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
 
-                    switch ((TeamMappings)teamSettings.team)
+                    switch ((TeamSpawnPoints)teamSettings.team)
                     {
-                        case TeamMappings.martyrsTeamName:
+                        case TeamSpawnPoints.martyrsTeamName:
                             randomExitIndex = teamBattleMode.martyrsSpawn;
                             break;
-                        case TeamMappings.outlawTeamName:
+                        case TeamSpawnPoints.outlawTeamName:
                             randomExitIndex = teamBattleMode.outlawsSpawn;
                             break;
-                        case TeamMappings.dragonslayersTeamName:
+                        case TeamSpawnPoints.dragonslayersTeamName:
                             randomExitIndex = teamBattleMode.dragonslayersSpawn;
                             break;
-                        case TeamMappings.chieftainsTeamName:
+                        case TeamSpawnPoints.chieftainsTeamName:
                             randomExitIndex = teamBattleMode.chieftainsSpawn;
                             break;
                         default:
@@ -516,7 +516,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
                 
-                return TeamMappingsDictionary[tb2.team];
+                return teamIcons[tb2.team];
             }
             return "";
         }
@@ -530,7 +530,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
-                return TeamColors[tb2.team];
+                return teamColors[tb2.team];
             }
  
             return customization.bodyColor;

@@ -26,14 +26,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
-        public Dictionary<int, string> teamNameDictionary = new Dictionary<int, string>
+        public Dictionary<int, string> teamNames = new Dictionary<int, string>
         {
             { 0, RainMeadow.rainMeadowOptions.MartyrTeamName.Value },
             { 1, RainMeadow.rainMeadowOptions.OutlawsTeamName.Value },
             { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value },
             { 3, RainMeadow.rainMeadowOptions.ChieftainTeamName.Value }
         };
-        public enum TeamMappings
+        public enum TeamSpawnPoints
         {
             martyrsTeamName,
             outlawTeamName,
@@ -41,7 +41,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             chieftainsTeamName
         }
 
-        public Dictionary<int, string> TeamMappingsDictionary = new Dictionary<int, string>
+        public Dictionary<int, string> teamIcons = new Dictionary<int, string>
         {
             { 0, "SaintA" },
             { 1, "OutlawA" },
@@ -49,7 +49,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, "ChieftainA" }
     };
 
-        public static Dictionary<int, Color> TeamColors = new Dictionary<int, Color>
+        public static Dictionary<int, Color> teamColors = new Dictionary<int, Color>
         {
     { 0, GetColorFromHex("#FF7F7F") },
     { 1, GetColorFromHex("#FFFF7F") },
@@ -93,7 +93,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
                     playerBox.showRainbow = teamSettings?.team == winningTeam && winningTeam != -1;
-                    string symbolName = teamSettings != null ? TeamMappingsDictionary[teamSettings.team] : "pixel";
+                    string symbolName = teamSettings != null ? teamIcons[teamSettings.team] : "pixel";
                     if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox))
                     {
                         teamBox = new(playerBox.menu, playerBox, new(0, 0), symbolName);
@@ -101,12 +101,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         playerBoxes.Add(playerBox, teamBox);
                     }
                     else teamBox.teamSymbol.SetElementByName(symbolName);
-                    teamBox.teamColor = teamSettings != null ? TeamColors[teamSettings.team] : Color.black;
+                    teamBox.teamColor = teamSettings != null ? teamColors[teamSettings.team] : Color.black;
                 }
                 if (button is ArenaPlayerSmallBox smallBox)
                 {
                     ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(smallBox.profileIdentifier);
-                    smallBox.baseColor = teamSettings != null ? TeamColors[teamSettings.team].ToHSL() : null;
+                    smallBox.baseColor = teamSettings != null ? teamColors[teamSettings.team].ToHSL() : null;
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1; //apparently winning team function doesnt work (from testing with 2 teams)
         }
 
-        public override DialogNotify AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
+        public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }

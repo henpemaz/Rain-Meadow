@@ -67,7 +67,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        Arena.ResetOnReturnMenu(Arena, manager);
+        Arena.ResetOnReturnMenu(manager);
         RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
     }
 
@@ -174,7 +174,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        Arena.OnStartGame(Arena, manager);
+        Arena.OnStartGame(manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -274,7 +274,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
 
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
-            Arena.ResetOnReturnMenu(Arena, manager);
+            Arena.ResetOnReturnMenu(manager);
             Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         }
 
@@ -354,6 +354,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
+        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", teamBtn.teamName);
         return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
