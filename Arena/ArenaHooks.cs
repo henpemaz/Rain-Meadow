@@ -1513,6 +1513,10 @@ namespace RainMeadow
                             {
                                 arena.localAllKills[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData);
                             }
+                            if (OnlineManager.lobby.isOwner)
+                            {
+                                arena.playerNumberWithKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills.Count;
+                            }
                             RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
 
                             for (int p = 0; p < OnlineManager.players.Count; p++)
