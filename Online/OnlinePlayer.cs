@@ -267,13 +267,13 @@ namespace RainMeadow
         }
 
 
-        internal OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data, int sliceSize = 4096)
+        public OutgoingDataChunk QueueChunk(IChunkDestination destination, bool reliable, ArraySegment<byte> data, int sliceSize = 4096)
         {
             var chunk = new OutgoingDataChunk(reliable ? NextChunkId() : (byte)0, destination, data, this, sliceSize);
             return QueueChunk(chunk);
         }
 
-        internal OutgoingDataChunk QueueChunk(OutgoingDataChunk chunk)
+        public OutgoingDataChunk QueueChunk(OutgoingDataChunk chunk)
         {
             if (chunk.reliable && OutgoingChunks.Any(x => x.chunkId == chunk.chunkId))
             {
