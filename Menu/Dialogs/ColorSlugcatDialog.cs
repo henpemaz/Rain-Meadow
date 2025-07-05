@@ -22,7 +22,7 @@ namespace RainMeadow
             colorChooser = -1;
             colorCheckbox = new(this, pages[0], this, new(size.x + 40, size.y + -40 * 5), 0, "", COLORCHECKBOXID);
             pages[0].subObjects.Add(colorCheckbox);
-            this.TryMutualBind(colorCheckbox, okButton, true);
+            MutualHorizontalButtonBind(colorCheckbox, okButton);
             GetSaveColorEnabled();
         }
         public override void ShutDownProcess()
@@ -83,8 +83,7 @@ namespace RainMeadow
             SetUpSafeColorChoices();
             if (!manager.rainWorld.progression.miscProgressionData.colorsEnabled.ContainsKey(id.value))
             {
-                manager.rainWorld.progression.miscProgressionData.colorsEnabled.Add(id.value, colorChecked);
-                return;
+                manager.rainWorld.progression.miscProgressionData.colorsEnabled.Add(id.value, false);
             }
             colorCheckbox.Checked = manager.rainWorld.progression.miscProgressionData.colorsEnabled[id.value];
 
@@ -109,11 +108,11 @@ namespace RainMeadow
         }
         public Vector3 GetHSL()
         {
-            return this.GetMenuHSL(id, colorChooser);
+            return this.manager.rainWorld.progression.GetCustomColorHSL(id, colorChooser);
         }
         public void ApplyHSL(Vector3 hsl)
         {
-            this.SaveMenuHSL(id, colorChooser, hsl);
+            this.manager.rainWorld.progression.SaveCustomColorHSL(id, colorChooser, hsl);
         }
         public void AddOrRemoveColorInterface(int num)
         {
@@ -133,6 +132,7 @@ namespace RainMeadow
             {
                 bodyInterface = GetColorInterface(id, new Vector2(size.x, size.y + 90f));
                 pages[0].subObjects.Add(bodyInterface);
+                UpdateColorBinds();
             }
         }
         public void AddColorInterface()
@@ -158,8 +158,11 @@ namespace RainMeadow
                 pages[0].subObjects.Add(defaultColor);
             }
             this.TryMutualBind(hueSlider, bodyInterface?.bodyButtons?.FirstOrDefault(), bottomTop: true);
+            MutualVerticalButtonBind(satSlider, hueSlider);
+            MutualVerticalButtonBind(litSlider, satSlider);
+            MutualVerticalButtonBind(defaultColor, litSlider);
             MutualVerticalButtonBind(colorCheckbox, defaultColor);
-            this.TryMutualBind(okButton, defaultColor);
+
         }
         public void RemoveColorButtons()
         {
@@ -167,6 +170,19 @@ namespace RainMeadow
             pages[0].ClearMenuObject(ref bodyInterface);
         }
         public void RemoveColorInterface()
+        {
+            UpdateColorBinds();
+            pages[0].ClearMenuObject(ref hueSlider);
+            pages[0].ClearMenuObject(ref satSlider);
+            pages[0].ClearMenuObject(ref litSlider);
+            pages[0].ClearMenuObject(ref defaultColor);
+            colorChooser = -1;
+        }
+        public ColorSlugcatBodyButtons GetColorInterface(SlugcatStats.Name slugcatID, Vector2 pos)
+        {
+             return new ColorSlugcatBodyButtons(this, pages[0], pos, slugcatID, PlayerGraphics.ColoredBodyPartList(slugcatID), [.. PlayerGraphics.DefaultBodyPartColorHex(slugcatID).Select(Custom.hexToColor).Select(Custom.RGB2HSL).Select(ColorHelpers.SetHSLString)]);
+        }
+        public void UpdateColorBinds()
         {
             for (int i = 0; i < bodyInterface?.bodyButtons?.Length; i++)
             {
@@ -177,15 +193,6 @@ namespace RainMeadow
                 }
                 bodyInterface.bodyButtons[i].TryBind(colorCheckbox, bottom: true);
             }
-            pages[0].ClearMenuObject(ref hueSlider);
-            pages[0].ClearMenuObject(ref satSlider);
-            pages[0].ClearMenuObject(ref litSlider);
-            pages[0].ClearMenuObject(ref defaultColor);
-            colorChooser = -1;
-        }
-        public ColorSlugcatBodyButtons GetColorInterface(SlugcatStats.Name slugcatID, Vector2 pos)
-        {
-             return new ColorSlugcatBodyButtons(this, pages[0], pos, slugcatID, PlayerGraphics.ColoredBodyPartList(slugcatID), [.. PlayerGraphics.DefaultBodyPartColorHex(slugcatID).Select(Custom.hexToColor).Select(Custom.RGB2HSL).Select(ColorHelpers.SetHSLString)]);
         }
 
         public const string COLORCHECKBOXID = "COLORCHECKED";

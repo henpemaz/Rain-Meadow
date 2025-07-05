@@ -15,11 +15,11 @@ namespace RainMeadow
     public class ColorSlugcatBodyButtons : PositionedMenuObject
     {
         public int PerPage { get => perPage; set => perPage = Mathf.Max(1, value); }
-        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (bodyNames?.Count > 0) ? (bodyNames.Count - 1 / PerPage) : 0); }
+        public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (bodyNames?.Count > 0) ? ((bodyNames.Count - 1) / PerPage) : 0); }
         public bool PagesOn => bodyNames?.Count > PerPage;
         public ColorSlugcatBodyButtons(Menu.Menu menu, MenuObject owner, Vector2 pos, SlugcatStats.Name slugcatID, List<string> names, List<string> defaultColors) : base(menu, owner, pos)
         {
-            PerPage = 2;
+            PerPage = 3;
             CurrentOffset = 0;
             bodyNames = names;
             this.slugcatID = slugcatID;
@@ -36,7 +36,7 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             bodyColors?.Do((illuIndex) =>
             {
-                illuIndex.Key.color = ColorHelpers.HSL2RGB(menu.GetMenuHSL(slugcatID, illuIndex.Value));
+                illuIndex.Key.color = ColorHelpers.HSL2RGB(this.menu.manager.rainWorld.progression.GetCustomColorHSL(slugcatID, illuIndex.Value));
             });
         }
         public override void RemoveSprites()
@@ -114,7 +114,7 @@ namespace RainMeadow
             }
             if (nextButton == null)
             {
-                nextButton = new(menu, this, "Menu_Symbol_Arrow", NEXTSINGAL, new Vector2(prevButton.pos.x + 54 + (perPage * 80), prevButton.pos.y));
+                nextButton = new(menu, this, "Menu_Symbol_Arrow", NEXTSINGAL, new Vector2(prevButton.pos.x + 64 + (perPage * 80), prevButton.pos.y));
                 subObjects.Add(nextButton);
                 nextButton.symbolSprite.rotation = 90;
             }

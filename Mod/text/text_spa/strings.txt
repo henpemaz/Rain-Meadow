@@ -53,7 +53,7 @@ Meadow|Meadow
 A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|Un modo pacífico sobre explorar tus alrededores y descubrir pequeños secretos,<LINE>en grupo o por tu cuenta.
 Story|Historia
 Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|Aventúrate junto con amigos en el mundo de Rain World, lucha en grupo y muere<LINE>en grupo.
-ArenaCompetitive|Arena competitiva
+Arena|Arena competitiva
 Fight against unforgiving creatues and foes where only the strong survive.|Lucha contra enemigos y criaturas despiadados donde solamente el más fuerte<LINE>sobrevive.
 Visibility:|Visibilidad:
 Public|Pública
@@ -167,7 +167,7 @@ Wait for others to shelter or rescue you, press |Espera a que los demás se refu
 READY|LISTO
 Press on the button to open/close the slugcat selection list|Pulsa en el botón para abrir o cerrar la lista de selección de gatobabosa
 
-// ArenaCompetitive Mode
+// Arena Mode
 Current Mode:|Modo actual:
 Free For All|Todos contra todos
 Ready:|Listos:
