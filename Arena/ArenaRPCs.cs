@@ -264,6 +264,10 @@ namespace RainMeadow
                                 {
                                     arena.localAllKills[pl.inLobbyId].Add(iconSymbolData);
                                 }
+                                if (OnlineManager.lobby.isOwner)
+                                {
+                                    arena.playerNumberWithKills[pl.inLobbyId] = arena.localAllKills[pl.inLobbyId].Count;
+                                }
                             }
                         }
 

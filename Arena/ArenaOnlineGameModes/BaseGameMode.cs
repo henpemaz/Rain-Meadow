@@ -338,23 +338,8 @@ namespace RainMeadow
                     OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
                     if (getPlayer != null)
                     {
-                        if (!arena.playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
-                        {
-                            arena.playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
-                        }
-                        if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
-                        {
-                            arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
-                        }
-                        if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
-                        {
-                            arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
-                        }
-                        if (!arena.playerTotScore.ContainsKey(getPlayer.inLobbyId))
-                        {
-                            arena.playerTotScore.Add(getPlayer.inLobbyId, 0);
-                        }
 
+                        arena.CheckToAddPlayerStatsToDicts(getPlayer);
                     }
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();

@@ -61,6 +61,8 @@ namespace RainMeadow
         public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithKills = new Dictionary<int, int>();
+
         public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
 
 
@@ -397,6 +399,30 @@ namespace RainMeadow
 
             }
         }
+
+        public void CheckToAddPlayerStatsToDicts(OnlinePlayer getPlayer)
+        {
+            if (!playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
+            }
+            if (!playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+            }
+            if (!playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+            }
+            if (!playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+            }
+            if (!playerTotScore.ContainsKey(getPlayer.inLobbyId))
+            {
+                playerTotScore.Add(getPlayer.inLobbyId, 0);
+            }
+        }
         public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
         {
             if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
@@ -480,6 +506,7 @@ namespace RainMeadow
             playerNumberWithWins.Clear();
             playerNumberWithDeaths.Clear();
             playerNumberWithScore.Clear();
+            playerNumberWithKills.Clear();
             playerTotScore.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
