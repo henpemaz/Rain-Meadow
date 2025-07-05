@@ -169,7 +169,7 @@ READY|LISTO
 
 // Arena Mode
 ME|YO
-Got All<LINE>ScugSlots!!|¡Ganó en<LINE>la babofortuna!
+Got All<LINE>ScugSlots!!|¡Ganó en la<LINE>babofortuna!
 Joining<LINE>soon!|¡Uniéndose<LINE>pronto!
 Ready!|¡Listo!
 Selecting<LINE>Slugcat|Seleccionando<LINE>gato-babosa
@@ -181,12 +181,11 @@ Free For All|Todos contra todos
 Do some wacky stuff around here!|¡Haz alguna locura por aquí!
 Team Battle|Batalla por equipos
 Choose a faction. Last team standing wins.|Elige una facción. El último equipo en pie gana.
-Post-Game Stats <LINE>|Estadísticas de post-partida <LINE>
-Player report: <LINE>|Informe de jugador: <LINE>
-Wins:|Victorias:
-Kills:|Bajas:
-Deaths:|Muertes:
-Total Score:|Puntuación total:
+Post-Game Stats|Estadísticas de post-partida
+WINS<LINE>|VICTORIAS<LINE>
+KILLS<LINE>|BAJAS<LINE>
+DEATHS<LINE>|MUERTES<LINE>
+Your Game Mode Info Here|Tu información de modo de juego aquí
 Ready:|Listos:
 Playlist Progress:|Progreso de la lista:
 WAIT FOR OTHERS|ESTOY LISTO
@@ -267,7 +266,7 @@ THE SLUGPUP|LA CRÍA DE GATO-BABOSA
 THE NIGHTCAT|EL GATO NOCTURNO
 THE UNKNOWN|LO DESCONOCIDO
 Unknown|Desconocido
-Your enemies close in around you, but it won't be like the first time|Los enemigos se acercan a tu alrededor, pero no será como la primera vez.
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Los enemigos se acercan a tu alrededor, pero no será como tu primera vez.<LINE>Agarra tu lanza y roca.
 Remember: they struck first, so you'll need to hit back harder.|Recuerda: ellos atacaron primero, así que<LINE>necesitarás devolver más fuerte el golpe.
 Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Afligido desde el inicio y un luchador hasta el final.<LINE>Demuéstrales el significado del sufrimiento.
 Observe all weakness - then strike while cloaked in shadows.|Observa toda debilidad; luego ataca oculto en las sombras.
@@ -276,7 +275,7 @@ An explosive personality and unmatched anger.<LINE>Maul and detonate your way to
 A gnawing hunger grows inside you. Feed it with spears.|Un hambre pertinaz crece dentro de ti. Aliméntala con lanzas.
 In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|En un mundo carente de propósito, quizá has hallado al fin el tuyo.<LINE>Muévete con audacia para no perderlo.
 The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lanza es un artefacto pusilánime.<LINE>Moldea el mundo desde las marcas de tu mente.
-The mind is a weak vessel. Shape the world<LINE>from the markings of your spear.|La mente es una sustancia pusilánime.<LINE>Moldea el mundo desde las marcas de tu lanza.
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|La mente es una sustancia pusilánime.<LINE>Demuestra tu pericia con lanza en mano.
 Desperate. Fearful. Violent.|Desesperada. Temerosa. Violenta.
 Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Open: Echoes. Balance. Weightless.|Abierto: Voces. Calor. Atosigado.<LINE>Cerrado: Susurros. Frío. Ahogado.<LINE>Abierto: Ecos. Equilibrio. Ingrávido.
 Am I Warrior from the past, or a Messiah from the future?|¿Soy un guerrero del pasado o un mesías del futuro?
@@ -320,7 +319,7 @@ You will lose this round<LINE>Your body will not be found<LINE>6 feet undergroun
 "i luv u <3"|«Te amo <3».
 WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|¿POR QUÉ TENÍA QUE SER UNA VARIABLE?<LINE>num2 ES LITERALMENTE 0
 Don't Care<LINE>Nuh<LINE>Yuh|No me importa<LINE>Nah<LINE>Yah
-Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|De repente, el rectángulo de resultados falló en aparecer, estás en un softlock.<LINE>¿Qué demonios?<LINE>Pensé que ya habían arreglado ese error hace mucho...
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|De repente el rectángulo de resultados falló en aparecer, estás en un softlock.<LINE>¿Qué demonios?<LINE>Pensé que ya habían arreglado ese error hace mucho...
 Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|¿Alguna vez pensaste en contribuir a<LINE>https://github.com/henpemaz/Rain-Meadow?
 Be careful when selecting the Fartificer|Ten cuidado seleccionando a Fartífice
 am getting "among us potion at 3 am" vibes<LINE>add that /lh|me están llegando vibras de «poción de among us de las 3 am»<LINE>añade eso /lh
