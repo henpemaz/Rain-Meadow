@@ -474,12 +474,11 @@ namespace RainMeadow
         {
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.SaveProgression(true, true);
+            arena.localAllKills.Clear();
             if (!OnlineManager.lobby.isOwner) return;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playerNumberWithDeaths.Clear();
             arena.playerNumberWithScore.Clear();
-            arena.playerNumberWithWins.Clear();
-            arena.localAllKills.Clear();
             arena.playerTotScore.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)

@@ -138,10 +138,7 @@ namespace RainMeadow
                     {
                         player.allKills = kills;
                     }
-                    else
-                    {
-                        player.allKills = new List<IconSymbol.IconSymbolData>();
-                    }
+
                     if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
                     {
                         player.deaths = d;
