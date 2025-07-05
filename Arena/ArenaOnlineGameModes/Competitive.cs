@@ -132,5 +132,6 @@ namespace RainMeadow
             return base.IconColor(arena, owner, customization, player);
         }
 
+        public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu) => new DialogNotify(menu.LongTranslate("Trust no one. Last scug standing wins"), menu.manager, false);
     }
 }

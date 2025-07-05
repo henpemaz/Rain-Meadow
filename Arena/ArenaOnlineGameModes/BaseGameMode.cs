@@ -388,7 +388,7 @@ namespace RainMeadow
         }
         public virtual Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
-            return new DialogNotify(menu.LongTranslate("Your Game Mode Info Here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+            return new DialogNotify(menu.LongTranslate("This game mode doesnt have any info to give"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
         public virtual Dialog AddPostGameStatsFeed(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
