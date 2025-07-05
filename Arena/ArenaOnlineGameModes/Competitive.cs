@@ -107,28 +107,29 @@ namespace RainMeadow
 
         }
 
-        public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
+        public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-            if (list.Count == 1)
+
+            if (owner.clientSettings.owner == OnlineManager.lobby.owner)
             {
-                list[0].winner = list[0].alive;
+                return "ChieftainA";
             }
-            else if (list.Count > 1)
-            {
-                if (list[0].alive && !list[1].alive)
-                {
-                    list[0].winner = true;
-                }
-                else if (list[0].score > list[1].score)
-                {
-                    list[0].winner = true;
-                }
-            }
+            return base.AddIcon(arena, owner, customization, player);
+
         }
 
-        public override DialogNotify AddGameModeInfo(Menu.Menu menu)
+        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-            return new DialogNotify(menu.LongTranslate("Trust no one. Last scug standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+            if (owner.PlayerConsideredDead)
+            {
+                return Color.grey;
+            }
+            if (arena.reigningChamps != null && arena.reigningChamps.list != null && arena.reigningChamps.list.Contains(player.id))
+            {
+                return Color.yellow;
+            }
+
+            return base.IconColor(arena, owner, customization, player);
         }
 
     }

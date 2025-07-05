@@ -1,5 +1,8 @@
-﻿using Menu.Remix;
+﻿using BepInEx;
+using HarmonyLib;
 using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using Steamworks;
@@ -25,7 +28,7 @@ namespace RainMeadow
                 return FFA.FFAMode;
             }
             set { GetGameModeId = value; }
-            
+
         }
 
         public virtual void ResetOnSessionEnd()
@@ -51,7 +54,21 @@ namespace RainMeadow
         /// <summary> Used for managing winner conditions, after the list is originally sorted but before the overlay is initialized </summary>
         public virtual void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
         {
-
+            if (list.Count == 1)
+            {
+                list[0].winner = list[0].alive;
+            }
+            else if (list.Count > 1)
+            {
+                if (list[0].alive && !list[1].alive)
+                {
+                    list[0].winner = true;
+                }
+                else if (list[0].score > list[1].score)
+                {
+                    list[0].winner = true;
+                }
+            }
         }
 
         public virtual void InitAsCustomGameType(ArenaSetup.GameTypeSetup self)
@@ -125,9 +142,15 @@ namespace RainMeadow
             return arena.countdownInitiatedHoldFire = false;
         }
 
-        public virtual string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        public virtual string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             return "";
+        }
+
+        public virtual Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        {
+
+            return customization.bodyColor;
         }
 
         public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
@@ -315,9 +338,9 @@ namespace RainMeadow
                     OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
                     if (getPlayer != null)
                     {
-                        if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                        if (!arena.playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
                         {
-                            arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                            arena.playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
                         }
                         if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
                         {
@@ -327,6 +350,11 @@ namespace RainMeadow
                         {
                             arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
                         }
+                        if (!arena.playerTotScore.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerTotScore.Add(getPlayer.inLobbyId, 0);
+                        }
+
                     }
                 }
                 arena.playersLateWaitingInLobbyForNextRound.Clear();
@@ -351,6 +379,9 @@ namespace RainMeadow
 
         public virtual bool PlayerSittingResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
         {
+            RainMeadow.Debug($"PlayerSittingResultSort Player A: Score: {A.score} - Wins: {A.wins} - All Kills: {A.allKills.Count} - Deaths: {A.deaths}");
+            RainMeadow.Debug($"PlayerSittingResultSort Player B: Score: {B.score} - Wins: {B.wins} - All Kills: {B.allKills.Count} - Deaths: {B.deaths}");
+
             return orig(self, A, B);
         }
         public virtual bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player) => arena.reigningChamps.list.Contains(player.id);
@@ -370,11 +401,47 @@ namespace RainMeadow
         {
 
         }
-        public virtual DialogNotify AddGameModeInfo(Menu.Menu menu)
+        public virtual DialogNotify AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
-            return new DialogNotify(menu.LongTranslate("Add your gamemode info here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
+
+            //var statsReport = menu.Translate("Post-Game Stats");
+            //statsReport += "<LINE>";
+            //statsReport += "WINS<LINE>";
+            //foreach (var entry in arena.playerNumberWithWins)
+            //{
+            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+            //    if (pl != null)
+            //    {
+            //        statsReport += $"{pl.id.name} - {(arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var w) ? w : 0)}";
+            //        statsReport += "<LINE>";
+            //    }
+            //}
+            //statsReport += "<LINE>";
+            //statsReport += "KILLS<LINE>";
+            //foreach (var entry in arena.localAllKills)
+            //{
+            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+            //    if (pl != null)
+            //    {
+            //        statsReport += $"{pl.id.name} - {(arena.localAllKills.TryGetValue(pl.inLobbyId, out var k) ? k.Count : 0)}";
+            //        statsReport += "<LINE>";
+            //    }
+            //}
+            //statsReport += "<LINE>";
+            //statsReport += "DEATHS<LINE>";
+            //foreach (var entry in arena.playerNumberWithDeaths)
+            //{
+            //    OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)entry.Key);
+            //    if (pl != null)
+            //    {
+            //        statsReport += $"{pl.id.name} - {(arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d) ? d : 0)}";
+            //        statsReport += "<LINE>";
+            //    }
+
+            //}
+
+            return new DialogNotify(menu.LongTranslate("Your Game Mode Info Here"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }
 
     }
-
 }

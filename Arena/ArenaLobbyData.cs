@@ -80,11 +80,13 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public int currentLevel;
             [OnlineField(group = "arenaGameplay")]
-            public Dictionary<int, int> playerNumberWithKills;
+            public Dictionary<int, int> playerNumberWithScore;
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithDeaths;
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithWins;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerTotScore;
             [OnlineField(group = "arenaGameplay")]
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
@@ -109,8 +111,9 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
-                playerNumberWithKills = new(arena.playerNumberWithKills);
+                playerNumberWithScore = new(arena.playerNumberWithScore);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
+                playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
@@ -152,9 +155,10 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore = playerNumberWithScore;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
+                (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 

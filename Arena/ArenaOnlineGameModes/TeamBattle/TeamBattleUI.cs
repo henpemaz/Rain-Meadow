@@ -120,7 +120,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
             return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1; //apparently winning team function doesnt work (from testing with 2 teams)
         }
-        public override DialogNotify AddGameModeInfo(Menu.Menu menu)
+
+        public override DialogNotify AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("Choose a faction. Last team standing wins."), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });
         }

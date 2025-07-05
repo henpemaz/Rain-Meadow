@@ -475,19 +475,28 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arena.isInGame = true; // used for readied players at the beginning
                     arena.leaveForNextLevel = false;
 
-                    foreach (var arenaPlayer in self.arenaSitting.players)
+                    foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                     {
-                        if (!arena.playerNumberWithKills.ContainsKey(arenaPlayer.playerNumber))
+                        OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                        if (getPlayer != null)
                         {
-                            arena.playerNumberWithKills.Add(arenaPlayer.playerNumber, 0);
-                        }
-                        if (!arena.playerNumberWithDeaths.ContainsKey(arenaPlayer.playerNumber))
-                        {
-                            arena.playerNumberWithDeaths.Add(arenaPlayer.playerNumber, 0);
-                        }
-                        if (!arena.playerNumberWithWins.ContainsKey(arenaPlayer.playerNumber))
-                        {
-                            arena.playerNumberWithWins.Add(arenaPlayer.playerNumber, 0);
+                            if (!arena.playerNumberWithScore.ContainsKey(getPlayer.inLobbyId))
+                            {
+                                arena.playerNumberWithScore.Add(getPlayer.inLobbyId, 0);
+                            }
+                            if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                            {
+                                arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                            }
+                            if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+                            {
+                                arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+                            }
+                            if (!arena.playerTotScore.ContainsKey(getPlayer.inLobbyId))
+                            {
+                                arena.playerTotScore.Add(getPlayer.inLobbyId, 0);
+                            }
+
                         }
                     }
                     arena.playersLateWaitingInLobbyForNextRound.Clear();
@@ -501,15 +510,32 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
 
 
-        public override string AddCustomIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud onlineHud)
+        public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
 
-            if (OnlineManager.lobby.clientSettings[onlineHud.clientSettings.owner].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
             {
+                
                 return TeamMappingsDictionary[tb2.team];
             }
             return "";
         }
+
+        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner,  SlugcatCustomization customization, OnlinePlayer player)
+        {
+            if (owner.PlayerConsideredDead)
+            {
+                return Color.grey;
+            }
+
+            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            {
+                return TeamColors[tb2.team];
+            }
+ 
+            return customization.bodyColor;
+        }
+
 
 
     }

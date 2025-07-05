@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 namespace RainMeadow
 {
 
@@ -26,6 +27,18 @@ namespace RainMeadow
                 if (OnlineManager.lobby.isOwner)
                 {
                     arena.leaveForNextLevel = true;
+                }
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    foreach (var player in self.players)
+                    {
+                        OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (currentName != null)
+                        {
+                            arena.AddOrInsertPlayerStats(arena, player, currentName);
+                        }
+
+                    }
                 }
 
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;

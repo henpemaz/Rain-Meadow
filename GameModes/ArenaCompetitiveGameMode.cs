@@ -58,9 +58,10 @@ namespace RainMeadow
         public Generics.DynamicOrderedPlayerIDs reigningChamps = new Generics.DynamicOrderedPlayerIDs();
 
         public Dictionary<string, int> playersInLobbyChoosingSlugs = new Dictionary<string, int>();
-        public Dictionary<int, int> playerNumberWithKills = new Dictionary<int, int>();
+        public Dictionary<int, int> playerNumberWithScore = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithDeaths = new Dictionary<int, int>();
         public Dictionary<int, int> playerNumberWithWins = new Dictionary<int, int>();
+        public Dictionary<int, int> playerTotScore = new Dictionary<int, int>();
 
 
         public bool playersEqualToOnlineSitting;
@@ -400,20 +401,47 @@ namespace RainMeadow
         {
             if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
             {
-                newArenaPlayer.wins = wins;
-                newArenaPlayer.score = arena.playerNumberWithKills[pl.inLobbyId];
-                newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playerNumberWithWins[pl.inLobbyId] += newArenaPlayer.wins;
+                    arena.playerNumberWithScore[pl.inLobbyId] += newArenaPlayer.score;
+                    arena.playerNumberWithDeaths[pl.inLobbyId] += newArenaPlayer.deaths;
+                    arena.playerTotScore[pl.inLobbyId] += newArenaPlayer.totScore;
+                    RainMeadow.Debug($"Player found witih stats: {newArenaPlayer} from online player: {pl}");
+                    RainMeadow.Debug($"Player found witih stats: {newArenaPlayer.wins} from online player: {pl} => NOW {arena.playerNumberWithWins[pl.inLobbyId]} ");
+                    RainMeadow.Debug($"Player found witih score stats: {newArenaPlayer.score} from online player: {pl} {arena.playerNumberWithWins[pl.inLobbyId]} ");
+                    RainMeadow.Debug($"Player found witih death stats: {newArenaPlayer.deaths} from online player: {pl} {arena.playerNumberWithWins[pl.inLobbyId]} ");
+                    RainMeadow.Debug($"Player found witih totScore stats: {newArenaPlayer.totScore} from online player: {pl} {arena.playerNumberWithWins[pl.inLobbyId]}");
 
-                RainMeadow.Debug($"Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+                }
+                else
+                {
+                    newArenaPlayer.wins = wins;
+                    newArenaPlayer.score = arena.playerNumberWithScore[pl.inLobbyId];
+                    newArenaPlayer.deaths = arena.playerNumberWithDeaths[pl.inLobbyId];
+                    newArenaPlayer.totScore = arena.playerTotScore[pl.inLobbyId];
+
+                    RainMeadow.Debug($"Client read stats: {newArenaPlayer} from online player: {pl}");
+                    RainMeadow.Debug($"Client read stats witih stats: {newArenaPlayer.wins} from online player: {pl}");
+                    RainMeadow.Debug($"Client read stats witih score stats: {newArenaPlayer.score} from online player: {pl}");
+                    RainMeadow.Debug($"Client read stats witih death stats: {newArenaPlayer.deaths} from online player: {pl}");
+                    RainMeadow.Debug($"Client read stats witih totScore stats: {newArenaPlayer.totScore} from online player: {pl}");
+                }
+
             }
             else
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    arena.playerNumberWithKills.Add(pl.inLobbyId, 0);
-                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, 0);
-                    arena.playerNumberWithWins.Add(pl.inLobbyId, 0);
-                    RainMeadow.Debug($"Added new stats for: {newArenaPlayer} from online player: {pl}");
+                    arena.playerNumberWithScore.Add(pl.inLobbyId, newArenaPlayer.score);
+                    arena.playerNumberWithDeaths.Add(pl.inLobbyId, newArenaPlayer.deaths);
+                    arena.playerNumberWithWins.Add(pl.inLobbyId, newArenaPlayer.wins);
+                    arena.playerTotScore.Add(pl.inLobbyId, newArenaPlayer.totScore);
+                    RainMeadow.Debug($"New Player assigned witih stats: {newArenaPlayer} from online player: {pl}");
+                    RainMeadow.Debug($"New Player assigned witih stats: {newArenaPlayer.wins} from online player: {pl}");
+                    RainMeadow.Debug($"New Player assigned witih score stats: {newArenaPlayer.score} from online player: {pl}");
+                    RainMeadow.Debug($"New Player assigned witih death stats: {newArenaPlayer.deaths} from online player: {pl}");
+                    RainMeadow.Debug($"New Player assigned witih totScore stats: {newArenaPlayer.totScore} from online player: {pl}");
 
                 }
             }
@@ -428,9 +456,6 @@ namespace RainMeadow
             arena.currentLevel = 0;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playersReadiedUp.list.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
             arena.playersLateWaitingInLobbyForNextRound.Clear();
         }
         public void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
@@ -449,12 +474,12 @@ namespace RainMeadow
         {
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.SaveProgression(true, true);
+            arena.localAllKills.Clear();
             if (!OnlineManager.lobby.isOwner) return;
             arena.arenaSittingOnlineOrder.Clear();
             arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
-            arena.localAllKills.Clear();
+            arena.playerNumberWithScore.Clear();
+            arena.playerTotScore.Clear();
         }
         public void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
         {

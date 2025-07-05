@@ -116,7 +116,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void OpenInfoDialog()
     {
         menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        dialog = Arena.externalArenaGameMode.AddGameModeInfo(menu);
+        dialog = Arena.externalArenaGameMode.AddGameModeInfo(Arena, menu);
         menu.manager.ShowDialog(dialog);
     }
     public void OpenColorConfig(SlugcatStats.Name? slugcat)
