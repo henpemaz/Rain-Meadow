@@ -146,21 +146,6 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(context);
-
-
-                cursor.GotoNext(MoveType.After, x => x.MatchLdstr("Endgame - Wanderer - Flat"));
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate(string (string orig, MenuScene self) =>
-                {
-                    if (self.menu is ArenaOnlineLobbyMenu)
-                    {
-                        return "Endgame - Wanderer - Flat - Nosymbol";
-                    }
-                    return orig;
-                });
-
-
-
                 cursor.GotoNext(x => x.MatchLdstr("Wanderer - Symbol"));
                 cursor.GotoNext(MoveType.Before, x => x.MatchCall<MenuScene>(nameof(MenuScene.AddIllustration)));
                 cursor.Emit(OpCodes.Dup);

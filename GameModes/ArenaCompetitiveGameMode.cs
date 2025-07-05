@@ -249,9 +249,15 @@ namespace RainMeadow
                 slugcatSelectDisplayNames.Remove("Night");
             }
 
-
-
-            slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            if (OnlineManager.instance.manager.rainWorld.flatIllustrations || (ModManager.MMF && (OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.MEDIUM || OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.LOW)))
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Empty);
+            }
+            else
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            }
+            
 
 
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
