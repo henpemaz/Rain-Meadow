@@ -16,8 +16,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     public partial class TeamBattleMode : ExternalArenaGameMode
     {
         public TabContainer.Tab? myTab;
+        public OnlineTeamBattleSettingsInterface? myTeamBattleSettingInterface;
         public ConditionalWeakTable<ArenaPlayerBox, TeamBattlePlayerBox> playerBoxes = new();
-        public int winningTeam, martyrsSpawn, outlawsSpawn, dragonslayersSpawn, chieftainsSpawn, roundSpawnPointCycler;
+        public int winningTeam = -1, martyrsSpawn, outlawsSpawn, dragonslayersSpawn, chieftainsSpawn, roundSpawnPointCycler;
 
         public string martyrsTeamName = RainMeadow.rainMeadowOptions.MartyrTeamName.Value;
         public string outlawTeamNames = RainMeadow.rainMeadowOptions.OutlawsTeamName.Value;
@@ -25,7 +26,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public string chieftainsTeamNames = RainMeadow.rainMeadowOptions.ChieftainTeamName.Value;
 
         public float lerp = RainMeadow.rainMeadowOptions.TeamColorLerp.Value;
-        public bool teamComboBoxLastHeld;
         public Dictionary<int, string> teamNameDictionary = new Dictionary<int, string>
         {
             { 0, RainMeadow.rainMeadowOptions.MartyrTeamName.Value },
@@ -58,7 +58,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
     };
         public void ArenaSettingsInit()
         {
-            winningTeam = -1;
             martyrsSpawn = 0;
             outlawsSpawn = 0;
             dragonslayersSpawn = 0;
@@ -70,12 +69,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             base.OnUIEnabled(menu);
             ArenaSettingsInit();
             myTab = menu.arenaMainLobbyPage.tabContainer.AddTab("Team Settings");
-            myTab.AddObjects(new OnlineTeamBattleSettingsInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0)));
-            menu.arenaMainLobbyPage.tabContainer.tabButtonContainer.GoPrevPage();
+            myTab.AddObjects(myTeamBattleSettingInterface = new OnlineTeamBattleSettingsInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
         }
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIDisabled(menu);
+            myTeamBattleSettingInterface?.OnShutdown();
             if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
             myTab = null;
             foreach (ArenaPlayerBox playerBox in menu.arenaMainLobbyPage.playerDisplayer?.GetSpecificButtons<ArenaPlayerBox>() ?? [])
@@ -88,21 +87,38 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override void OnUIUpdate(ArenaOnlineLobbyMenu menu)
         {
             base.OnUIUpdate(menu);
-            foreach (ArenaPlayerBox playerBox in menu.arenaMainLobbyPage.playerDisplayer?.GetSpecificButtons<ArenaPlayerBox>() ?? [])
+            foreach (ButtonScroller.IPartOfButtonScroller button in menu.arenaMainLobbyPage.playerDisplayer?.buttons ?? [])
             {
-                ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
-                playerBox.showRainbow = teamSettings?.team == winningTeam && winningTeam != -1;
-                string symbolName = teamSettings != null? TeamMappingsDictionary[teamSettings.team] : "pixel";
-                if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox))
+                if (button is ArenaPlayerBox playerBox)
                 {
-                    teamBox = new(playerBox.menu, playerBox, new(0, 0), symbolName);
-                    playerBox.subObjects.Add(teamBox);
-                    playerBoxes.Add(playerBox, teamBox);
+                    ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
+                    playerBox.showRainbow = teamSettings?.team == winningTeam && winningTeam != -1;
+                    string symbolName = teamSettings != null ? TeamMappingsDictionary[teamSettings.team] : "pixel";
+                    if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox))
+                    {
+                        teamBox = new(playerBox.menu, playerBox, new(0, 0), symbolName);
+                        playerBox.subObjects.Add(teamBox);
+                        playerBoxes.Add(playerBox, teamBox);
+                    }
+                    else teamBox.teamSymbol.SetElementByName(symbolName);
+                    teamBox.teamColor = teamSettings != null ? TeamColors[teamSettings.team] : Color.black;
                 }
-                else teamBox.teamSymbol.SetElementByName(symbolName);
-                teamBox.teamColor = teamSettings != null ? TeamColors[teamSettings.team] : Color.black;
-
+                if (button is ArenaPlayerSmallBox smallBox)
+                {
+                    ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(smallBox.profileIdentifier);
+                    smallBox.baseColor = teamSettings != null ? TeamColors[teamSettings.team].ToHSL() : null;
+                }
             }
+        }
+        public override void OnUIShutDown(ArenaOnlineLobbyMenu menu)
+        {
+            base.OnUIShutDown(menu);
+            myTeamBattleSettingInterface?.OnShutdown();
+        }
+        public override bool DidPlayerWinRainbow(ArenaMode arena, OnlinePlayer player)
+        {
+            ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
+            return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1; //apparently winning team function doesnt work (from testing with 2 teams)
         }
         public override DialogNotify AddGameModeInfo(Menu.Menu menu)
         {

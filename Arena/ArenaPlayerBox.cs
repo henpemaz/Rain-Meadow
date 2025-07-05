@@ -71,10 +71,6 @@ namespace RainMeadow.UI.Components
             base.RemoveSprites();
             sprites.Do(x => x.RemoveFromContainer());
             pingLabel.RemoveFromContainer();
-            if (externalSprite != null)
-            {
-                externalSprite.RemoveFromContainer();
-            }
         }
         public override void Singal(MenuObject sender, string message)
         {
@@ -200,6 +196,5 @@ namespace RainMeadow.UI.Components
         public ProperlyAlignedMenuLabel nameLabel;
         public SlugcatColorableButton slugcatButton;
         public OnlinePlayer profileIdentifier;
-        public FSprite externalSprite;
     }
 }

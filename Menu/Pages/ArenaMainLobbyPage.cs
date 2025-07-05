@@ -174,7 +174,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
             else playerBox.slugcatButton.portraitColor = Color.white;
 
-            playerBox.showRainbow = Arena.reigningChamps.list.Contains(playerBox.profileIdentifier.id) || slugSlots;
+            playerBox.showRainbow = Arena.externalArenaGameMode?.DidPlayerWinRainbow(Arena, playerBox.profileIdentifier) == true || slugSlots;
         }
         if (button is ArenaPlayerSmallBox smallPlayerBox)
             smallPlayerBox.slugcatButton.slug = ArenaHelpers.GetArenaClientSettings(smallPlayerBox.profileIdentifier)?.playingAs;

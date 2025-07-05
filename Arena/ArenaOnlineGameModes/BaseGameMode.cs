@@ -353,7 +353,7 @@ namespace RainMeadow
         {
             return orig(self, A, B);
         }
-
+        public virtual bool DidPlayerWinRainbow(ArenaOnlineGameMode arena, OnlinePlayer player) => arena.reigningChamps.list.Contains(player.id);
         public virtual void OnUIEnabled(ArenaOnlineLobbyMenu menu)
         {
 
@@ -363,6 +363,10 @@ namespace RainMeadow
 
         }
         public virtual void OnUIUpdate(ArenaOnlineLobbyMenu menu)
+        {
+
+        }
+        public virtual void OnUIShutDown(ArenaOnlineLobbyMenu menu)
         {
 
         }
