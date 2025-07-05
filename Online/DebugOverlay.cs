@@ -397,7 +397,7 @@ namespace RainMeadow
 
                         entityNode = new EntityNode(self.rainWorld, overlayContainer, onlineEntity)
                         {
-                            text = isMe ? "YOU" : ""
+                            text = isMe ? Utils.Translate("YOU") : ""
                         };
                         entityNodes.Add(entityNode);
                     }
@@ -428,13 +428,13 @@ namespace RainMeadow
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
             overlayContainer = new FContainer();
 
-            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Outgoing (Receivers)")
+            overlayContainer.AddChild(new FLabel(Custom.GetFont(), Utils.Translate("Outgoing (Receivers)"))
             {
                 alignment = FLabelAlignment.Left,
                 x = 5.01f,
                 y = screenSize.y - 10,
             });
-            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Incoming (Senders)")
+            overlayContainer.AddChild(new FLabel(Custom.GetFont(), Utils.Translate("Incoming (Senders)"))
             {
                 alignment = FLabelAlignment.Left,
                 x = 205.01f,
