@@ -54,7 +54,7 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
             if (OnlineManager.lobby.isOwner)
             {
-                arena.ResetOnReturnToMenu(arena, this);
+                arena.ResetOnReturnToMenu(this);
                 arena.ResetForceReadyCountDown();
             }
             arena.ResetReadyUpLogic(arena, this);

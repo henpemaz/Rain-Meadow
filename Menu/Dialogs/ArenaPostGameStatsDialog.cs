@@ -22,7 +22,7 @@ namespace RainMeadow.UI
         public ArenaPostGameStatsDialog(ProcessManager manager, ArenaOnlineGameMode arena) : base("", new(800, 460), manager)
         {
             arenaMode = arena;
-            postGameStatsLabel = new(this, pages[0], Translate("POST-GAME STATS"), new(roundedRect.pos.x + roundedRect.size.x * 0.5f, roundedRect.pos.y + roundedRect.size.y + 10), new(0, 0), true);
+            postGameStatsLabel = new(this, pages[0], Translate("POST-GAME STATS"), new(pos.x + size.x * 0.5f, pos.y + size.y + 10), new(0, 0), true);
             postGameStatsLabel.label.anchorY = 0;
             closeButton = new(this, pages[0], Translate("BACK"), new(roundedRect.pos.x + roundedRect.size.x - 80, roundedRect .pos.y - 40), new(80, 30));
             closeButton.OnClick += _ =>
@@ -53,8 +53,9 @@ namespace RainMeadow.UI
             for (int i = 0; i < storedResults.Length; i++)
                 UpdateStoredResults(storedResults[i], GetStrings(storedResults[i], i));
         }
-        public List<string> GetStrings(StoredResults storedResults, int i)
+        public string[] GetStrings(StoredResults storedResults, int i)
         {
+
             if (i == 0)
                 return [.. arenaMode.playerNumberWithWins.Where(x => ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key) != null).Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             if (i == 1)
@@ -63,12 +64,12 @@ namespace RainMeadow.UI
                 return [.. arenaMode.playerNumberWithDeaths.Select(x => $"{LabelTest.TrimText(ArenaHelpers.FindOnlinePlayerByLobbyId((ushort)x.Key).id.name, storedResults.size.x - LabelTest.GetWidth($" - {x.Value}") - 10, true)} - {x.Value}")];
             return [];
         }
-        public void UpdateStoredResults(StoredResults storedResults, List<string> strings)
+        public void UpdateStoredResults(StoredResults storedResults, string[] strings)
         {
             List<AlignedMenuLabel> menulabels = storedResults.scroller.GetSpecificButtons<AlignedMenuLabel>();
             for (int i = 0; i < menulabels.Count; i++)
             {
-                if (strings.Count <= i)
+                if (strings.Length<= i)
                 {
                     storedResults.scroller.RemoveButton(menulabels[i], true);
                     continue;
@@ -76,7 +77,7 @@ namespace RainMeadow.UI
                 menulabels[i].text = strings[i];
             }
             int count = storedResults.scroller.GetSpecificButtons<AlignedMenuLabel>().Count;
-            if (strings.Count == count) return;
+            if (strings.Length == count) return;
             IEnumerable<string> newStrings = strings.Skip(count);
             foreach (string s in newStrings)
             {
