@@ -20,7 +20,7 @@ namespace RainMeadow.UI.Components
             saintAscendDurationTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value), new(saintAscendanceTimerLabel.pos.x + 292.5f, saintAscendanceTimerLabel.pos.y - 2), 40)
             {
                 alignment = FLabelAlignment.Center,
-                description = Translate("How long Saint's ascendance ability lasts for. Default: 120 tics")
+                description = Translate("How long Saint's ascendance ability lasts for. Default: 3s")
             };
             saintAscendDurationTimerTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
             {
