@@ -25,6 +25,8 @@ namespace RainMeadow.UI
         public List<string> losingDescriptions = ["Oops, better luck next time!", "Try your luck again!", "99% of gamblers quit before they win big"],
             closeDesriptions = ["So Close! Keep trying!", "Almost there!"],
             winningDescriptions = ["Congratulations! You have achieved the ultimate gamble skill!!!", "Gahh?? Impossible?!"];
+
+        public static List<string> slugcatSelectorHints = ["Press and hold something on screen to spin the slots / Hope you brought green", "One, two three of a kind / Somewhere on this page you will find", "A joke started from the Meadow Discord / Makes all players broke, and none can afford"];
         public bool FinishedShowingResults => slugcatRandomizers.All(x => !x.rolling && x.desiredResultPosY == x.resultPosY);
         public bool IsMatching => slugcatRandomizers.All(x => x.slugcatButton.slugcat == slugcatRandomizers[0].slugcatButton.slugcat);
         public bool IsCloseMatching => slugcatRandomizers.GroupBy(x => x.slugcatButton.slugcat).OrderByDescending(x => x.Count()).FirstOrDefault()?.Count() == slugcatRandomizers.Length - 1;

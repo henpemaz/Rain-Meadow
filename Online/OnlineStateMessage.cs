@@ -21,12 +21,12 @@
             this.baseline = baseline;
         }
 
-        internal void Failed()
+        public void Failed()
         {
             source.Failed(this);
         }
 
-        internal void Sent()
+        public void Sent()
         {
             source.Sent(this);
         }

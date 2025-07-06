@@ -162,6 +162,7 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
                 slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.");
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.");
+                slugcatSelectDescriptions.Add("Sainot", "The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
 
@@ -259,9 +260,15 @@ namespace RainMeadow
                 slugcatSelectDisplayNames.Remove("Night");
             }
 
-
-
-            slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            if (OnlineManager.instance.manager.rainWorld.flatIllustrations || (ModManager.MMF && (OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.MEDIUM || OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.LOW)))
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Empty);
+            }
+            else
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            }
+            
 
 
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
