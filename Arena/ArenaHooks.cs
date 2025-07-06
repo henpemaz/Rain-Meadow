@@ -796,6 +796,14 @@ namespace RainMeadow
                         }
 
                     }
+                    foreach (var player in self.manager.arenaSitting.players)
+                    {
+                        OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        if (onlinePlayer != null)
+                        {
+                            arena.ReadFromStats(player, onlinePlayer);
+                        }
+                    }
                     self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
 
                 }

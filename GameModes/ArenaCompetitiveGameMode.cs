@@ -430,6 +430,23 @@ namespace RainMeadow
                 playerTotScore.Add(getPlayer.inLobbyId, 0);
             }
         }
+
+        public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
+        {
+            if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
+            {
+                player.wins = wins;
+                player.score = playerNumberWithScore[pl.inLobbyId];
+                player.deaths = playerNumberWithDeaths[pl.inLobbyId];
+                player.totScore = playerTotScore[pl.inLobbyId];
+
+                RainMeadow.Debug($"Read stats: {player} from online player: {pl}");
+                RainMeadow.Debug($"Read witih stats: {player.wins} from online player: {player}");
+                RainMeadow.Debug($"Read witih score stats: {player.score} from online player: {player}");
+                RainMeadow.Debug($"Read witih death stats: {player.deaths} from online player: {player}");
+                RainMeadow.Debug($"Read witih totScore stats: {player.totScore} from online player: {player}");
+            }
+        }
         public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
         {
             if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins)) // if we have one of the dictionary entries, we can rest assured we have all
