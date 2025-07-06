@@ -15,7 +15,7 @@ namespace RainMeadow.UI.Components
             onlinePlayers = players;
             this.largeButtonHeightSpacing = largeButtonHeightSpacing;
             this.smallButtonHeightSpacing = smallButtonHeightSpacing;
-            inviteFriends = this.AddSideButton("smallKarma5-8", signal: "INVITE_FRIENDS");
+            inviteFriends = this.AddSideButton("Meadow_Menu_InviteFriends", description: menu.Translate("Invite friends"), signal: "INVITE_FRIENDS");
             inviteFriends.OnClick += (_) =>
             {
                     MatchmakingManager.currentInstance.OpenInvitationOverlay();

@@ -29,6 +29,15 @@ namespace RainMeadow
                     arena.leaveForNextLevel = true;
                 }
 
+                for (int i = arena.arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
+                {
+                    OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                    if (missingPlayer == null)
+                    {
+                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                    }
+                }
+
                 foreach (var player in self.players)
                 {
                     OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
