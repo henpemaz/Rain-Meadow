@@ -64,10 +64,10 @@ namespace RainMeadow
                     bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
                     {
-                        martyrsName = teamBattleMode.martyrsTeamName;
-                        chieftainsName = teamBattleMode.chieftainsTeamNames;
-                        dragonslayersName = teamBattleMode.dragonSlayersTeamNames;
-                        outlawsName = teamBattleMode.outlawTeamNames;
+                        martyrsName = teamBattleMode.teamNames[0];
+                        chieftainsName = teamBattleMode.teamNames[1];
+                        dragonslayersName = teamBattleMode.teamNames[2];
+                        outlawsName = teamBattleMode.teamNames[3];
                         winningTeam = teamBattleMode.winningTeam;
                         martyrs = teamBattleMode.martyrsSpawn;
                         outlaws = teamBattleMode.outlawsSpawn;
@@ -95,10 +95,10 @@ namespace RainMeadow
                     bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (cachedTb && teamBattleMode != null)
                     {
-                        teamBattleMode.martyrsTeamName = martyrsName;
-                        teamBattleMode.chieftainsTeamNames = chieftainsName;
-                        teamBattleMode.outlawTeamNames = outlawsName;
-                        teamBattleMode.dragonSlayersTeamNames = dragonslayersName;
+                        teamBattleMode.teamNames[0] = martyrsName;
+                        teamBattleMode.teamNames[1] = chieftainsName;
+                        teamBattleMode.teamNames[2] = outlawsName;
+                        teamBattleMode.teamNames[3] = dragonslayersName;
                         teamBattleMode.winningTeam = winningTeam;
                         teamBattleMode.martyrsSpawn = martyrs;
                         teamBattleMode.outlawsSpawn = outlaws;
