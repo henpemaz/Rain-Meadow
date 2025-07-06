@@ -86,7 +86,7 @@ namespace RainMeadow
                         handler = new StateHandler((externalKey.Value, (byte)externalhandlers[externalKey.Value].Count), type);
                         externalhandlers[externalKey.Value].Insert(externalhandlers[externalKey.Value].Count, handler);
                     }
-                    handlersByType[type] = handler;
+                    handlersByType.Add(type, handler);
                 }
 
             }
