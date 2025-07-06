@@ -1,4 +1,5 @@
 ﻿using RWCustom;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -77,6 +78,34 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     data.Add(reader.ReadByte());
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+        public void Serialize(ref List<(Guid, byte)> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(data[i].Item1.ToByteArray());
+                    writer.Write(data[i].Item2);
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    data.Add((new Guid(reader.ReadBytes(16)), reader.ReadByte()));
                 }
             }
 #if TRACING
@@ -402,6 +431,35 @@ namespace RainMeadow
                 for (int i = 0; i < count; i++)
                 {
                     data.Add(reader.ReadUInt32());
+                }
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
+
+
+
+        public void Serialize(ref List<Guid> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write((byte)data.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    writer.Write(data[i].ToByteArray());
+                }
+            }
+            if (IsReading)
+            {
+                var count = reader.ReadByte();
+                data = new(count);
+                for (int i = 0; i < count; i++)
+                {
+                    data.Add(new Guid(reader.ReadBytes(16)));
                 }
             }
 #if TRACING

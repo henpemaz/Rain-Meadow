@@ -30,38 +30,70 @@ namespace RainMeadow
             return e;
         }
 
-        // todo figure out how to handle indexes for modded stuff (so doesn't depend on load-order and so forth)
-        public class StateType : ExtEnum<StateType>
-        {
-            public StateType(string value, bool register = false) : base(value, register) { }
-            public static readonly StateType Unknown = new("Unknown", true); // sending zeroes over should error out
-        }
-
         public static OnlineState ParsePolymorph(Serializer serializer)
         {
-            return handlersByEnum[new StateType(StateType.values.GetEntry(serializer.reader.ReadByte()))].factory();
+            var index = serializer.reader.ReadByte();
+            if (index == 255)
+            {
+                var guid = new Guid(serializer.reader.ReadBytes(16));
+                byte externalindex = serializer.reader.ReadByte();
+                return externalhandlers[guid][externalindex].factory();
+            }
+
+
+            return handlers[index].factory();
         }
 
         public void WritePolymorph(Serializer serializer)
         {
-            serializer.writer.Write((byte)handler.stateType.index);
+            if (handler.stateType.Item1 == Guid.Empty)
+            {
+                serializer.writer.Write((byte)handler.stateType.Item2);
+            }
+            else
+            {
+                serializer.writer.Write(255);
+                serializer.writer.Write(handler.stateType.Item1.ToByteArray());
+                serializer.writer.Write(handler.stateType.Item2);
+            }
+            
         }
 
-        private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
+        private static List<StateHandler> handlers = new List<StateHandler>();
+        private static Dictionary<Guid, List<StateHandler>> externalhandlers = new Dictionary<Guid, List<StateHandler>>();
         private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
-        public static void RegisterState(Type type)
+        public static void RegisterState(Type type, Guid? externalKey)
         {
             if (!type.IsAbstract && typeof(OnlineState).IsAssignableFrom(type))
             {
-                StateType stateType = new StateType(type.FullName, true);
-                handlersByEnum[stateType] = handlersByType[type] = new StateHandler(stateType, type);
+                // make sure we don't overflow with the byte stuff
+                checked
+                {
+                    StateHandler handler;
+                    if (!externalKey.HasValue)
+                    {
+                        handler = new StateHandler((Guid.Empty, (byte)handlers.Count), type);
+                        handlers.Insert(handlers.Count, handler);
+                    }
+                    else
+                    {
+                        if (externalhandlers[externalKey.Value].Count == 255) throw new InvalidOperationException("too many states!");
+                        if (!externalhandlers.ContainsKey(externalKey.Value))
+                        {
+                            externalhandlers.Add(externalKey.Value, new List<StateHandler>());
+                        }
+                        handler = new StateHandler((externalKey.Value, (byte)externalhandlers[externalKey.Value].Count), type);
+                        externalhandlers[externalKey.Value].Insert(externalhandlers[externalKey.Value].Count, handler);
+                    }
+                    handlersByType[type] = handler;
+                }
+
             }
         }
 
         internal static void InitializeBuiltinTypes()
         {
-            _ = StateType.Unknown; // runs static init
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();
@@ -73,7 +105,7 @@ namespace RainMeadow
                         try
                         {
                             hasState |= typeof(OnlineState).IsAssignableFrom(type);
-                            OnlineState.RegisterState(type);
+                            OnlineState.RegisterState(type, isMain? null : type.Module.ModuleVersionId);
                         }
                         catch (Exception e)
                         {
@@ -210,7 +242,7 @@ namespace RainMeadow
 
         public class StateHandler
         {
-            public OnlineState.StateType stateType;
+            public (Guid, byte) stateType;
             public Type type;
             public DeltaSupport deltaSupport;
             public Func<OnlineState> factory;
@@ -228,7 +260,7 @@ namespace RainMeadow
             }
 
             // Welcome to Expression Trees hell
-            public StateHandler(OnlineState.StateType stateType, Type type)
+            public StateHandler((Guid, byte) stateType, Type type)
             {
                 RainMeadow.Debug($"Registering " + type.FullName);
                 try

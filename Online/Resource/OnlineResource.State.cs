@@ -91,6 +91,8 @@ namespace RainMeadow
             public DeltaStates<OnlineEntity.EntityState, OnlineEntity.EntityId> entityStates;
             [OnlineField(nullable = true, group = "data")]
             public DeltaDataStates<ResourceData.ResourceDataState> resourceDataStates;
+            [OnlineField(nullable = true, group = "data")]
+            public DeltaDataStatesGUID<ResourceData.ResourceDataState> externalResourceDataStates;
 
             protected ResourceState() : base() { }
             protected ResourceState(OnlineResource resource, uint ts) : base(ts)
@@ -99,7 +101,8 @@ namespace RainMeadow
                 registeredEntities = new(resource.registeredEntities.Values.ToList());
                 entitiesJoined = new(resource.joinedEntities.Values.ToList());
                 entityStates = new(resource.activeEntities.Select(e => e.GetState(ts, resource)).ToList());
-                resourceDataStates = new(resource.resourceData.Values.Select(d => d.MakeState(resource)).Where(s => s != null).ToList());
+                resourceDataStates = new(resource.resourceData.Values.Select(d => d.MakeState(resource)).Where(s => s != null && (s.handler.stateType.Item1 == Guid.Empty)).ToList());
+                externalResourceDataStates = new(resource.resourceData.Values.Select(d => d.MakeState(resource)).Where(s => s != null && (s.handler.stateType.Item1 != Guid.Empty)).ToList());
             }
             public virtual void ReadTo(OnlineResource resource)
             {
@@ -231,6 +234,7 @@ namespace RainMeadow
                     }
                 }
                 resourceDataStates.list.ForEach(ds => ds.ReadTo(resource.TryGetData(ds.GetDataType(), out var d) ? d : resource.AddData(ds.MakeData(resource)), resource));
+                externalResourceDataStates.list.ForEach(ds => ds.ReadTo(resource.TryGetData(ds.GetDataType(), out var d) ? d : resource.AddData(ds.MakeData(resource)), resource));
             }
         }
 
