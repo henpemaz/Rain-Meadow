@@ -118,7 +118,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         public override bool DidPlayerWinRainbow(ArenaMode arena, OnlinePlayer player)
         {
             ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
-            return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1; //apparently winning team function doesnt work (from testing with 2 teams)
+            return base.DidPlayerWinRainbow(arena, player) || teamSettings?.team == winningTeam && winningTeam != -1;
         }
 
         public override Dialog AddGameModeInfo(ArenaMode arena, Menu.Menu menu)

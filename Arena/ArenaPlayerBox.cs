@@ -108,7 +108,7 @@ namespace RainMeadow.UI.Components
             base.GrafUpdate(timeStacker);
             Vector2 size = DrawSize(timeStacker), pos = DrawPos(timeStacker);
             Color pingColor = GetPingColor(realPing);
-            pingLabel.text = profileIdentifier.isMe ? "ME" : $"{realPing}ms";
+            pingLabel.text = profileIdentifier.isMe ? menu.Translate("ME") : $"{realPing}ms";
             pingLabel.x = pos.x + size.x;
             pingLabel.y = pos.y + 7;
             pingLabel.color = pingColor;

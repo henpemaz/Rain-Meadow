@@ -52,7 +52,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         };
         arenaGameStatsButton.roundedRect.size = arenaGameStatsButton.size;
         arenaGameStatsButton.OnClick += _ => OpenGameStatsDialog();
-        readyButton.description = Utils.Translate(scugslotsHint == 20 ? SlugcatSelector.slugcatSelectorHints[Random.Range(0, SlugcatSelector.slugcatSelectorHints.Count)]: "Ready up to join the host when the match begins");
+        readyButton.description = Utils.Translate(scugslotsHint == 20 ? SlugcatSelector.slugcatSelectorHints[UnityEngine.Random.Range(0, SlugcatSelector.slugcatSelectorHints.Count)]: "Ready up to join the host when the match begins");
         chatMenuBox = new(menu, this, new(100f, 125f), new(300, 425));
         chatMenuBox.roundedRect.size.y = 475f;
 
