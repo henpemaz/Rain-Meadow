@@ -78,11 +78,11 @@ namespace RainMeadow
                     }
                     else
                     {
-                        if (externalhandlers[externalKey.Value].Count == 255) throw new InvalidOperationException("too many states!");
                         if (!externalhandlers.ContainsKey(externalKey.Value))
                         {
                             externalhandlers.Add(externalKey.Value, new List<StateHandler>());
                         }
+                        if (externalhandlers[externalKey.Value].Count == 255) throw new InvalidOperationException("too many states!");
                         handler = new StateHandler((externalKey.Value, (byte)externalhandlers[externalKey.Value].Count), type);
                         externalhandlers[externalKey.Value].Insert(externalhandlers[externalKey.Value].Count, handler);
                     }
