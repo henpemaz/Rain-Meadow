@@ -28,16 +28,25 @@ namespace RainMeadow
                 {
                     arena.leaveForNextLevel = true;
                 }
-                if (!OnlineManager.lobby.isOwner)
-                {
-                    foreach (var player in self.players)
-                    {
-                        OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
-                        if (currentName != null)
-                        {
-                            arena.AddOrInsertPlayerStats(arena, player, currentName);
-                        }
 
+                foreach (var player in self.players)
+                {
+                    OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                    if (currentName != null)
+                    {
+                        if (arena.playerNumberWithWins.TryGetValue(currentName.inLobbyId, out var wins))
+                        {
+                            player.wins = wins;
+                            player.score = arena.playerNumberWithScore[currentName.inLobbyId];
+                            player.deaths = arena.playerNumberWithDeaths[currentName.inLobbyId];
+                            player.totScore = arena.playerTotScore[currentName.inLobbyId];
+
+                            RainMeadow.Debug($"Next Level stats: {player} from online player: {currentName}");
+                            RainMeadow.Debug($"Next Levels witih stats: {player.wins} from online player: {player}");
+                            RainMeadow.Debug($"Next Level witih score stats: {player.score} from online player: {player}");
+                            RainMeadow.Debug($"Next Level witih death stats: {player.deaths} from online player: {player}");
+                            RainMeadow.Debug($"Next Level witih totScore stats: {player.totScore} from online player: {player}");
+                        }
                     }
                 }
 
