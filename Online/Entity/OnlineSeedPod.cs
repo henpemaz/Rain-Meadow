@@ -45,7 +45,7 @@
             return asc;
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlineSeedCobDefinition(this, onlineResource);
         }

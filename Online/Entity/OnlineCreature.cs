@@ -109,7 +109,7 @@ namespace RainMeadow
             isAvatar = onlineCreatureDefinition.isAvatar;
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlineCreatureDefinition(this, onlineResource);
         }

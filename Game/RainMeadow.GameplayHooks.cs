@@ -464,11 +464,15 @@ namespace RainMeadow
                 if (!room.isOwner)
                 {
                     OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var objectHit);
-                    OnlinePhysicalObject.map.TryGetValue(explosion?.sourceObject.abstractPhysicalObject, out var explosionSource);
-                    if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                    if (explosion != null && explosion.sourceObject != null)
                     {
-                        room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
-                        return;
+                        OnlinePhysicalObject.map.TryGetValue(explosion.sourceObject.abstractPhysicalObject, out var explosionSource);
+
+                        if (objectHit != null && (objectHit.isMine || (explosionSource != null && explosionSource.isMine)))
+                        {
+                            room.owner.InvokeOnceRPC(objectHit.HitByExplosion, hitFac);
+                            return;
+                        }
                     }
                 }
             }
