@@ -19,9 +19,9 @@ namespace RainMeadow
             [OnlineField]
             public bool isTransferable;
             [OnlineField]
-            internal ushort version;
+            public ushort version;
 
-            internal bool failedToSpawn; // tracked locally
+            public bool failedToSpawn; // tracked locally
 
             public EntityDefinition() : base() { }
 
@@ -43,14 +43,14 @@ namespace RainMeadow
             }
         }
 
-        internal abstract EntityDefinition MakeDefinition(OnlineResource onlineResource);
+        public abstract EntityDefinition MakeDefinition(OnlineResource onlineResource);
 
         public OnlinePlayer owner;
         public readonly EntityId id;
         public readonly bool isTransferable;
 
-        internal ushort version;
-        internal bool everRegistered;
+        public ushort version;
+        public bool everRegistered;
 
         public bool isMine => owner.isMe && !isTransfering;
 

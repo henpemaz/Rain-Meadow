@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using HUD;
-using Menu;
-using MoreSlugcats;
-using RainMeadow;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static RainMeadow.OnlineEntity;
+
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -182,7 +175,6 @@ namespace RainMeadow
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
-
             }
             else
             {
@@ -279,8 +271,7 @@ namespace RainMeadow
             arena.playerEnteredGame++;
             foreach (var player in arena.arenaSittingOnlineOrder)
             {
-
-                var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
                 if (getPlayer != null)
                 {
                     if (!getPlayer.isMe)
@@ -289,21 +280,40 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
+            if (OnlineManager.lobby.isOwner)
             {
-                arena.isInGame = true;
-                foreach (var p in arena.arenaSittingOnlineOrder)
+                arena.isInGame = true; // used for readied players at the beginning
+                arena.leaveForNextLevel = false;
+                foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
+                foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                 {
-                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (onlineP != null)
+                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                    if (getPlayer != null)
                     {
-                        if (onlineP.isMe) continue;
-                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                        if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                        }
+                        if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                        }
+                        if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+                        }
                     }
-
                 }
-                arena.initiatedStartGameForClient = true; // set this so we don't notify again
+                arena.playersLateWaitingInLobbyForNextRound.Clear();
+
+
             }
+            arena.hasPermissionToRejoin = false;
+
+
+
+
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)

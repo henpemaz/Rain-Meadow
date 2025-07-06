@@ -2,7 +2,7 @@
 
 namespace RainMeadow
 {
-    internal class RealizedScavengerState : RealizedCreatureState
+    public class RealizedScavengerState : RealizedCreatureState
     {
         [OnlineField(nullable = true, group = "swing")]
         private Vector2? swingPos;

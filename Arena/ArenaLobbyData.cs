@@ -16,77 +16,109 @@ namespace RainMeadow
 
         internal class State : ResourceDataState
         {
-            [OnlineField]
+            // Group: arenaLobby
+            [OnlineField(group = "arenaLobby")]
             public bool isInGame;
-            [OnlineField]
+
+            [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
-            [OnlineField]
-            public List<string> playList;
-            [OnlineField]
-            public List<ushort> arenaSittingOnlineOrder;
-            [OnlineField]
+            [OnlineField(group = "arenaLobby")]
             public bool returnToLobby;
-            [OnlineField]
+            [OnlineField(group = "arenaLobby")]
             public Dictionary<string, int> onlineArenaSettingsInterfaceMultiChoice;
-            [OnlineField]
+            [OnlineField(group = "arenaLobby")]
             public Dictionary<string, bool> onlineArenaSettingsInterfaceBool;
-            [OnlineField]
+            [OnlineField(group = "arenaLobby")]
             public Dictionary<string, int> playersChoosingSlugs;
-            [OnlineField]
+            [OnlineField(group = "arenaLobby")]
             public Dictionary<string, int> playerResultColors;
-            [OnlineField(nullable = true)]
+            [OnlineField(nullable = true, group = "arenaLobby")]
             public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
-            [OnlineField(nullable = true)]
-            public Generics.DynamicOrderedPlayerIDs reigningChamps;
-            [OnlineField]
-            public bool countdownInitiatedHoldFire;
-            [OnlineField]
-            public int playerEnteredGame;
-            [OnlineField]
-            public int currentLevel;
-            [OnlineField]
+
+            // Group: arenaSetup
+            [OnlineField(group = "arenaSetup")]
+            public List<string> playList;
+            [OnlineField(group = "arenaSetup")]
+            public bool shufflePlayList;
+            [OnlineField(group = "arenaSetup")]
             public int totalLevels;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public int arenaSetupTime;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
+            public int lobbyCountDown;
+            [OnlineField(group = "arenaSetup")]
+            public bool initiatedLobbyCountDown;
+            [OnlineField(group = "arenaSetup")]
             public int saintAscendanceTimer;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool sainot;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool painCatEgg;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool painCatThrows;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool painCatLizard;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool disableMaul;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
             public bool disableArtiStun;
-            [OnlineField]
-            public string currentGameMode;
-            [OnlineField]
+            [OnlineField(group = "arenaSetup")]
+            public string currentGameMode; // maybe not use string
+            [OnlineField(group = "arenaSetup")]
             public bool arenaItemSteal;
+            [OnlineField(group = "arenaSetup")]
+            public bool allowJoiningMidRound;
+
+            // Group: arenaGameplay
+            [OnlineField(group = "arenaGameplay")]
+            public List<ushort> arenaSittingOnlineOrder;
+            [OnlineField(group = "arenaGameplay")]
+            public List<ushort> playersLateWaitingInLobby;
+            [OnlineField(nullable = true, group = "arenaGameplay")]
+            public Generics.DynamicOrderedPlayerIDs reigningChamps;
+            [OnlineField(group = "arenaGameplay")]
+            public int currentLevel;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerNumberWithKills;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerNumberWithDeaths;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerNumberWithWins;
+            [OnlineField(group = "arenaGameplay")]
+            public bool countdownInitiatedHoldFire;
+            [OnlineField(group = "arenaGameplay")]
+            public int playerEnteredGame;
+            [OnlineField(group = "arenaGameplay")]
+            public bool leaveForNextLevel;
             [OnlineField]
             public bool weaponCollisionFix;
+
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
-                isInGame = arena.isInGame;
-                playList = arena.playList;
-                arenaSittingOnlineOrder = arena.arenaSittingOnlineOrder;
+                isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame;
+                playList = new(arena.playList);
+                shufflePlayList = arena.shufflePlayList;
+                arenaSittingOnlineOrder = new(arena.arenaSittingOnlineOrder);
                 allPlayersReadyLockLobby = arena.allPlayersReadyLockLobby;
                 returnToLobby = arena.returnToLobby;
                 onlineArenaSettingsInterfaceMultiChoice = arena.onlineArenaSettingsInterfaceMultiChoice;
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
+                playerNumberWithKills = new(arena.playerNumberWithKills);
+                playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
+                playerNumberWithWins = new(arena.playerNumberWithWins);
+                playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
                 playerEnteredGame = arena.playerEnteredGame;
                 arenaSetupTime = arena.setupTime;
+                lobbyCountDown = arena.lobbyCountDown;
+                initiatedLobbyCountDown = arena.initiateLobbyCountdown;
                 sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
                 currentGameMode = arena.currentGameMode;
@@ -98,6 +130,9 @@ namespace RainMeadow
                 disableMaul = arena.disableMaul;
                 disableArtiStun = arena.disableArtiStun;
                 arenaItemSteal = arena.itemSteal;
+                allowJoiningMidRound = arena.allowJoiningMidRound;
+
+                leaveForNextLevel = arena.leaveForNextLevel;
                 weaponCollisionFix = arena.weaponCollisionFix;
             }
 
@@ -106,6 +141,7 @@ namespace RainMeadow
                 var lobby = (resource as Lobby);
                 (lobby.gameMode as ArenaOnlineGameMode).isInGame = isInGame;
                 (lobby.gameMode as ArenaOnlineGameMode).playList = playList;
+                (lobby.gameMode as ArenaOnlineGameMode).shufflePlayList = shufflePlayList;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSittingOnlineOrder = arenaSittingOnlineOrder;
                 (lobby.gameMode as ArenaOnlineGameMode).allPlayersReadyLockLobby = allPlayersReadyLockLobby;
                 (lobby.gameMode as ArenaOnlineGameMode).returnToLobby = returnToLobby;
@@ -114,11 +150,20 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
+
+                (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
+
 
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
                 (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
+                (lobby.gameMode as ArenaOnlineGameMode).lobbyCountDown = lobbyCountDown;
+                (lobby.gameMode as ArenaOnlineGameMode).initiateLobbyCountdown = initiatedLobbyCountDown;
+
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
@@ -130,6 +175,11 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableArtiStun = disableArtiStun;
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
+                (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
+
+
+                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
+
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
 
             }

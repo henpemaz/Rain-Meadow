@@ -338,7 +338,7 @@ namespace RainMeadow
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 
-        private static void ShouldCapture(bool shouldCapture)
+        public static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)
             {

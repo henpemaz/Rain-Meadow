@@ -64,7 +64,7 @@ namespace RainMeadow
         {
             if (scroller == null)
             {
-                scroller = new(menu, this, new(0, StartingYPoint), NumberOfButtonsToShow - 1, size.x, size.y, buttonSpacing);
+                scroller = new(menu, this, new(0, StartingYPoint), NumberOfButtonsToShow - 1, size.x, new(size.y, buttonSpacing));
                 scroller.AddScrollObjects(populateList?.Invoke(this, scroller));
                 subObjects.Add(scroller);
                 if (playSound)
