@@ -52,7 +52,8 @@ public class RainMeadowOptions : OptionInterface
     {
         Meadow,
         Vanilla,
-        Downpour
+        Downpour,
+        Watcher
     }
 
 
@@ -163,6 +164,8 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpLabel downpourWarning;
+            OpLabel watcherWarning;
+
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
 
@@ -210,14 +213,29 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 120, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+                watcherWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+
                 new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
                 new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
         };
-            introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
-            downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
+            introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                if (value == "Downpour" && !ModManager.MSC)
+                {
+                    downpourWarning.Show();
+                }
+                else downpourWarning.Hide();
+                if (value == "Watcher" && !ModManager.Watcher)
+                {
+                    watcherWarning.Show();
+                }
+                else watcherWarning.Hide();
+            };
+            downpourWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Downpour && ModManager.MSC;
+            watcherWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Watcher && ModManager.Watcher;
 
             editSyncRequiredModsButton.OnClick += _ =>
             {
@@ -291,7 +309,7 @@ public class RainMeadowOptions : OptionInterface
                 {
                     color = new Color(0.85f, 0.35f, 0.4f)
                 },
-                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), "OKIE DOKIE")
+                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), Translate("OKIE DOKIE"))
                 {
                     colorEdge = new Color(0.85f, 0.35f, 0.4f),
                 },

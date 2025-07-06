@@ -204,7 +204,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlinePhysicalObjectDefinition(this, onlineResource);
         }

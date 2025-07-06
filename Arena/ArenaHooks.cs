@@ -146,21 +146,6 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(context);
-
-
-                cursor.GotoNext(MoveType.After, x => x.MatchLdstr("Endgame - Wanderer - Flat"));
-                cursor.Emit(OpCodes.Ldarg_0);
-                cursor.EmitDelegate(string (string orig, MenuScene self) =>
-                {
-                    if (self.menu is ArenaOnlineLobbyMenu)
-                    {
-                        return "Endgame - Wanderer - Flat - Nosymbol";
-                    }
-                    return orig;
-                });
-
-
-
                 cursor.GotoNext(x => x.MatchLdstr("Wanderer - Symbol"));
                 cursor.GotoNext(MoveType.Before, x => x.MatchCall<MenuScene>(nameof(MenuScene.AddIllustration)));
                 cursor.Emit(OpCodes.Dup);
@@ -1847,6 +1832,12 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
+                {
+                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
+                    arena.currentLobbyOwner = OnlineManager.lobby.owner;
+
+                }
                 if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");

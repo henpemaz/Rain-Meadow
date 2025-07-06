@@ -39,6 +39,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         RainMeadow.DebugMe();
         if (OnlineManager.lobby == null)
             throw new InvalidOperationException("lobby is null");
+        Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         backTarget = RainMeadow.Ext_ProcessID.LobbySelectMenu;
         forceFlatIllu = !manager.rainWorld.flatIllustrations;
         if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
@@ -67,7 +68,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ArenaHelpers.ResetOnReturnMenu(Arena, manager);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
-
     }
 
     public void ChangeScene()
@@ -165,7 +165,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-        if (Arena.lobbyCountDown > 0)
+        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
         {
             Arena.initiateLobbyCountdown = true;
             return;
@@ -255,6 +255,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         }
 
     }
+    public override void Init()
+    {
+        base.Init();
+        selectedObject = arenaMainLobbyPage.chatMenuBox.chatTypingBox;
+    }
     public override void Update()
     {
         base.Update();
@@ -267,6 +272,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (pagesMoving) UpdateMovingPage();
         UpdateOnlineUI();
         UpdateElementBindings();
+
+        if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
+        {
+            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.currentLobbyOwner = OnlineManager.lobby.owner;
+        }
 
         if (OnlineManager.lobby.isOwner)
         {
@@ -314,7 +325,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate($"Play each level {numberText}");
             }
             if (idString == "SESSIONLENGTH")
-                return Translate(index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? "No rain" : $"{ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index]} minute{(index == 1 ? "" : "s")} until rain");
+                return index < 0 || index >= ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray.Length ? Translate("No rain") : ArenaSetup.GameTypeSetup.SessionTimesInMinutesArray[index] + " " + Translate($"minute{(index == 1 ? "" : "s")} until rain");
             if (idString == "WILDLIFE")
             {
                 ArenaSetup.GameTypeSetup.WildLifeSetting settingFromBtn = new(ExtEnum<ArenaSetup.GameTypeSetup.WildLifeSetting>.values.GetEntry(index), false);

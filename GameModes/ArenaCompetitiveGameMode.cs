@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Menu;
@@ -14,6 +14,8 @@ namespace RainMeadow
         public ExternalArenaGameMode onlineArenaGameMode;
         public string currentGameMode;
         public Dictionary<ExternalArenaGameMode, string> registeredGameModes;
+
+        public OnlinePlayer currentLobbyOwner;
 
         public bool registeredNewGameModes = false;
 
@@ -149,6 +151,7 @@ namespace RainMeadow
                 slugcatSelectDescriptions.Add("Spear", "A gnawing hunger grows inside you. Feed it with spears.");
                 slugcatSelectDescriptions.Add("Rivulet", "In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.");
                 slugcatSelectDescriptions.Add("Saint", "The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.");
+                slugcatSelectDescriptions.Add("Sainot", "The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.");
                 slugcatSelectDescriptions.Add("Slugpup", "Desperate. Fearful. Violent.");
 
 
@@ -246,19 +249,25 @@ namespace RainMeadow
                 slugcatSelectDisplayNames.Remove("Night");
             }
 
-
-
-            slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            if (OnlineManager.instance.manager.rainWorld.flatIllustrations || (ModManager.MMF && (OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.MEDIUM || OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.LOW)))
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Empty);
+            }
+            else
+            {
+                slugcatSelectMenuScenes.Add("MeadowRandom", MenuScene.SceneID.Endgame_Traveller);
+            }
+            
 
 
             if ((OnlineManager.mePlayer.id.name == "IVLD") || (UnityEngine.Random.Range(0, 4) == 0))
             {
                 StringBuilder randomDescBuilder = new();
-                if (ModManager.MSC) randomDescBuilder.Append("Am I Warrior from the past, or a Messiah from the future?");
-                else randomDescBuilder.Append("Am I Cat Searching for many, or a Mouse searching for one?");
-                if (ModManager.Watcher) randomDescBuilder.Append("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?");
-                else randomDescBuilder.Append("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?");
-                randomDescBuilder.Append("<LINE>I do not know, for I am not one. I am many.");
+                if (ModManager.MSC) randomDescBuilder.Append(Utils.Translate("Am I Warrior from the past, or a Messiah from the future?"));
+                else randomDescBuilder.Append(Utils.Translate("Am I Cat Searching for many, or a Mouse searching for one?"));
+                if (ModManager.Watcher) randomDescBuilder.Append(Utils.Translate("<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?"));
+                else randomDescBuilder.Append(Utils.Translate("<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?"));
+                randomDescBuilder.Append(Utils.Translate("<LINE>I do not know, for I am not one. I am many."));
                 slugcatSelectDescriptions.Add("MeadowRandom", randomDescBuilder.ToString());
             }
             else

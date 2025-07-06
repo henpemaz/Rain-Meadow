@@ -28,7 +28,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatName = painCatName;
         this.painCatIndex = painCatIndex;
 
-        backButton = new SimplerButton(menu, this, "Back To Lobby", new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
+        backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
@@ -42,7 +42,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
-            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
             btn.subObjects.Add(portrait);
             if (i >= buttonsInTopRow)
@@ -94,18 +94,24 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
     {
-        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(slugcat), 0);
+        SlugcatStats.Name nonNullSlugcat = slugcat ?? SlugcatStats.Name.White;
+        selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(nonNullSlugcat), 0);
         slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
-        ArenaMenu?.SwitchSelectedSlugcat(slugcat);
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+        ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
+        if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = menu.LongTranslate(painCatDescription);
+            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
-        descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions.TryGetValue(slugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
-        slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(slugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
-        if (slugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
+
+        descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions.TryGetValue(nonNullSlugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
+        slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(nonNullSlugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
+
+        if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+
+        if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
             menu.PlaySound(RainMeadow.Ext_SoundID.Fartificer);
             slugcatNameLabel.text = menu.Translate("THE FARTIFICER");
@@ -132,7 +138,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (invPortraitDescriptions is not null) descriptionCategories.Add(invPortraitDescriptions, 0.3f);
 
         List<string> descriptions = descriptionCategories.GetRandom();
-        return Custom.ReplaceLineDelimeters(descriptions[UnityEngine.Random.Range(0, descriptions.Count)]).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+        return descriptions[UnityEngine.Random.Range(0, descriptions.Count)];
     }
     public override void Update()
     {
@@ -145,6 +151,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         {
             readyWarningLabel.text = Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in {Arena.lobbyCountDown}! Ready up!!") : defaultReadyWarningText;
         }
+
+        if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
     }
     public override void GrafUpdate(float timeStacker)
     {
