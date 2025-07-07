@@ -26,7 +26,7 @@ namespace RainMeadow
                 anchorX = 0,
                 anchorY = 0,
                 color = Color.black,
-                alpha = 0.2f,
+                alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
             };
             pages[0].Container.AddChild(chatBg);
             scroller = new(this, pages[0], new(1366f - 660f - manager.rainWorld.screenSize.x / 2 - bgSideOffset, 330 - maxVisibleMessages * 20), new(manager.rainWorld.screenSize.x / 2.7f + bgSideOffset, maxVisibleMessages * 20))
