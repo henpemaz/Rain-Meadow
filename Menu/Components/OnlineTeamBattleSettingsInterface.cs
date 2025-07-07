@@ -30,7 +30,7 @@ namespace RainMeadow.UI.Components
 
         public ArenaMode arenaMode;
         public TeamBattleMode teamBattleMode;
-        public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown;
+        public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
         public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
             !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == teamBattleMode.teamColors.Count);
@@ -231,7 +231,6 @@ namespace RainMeadow.UI.Components
                 Color color = teamBattleMode.teamColors[index];
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
-
                 teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking);
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
