@@ -1,10 +1,12 @@
 using Menu.Remix.MixedUI;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow;
+
 public class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
@@ -26,13 +28,15 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> BlockMaul;
-    public readonly Configurable<bool> BlockArtiStun;
+    public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
+    public readonly Configurable<bool> SlugpupHellBackground;
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
+    public readonly Configurable<bool> WeaponCollisionFix;
 
 
-    public readonly Configurable<float> ScrollSpeed;
+    public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
     public readonly Configurable<bool> ShowPing;
     public readonly Configurable<int> ShowPingLocation;
 
@@ -41,7 +45,6 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
-    public readonly Configurable<string> PrivateLobbyPassword;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -49,7 +52,8 @@ public class RainMeadowOptions : OptionInterface
     {
         Meadow,
         Vanilla,
-        Downpour
+        Downpour,
+        Watcher
     }
 
 
@@ -76,13 +80,21 @@ public class RainMeadowOptions : OptionInterface
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
-        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 120);
+
+        ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
+        ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
+
         PainCatThrows = config.Bind("PainCatThrows", false);
         PainCatEgg = config.Bind("PainCatEgg", true);
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+
+        SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
+
+        WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
+
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);
         ScrollSpeed = config.Bind("ScrollSpeed", 10f);
@@ -100,7 +112,7 @@ public class RainMeadowOptions : OptionInterface
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
-        PrivateLobbyPassword = config.Bind("PrivateLobbyPassword", "");
+        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
     }
 
     public override void Initialize()
@@ -154,8 +166,12 @@ public class RainMeadowOptions : OptionInterface
 
             OpComboBox2 introroll;
             OpLabel downpourWarning;
+            OpLabel watcherWarning;
+
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
+
+            OpTextBox chatBgOpacity;
 
             GeneralUIArrPlayerOptions = new UIelement[]
             {
@@ -188,6 +204,8 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(210, 180f, Translate("Chat Talk Button")),
                 new OpKeyBinder(ChatButtonKey, new Vector2(210f, 150), new Vector2(150f, 30f)),
 
+                new OpLabel(410, 180, Translate("Chat Background Opacity")),
+                chatBgOpacity = new OpTextBox(ChatBgOpacity, new Vector2(410f, 153f), 90),
 
                 new OpLabel(210, 120f, Translate("Show Ping")),
                 new OpCheckBox(ShowPing, new Vector2(210, 90f)),
@@ -201,14 +219,34 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 120, Translate("Introroll")),
                 introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+                watcherWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+
                 new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
                 new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
         };
-            introroll.OnValueChanged += (UIconfig config, string value, string oldValue) => { if (value == "Downpour" && introroll.Menu.manager.rainWorld.dlcVersion == 0) downpourWarning.Show(); else downpourWarning.Hide(); };
-            downpourWarning.Hidden = PickedIntroRoll.Value != IntroRoll.Downpour && introroll.Menu.manager.rainWorld.dlcVersion == 0;
+            introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
+            {
+                if (value == "Downpour" && !ModManager.MSC)
+                {
+                    downpourWarning.Show();
+                }
+                else downpourWarning.Hide();
+                if (value == "Watcher" && !ModManager.Watcher)
+                {
+                    watcherWarning.Show();
+                }
+                else watcherWarning.Hide();
+            };
+            downpourWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Downpour && ModManager.MSC;
+            watcherWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Watcher && ModManager.Watcher;
+
+            chatBgOpacity.OnValueChanged += (config, value, oldValue) =>
+            {
+                chatBgOpacity.valueFloat = Mathf.Clamp01(chatBgOpacity.valueFloat);
+            };
 
             editSyncRequiredModsButton.OnClick += _ =>
             {
@@ -235,7 +273,6 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadow.Error(e);
                 }
             };
-
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
             OnlineStorySettings = new UIelement[11]
@@ -270,52 +307,33 @@ public class RainMeadowOptions : OptionInterface
            };
             storyTab.AddItems(OnlineStorySettings);
 
+            OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
+            OpHoldButton arenaSpoilerButton;
+            OpCheckBox slugpupHellBackgroundCheckbox;
 
-
-            OnlineArenaSettings = new UIelement[19]
-
-            {
+            OnlineArenaSettings =
+            [
                 new OpLabel(10f, 550f, Translate("Arena"), bigText: true),
-                new OpLabel(10f, 505, Translate("Countdown timer. Default: 5s"), bigText: false),
-                new OpTextBox(ArenaCountDownTimer, new Vector2(10, 480), 160f)
+                new OpLabel(10f, 520, Custom.ReplaceLineDelimeters(Translate("Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs."))),
+                arenaSpoilerLabel = new OpLabel(10f, 480, Translate("The following option may contain spoilers for Saint's campaign."), bigText: false)
                 {
-                    accept = OpTextBox.Accept.Int
+                    color = new Color(0.85f, 0.35f, 0.4f)
                 },
-
-                new OpLabel(10f, 455, Translate("Sain't: Disable Saint ascendance"), bigText: false),
-                new OpCheckBox(ArenaSAINOT, new Vector2(10f, 430)),
-
-                new OpLabel(10f, 410, Translate("Saint ascendance duration timer. Default: 120"), bigText: false),
-                new OpTextBox(ArenaSaintAscendanceTimer, new Vector2(10, 385), 160f)
+                arenaSpoilerButton = new OpHoldButton(new Vector2(10f, 445f), new Vector2(110, 30), Translate("OKIE DOKIE"))
                 {
-                    accept = OpTextBox.Accept.Int
+                    colorEdge = new Color(0.85f, 0.35f, 0.4f),
                 },
-                new OpLabel(10f, 350, Translate("Inv: Enable spear throws at 0 throw skill"), bigText: false),
-                new OpCheckBox(PainCatThrows, new Vector2(10f, 315)),
-
-                new OpLabel(10f, 285, Translate("Inv: Enable egg at 0 throw skill"), bigText: false),
-                new OpCheckBox(PainCatEgg, new Vector2(10f, 250)),
-
-
-                new OpLabel(10f, 215, Translate("Inv: Enable ???"), bigText: false),
-                new OpCheckBox(PainCatLizard, new Vector2(10f, 185)),
-
-                new OpLabel(10f, 160, Translate("Artificer: Disable Stun"), bigText: false),
-                new OpCheckBox(BlockArtiStun, new Vector2(10f, 125)),
-
-                new OpLabel(10f, 100, Translate("Mauling: Disable"), bigText: false),
-                new OpCheckBox(BlockMaul, new Vector2(10f, 75)),
-
-                new OpLabel(10, 50, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Arena mode")))
-                {
-                    verticalAlignment = OpLabel.LabelVAlignment.Center
-                },
-                new OpCheckBox(ArenaItemSteal, new Vector2(10, 25))
-
-
-
-        };
+                slugpupHellBackgroundLabel = new OpLabel(10f, 480, Translate("Slugpup: Rubicon background in select menu"), bigText: false),
+                slugpupHellBackgroundCheckbox = new OpCheckBox(SlugpupHellBackground, new Vector2(10f, 455)),
+            ];
+            UIelement[] arenaPotentialSpoilerSettings = [slugpupHellBackgroundLabel, slugpupHellBackgroundCheckbox];
+            for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Hide();
             arenaTab.AddItems(OnlineArenaSettings);
+            arenaSpoilerButton.OnPressDone += btn =>
+            {
+                OpTab.DestroyItems([arenaSpoilerButton, arenaSpoilerLabel]);
+                for (int i = 0; i < arenaPotentialSpoilerSettings.Length; i++) arenaPotentialSpoilerSettings[i].Show();
+            };
 
             OnlineLANSettings = new UIelement[7]
             {

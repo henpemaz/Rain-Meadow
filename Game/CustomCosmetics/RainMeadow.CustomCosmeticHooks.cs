@@ -1,5 +1,6 @@
 
 using System;
+using System.Linq;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using UnityEngine;
@@ -40,16 +41,26 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloca, numofsprites_loc);
                 c.EmitDelegate((PlayerGraphics self, ref int numofsprites) => {
                     try {
-                        if (OnlineManager.lobby != null) {
-                            if (!self.player.isNPC && self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter) {
-                                Color? cape = CapeManager.HasCape(critter.owner.id);
-                                if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingCape && cape.HasValue) {
-                                    numofsprites += SlugcatCape.totalSprites;
-                                    if (!SlugcatCape.cloaked_slugcats.TryGetValue(self, out _)) {
-                                        new SlugcatCape(self, numofsprites - 1, cape.Value);
+                        if (OnlineManager.lobby != null)
+                        {
+                            if (!SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                            {
+                                if (!self.player.isNPC && self.player.abstractCreature.GetOnlineCreature() is OnlineCreature critter)
+                                {
+                                    Color? cape_color = CapeManager.HasCape(critter.owner.id);
+                                    if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingCape && cape_color.HasValue)
+                                    {
+                                        cape = new SlugcatCape(self, numofsprites - SlugcatCape.totalSprites, cape_color.Value);
                                     }
                                 }
                             }
+
+                            if (cape is not null)
+                            {
+                                numofsprites += SlugcatCape.totalSprites;
+                                cape.firstSpriteIndex = numofsprites - SlugcatCape.totalSprites;
+                            }
+                            
                         }
                     } catch (Exception except) {
                         RainMeadow.Error(except);
@@ -60,8 +71,8 @@ namespace RainMeadow
                     MoveType.After,
                     x => x.MatchLdarg(1),
                     x => x.MatchLdloc(0),
-                    x => x.MatchNewarr<FSprite>(), // mudsprite
-                    x => x.MatchStfld(out _)
+                    x => x.MatchNewarr<FSprite>(),
+                    x => x.MatchStfld<RoomCamera.SpriteLeaser>(nameof(RoomCamera.SpriteLeaser.sprites))
                 );
 
 
@@ -88,8 +99,10 @@ namespace RainMeadow
         void PlayerGraphics_UpdateCosmetics(On.PlayerGraphics.orig_Update orig, PlayerGraphics self) {
             orig(self);
             try {                
-                if (OnlineManager.lobby != null) {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape)) {
+                if (OnlineManager.lobby != null)
+                {
+                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    {
                         cape.Update();
                     }
                 }
@@ -118,7 +131,8 @@ namespace RainMeadow
 
             try {
                 if (OnlineManager.lobby != null) {
-                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape)) {
+                    if (SlugcatCape.cloaked_slugcats.TryGetValue(self, out var cape))
+                    {
                         cape.DrawSprites(sLeaser, rCam, timeStacker, camPos);
                     }
                 }

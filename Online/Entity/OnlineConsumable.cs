@@ -54,7 +54,7 @@ namespace RainMeadow
 
         public AbstractConsumable Consumable => apo as AbstractConsumable;
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlineConsumableDefinition(this, onlineResource);
         }
