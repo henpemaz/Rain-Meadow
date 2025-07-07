@@ -39,6 +39,7 @@ namespace RainMeadow
         public float ScrollOffsetPos => scrollOffset * ButtonHeightAndSpacing;
         public bool CanScrollUp => DownScrollOffset > 0;
         public bool CanScrollDown => DownScrollOffset < MaxDownScroll;
+        public bool CanScroll => !menu.FreezeMenuFunctions;
         public bool IsHidden { get; set; }
         public ButtonScroller(Menu.Menu menu, MenuObject owner, Vector2 pos, int amtOfButtonsToView, float listSizeX, (float, float) buttonHeightSpacing, bool sliderOnRight = false, Vector2 sliderPosOffset = default, float sliderSizeYOffset = 0, bool startEndWithSpacing = false) : 
             this(menu, owner, pos, new(listSizeX, CalculateHeightBasedOnAmtOfButtons(amtOfButtonsToView, buttonHeightSpacing.Item1, buttonHeightSpacing.Item2, startEndWithSpacing)), sliderOnRight, sliderPosOffset, sliderSizeYOffset)
@@ -63,7 +64,7 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-            if (!IsHidden && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
+            if (!IsHidden && CanScroll && MouseOver && menu.manager.menuesMouseMode) ScrollingUpdate(menu.mouseScrollWheelMovement);
             
             for (int i = 0; i < buttons.Count; i++)
             {

@@ -49,12 +49,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 3, "ChieftainA" }
     };
 
-        public static Dictionary<int, Color> teamColors = new Dictionary<int, Color>
+        public Dictionary<int, Color> teamColors = new Dictionary<int, Color>
         {
-    { 0, GetColorFromHex("#FF7F7F") },
-    { 1, GetColorFromHex("#FFFF7F") },
-    { 2, GetColorFromHex("#7FFF7F") },
-    { 3,  GetColorFromHex("#7F7FFF") }
+    { 0,  RainMeadow.rainMeadowOptions.MartyrTeamColor.Value },
+    { 1, RainMeadow.rainMeadowOptions.OutlawsTeamColor.Value },
+    { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value },
+    { 3,  RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value }
     };
         public void ArenaSettingsInit()
         {
@@ -114,6 +114,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             base.OnUIShutDown(menu);
             myTeamBattleSettingInterface?.OnShutdown();
+        }
+        public override Color GetPortraitColor(ArenaMode arena, OnlinePlayer? player, Color origColor)
+        {
+            Color col = base.GetPortraitColor(arena, player, origColor);
+            ArenaTeamClientSettings? teamClientSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(player);
+            if (teamClientSettings != null && teamColors.ContainsKey(teamClientSettings.team))
+                col = Color.Lerp(col, teamColors[teamClientSettings.team], lerp);
+            return col;
         }
         public override bool DidPlayerWinRainbow(ArenaMode arena, OnlinePlayer player)
         {

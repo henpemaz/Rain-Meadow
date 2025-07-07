@@ -1671,16 +1671,31 @@ namespace RainMeadow
             try
             {
                 ILCursor cursor = new(il);
-                cursor.TryGotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<Color>("get_white"));
                 cursor.Emit(OpCodes.Ldarg_0);
                 cursor.EmitDelegate(delegate (Color whiteCol, Menu.PlayerResultBox self)
                 {
                     if (isArenaMode(out ArenaOnlineGameMode arena))
                     {
-                        ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber));
-                        if (arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black) return arenaclientSettings.slugcatColor;
+                        OnlinePlayer? player = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
+                        ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(player);
+                        if (arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black) whiteCol = arenaclientSettings.slugcatColor;
+                        whiteCol = arena.externalArenaGameMode?.GetPortraitColor(arena, player, whiteCol) ?? whiteCol;
                     }
                     return whiteCol;
+                });
+                cursor.GotoNext(MoveType.After, x => x.MatchCall<PlayerGraphics>("DefaultSlugcatColor"));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate(delegate (Color defaultSlugColor, PlayerResultBox self)
+                {
+                    if (isArenaMode(out ArenaOnlineGameMode arena))
+                    {
+                        OnlinePlayer? player = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.player.playerNumber);
+                        ArenaClientSettings? arenaclientSettings = ArenaHelpers.GetArenaClientSettings(player);
+                        if (arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black) defaultSlugColor = arenaclientSettings.slugcatColor;
+                        defaultSlugColor = arena.externalArenaGameMode?.GetPortraitColor(arena, player, defaultSlugColor) ?? defaultSlugColor;
+                    }
+                    return defaultSlugColor;
                 });
             }
             catch (Exception ex)
