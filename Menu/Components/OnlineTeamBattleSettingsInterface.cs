@@ -91,7 +91,11 @@ namespace RainMeadow.UI.Components
                 new PatchedUIelementWrapper(tabWrapper, textBox);
 
                 OpTinyColorPicker tinyPicker = teamColorPickers[i] = new(menu, new(namePickerPos.x + 10 + textBox.size.x, namePickerPos.y), teamColor, tabWrapper);
-                tinyPicker.OnValueChangedEvent += () => ColorPicker_OnValueChangedEvent(mapping.Key, tinyPicker.valuecolor.SafeColorRange());
+                tinyPicker.colorPicker.OnValueUpdate += (config, value, oldValue) =>
+                {
+                    if (ColorUtility.TryParseHtmlString($"#{tinyPicker.colorPicker.value}", out Color color))
+                        ColorPicker_OnValueChangedEvent(mapping.Key, color.SafeColorRange());
+                };
             }
             this.SafeAddSubobjects(teamButtons);
             if (IsPagesOn) CreatePageButtons();
@@ -227,14 +231,16 @@ namespace RainMeadow.UI.Components
                 Color color = teamBattleMode.teamColors[index];
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
+
                 teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
-                if (!teamColorPickers[i].colorPicker.held) teamColorPickers[i].valuecolor = color;
+                if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
 
-                //teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled;
-                teamNameBoxes[i].greyedOut = OwnerSettingsDisabled;
-                teamColorPickers[i].greyedOut = OwnerSettingsDisabled;
+                bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);
+
+                teamNameBoxes[i].greyedOut = greyOutConfig;
+                teamColorPickers[i].greyedOut = greyOutConfig;
             }
         }
         public void SetCurrentlySelectedOfSeries(string id, int index) => arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;
