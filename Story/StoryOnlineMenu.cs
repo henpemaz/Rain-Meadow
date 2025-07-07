@@ -53,7 +53,7 @@ namespace RainMeadow
             }
             set
             {
-                playerSelectedSlugcat = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                playerSelectedSlugcat = value == storyGameMode.currentCampaign? null : value;
                 CurrentSlugcat = PlayerSelectedSlugcat;
             }
         }
@@ -139,7 +139,7 @@ namespace RainMeadow
             // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
-            personaSettings.currentColors = this.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
+            personaSettings.currentColors = this.manager.rainWorld.progression.GetCustomColors(personaSettings.playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
             manager.arenaSitting = null;
 
             if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
@@ -261,7 +261,7 @@ namespace RainMeadow
             playerScrollBox?.RemoveAllButtons(false);
             if (playerScrollBox == null)
             {
-                playerScrollBox = new(this, pages[0], new(194, 553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
+                playerScrollBox = new(this, pages[0], new(194, 553 - 30 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, new(ButtonSize, ButtonSpacingOffset));
                 pages[0].subObjects.Add(playerScrollBox);
             }
             foreach (OnlinePlayer player in OnlineManager.players)
@@ -290,7 +290,16 @@ namespace RainMeadow
                 var shelterName = saveGameData[storyGameMode.currentCampaign]?.shelterName;
                 if (shelterName != null && shelterName.Length > 2)
                 {
-                    return Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    var s = Region.GetRegionFullName(shelterName.Substring(0, 2), storyGameMode.currentCampaign);
+                    if (s == "Unknown Region")
+                    {
+                        // watcher regions
+                        if (shelterName.Length > 4)
+                        {
+                            return Region.GetRegionFullName(shelterName.Substring(0, 4), storyGameMode.currentCampaign);
+                        }
+                        return s;
+                    }
                 }
             }
             catch (Exception e)

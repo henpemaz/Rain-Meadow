@@ -1,4 +1,7 @@
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 namespace RainMeadow
@@ -23,6 +26,11 @@ namespace RainMeadow
             if (isArenaMode(out var arena))
             {
                 arena.onlineArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
+
+                if (OnlineManager.lobby.isOwner)
+                {
+                    arena.leaveForNextLevel = true;
+                }
 
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
@@ -110,6 +118,101 @@ namespace RainMeadow
                         return;
                     }
 
+                    List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe)];
+
+                    // Remove gone players
+
+                    for (int i = self.players.Count - 1; i >= 0; i--)
+                    {
+                        RainMeadow.Debug($"Arena: Local Sitting Data: {self.players[i].playerNumber}: {self.players[i].playerClass}");
+
+                        OnlinePlayer? onlineArenaSittingPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[i].playerNumber);
+                        if (onlineArenaSittingPlayer == null)
+                        {
+                            if (OnlineManager.lobby.isOwner)
+                            {
+                                // Find the index of the missing player's inLobbyId in arenaSittingOnlineOrder
+                                // Safely check if the index 'i' is within the bounds of arena.arenaSittingOnlineOrder
+                                if (i >= 0 && i < arena.arenaSittingOnlineOrder.Count)
+                                {
+                                    //// Now it's safe to access arena.arenaSittingOnlineOrder[i]
+                                    //if (arena.arenaSittingOnlineOrder[i] == (onlineArenaSittingPlayer?.inLobbyId ?? null))
+                                    //{
+                                        RainMeadow.Debug("Arena: Removing missing player from sitting");
+                                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        RainMeadow.Debug("Arena: Removed missing player from sitting");
+                                    //}
+                                }
+                                else
+                                {
+                                    RainMeadow.Debug($"Warning: Index {i} is out of bounds for arena.arenaSittingOnlineOrder.");
+                                }
+                            }
+                            RainMeadow.Debug("Arena: Removing missing player from local sitting");
+                            self.players.RemoveAt(i);
+                            RainMeadow.Debug("Arena: Removed missing player from local sitting");
+                        }
+                        else
+                        {
+                            for (int p = waitingPlayers.Count - 1; p >= 0; p--)
+                            {
+                                OnlinePlayer lateClient = waitingPlayers[p];
+                                Debug($"Late client: {lateClient}");
+                                if (lateClient != null && lateClient == onlineArenaSittingPlayer)
+                                {
+                                    Debug("Found a late client who matches a sitting player in-game");
+                                    if (OnlineManager.lobby.isOwner)
+                                    {
+                                        Debug("Arena: Removing late player from sitting");
+                                        arena.arenaSittingOnlineOrder.RemoveAt(i);
+                                        Debug("Arena: Removed late player from sitting");
+                                    }
+                                    Debug($"Arena: Removing pending player's old sitting entry: {lateClient}");
+                                    self.players.RemoveAt(i);
+                                }
+                            }
+                        }
+                    }
+                    // Add waiting players
+                    if (arena.allowJoiningMidRound)
+                    {
+                        foreach (OnlinePlayer player in waitingPlayers)
+                        {
+                            if (!arena.arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
+                                arena.arenaSittingOnlineOrder.Add(player.inLobbyId);
+                            ArenaSitting.ArenaPlayer newArenaPlayer = new(arena.arenaSittingOnlineOrder.Count - 1)
+                            {
+                                playerNumber = arena.arenaSittingOnlineOrder.Count - 1,
+                                playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
+                                hasEnteredGameArea = true
+                            };
+                            Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                            self.players.Add(newArenaPlayer);
+                        }
+                    }
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                        foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
+                        {
+                            OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                            if (getPlayer != null)
+                            {
+                                if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                                }
+                                if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                                }
+                                if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+                                {
+                                    arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+                                }
+                            }
+                        }
+                    }
+
                     manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
 
                 }
@@ -188,21 +291,12 @@ namespace RainMeadow
                 ws0.Needed();
                 if (!ws0.isAvailable || ws0.isPending)
                 {
-                    lock (self)
-                    {
-                        self.requestCreateWorld = false;
-                        orig(self);
-                    }
-                    if (self.game.overWorld == null)
+                    if (self.game.overWorld.activeWorld == null)
                     {
                         OnlineManager.ForceLoadUpdate();
                     }
+                    // no processing while not available
                     return;
-                }
-                else if (self.requestCreateWorld)
-                {
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws0);
-                    Debug($"world loading creating new world, worldCreaturesSpawn? {self.setupValues.worldCreaturesSpawn}");
                 }
             }
             orig(self);
@@ -216,7 +310,7 @@ namespace RainMeadow
                 }
 
                 // if there is a gate, the gate's room will be reused, it needs to be made available
-                if (self.Finished && self.game.overWorld?.reportBackToGate is RegionGate gate)
+                if (ws.isActive && self.game.overWorld?.reportBackToGate is RegionGate gate)
                 {
                     var newRoom = ws.roomSessions[gate.room.abstractRoom.name];
                     newRoom.Needed();
@@ -235,8 +329,6 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
-
-
             }
             orig(self, game, playerCharacter, timeline, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
@@ -254,8 +346,7 @@ namespace RainMeadow
                     {
                         ws = OnlineManager.lobby.worldSessions[region.name];
                     }
-                    ws.BindWorld(self.world);
-                    self.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(self.game, ws);
+                    ws.BindWorld(self, self.world);
                 }
                 catch (System.NullReferenceException e) // happens in riv ending
                 {

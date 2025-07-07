@@ -9,6 +9,7 @@ namespace RainMeadow
     {
         public Region region;
         public World world;
+        public WorldLoader worldLoader;
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
@@ -18,9 +19,10 @@ namespace RainMeadow
             this.region = region;
         }
 
-        public void BindWorld(World world)
+        public void BindWorld(WorldLoader worldLoader, World world)
         {
             this.world = world;
+            this.worldLoader = worldLoader;
             if (RainMeadow.isArenaMode(out var _)) {
 
                 world.region = new Region("arena", 0, 0, SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer));
@@ -30,7 +32,10 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-
+            if (worldLoader != null)
+            {
+                worldLoader.setupValues.worldCreaturesSpawn = OnlineManager.lobby.gameMode.ShouldLoadCreatures(worldLoader.game, this);
+            }
         }
 
         protected override void ActivateImpl()
@@ -59,6 +64,8 @@ namespace RainMeadow
                 ApoEnteringWorld(item);
             }
             earlyApos.Clear();
+
+            worldLoader = null;
         }
 
         protected override void DeactivateImpl()

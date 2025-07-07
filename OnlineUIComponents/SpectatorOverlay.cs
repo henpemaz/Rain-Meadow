@@ -1,4 +1,5 @@
 ﻿using Menu;
+using RainMeadow.UI.Components;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,7 +19,7 @@ namespace RainMeadow
             selectedObject = null;
             Vector2 pos = new(1180, 553);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
-            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, ButtonSize, ButtonSpacingOffset);
+            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, new(ButtonSize, ButtonSpacingOffset));
             pages[0].subObjects.Add(playerScroller);
         }
         private bool UpdateList()
@@ -55,7 +56,7 @@ namespace RainMeadow
             {
                 AbstractCreature? ac = button.opo?.apo as AbstractCreature;
                 button.toggled = ac != null && ac == spectatee;
-                button.forceGreyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
+                button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
             }
             if (forceNonMouseSelectFreeze && !manager.menuesMouseMode)
             {
@@ -175,30 +176,18 @@ namespace RainMeadow
                 base.RemoveSprites();
                 this.ClearMenuObject(ref kickbutton);
             }
-            public override void UpdateAlpha(float alpha)
-            {
-                base.UpdateAlpha(alpha);
-                if (kickbutton != null)
-                {
-                    kickbutton.symbolSprite.alpha = alpha;
-                    for (int i = 0; i < kickbutton.roundedRect.sprites.Length; i++)
-                    {
-                        kickbutton.roundedRect.sprites[i].alpha = alpha;
-                        kickbutton.roundedRect.fillAlpha = alpha / 2;
-                    }
-                    kickbutton.GetButtonBehavior.greyedOut = forceKickGreyOut || alpha < 1;
-                }
-            }
             public override void Update()
             {
                 base.Update();
                 BanClickedOnce = menu.selectedObject == kickbutton && BanClickedOnce;
+                if (kickbutton != null)
+                    kickbutton.buttonBehav.greyedOut = forceKickGreyOut;
             }
 
             public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
             public OnlinePhysicalObject? opo;
-            public SimplerSymbolButton? kickbutton;
+            public ScrollSymbolButton? kickbutton;
         }
     }
 }

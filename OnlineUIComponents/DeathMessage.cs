@@ -112,7 +112,7 @@ public static class DeathMessage
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("licked the power."));
                     break;
                 case DeathType.Coalescipede:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consummed by the swarm."));
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consumed by the swarm."));
                     break;
                 case DeathType.UnderwaterShock:
                     ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted in the water."));

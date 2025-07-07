@@ -204,7 +204,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlinePhysicalObjectDefinition(this, onlineResource);
         }
@@ -252,7 +252,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{this} joining {inResource} at {poState.pos}");
             try
             {
-                AllMoving(true);
+                beingMoved = true;
                 if (inResource is WorldSession ws)
                 {
                     RainMeadow.Debug($"world join");
@@ -276,7 +276,7 @@ namespace RainMeadow
                         if (apo is AbstractCreature ac && !ac.AllowedToExistInRoom(newRoom.absroom.realizedRoom))
                         {
                             RainMeadow.Debug($"early creature");
-                            apo.MoveMovable(topos);
+                            apo.MoveOnly(topos);
                             if (apo.realizedObject is PhysicalObject po)
                             {
                                 // this line might be problematic because room.cleanout calls apo.Destroy
@@ -294,9 +294,7 @@ namespace RainMeadow
                         {
                             if (topos.TileDefined)
                             {
-                                apo.MoveMovable(topos);
-
-
+                                apo.MoveOnly(topos);
                                 if (apo.realizedObject is Creature crit)
                                 {
                                     crit.RemoveFromShortcuts();
@@ -312,45 +310,48 @@ namespace RainMeadow
                                 }
 
                             }
-
-                            RainMeadow.Debug("node defined");
-                            apo.MoveMovable(topos);
-                            bool inshortcuts = false;
-                            if (apo.realizedObject is Creature c)
+                            else
                             {
-                                inshortcuts = c.inShortcut;
-                            }
+                                RainMeadow.Debug("node defined");
+                                apo.MoveOnly(topos);
 
-                            if (!inshortcuts && apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
-                            {
-                                RainMeadow.Debug("creature moved");
-                                ac2.realizedCreature?.RemoveFromShortcuts(); // just to make sure
-                                if (ac2.realizedCreature == null || !ac2.realizedCreature.inShortcut)
+                                bool inshortcuts = false;
+                                if (apo.realizedObject is Creature c)
                                 {
-                                    RainMeadow.Debug($"spawning in shortcuts");
-                                    ac2.Realize();
-                                    if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
+                                    inshortcuts = c.inShortcut;
+                                }
+
+                                if (!inshortcuts && apo is AbstractCreature ac2) // Creature.ChangeRoom didn't run, so we do it manually
+                                {
+                                    RainMeadow.Debug("creature moved");
+                                    ac2.realizedCreature?.RemoveFromShortcuts(); // just to make sure
+                                    if (ac2.realizedCreature == null || !ac2.realizedCreature.inShortcut)
                                     {
-                                        ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        RainMeadow.Debug($"spawning in shortcuts");
+                                        ac2.Realize();
+                                        if (ac2.world.GetAbstractRoom(topos).realizedRoom?.shortcuts?.Length > 0)
+                                        {
+                                            ac2.world.game.shortcuts.CreatureEnterFromAbstractRoom(ac2.realizedCreature, ac2.world.GetAbstractRoom(topos), topos.abstractNode);
+                                        }
+                                        else
+                                        {
+
+                                            // noop, shortcut length / realized room is null
+                                        }
+
                                     }
                                     else
                                     {
-
-                                        // noop, shortcut length / realized room is null
+                                        RainMeadow.Debug($"supposedly already spawning in shortcuts");
+                                        RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
                                     }
-
                                 }
                                 else
                                 {
-                                    RainMeadow.Debug($"supposedly already spawning in shortcuts");
-                                    RainMeadow.Debug("found in shortcuts? " + (ac2.realizedCreature != null && apo.world.game.shortcuts.betweenRoomsWaitingLobby.Any(v => v.creature.abstractCreature.GetAllConnectedObjects().Any(o => o.realizedObject == ac2.realizedCreature))));
+                                    RainMeadow.Debug($"regular item, spawning off-room");
+                                    apo.Realize();
+                                    // and lets leave it at that, some creature will connect to it and drag it in-room
                                 }
-                            }
-                            else
-                            {
-                                RainMeadow.Debug($"regular item, spawning off-room");
-                                apo.Realize();
-                                // and lets leave it at that, some creature will connect to it and drag it in-room
                             }
                         }
                     } // inDen
@@ -363,12 +364,12 @@ namespace RainMeadow
                         RainMeadow.Error($"{this} in {newRoom} has room -1 assigned!");
                     }
                 }
-                AllMoving(false);
+                beingMoved = false;
             }
             catch (Exception e)
             {
                 RainMeadow.Error(e);
-                AllMoving(false);
+                beingMoved = false;
                 //throw;
             }
         }
@@ -491,16 +492,78 @@ namespace RainMeadow
             return $"{apo?.type} {base.ToString()}";
         }
 
-        [RPCMethod]
-        public void HitByWeapon(OnlinePhysicalObject weapon)
+
+
+        public class OnlineCollisionResult : Serializer.ICustomSerializable
         {
+            public OnlineEntity.EntityId obj;
+            public BodyChunkRef? chunk;
+            public AppendageRef? onAppendagePos;
+
+            public bool hitSomething;
+
+            public Vector2 collisionPoint;
+
+            public OnlineCollisionResult() {}
+            public OnlineCollisionResult(OnlineEntity.EntityId obj, BodyChunkRef? chunk, AppendageRef onAppendagePos, bool hitSomething, Vector2 collisionPoint)
+            {
+                this.obj = obj;
+                this.chunk = chunk;
+                this.hitSomething = hitSomething;
+                this.onAppendagePos = onAppendagePos;
+                this.collisionPoint = collisionPoint;
+            }
+
+            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer) {
+                serializer.Serialize(ref obj);
+                serializer.SerializeNullable(ref chunk);
+                serializer.SerializeNullable(ref onAppendagePos);
+                serializer.Serialize(ref hitSomething);
+                serializer.Serialize(ref collisionPoint);
+            }
+            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result) {
+                result = null;
+                OnlinePhysicalObject? collision_obj = this.obj.FindEntity() as OnlinePhysicalObject;
+                if (collision_obj == null) {
+                    RainMeadow.Error("Invalid collision result");
+                    return;
+                }
+
+                if (collision_obj.apo.realizedObject == null) {
+                    RainMeadow.Error("Object not realized");
+                    return;
+                }
+
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
+                    chunk?.ToBodyChunk(), 
+                    onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
+            }
+        }
+
+
+        public bool HittingRemotely { get; private set; }=  false;
+        [RPCMethod]
+        public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
+        {
+            HittingRemotely = true;
             if ((OnlineManager.lobby != null) && this.didParry)
             {
                 RainMeadow.Debug("Parried!");
                 OnlineManager.RunDeferred(() => this.didParry = false);
                 return;
             }
-            apo.realizedObject?.HitByWeapon(weapon.apo.realizedObject as Weapon);
+
+            if (this.apo.realizedObject != null) {
+                statewhenhit.ReadTo(this);
+                SharedPhysics.CollisionResult? result = null;
+                hit.BuildCollisionResult(out result);
+                if (result.HasValue) {
+                    (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
+                }
+                
+            }
+            
+            HittingRemotely = false;
         }
 
         [RPCMethod]
@@ -537,6 +600,8 @@ namespace RainMeadow
                     bomb.Explode(null); return;
                 case MoreSlugcats.SingularityBomb bomb:
                     bomb.Explode(); return;
+                case ExplosiveSpear spear:
+                    spear.Explode(); return;
                 case FlareBomb bomb:
                     bomb.StartBurn(); return;
                 case FirecrackerPlant bomb:

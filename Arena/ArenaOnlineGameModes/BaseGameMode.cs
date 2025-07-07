@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using System.Text.RegularExpressions;
-using Menu;
-using MoreSlugcats;
-using RainMeadow;
+﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using static RainMeadow.OnlineEntity;
+
 namespace RainMeadow
 {
     public abstract class ExternalArenaGameMode
@@ -81,6 +75,12 @@ namespace RainMeadow
             self.AddPart(new OnlineHUD(self, session.game.cameras[0], arena));
             self.AddPart(new Pointing(self));
             self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
+            self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
+            if (ModManager.Watcher && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                RainMeadow.Debug("Adding Watcher Camo Meter");
+                self.AddPart(new Watcher.CamoMeter(self, self.fContainers[1]));
+            }
         }
         public virtual void ArenaCreatureSpawner_SpawnCreatures(ArenaOnlineGameMode arena, On.ArenaCreatureSpawner.orig_SpawnArenaCreatures orig, RainWorldGame game, ArenaSetup.GameTypeSetup.WildLifeSetting wildLifeSetting, ref List<AbstractCreature> availableCreatures, ref MultiplayerUnlocks unlocks)
         {
@@ -163,22 +163,18 @@ namespace RainMeadow
             AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
             abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
             abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(randomExitIndex).destNode;
-
+            abstractCreature.Room.AddEntity(abstractCreature);
 
             RainMeadow.Debug("assigned ac, registering");
 
             self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
             RainMeadow.sSpawningAvatar = false;
 
-            if (ModManager.MSC)
-            {
-                self.game.cameras[0].followAbstractCreature = abstractCreature;
-            }
+            self.game.cameras[0].followAbstractCreature = abstractCreature;
 
             if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
             {
                 abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
-
             }
             else
             {
@@ -188,7 +184,6 @@ namespace RainMeadow
 
             RainMeadow.Debug("Arena: Realize Creature!");
             abstractCreature.Realize();
-
             var shortCutVessel = new ShortcutHandler.ShortCutVessel(room.ShortcutLeadingToNode(randomExitIndex).DestTile, abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
 
             shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
@@ -265,14 +260,18 @@ namespace RainMeadow
                 }
             }
 
+            if (ModManager.Watcher && (abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
+            }
+
 
 
             self.playersSpawned = true;
             arena.playerEnteredGame++;
             foreach (var player in arena.arenaSittingOnlineOrder)
             {
-
-                var getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
+                OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(player);
                 if (getPlayer != null)
                 {
                     if (!getPlayer.isMe)
@@ -281,21 +280,40 @@ namespace RainMeadow
                     }
                 }
             }
-            if (OnlineManager.lobby.isOwner && !arena.initiatedStartGameForClient)
+            if (OnlineManager.lobby.isOwner)
             {
-                arena.isInGame = true;
-                foreach (var p in arena.arenaSittingOnlineOrder)
+                arena.isInGame = true; // used for readied players at the beginning
+                arena.leaveForNextLevel = false;
+                foreach (OnlinePlayer player in arena.arenaSittingOnlineOrder.Select(ArenaHelpers.FindOnlinePlayerByLobbyId).Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true))
+                    player.InvokeOnceRPC(ArenaRPCs.Arena_CallPlayerInMenuToJoin, true);
+                foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                 {
-                    OnlinePlayer onlineP = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                    if (onlineP != null)
+                    OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                    if (getPlayer != null)
                     {
-                        if (onlineP.isMe) continue;
-                        onlineP.InvokeOnceRPC(ArenaRPCs.Arena_NotifyStartGame); // notify other players that host is starting the game
+                        if (!arena.playerNumberWithKills.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithKills.Add(getPlayer.inLobbyId, 0);
+                        }
+                        if (!arena.playerNumberWithDeaths.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithDeaths.Add(getPlayer.inLobbyId, 0);
+                        }
+                        if (!arena.playerNumberWithWins.ContainsKey(getPlayer.inLobbyId))
+                        {
+                            arena.playerNumberWithWins.Add(getPlayer.inLobbyId, 0);
+                        }
                     }
-
                 }
-                arena.initiatedStartGameForClient = true; // set this so we don't notify again
+                arena.playersLateWaitingInLobbyForNextRound.Clear();
+
+
             }
+            arena.hasPermissionToRejoin = false;
+
+
+
+
         }
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)

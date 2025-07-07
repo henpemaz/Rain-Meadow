@@ -2,6 +2,7 @@
 using Steamworks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -353,14 +354,18 @@ namespace RainMeadow
                     }
                 }
 
-                if (rid.Length == 2 && lobby.worldSessions.TryGetValue(rid, out var r)) return r;
-                if (rid.Length > 2 && lobby.worldSessions.TryGetValue(rid.Substring(0, 2), out var r2) && r2.roomSessions.TryGetValue(rid.Substring(2), out var room)) return room;
+                var split = rid.Split('.');
+                if (lobby.worldSessions.TryGetValue(split[0], out var ws)) {
+                    if (split.Length >= 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
+                        return rs;
+                    return ws;
+                }
             }
             RainMeadow.Error("resource not found : " + rid);
             return null;
         }
 
-        internal static void QuitWithError(string v)
+        public static void QuitWithError(string v)
         {
             RainMeadow.Error(v);
             if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)

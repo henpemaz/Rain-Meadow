@@ -18,6 +18,8 @@ namespace RainMeadow
             public string? defaultDenPos;
             [OnlineField(nullable = true)]
             public string? region;
+            [OnlineField(nullable = true)]
+            public string? defaultWarpPos; //this is mainly so clients do not brick saves when activating echoes
             [OnlineField]
             public bool isInGame;
             [OnlineField]
@@ -25,7 +27,7 @@ namespace RainMeadow
             [OnlineField]
             public bool readyForWin;
             [OnlineField]
-            public byte readyForGate;
+            public byte readyForTransition;
             [OnlineField]
             public bool friendlyFire;
             [OnlineField]
@@ -52,6 +54,18 @@ namespace RainMeadow
             public bool requireCampaignSlugcat;
             [OnlineField]
             public List<OnlineEntity.EntityId> pups;
+            [OnlineField]
+            public bool storyItemSteal;
+            //watcher stuff
+            // TODO: Food for tought, what if we use a LUT and encode these in bytes? afterall
+            // we know they can only go from 1-10 (integer) and 0, 0.25 and 0.5
+            [OnlineFieldHalf]
+            public float rippleLevel;
+            [OnlineFieldHalf]
+            public float minimumRippleLevel;
+            [OnlineFieldHalf]
+            public float maximumRippleLevel;
+
             public State() { }
 
             public State(StoryLobbyData storyLobbyData, OnlineResource onlineResource)
@@ -62,17 +76,21 @@ namespace RainMeadow
                 defaultDenPos = storyGameMode.defaultDenPos;
                 currentCampaign = storyGameMode.currentCampaign;
                 requireCampaignSlugcat = storyGameMode.requireCampaignSlugcat;
+                rippleLevel = storyGameMode.rippleLevel;
 
                 isInGame = RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame && RWCustom.Custom.rainWorld.processManager.upcomingProcess is null;
                 changedRegions = storyGameMode.changedRegions;
                 readyForWin = storyGameMode.readyForWin;
-                readyForGate = (byte)storyGameMode.readyForGate;
+                readyForTransition = (byte)storyGameMode.readyForTransition;
                 saveStateString = storyGameMode.saveStateString;
+                storyItemSteal = storyGameMode.itemSteal;
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     cycleNumber = storySession.saveState.cycleNumber;
                     karma = storySession.saveState.deathPersistentSaveData.karma;
                     karmaCap = storySession.saveState.deathPersistentSaveData.karmaCap;
+                    minimumRippleLevel = storySession.saveState.deathPersistentSaveData.minimumRippleLevel;
+                    maximumRippleLevel = storySession.saveState.deathPersistentSaveData.maximumRippleLevel;
                     theGlow = storySession.saveState.theGlow;
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                 }
@@ -96,8 +114,10 @@ namespace RainMeadow
             public override void ReadTo(ResourceData data, OnlineResource resource)
             {
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
+
                 var playerstate = (currentGameState?.Players[0].state as PlayerState);
                 var lobby = (resource as Lobby);
+                (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
 
                 (lobby.gameMode as StoryGameMode).defaultDenPos = defaultDenPos;
 
@@ -116,6 +136,10 @@ namespace RainMeadow
                     storySession.saveState.cycleNumber = cycleNumber;
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
+                    storySession.saveState.deathPersistentSaveData.rippleLevel = rippleLevel;
+                    
+                    storySession.saveState.deathPersistentSaveData.minimumRippleLevel = minimumRippleLevel;
+                    storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
                     storySession.saveState.theGlow = theGlow;
                     if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame rainWorldGame))
@@ -130,11 +154,12 @@ namespace RainMeadow
                 (lobby.gameMode as StoryGameMode).isInGame = isInGame;
                 (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
                 (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
-                (lobby.gameMode as StoryGameMode).readyForGate = (StoryGameMode.ReadyForGate)readyForGate;
+                (lobby.gameMode as StoryGameMode).readyForTransition = (StoryGameMode.ReadyForTransition)readyForTransition;
                 (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
                 (lobby.gameMode as StoryGameMode).region = region;
 
                 (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
+                (lobby.gameMode as StoryGameMode).itemSteal = storyItemSteal;
 
 
                 foreach (OnlineEntity.EntityId pupid in pups) {

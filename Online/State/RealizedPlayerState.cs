@@ -110,8 +110,6 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
-        [OnlineField]
-        private bool isPup;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
@@ -129,16 +127,16 @@ namespace RainMeadow
         private float burstY;
         [OnlineField(group = "saint")]
         public bool monkAscension;
-        [OnlineField(group = "tongue")]
-        public byte tongueMode;
-        [OnlineField(group = "tongue")]
-        public Vector2 tonguePos;
-        [OnlineFieldHalf(group = "tongue")]
-        public float tongueIdealLength;
-        [OnlineFieldHalf(group = "tongue")]
-        public float tongueRequestedLength;
-        [OnlineField(group = "tongue", nullable = true)]
-        public BodyChunkRef? tongueAttachedChunk;
+
+        [OnlineField(group = "saint", nullable = true)]
+        TongueState? tongueState;
+
+        [OnlineField(nullable = true)]
+        TongueState? tongueStateOnBack; // for saint on back behavior
+
+        [OnlineField(group = "watcher")]
+        public bool isCamo;
+
         [OnlineFieldHalf(nullable = true)]
         private Vector2? pointingDir;
 
@@ -147,6 +145,8 @@ namespace RainMeadow
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
             Player p = onlineEntity.apo.realizedObject as Player;
+            isCamo = p.isCamo; // watcher
+
             monkAscension = p.monkAscension;
             animationIndex = (byte)p.animation.Index;
             animationFrame = (short)p.animationFrame;
@@ -154,7 +154,6 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
-            isPup = p.playerState.isPup;
             burstX = p.burstX;
             burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -163,12 +162,20 @@ namespace RainMeadow
                 && OnlinePhysicalObject.map.TryGetValue(apo0, out var oe0)) ? oe0.id : null;
             if (p.tongue is Player.Tongue tongue)
             {
-                tongueMode = (byte)tongue.mode;
-                tonguePos = tongue.pos;
-                tongueIdealLength = tongue.idealRopeLength;
-                tongueRequestedLength = tongue.requestedRopeLength;
-                tongueAttachedChunk = BodyChunkRef.FromBodyChunk(tongue.attachedChunk);
+                tongueState = new TongueState(tongue);
             }
+
+            if (p.onBack is null)
+            {
+                if (RainMeadow.HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out var saint_player) &&
+                        saint_player?.tongue is Player.Tongue tongue2)
+                {
+                    tongueStateOnBack = new TongueState(tongue2);
+                }
+            }
+
+
+
 
             var i = p.input[0];
             inputs = (ushort)(
@@ -226,7 +233,7 @@ namespace RainMeadow
             if (vinePosState is not null && p.animation == Player.AnimationIndex.VineGrab) return true;
             if (p.playerInAntlers is not null && p.playerInAntlers.deer == playerInAntlersState?.onlineDeer?.apo.realizedObject) return true;
             if (p.grabbedBy is not null && p.grabbedBy.Any(x => x.grabber is Player)) return true;
-            return false;
+            return base.ShouldPosBeLenient(po);
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -238,6 +245,8 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if (p is null) { RainMeadow.Error("target not realized: " + onlineEntity); return; }
 
+            //watcher
+            p.isCamo = isCamo;
             p.monkAscension = monkAscension;
             p.burstY = burstY;
             p.burstX = burstX;
@@ -248,8 +257,7 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
-            if (p.playerState.isPup != isPup)
-                p.playerState.isPup = isPup;
+
 
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
@@ -270,26 +278,33 @@ namespace RainMeadow
                     slugcatOnBackTemp.onBack = p;
 
                     p.slugOnBack.DropSlug();
+                    if (!slugcatOnBackTemp.isNPC && slugcatOnBackTemp.input[0].jmp && slugcatOnBackTemp.IsLocal())
+                    {
+                        slugcatOnBackTemp.jumpChunk = p.mainBodyChunk;
+                        slugcatOnBackTemp.JumpOnChunk();
+                    }
                     slugcatOnBackTemp.onBack = null;
                     slugcatOnBackTemp = null;
                 }
             }
 
-            if (p.tongue is Player.Tongue tongue)
+            bool has_saint_on_back = RainMeadow.HasSlugcatClassOnBack(p, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out var saint_player);
+            if (has_saint_on_back && p.onBack == null)
             {
-                tongue.mode = new Player.Tongue.Mode(Player.Tongue.Mode.values.GetEntry(tongueMode));
-                tongue.pos = tonguePos;
-                tongue.idealRopeLength = tongueIdealLength;
-                tongue.requestedRopeLength = tongueRequestedLength;
-                if (tongue.mode == Player.Tongue.Mode.AttachedToTerrain)
+                if (saint_player?.tongue is Player.Tongue tongue && tongueStateOnBack is not null)
                 {
-                    tongue.terrainStuckPos = tongue.pos;
-                }
-                else if (tongue.mode == Player.Tongue.Mode.AttachedToObject)
-                {
-                    tongue.attachedChunk = tongueAttachedChunk.ToBodyChunk();
+                    tongueStateOnBack.ReadTo(tongue);
                 }
             }
+
+            if (p.onBack == null || has_saint_on_back)
+            {
+                if (p.tongue is Player.Tongue tongue && tongueState is not null)
+                {
+                    tongueState.ReadTo(tongue);
+                }
+            }
+
 
             if (p.room?.climbableVines != null)
             {

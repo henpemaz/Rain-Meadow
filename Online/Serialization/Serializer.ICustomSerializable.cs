@@ -159,6 +159,7 @@ namespace RainMeadow
 
         // tempting to try and cache this, would need a query icomparable
         // liz: say no more!
+        // hen: yeah sure nice except it was untested and didn't work :(
         internal static MethodInfo GetSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var key = new Serializer.TypeInfo(fieldType, nullable, polymorphic, longList);
@@ -248,8 +249,8 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m =>
-                m.Name == "SerializeExtEnum" && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                return typeof(Serializer).GetMethods().Single(m => 
+                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
