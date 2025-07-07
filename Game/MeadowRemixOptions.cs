@@ -36,7 +36,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> WeaponCollisionFix;
 
 
-    public readonly Configurable<float> ScrollSpeed;
+    public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
     public readonly Configurable<bool> ShowPing;
     public readonly Configurable<int> ShowPingLocation;
 
@@ -111,6 +111,8 @@ public class RainMeadowOptions : OptionInterface
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
+
+        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
     }
 
     public override void Initialize()
@@ -169,6 +171,8 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
 
+            OpTextBox chatBgOpacity;
+
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -200,6 +204,8 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(210, 180f, Translate("Chat Talk Button")),
                 new OpKeyBinder(ChatButtonKey, new Vector2(210f, 150), new Vector2(150f, 30f)),
 
+                new OpLabel(410, 180, Translate("Chat Background Opacity")),
+                chatBgOpacity = new OpTextBox(ChatBgOpacity, new Vector2(410f, 153f), 90),
 
                 new OpLabel(210, 120f, Translate("Show Ping")),
                 new OpCheckBox(ShowPing, new Vector2(210, 90f)),
@@ -237,6 +243,11 @@ public class RainMeadowOptions : OptionInterface
             downpourWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Downpour && ModManager.MSC;
             watcherWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Watcher && ModManager.Watcher;
 
+            chatBgOpacity.OnValueChanged += (config, value, oldValue) =>
+            {
+                chatBgOpacity.valueFloat = Mathf.Clamp01(chatBgOpacity.valueFloat);
+            };
+
             editSyncRequiredModsButton.OnClick += _ =>
             {
                 try
@@ -262,7 +273,6 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadow.Error(e);
                 }
             };
-
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
             OnlineStorySettings = new UIelement[11]
