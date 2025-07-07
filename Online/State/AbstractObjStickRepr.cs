@@ -73,15 +73,15 @@ namespace RainMeadow
             }
         }
 
-        internal abstract void MakeStick(AbstractPhysicalObject A);
+        public abstract void MakeStick(AbstractPhysicalObject A);
 
-        internal void Release(AbstractPhysicalObject.AbstractObjectStick abstractObjectStick)
+        public void Release(AbstractPhysicalObject.AbstractObjectStick abstractObjectStick)
         {
             RainMeadow.Debug(this);
             abstractObjectStick.Deactivate();
         }
 
-        internal virtual bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
+        public virtual bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
         {
             return a.apo == s.A && b.apo == s.B;
         }
@@ -103,7 +103,7 @@ namespace RainMeadow
                 angle = s.angle;
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
@@ -135,7 +135,7 @@ namespace RainMeadow
                 angle = s.angle;
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
@@ -160,7 +160,7 @@ namespace RainMeadow
                 onSpearPosition = (sbyte)s.onSpearPosition;
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
@@ -171,7 +171,7 @@ namespace RainMeadow
                 }
             }
 
-            internal override bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
+            public override bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
             {
                 return base.StickEquals(s, a, b) && s is AbstractPhysicalObject.ImpaledOnSpearStick ioss && ioss.onSpearPosition == onSpearPosition;
             }
@@ -185,7 +185,7 @@ namespace RainMeadow
 
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
@@ -204,7 +204,7 @@ namespace RainMeadow
             {
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner != b.owner && !a.isPending && !b.isPending)
@@ -229,7 +229,7 @@ namespace RainMeadow
                 carry = s.carry;
             }
 
-            internal override void MakeStick(AbstractPhysicalObject A)
+            public override void MakeStick(AbstractPhysicalObject A)
             {
                 RainMeadow.Debug(this);
                 if (OnlinePhysicalObject.map.TryGetValue(A, out OnlinePhysicalObject a) && a.owner == b.owner && !a.isPending && !b.isPending)
@@ -240,7 +240,7 @@ namespace RainMeadow
                 }
             }
 
-            internal override bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
+            public override bool StickEquals(AbstractPhysicalObject.AbstractObjectStick s, OnlinePhysicalObject a, OnlinePhysicalObject b)
             {
                 return base.StickEquals(s, a, b) && s is AbstractPhysicalObject.CreatureGripStick cgs && cgs.grasp == grasp;
             }

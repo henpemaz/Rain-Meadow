@@ -5,26 +5,25 @@ namespace RainMeadow
 {
     public class MenuDarkSprite : MenuObject
     {
-        private FSprite darkSprite;
+        public FSprite darkSprite;
 
         public MenuDarkSprite(Menu.Menu menu, MenuObject owner) : base(menu, owner)
         {
-            this.Container.AddChild(this.darkSprite = new FSprite("pixel")
+            Container.AddChild(darkSprite = new("Futile_White")
             {
                 color = new Color(0f, 0f, 0f),
                 anchorX = 0f,
                 anchorY = 0f,
-                scaleX = 1368f,
-                scaleY = 770f,
-                x = -1f,
-                y = -1f,
+                scaleX = 1000f,
+                scaleY = 1000f,
+                x = 0f,
+                y = 0f,
                 alpha = 0.85f,
             });
         }
-
         public override void RemoveSprites()
         {
-            this.darkSprite.RemoveFromContainer();
+            darkSprite.RemoveFromContainer();
             base.RemoveSprites();
         }
     }

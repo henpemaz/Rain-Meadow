@@ -2,11 +2,11 @@
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using Menu.Remix.MixedUI.ValueTypes;
 using System;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using BepInEx;
 
 namespace RainMeadow;
 
@@ -19,7 +19,6 @@ public class LobbyCreateMenu : SmartMenu
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
     private OpTextBox passwordInputBox;
-    private OpCheckBox enablePasswordCheckbox;
     private MenuDialogBox? popupDialog;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
@@ -56,17 +55,18 @@ public class LobbyCreateMenu : SmartMenu
         visibilityDropDown = new OpComboBox2(new Configurable<MatchmakingManager.LobbyVisibility>(MatchmakingManager.LobbyVisibility.Public), where, 160, OpResourceSelector.GetEnumNames(null, typeof(MatchmakingManager.LobbyVisibility)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
         new UIelementWrapper(this.tabWrapper, visibilityDropDown);
 
-        // password setting in lower center
-        where.x -= 80;
+        
         where.y -= 45;
-        enablePasswordCheckbox = new OpCheckBox(new Configurable<bool>(false), where); //new Vector2(600f, 400f));//where);
-        new UIelementWrapper(tabWrapper, enablePasswordCheckbox);
+        where.x -= 80;
+        mainPage.subObjects.Add(
+            new ProperlyAlignedMenuLabel(this, mainPage, Translate("Password:"), where, new Vector2(200, 20f), false)
+        );
         where.x += 160;
         passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f)
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
-            defaultValue = RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value,
+            defaultValue = "",
             description = Utils.Translate("Lobby Password"),
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
@@ -112,14 +112,6 @@ public class LobbyCreateMenu : SmartMenu
         }
     }
 
-    /// Store and save password upon exiting
-    public override void OnBack(SimplerButton obj)
-    {
-        RainMeadow.rainMeadowOptions._LoadConfigFile(); //shenanigans WILL happen -- avoid them
-        RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value = passwordInputBox.value;
-        RainMeadow.rainMeadowOptions._SaveConfigFile(); //this may just be evil
-    }
-
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
@@ -150,11 +142,8 @@ public class LobbyCreateMenu : SmartMenu
     {
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
-        // store config global global global
-        RainMeadow.rainMeadowOptions._LoadConfigFile(); //shenanigans WILL happen -- avoid them
-        RainMeadow.rainMeadowOptions.PrivateLobbyPassword.Value = passwordInputBox.value;
-        RainMeadow.rainMeadowOptions._SaveConfigFile(); //this may just be evil
-        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, enablePasswordCheckbox.GetValueBool() ? passwordInputBox.value : null, maxPlayerCount);
+        string? password = passwordInputBox.value.IsNullOrWhiteSpace() ? null : passwordInputBox.value;
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount);
     }
 
     private void ShowLoadingDialog(string text)
