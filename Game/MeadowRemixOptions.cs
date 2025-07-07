@@ -35,6 +35,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
 
+    public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
     public readonly Configurable<string> MartyrTeamName;
     public readonly Configurable<string> OutlawsTeamName;
     public readonly Configurable<string> DragonSlayersTeamName;
@@ -97,6 +98,10 @@ public class RainMeadowOptions : OptionInterface
         BlockArtiStun = config.Bind("BlockArtiStun", false);
 
 
+        MartyrTeamColor = config.Bind("MartyrTeamColor", new Color(1, 0.49f, 0.49f));
+        OutlawsTeamColor = config.Bind("OutlawsTeamColor", new Color(1, 1, 0.49f));
+        DragonSlayersTeamColor = config.Bind("DragonSlayersTeamColor", new Color(0.49f, 1, 0.49f));
+        ChieftainTeamColor = config.Bind("ChieftainTeamColor", new Color(0.49f, 0.49f, 1));
 
         MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
         OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");

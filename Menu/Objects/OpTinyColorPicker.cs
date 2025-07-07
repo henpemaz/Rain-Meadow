@@ -9,7 +9,7 @@ namespace RainMeadow
     public class OpTinyColorPicker : OpSimpleButton
     {
         public OpColorPicker colorPicker;
-        private bool currentlyPicking;
+        public bool currentlyPicking;
         private const int focusTimeout = 10;
         private int loseFocusCounter;
 

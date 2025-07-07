@@ -38,13 +38,13 @@ namespace RainMeadow
             public string dragonslayersName;
             [OnlineField(nullable = true)]
             public string outlawsName;
-            [OnlineFieldColorRgb]
+            [OnlineFieldColorRgb(nullable = true)]
             public Color martyrColors;
-            [OnlineFieldColorRgb]
+            [OnlineFieldColorRgb(nullable = true)]
             public Color chieftainColors;
-            [OnlineFieldColorRgb]
+            [OnlineFieldColorRgb(nullable = true)]
             public Color dragonslayerColors;
-            [OnlineFieldColorRgb]
+            [OnlineFieldColorRgb(nullable = true)]
             public Color outlawColors;
 
 
@@ -56,18 +56,17 @@ namespace RainMeadow
                 ArenaOnlineGameMode arena = (onlineResource as Lobby).gameMode as ArenaOnlineGameMode;
                 if (arena != null)
                 {
-                    martyrColors = TeamBattleMode.teamColors[0];
-                    outlawColors = TeamBattleMode.teamColors[1];
-                    dragonslayerColors = TeamBattleMode.teamColors[2];
-                    chieftainColors = TeamBattleMode.teamColors[3];
-
                     bool isTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (isTb && teamBattleMode != null)
                     {
+                        martyrColors = teamBattleMode.teamColors[0];
+                        outlawColors = teamBattleMode.teamColors[1];
+                        dragonslayerColors = teamBattleMode.teamColors[2];
+                        chieftainColors = teamBattleMode.teamColors[3];
                         martyrsName = teamBattleMode.teamNames[0];
-                        chieftainsName = teamBattleMode.teamNames[1];
+                        outlawsName = teamBattleMode.teamNames[1];
                         dragonslayersName = teamBattleMode.teamNames[2];
-                        outlawsName = teamBattleMode.teamNames[3];
+                        chieftainsName = teamBattleMode.teamNames[3];
                         winningTeam = teamBattleMode.winningTeam;
                         martyrs = teamBattleMode.martyrsSpawn;
                         outlaws = teamBattleMode.outlawsSpawn;
@@ -86,19 +85,19 @@ namespace RainMeadow
                 var arena = (lobby.gameMode as ArenaOnlineGameMode);
                 if (arena != null)
                 {
-                    TeamBattleMode.teamColors[0] = martyrColors;
-                    TeamBattleMode.teamColors[1] = outlawColors;
-                    TeamBattleMode.teamColors[2] = dragonslayerColors;
-                    TeamBattleMode.teamColors[3] = chieftainColors;
 
 
                     bool cachedTb = TeamBattleMode.isTeamBattleMode(arena, out var teamBattleMode);
                     if (cachedTb && teamBattleMode != null)
                     {
+                        teamBattleMode.teamColors[0] = martyrColors;
+                        teamBattleMode.teamColors[1] = outlawColors;
+                        teamBattleMode.teamColors[2] = dragonslayerColors;
+                        teamBattleMode.teamColors[3] = chieftainColors;
                         teamBattleMode.teamNames[0] = martyrsName;
-                        teamBattleMode.teamNames[1] = chieftainsName;
-                        teamBattleMode.teamNames[2] = outlawsName;
-                        teamBattleMode.teamNames[3] = dragonslayersName;
+                        teamBattleMode.teamNames[1] = outlawsName;
+                        teamBattleMode.teamNames[2] = dragonslayersName;
+                        teamBattleMode.teamNames[3] = chieftainsName;
                         teamBattleMode.winningTeam = winningTeam;
                         teamBattleMode.martyrsSpawn = martyrs;
                         teamBattleMode.outlawsSpawn = outlaws;
