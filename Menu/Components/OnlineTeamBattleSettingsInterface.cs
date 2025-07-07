@@ -224,7 +224,7 @@ namespace RainMeadow.UI.Components
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].colorPicker.held) teamColorPickers[i].valuecolor = color;
 
-                teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled;
+                //teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled;
                 teamNameBoxes[i].greyedOut = OwnerSettingsDisabled;
                 teamColorPickers[i].greyedOut = OwnerSettingsDisabled;
             }
