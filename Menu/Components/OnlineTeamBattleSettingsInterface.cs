@@ -212,7 +212,6 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
             if (!teamLerpTextBox.held)
                 teamLerpTextBox.valueFloat = teamBattleMode.lerp;
@@ -228,6 +227,7 @@ namespace RainMeadow.UI.Components
                 Color color = teamBattleMode.teamColors[index];
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
+                teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].colorPicker.held) teamColorPickers[i].valuecolor = color;
