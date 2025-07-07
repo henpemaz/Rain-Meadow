@@ -232,7 +232,7 @@ namespace RainMeadow.UI.Components
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
 
-                teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
+                teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking);
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
