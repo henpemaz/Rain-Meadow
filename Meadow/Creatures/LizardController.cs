@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    class LizardController : GroundCreatureController
+    public class LizardController : GroundCreatureController
     {
         public static void EnableLizard()
         {

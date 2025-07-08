@@ -2,6 +2,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -52,8 +53,32 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
+        
+            IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
         }
 
+        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il) {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchCall("ExtEnum`1<SlugcatStats/Name>", "op_Inequality"),
+                    i => i.MatchBrfalse(out skip),
+                    i => i.MatchLdloc(3),
+                    i => i.MatchBrtrue(out skip),
+                    i => i.MatchLdloc(2),
+                    i => i.MatchBrtrue(out skip)
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Menu.SleepAndDeathScreen self) => OnlineManager.lobby != null && self.karmaLadder == null);
+                c.Emit(OpCodes.Brtrue, skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
 
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
@@ -160,6 +185,8 @@ namespace RainMeadow
             }
         }
 
+
+
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
             if (OnlineManager.lobby?.gameMode is MeadowGameMode)
@@ -171,6 +198,7 @@ namespace RainMeadow
                     self.manager.blackDelay = 0;
                 }
             }
+
 
             orig(self);
 

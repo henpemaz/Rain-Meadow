@@ -48,7 +48,6 @@ namespace RainMeadow
                 typingHandler.StartCoroutine(Unload(delay));
             }
         }
-
         private IEnumerator Unload(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -57,7 +56,7 @@ namespace RainMeadow
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-
+                blockInput = false;
             }
         }
         private void CaptureInputs(char input)
@@ -66,7 +65,7 @@ namespace RainMeadow
             if (input == '\u007F') return;
             string msg = lastSentMessage;
             blockInput = false;
-            if ((input == '\b' || input == '\u0008') && !(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)))
+            if (input == '\b')
             {
                 if (cursorPos > 0 || selectionPos != -1)
                 {
@@ -107,7 +106,7 @@ namespace RainMeadow
                 lastSentMessage = "";
                 return;
             }
-            else
+            else if (!isUnloading)
             {
                 if(selectionPos != -1)
                 {
@@ -128,7 +127,7 @@ namespace RainMeadow
                     cursorPos++;
                 }
             }
-            blockInput = true;
+            if (!isUnloading) blockInput = true;
             menuLabel.text = lastSentMessage;
         }
 
@@ -142,15 +141,9 @@ namespace RainMeadow
                 // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
                 if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
                 {
-                    if ((Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) && backspaceHeld == 0)
-                    {
-                        lastSentMessage = "";
-                        menuLabel.text = lastSentMessage;
-                        cursorPos = 0;
-                        selectionPos = -1;
-                    }
+                    // no alt + backspace, because alt can be finnicky
                     // activates on either the first frame the key is held, or every other frame after it's been held down for half a second
-                    else if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))))
+                    if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))))
                     {
                         if (selectionPos != -1)
                         {
@@ -345,7 +338,7 @@ namespace RainMeadow
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 
-        private static void ShouldCapture(bool shouldCapture)
+        public static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)
             {

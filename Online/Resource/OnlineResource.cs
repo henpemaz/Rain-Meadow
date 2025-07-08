@@ -47,7 +47,7 @@ namespace RainMeadow
             }
         }
 
-        internal virtual void Tick(uint tick)
+        public virtual void Tick(uint tick)
         {
             if (isActive)
             {
