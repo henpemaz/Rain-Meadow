@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
 using Menu;
+using RainMeadow.UI.Components;
 using UnityEngine;
 
 namespace RainMeadow
@@ -32,30 +33,17 @@ namespace RainMeadow
             base.RemoveSprites();
             this.ClearMenuObject(ref kickButton);
         }
-        public override void UpdateAlpha(float alpha)
-        {
-            base.UpdateAlpha(alpha);
-            if (kickButton != null)
-            {
-                kickButton.symbolSprite.alpha = alpha;
-                for (int i = 0; i < kickButton.roundedRect.sprites.Length; i++)
-                {
-                    kickButton.roundedRect.sprites[i].alpha = alpha;
-                    kickButton.roundedRect.fillAlpha = alpha / 2;
-                }
-                kickButton.GetButtonBehavior.greyedOut = alpha < 1;
-            }    
-        }
-        public SimplerSymbolButton? kickButton;
+        public ScrollSymbolButton? kickButton;
     }
     public class StoryMenuSlugcatButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name slugcat, Action<SlugcatStats.Name> onReceieveSlugcat, Vector2 size = default) : base(menu, owner, "", Vector2.zero, size == default? new(110, 30) : size)
+        public StoryMenuSlugcatButton(Menu.Menu menu, MenuObject owner, SlugcatStats.Name? slugcat, Action<SlugcatStats.Name?>? onReceieveSlugcat, Vector2 size = default, Vector2 pos = default) : base(menu, owner, "", pos == default? Vector2.zero : pos, size == default? new(110, 30) : size)
         {
             slug = slugcat;
+           onRecieveSlugcat = onReceieveSlugcat;
             OnClick += (_) =>
             {
-                onReceieveSlugcat?.Invoke(slug);
+                onRecieveSlugcat?.Invoke(slug);
             };
         }
         public override void GrafUpdate(float timeStacker)
@@ -66,7 +54,8 @@ namespace RainMeadow
                 menuLabel.text = menu.Translate(SlugcatStats.getSlugcatName(slug));
             }
         }
-        public SlugcatStats.Name slug;
+        public Action<SlugcatStats.Name?>? onRecieveSlugcat;
+        public SlugcatStats.Name? slug;
     }
     public class StoryMenuSlugcatSelector : ButtonSelector
     {
