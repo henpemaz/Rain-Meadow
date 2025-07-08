@@ -34,10 +34,23 @@ namespace RainMeadow
             On.AbstractPhysicalObject.Move += AbstractPhysicalObject_Move; // I'm watching your every step
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
             IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
+            On.Watcher.SandGrubGraphics.DrawSprites += SandGrubGraphics_DrawSprites;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
 
+        private void SandGrubGraphics_DrawSprites(On.Watcher.SandGrubGraphics.orig_DrawSprites orig, Watcher.SandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            try
+            {
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
         private void MirosBirdAbstractAI_Raid(ILContext il)
         {
             try
@@ -235,7 +248,7 @@ namespace RainMeadow
             }
         }
 
-       
+
 
         // echo warps from the waher
         public void OverWorld_InitiateSpecialWarp_WarpPoint(On.OverWorld.orig_InitiateSpecialWarp_WarpPoint orig, OverWorld self, MoreSlugcats.ISpecialWarp callback, Watcher.WarpPoint.WarpPointData warpData, bool useNormalWarpLoader)
@@ -522,7 +535,10 @@ namespace RainMeadow
                         {
                             RainMeadow.Debug($"fixing player");
                             // do not get stuck on bottom left
-                            player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
+                            if (self.warpData?.destPos != null)
+                            {
+                                player.abstractCreature.pos.Tile = new RWCustom.IntVector2((int)(self.warpData.destPos.Value.x / 20f), (int)(self.warpData.destPos.Value.y / 20f));
+                            }
                             player.slugOnBack?.DropSlug();
                             if (player.objectInStomach is AbstractPhysicalObject apo)
                             { // apo's in stomach (isn't realized but has to be "carried" over)

@@ -358,7 +358,7 @@ namespace RainMeadow
 
         public event Action<GenericResult> OnResolve;
 
-        internal RPCEvent Then(Action<GenericResult> onResolve)
+        public RPCEvent Then(Action<GenericResult> onResolve)
         {
             this.OnResolve += onResolve;
             return this;
