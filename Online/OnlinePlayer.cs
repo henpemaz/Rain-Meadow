@@ -88,7 +88,7 @@ namespace RainMeadow
             return recentlyAckedEvents.FirstOrDefault(e => e.eventId == id);
         }
 
-        internal void NewTick(uint newTick)
+        public void NewTick(uint newTick)
         {
             tick = newTick;
             recentTicks.Enqueue(tick);
@@ -173,7 +173,7 @@ namespace RainMeadow
             return (RPCEvent)this.QueueEvent(RPCManager.BuildRPC(del, args));
         }
 
-        internal void Update()
+        public void Update()
         {
             // Update snapshot cycle for debug overlay and reset for snapshot frame
             var nextSnapshotIndex = (bytesSnapIndex + 1) % 40;

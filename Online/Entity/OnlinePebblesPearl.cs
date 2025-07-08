@@ -35,7 +35,7 @@
 
         }
 
-        internal override EntityDefinition MakeDefinition(OnlineResource onlineResource)
+        public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
         {
             return new OnlinePebblesPearlDefinition(this, onlineResource);
         }
