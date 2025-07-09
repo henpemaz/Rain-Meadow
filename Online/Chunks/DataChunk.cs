@@ -106,6 +106,7 @@ namespace RainMeadow
             this.chunkId = chunkId;
             if (this.reliable != template.reliable) throw new InvalidProgrammerException("Reliability should match template (Wrong chunk ID?)");
             this.toPlayer = toPlayer;
+            this.destination = template.destination;
             outgoingSlices = new SliceMessage[template.outgoingSlices.Length];
             for (byte i = 0; i < outgoingSlices.Length; i++)
             {
