@@ -63,7 +63,10 @@ namespace RainMeadow
             else
             {
                 RainMeadow.Debug("Requesting lobby");
-                RequestLobby(password);
+                MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Downloading resources"));
+                this.password = password;
+                owner.InvokeRPC(DownloadResources);
+                // RequestLobby(password); Once we download the resources we'll request the lobby.
             }
         }
 
@@ -73,12 +76,14 @@ namespace RainMeadow
             enumMap = new();
             foreach (Type key in Serializer.serializedExtEnums)
             {
-                
+
                 // TODO: some ExtEnums don't effect gameplay exp: MatchmakingManager.MatchMakingDomain. 
                 // we need to make a list of those to ignore.
-                if (ExtEnumBase.valueDictionary[key].entries.Count > byte.MaxValue) throw new InvalidOperationException("too many ext enums");
-                for (byte i = 0; i < ExtEnumBase.valueDictionary[key].Count; i++)
+                enumMap.Add(key, new());
+                if (ExtEnumBase.GetExtEnumType(key).Count > byte.MaxValue) throw new InvalidOperationException("too many ext enums");
+                for (byte i = 0; i < ExtEnumBase.GetExtEnumType(key).Count; i++)
                 {
+                    RainMeadow.Debug($"{ExtEnumBase.GetExtEnumType(key).GetEntry(i)}: remote={i} local={i}");
                     enumMap[key].Add((i, i));
                 }
             }
@@ -98,6 +103,7 @@ namespace RainMeadow
                         writer.Write((byte)enumMap[key].Count);
                         foreach (byte enumkey in enumMap[key].Select(x => x.Item1))
                         {
+                            writer.Write(enumkey);
                             var entry = Encoding.UTF8.GetBytes(ExtEnumBase.GetExtEnumType(key).GetEntry(enumkey));
                             writer.Write((byte)entry.Length);
                             writer.Write(entry);
@@ -141,9 +147,10 @@ namespace RainMeadow
                             }
                             byte entryCount = reader.ReadByte();
                             RainMeadow.Debug($"{t.FullName}: {entryCount}:{ExtEnumBase.GetExtEnumType(t).Count}");
-
+                            newEnumMap.Add(t, new());
                             for (byte j = 0; j < entryCount; j++)
                             {
+                                byte remotekey = reader.ReadByte();
                                 string entry = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
                                 if (!ExtEnumBase.TryParse(t, entry, false, out var result))
                                 {
@@ -152,8 +159,8 @@ namespace RainMeadow
                                     MatchmakingManager.currentInstance.JoinLobby(false);
                                     return;
                                 }
-
-                                newEnumMap[t].Add((j, (byte)result.Index));
+                                RainMeadow.Debug($"{entry}: remote={remotekey} local={result.Index}");
+                                newEnumMap[t].Add((remotekey, (byte)result.Index));
                             }
                         }
                         enumMap = newEnumMap;
@@ -161,10 +168,42 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (!isAvailable && !isPending && DownloadedAllResources())
+            {
+                RequestLobby(password);
+            }
         }
-        
+        public override void ProcessSliceImpl(IncomingDataChunk chunk, Slice slice)
+        {
+            base.ProcessSliceImpl(chunk, slice);
+
+            if (slice.index == 0)
+            {
+                checked
+                {
+                    using (MemoryStream stream = new(slice.data.Array))
+                    using (BinaryReader reader = new(stream))
+                    {
+                        if (Encoding.ASCII.GetString(reader.ReadBytes(4)) == "ENUM")
+                        {
+                            MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Recieving ExtEnum entries"));
+                        }
+                    }
+                }
+            }  
+        }  
+
+        [RPCMethod]
+        public void DownloadResources(RPCEvent request)
+        {
+            request.from.QueueChunk(new OutgoingDataChunk(enumMapChunkTemplate, request.from, request.from.NextChunkId()));
+        }
+
+
         public void RequestLobby(string? key)
         {
+            MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Pending lobby request"));
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");
             if (isAvailable) throw new InvalidOperationException("available");
@@ -185,8 +224,9 @@ namespace RainMeadow
                 }
             }
 
-            request.from.QueueChunk(new OutgoingDataChunk(enumMapChunkTemplate, request.from, request.from.NextChunkId())).Then(_ => Requested(request));
+            Requested(request);
         }
+        public bool DownloadedAllResources() => enumMap.Count != 0; // for now the only pre-request resource we need is Ext-Enums
 
         public void ResolveLobbyRequest(GenericResult requestResult)
         {

@@ -160,20 +160,6 @@ namespace RainMeadow
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }
 
-        public override void JoinLobby(bool success)
-        {
-            if (success)
-            {
-                OnLobbyJoinedEvent(true);
-            }
-            else
-            {
-                OnlineManager.LeaveLobby();
-                RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
-            }
-        }
-
         public override void JoinLobbyUsingArgs(params string?[] args)
         {
             if (args.Length >= 1 && ulong.TryParse(args[0], out var id))

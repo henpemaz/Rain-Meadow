@@ -21,8 +21,8 @@ namespace RainMeadow
                     throw new InvalidProgrammerException($"ExtEnum type {typeof(T).AssemblyQualifiedName} is not serializable in this lobby. TIP: If you are a modder add the enum type to Serializer.serializedExtEnums.");
                 }
 
-                var enum2 = extEnum;  // c# doesn't allow ref params to be passed down in anonymous lambdas.
-                var remoteIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item2 == enum2.Index).Item1;
+                var localindex = extEnum.Index;
+                var remoteIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item2 == localindex).Item1;
                 writer.Write(remoteIndex);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
@@ -30,7 +30,8 @@ namespace RainMeadow
             }
             if (IsReading)
             {
-                var localIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item1 == reader.ReadByte()).Item2;
+                var remoteIndex = reader.ReadByte();
+                var localIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item1 == remoteIndex).Item2;
                 extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(localIndex), false });
             }
         }

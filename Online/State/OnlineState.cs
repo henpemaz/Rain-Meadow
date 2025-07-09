@@ -62,6 +62,12 @@ namespace RainMeadow
         internal static void InitializeBuiltinTypes()
         {
             _ = StateType.Unknown; // runs static init
+
+            if (!Serializer.serializedExtEnums.Contains(typeof(StateType)))
+            {
+                Serializer.serializedExtEnums.Add(typeof(StateType));
+            }
+            
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();

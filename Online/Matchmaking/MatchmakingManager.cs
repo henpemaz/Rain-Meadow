@@ -22,10 +22,13 @@ namespace RainMeadow
         public static event LobbyListReceived_t OnLobbyListReceived = delegate {};
         public static event PlayerListReceived_t OnPlayerListReceived = delegate {};
         public static event LobbyJoined_t OnLobbyJoined = delegate {};
+        public static event ChangedJoinState_t OnChangedJoiningState = delegate {};
 
         protected static void OnLobbyJoinedEvent(bool ok, string error = "") => OnLobbyJoined?.Invoke(ok, error);
         protected static void OnPlayerListReceivedEvent(PlayerInfo[] players) => OnPlayerListReceived?.Invoke(players);
         protected static void OnLobbyListReceivedEvent(bool ok, LobbyInfo[] lobbies) => OnLobbyListReceived?.Invoke(ok, lobbies);
+        public static void OnChangedJoiningStateEvent(string msg) => OnChangedJoiningState?.Invoke(msg);
+
 
         public static event ChangedMatchMakingDomain_t changedMatchMaker = delegate { };
         public delegate void ChangedMatchMakingDomain_t(MatchMakingDomain last, MatchMakingDomain current);
@@ -84,6 +87,7 @@ namespace RainMeadow
         public delegate void LobbyListReceived_t(bool ok, LobbyInfo[] lobbies);
         public delegate void PlayerListReceived_t(PlayerInfo[] players);
         public delegate void LobbyJoined_t(bool ok, string error = "");
+        public delegate void ChangedJoinState_t(string msg = "");
 
         public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
@@ -91,7 +95,24 @@ namespace RainMeadow
         public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
-        public abstract void JoinLobby(bool success);
+        public virtual void JoinLobby(bool success, string error = "")
+        {
+            if (success)
+            {
+                RainMeadow.Debug("Joining lobby");
+                OnLobbyJoinedEvent(true);
+            }
+            else
+            {
+                OnlineManager.LeaveLobby();
+                RainMeadow.Debug("Failed to join local game. Wrong Password");
+                OnLobbyJoinedEvent(false, error);
+            }
+        }
+
+        public virtual void ChangeLoadingState(string state = "")
+        {
+        }
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
         public static void JoinLobbyUsingCode(string code) {
