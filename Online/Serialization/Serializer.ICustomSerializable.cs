@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RainMeadow.Generics;
 
 namespace RainMeadow
 {
@@ -175,6 +176,9 @@ namespace RainMeadow
             return method;
         }
 
+
+        public static List<Type> serializedExtEnums = new();
+
         internal static MethodInfo MakeSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var arguments = new { nullable, polymorphic, longList }; // one hell of a drug
@@ -208,6 +212,14 @@ namespace RainMeadow
 
             if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(fieldType))
             {
+                if (fieldType.IsGenericType && typeof(DynamicOrderedExtEnums<>).IsAssignableFrom(fieldType.GetGenericTypeDefinition()))
+                {
+                    if (!serializedExtEnums.Contains(fieldType))
+                    {
+                        serializedExtEnums.Add(fieldType.GenericTypeArguments[0]);
+                    }
+                }
+
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == arguments switch
                 {
@@ -249,8 +261,13 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m => 
-                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                if (!serializedExtEnums.Contains(fieldType))
+                {
+                    serializedExtEnums.Add(fieldType);
+                }
+                
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == (arguments.nullable ? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))

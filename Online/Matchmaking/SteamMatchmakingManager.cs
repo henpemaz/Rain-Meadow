@@ -168,7 +168,7 @@ namespace RainMeadow
             }
             else
             {
-                LeaveLobby();
+                OnlineManager.LeaveLobby();
                 RainMeadow.Debug("Failed to join local game. Wrong Password");
                 OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
             }

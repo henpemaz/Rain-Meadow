@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -10,14 +11,27 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
-                writer.Write((byte)extEnum.Index);
+                if (OnlineManager.lobby == null) 
+                {
+                    throw new InvalidProgrammerException("Can't serialize ExtEnums without a lobby");
+                }
+
+                if (!OnlineManager.lobby.enumMap.ContainsKey(typeof(T)))
+                {
+                    throw new InvalidProgrammerException($"ExtEnum type {typeof(T).AssemblyQualifiedName} is not serializable in this lobby. TIP: If you are a modder add the enum type to Serializer.serializedExtEnums.");
+                }
+
+                var enum2 = extEnum;  // c# doesn't allow ref params to be passed down in anonymous lambdas.
+                var remoteIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item2 == enum2.Index).Item1;
+                writer.Write(remoteIndex);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
             }
             if (IsReading)
             {
-                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                var localIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item1 == reader.ReadByte()).Item2;
+                extEnum = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(localIndex), false });
             }
         }
 
@@ -48,13 +62,25 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
+                if (OnlineManager.lobby == null) 
+                {
+                    throw new InvalidProgrammerException("Can't serialize ExtEnums without a lobby");
+                }
+
+                if (!OnlineManager.lobby.enumMap.ContainsKey(typeof(T)))
+                {
+                    throw new InvalidProgrammerException($"ExtEnum type {typeof(T).AssemblyQualifiedName} is not serializable in this lobby. TIP: If you are a modder add the enum type to Serializer.serializedExtEnums.");
+                }
+
                 writer.Write((byte)extEnum.Length);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    var enum2 = extEnum[i]; // c# doesn't allow ref params to be passed down in anonymous lambdas.
+                    var remoteIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item2 == enum2.Index).Item1;
+                    writer.Write(remoteIndex);
                 }
             }
             if (IsReading)
@@ -62,7 +88,8 @@ namespace RainMeadow
                 extEnum = new T[reader.ReadByte()];
                 for (int i = 0; i < extEnum.Length; i++)
                 {
-                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false });
+                    var localIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item1 == reader.ReadByte()).Item2;
+                    extEnum[i] = (T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(localIndex), false });
                 }
             }
         }
@@ -71,22 +98,35 @@ namespace RainMeadow
         {
             if (IsWriting)
             {
+                if (OnlineManager.lobby == null) 
+                {
+                    throw new InvalidProgrammerException("Can't serialize ExtEnums without a lobby");
+                }
+
+                if (!OnlineManager.lobby.enumMap.ContainsKey(typeof(T)))
+                {
+                    throw new InvalidProgrammerException($"ExtEnum type {typeof(T).AssemblyQualifiedName} is not serializable in this lobby. TIP: If you are a modder add the enum type to Serializer.serializedExtEnums.");
+                }
+
                 writer.Write((byte)extEnum.Count);
 #if TRACING
                 if (IsWriting) RainMeadow.Trace(1);
 #endif
                 for (int i = 0; i < extEnum.Count; i++)
                 {
-                    writer.Write((byte)extEnum[i].Index);
+                    var enum2 = extEnum[i]; // c# doesn't allow ref params to be passed down in anonymous lambdas.
+                    var remoteIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item2 == enum2.Index).Item1;
+                    writer.Write(remoteIndex);
                 }
             }
             if (IsReading)
             {
                 var count = reader.ReadByte();
-                extEnum = new(count);
+                extEnum = new List<T>();
                 for (int i = 0; i < count; i++)
                 {
-                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(reader.ReadByte()), false }));
+                    var localIndex = OnlineManager.lobby.enumMap[typeof(T)].First(x => x.Item1 == reader.ReadByte()).Item2;
+                    extEnum.Add((T)Activator.CreateInstance(typeof(T), new object[] { ExtEnum<T>.values.GetEntry(localIndex), false }));
                 }
             }
         }

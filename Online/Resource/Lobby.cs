@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RainMeadow
@@ -14,6 +15,7 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<Type, List<(byte, byte)>> enumMap = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
         public string[] requiredmods;
@@ -56,7 +58,7 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
-
+                BuildEnumMap();
             }
             else
             {
@@ -65,6 +67,102 @@ namespace RainMeadow
             }
         }
 
+        private OutgoingDataChunk enumMapChunkTemplate;
+        public void BuildEnumMap()
+        {
+            enumMap = new();
+            foreach (Type key in Serializer.serializedExtEnums)
+            {
+                
+                // TODO: some ExtEnums don't effect gameplay exp: MatchmakingManager.MatchMakingDomain. 
+                // we need to make a list of those to ignore.
+                if (ExtEnumBase.valueDictionary[key].entries.Count > byte.MaxValue) throw new InvalidOperationException("too many ext enums");
+                for (byte i = 0; i < ExtEnumBase.valueDictionary[key].Count; i++)
+                {
+                    enumMap[key].Add((i, i));
+                }
+            }
+
+            checked
+            {
+                using (MemoryStream stream = new())
+                using (BinaryWriter writer = new(stream))
+                {
+                    writer.Write(Encoding.ASCII.GetBytes("ENUM"));
+                    writer.Write((byte)enumMap.Keys.Count);
+                    foreach (Type key in enumMap.Keys)
+                    {
+                        var typename = Encoding.UTF8.GetBytes(key.AssemblyQualifiedName);
+                        writer.Write((byte)typename.Length);
+                        writer.Write(typename);
+                        writer.Write((byte)enumMap[key].Count);
+                        foreach (byte enumkey in enumMap[key].Select(x => x.Item1))
+                        {
+                            var entry = Encoding.UTF8.GetBytes(ExtEnumBase.GetExtEnumType(key).GetEntry(enumkey));
+                            writer.Write((byte)entry.Length);
+                            writer.Write(entry);
+                        }
+                    }
+                    enumMapChunkTemplate = new(1, this, new ArraySegment<byte>((byte[])stream.GetBuffer().Clone(), 0, (int)stream.Position), null, 4096);
+                }
+            }
+        }
+
+        public override void ProcessEntireChunkImpl(IncomingDataChunk chunk)
+        {
+            checked
+            {
+                using (MemoryStream stream = new(chunk.GetData()))
+                using (BinaryReader reader = new(stream))
+                {
+                    if (Encoding.ASCII.GetString(reader.ReadBytes(4)) == "ENUM")
+                    {
+                        Dictionary<Type, List<(byte, byte)>> newEnumMap = new();
+                        byte typeCount = reader.ReadByte();
+                        for (byte i = 0; i < typeCount; i++)
+                        {
+                            string typeName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+                            Type t = null;
+                            try
+                            {
+                                t = Type.GetType(typeName);
+                            }
+                            catch (Exception except)
+                            {
+                                RainMeadow.Error(except);
+                            }
+
+                            if (t is null || !ExtEnumBase.valueDictionary.Keys.Contains(t))
+                            {
+                                // missing enum type error.
+                                RainMeadow.Error($"Missing enum type {typeName}");
+                                MatchmakingManager.currentInstance.JoinLobby(false);
+                                return;
+                            }
+                            byte entryCount = reader.ReadByte();
+                            RainMeadow.Debug($"{t.FullName}: {entryCount}:{ExtEnumBase.GetExtEnumType(t).Count}");
+
+                            for (byte j = 0; j < entryCount; j++)
+                            {
+                                string entry = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+                                if (!ExtEnumBase.TryParse(t, entry, false, out var result))
+                                {
+                                    // missing entry error.
+                                    RainMeadow.Error($"Missing enum type entry: {entry}");
+                                    MatchmakingManager.currentInstance.JoinLobby(false);
+                                    return;
+                                }
+
+                                newEnumMap[t].Add((j, (byte)result.Index));
+                            }
+                        }
+                        enumMap = newEnumMap;
+                        enumMapChunkTemplate = new(1, this, new ArraySegment<byte>(chunk.GetData()), null, 4096);
+                    }
+                }
+            }
+        }
+        
         public void RequestLobby(string? key)
         {
             RainMeadow.Debug(this);
@@ -86,7 +184,8 @@ namespace RainMeadow
                     return;
                 }
             }
-            Requested(request);
+
+            request.from.QueueChunk(new OutgoingDataChunk(enumMapChunkTemplate, request.from, request.from.NextChunkId())).Then(_ => Requested(request));
         }
 
         public void ResolveLobbyRequest(GenericResult requestResult)
