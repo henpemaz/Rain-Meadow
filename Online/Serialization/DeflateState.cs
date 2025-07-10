@@ -6,7 +6,7 @@ using System.Reflection;
 namespace RainMeadow
 {
     [DeltaSupport(level = StateHandler.DeltaSupport.None)]
-    internal class DeflateState : OnlineState
+    public class DeflateState : OnlineState
     {
         public class LongBytesFieldAttribute : OnlineFieldAttribute
         {

@@ -48,7 +48,6 @@ namespace RainMeadow
                 typingHandler.StartCoroutine(Unload(delay));
             }
         }
-
         private IEnumerator Unload(float delay)
         {
             yield return new WaitForSeconds(delay);
@@ -57,7 +56,7 @@ namespace RainMeadow
             {
                 typingHandler.Unassign(this);
                 typingHandler.OnDestroy();
-
+                blockInput = false;
             }
         }
         private void CaptureInputs(char input)
@@ -107,7 +106,7 @@ namespace RainMeadow
                 lastSentMessage = "";
                 return;
             }
-            else
+            else if (!isUnloading)
             {
                 if(selectionPos != -1)
                 {
@@ -128,7 +127,7 @@ namespace RainMeadow
                     cursorPos++;
                 }
             }
-            blockInput = true;
+            if (!isUnloading) blockInput = true;
             menuLabel.text = lastSentMessage;
         }
 
@@ -339,7 +338,7 @@ namespace RainMeadow
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 
-        private static void ShouldCapture(bool shouldCapture)
+        public static void ShouldCapture(bool shouldCapture)
         {
             if (shouldCapture && !blockInput)
             {

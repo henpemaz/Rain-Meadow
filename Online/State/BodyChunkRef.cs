@@ -16,13 +16,14 @@ namespace RainMeadow
             this.onlineOwner = owner.id;
             this.index = (byte)index;
         }
-
+        
         public static BodyChunkRef? FromBodyChunk(BodyChunk? bodyChunk)
         {
             if (bodyChunk is null) return null;
             if (!OnlinePhysicalObject.map.TryGetValue(bodyChunk.owner.abstractPhysicalObject, out var oe))
             {
-                throw new InvalidProgrammerException("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
+                RainMeadow.Error("body chunk owner doesn't exist in online space! " + bodyChunk.owner.abstractPhysicalObject);
+                return null;
             }
             return new BodyChunkRef(oe, bodyChunk.index);
         }
