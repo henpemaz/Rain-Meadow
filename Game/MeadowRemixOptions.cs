@@ -217,7 +217,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
 
                 new OpLabel(10, 100, Translate("Introroll")),
-               introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 80f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+               introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 70f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
             
