@@ -1024,6 +1024,12 @@ public partial class RainMeadow
         }
     }
 
+    //Used to emulate having a new int in the Player class.
+    public static ConditionalWeakTable<Player, AbleToSleepTimer> playerAbleToSleep = new();
+    public class AbleToSleepTimer
+    {
+        public int timer = 0;
+    }
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
         if (OnlineManager.lobby != null && self.objectInStomach != null)
@@ -1069,7 +1075,29 @@ public partial class RainMeadow
                 }
             }
         }
-
+        //Sleeping when AFK
+        var ableToSleep = playerAbleToSleep.GetOrCreateValue(self);
+        if
+        (
+            OnlineManager.lobby != null && //Make sure we're online.
+            self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
+            ( //Check if we can fit a sleeping animation.
+                (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
+                (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
+            )
+        )
+        {
+            ableToSleep.timer++;
+        }
+        else
+        {
+            ableToSleep.timer = 0;
+        }
+        if (OnlineManager.lobby != null && self.touchedNoInputCounter > 1200 && ableToSleep.timer > 200)
+        {
+            self.standing = false;
+            self.sleepCurlUp = Math.Min(1f, self.sleepCurlUp + 0.12f); //The regular sleep function constantly subtracts 0.1f from sleepCurlUp when awake, so this is effectively +0.02. Hacky, but works.
+        }
     }
 
     private UnityEngine.Color Player_ShortCutColor(On.Player.orig_ShortCutColor orig, Player self)
