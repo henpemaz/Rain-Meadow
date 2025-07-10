@@ -302,7 +302,7 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.RequestLobbyList();
         }
 
-        public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = false)
+        public void StartJoiningLobby(LobbyInfo lobby, string? password = null, bool checkMods = true)
         {
             if (checkMods)
             {
