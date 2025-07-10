@@ -386,6 +386,7 @@ namespace RainMeadow
         {
 
         }
+        public virtual Color GetPortraitColor(ArenaOnlineGameMode arena, OnlinePlayer? player, Color origPortraitColor) => origPortraitColor;
         public virtual Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
         {
             return new DialogNotify(menu.LongTranslate("This game mode doesnt have any info to give"), new Vector2(500f, 400f), menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); });

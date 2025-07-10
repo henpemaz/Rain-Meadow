@@ -30,10 +30,10 @@ namespace RainMeadow.UI.Components
 
         public ArenaMode arenaMode;
         public TeamBattleMode teamBattleMode;
-        public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown;
+        public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
-        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => TeamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
-            !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == TeamBattleMode.teamColors.Count);
+        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
+            !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == teamBattleMode.teamColors.Count);
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (teamBattleMode.teamNames.Count > 0) ? ((teamBattleMode.teamNames.Count - 1) / 4) : 0); }
         public int MaxOffset => Mathf.Max(teamBattleMode.teamNames.Count - 1, 0) / 4;
         public bool IsPagesOn => teamBattleMode.teamNames.Count > 4;
@@ -77,7 +77,7 @@ namespace RainMeadow.UI.Components
             {
                 KeyValuePair<int, string> mapping = actualMappings[num + i];
                 string name = teamBattleMode.teamNames[mapping.Key];
-                Color teamColor = TeamBattleMode.teamColors[mapping.Key];
+                Color teamColor = teamBattleMode.teamColors[mapping.Key];
 
                 Vector2 btnpos = i == 0 ? new(posXMultipler - 50, size.y - 125) : i % 2 == 0 ? new(teamButtons[0].pos.x, teamButtons[0].pos.y - 140) : new(posXMultipler * 3 - 50, teamButtons[i - 1].pos.y);
                 teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, name, mapping.Value);
@@ -91,7 +91,11 @@ namespace RainMeadow.UI.Components
                 new PatchedUIelementWrapper(tabWrapper, textBox);
 
                 OpTinyColorPicker tinyPicker = teamColorPickers[i] = new(menu, new(namePickerPos.x + 10 + textBox.size.x, namePickerPos.y), teamColor, tabWrapper);
-                tinyPicker.OnValueChangedEvent += () => ColorPicker_OnValueChangedEvent(mapping.Key, tinyPicker.valuecolor.SafeColorRange());
+                tinyPicker.colorPicker.OnValueUpdate += (config, value, oldValue) =>
+                {
+                    if (ColorUtility.TryParseHtmlString($"#{tinyPicker.colorPicker.value}", out Color color))
+                        ColorPicker_OnValueChangedEvent(mapping.Key, color.SafeColorRange());
+                };
             }
             this.SafeAddSubobjects(teamButtons);
             if (IsPagesOn) CreatePageButtons();
@@ -120,12 +124,12 @@ namespace RainMeadow.UI.Components
         }
         public void ColorPicker_OnValueChangedEvent(int value, Color newColor)
         {
-            if (!TeamBattleMode.teamColors.ContainsKey(value))
+            if (!teamBattleMode.teamColors.ContainsKey(value))
             {
                 RainMeadow.Error($"Key,{value} is not stored in team colors");
                 return;
             }
-            TeamBattleMode.teamColors[value] = Extensions.SafeColorRange(newColor);
+            teamBattleMode.teamColors[value] = Extensions.SafeColorRange(newColor);
         }
         public void NameTextBox_OnValueUpdated(int value, string newName)
         {
@@ -138,18 +142,26 @@ namespace RainMeadow.UI.Components
         }
         public void OnShutdown()
         {
-            if (OnlineManager.lobby?.isOwner == true)
-            {
-                RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamBattleMode.lerp;
-                if (teamBattleMode.teamNames.ContainsKey(0))
-                    RainMeadow.rainMeadowOptions.MartyrTeamName.Value = teamBattleMode.teamNames[0];
-                if (teamBattleMode.teamNames.ContainsKey(1))
-                    RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = teamBattleMode.teamNames[1];
-                if (teamBattleMode.teamNames.ContainsKey(2))
-                    RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = teamBattleMode.teamNames[2];
-                if (teamBattleMode.teamNames.ContainsKey(3))
-                    RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = teamBattleMode.teamNames[3];
-            }
+            if (!(OnlineManager.lobby?.isOwner == true)) return;
+
+            RainMeadow.rainMeadowOptions.TeamColorLerp.Value = teamBattleMode.lerp;
+            if (teamBattleMode.teamNames.ContainsKey(0))
+                RainMeadow.rainMeadowOptions.MartyrTeamName.Value = teamBattleMode.teamNames[0];
+            if (teamBattleMode.teamNames.ContainsKey(1))
+                RainMeadow.rainMeadowOptions.OutlawsTeamName.Value = teamBattleMode.teamNames[1];
+            if (teamBattleMode.teamNames.ContainsKey(2))
+                RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value = teamBattleMode.teamNames[2];
+            if (teamBattleMode.teamNames.ContainsKey(3))
+                RainMeadow.rainMeadowOptions.ChieftainTeamName.Value = teamBattleMode.teamNames[3];
+
+            if (teamBattleMode.teamColors.ContainsKey(0))
+                RainMeadow.rainMeadowOptions.MartyrTeamColor.Value = teamBattleMode.teamColors[0];
+            if (teamBattleMode.teamColors.ContainsKey(1))
+                RainMeadow.rainMeadowOptions.OutlawsTeamColor.Value = teamBattleMode.teamColors[1];
+            if (teamBattleMode.teamColors.ContainsKey(2))
+                RainMeadow.rainMeadowOptions.DragonSlayersTeamColor.Value = teamBattleMode.teamColors[2];
+            if (teamBattleMode.teamColors.ContainsKey(3))
+                RainMeadow.rainMeadowOptions.ChieftainTeamColor.Value = teamBattleMode.teamColors[3];
         }
         public void PrevPage()
         {
@@ -204,7 +216,6 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
             if (!teamLerpTextBox.held)
                 teamLerpTextBox.valueFloat = teamBattleMode.lerp;
@@ -217,16 +228,18 @@ namespace RainMeadow.UI.Components
             {
                 int index = teamButtons[i].buttonArrayIndex;
                 string name = teamBattleMode.teamNames[index];
-                Color color = TeamBattleMode.teamColors[index];
+                Color color = teamBattleMode.teamColors[index];
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
+                teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
-                if (!teamColorPickers[i].colorPicker.held) teamColorPickers[i].valuecolor = color;
+                if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
 
-                //teamButtons[i].buttonBehav.greyedOut = AllSettingsDisabled;
-                teamNameBoxes[i].greyedOut = OwnerSettingsDisabled;
-                teamColorPickers[i].greyedOut = OwnerSettingsDisabled;
+                bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);
+
+                teamNameBoxes[i].greyedOut = greyOutConfig;
+                teamColorPickers[i].greyedOut = greyOutConfig;
             }
         }
         public void SetCurrentlySelectedOfSeries(string id, int index) => arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;

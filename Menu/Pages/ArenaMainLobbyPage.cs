@@ -185,8 +185,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             if (clientSettings?.selectingSlugcat == true) playerBox.ToggleTextOverlay("Selecting<LINE>Slugcat", true);
             if (Arena.arenaSittingOnlineOrder.Contains(playerBox.profileIdentifier.inLobbyId) && Arena.isInGame) playerBox.ToggleTextOverlay("In Game!", true);
 
-            if (playerBox.slugcatButton.isColored) playerBox.slugcatButton.portraitColor = (clientSettings?.slugcatColor ?? Color.white);
-            else playerBox.slugcatButton.portraitColor = Color.white;
+            Color color = playerBox.slugcatButton.isColored && clientSettings != null ? clientSettings.slugcatColor : Color.white;
+            if (Arena.externalArenaGameMode != null) color = Arena.externalArenaGameMode.GetPortraitColor(Arena, playerBox.profileIdentifier, color);
+            playerBox.slugcatButton.portraitColor = color;
 
             playerBox.showRainbow = Arena.externalArenaGameMode?.DidPlayerWinRainbow(Arena, playerBox.profileIdentifier) == true || slugSlots;
         }
