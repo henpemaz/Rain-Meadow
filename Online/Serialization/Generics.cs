@@ -478,7 +478,7 @@ namespace RainMeadow.Generics
         }
     }
 
-    public class DeltaDataStates<T> : DynamicIdentifiablesPrimaryDeltaList<T, byte, OnlineState, DeltaDataStates<T>> where T : OnlineState, IIdentifiable<byte>
+    public class DeltaDataStates<T> : DynamicIdentifiablesPrimaryDeltaList<T, OnlineState.StateType, OnlineState, DeltaDataStates<T>> where T : OnlineState, IIdentifiable<OnlineState.StateType>
     {
         public DeltaDataStates() : base() { }
         public DeltaDataStates(List<T> list) : base(list) { }
@@ -486,7 +486,7 @@ namespace RainMeadow.Generics
         public override void SerializeImpl(Serializer serializer)
         {
             serializer.SerializePolyStatesByte(ref list);
-            if (serializer.IsDelta) serializer.Serialize(ref removed);
+            if (serializer.IsDelta) serializer.SerializeExtEnums(ref removed);
         }
     }
 

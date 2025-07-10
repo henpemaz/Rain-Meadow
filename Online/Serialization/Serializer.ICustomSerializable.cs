@@ -178,6 +178,34 @@ namespace RainMeadow
 
 
         public static List<Type> serializedExtEnums = new();
+        public static List<Type> requiredExtEnums = new();
+
+        public static void AddSerializedExtEnum(Type t)
+        {
+            if (!serializedExtEnums.Contains(t))
+            {
+                serializedExtEnums.Add(t);
+                if (t != typeof(OnlineState.StateType))
+                {
+                    if ((t.Assembly == Assembly.GetExecutingAssembly()) || (t.Assembly == typeof(RainWorld).Assembly))
+                    {
+                        requiredExtEnums.Add(t);
+                    }
+                }
+            }
+        }
+
+        public static bool IsExtEnumRequired(Type t, string entry)
+        {
+
+            if (t == typeof(OnlineState.StateType))
+            {
+                var stateHandler = OnlineState.handlersByEnum.Where(x => x.Key.value == entry).Select(x => x.Value).FirstOrDefault();
+                if (stateHandler == null) return false;
+                return stateHandler.type.Assembly == Assembly.GetExecutingAssembly() || stateHandler.type.Assembly == typeof(RainWorld).Assembly;
+            }
+            return requiredExtEnums.Contains(t);
+        }
 
         internal static MethodInfo MakeSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
@@ -214,10 +242,7 @@ namespace RainMeadow
             {
                 if (fieldType.IsGenericType && typeof(DynamicOrderedExtEnums<>).IsAssignableFrom(fieldType.GetGenericTypeDefinition()))
                 {
-                    if (!serializedExtEnums.Contains(fieldType))
-                    {
-                        serializedExtEnums.Add(fieldType.GenericTypeArguments[0]);
-                    }
+                    AddSerializedExtEnum(fieldType.GenericTypeArguments[0]);
                 }
 
                 return typeof(Serializer).GetMethods().Single(m =>
@@ -261,11 +286,7 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                if (!serializedExtEnums.Contains(fieldType))
-                {
-                    serializedExtEnums.Add(fieldType);
-                }
-                
+                AddSerializedExtEnum(fieldType);
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == (arguments.nullable ? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
