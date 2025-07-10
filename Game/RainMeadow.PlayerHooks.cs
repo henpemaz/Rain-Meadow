@@ -1576,17 +1576,23 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null)
         {
-            if (self.isNPC) return;
             if (self.abstractPhysicalObject.GetOnlineObject(out var oe))
             {
-                if (oe.TryGetData<SlugcatCustomization>(out var customization))
-                {
-                    bool malnourished;
-                    if (self.isNPC) malnourished = self.State is MoreSlugcats.PlayerNPCState state && state.Malnourished;
-                    else malnourished = self.abstractCreature.world.game.GetStorySession.saveState.malnourished;
-                    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, malnourished));
-                    self.SlugCatClass = customization.playingAs;
-                }
+		if (oe.TryGetData<SlugcatCustomization>(out var customization))
+		{
+		    bool malnourished;
+		    if (isStoryMode(out var _))
+		    {
+		        if (self.isNPC) malnourished = self.State is MoreSlugcats.PlayerNPCState state && state.Malnourished;
+		        else malnourished = self.abstractCreature.world.game.GetStorySession.saveState.malnourished;
+		    }
+		    else
+		    {
+		        malnourished = self.slugcatStats?.malnourished ?? false;
+		    }
+		    slugcatStatsPerPlayer.Add(self, new SlugcatStats(customization.playingAs, malnourished));
+		    self.SlugCatClass = customization.playingAs;
+		}
                 else
                 {
                     RainMeadow.Debug("no SlugcatCustomization for " + oe);
