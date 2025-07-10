@@ -318,7 +318,8 @@ namespace RainMeadow
             {
                 OnlineManager.ProcessIncomingState(ReadState());
             }
-            
+
+            fromPlayer.lastCompletedIncomingChunk = reader.ReadByte();
             byte nc = reader.ReadByte();
             for (byte i = 0; i < nc; i++)
             {
@@ -378,6 +379,7 @@ namespace RainMeadow
 
             EndWriteStates();
 
+            writer.Write(toPlayer.lastCompletedOutgoingChunk);
             if (toPlayer.OutgoingChunks.Count > 0)
             {
                 byte chunkAmount = 0;
@@ -416,7 +418,7 @@ namespace RainMeadow
             }
             else
             {
-                writer.Write(0); 
+                writer.Write(0);
             }
 
 

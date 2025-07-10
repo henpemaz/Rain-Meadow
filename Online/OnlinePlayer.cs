@@ -216,8 +216,8 @@ namespace RainMeadow
             }
         }
 
-        byte lastCompletedIncomingChunk = 0;
-        byte lastCompletedOutgoingChunk = 0;
+        public byte lastCompletedIncomingChunk = 0;
+        public byte lastCompletedOutgoingChunk = 0;
         internal IncomingDataChunk IncomingChunk(byte chunkId, IChunkDestination destination, byte totalSlices)
         {
             // unreliable chunk
