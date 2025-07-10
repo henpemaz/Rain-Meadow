@@ -110,6 +110,12 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
+        [OnlineFieldHalf]
+        public float sleepCurlUp;
+        [OnlineField]
+        public int touchedNoInputCounter;
+        [OnlineField]
+        public int ableToSleep;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
@@ -154,6 +160,9 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
+            sleepCurlUp = p.sleepCurlUp;
+            touchedNoInputCounter = p.touchedNoInputCounter;
+            ableToSleep = RainMeadow.playerAbleToSleep.GetOrCreateValue(p).timer;
             burstX = p.burstX;
             burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -257,6 +266,9 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
+            p.sleepCurlUp = sleepCurlUp;
+            p.touchedNoInputCounter = touchedNoInputCounter;
+            RainMeadow.playerAbleToSleep.GetOrCreateValue(p).timer = ableToSleep;
 
 
             if (p.spearOnBack != null)
