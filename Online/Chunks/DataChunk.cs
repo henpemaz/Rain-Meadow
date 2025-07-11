@@ -317,16 +317,23 @@ namespace RainMeadow
             incomingSlices[slice.index] = slice;
             slicesReceived++;
 
+            try
+            {
+                destination.ProcessSlice(this, slice);
+                for (int i = 0; i < incomingOrderedSlices.Count; i++)
+                {
+                    destination.ProcessOrderedSlice(this, incomingOrderedSlices[i], i == (incomingOrderedSlices.Count - 1));
+                }
+                if (DoneReceiving())
+                {
+                    destination.ProcessEntireChunk(this);
+                }
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error($"Error processing chunk {chunkId}: {except}");
+            }
 
-            destination.ProcessSlice(this, slice);
-            for (int i = 0; i < incomingOrderedSlices.Count; i++)
-            {
-                destination.ProcessOrderedSlice(this, incomingOrderedSlices[i], i == (incomingOrderedSlices.Count - 1));
-            }
-            if (DoneReceiving())
-            {
-                destination.ProcessEntireChunk(this);
-            }
         }
         public bool DoneReceiving() => slicesReceived == totalSlices;
     }
