@@ -32,7 +32,6 @@ namespace RainMeadow
             public bool ready;
             [OnlineField(group = "arenaClientData")]
             public bool gotSlugcat;
-
             public State() { }
 
             public State(ArenaClientSettings onlineEntity) : base()
@@ -47,6 +46,8 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
+                var avatarSettings = (ArenaClientSettings)entityData;
+                avatarSettings.playingAs = playingAs;
                 var clientSettings = (ArenaClientSettings)entityData;
                 clientSettings.playingAs = playingAs;
                 clientSettings.randomPlayingAs = randomPlayingAs;

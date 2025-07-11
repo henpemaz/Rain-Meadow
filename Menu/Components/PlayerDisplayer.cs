@@ -15,6 +15,11 @@ namespace RainMeadow.UI.Components
             onlinePlayers = players;
             this.largeButtonHeightSpacing = largeButtonHeightSpacing;
             this.smallButtonHeightSpacing = smallButtonHeightSpacing;
+            inviteFriends = this.AddSideButton("Meadow_Menu_InviteFriends", description: menu.Translate("Invite friends"), signal: "INVITE_FRIENDS");
+            inviteFriends.OnClick += (_) =>
+            {
+                    MatchmakingManager.currentInstance.OpenInvitationOverlay();
+            };
             refreshDisplayButtons = PopulatePlayerDisplays;
             UpdatePlayerList(onlinePlayers);
         }
@@ -45,5 +50,6 @@ namespace RainMeadow.UI.Components
         public (float, float) largeButtonHeightSpacing, smallButtonHeightSpacing;
         public List<OnlinePlayer> onlinePlayers;
         public Func<PlayerDisplayer, bool, OnlinePlayer, Vector2, IPartOfButtonScroller> getPlayerButton;
+        public SideButton inviteFriends;
     }
 }

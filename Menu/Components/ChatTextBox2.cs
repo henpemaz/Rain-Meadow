@@ -18,7 +18,7 @@ namespace RainMeadow.UI.Components
     public class ChatTextBox2 : ButtonTemplate, ICanBeTyped
     {
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
-        public bool SelectionActive => selectionStartPos != -1 ;
+        public bool SelectionActive => selectionStartPos != -1;
         public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
         public bool Focused
         {
@@ -84,7 +84,7 @@ namespace RainMeadow.UI.Components
             base.Update();
             if (previouslySubmittedText) previouslySubmittedText = previouslySubmittedText && menu.selectedObject == this;
             buttonBehav.Update();
-            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ?  null : SoundID.None);
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ? null : SoundID.None);
             if (menu.allowSelectMove) menu.allowSelectMove = !Focused;
             UpdateSelection();
             roundedRect.fillAlpha = 1.0f;

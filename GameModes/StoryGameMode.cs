@@ -1,4 +1,5 @@
-﻿using System;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -314,31 +315,43 @@ namespace RainMeadow
             base.GameShutDown(game);
         }
     }
-
     public static class StoryModeExtensions
     {
-        public static bool FriendlyFireSafetyCandidate(this PhysicalObject creature)
+        public static bool FriendlyFireSafetyCandidate(this Creature creature, Creature? friend)
         {
-            if (creature is Player p)
+            if (creature.abstractCreature.GetOnlineCreature() is not OnlineCreature oc)
             {
-                if (p.isNPC) return false;
-                if (RainMeadow.isArenaMode(out var _) && p.room.game.IsArenaSession && p.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false) {
-                    return true; // you are a safety candidate
-                };
-
+                RainMeadow.Error($"{creature.abstractCreature} does not have an OnlineCreature or is null.");
+                return false;
             }
-            else return false;
+
+            if (!oc.isAvatar) return false;
+
+            if (RainMeadow.isArenaMode(out var arena))
+            {
+                if (creature.room.game.IsArenaSession && creature.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false)
+                {
+                    return true; // you are a safety candidate
+                }
+
+                if (friend is not null)
+                {
+                    if (TeamBattleMode.isTeamBattleMode(arena, out _))
+                    {
+                        return ArenaHelpers.CheckSameTeam(oc.owner, friend.abstractCreature.GetOnlineCreature()?.owner, creature, friend);
+                    }
+                }
+
+                if (arena.countdownInitiatedHoldFire) return true;
+            }
 
             if (RainMeadow.isStoryMode(out var story))
             {
                 return !story.friendlyFire;
             }
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                return arena.countdownInitiatedHoldFire;
-            }
 
             return false;
         }
     }
+
 }

@@ -97,25 +97,7 @@ namespace RainMeadow
             selectableSlugcats.AddRange(allSlugcats);
             selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
         }
-        public static void SetProfileColor(ArenaOnlineGameMode arena)
-        {
-            int profileColor = 0;
-            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
-            {
-                var currentPlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, i);
 
-                if (ArenaHelpers.baseGameSlugcats.Contains(arena.avatarSettings.playingAs) && ModManager.MSC)
-                {
-                    profileColor = UnityEngine.Random.Range(0, 4);
-                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
-                }
-                else
-                {
-                    arena.playerResultColors[currentPlayer.GetUniqueID()] = profileColor;
-                }
-
-            }
-        }
 
         // I need a way to order ArenaSitting by the host without serializing a ton of data, so I just serialize the ushort of the inLobbyId
         public static OnlinePlayer FindOnlinePlayerByLobbyId(ushort lobbyId)
@@ -130,67 +112,7 @@ namespace RainMeadow
 
             return null;
         }
-        public static void ResetOnReturnToMenu(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
-        {
-            arena.ResetGameTimer();
-            arena.currentLevel = 0;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playersReadiedUp.list.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
-            arena.playersLateWaitingInLobbyForNextRound.Clear();
 
-
-
-        }
-        public static void ResetOnReturnMenu(ArenaOnlineGameMode arena, ProcessManager manager)
-        {
-            manager.rainWorld.options.DeleteArenaSitting();
-            if (!OnlineManager.lobby.isOwner) return;
-            arena.isInGame = false;
-            arena.leaveForNextLevel = false;
-            arena.ResetGameTimer();
-            arena.currentLevel = 0;
-            arena.lobbyCountDown = 5;
-            arena.initiateLobbyCountdown = false;
-        }
-        public static void OnStartGame(ArenaOnlineGameMode arena, ProcessManager manager)
-        {
-            manager.rainWorld.progression.ClearOutSaveStateFromMemory();
-            manager.rainWorld.progression.SaveProgression(true, true);
-            if (!OnlineManager.lobby.isOwner) return;
-            arena.arenaSittingOnlineOrder.Clear();
-            arena.playerNumberWithDeaths.Clear();
-            arena.playerNumberWithKills.Clear();
-            arena.playerNumberWithWins.Clear();
-        }
-        public static void ResetReadyUpLogic(ArenaOnlineGameMode arena, ArenaLobbyMenu lobby)
-        {
-            if (lobby.playButton != null)
-            {
-                lobby.playButton.menuLabel.text = Utils.Translate("READY?");
-                lobby.playButton.inactive = false;
-
-            }
-            if (OnlineManager.lobby.isOwner)
-            {
-                arena.allPlayersReadyLockLobby = arena.playersReadiedUp.list.Count == OnlineManager.players.Count;
-                arena.isInGame = false;
-                arena.leaveForNextLevel = false;
-            }
-            if (arena.returnToLobby)
-            {
-                arena.playersReadiedUp.list.Clear();
-                arena.returnToLobby = false;
-            }
-
-
-            lobby.manager.rainWorld.options.DeleteArenaSitting();
-            //Nightcat.ResetNightcat();
-
-
-        }
         public static OnlinePlayer FindOnlinePlayerByStringUsername(string username)
         {
             foreach (var player in OnlineManager.players)
@@ -317,7 +239,8 @@ namespace RainMeadow
                 arena.onlineArenaSettingsInterfaceMultiChoice[ID] = i;
             }
         }
-        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player)
+        public static ArenaClientSettings? GetArenaClientSettings(OnlinePlayer? player) => GetDataSettings<ArenaClientSettings>(player);
+        public static T? GetDataSettings<T>(OnlinePlayer? player) where T : OnlineEntity.EntityData
         {
             if (OnlineManager.lobby == null)
             {
@@ -325,7 +248,7 @@ namespace RainMeadow
                 return null;
             }
             if (player == null) return null;
-            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<ArenaClientSettings>() : null;
+            return OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) ? settings.GetData<T>() : null;
         }
         public static void ParseArenaSetupSaveString(string text, Action<string[]> action)
         {
@@ -333,6 +256,27 @@ namespace RainMeadow
             string[] array = Regex.Split(text, "<msuA>");
             for (int i = 0; i < array.Length; i++)
                 action.Invoke(Regex.Split(array[i], "<msuB>"));
+        }
+
+        public static bool CheckSameTeam(OnlinePlayer? A, OnlinePlayer? B, Creature creature, Creature friend)
+        {
+            if (A is not null && B is not null)
+            {
+                if (OnlineManager.lobby.clientSettings[A].TryGetData<ArenaTeamClientSettings>(out var tb1))
+                {
+                    if (OnlineManager.lobby.clientSettings[B].TryGetData<ArenaTeamClientSettings>(out var tb2))
+                    {
+                        if (tb1.team == tb2.team)
+                        {
+                            RainMeadow.Debug("Same team! No hits");
+                        }
+                        return tb1.team == tb2.team && creature.State.alive && friend.State.alive;
+                    }
+                }         
+            }
+
+            RainMeadow.Debug("Different teams or Player is null");
+            return false;
         }
 
         public static int GetReadiedPlayerCount(List<OnlinePlayer> players) => players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
