@@ -5,63 +5,138 @@ using System.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json.Linq;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using HarmonyLib;
 
 namespace RainMeadow
 {
     static class CapeManager
     {
-        const string capes_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics/refs/heads/master/capes.txt";
+        const string capes_latest_commit = "https://github.com/invalidunits/MeadowCosmetics16.git/info/refs?service=git-upload-pack";
+        static string getRemoteLatestCommit() 
+        {
+            using (WebClient client = new WebClient())
+            {
+                string response = client.DownloadString(capes_latest_commit);
+
+                // Split by lines
+                var lines = response.Split('\n');
+
+                foreach (var line in lines)
+                {
+                    if (line.Contains("refs/heads/master"))
+                    {
+                        RainMeadow.Debug(line);
+                        // Line format: <length><sha1> refs/heads/master
+                        // Strip off the first 4 chars (pkt-line length)
+                        string trimmed = line.Length > 4 ? line.Substring(4) : line;
+                        string[] parts = trimmed.Split(' ');
+                        if (parts.Length > 0)
+                        {
+                            RainMeadow.Debug($"recieved the hash latest commit: {parts[0]}");
+                            return parts[0];
+                        }
+                    }
+                }
+
+                throw new Exception("We couldn't find the remote hash");
+            }
+        }
+        
+
+        const string capes_remote_txt = "https://raw.githubusercontent.com/invalidunits/MeadowCosmetics16/refs/heads/master/capes.txt";
         static public void FetchCapes()
         {
             try
             {
-                RainMeadow.DebugMe();
                 using (WebClient client = new WebClient())
                 {
-                    string capes = client.DownloadString(capes_txt);
-                    entries.Clear();
+                    var cape_hash_file = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes_hash.txt");
+                    var capes_txt = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").path, "capes.txt");
 
-                    foreach (string line in capes.Split('\n'))
+                    // Download remote commit hash.
+                    string commithash = getRemoteLatestCommit();
+
+                    // Read local commit hash from file.
+                    string commithashlocal = string.Empty;
+                    if (File.Exists(cape_hash_file))
                     {
-                        RainMeadow.Debug(line);
-                        // Skip the header or empty lines
-                        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
-                            continue;
-
-                        // Split the line into parts
-                        string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
-                        RainMeadow.Debug(parts);
-                        if (parts.Length < 2) continue;
-
-                        string steamId64 = parts[0].Trim();
-                        string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
-                        string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
-
-                        // Check if the color is a list of floats (RGB)
-                        Color rgbColor = Color.red;
-                        if (color.Contains(","))
+                        using (FileStream stream = File.OpenRead(cape_hash_file))
+                        using (StreamReader reader = new(stream))
                         {
-                            string[] rgbParts = color.Split(',');
-                            if (rgbParts.Length == 3 &&
-                                float.TryParse(rgbParts[0].Trim(), out float r) &&
-                                float.TryParse(rgbParts[1].Trim(), out float g) &&
-                                float.TryParse(rgbParts[2].Trim(), out float b))
-                            {
-                                rgbColor = new Color(r, g, b);
-                            }
+                            commithashlocal = reader.ReadLine();
                         }
-                        else
-                        {
-                            if (color == "sgold")
-                            {
-                                rgbColor = RainWorld.SaturatedGold;
-                            }
-                        }
-
-                        // Add the parsed entry to the list
-                        entries.Add(new CapeEntry(ulong.Parse(steamId64), rgbColor));
                     }
 
+
+                    // Only download the new capes when we hashes don't match.
+                    if (commithash != commithashlocal)
+                    {
+                        RainMeadow.Debug("Local hash doesn't match, downloading remote.");
+                        using (FileStream stream = File.Create(cape_hash_file))
+                        using (StreamWriter writer = new(stream))
+                        {
+                            writer.WriteLine(commithash);
+                        }
+                        string response = client.DownloadString(capes_remote_txt);
+                        using (FileStream stream = File.Create(capes_txt))
+                        using (StreamWriter writer = new(stream))
+                        {
+                            writer.WriteLine(response);
+                        }
+                    }
+
+                    entries.Clear();
+                    // process capes from file.
+                    using (FileStream capefile = File.OpenRead(capes_txt))
+                    using (StreamReader capestream = new StreamReader(capefile))
+                    {
+                        while (true)
+                        {
+                            var line = capestream.ReadLine();
+                            if (line == null) break;
+
+                            // Skip the header or empty lines
+                            if (string.IsNullOrWhiteSpace(line) || line.StartsWith("steamid64"))
+                                continue;
+
+                            // Split the line into parts
+                            string[] parts = line.Split(new[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length < 2) continue;
+
+                            string HashedsteamId64 = parts[0].Trim();
+                            string colorPart = parts[1].Split(';')[0].Trim(); // Extract only the color part
+                            string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
+
+                            // Check if the color is a list of floats (RGB)
+                            Color rgbColor = Color.red;
+                            if (color.Contains(","))
+                            {
+                                string[] rgbParts = color.Split(',');
+                                if (rgbParts.Length == 3 &&
+                                    float.TryParse(rgbParts[0].Trim(), out float r) &&
+                                    float.TryParse(rgbParts[1].Trim(), out float g) &&
+                                    float.TryParse(rgbParts[2].Trim(), out float b))
+                                {
+                                    rgbColor = new Color(r, g, b);
+                                }
+                            }
+                            else
+                            {
+                                if (color == "sgold")
+                                {
+                                    rgbColor = RainWorld.SaturatedGold;
+                                }
+                            }
+
+
+                            // Add the parsed entry to the list
+                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, rgbColor);
+                        }
+                    }
                 }
             }
             catch (Exception except)
@@ -72,31 +147,33 @@ namespace RainMeadow
         }
 
 
-        public class CapeEntry
-        {
-            public ulong steamID;
-            public Color color;
-
-            public CapeEntry(ulong steamID, Color color)
-            {
-                RainMeadow.Debug($"Cape Entry {steamID}, {color}");
-                this.steamID = steamID;
-                this.color = color;
-
-            }
-        }
-        private static List<CapeEntry> entries = new();
+        private static Dictionary<string, Color> entries = new();
+        private static ConditionalWeakTable<MeadowPlayerId, object> cape_cache = new();
 
         static public Color? HasCape(MeadowPlayerId player)
         {
+            if (cape_cache.TryGetValue(player, out var entry) && entry is not null) return (Color)entry;
             if (player is SteamMatchmakingManager.SteamPlayerId steamid)
             {
-                CapeEntry? entry = entries.Where(x => steamid.oid.GetSteamID64() == x.steamID).FirstOrDefault();
-                if (entry is not null)
+                ulong steamID = steamid.oid.GetSteamID64();
+                SHA256 Sha = SHA256.Create();
+                var hashed_cape_str = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
+
+                if (entries.TryGetValue(hashed_cape_str, out Color found_entry))
                 {
-                    return entry.color;
+                    cape_cache.Add(player, found_entry);
+                    return found_entry;
                 }
             }
+
+            if (player is LANMatchmakingManager.LANPlayerId lanPlayer)
+            {
+                if (lanPlayer.name == "goldcape") return RainWorld.SaturatedGold;
+                if (lanPlayer.name == "redcape") return Color.red;
+                if (lanPlayer.name == "bluecape") return Color.blue;
+            }
+
+
             return null;
         }
 
