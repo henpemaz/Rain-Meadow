@@ -442,8 +442,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 if (MyLevelSelector.LevelListSortNumber(levelItem.name) != MyLevelSelector.LevelListSortNumber(nextLevelItem.name))
                     levelItem.AddDividers(nextLevelItem);
             }
-            ConstrainScroll();
-            scrollOffset = DownScrollOffset;
+            scrollOffset = DownScrollOffset = 0;
 
         }
         public virtual void HandleLevelItemFade(LevelItem item) { }
