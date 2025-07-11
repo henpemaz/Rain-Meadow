@@ -130,6 +130,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public void OpenGameStatsDialog()
     {
         if (!RainMeadow.isArenaMode(out _)) return;
+        menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
         dialog = Arena.externalArenaGameMode?.AddPostGameStatsFeed(Arena, menu);
         menu.manager.ShowDialog(dialog);
     }
