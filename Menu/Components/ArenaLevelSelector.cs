@@ -585,7 +585,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         }
         public void UpdatePlaylist()
         {
-            clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true || !string.IsNullOrEmpty(searchBox?.value);
+            clearButton.buttonBehav.greyedOut = LevelItems.Count == 0 || clearAllCounter > 0 || MyLevelSelector?.ForceGreyOutAll == true;
             shuffleButton.buttonBehav.greyedOut = MyLevelSelector?.ForceGreyOutAll == true;
             if (clearAllCounter > 0)
             {
@@ -611,7 +611,7 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
                 }
                 return;
             }
-            mismatchCounter = IsMismatched && string.IsNullOrEmpty(searchBox?.value) ? mismatchCounter + 1 : 0;
+            mismatchCounter = IsMismatched ? mismatchCounter + 1 : 0;
             if (mismatchCounter == 80) ResolvePlaylistMismatch();
 
         }
