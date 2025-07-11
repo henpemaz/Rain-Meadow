@@ -97,7 +97,7 @@ namespace RainMeadow
                 using (BinaryWriter writer = new(stream))
                 {
                     writer.Write(Encoding.ASCII.GetBytes("ENUM"));
-                    writer.Write((byte)enumMap.Keys.Count);
+                    writer.Write((byte)(enumMap.Count + unrecognizedEnumMap.Count));
                     foreach (Type key in enumMap.Keys)
                     {
                         var typename = Encoding.UTF8.GetBytes(key.AssemblyQualifiedName);
@@ -166,7 +166,7 @@ namespace RainMeadow
                                 }
 
                                 bool typeValid = true;
-                                if (!ExtEnumBase.valueDictionary.Keys.Contains(t))
+                                if (t is null || !ExtEnumBase.valueDictionary.Keys.Contains(t))
                                 {
                                     // missing enum type error.
                                     typeValid = false;
@@ -175,7 +175,7 @@ namespace RainMeadow
                                 else
                                 {
                                     RainMeadow.Debug($"{typeName}: {entryCount}:{ExtEnumBase.GetExtEnumType(t).Count}");
-                                    newEnumMap.Add(t, new());
+                                    if (!newEnumMap.ContainsKey(t)) newEnumMap.Add(t, new());
                                 }
 
 
@@ -184,17 +184,18 @@ namespace RainMeadow
                                     byte remotekey = reader.ReadByte();
                                     bool required = reader.ReadBoolean();
                                     string entry = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
-                                    if (required)
+                                    if (typeValid && ExtEnumBase.TryParse(t, entry, false, out var result))
                                     {
-                                        if (!typeValid || !ExtEnumBase.TryParse(t, entry, false, out var result))
-                                        {
-                                            // missing entry error.
-                                            OnlineManager.QuitWithError($"Missing enum entry: {typeName} : {entry}");
-                                            return;
-                                        }
-
                                         newEnumMap[t!].Add((remotekey, (byte)result.Index));
                                         RainMeadow.Debug($"{entry}: remote={remotekey} local={result.Index}");
+                                        continue;
+                                    }
+
+                                    if (required)
+                                    {
+                                        // missing entry error.
+                                        OnlineManager.QuitWithError($"Missing enum entry: {typeName} : {entry}");
+                                        return;
                                     }
                                     else
                                     {
@@ -266,6 +267,7 @@ namespace RainMeadow
 
                                     var possibleIndexes = usedIndexes.Select(x => { checked { return (byte)(x + 1); } } );
                                     byte unusedIndex = possibleIndexes.Except(usedIndexes).First();
+                                    RainMeadow.Debug($"Added Enum {typeName} : {entryName}");
                                     unrecognizedEnumMap[typeName].Add((unusedIndex, entryName));
                                 }
                             }

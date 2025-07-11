@@ -151,6 +151,7 @@ namespace RainMeadow
                 MenuHooks(); //  sets the error message fallback
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
+                ActivateEnums();
 
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();

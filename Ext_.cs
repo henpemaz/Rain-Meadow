@@ -56,5 +56,12 @@ namespace RainMeadow
             internal static SoundID RM_Mouse_Call = new("RM_Mouse_Call", true);
             internal static SoundID Fartificer = new("Fartificer", true);
         }
+
+
+        void ActivateEnums()
+        {
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Ext_SlugcatStatsName).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Ext_SoundID).TypeHandle);
+        }
     }
 }
