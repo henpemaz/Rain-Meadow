@@ -375,8 +375,6 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
 
             buttonHeight = Mathf.Lerp(20, 30 + ThumbHeight, ShowThumbsTransitionState(1f));
             buttonSpacing = (buttonHeight - 20) / 6;
-
-            if (searchBox != null) searchBox.greyedOut = MyLevelSelector?.ForceGreyOutAll == true;
         }
         public override float GetIdealYPosWithScroll(int elementIndex)
         {
