@@ -85,6 +85,23 @@ namespace RainMeadow
             self.saveCreatures = false;
         }
 
+        public string PlayingAsText()
+        {
+            var clientSettings = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>();
+            if (ModManager.MSC && clientSettings.playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
+            {
+                return (OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? SlugcatStats.getSlugcatName(clientSettings.playingAs);
+            }
+            else if (clientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
+            {
+                return SlugcatStats.getSlugcatName(clientSettings.randomPlayingAs);
+            }
+            else
+            {
+                return SlugcatStats.getSlugcatName(clientSettings.playingAs);
+            }
+        }
+
         public virtual string TimerText()
         {
             return "";
