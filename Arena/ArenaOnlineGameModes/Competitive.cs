@@ -57,24 +57,7 @@ namespace RainMeadow
         }
         public override string TimerText()
         {
-            var client_settings = OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>();
-
-            SlugcatStats.Name playingAs;
-            if (client_settings.playingAs != RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
-            {
-                playingAs = client_settings.playingAs;
-            }
-            else
-            {
-                playingAs = client_settings.randomPlayingAs ?? SlugcatStats.Name.White;
-            }
-
-            if (ModManager.MSC && playingAs == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-            {
-                return Utils.Translate($"Prepare for combat,") + " " + Utils.Translate((OnlineManager.lobby.gameMode as ArenaOnlineGameMode)?.paincatName ?? "");
-            }
-
-            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(SlugcatStats.getSlugcatName(playingAs));
+            return Utils.Translate("Prepare for combat,") + " " + Utils.Translate(PlayingAsText());
         }
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
