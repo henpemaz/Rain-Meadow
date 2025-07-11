@@ -94,6 +94,9 @@ namespace RainMeadow
 
     public class RealizedPlayerState : RealizedCreatureState
     {
+        [OnlineField]
+        public bool malnourished = false;
+
         [OnlineField(nullable = true)]
         private VinePositionState? vinePosState;
         [OnlineField(nullable = true)]
@@ -204,6 +207,8 @@ namespace RainMeadow
                 if (handIndex >= 0 && playerGraphics.hands[handIndex].reachingForObject)
                     pointingDir = playerGraphics.hands[handIndex].absoluteHuntPos;
             }
+
+            malnourished = p.Malnourished;
         }
 
         public Player.InputPackage GetInput()
@@ -337,6 +342,10 @@ namespace RainMeadow
                     playerGraphics.hands[handIndex].absoluteHuntPos = pointingDir.Value;
                     p.handPointing = handIndex; //important! - check != -1 so we know we are in a "pointing state"
                 }
+            }
+
+            if (p.Malnourished != malnourished) {
+                p.SetMalnourished(malnourished);
             }
         }
     }

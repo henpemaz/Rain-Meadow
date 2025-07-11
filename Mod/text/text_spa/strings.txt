@@ -19,7 +19,6 @@ Lobby Domain|Dominio de la sala
 Local|Local
 Router|Rúter
 Steam|Steam
-Please disable JollyCoop before playing Online|Por favor, desactiva Jolly Co-op antes de jugar en línea.
 Failed to join lobby.<LINE> Lobby is full|Error al unirte a la sala.<LINE> La sala está llena.
 Failed to join lobby.<LINE>|Error al unirte a la sala.<LINE>
 Password Required|Contraseña requerida
