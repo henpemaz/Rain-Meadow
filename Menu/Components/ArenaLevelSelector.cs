@@ -6,6 +6,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using MoreSlugcats;
+using Newtonsoft.Json.Linq;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
@@ -305,9 +306,8 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         public SideButton? searchButton;
         public SideButton showThumbsButton;
         public LevelPreview levelPreviewer;
-        public string savedSearchQuery = "";
         public float showThumbsTransitionState, lastShowThumbsTransitionState;
-        public override float MaxVisibleItemsShown => (int)base.MaxVisibleItemsShown;
+        public override float MaxDownScroll => (int)base.MaxDownScroll; 
         public override float DownScrollOffset
         {
             get => base.DownScrollOffset;
@@ -449,36 +449,35 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
             if (buttons.GetValueOrDefault(index) is not LevelItem item) return;
             MyLevelSelector?.AddItemToSelectedList(item.name);
         }
-        public void AddSearchBar(float posYOffset = 10, float sizeX = 160)
+        public void AddSearchBar(float sizeX = 150, float decreaseSizeY = 20)
         {
             if (searchButton != null) return;
          
             searchButton = AddSideButton("modSearch", "", menu.Translate("Search for levels"), "SEARCHLEVEL");
             searchButton.OnClick += (btn) =>
             {
-                float offset = posYOffset + 10;
                 if (searchBox != null)
                 {
-                    if (scrollUpButton != null) scrollUpButton.pos.y -= offset;
+                    FilterLevelsList("");
                     menu.PlaySound(SoundID.MENU_Checkbox_Uncheck);
-                    savedSearchQuery = searchBox.value;
+                    size.y += decreaseSizeY;
                     tabWrapper.ClearMenuObject(searchBox.wrapper);
                     searchBox.Hide();
                     searchBox.Unload();
                     searchBox = null;
                     return;
                 }
-                if (scrollUpButton != null) scrollUpButton.pos.y += offset;
                 menu.PlaySound(SoundID.MENU_Checkbox_Check);
-                searchBox = new(new Configurable<string>(""), new((size.x * 0.5f) - (sizeX * 0.5f), size.y + posYOffset), sizeX)
+                searchBox = new(new Configurable<string>(""), new((size.x * 0.5f) - (sizeX * 0.5f), size.y - 24), sizeX)
                 {
                     description = menu.Translate("Search levels"),
                     allowSpace = true,
                     accept = OpTextBox.Accept.StringASCII,
-                    colorFill = MenuColorEffect.rgbBlack
+                    colorFill = MenuColorEffect.rgbBlack,
                 };
-                if (!string.IsNullOrEmpty(savedSearchQuery)) searchBox.value = savedSearchQuery;
-                searchBox.OnChange += () => { savedSearchQuery = searchBox.value; FilterLevelsList(savedSearchQuery); };
+                searchBox.OnHeld += (held) => { searchBox.wrapper.tabWrapper.holdElement = held; };
+                searchBox.OnChange += () => { FilterLevelsList(searchBox.value); };
+                size.y -= decreaseSizeY;
                 new PatchedUIelementWrapper(tabWrapper, searchBox);
 
             };
