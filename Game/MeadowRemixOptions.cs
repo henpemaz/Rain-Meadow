@@ -42,7 +42,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> ChieftainTeamName;
     public readonly Configurable<float> TeamColorLerp;
 
-    public readonly Configurable<float> ScrollSpeed;
+    public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
     public readonly Configurable<bool> ShowPing;
     public readonly Configurable<int> ShowPingLocation;
 
@@ -130,6 +130,8 @@ public class RainMeadowOptions : OptionInterface
 
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
+
+        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
     }
 
     public override void Initialize()
@@ -188,6 +190,8 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editSyncRequiredModsButton;
             OpSimpleButton editBannedModsButton;
 
+            OpTextBox chatBgOpacity;
+
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -219,6 +223,8 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(210, 180f, Translate("Chat Talk Button")),
                 new OpKeyBinder(ChatButtonKey, new Vector2(210f, 150), new Vector2(150f, 30f)),
 
+                new OpLabel(410, 180, Translate("Chat Background Opacity")),
+                chatBgOpacity = new OpTextBox(ChatBgOpacity, new Vector2(410f, 153f), 90),
 
                 new OpLabel(210, 120f, Translate("Show Ping")),
                 new OpCheckBox(ShowPing, new Vector2(210, 90f)),
@@ -229,13 +235,13 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410, 120f, Translate("Chat Log On/Off")),
                 new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
 
-                new OpLabel(10, 120, Translate("Introroll")),
-                introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
-                watcherWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
-
-                new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
-                new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
+                new OpLabel(10, 100, Translate("Introroll")),
+               introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 70f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+               downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+               watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+            
+               new OpLabel(10f, 30, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
+               new OpTextBox(ScrollSpeed, new Vector2(10, 5), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
@@ -253,8 +259,32 @@ public class RainMeadowOptions : OptionInterface
                 }
                 else watcherWarning.Hide();
             };
-            downpourWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Downpour && ModManager.MSC;
-            watcherWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Watcher && ModManager.Watcher;
+            if (!ModManager.MSC && introroll.value == "Downpour")
+            {
+                downpourWarning.Hidden = false;
+                watcherWarning.Hidden = true;
+            }
+            else
+            {
+                downpourWarning.Hidden = ModManager.MSC;
+            }
+
+
+            if (!ModManager.Watcher && introroll.value == "Watcher")
+            {
+                watcherWarning.Hidden = false;
+                downpourWarning.Hidden = true;
+            }
+            else
+            {
+                watcherWarning.Hidden = ModManager.Watcher;
+            }
+
+
+            chatBgOpacity.OnValueChanged += (config, value, oldValue) =>
+            {
+                chatBgOpacity.valueFloat = Mathf.Clamp01(chatBgOpacity.valueFloat);
+            };
 
             editSyncRequiredModsButton.OnClick += _ =>
             {
@@ -281,7 +311,6 @@ public class RainMeadowOptions : OptionInterface
                     RainMeadow.Error(e);
                 }
             };
-
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
             OnlineStorySettings = new UIelement[11]

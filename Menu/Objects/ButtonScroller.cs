@@ -216,10 +216,9 @@ namespace RainMeadow
             }
         }
 
-        public bool sliderDefaultIsDown, greyOutWhenNoScroll, startEndWithSpacing;
-        protected bool sliderIsOnRightSide, isScrolling;
-        protected float desiredScrollOffset, scrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap;
-        public float buttonSpacing, buttonHeight = 30, maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
+        public bool sliderDefaultIsDown, greyOutWhenNoScroll, startEndWithSpacing, sliderIsOnRightSide, isScrolling;
+        public float desiredScrollOffset, scrollOffset, floatScrollSpeed, scrollSliderValue, scrollSliderValueCap, 
+            buttonSpacing, buttonHeight = 30, maxScrollSpeed = 1.2f, scrollSliderCapLerp = 0.02f, scrollSliderCapTick = 0.05f;
         public PatchedVerticalSlider scrollSlider;
         public EventfulScrollButton? scrollUpButton, scrollDownButton;
         public List<IPartOfButtonScroller> buttons = [];

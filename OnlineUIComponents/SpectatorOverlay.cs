@@ -1,5 +1,4 @@
 ﻿using Menu;
-using RainMeadow.UI.Components;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,37 +11,38 @@ namespace RainMeadow
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
         public List<PlayerButton> PlayerButtons => playerScroller.GetSpecificButtons<PlayerButton>();
-        public SpectatorOverlay(ProcessManager manager, RainWorldGame game) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
+        public SpectatorOverlay(ProcessManager manager, RainWorldGame game, RoomCamera camera) : base(manager, RainMeadow.Ext_ProcessID.SpectatorMode)
         {
             this.game = game;
+            this.camera = camera;
             pages.Add(new(this, null, "spectator", 0));
             selectedObject = null;
             Vector2 pos = new(1180, 553);
             pages[0].subObjects.Add(new MenuLabel(this, pages[0], Translate("PLAYERS"), pos, new(110, 30), true));
-            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, new(ButtonSize, ButtonSpacingOffset));
+            playerScroller = new(this, pages[0], new(pos.x, pos.y - 38 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(MaxVisibleOnList, ButtonSize, ButtonSpacingOffset)), MaxVisibleOnList, 200, (ButtonSize, ButtonSpacingOffset));
             pages[0].subObjects.Add(playerScroller);
         }
         private bool UpdateList()
         {
             List<PlayerButton> playerButtons = PlayerButtons;
             List<OnlinePlayer> newPlayers = [..OnlineManager.players.OrderBy(onlineP => onlineP.isMe ? 0 : 1)]; // will keep this logic for LAN
-            List<OnlinePhysicalObject> realizedPlayers = [.. OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true)).OfType<OnlinePhysicalObject>().OrderBy(opo => opo.isMine ? 0 : 1)];
+            List<OnlineCreature> realizedPlayers = [.. OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true)).OfType<OnlineCreature>().OrderBy(opo => opo.isMine ? 0 : 1)];
             if (newPlayers.Count == playerButtons.Count) return false; // race condition that will Never Happen(TM)
 
             for (int i = playerButtons.Count - 1; i >= 0; i--)
             {
-                PlayerButton button = playerButtons[i] ;
+                PlayerButton button = playerButtons[i];
                 if (newPlayers.Contains(button.player))
                 {
                     newPlayers.Remove(button.player);
+                    button.avatars = realizedPlayers.Where(x => x.owner == button.player).ToList();
                     continue;
                 }
                 playerScroller.RemoveButton(button, false);
             }
             foreach (OnlinePlayer player in newPlayers)
             {
-                OnlinePhysicalObject? foundPlayer = realizedPlayers.FirstOrDefault(x => x.owner == player);
-                PlayerButton playerButton = new(this, playerScroller, player, foundPlayer, playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && (foundPlayer == null ? !player.isMe : !foundPlayer.isMine));
+                PlayerButton playerButton = new(this, playerScroller, player, realizedPlayers.Where(x => x.owner == player).ToList(), playerScroller.GetIdealPosWithScrollForButton(playerScroller.buttons.Count), OnlineManager.lobby.isOwner && !player.isMe);
                 playerScroller.AddScrollObjects(playerButton);
             }
             playerScroller.ConstrainScroll();
@@ -54,9 +54,9 @@ namespace RainMeadow
             UpdateList();
             foreach (PlayerButton button in PlayerButtons)
             {
-                AbstractCreature? ac = button.opo?.apo as AbstractCreature;
-                button.toggled = ac != null && ac == spectatee;
-                button.buttonBehav.greyedOut = ac is null || (ac.state.dead || (ac.realizedCreature != null && ac.realizedCreature.State.dead));
+                var avatars = button.GetSpectableAvatars();
+                button.toggled = avatars.Contains(spectatee?.GetOnlineObject());
+                button.buttonBehav.greyedOut = avatars.Count() == 0;
             }
             if (forceNonMouseSelectFreeze && !manager.menuesMouseMode)
             {
@@ -83,6 +83,7 @@ namespace RainMeadow
         }
         public AbstractCreature? spectatee;
         public RainWorldGame game;
+        public RoomCamera camera;
         public ButtonScroller playerScroller;
         public bool forceNonMouseSelectFreeze = false;
         public class PlayerButton : ButtonScroller.ScrollerButton //makes sense to just remove the pos property
@@ -133,14 +134,43 @@ namespace RainMeadow
             {
                 get => menu as SpectatorOverlay;
             }
-            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, OnlinePhysicalObject? opo, Vector2 pos, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.name, pos, size == default ? new(110, 30) : size)
+            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, List<OnlineCreature> avatars, Vector2 pos, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.name, pos, size == default ? new(110, 30) : size)
             {
                 this.player = player;
-                this.opo = opo;
+                this.avatars = avatars;
                 OnClick += (_) =>
                 {
-                    toggled ^= true;
-                    Overlay?.SpectatePlayer(toggled ? this.opo?.apo as AbstractCreature : null);
+                    OnlineCreature? spectatee = Overlay?.spectatee?.GetOnlineCreature();
+                    var spectatable_avatars = GetSpectableAvatars().ToList();
+                    if (player.isMe)
+                    {
+                        spectatee = null;
+                    }
+                    else if (spectatee is not null)
+                    {
+                        if (spectatable_avatars.Contains(spectatee))
+                        {
+                            // iterate to next avatar
+                            int index = spectatable_avatars.IndexOf(spectatee);
+                            index += 1;
+                            index = index % spectatable_avatars.Count;
+                            spectatee = spectatable_avatars.ElementAtOrDefault(index);
+                        }
+                        else
+                        {
+                            spectatee = spectatable_avatars.FirstOrDefault();
+                        }
+                    }
+                    else
+                    {
+                        spectatee = spectatable_avatars.FirstOrDefault();
+                    }
+
+                    if (spectatee is not null) {
+                        toggled = true;
+                    }
+
+                    Overlay?.SpectatePlayer(spectatee?.creature);
                 };
                 if (canKick)
                 {
@@ -186,8 +216,10 @@ namespace RainMeadow
 
             public bool banClickedOnce, forceKickGreyOut;
             public OnlinePlayer player;
-            public OnlinePhysicalObject? opo;
-            public ScrollSymbolButton? kickbutton;
+
+            public IEnumerable<OnlineCreature> GetSpectableAvatars() => avatars.Where(avatar => !avatar.creature.state.dead && (avatar.creature.realizedCreature == null || !avatar.creature.realizedCreature.State.dead));
+            public List<OnlineCreature> avatars;
+            public SimplerSymbolButton? kickbutton;
         }
     }
 }

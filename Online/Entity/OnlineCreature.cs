@@ -207,6 +207,26 @@ namespace RainMeadow
             if (creature.State is HealthState hs2) RainMeadow.Debug($"heath became {hs2.health}");
         }
 
+
+        [RPCMethod]
+        public void HopOnBack(OnlineCreature uppyWanter)
+        {
+            if (!isMine || isPending) throw new InvalidOperationException("not owner"); // causes sender to retry
+            if (this.abstractCreature.realizedCreature is Player realizedPlayer)
+            {
+                if (realizedPlayer.slugOnBack is null) return;
+                if (uppyWanter.abstractCreature.realizedCreature is Player realizedUppyWanter)
+                {
+                    if (realizedPlayer == realizedUppyWanter) return;
+                    if (!realizedPlayer.slugOnBack.HasASlug)
+                    {
+                        realizedPlayer.slugOnBack.SlugToBack(realizedUppyWanter);
+                    }
+                }
+            }
+        }
+
+
         [RPCMethod(runDeferred = true)] // deferred because NPCTransportationDestination needed
         public void SuckedIntoShortCut(IntVector2 entrancePos, bool carriedByOther, bool sucked_in_by_remote)
         {
@@ -287,7 +307,7 @@ namespace RainMeadow
                 AllMoving(false);
             }
 
-            
+            realcreature.RemoveFromShortcuts();
             realcreature.SpitOutOfShortCut(pos, roomSession.absroom.realizedRoom, spitOutAllSticks);
         }
 

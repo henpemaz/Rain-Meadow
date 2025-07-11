@@ -253,11 +253,6 @@ namespace RainMeadow
 
         public bool VerifyPlay(LobbyInfo lobbyInfo, bool care_about_lobby_size = true) {
             domainDropDown.greyedOut = true;
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return false;
-            }
             lastClickedLobby = lobbyInfo;
 
 
@@ -279,11 +274,6 @@ namespace RainMeadow
                 return;
             }
 
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return;
-            }
             lastClickedLobby = lobbyInfo;
 
             if (lobbyInfo is LANMatchmakingManager.LANLobbyInfo) {
