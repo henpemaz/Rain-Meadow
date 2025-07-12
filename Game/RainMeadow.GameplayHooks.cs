@@ -216,12 +216,14 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Player self) =>
                 {
+                    if (self.State.alive)
+                    {
                     if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
                     {
                         //DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
                         DeathMessage.EnvironmentalRPC(self, DeathMessage.DeathType.FallDamage);
                     }
-
+                    }
                 });
             }
             catch (Exception e)
@@ -738,31 +740,33 @@ namespace RainMeadow
                 }
             }
 
-            if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
+            if (self.State.alive)
             {
-                if (self.room != null)
+                if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
                 {
-                    // fall out of world handling
-                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
-                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    if (self.room != null)
                     {
-                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        // fall out of world handling
+                        float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                        if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
                         {
-                            num = Mathf.Max(num, -250f);
+                            if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                            {
+                                num = Mathf.Max(num, -250f);
+                            }
+                            else
+                            {
+                                num = Mathf.Max(num, -500f);
+                            }
                         }
-                        else
+                        if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
                         {
-                            num = Mathf.Max(num, -500f);
+                            //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
+                            DeathMessage.EnvironmentalRPC(self as Player, DeathMessage.DeathType.Abyss);
+                            RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
+                            self.Die();
+                            self.State.alive = false;
                         }
-                    }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
-                    {
-
-                        //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
-                        DeathMessage.EnvironmentalRPC(self as Player, DeathMessage.DeathType.Abyss);
-                        RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
-                        self.Die();
-                        self.State.alive = false;
                     }
                 }
             }
