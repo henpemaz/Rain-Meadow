@@ -197,7 +197,14 @@ namespace RainMeadow
 
         public static bool IsExtEnumRequired(Type t, string entry)
         {
-
+            if (ModManager.JollyCoop && t == typeof(SlugcatStats.Name))
+            {
+                var jollyPlayerPrefix = "JollyPlayer";
+                if (entry.StartsWith(jollyPlayerPrefix) && int.TryParse(entry.Substring(jollyPlayerPrefix.Length), out _))
+                {
+                    return false; // Jolly player enums aren't used in meadow.
+                }
+            }
             if (t == typeof(OnlineState.StateType))
             {
                 var stateHandler = OnlineState.handlersByEnum.Where(x => x.Key.value == entry).Select(x => x.Value).FirstOrDefault();
