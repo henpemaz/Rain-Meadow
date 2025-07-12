@@ -1,4 +1,4 @@
-﻿using RainMeadow.Generics;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -187,12 +187,13 @@ namespace RainMeadow
             return this.subresources[shortId];
         }
 
-        protected ushort nextId = 1;
+        // Would only allow up to 254 players (id 0 is null) - per lobby
+        protected byte nextId = 1;
 
         public class LobbyState : ResourceWithSubresourcesState
         {
             [OnlineField]
-            public ushort nextId;
+            public byte nextId;
             [OnlineField]
             public string[] requiredmods;
             [OnlineField]
@@ -209,6 +210,7 @@ namespace RainMeadow
             public Dictionary<string, float> onlineFloatRemixSettings;
             [OnlineField]
             public Dictionary<string, int> onlineIntRemixSettings;
+
             public LobbyState() : base() { }
             public LobbyState(Lobby lobby, uint ts) : base(lobby, ts)
             {
@@ -281,12 +283,9 @@ namespace RainMeadow
             }
         }
 
-        public override string ToString()
-        {
-            return "Lobby";
-        }
+        public override string ToString() => "Lobby";
 
-        public OnlinePlayer PlayerFromId(ushort id)
+        public OnlinePlayer? PlayerFromId(ushort id)
         {
             if (id == 0) return null;
             return OnlineManager.players.FirstOrDefault(p => p.inLobbyId == id);
@@ -303,8 +302,17 @@ namespace RainMeadow
             {
                 player.inLobbyId = nextId;
                 RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
-                nextId++;
-                // todo overflows and repeats (unrealistic but it's a ushort)
+                // Simple mathematical thing, we simply add +1 into each currently assigned id
+                // and it is guaranteed that there will be atleast 1 id that will be unique
+                // z.B: If we had 65535 and 0, then it would shift to 0 and 1, where 1 is unique
+                List<byte> possibleIds = [];
+                List<byte> currentIds = [];
+                foreach (var p in OnlineManager.players)
+                {
+                    currentIds.Add((byte)p.inLobbyId);
+                    possibleIds.Add((byte)(p.inLobbyId + 1));
+                }
+                nextId = possibleIds.Except(currentIds).First();
             }
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
