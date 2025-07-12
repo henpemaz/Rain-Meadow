@@ -216,12 +216,14 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Player self) =>
                 {
-                    if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
+                    if (self.State.alive)
                     {
-                        //DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
-                        DeathMessage.EnvironmentalRPC(self, DeathMessage.DeathType.FallDamage);
+                        if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode)
+                        {
+                            //DeathMessage.EnvironmentalDeathMessage(self, DeathMessage.DeathType.FallDamage);
+                            DeathMessage.EnvironmentalRPC(self, DeathMessage.DeathType.FallDamage);
+                        }
                     }
-
                 });
             }
             catch (Exception e)
@@ -701,31 +703,40 @@ namespace RainMeadow
                 Trace($"Creature {self} {self.abstractPhysicalObject.ID} doesn't exist in online space!");
                 return;
             }
+
             if (OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 if (EmoteDisplayer.map.TryGetValue(self, out var displayer))
                 {
                     displayer.OnUpdate(); // so this only updates while the creature is in-room, what about creatures in pipes though
                 }
-
                 if (self is AirBreatherCreature breather) breather.lungs = 1f;
+            }
 
-                if (self.room != null)
+            if (self is Player player &&  self.room != null)
+            {
+                // fall out of world handling
+                float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
+                if (self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
                 {
-                    // fall out of world handling
-                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
-                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
+                    float lower = player.bodyMode == Player.BodyModeIndex.WallClimb ? 250f : 500f;
+                    num = Mathf.Max(num, -lower);
+                }
+                if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                {
+                    if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
                     {
-                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
+                        // Do not spam environmental RPCs every framee (state.alive <> false); and only if we ownt he player
+                        // we may send RPCs for it
+                        if (self.State.alive && player.IsLocal())
                         {
-                            num = Mathf.Max(num, -250f);
-                        }
-                        else
-                        {
-                            num = Mathf.Max(num, -500f);
+                            DeathMessage.EnvironmentalRPC(player, DeathMessage.DeathType.Abyss);
+                            RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
+                            self.Die();
+                            self.State.alive = false;
                         }
                     }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || !self.room.game.IsArenaSession || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
+                    else if (OnlineManager.lobby.gameMode is MeadowGameMode)
                     {
                         RainMeadow.Debug("fall out of world prevention: " + self);
                         var room = self.room;
@@ -734,35 +745,6 @@ namespace RainMeadow
                         var node = self.coord.abstractNode;
                         if (node > room.abstractRoom.exits) node = UnityEngine.Random.Range(0, room.abstractRoom.exits);
                         self.SpitOutOfShortCut(room.ShortcutLeadingToNode(node).startCoord.Tile, room, true);
-                    }
-                }
-            }
-
-            if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode || OnlineManager.lobby.gameMode is StoryGameMode)
-            {
-                if (self.room != null)
-                {
-                    // fall out of world handling
-                    float num = -self.bodyChunks[0].restrictInRoomRange + 1f;
-                    if (self is Player && self.bodyChunks[0].restrictInRoomRange == self.bodyChunks[0].defaultRestrictInRoomRange)
-                    {
-                        if ((self as Player).bodyMode == Player.BodyModeIndex.WallClimb)
-                        {
-                            num = Mathf.Max(num, -250f);
-                        }
-                        else
-                        {
-                            num = Mathf.Max(num, -500f);
-                        }
-                    }
-                    if (self.bodyChunks[0].pos.y < num && (!self.room.water || self.room.waterInverted || self.room.defaultWaterLevel < -10) && (!self.Template.canFly || self.Stunned || self.dead) && (self is Player || self.room.game.GetArenaGameSession.chMeta == null || !self.room.game.GetArenaGameSession.chMeta.oobProtect))
-                    {
-
-                        //DeathMessage.EnvironmentalDeathMessage(self as Player, DeathMessage.DeathType.Abyss);
-                        DeathMessage.EnvironmentalRPC(self as Player, DeathMessage.DeathType.Abyss);
-                        RainMeadow.Debug("prevent abstract creature destroy: " + self); // need this so that we don't release the world session on death
-                        self.Die();
-                        self.State.alive = false;
                     }
                 }
             }

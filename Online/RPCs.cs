@@ -62,11 +62,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.owner != rpc.from) return; // Only respond if its the host kicking the player
             if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
             {
-                if (RWCustom.Custom.rainWorld.processManager.musicPlayer != null)
-                {
-                    RWCustom.Custom.rainWorld.processManager.musicPlayer.DeathEvent();
-                }
-
+                RWCustom.Custom.rainWorld.processManager.musicPlayer?.DeathEvent();
                 game.ExitGame(asDeath: true, asQuit: true);
             }
             RWCustom.Custom.rainWorld.processManager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
@@ -90,12 +86,12 @@ namespace RainMeadow
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)
             {
-                DeathMessage.PvPRPC(saint.apo.realizedObject as Player, opo.apo.realizedObject as Creature, 1);
+                DeathMessage.PvPRPC(saint.apo.realizedObject as Player, opo.apo.realizedObject as Creature, DeathMessage.DeathType.Ascencion);
             }
         }
 
         [RPCMethod]
-        public static void KillFeedEnvironment(OnlinePhysicalObject opo, int index)
+        public static void KillFeedEnvironment(OnlinePhysicalObject opo, DeathMessage.DeathType type)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
@@ -105,7 +101,6 @@ namespace RainMeadow
                 {
                     if (opo1.id == opo.id)
                     {
-                        DeathMessage.DeathType type = (DeathMessage.DeathType)index;
                         DeathMessage.EnvironmentalDeathMessage(opo, type);
                         break;
                     }
@@ -114,7 +109,7 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void KillFeedPvP(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
+        public static void KillFeedPvP(OnlinePhysicalObject killer, OnlinePhysicalObject target, DeathMessage.DeathType context)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             OnlinePhysicalObject myKiller = null;
