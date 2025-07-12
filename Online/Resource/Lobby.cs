@@ -27,7 +27,7 @@ namespace RainMeadow
         public Dictionary<string, int> configurableInts;
 
         public string? password;
-        public bool hasPassword => password != null;
+        public bool hasPassword => string.IsNullOrWhiteSpace(password);
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
