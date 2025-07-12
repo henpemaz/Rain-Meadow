@@ -174,6 +174,10 @@ namespace RainMeadow
         public virtual void RecieveChatMessage(OnlinePlayer player, string message) { 
             ChatLogManager.LogMessage($"{player.id.GetPersonaName()}", $"{message}");
         }
+        public virtual void RecieveCustomPacket(OnlinePlayer player, CustomPacket packet)
+        {
+            CustomManager.HandlePacket(player, packet);
+        }
 
         public void HandleJoin(OnlinePlayer player) {
             if (OnlineManager.lobby != null && OnlineManager.mePlayer == OnlineManager.lobby.owner && OnlineManager.lobby.bannedUsers.list.Contains(player.id))

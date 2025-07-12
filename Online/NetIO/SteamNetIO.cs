@@ -39,6 +39,51 @@ namespace RainMeadow
             }
         }
 
+        public override void SendCustomData(OnlinePlayer toPlayer, CustomPacket customPacket, SendType sendType)
+        {
+            if (MatchmakingManager.currentDomain == MatchmakingManager.MatchMakingDomain.Steam)
+            {
+                try
+                {
+                    byte[] buffer = null;
+                    using (MemoryStream ms = new MemoryStream())
+                    using (BinaryWriter writer = new BinaryWriter(ms))
+                    {
+                        customPacket.SteamEncode(ms, writer);
+                        writer.Flush();
+                        buffer = ms.ToArray();
+                    }
+                    if (buffer == null)
+                    {
+                        RainMeadow.Error("There was an error writing the Custom Data buffer.");
+                        return;
+                    }
+                    var steamNetId = (toPlayer.id as SteamMatchmakingManager.SteamPlayerId).oid;
+                    unsafe
+                    {
+                        fixed (byte* dataPointer = buffer)
+                        {
+                            SteamNetworkingMessages.SendMessageToUser(ref steamNetId, (IntPtr)dataPointer, (uint)buffer.Length,
+                                sendType switch
+                                {
+                                    SendType.Reliable => Constants.k_nSteamNetworkingSend_Reliable,
+                                    SendType.Unreliable => Constants.k_nSteamNetworkingSend_Unreliable
+                                }, 1);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    RainMeadow.Error(e);
+                    throw;
+                }
+            }
+            else
+            {
+                base.SendCustomData(toPlayer, customPacket, sendType);
+            }
+        }
+
         override public void RecieveData() {
             base.RecieveData();
             SteamAPI.RunCallbacks();
@@ -54,6 +99,7 @@ namespace RainMeadow
             lock (OnlineManager.serializer)
             {
                 int n;
+                int c;
                 IntPtr[] messages = new IntPtr[32];
                 do // process in batches
                 {
@@ -91,6 +137,42 @@ namespace RainMeadow
                     }
                 }
                 while (n > 0);
+                // Custom Data
+                do
+                {
+                    c = SteamNetworkingMessages.ReceiveMessagesOnChannel(1, messages, messages.Length);
+                    for (int i = 0; i < c; i++)
+                    {
+                        var message = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
+                        try
+                        {
+                            if (OnlineManager.lobby != null)
+                            {
+
+                                var fromPlayer = (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam] as SteamMatchmakingManager).GetPlayerSteam(message.m_identityPeer.GetSteamID().m_SteamID);
+                                if (fromPlayer == null)
+                                {
+                                    RainMeadow.Error("player not found: " + message.m_identityPeer + " " + message.m_identityPeer.GetSteamID());
+                                    continue;
+                                }
+                                //RainMeadow.Debug($"Receiving message from {fromPlayer}");
+                                byte[] data = new byte[message.m_cbSize];
+                                Marshal.Copy(message.m_pData, data, 0, message.m_cbSize);
+                                CustomManager.ReadCustom(fromPlayer, data);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            RainMeadow.Error("Error reading custom packet from player : " + message.m_identityPeer.GetSteamID());
+                            RainMeadow.Error(e);
+                            //throw;
+                        }
+                        finally
+                        {
+                            SteamNetworkingMessage_t.Release(messages[i]);
+                        }
+                    }
+                } while (c > 0);
             }
         }
     }
