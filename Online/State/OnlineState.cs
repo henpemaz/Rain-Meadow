@@ -47,8 +47,8 @@ namespace RainMeadow
             serializer.writer.Write((byte)handler.stateType.index);
         }
 
-        private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
-        private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
+        public static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
+        public static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
         public static void RegisterState(Type type)
         {
@@ -62,6 +62,12 @@ namespace RainMeadow
         internal static void InitializeBuiltinTypes()
         {
             _ = StateType.Unknown; // runs static init
+
+            if (!Serializer.serializedExtEnums.Contains(typeof(StateType)))
+            {
+                Serializer.serializedExtEnums.Add(typeof(StateType));
+            }
+            
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();

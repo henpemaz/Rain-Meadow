@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using RainMeadow.Generics;
 
 namespace RainMeadow
 {
@@ -175,6 +176,44 @@ namespace RainMeadow
             return method;
         }
 
+
+        public static List<Type> serializedExtEnums = new();
+        public static List<Type> requiredExtEnums = new();
+
+        public static void AddSerializedExtEnum(Type t)
+        {
+            if (!serializedExtEnums.Contains(t))
+            {
+                serializedExtEnums.Add(t);
+                if (t != typeof(OnlineState.StateType))
+                {
+                    if ((t.Assembly == Assembly.GetExecutingAssembly()) || (t.Assembly == typeof(RainWorld).Assembly))
+                    {
+                        requiredExtEnums.Add(t);
+                    }
+                }
+            }
+        }
+
+        public static bool IsExtEnumRequired(Type t, string entry)
+        {
+            if (ModManager.JollyCoop && t == typeof(SlugcatStats.Name))
+            {
+                var jollyPlayerPrefix = "JollyPlayer";
+                if (entry.StartsWith(jollyPlayerPrefix) && int.TryParse(entry.Substring(jollyPlayerPrefix.Length), out _))
+                {
+                    return false; // Jolly player enums aren't used in meadow.
+                }
+            }
+            if (t == typeof(OnlineState.StateType))
+            {
+                var stateHandler = OnlineState.handlersByEnum.Where(x => x.Key.value == entry).Select(x => x.Value).FirstOrDefault();
+                if (stateHandler == null) return false;
+                return stateHandler.type.Assembly == Assembly.GetExecutingAssembly() || stateHandler.type.Assembly == typeof(RainWorld).Assembly;
+            }
+            return requiredExtEnums.Contains(t);
+        }
+
         internal static MethodInfo MakeSerializationMethod(Type fieldType, bool nullable, bool polymorphic, bool longList)
         {
             var arguments = new { nullable, polymorphic, longList }; // one hell of a drug
@@ -208,6 +247,11 @@ namespace RainMeadow
 
             if (typeof(Serializer.ICustomSerializable).IsAssignableFrom(fieldType))
             {
+                if (fieldType.IsGenericType && typeof(DynamicOrderedExtEnums<>).IsAssignableFrom(fieldType.GetGenericTypeDefinition()))
+                {
+                    AddSerializedExtEnum(fieldType.GenericTypeArguments[0]);
+                }
+
                 return typeof(Serializer).GetMethods().Single(m =>
                 m.Name == arguments switch
                 {
@@ -249,8 +293,9 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m => 
-                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                AddSerializedExtEnum(fieldType);
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == (arguments.nullable ? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
