@@ -427,7 +427,7 @@ namespace RainMeadow
             Vector2 pos = new(394, 553);
             if (slugcatLabel == null)
             {
-                slugcatLabel = new(this, pages[0], Translate("Selected Slugcat"), pos, new(110, 30), true);
+                slugcatLabel = new(this, pages[0], Translate("Selected Slugcat").Replace("<LINE>", "\n"), pos, new(110, 30), true);
                 pages[0].subObjects.Add(slugcatLabel);
             }
             if (slugcatSelector == null)

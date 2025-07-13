@@ -1619,7 +1619,7 @@ namespace RainMeadow
             orig(self, manager);
             if (isArenaMode(out var arena))
             {
-                self.continueButton.menuLabel.text = "TO LOBBY";
+                self.continueButton.menuLabel.text = self.Translate("TO LOBBY");
 
                 var exitButton = new Menu.SimpleButton(self, self.pages[0], self.Translate("QUIT"), "QUIT", new Vector2(856f, 50f), new Vector2(110f, 30f));
                 self.pages[0].subObjects.Add(exitButton);
