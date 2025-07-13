@@ -266,14 +266,14 @@ THE FARTIFICER|LA FARTÍFICE
 THE SLUGPUP|LA CRÍA DE GATO-BABOSA
 THE UNKNOWN|LO DESCONOCIDO
 Unknown|Desconocido
-Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Los enemigos se acercan a tu alrededor, pero no será como tu primera vez.<LINE>Agarra tu lanza y roca.
-Remember: they struck first, so you'll need to hit back harder.|Recuerda: ellos atacaron primero, así que<LINE>necesitarás devolver más fuerte el golpe.
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|Los enemigos se acercan a tu alrededor, pero no será<LINE>como tu primera vez. Agarra tu lanza y roca.
+Remember: they struck first, so you'll need to hit back harder.|Recuerda: ellos atacaron primero,<LINE>así que necesitarás devolver más fuerte el golpe.
 Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|Afligido desde el inicio y un luchador hasta el final.<LINE>Demuéstrales el significado del sufrimiento.
 Observe all weakness - then strike while cloaked in shadows.|Observa toda debilidad; luego ataca oculto en las sombras.
-Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Tu historia mudable está casi completa.<LINE>Aplasta esta última tarea.
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|Tu historia de idas y vueltas está casi completa.<LINE>Aplasta esta última tarea.
 An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|Una personalidad explosiva e ira inigualable.<LINE>Muerde y detona tu sendero hacia la venganza.
 A gnawing hunger grows inside you. Feed it with spears.|Un hambre pertinaz crece dentro de ti. Aliméntala con lanzas.
-In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|En un mundo carente de propósito, quizá has hallado al fin el tuyo.<LINE>Muévete con audacia para no perderlo.
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|En un mundo carente de propósito, quizá has hallado<LINE>al fin el tuyo. Muévete con audacia para no perderlo.
 The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lanza es un instrumento pusilánime.<LINE>Moldea el mundo desde las marcas de tu mente.
 The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|La mente es un elemento pusilánime.<LINE>Demuestra tu pericia con lanza en mano.
 Desperate. Fearful. Violent.|Desesperada. Temerosa. Violenta.
