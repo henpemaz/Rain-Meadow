@@ -1,6 +1,7 @@
 using MoreSlugcats;
 using RainMeadow.Game;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Watcher;
 
@@ -14,10 +15,17 @@ public static class DeathMessage
         if (opo == null) return;
         foreach(var op in OnlineManager.players)
         {
-            op.InvokeRPC(RPCs.KillFeedEnvironment, opo, (int)cause);
+            op.InvokeRPC(RPCs.KillFeedEnvironment, opo, cause);
         }
     }
-    public static void PvPRPC(Player killer, Creature target, int context)
+
+    /// <summary>
+    /// Player kills creature (or other player)
+    /// </summary>
+    /// <param name="killer">Player</param>
+    /// <param name="target">Creature</param>
+    /// <param name="context">0 = Normal kill, 1 = Ascension</param>
+    public static void PvPRPC(Player killer, Creature target, DeathType context)
     {
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
         var topo = target.abstractPhysicalObject.GetOnlineObject();
@@ -28,6 +36,12 @@ public static class DeathMessage
             op.InvokeRPC(RPCs.KillFeedPvP, kopo, topo, context);
         }
     }
+
+    /// <summary>
+    /// Creature kills player
+    /// </summary>
+    /// <param name="killer">Creature</param>
+    /// <param name="target">Player</param>
     public static void CvPRPC(Creature killer, Player target)
     {
         var kopo = killer.abstractPhysicalObject.GetOnlineObject();
@@ -43,15 +57,7 @@ public static class DeathMessage
         if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
         {
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
-
-            foreach (var onlineHud in onlineHuds)
-            {
-                if (onlineHud.killFeed.Contains(opo.id))
-                {
-                    return false;
-                }
-            }
-            return true;
+            return onlineHuds.Where((e) => e.killFeed.Contains(opo.id)).Count() == 0;
         }
         return false;
     }
@@ -65,82 +71,19 @@ public static class DeathMessage
                 return;
             }
             var t = opo.owner.id.name;
-            switch (cause)
+            // Known causer + there is a custom message for that, show "died from <thing> by <person>" message
+            if (opo.apo is AbstractCreature ac && ac.realizedCreature != null && ac.realizedCreature.grabbedBy.Count > 0 && DeathType.targetMessages.TryGetValue(cause, out var targetMsg))
             {
-                default:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died."));
-                    break;
-                case DeathType.Rain:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was crushed by the rain."));
-                    break;
-                case DeathType.Abyss:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("fell into the abyss."));
-                    break;
-                case DeathType.Drown:
-                    if ((opo.apo as AbstractCreature).realizedCreature != null && (opo.apo as AbstractCreature).realizedCreature.grabbedBy.Count > 0)
-                    {
-                        ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was drowned by") + " " + Utils.Translate((opo.apo as AbstractCreature).realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
-                        break;
-                    }
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("drowned."));
-                    break;
-                case DeathType.FallDamage:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("hit the ground too hard."));
-                    break;
-                case DeathType.Oracle:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was killed through unknown means."));
-                    break;
-                case DeathType.Burn:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("tried to swim in burning liquid."));
-                    break;
-                case DeathType.PyroDeath:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("spontaneously combusted."));
-                    break;
-                case DeathType.Freeze:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("froze to death."));
-                    break;
-                case DeathType.WormGrass:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the grass."));
-                    break;
-                case DeathType.WallRot:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was swallowed by the walls."));
-                    break;
-                case DeathType.Electric:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted."));
-                    break;
-                case DeathType.DeadlyLick:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("licked the power."));
-                    break;
-                case DeathType.Coalescipede:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consumed by the swarm."));
-                    break;
-                case DeathType.UnderwaterShock:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was electrocuted in the water."));
-                    break;
-
-                // WATCHER
-
-                case DeathType.Sandstorm:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was obliterated by the sandstorm."));
-                    break;
-                case DeathType.Poison:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died from poison."));
-                    break;
-                case DeathType.Lightning:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was struck by lightning."));
-                    break;
-                case DeathType.Locust:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was consumed by locusts."));
-                    break;
-                case DeathType.Ripple:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("swam with the ripples."));
-                    break;
-                case DeathType.Pomegranate:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("experienced the force of fresh fruit."));
-                    break;
-                case DeathType.Fire:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was burnt to a crisp."));
-                    break;
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate(targetMsg) + " " + Utils.Translate(ac.realizedCreature.grabbedBy[0].grabber.Template.name) + ".");
+            }
+            // No custom message for known causer/no known causer, show generic "died from <thing>" message
+            else if (DeathType.messages.TryGetValue(cause, out var msg))
+            {
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate(msg));
+            }
+            else
+            {
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("died."));
             }
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
 
@@ -154,7 +97,7 @@ public static class DeathMessage
             RainMeadow.Error("Error displaying death message. " + e);
         }
     }
-    public static void PlayerKillPlayer(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
+    public static void PlayerKillPlayer(OnlinePhysicalObject killer, OnlinePhysicalObject target, DeathType context)
     {
         try
         {
@@ -165,18 +108,16 @@ public static class DeathMessage
             }
             var k = killer.owner.id.name;
             var t = target.owner.id.name;
-            switch(context)
+            if (DeathType.targetMessages.TryGetValue(context, out var msg))
             {
-                default:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by") + $" {k}.");
-                    break;
-                case 1:
-                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was ascended by") + $" {k}.");
-                    break;
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate(msg) + $" {k}.");
+            }
+            else
+            {
+                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by") + $" {k}.");
             }
             
             var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
-
             foreach (var onlineHud in onlineHuds)
             {
                 onlineHud.killFeed.Add(target.id);
@@ -193,23 +134,33 @@ public static class DeathMessage
         try
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
-            var k = (killer.apo as AbstractCreature).creatureTemplate.name;
-            var t = target.owner.id.name;
-            if (!ShouldShowDeath(target)) return;
-            if ((killer.apo as AbstractCreature).creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Centipede)
+            if (killer.apo is AbstractCreature kac)
             {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was zapped by a") + " " + Utils.Translate(k) + ".");
-            } 
-            else
-            {
-                ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by a") + " " + Utils.Translate(k) + ".");
-            }
+                var k = kac.creatureTemplate.name;
+                var t = target.owner.id.name;
+                if (!ShouldShowDeath(target)) return;
+                if (kac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Centipede)
+                {
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was zapped by a") + " " + Utils.Translate(k) + ".");
+                }
+                else if (kac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.DropBug)
+                {
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was ambushed by a") + " " + Utils.Translate(k) + ".");
+                }
+                else if (kac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.PoleMimic || kac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.TentaclePlant || kac.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.MirosBird || (ModManager.Watcher && kac.creatureTemplate.TopAncestor().type == Watcher.WatcherEnums.CreatureTemplateType.BigMoth))
+                {
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was taken by a") + " " + Utils.Translate(k) + ".");
+                }
+                else
+                {
+                    ChatLogManager.LogSystemMessage(t + " " + Utils.Translate("was slain by a") + " " + Utils.Translate(k) + ".");
+                }
 
-            var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
-
-            foreach (var onlineHud in onlineHuds)
-            {
-                onlineHud.killFeed.Add(target.id);
+                var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+                foreach (var onlineHud in onlineHuds)
+                {
+                    onlineHud.killFeed.Add(target.id);
+                }
             }
         }
         catch (Exception e)
@@ -218,7 +169,7 @@ public static class DeathMessage
         }
     }
 
-    public static void PlayerKillCreature(OnlinePhysicalObject killer, OnlinePhysicalObject target, int context)
+    public static void PlayerKillCreature(OnlinePhysicalObject killer, OnlinePhysicalObject target, DeathType context)
     {
         /* don't think we need this anymore...
         if (target.creatureTemplate.type == CreatureTemplate.Type.Slugcat)
@@ -230,27 +181,29 @@ public static class DeathMessage
         try
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
-            var k = killer.owner.id.name;
-            var t = (target.apo as AbstractCreature).creatureTemplate.name;
-            var realized = (target.apo as AbstractCreature).realizedCreature;
-            if (!ShouldShowDeath(target)) return;
-            switch (context)
+            if (target.apo is AbstractCreature tac)
             {
-                default:
-                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
-                    break;
-                case 1:
-                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was ascended by") + $" {k}.");
-                    break;
-            }
-
-            if (target != null)
-            {
-                var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
-
-                foreach (var onlineHud in onlineHuds)
+                var k = killer.owner.id.name;
+                var t = tac.creatureTemplate.name;
+                var realized = tac.realizedCreature;
+                if (!ShouldShowDeath(target)) return;
+                if (DeathType.targetMessages.TryGetValue(context, out var msg))
                 {
-                    onlineHud.killFeed.Add(target.id);
+                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate(msg) + $" {k}.");
+                }
+                else
+                {
+                    ChatLogManager.LogSystemMessage(Utils.Translate(t) + " " + Utils.Translate("was slain by") + $" {k}.");
+                }
+
+                if (target != null)
+                {
+                    var onlineHuds = game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>();
+
+                    foreach (var onlineHud in onlineHuds)
+                    {
+                        onlineHud.killFeed.Add(target.id);
+                    }
                 }
             }
         }
@@ -299,7 +252,7 @@ public static class DeathMessage
         {
             if (crit.killTag.realizedCreature is Player)
             {
-                PvPRPC(crit.killTag.realizedCreature as Player, crit, 0);
+                PvPRPC(crit.killTag.realizedCreature as Player, crit, DeathType.Kill);
             }
             else if (crit is Player)
             {
@@ -356,7 +309,7 @@ public static class DeathMessage
                     {
                         if (player.grabbedBy[i].grabber is Spider)
                         {
-                            spiders+= player.grabbedBy[i].grabber.TotalMass;
+                            spiders += player.grabbedBy[i].grabber.TotalMass;
                         }
                     }
                     if (spiders >= player.TotalMass)
@@ -394,29 +347,67 @@ public static class DeathMessage
         }
     }
 
-    public enum DeathType
+    public class DeathType(string value, bool register = false) : ExtEnum<DeathType>(value, register)
     {
-        Invalid,
-        Rain,
-        Abyss,
-        Drown,
-        FallDamage,
-        Oracle,
-        Burn,
-        PyroDeath,
-        Freeze,
-        WormGrass,
-        WallRot,
-        Electric,
-        DeadlyLick,
-        Coalescipede,
-        Sandstorm,
-        Poison,
-        Lightning,
-        Locust,
-        Ripple,
-        Pomegranate,
-        Fire,
-        UnderwaterShock,
+        public static DeathType Unknown = new("Unknown", true);
+        public static DeathType Rain = new("Rain", true);
+        public static DeathType Abyss = new("Abyss", true);
+        public static DeathType Drown = new("Drown", true);
+        public static DeathType FallDamage = new("FallDamage", true);
+        public static DeathType Oracle = new("Oracle", true);
+        public static DeathType Burn = new("Burn", true);
+        public static DeathType PyroDeath = new("PyroDeath", true);
+        public static DeathType Freeze = new("Freeze", true);
+        public static DeathType WormGrass = new("WormGrass", true);
+        public static DeathType WallRot = new("WallRot", true);
+        public static DeathType Electric = new("Electric", true);
+        public static DeathType DeadlyLick = new("DeadlyLick", true);
+        public static DeathType Coalescipede = new("Coalescipede", true);
+        public static DeathType Sandstorm = new("Sandstorm", true);
+        public static DeathType Poison = new("Poison", true);
+        public static DeathType Lightning = new("Lightning", true);
+        public static DeathType Locust = new("Locust", true);
+        public static DeathType Ripple = new("Ripple", true);
+        public static DeathType Pomegranate = new("Pomegranate", true);
+        public static DeathType Fire = new("Fire", true);
+        public static DeathType UnderwaterShock = new("UnderwaterShock", true);
+
+        // Non-environmental kills (PVP)
+        public static DeathType Kill = new("Kill", true);
+        public static DeathType Ascencion = new("Ascencion", true);
+
+        public static Dictionary<DeathType, string> messages = new()
+        {
+            { Unknown, "died." },
+            { Rain, "was crushed by the rain." },
+            { Abyss, "fell into the abyss." },
+            { Drown, "drowned." },
+            { FallDamage, "hit the ground too hard." },
+            { Oracle, "was killed through unknown means." },
+            { Burn, "tried to swim in burning liquid." },
+            { PyroDeath, "spontaneously combusted." },
+            { Freeze, "froze to death." },
+            { WormGrass, "was swallowed by the grass." },
+            { WallRot, "was swallowed by the walls." },
+            { Electric, "was electrocuted." },
+            { DeadlyLick, "licked the power." },
+            { Coalescipede, "was consumed by the swarm." },
+            { UnderwaterShock, "was electrocuted in the water." },
+            { Sandstorm, "was obliterated by the sandstorm." },
+            { Poison, "died from poison." },
+            { Lightning, "was struck by lightning." },
+            { Locust, "was consumed by locusts." },
+            { Ripple, "swam with the ripples." },
+            { Pomegranate, "experienced the force of fresh fruit." },
+            { Fire, "was burnt to a crisp." },
+        };
+        // "Drowned-by" messages; i.e where the killer is known (also used for PVP deaths)
+        public static Dictionary<DeathType, string> targetMessages = new()
+        {
+            { Abyss, "was taken into the abyss by" },
+            { Drown, "was drowned by" },
+            { Kill, "was slain by" },
+            { Ascencion, "was ascended by" },
+        };
     }
 }

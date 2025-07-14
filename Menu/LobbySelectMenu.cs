@@ -96,12 +96,18 @@ namespace RainMeadow
 
             // filters
 
-            Vector2 where = new Vector2(300f, 400f);
+            Vector2 where = new(300f, 400f);
 
             var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModeLabel);
             where.y -= 27;
-            filterModeDropDown = new OpComboBox2(new Configurable<LobbyCardsList.LobbyCardsFilter.GameModeFilter>(LobbyCardsList.LobbyCardsFilter.GameModeFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyCardsList.LobbyCardsFilter.GameModeFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // Depends on nullable enum - if null => no filter
+            var filterEnumNames = OpResourceSelector.GetEnumNames(null, typeof(OnlineGameMode.OnlineGameModeType)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList();
+            filterEnumNames.Add(new ListItem("All", Translate("All")));
+            filterModeDropDown = new OpComboBox2(new Configurable<string>("All"), where, 160f, filterEnumNames)
+            {
+                colorEdge = MenuColorEffect.rgbWhite
+            };
             filterModeDropDown.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterModeDropDown);
             where.y -= 30;
@@ -253,11 +259,6 @@ namespace RainMeadow
 
         public bool VerifyPlay(LobbyInfo lobbyInfo, bool care_about_lobby_size = true) {
             domainDropDown.greyedOut = true;
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return false;
-            }
             lastClickedLobby = lobbyInfo;
 
 
@@ -279,11 +280,6 @@ namespace RainMeadow
                 return;
             }
 
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return;
-            }
             lastClickedLobby = lobbyInfo;
 
             if (lobbyInfo is LANMatchmakingManager.LANLobbyInfo) {

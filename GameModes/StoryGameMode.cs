@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -30,7 +32,9 @@ namespace RainMeadow
         public Dictionary<string, float> storyFloatRemixSettings;
         public Dictionary<string, int> storyIntRemixSettings;
 
-        public SlugcatCustomization avatarSettings;
+        public SlugcatCustomization[] avatarSettings;
+        public int avatarCount { get; set; } = 1;
+
         public StoryClientSettingsData storyClientData;
 
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
@@ -65,9 +69,11 @@ namespace RainMeadow
         public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
-        {
-            avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
-            rippleLevel = 0.0f;
+        {  
+            avatarSettings = new SlugcatCustomization[4];
+            for (int i = 0; i < avatarSettings.Length; i++) {
+                avatarSettings[i] = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
+            }
         }
 
         public override ProcessManager.ProcessID MenuProcessId()
@@ -86,6 +92,10 @@ namespace RainMeadow
         public override bool AllowedInMode(PlacedObject item)
         {
             if (disallowedPlacedObjects.Contains(item.type)) return false;
+            if (item.type == PlacedObject.Type.StuckDaddy)
+            {
+                return OnlineManager.lobby.isOwner;
+            }
             return true;  // base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type) || creatureRelatedItems.Contains(item.type);
         }
 
@@ -242,9 +252,37 @@ namespace RainMeadow
             base.ResourceActive(onlineResource);
         }
 
+        public override AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)
+        {
+            RainMeadow.Debug(self.StoryPlayerCount);
+            AbstractCreature MainAvatar = null!;
+            AbstractCreature abstractCreature;
+            
+            for (int i = 0; i < self.StoryPlayerCount; i++) {
+                abstractCreature = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, i));
+                abstractCreature.state = new PlayerState(abstractCreature, i, avatarSettings[i].playingAs, false) { isPup = avatarSettings[i].fakePup };
+                self.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
+                self.session.AddPlayer(abstractCreature);
+
+                if (i == 0) {
+                    MainAvatar = abstractCreature;
+                }
+            }
+
+
+            if (MainAvatar is null) throw new InvalidProgrammerException("MainAvatar is null somehow");
+            return MainAvatar;
+            return null;
+        }
+
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
-            onlineCreature.AddData(avatarSettings);
+            int avatarsettings_index = 0;
+            if (onlineCreature.abstractCreature.state is PlayerState playerState) {
+                avatarsettings_index = playerState.playerNumber;
+            } else RainMeadow.Error("No Player State for playerNumber?");
+
+            onlineCreature.AddData(avatarSettings[avatarsettings_index]);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)
