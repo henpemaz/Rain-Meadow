@@ -191,7 +191,8 @@ namespace RainMeadow
                 | (i.pckp ? 1 << 6 : 0)
                 | (i.jmp ? 1 << 7 : 0)
                 | (i.thrw ? 1 << 8 : 0)
-                | (i.mp ? 1 << 9 : 0));
+                | (i.mp ? 1 << 9 : 0)
+                | (i.spec ? 1 << 10 : 0));
 
             vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null || p.room is null ? null : new VinePositionState(p.vinePos, p.room.climbableVines.vines.IndexOf(p.vinePos.vine));
 
@@ -225,6 +226,7 @@ namespace RainMeadow
             if (((inputs >> 7) & 1) != 0) i.jmp = true;
             if (((inputs >> 8) & 1) != 0) i.thrw = true;
             if (((inputs >> 9) & 1) != 0) i.mp = true;
+            if (((inputs >> 10) & 1) != 0) i.spec = true;
             i.analogueDir.x = analogInputX;
             i.analogueDir.y = analogInputY;
             return i;
