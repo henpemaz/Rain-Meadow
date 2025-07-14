@@ -81,7 +81,89 @@ namespace RainMeadow
         public void CustomSerialize(Serializer serializer)
         {
             serializer.Serialize(ref pos);
-            serializer.SerializeHalf(ref vel);
+
+            // NET 4.8 doesn't have the functions :(
+            // https://stackoverflow.com/questions/27237776/convert-int-bits-to-float-bits
+            unsafe uint SingleToInt32Bits(float value)
+            {
+                return *(uint*)(&value);
+            }
+            unsafe float Int32BitsToSingle(uint value)
+            {
+                return *(float*)(&value);
+            }
+            void EncodeFloat(ref float f)
+            {
+                const float prec = 0.01f;
+                // Must send full float data
+                if (Mathf.Abs(Mathf.HalfToFloat(Mathf.FloatToHalf(f)) - f) >= prec)
+                {
+                    // Shifts away the LSB, sign bit preserved as second-MSB
+                    uint bit = SingleToInt32Bits(f);
+                    bit >>= 1;
+                    // Force Big-endian
+                    byte[] data = [
+                        (byte)((bit >> 24) | 0x80),
+                        (byte)(bit >> 16),
+                        (byte)(bit >> 8),
+                        (byte)bit
+                    ];
+                    serializer.Serialize(ref data[0]);
+                    serializer.Serialize(ref data[1]);
+                    serializer.Serialize(ref data[2]);
+                    serializer.Serialize(ref data[3]);
+                }
+                // Below precision threshold, send as u16
+                else
+                {
+                    ushort bit = Mathf.FloatToHalf(f);
+                    bit >>= 1;
+                    // Force Big-endian
+                    byte[] data = [
+                        (byte)(bit >> 8),
+                        (byte)bit
+                    ];
+                    serializer.Serialize(ref data[0]);
+                    serializer.Serialize(ref data[1]);
+                }
+            }
+            void DecodeFloat(ref float f)
+            {
+                byte b0 = 0;
+                serializer.Serialize(ref b0);
+                // 32-bits
+                if ((b0 & 0x80) == 1)
+                {
+                    byte b1 = 0, b2 = 0, b3 = 0;
+                    serializer.Serialize(ref b1);
+                    serializer.Serialize(ref b2);
+                    serializer.Serialize(ref b3);
+                    uint bit = (uint)(((int)b0 << 24) | ((int)b1 << 16) | ((int)b2 << 8) | ((int)b3 << 0));
+                    bit <<= 1; //Shift back (LSB lost)
+                    f = Int32BitsToSingle(bit);
+                }
+                // 16-bits
+                else
+                {
+                    byte b1 = 0;
+                    serializer.Serialize(ref b1);
+                    ushort bit = (ushort)(((int)b0 << 8) | ((int)b1 << 0));
+                    bit <<= 1; //Shift back (LSB lost)
+                    f = Mathf.HalfToFloat(bit);
+                }
+            }
+
+            if (serializer.IsWriting)
+            {
+                EncodeFloat(ref pos.x);
+                EncodeFloat(ref pos.y);
+            }
+            else
+            {
+                DecodeFloat(ref pos.x);
+                DecodeFloat(ref pos.y);
+            }
+            //serializer.SerializeHalf(ref vel);
         }
 
         public void ReadTo(BodyChunk c)
