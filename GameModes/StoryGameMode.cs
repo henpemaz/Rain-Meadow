@@ -93,6 +93,10 @@ namespace RainMeadow
         public override bool AllowedInMode(PlacedObject item)
         {
             if (disallowedPlacedObjects.Contains(item.type)) return false;
+            if (item.type == PlacedObject.Type.StuckDaddy)
+            {
+                return OnlineManager.lobby.isOwner;
+            }
             return true;  // base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type) || creatureRelatedItems.Contains(item.type);
         }
 

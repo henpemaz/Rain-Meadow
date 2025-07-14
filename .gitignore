@@ -404,3 +404,8 @@ Properties/Settings.Designer.cs
 
 # Mod folder
 [Mm]od/plugins/*
+
+
+# Capes
+[Mm]od/capes.txt
+[Mm]od/capes_hash.txt
