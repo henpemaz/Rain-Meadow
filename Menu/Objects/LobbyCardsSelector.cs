@@ -282,11 +282,19 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             {
                 if (filter.gameMode != "All" && lobby.mode != filter.gameMode) continue;
                 if (filter.publicLobby && lobby.hasPassword) continue;
+                // DLC checks
+                var hasMsc = lobby.requiredMods.Contains("moreslugcats");
+                var hasWatcher = lobby.requiredMods.Contains("watcher");
                 //filter for required mods
                 bool missingMod = false;
                 switch (filter.requiredMods)
                 {
                     case "Any": break;
+                    // Mod checks
+                    case "MSC": missingMod = !hasMsc; break;
+                    case "Watcher": missingMod = !hasWatcher; break;
+                    case "MSC + Watcher": missingMod = !(hasMsc && hasWatcher); break;
+                    //
                     case "Exact": //currently unused filter
                         missingMod = lobby.requiredMods != requiredModsString;
                         break;
