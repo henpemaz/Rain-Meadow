@@ -112,7 +112,7 @@ public class RainMeadowOptions : OptionInterface
         DisableMeadowPauseAnimation = config.Bind("DisableMeadowPauseAnimation", false);
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
-        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
+        ChatBgOpacity = config.Bind("ChatBgOpacity", 0.5f);
     }
 
     public override void Initialize()
