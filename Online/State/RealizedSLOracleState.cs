@@ -48,7 +48,7 @@ namespace RainMeadow
                 convoId = markBehavior.currentConversation.id;
                 convoItemType = ((SLOracleBehaviorHasMark.MoonConversation)markBehavior.currentConversation).describeItem;
             }
-            // TODO: genericize with 5P?
+            // TODO: genericize with 5P??
             currentGetTo = behavior.currentGetTo;
             nextPos = behavior.nextPos;
             investigateAngle = (float)behavior.investigateAngle;
