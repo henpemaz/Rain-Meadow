@@ -72,7 +72,7 @@ namespace RainMeadow
             if (controller is Joystick joystick)
             {
                 Vector2 direction = new(joystick.GetAxis(2), joystick.GetAxis(3));
-                return Vector2.ClampMagnitude(direction, 1f);
+                return (Vector2.ClampMagnitude(direction, 1f) * 40f) + new Vector2(Futile.width / 2f, Futile.height / 2f);
             }
             return Futile.mousePosition;
         }
