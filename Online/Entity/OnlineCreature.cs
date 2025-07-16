@@ -286,6 +286,7 @@ namespace RainMeadow
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
+
             if (this.realizedCreature is null) {
                 this.creature.Realize();
             }
