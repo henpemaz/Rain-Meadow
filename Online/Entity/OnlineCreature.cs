@@ -286,7 +286,6 @@ namespace RainMeadow
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
-
             if (this.realizedCreature is null) {
                 this.creature.Realize();
             }
@@ -294,8 +293,7 @@ namespace RainMeadow
             var realcreature = this.realizedCreature!;
             if (abstractCreature.Room != newRoom.absroom) {
                 RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
-                if (realcreature.room != null)
-                {
+                if (realcreature.room != null) {
                     realcreature.room.RemoveObject(realcreature);
                 }
                 AllMoving(true);
