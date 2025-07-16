@@ -276,27 +276,23 @@ namespace RainMeadow
         public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
         {
             RainMeadow.Debug(this);
-            if (this.roomSession.absroom.realizedRoom is null)
-            {
+            if (this.roomSession.absroom.realizedRoom is null) {
                 RainMeadow.Error($"{this} is trying to enter abstracted room.");
                 apo.Abstractize(apo.pos);
                 return;
             }
 
-            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom))
-            {
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
 
-            if (this.realizedCreature is null)
-            {
+            if (this.realizedCreature is null) {
                 this.creature.Realize();
             }
 
             var realcreature = this.realizedCreature!;
-            if (abstractCreature.Room != newRoom.absroom)
-            {
+            if (abstractCreature.Room != newRoom.absroom) {
                 RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
                 if (realcreature.room != null)
                 {
