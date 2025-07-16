@@ -99,12 +99,12 @@ namespace RainMeadow
 
         public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
         {
+            if (RainMeadow.sSpawningAvatar) isAvatar = true;
         }
 
         public OnlineCreature(OnlineCreatureDefinition onlineCreatureDefinition, OnlineResource inResource, AbstractCreatureState initialState) : base(onlineCreatureDefinition, inResource, initialState)
         {
-            if (RainMeadow.sSpawningAvatar) isAvatar = true;
-
+            isAvatar = onlineCreatureDefinition.isAvatar;
         }
 
         public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
