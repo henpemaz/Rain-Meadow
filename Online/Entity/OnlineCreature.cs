@@ -341,4 +341,4 @@ namespace RainMeadow
             return $"{abstractCreature.creatureTemplate.type} {base.ToString()}";
         }
     }
-} 
+}
