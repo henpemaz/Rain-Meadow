@@ -325,7 +325,7 @@ namespace RainMeadow
                 return false;
             }
 
-            //if (!oc.isAvatar) return false;
+            if (!oc.isAvatar) return false;
 
             if (RainMeadow.isArenaMode(out var arena))
             {
