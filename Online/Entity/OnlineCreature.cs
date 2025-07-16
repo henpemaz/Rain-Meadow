@@ -16,15 +16,11 @@ namespace RainMeadow
             [OnlineField]
             private CreatureTemplate.Type creatureType;
 
-            [OnlineField]
-            public bool isAvatar;
-
             public OnlineCreatureDefinition() { }
 
             public OnlineCreatureDefinition(OnlineCreature onlineCreature, OnlineResource inResource) : base(onlineCreature, inResource)
             {
                 this.creatureType = onlineCreature.creature.creatureTemplate.type;
-                isAvatar = onlineCreature.isAvatar;
             }
 
             protected void CreatureSaveExtras(string extras)
@@ -94,19 +90,18 @@ namespace RainMeadow
         }
 
         public bool enteringShortCut;
-        public bool isAvatar { get; private set; }
         public AbstractCreature creature => apo as AbstractCreature;
         public Creature realizedCreature => apo.realizedObject as Creature;
         public AbstractCreature abstractCreature => apo as AbstractCreature;
 
         public OnlineCreature(AbstractCreature ac, EntityId id, OnlinePlayer owner, bool isTransferable) : base(ac, id, owner, isTransferable)
         {
-            if (RainMeadow.sSpawningAvatar) isAvatar = true;
+
         }
 
         public OnlineCreature(OnlineCreatureDefinition onlineCreatureDefinition, OnlineResource inResource, AbstractCreatureState initialState) : base(onlineCreatureDefinition, inResource, initialState)
         {
-            isAvatar = onlineCreatureDefinition.isAvatar;
+
         }
 
         public override EntityDefinition MakeDefinition(OnlineResource onlineResource)
@@ -281,25 +276,30 @@ namespace RainMeadow
         public void SpitOutOfShortCut(IntVector2 pos, RoomSession newRoom, bool spitOutAllSticks)
         {
             RainMeadow.Debug(this);
-            if (this.roomSession.absroom.realizedRoom is null) {
+            if (this.roomSession.absroom.realizedRoom is null)
+            {
                 RainMeadow.Error($"{this} is trying to enter abstracted room.");
                 apo.Abstractize(apo.pos);
                 return;
             }
 
-            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom)) {
+            if (!this.abstractCreature.AllowedToExistInRoom(this.roomSession.absroom.realizedRoom))
+            {
                 RainMeadow.Error($"{this} is to early to spit out of shortcut.");
                 return;
             }
-            
-            if (this.realizedCreature is null) {
+
+            if (this.realizedCreature is null)
+            {
                 this.creature.Realize();
             }
 
             var realcreature = this.realizedCreature!;
-            if (abstractCreature.Room != newRoom.absroom) {
+            if (abstractCreature.Room != newRoom.absroom)
+            {
                 RainMeadow.Error($"{this} tried to spit out of a shortcut in a room it wasn't in.");
-                if (realcreature.room != null) {
+                if (realcreature.room != null)
+                {
                     realcreature.room.RemoveObject(realcreature);
                 }
                 AllMoving(true);
