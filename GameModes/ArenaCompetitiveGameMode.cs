@@ -252,7 +252,7 @@ namespace RainMeadow
             if (ModManager.Watcher)
             {
                 slugcatSelectMenuScenes.Add("Watcher", slugcatSelectMenuScenes["Night"]);
-                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Open: Echoes. Balance. Weightless.");
+                slugcatSelectDescriptions.Add("Watcher", "Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.");
                 slugcatSelectDisplayNames.Add("Watcher", "THE WATCHER");
 
                 slugcatSelectMenuScenes.Remove("Night");
