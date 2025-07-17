@@ -451,6 +451,10 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (item.type == PlacedObject.Type.StuckDaddy)
+            {
+                return OnlineManager.lobby.isOwner;
+            }
 
             return base.AllowedInMode(item) || playerGrabbableItems.Contains(item.type);
         }

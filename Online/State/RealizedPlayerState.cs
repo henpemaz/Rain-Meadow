@@ -94,6 +94,9 @@ namespace RainMeadow
 
     public class RealizedPlayerState : RealizedCreatureState
     {
+        [OnlineField]
+        public bool malnourished = false;
+
         [OnlineField(nullable = true)]
         private VinePositionState? vinePosState;
         [OnlineField(nullable = true)]
@@ -191,7 +194,8 @@ namespace RainMeadow
                 | (i.pckp ? 1 << 6 : 0)
                 | (i.jmp ? 1 << 7 : 0)
                 | (i.thrw ? 1 << 8 : 0)
-                | (i.mp ? 1 << 9 : 0));
+                | (i.mp ? 1 << 9 : 0)
+                | (i.spec ? 1 << 10 : 0));
 
             vinePosState = p.animation != Player.AnimationIndex.VineGrab || p.vinePos is null || p.room is null ? null : new VinePositionState(p.vinePos, p.room.climbableVines.vines.IndexOf(p.vinePos.vine));
 
@@ -207,6 +211,8 @@ namespace RainMeadow
                 if (handIndex >= 0 && playerGraphics.hands[handIndex].reachingForObject)
                     pointingDir = playerGraphics.hands[handIndex].absoluteHuntPos;
             }
+
+            malnourished = p.Malnourished;
         }
 
         public Player.InputPackage GetInput()
@@ -223,6 +229,7 @@ namespace RainMeadow
             if (((inputs >> 7) & 1) != 0) i.jmp = true;
             if (((inputs >> 8) & 1) != 0) i.thrw = true;
             if (((inputs >> 9) & 1) != 0) i.mp = true;
+            if (((inputs >> 10) & 1) != 0) i.spec = true;
             i.analogueDir.x = analogInputX;
             i.analogueDir.y = analogInputY;
             return i;
@@ -340,6 +347,10 @@ namespace RainMeadow
                     playerGraphics.hands[handIndex].absoluteHuntPos = pointingDir.Value;
                     p.handPointing = handIndex; //important! - check != -1 so we know we are in a "pointing state"
                 }
+            }
+
+            if (p.Malnourished != malnourished) {
+                p.SetMalnourished(malnourished);
             }
         }
     }

@@ -23,7 +23,9 @@ namespace RainMeadow
                 {
                     int handIndex = GetHandIndex(player);
                     if (handIndex >= 0) LookAtPoint(player, GetOnlinePointingVector(), handIndex);
-                } else {
+                }
+                else
+                {
                     player.handPointing = -1; //reset hand
                 }
             }
@@ -35,10 +37,12 @@ namespace RainMeadow
         private static void LookAtPoint(Creature realizedPlayer, Vector2 pointingVector, int handIndex)
         {
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-            Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
-            Vector2 finalHandPos = controller is Joystick ? targetPosition : Futile.mousePosition;
             if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
             {
+
+                Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
+                Vector2 finalHandPos = (controller is Joystick ? targetPosition : new Vector2(Futile.mousePosition.x, Futile.mousePosition.y) + player.room.game.cameras[0].pos);
+
                 playerGraphics.LookAtPoint(finalHandPos, Pointing.LookInterest);
                 var handModule = playerGraphics.hands[handIndex];
                 handModule.reachingForObject = true;
@@ -70,7 +74,7 @@ namespace RainMeadow
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)
             {
-                Vector2 direction = new Vector2(joystick.GetAxis(2), joystick.GetAxis(3));
+                Vector2 direction = new(joystick.GetAxis(2), joystick.GetAxis(3));
                 return Vector2.ClampMagnitude(direction, 1f);
             }
             return Futile.mousePosition;
