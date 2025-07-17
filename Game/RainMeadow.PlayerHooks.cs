@@ -1036,6 +1036,8 @@ public partial class RainMeadow
             self.objectInStomach.pos = self.abstractCreature.pos;
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
             gameMode.storyClientData.readyForWin = false;
+        float wasSleepCurlUp = self.sleepCurlUp;
+
         orig(self, eu);
 
         if (isStoryMode(out var story) && !self.inShortcut && OnlineManager.players.Count > 4)
@@ -1076,27 +1078,28 @@ public partial class RainMeadow
             }
         }
         //Sleeping when AFK
-        var ableToSleep = playerAbleToSleep.GetOrCreateValue(self);
-        if
-        (
-            OnlineManager.lobby != null && //Make sure we're online.
-            self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
-            ( //Check if we can fit a sleeping animation.
-                (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
-                (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
-            )
-        )
+        if(OnlineManager.lobby != null && self.IsLocal())
         {
-            ableToSleep.timer++;
-        }
-        else
-        {
-            ableToSleep.timer = 0;
-        }
-        if (OnlineManager.lobby != null && self.touchedNoInputCounter > 1200 && ableToSleep.timer > 200)
-        {
-            self.standing = false;
-            self.sleepCurlUp = Math.Min(1f, self.sleepCurlUp + 0.12f); //The regular sleep function constantly subtracts 0.1f from sleepCurlUp when awake, so this is effectively +0.02. Hacky, but works.
+            var ableToSleep = playerAbleToSleep.GetOrCreateValue(self);
+            if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
+                ( //Check if we can fit a sleeping animation.
+                    (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
+                    (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
+                )
+               )
+            {
+                ableToSleep.timer++;
+            }
+            else
+            {
+                ableToSleep.timer = 0;
+            }
+            if (self.touchedNoInputCounter > 1200 && ableToSleep.timer > 200)
+            {
+                self.standing = false;
+                self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
+                self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
+            }
         }
     }
 
