@@ -192,6 +192,7 @@ namespace RainMeadow
                         requiredExtEnums.Add(t);
                     }
                 }
+                RainMeadow.Debug($"added serialized {(requiredExtEnums.Contains(t) ? "required" : "")} extEnum: {t.AssemblyQualifiedName}");
             }
         }
 

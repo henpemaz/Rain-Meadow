@@ -39,12 +39,16 @@ namespace RainMeadow
 
         public static OnlineState ParsePolymorph(Serializer serializer)
         {
-            return handlersByEnum[new StateType(StateType.values.GetEntry(serializer.reader.ReadByte()))].factory();
+            if (!serializer.IsWriting) throw new InvalidProgrammerException("ParsePolymorph called when not reading");
+            StateType type = null!;
+            serializer.SerializeExtEnum(ref type);
+            return handlersByEnum[type].factory();
         }
 
         public void WritePolymorph(Serializer serializer)
         {
-            serializer.writer.Write((byte)handler.stateType.index);
+            if (!serializer.IsWriting) throw new InvalidProgrammerException("WritePolymorph called when not writing");
+            serializer.SerializeExtEnum(ref handler.stateType);
         }
 
         public static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
