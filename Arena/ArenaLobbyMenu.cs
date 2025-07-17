@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using System.Linq;
+using Rewired.ControllerExtensions;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 namespace RainMeadow
 {
     public class ArenaLobbyMenu : MultiplayerMenu
@@ -14,6 +16,8 @@ namespace RainMeadow
 
         private MenuLabel totalClientsReadiedUpOnPage, currentLevelProgression, displayCurrentGameMode;
         public SimplerButton forceReady;
+        public SimplerButton changeTeam;
+
         private SimplerSymbolButton colorConfigButton;
         private ColorSlugcatDialog colorConfigDialog;
         private ArenaOnlineSlugcatButtons slugcatButtons;
@@ -22,6 +26,7 @@ namespace RainMeadow
         private string forceReadyText = "FORCE READY"; // for the button text, in case we need to reset it for any reason
         private bool flushArenaSittingForWaitingClients = false;
         private bool pushClientIntoGame = false;
+        public int team = 0;
 
         private ArenaOnlineGameMode arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
         private int ScreenWidth => (int)manager.rainWorld.options.ScreenSize.x; // been using 1360 as ref
@@ -49,10 +54,10 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) throw new InvalidOperationException("lobby is null");
             if (OnlineManager.lobby.isOwner)
             {
-                ArenaHelpers.ResetOnReturnToMenu(arena, this);
+                arena.ResetOnReturnToMenu(this);
                 arena.ResetForceReadyCountDown();
             }
-            ArenaHelpers.ResetReadyUpLogic(arena, this);
+            arena.ResetReadyUpLogic(arena, this);
             OverrideMultiplayerMenu();
             BindSettings();
             BuildLayout();
@@ -60,7 +65,8 @@ namespace RainMeadow
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
             if (arena.currentGameMode == "" || arena.currentGameMode is null)
             {
-                arena.currentGameMode = Competitive.CompetitiveMode.value;
+                arena.currentGameMode = FFA.FFAMode.value;
+                arena.externalArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
             }
 
         }
@@ -83,12 +89,15 @@ namespace RainMeadow
             base.GrafUpdate(timeStacker);
             if (colorConfigButton != null)
             {
-                if (SlugcatFromIndex != null) {
+                if (SlugcatFromIndex != null)
+                {
                     colorConfigButton.symbolSprite.alpha = this.manager.rainWorld.progression.IsCustomColorEnabled(SlugcatFromIndex) ? 1 : 0.2f;
-                } else {
+                }
+                else
+                {
                     colorConfigButton.symbolSprite.alpha = 0.2f;
                 }
-                
+
             }
         }
         public override void Update()
@@ -163,14 +172,15 @@ namespace RainMeadow
                     var gameModesList = arena.registeredGameModes.ToList();
 
                     // Find the current game mode entry
-                    var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+                    var currentModeIndex = gameModesList.FindIndex(kvp => kvp.Key == arena.currentGameMode);
 
                     // Get the next mode in the list, or wrap around to the first mode if at the end
                     var nextModeIndex = (currentModeIndex + 1) % gameModesList.Count;
 
                     // Update the current game mode
-                    arena.onlineArenaGameMode = gameModesList[nextModeIndex].Key;
-                    arena.currentGameMode = gameModesList[nextModeIndex].Value;
+                    arena.externalArenaGameMode = gameModesList[nextModeIndex].Value;
+                    arena.currentGameMode = gameModesList[nextModeIndex].Key;
+                    //this.currentGameType = gameModesList[nextModeIndex].Value.GameModeSetups;
 
                 }
 
@@ -179,15 +189,16 @@ namespace RainMeadow
                     var gameModesList = arena.registeredGameModes.ToList();
 
                     // Find the current game mode entry
-                    int currentModeIndex = gameModesList.FindIndex(kvp => kvp.Value == arena.currentGameMode);
+                    int currentModeIndex = gameModesList.FindIndex(kvp => kvp.Key == arena.currentGameMode);
 
                     // Handle the case when we're at the beginning of the list
                     if (currentModeIndex > 0)
                     {
                         // Get the previous mode in the list
                         int prevModeIndex = currentModeIndex - 1;
-                        arena.onlineArenaGameMode = gameModesList[prevModeIndex].Key;
-                        arena.currentGameMode = gameModesList[prevModeIndex].Value;
+                        arena.externalArenaGameMode = gameModesList[prevModeIndex].Value;
+                        arena.currentGameMode = gameModesList[prevModeIndex].Key;
+                        //this.currentGameType = gameModesList[prevModeIndex].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
@@ -195,11 +206,13 @@ namespace RainMeadow
                     {
                         // Handle the case when we're already at the beginning
                         // You might want to wrap around to the last mode here
-                        arena.onlineArenaGameMode = gameModesList[gameModesList.Count - 1].Key;
-                        arena.currentGameMode = gameModesList[gameModesList.Count - 1].Value;
+                        arena.externalArenaGameMode = gameModesList[gameModesList.Count - 1].Value;
+                        arena.currentGameMode = gameModesList[gameModesList.Count - 1].Key;
+                        //this.currentGameType = gameModesList[gameModesList.Count - 1].Value.GameModeSetups;
 
                         // Initialize the custom game type
                     }
+
 
                 }
 
@@ -238,6 +251,7 @@ namespace RainMeadow
             RemoveExcessArenaObjects();
 
             this.currentGameType = this.nextGameType = ArenaSetup.GameTypeID.Competitive;
+            RainMeadow.Debug(this.currentGameType);
             this.nextButton.signalText = "NEXTONLINEGAME";
             this.prevButton.signalText = "PREVONLINEGAME";
 
@@ -295,6 +309,7 @@ namespace RainMeadow
                 }
             }
 
+
         }
         private void BuildPlayerButtons()
         {
@@ -325,8 +340,17 @@ namespace RainMeadow
                     (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>()).playingAs = SlugcatFromIndex;
                     RainMeadow.Debug($"My Slugcat: {OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs}");
 
-
                 };
+                Action<SimplerButton> changeTeam = (_) =>
+                {
+                    this.team = (this.team + 1) % 4;
+                    if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var team))
+                    {
+                        team.team = this.team;
+                    }
+                };
+                this.changeTeam = CreateButton("Change Team", new Vector2(this.playButton.pos.x - 260f, this.playButton.pos.y), this.playButton.size, changeTeam);
+
             }
         }
         private void UpdateProfilePlayerButtons(ArenaOnlineSlugcatButtons slugcatPlayerButtons)
@@ -360,7 +384,7 @@ namespace RainMeadow
                 }
                 if (this != null)
                 {
-                    ArenaHelpers.ResetReadyUpLogic(arena, this);
+                    arena.ResetReadyUpLogic(arena, this);
                 }
             }
 
@@ -391,6 +415,7 @@ namespace RainMeadow
                 this.abovePlayButtonLabel.label.alignment = FLabelAlignment.Right;
                 this.abovePlayButtonLabel.pos.x = this.playButton.pos.x + 55f;
             }
+
         }
         private void InitializeNewOnlineSitting()
         {
@@ -455,18 +480,18 @@ namespace RainMeadow
 
             }
 
-            ArenaHelpers.SetProfileColor(arena);
-            if (arena.registeredGameModes.Values.Contains(arena.currentGameMode))
+            arena.SetProfileColor(arena);
+            if (arena.registeredGameModes.Keys.Contains(arena.currentGameMode))
             {
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == arena.currentGameMode).Key;
-                RainMeadow.Debug("Playing GameMode: " + arena.onlineArenaGameMode);
+                arena.externalArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == arena.currentGameMode).Value;
+                RainMeadow.Debug("Playing GameMode: " + arena.externalArenaGameMode);
             }
             else
             {
-                RainMeadow.Error("Could not find gamemode in list! Setting to Competitive as a fallback");
-                arena.onlineArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
+                RainMeadow.Error("Could not find gamemode in list! Setting to FFA as a fallback");
+                arena.externalArenaGameMode = arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
             }
-            arena.onlineArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
+            arena.externalArenaGameMode.InitAsCustomGameType(this.GetGameTypeSetup);
 
         }
         public void StartGame()
@@ -675,9 +700,10 @@ namespace RainMeadow
             }
             if (arena.returnToLobby && !flushArenaSittingForWaitingClients) // coming back to lobby, reset everything
             {
-                ArenaHelpers.ResetReadyUpLogic(arena, this);
+                arena.ResetReadyUpLogic(arena, this);
                 flushArenaSittingForWaitingClients = true;
             }
+
         }
         private void UpdateSlugcatButtons() //called under update, so lobby null check isnt needed
         {
@@ -686,7 +712,7 @@ namespace RainMeadow
                 foreach (ArenaOnlinePlayerJoinButton playerButton in slugcatButtons.otherArenaPlayerButtons)
                 {
                     playerButton.readyForCombat = arena.playersReadiedUp?.list?.Contains(playerButton.profileIdentifier.id) == true;
-                    playerButton.buttonBehav.greyedOut = !(arena.reigningChamps?.list?.Contains(playerButton.profileIdentifier.id) == true);
+                    playerButton.buttonBehav.greyedOut = false;
                     int colorIndex = arena.playersInLobbyChoosingSlugs?.TryGetValue(playerButton.profileIdentifier.GetUniqueID(), out int result) == true ? result : 0;
                     playerButton.SetNewSlugcat(ArenaHelpers.selectableSlugcats[colorIndex], colorIndex, ArenaImage);
                 }
@@ -714,6 +740,7 @@ namespace RainMeadow
                 arena.ResetForceReadyCountDownShort();
             };
             this.forceReady = CreateButton(this.Translate(forceReadyText), new Vector2(this.playButton.pos.x - 130f, this.playButton.pos.y), this.playButton.size, forceReadyClick);
+
         }
         public void CallLobbyDataChange(Delegate del, params object[] args) //prevent unnecessary rpc is called as owner, else call rpc
         {

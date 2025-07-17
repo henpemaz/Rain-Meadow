@@ -35,6 +35,12 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
 
+    public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
+    public readonly Configurable<string> MartyrTeamName;
+    public readonly Configurable<string> OutlawsTeamName;
+    public readonly Configurable<string> DragonSlayersTeamName;
+    public readonly Configurable<string> ChieftainTeamName;
+    public readonly Configurable<float> TeamColorLerp;
 
     public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
     public readonly Configurable<bool> ShowPing;
@@ -90,6 +96,19 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+
+
+        MartyrTeamColor = config.Bind("MartyrTeamColor", new Color(1, 0.49f, 0.49f));
+        OutlawsTeamColor = config.Bind("OutlawsTeamColor", new Color(1, 1, 0.49f));
+        DragonSlayersTeamColor = config.Bind("DragonSlayersTeamColor", new Color(0.49f, 1, 0.49f));
+        ChieftainTeamColor = config.Bind("ChieftainTeamColor", new Color(0.49f, 0.49f, 1));
+
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
+
 
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
 

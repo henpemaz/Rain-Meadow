@@ -92,7 +92,7 @@ namespace RainMeadow
 
             this.pages[0].subObjects.Add(this.skinsLabel = new MenuLabel(this, mainPage, this.Translate("SKINS"), new Vector2(194, 553), new(110, 30), true));
 
-            colorpicker = new OpTinyColorPicker(this, new Vector2(800, 60), Color.white);
+            colorpicker = new OpTinyColorPicker(this, this.tabWrapper, new Vector2(800, 60), Color.white);
             var wrapper = new UIelementWrapper(this.tabWrapper, colorpicker);
 
             colorpicker.OnValueChangedEvent += Colorpicker_OnValueChangedEvent;

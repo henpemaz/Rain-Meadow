@@ -1917,7 +1917,7 @@ public partial class RainMeadow
         {
             // if (!(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             //becomes
-            // if (!(otherObject.FriendlyFireSafetyCandidate()) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
+            // if (!(otherObject.FriendlyFireSafetyCandidate(me)) && !(otherObject as Creature).dead && (otherObject as Creature).abstractCreature.creatureTemplate.type != MoreSlugcatsEnums.CreatureTemplateType.SlugNPC && !(ModManager.CoopAvailable && flag4))
             var c = new ILCursor(il);
             var skip = il.DefineLabel();
             c.GotoNext(
@@ -1936,7 +1936,8 @@ public partial class RainMeadow
                 i => i.MatchBrtrue(out skip)
                 );
             c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((PhysicalObject otherObject) => otherObject.FriendlyFireSafetyCandidate());
+            c.Emit(OpCodes.Ldarg_1);
+            c.EmitDelegate((Creature me, Creature otherObject) => otherObject.FriendlyFireSafetyCandidate(me));
             c.Emit(OpCodes.Brtrue, skip);
         }
         catch (Exception e)
@@ -1947,13 +1948,9 @@ public partial class RainMeadow
 
     private bool Player_SlugSlamConditions(On.Player.orig_SlugSlamConditions orig, Player self, PhysicalObject otherObject)
     {
-        if (otherObject.FriendlyFireSafetyCandidate())
+        if (otherObject is Creature c && c.FriendlyFireSafetyCandidate(self))
         {
-            if (otherObject is Player) return false;
-        }
-        if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
-        {
-            if (otherObject is Player) return false;
+            return false;
         }
 
 
@@ -2033,7 +2030,7 @@ public partial class RainMeadow
 
     private bool Player_CanMaulCreature(On.Player.orig_CanMaulCreature orig, Player self, Creature crit)
     {
-        if (crit.FriendlyFireSafetyCandidate()) return false;
+        if (crit.FriendlyFireSafetyCandidate(self)) return false;
         if (isArenaMode(out var arena))
         {
             if (arena.disableMaul && crit is Player)
