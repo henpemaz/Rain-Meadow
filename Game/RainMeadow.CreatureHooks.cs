@@ -33,9 +33,38 @@ namespace RainMeadow
             On.EggBugGraphics.Update += EggBugGraphics_Update;
             On.BigSpiderGraphics.Update += BigSpiderGraphics_Update;
 
+            On.SLOracleBehaviorHasMark.Update += SLOracleBehaviorHasMark_Update1;
+            On.SSOracleBehavior.NewAction += SSOracleBehavior_NewAction;
+
             On.EggBug.DropEggs += EggBug_DropEggs;
             On.Vulture.DropMask += Vulture_DropMask;
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
+        }
+
+        private void SLOracleBehaviorHasMark_Update1(On.SLOracleBehaviorHasMark.orig_Update orig, SLOracleBehaviorHasMark self, bool eu)
+        {
+            if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo))
+            {
+                if ((opo.roomSession.isOwner && opo.isMine) || RealizedSLOracleState.allowConversationChange)
+                    orig(self, eu); //we own the entity.
+            }
+            else
+            {
+                orig(self, eu);
+            }
+        }
+
+        private void SSOracleBehavior_NewAction(On.SSOracleBehavior.orig_NewAction orig, SSOracleBehavior self, SSOracleBehavior.Action nextAction)
+        {
+            if (OnlineManager.lobby != null && self.oracle.abstractPhysicalObject.GetOnlineObject(out var opo))
+            {
+                if ((opo.roomSession.isOwner && opo.isMine) || RealizedSSOracleState.allowActionChange)
+                    orig(self, nextAction); //we own the entity.
+            }
+            else
+            {
+                orig(self, nextAction);
+            }
         }
 
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
