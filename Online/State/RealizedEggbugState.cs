@@ -3,13 +3,13 @@ namespace RainMeadow
     public class RealizedEggBugState : RealizedCreatureState
     {
         [OnlineField]
-        public int eggsLeft;
+        public sbyte eggsLeft;
 
         public RealizedEggBugState() { }
         public RealizedEggBugState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             var bug = (EggBug)onlineEntity.apo.realizedObject;
-            eggsLeft = bug.eggsLeft;
+            eggsLeft = (sbyte)bug.eggsLeft;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
