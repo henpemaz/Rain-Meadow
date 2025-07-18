@@ -500,7 +500,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return "";
         }
 
-        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner,  SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner,  SlugcatCustomization customization, OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
