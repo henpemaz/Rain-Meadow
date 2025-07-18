@@ -163,14 +163,13 @@ namespace RainMeadow
 
         public virtual Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-            if (display.username != null)
+
+            Color.RGBToHSV(customization.SlugcatColor(), out var H, out var S, out var V);
+            if (V < 0.8)
             {
-                return display.username.color;
+                return Color.HSVToRGB(H, S, 0.8f);
             }
-            else
-            {
-                return customization.bodyColor;
-            }
+            return customization.SlugcatColor();
         }
 
         public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)
