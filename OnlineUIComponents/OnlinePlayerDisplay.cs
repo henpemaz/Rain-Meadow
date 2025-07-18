@@ -62,7 +62,7 @@ namespace RainMeadow
             this.color = customization.SlugcatColor();
             if (RainMeadow.isArenaMode(out var a))
             {
-                this.color = a.externalArenaGameMode.IconColor(a, owner, customization, player);
+                this.color = a.externalArenaGameMode.IconColor(a, this, owner, customization, player);
             }
             Color.RGBToHSV(color, out H, out S, out V);
 
@@ -203,7 +203,7 @@ namespace RainMeadow
                             slugIcon.SetElementByName(arena.externalArenaGameMode.AddIcon(arena, owner, customization, player));
                         }
                         else if (owner.PlayerConsideredDead) slugIcon.SetElementByName("Multiplayer_Death");
-                        slugIcon.color = arena.externalArenaGameMode.IconColor(arena, owner, customization, player);
+                        slugIcon.color = arena.externalArenaGameMode.IconColor(arena, this, owner, customization, player);
 
                     }
                     else if (owner.PlayerInAncientShelter) slugIcon.SetElementByName("ShortcutAShelter");

@@ -9,9 +9,6 @@ using Steamworks;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Menu.Remix.MixedUI;
-using HarmonyLib;
-using System.Xml;
 using RainMeadow.UI;
 
 
@@ -164,10 +161,16 @@ namespace RainMeadow
             return "";
         }
 
-        public virtual Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public virtual Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-
-            return customization.bodyColor;
+            if (display.username != null)
+            {
+                return display.username.color;
+            }
+            else
+            {
+                return customization.bodyColor;
+            }
         }
 
         public virtual List<ListItem> ArenaOnlineInterfaceListItems(ArenaOnlineGameMode arena)

@@ -101,7 +101,7 @@ namespace RainMeadow
 
         }
 
-        public override Color IconColor(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
             if (owner.PlayerConsideredDead)
             {
@@ -112,7 +112,7 @@ namespace RainMeadow
                 return Color.yellow;
             }
 
-            return base.IconColor(arena, owner, customization, player);
+            return base.IconColor(arena, display, owner, customization, player);
         }
 
         public override Dialog AddGameModeInfo(ArenaOnlineGameMode arena, Menu.Menu menu)
