@@ -5,7 +5,6 @@ using Menu;
 using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace RainMeadow
 {

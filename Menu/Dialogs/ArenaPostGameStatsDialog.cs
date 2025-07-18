@@ -8,7 +8,6 @@ using Menu.Remix.MixedUI;
 using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace RainMeadow.UI
 {
