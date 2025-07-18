@@ -85,7 +85,7 @@ namespace RainMeadow
                 );
             
             pos.y += 40f;
-            var text = new MusicTitleDisplay(this, this.pages[0], "", pos, new Vector2(110f, 30f));
+            var text = new MusicTitleDisplay(this, this.pages[0], "", pos, new Vector2(0f, 30f)); //110
             pages[0].subObjects.Add(text);
             pos.y -= 40f;
 
@@ -129,11 +129,7 @@ namespace RainMeadow
                 if (c is FloatyButton button) button.progress = blackFade;
                 if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
                 if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
-                if (c is MusicTitleDisplay texts)
-                {
-                    //texts.progress = blackFade;
-                    texts.Display(manager?.musicPlayer?.song?.name ?? "", blackFade);
-                }
+                if (c is MusicTitleDisplay texts) texts.Display(manager?.musicPlayer?.song?.name ?? "", blackFade);
             }
             base.Update();
         }

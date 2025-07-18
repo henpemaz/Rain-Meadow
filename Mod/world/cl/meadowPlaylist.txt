@@ -1,5 +1,5 @@
 CL_AI,1000,1666,Sine
-Eyes Vain
+Eyes' Vain
 Woodback
 Ones
 403rings
@@ -11,3 +11,5 @@ Live more.
 Nevertop Side
 Purple Puff
 DustAshWrong
+slow
+my

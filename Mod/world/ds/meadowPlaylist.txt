@@ -1,5 +1,5 @@
 DS_B03,1000,2700,Clar
-Eyes Vain
+Eyes' Vain
 Folkada
 403rings
 tredjeplanen
@@ -7,3 +7,5 @@ Significance
 The Crewmate
 MTC
 Triptrap X
+slow
+Afio

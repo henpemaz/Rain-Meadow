@@ -490,8 +490,8 @@ namespace RainMeadow
                     RainMeadow.Debug("I will be asking to leave");
                     OnlineManager.lobby.owner.InvokeRPC(AskNowLeave);
                     demiseTimer = null;
-                    self.cameras[0].hud.textPrompt.AddMessage("Left your DJ group", 0, 100, false, false);
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 0, 0.5f, 1);
+                    //self.cameras[0].hud.textPrompt.AddMessage("Left your DJ group", 0, 100, false, false);
+                    //self.cameras[0].virtualMicrophone.PlaySound(SoundID.Snail_Pop, 0, 0.5f, 1);
                 }
             }
 
@@ -508,8 +508,8 @@ namespace RainMeadow
                     }
                     ushort[] ballers = InThisRoom.Select(v => v.owner.inLobbyId).ToArray();
                     OnlineManager.lobby.owner.InvokeRPC(AskNowSquashPlayers, ballers);
-                    self.cameras[0].hud.textPrompt.AddMessage("Squashing room into DJ group", 0, 100, false, false);
-                    self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 0, 0.65f, 1);
+                    //self.cameras[0].hud.textPrompt.AddMessage("Squashing room into DJ group", 0, 100, false, false);
+                    //self.cameras[0].virtualMicrophone.PlaySound(SoundID.Leviathan_Bite, 0, 0.65f, 1);
                     groupdemiseTimer = null;
                 }
             }
@@ -547,8 +547,8 @@ namespace RainMeadow
                         RainMeadow.Debug("I will ask to join this ID " + the);
                         OnlinePlayer who = playersWithMe.First(p => mgms.playerGroups[p.inLobbyId] == the);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who);
-                        self.cameras[0].hud.textPrompt.AddMessage($"Joining the DJ group {the} of {who.id.name}", 0, 100, false, false);
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
+                        //self.cameras[0].hud.textPrompt.AddMessage($"Joining the DJ group {the} of {who.id.name}", 0, 100, false, false);
+                        //self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
                     }
                     else 
                     {
@@ -556,8 +556,8 @@ namespace RainMeadow
                         var who = playersWithMe[UnityEngine.Random.Range(0, playersWithMe.Count)];
                         RainMeadow.Debug("I will ask to join this player named " + who);
                         OnlineManager.lobby.owner.InvokeRPC(AskNowJoinPlayer, who); // the ordering
-                        self.cameras[0].hud.textPrompt.AddMessage($"Joining the DJ group of {who.id.name}", 0, 100, false, false);
-                        self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
+                        //self.cameras[0].hud.textPrompt.AddMessage($"Joining the DJ group of {who.id.name}", 0, 100, false, false);
+                        //self.cameras[0].virtualMicrophone.PlaySound(SoundID.SS_AI_Give_The_Mark_Boom, 0, 0.5f, 1);
                     }
                 }
             }
@@ -617,7 +617,7 @@ namespace RainMeadow
                 {
                     // huh
                     RainMeadow.Debug("I'm the DJ");
-                    self.cameras[0].hud.textPrompt.AddMusicMessage("You're the DJ!", 100); //"speaker"
+                    //self.cameras[0].hud.textPrompt.AddMusicMessage("You're the DJ!", 100); //"speaker"
                 }
                 else if (TryGetMusicdata(hostId, out MeadowMusicData myDJsdata))
                 {
@@ -972,7 +972,7 @@ namespace RainMeadow
             var VibeRoomCreatures = creature.abstractCreature.Room.world.GetAbstractRoom(closestVibe);
             if (VibeRoomCreatures != null)
             { 
-                //PlopMachine.agora = VibeRoomCreatures.creatures.Count(); 
+                PlopMachine.agora = VibeRoomCreatures.creatures.Count(); 
             }
 
             if (groupImIn == 0)
