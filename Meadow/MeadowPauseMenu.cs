@@ -14,7 +14,7 @@ namespace RainMeadow
         private int targetHub;
         private int suco4;
         
-        public static Slider.SliderID Thingy = new Slider.SliderID("Thingy", true);
+        public static Slider.SliderID HubVolume = new Slider.SliderID("Thingy", true);
         public MeadowPauseMenu(ProcessManager manager, RainWorldGame game, MeadowGameMode mgm) : base(manager, game)
         {
             RainMeadow.DebugMe();
@@ -36,9 +36,11 @@ namespace RainMeadow
             var room = game.cameras[0].room;
             bool isShelter = room.abstractRoom.shelter;
             targetHub = -1;
-            if (MeadowMusic.activeZonesDict != null)
+            var thingcontrollerhavers = new FloatController(this, pages[0]);
+            var thing = new Floater(this, pages[0], 0.5f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f));
+            if (MeadowMusic.regionVibeZonesDict != null)
             {
-                var hubZone = MeadowMusic.activeZonesDict.MinBy(v => (world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index) - world.RoomToWorldPos(Vector2.zero, v.Key)).magnitude);
+                var hubZone = MeadowMusic.regionVibeZonesDict.MinBy(v => (world.RoomToWorldPos(Vector2.zero, room.abstractRoom.index) - world.RoomToWorldPos(Vector2.zero, v.Key)).magnitude);
                 RainMeadow.Debug($"hubzone: {hubZone.Value.room} : {hubZone.Key}");
                 targetHub = hubZone.Key;
             }
@@ -82,8 +84,13 @@ namespace RainMeadow
                     Mathf.Max(manager.rainWorld.options.SafeScreenOffset.y, 15f) + 540.2f
                 );
             
+            pos.y += 40f;
+            var text = new MusicTitleDisplay(this, this.pages[0], "", pos, new Vector2(0f, 30f)); //110
+            pages[0].subObjects.Add(text);
+            pos.y -= 40f;
+
             pos.y -= (buttonCount) * 40f;
-            var slider = new FloatySlider(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), Thingy, false);
+            var slider = new FloatySlider(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), HubVolume, false);
             slider.subObjects.Add(new Floater(this, slider, 0.7f, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f)));
             pages[0].subObjects.Add(slider);
 
@@ -105,7 +112,7 @@ namespace RainMeadow
 
         public override void SliderSetValue(Slider slider, float f)
         {
-            if (slider.ID == Thingy)
+            if (slider.ID == HubVolume)
             {
                 MeadowMusic.defaultPlopVolume = f * 0.575f;
             }
@@ -122,6 +129,7 @@ namespace RainMeadow
                 if (c is FloatyButton button) button.progress = blackFade;
                 if (c is FloatyCheckBox) c.subObjects.Do(b =>{ if (b is Floater floater) floater.progress = blackFade; });
                 if (c is FloatySlider) c.subObjects.Do(b => { if (b is Floater floater) floater.progress = blackFade; });
+                if (c is MusicTitleDisplay texts) texts.Display(manager?.musicPlayer?.song?.name ?? "", blackFade);
             }
             base.Update();
         }
@@ -131,7 +139,7 @@ namespace RainMeadow
             this.wantToContinue = true;
             base.PlaySound(SoundID.HUD_Unpause_Game);
         }
-
+            
         private void ToMainMenu(SimplerButton button)
         {
             RainMeadow.DebugMe();
