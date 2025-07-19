@@ -80,7 +80,7 @@ namespace RainMeadow
 
         public void CustomSerialize(Serializer serializer)
         {
-            serializer.Serialize(ref pos);
+            serializer.SerializeHalf(ref pos);
             serializer.SerializeHalf(ref vel);
         }
 
