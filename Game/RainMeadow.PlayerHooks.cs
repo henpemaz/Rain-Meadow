@@ -1163,18 +1163,15 @@ public partial class RainMeadow
                     && self.touchedNoInputCounter > 1200
                    )
                 {
-                    Debug("eepy");
                     extas.afkSleep = true;
                 }
                 else
                 {
-                    Debug("not eepy");
                     extas.afkSleep = false;
                 }
             }
             if (extas.afkSleep)
             {
-                
                 self.standing = false;
                 self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
                 self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
