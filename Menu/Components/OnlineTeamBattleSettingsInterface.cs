@@ -51,7 +51,7 @@ namespace RainMeadow.UI.Components
             teamLerpTextBox = new(new Configurable<float>(teamBattleMode.lerp), new(size.x * 0.5f - 30, 20), 60)
             {
                 alignment = FLabelAlignment.Center,
-                description = "How much do you want team color to show on players? From 0 to 1"
+                description = menu.Translate("How much do you want team color to show on players? From 0 to 1")
             };
             teamLerpTextBox.OnValueUpdate += (config, value, oldValue) =>
             {

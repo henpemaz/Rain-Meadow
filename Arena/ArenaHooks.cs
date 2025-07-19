@@ -213,7 +213,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{tb.teamNames[tb.winningTeam].ToUpper()} WIN!");
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
                     }
                 }
             }
@@ -1744,7 +1744,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = Utils.Translate($"{tb.teamNames[tb.winningTeam].ToUpper()} WIN!");
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
                     }
                 }
             }
