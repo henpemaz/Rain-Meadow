@@ -126,7 +126,14 @@ namespace RainMeadow
             var pos = (int)scratchpad.Position;
             scratchpad.stream.Seek(0, SeekOrigin.Begin);
             var zippedState = new DeflateState(scratchpad.stream, pos);
-            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedState.bytes.Length}");
+            var zippedSize = zippedState.bytes.Length;
+            RainMeadow.Debug($"zipping state {state}, was {pos} became ~{zippedSize}");
+            if (zippedSize >= pos)
+            {
+                RainMeadow.Debug($"cancelling zipping of {state}");
+                scratchpad.stream.Seek(pos, SeekOrigin.Begin); //restore position
+                return false;
+            }
             return WriteState(zippedState);
         }
 
@@ -138,9 +145,12 @@ namespace RainMeadow
             bool fits = scratchpad.Position < (capacity - Position - margin);
             if ((scratchpad.Position > zipTreshold || !fits) && state is not DeflateState)
             {
-                return WriteZippedState(state);
+                if (WriteZippedState(state))
+                {
+                    return true;
+                }
             }
-            else if (fits)
+            if (fits)
             {
                 writer.Write(scratchpad.buffer, 0, (int)scratchpad.Position);
                 stateCount++;
