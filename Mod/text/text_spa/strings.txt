@@ -239,8 +239,8 @@ If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATN
 Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permitir que <PAINCATNAME> siempre use lanzas, incluso si la habilidad de lanzamiento es 0
 <PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> a veces obtiene un amigo:
 Allow <PAINCATNAME> to rarely spawn with a little friend|Permitir que <PAINCATNAME> aparezca con un amigo en raras ocasiones
-Watcher Camo Duration:|Duración del camuflaje de Vigilante
-How long Wacher's abilities last for. Default: 12s|Cuánto dura las habilidades de Vigilante. Predeterminado: 12 s
+Watcher Camo Duration:|Duración del camuflaje del Vigilante
+How long Wacher's abilities last for. Default: 12s|Cuánto dura las habilidades del Vigilante. Predeterminado: 12 s
 Team Settings|Ajustes de equipo
 TEAM|EQUIPO
 Team Lerp Color:|Color de la interpolación lineal del equipo:
