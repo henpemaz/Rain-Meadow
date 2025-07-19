@@ -112,7 +112,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         }
         public override string TimerText()
         {
-            return Utils.Translate($"Prepare for war, {Utils.Translate(PlayingAsText())}");
+            return Utils.Translate("Prepare for war,") + " " + Utils.Translate(PlayingAsText());
         }
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
