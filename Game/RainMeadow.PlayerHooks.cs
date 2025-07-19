@@ -1049,7 +1049,12 @@ public partial class RainMeadow
         }
     }
 
-    //Used to emulate having a new int in the Player class.
+    public static ConditionalWeakTable<Player, PlayerExtras> playerExtras = new();
+    public class PlayerExtras
+    {
+        public bool afkSleep;
+    }
+
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
         if (OnlineManager.lobby != null && self.objectInStomach != null)
@@ -1147,21 +1152,29 @@ public partial class RainMeadow
         //Sleeping when AFK
         if (OnlineManager.lobby != null)
         {
-            if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
-                ( //Check if we can fit a sleeping animation.
-                    (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
-                    (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
-                )
-               )
-            {}
-            else
+            var extas = playerExtras.GetOrCreateValue(self); 
+            if (self.IsLocal())
             {
-                //Hack; this avoids needing an additional (synced) variable to track how long a player has been in a valid spot,
-                //at the cost of potentially disrupting anything expecting touchedNoInputCounter to be above 1000 (which nothing in vanilla or meadow comes close to).
-                self.touchedNoInputCounter = Math.Min(self.touchedNoInputCounter, 1000);
+                if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
+                    ( //Check if we can fit a sleeping animation.
+                        (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
+                        (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
+                    )
+                    && self.touchedNoInputCounter > 1200
+                   )
+                {
+                    Debug("eepy");
+                    extas.afkSleep = true;
+                }
+                else
+                {
+                    Debug("not eepy");
+                    extas.afkSleep = false;
+                }
             }
-            if (self.touchedNoInputCounter > 1200)
+            if (extas.afkSleep)
             {
+                
                 self.standing = false;
                 self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
                 self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
