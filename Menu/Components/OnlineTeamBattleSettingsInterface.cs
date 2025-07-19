@@ -10,8 +10,6 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System.Globalization;
 using HarmonyLib;
 using System;
-using static RainMeadow.UI.Components.TabContainer;
-using System.ComponentModel;
 
 namespace RainMeadow.UI.Components
 {
@@ -19,6 +17,7 @@ namespace RainMeadow.UI.Components
     {
         public FSprite divider;
         public MenuTabWrapper tabWrapper;
+        public ProperlyAlignedMenuLabel[] playerCount = [];
         public TeamButton[] teamButtons = []; //uses buttonSelectedArray for dictionary parsing
         public OpTinyColorPicker[] teamColorPickers = []; //same count as teamButtons
         public OpTextBox[] teamNameBoxes = []; //same count as teamButtons
@@ -30,9 +29,10 @@ namespace RainMeadow.UI.Components
 
         public ArenaMode arenaMode;
         public TeamBattleMode teamBattleMode;
+
         public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
-        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
+        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) ||
             !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == teamBattleMode.teamColors.Count);
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (teamBattleMode.teamNames.Count > 0) ? ((teamBattleMode.teamNames.Count - 1) / 4) : 0); }
         public int MaxOffset => Mathf.Max(teamBattleMode.teamNames.Count - 1, 0) / 4;
@@ -73,14 +73,17 @@ namespace RainMeadow.UI.Components
             teamButtons = new TeamButton[Mathf.Min(teamBattleMode.teamIcons.Count - num, 4)];
             teamNameBoxes = new OpTextBox[teamButtons.Length];
             teamColorPickers = new OpTinyColorPicker[teamButtons.Length];
+            playerCount = new ProperlyAlignedMenuLabel[teamButtons.Length];
             for (int i = 0; i < teamButtons.Length; i++)
             {
+
                 KeyValuePair<int, string> mapping = actualMappings[num + i];
                 string name = teamBattleMode.teamNames[mapping.Key];
                 Color teamColor = teamBattleMode.teamColors[mapping.Key];
 
                 Vector2 btnpos = i == 0 ? new(posXMultipler - 50, size.y - 125) : i % 2 == 0 ? new(teamButtons[0].pos.x, teamButtons[0].pos.y - 140) : new(posXMultipler * 3 - 50, teamButtons[i - 1].pos.y);
                 teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, name, mapping.Value);
+                playerCount[i] = new(menu, owner, "", new Vector2(teamButtons[i].pos.x + 10, teamButtons[i].pos.y + 10), new(10, 10), false);
 
                 Vector2 namePickerPos = i == 0 ? new(posXMultipler - 75, dividerY - 40) : i % 2 == 0 ? new(teamNameBoxes[0].pos.x, teamNameBoxes[0].pos.y - 40) : new(posXMultipler * 3 - 95, teamNameBoxes[i - 1].pos.y);
                 OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 150)
@@ -98,6 +101,7 @@ namespace RainMeadow.UI.Components
                 };
             }
             this.SafeAddSubobjects(teamButtons);
+            this.SafeAddSubobjects(playerCount);
             if (IsPagesOn) CreatePageButtons();
             else DeletePageButtons();
             tabWrapper._tab.myContainer.MoveToFront();
@@ -217,6 +221,7 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
+
             if (!teamLerpTextBox.held)
                 teamLerpTextBox.valueFloat = teamBattleMode.lerp;
             if (prevButton != null)
@@ -226,6 +231,7 @@ namespace RainMeadow.UI.Components
             teamLerpTextBox.greyedOut = OwnerSettingsDisabled;
             for (int i = 0; i < teamButtons.Length; i++)
             {
+                int count = 0;
                 int index = teamButtons[i].buttonArrayIndex;
                 string name = teamBattleMode.teamNames[index];
                 Color color = teamBattleMode.teamColors[index];
@@ -240,6 +246,21 @@ namespace RainMeadow.UI.Components
 
                 teamNameBoxes[i].greyedOut = greyOutConfig;
                 teamColorPickers[i].greyedOut = greyOutConfig;
+                foreach (var p in OnlineManager.players)
+                {
+                    if (p != null)
+                    {
+                        if (OnlineManager.lobby.clientSettings.TryGetValue(p, out var c) && c.TryGetData<ArenaTeamClientSettings>(out var teamClientSettings))
+                        {
+                            if (teamClientSettings != null && teamClientSettings.team == index)
+                            {
+                                count++;
+                            }
+                        }
+                    }
+                }
+                playerCount[i].text = count.ToString();
+                playerCount[i].label.color = teamButtons[i].teamColor;
             }
         }
         public void SetCurrentlySelectedOfSeries(string id, int index) => arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;
@@ -251,7 +272,7 @@ namespace RainMeadow.UI.Components
             public FSprite symbol;
             public MenuLabel teamLabel;
             public Color teamColor = Color.white;
-            public TeamButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, EventfulSelectOneButton[] selectButtons, int index, string teamName, string symbolName, float symbolSpriteScale = 2.8f): base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
+            public TeamButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, EventfulSelectOneButton[] selectButtons, int index, string teamName, string symbolName, float symbolSpriteScale = 2.8f) : base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
             {
 
                 this.teamName = teamName;
