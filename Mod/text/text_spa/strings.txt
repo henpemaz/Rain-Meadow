@@ -300,7 +300,7 @@ GORBO|GORBO
 You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|Has atravesado el infierno y has sobrevivido, pero ahora es<LINE>el momento de expiar tus pecados de tus ciclos pasados.
 ...why are you here|... ¿Por qué estás aquí?
 Thanks, Andrew.|Gracias, Andrew.
-.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA<LINE>.zev aremirp ut omoc se on erop ,rodederla ut a nacreca es sogimene soL
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|.acor y aznal ut arragA .zev aremirp ut omoc<LINE>áres on erop ,rodederla ut a nacreca es sogimene soL
 Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|Te doy la bienvenida a la torre de esfuerzos: donde harás trabajo pesado por<LINE>la duración de tu estadía. ¡Espero que hayas traído agua, <USERNAME>!
 $5 to unlock this description.|$5 para desbloquear esta descripción.
 egg|huevo
