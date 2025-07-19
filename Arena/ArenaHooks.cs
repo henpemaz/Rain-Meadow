@@ -121,6 +121,8 @@ namespace RainMeadow
             On.ArenaSitting.PlayerSessionResultSort += ArenaSitting_PlayerSessionResultSort;
             On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
+            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
+
 
 
 
@@ -441,8 +443,6 @@ namespace RainMeadow
                 return 600f;
             }
             return orig(self);
-            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
-            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
         }
         private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
         {
