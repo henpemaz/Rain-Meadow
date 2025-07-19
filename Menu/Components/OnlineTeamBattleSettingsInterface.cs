@@ -233,6 +233,22 @@ namespace RainMeadow.UI.Components
                 teamButtons[i].teamColor = color;
                 teamButtons[i].teamName = teamBattleMode.teamNames[index];
                 teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
+                var count = 0;
+                foreach (var p in OnlineManager.players)
+                {
+                    if (p != null)
+                    {
+                        if (OnlineManager.lobby.clientSettings.TryGetValue(p, out var c) && c.TryGetData<ArenaTeamClientSettings>(out var teamClientSettings))
+                        {
+                            if (teamClientSettings != null && teamClientSettings.team == i)
+                            {
+                                count++;
+                            }
+                        }
+                    }
+                }
+                teamButtons[i].teamCount.text = count.ToString();
+                teamButtons[i].teamCount.label.color = color;
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
@@ -254,10 +270,8 @@ namespace RainMeadow.UI.Components
             public MenuLabel teamLabel;
             public ProperlyAlignedMenuLabel teamCount;
             public Color teamColor = Color.white;
-            public int teamIndex;
             public TeamButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, EventfulSelectOneButton[] selectButtons, int index, string teamName, string symbolName, float symbolSpriteScale = 2.8f) : base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
             {
-                this.teamIndex = index;
                 this.teamName = teamName;
                 symbol = new(symbolName)
                 {
@@ -277,22 +291,6 @@ namespace RainMeadow.UI.Components
                 symbol.color = teamColor;
                 teamLabel.text = LabelTest.TrimText(teamName, widthOfText, true, true);
                 teamLabel.label.color = teamColor;
-                var count = 0;
-                foreach (var p in OnlineManager.players)
-                {
-                    if (p != null)
-                    {
-                        if (OnlineManager.lobby.clientSettings.TryGetValue(p, out var c) && c.TryGetData<ArenaTeamClientSettings>(out var teamClientSettings))
-                        {
-                            if (teamClientSettings != null && teamClientSettings.team == teamIndex)
-                            {
-                                count++;
-                            }
-                        }
-                    }
-                }
-                teamCount.text = count.ToString();
-                teamCount.label.color = teamColor;
             }
             public override void RemoveSprites()
             {
