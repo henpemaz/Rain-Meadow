@@ -204,7 +204,7 @@ Waiting for others...|Espera a los demás
 Waiting for host...|Espera al anfitrión
 Welcome to Arena Online!<LINE>All players must ready up to begin.|¡Bienvenido al modo arena en línea!<LINE>Todos los jugadores deben estar listos para empezar.
 Exit to Lobby Select|Salir a la selección de sala
-Click to open <TABNAME> tab|Haz clic para abrir la pestaña <TABNAME>
+Click to open <TABNAME> tab|Haz clic para abrir la pestaña «<TABNAME>»
 Arena Playlist|Lista de arenas
 Search for levels|Buscar niveles
 Search levels|Buscar niveles
@@ -212,8 +212,8 @@ Match Settings|Ajustes de partida
 Spears Hit:|Golpes de lanza:
 Repeat Rooms:|Repetir niveles:
 Allow Item Stealing:|Permitir robar objetos:
-Players can steal items from each other|Los jugadores pueden robar objetos entre sí
-Players cannot steal items from each other|Los jugadores no pueden robar objetos entre sí
+Players can steal items from each other|Los jugadores pueden robarse objetos entre sí
+Players cannot steal items from each other|Los jugadores no pueden robarse objetos entre sí
 Allow Mid-Game Join:|Permitir unirse más tarde:
 Players can join each round|Los jugadores pueden unirse en cada ronda
 Players can only join at the first round|Los jugadores solamente pueden unirse en la primera ronda
@@ -239,6 +239,8 @@ If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|Si <PAINCATN
 Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|Permitir que <PAINCATNAME> siempre use lanzas, incluso si la habilidad de lanzamiento es 0
 <PAINCATNAME> sometimes gets a friend:|<PAINCATNAME> a veces obtiene un amigo:
 Allow <PAINCATNAME> to rarely spawn with a little friend|Permitir que <PAINCATNAME> aparezca con un amigo en raras ocasiones
+Watcher Camo Duration:|Duración del camuflaje de Vigilante
+How long Wacher's abilities last for. Default: 12s|Cuánto dura las habilidades de Vigilante. Predeterminado: 12 s
 Team Settings|Ajustes de equipo
 TEAM|EQUIPO
 Team Lerp Color:|Color de la interpolación lineal del equipo:
@@ -248,7 +250,7 @@ Waiting|Esperando
 Prepare for combat,|Prepárate para el combate,
 Prepare for war,|Prepárate para la guerra,
 Winner!|¡Ganador!
-<TEAMNAME> WIN!|¡EL EQUIPO <TEAMNAME> HA GANADO!
+<TEAMNAME> WIN!|¡EL EQUIPO «<TEAMNAME>» HA GANADO!
 Unknown user|Usuario desconocido
 TO LOBBY|A LA SALA
 
@@ -256,11 +258,7 @@ TO LOBBY|A LA SALA
 Back To Lobby|Volver a la sala
 Go back to main lobby|Volver a la sala principal
 You have been unreadied. Switch back to re-ready yourself automatically|Ya no estás listo. Regresa para volver a dar a listo automáticamente.
-The match is starting in 5! Ready up!!|¡La partida comienza en 5!, ¡¡alístate!!
-The match is starting in 4! Ready up!!|¡La partida comienza en 4!, ¡¡alístate!!
-The match is starting in 3! Ready up!!|¡La partida comienza en 3!, ¡¡alístate!!
-The match is starting in 2! Ready up!!|¡La partida comienza en 2!, ¡¡alístate!!
-The match is starting in 1! Ready up!!|¡La partida comienza en 1!, ¡¡alístate!!
+The match is starting in <COUNTDOWN>! Ready up!!|¡La partida comienza en <COUNTDOWN>! ¡¡Alístate!!
 THE NIGHTCAT|EL GATO NOCTURNO
 THE FARTIFICER|LA FARTÍFICE
 THE SLUGPUP|LA CRÍA DE GATO-BABOSA
@@ -277,7 +275,7 @@ In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickl
 The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|La lanza es un instrumento pusilánime.<LINE>Moldea el mundo desde las marcas de tu mente.
 The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|La mente es un elemento pusilánime.<LINE>Demuestra tu pericia con lanza en mano.
 Desperate. Fearful. Violent.|Desesperada. Temerosa. Violenta.
-Open: Voices. Heat. Burdened.<LINE>Closed: Whispers. Freezing. Drowning.<LINE>Open: Echoes. Balance. Weightless.|Abierto: Voces. Calor. Atosigado.<LINE>Cerrado: Susurros. Frío. Ahogado.<LINE>Abierto: Ecos. Equilibrio. Ingrávido.
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|Abierto: Voces. Elección. Atosigado.<LINE>Cerrado: Susurros. Convergencia. Ahogado.<LINE>Abierto: Ecos. Claridad. Ingrávido.
 Am I Warrior from the past, or a Messiah from the future?|¿Soy un guerrero del pasado o un mesías del futuro?
 Am I Cat Searching for many, or a Mouse searching for one?|¿Soy un gato buscando muchos o un ratón buscando uno?
 <LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>¿Soy un samaritano condenado o una anomalía entre el tiempo y el espacio?
@@ -339,10 +337,10 @@ LET'S ROLL!|¡A TIRAR!
 Oops, better luck next time!|¡Ay, buena suerte en la próxima!
 Try your luck again!|¡Prueba de nuevo tu suerte!
 99% of gamblers quit before they win big|El 99% de los apostadores abandonan antes de ganar en grande.
-So Close! Keep trying!|¡Tan cerca!, ¡sigue intentándolo!
+So Close! Keep trying!|¡Tan cerca! ¡Sigue intentándolo!
 Almost there!|¡Casi lo lograste!
-Congratulations! You have achieved the ultimate gamble skill!!!|¡Felicidades!, ¡¡acabas de conseguir la habilidad apostante definitiva!!
-Gahh?? Impossible?!|¡¿Cómo?!, ¡no me lo puedo creer!
+Congratulations! You have achieved the ultimate gamble skill!!!|¡Felicidades! ¡¡Acabas de conseguir la habilidad apostante definitiva!!
+Gahh?? Impossible?!|¡¿Cómo?! ¡No me lo puedo creer!
 You got a <SLUGCATNAME>!|¡Obtuviste <SLUGCATNAME>!
 
 // Chat Tutorial
