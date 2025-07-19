@@ -10,8 +10,6 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System.Globalization;
 using HarmonyLib;
 using System;
-using static RainMeadow.UI.Components.TabContainer;
-using System.ComponentModel;
 
 namespace RainMeadow.UI.Components
 {
@@ -30,9 +28,10 @@ namespace RainMeadow.UI.Components
 
         public ArenaMode arenaMode;
         public TeamBattleMode teamBattleMode;
+
         public bool AllSettingsDisabled => arenaMode.initiateLobbyCountdown && arenaMode.arenaClientSettings.ready;
         public bool OwnerSettingsDisabled => !(OnlineManager.lobby?.isOwner == true) || AllSettingsDisabled;
-        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) || 
+        public bool IsTeamsAddedInCorrectly => !teamBattleMode.teamNames.All(x => teamBattleMode.teamColors.ContainsKey(x.Key) && teamBattleMode.teamIcons.ContainsKey(x.Key)) ||
             !(teamBattleMode.teamNames.Count == teamBattleMode.teamIcons.Count && teamBattleMode.teamNames.Count == teamBattleMode.teamColors.Count);
         public int CurrentOffset { get => currentOffset; set => currentOffset = Mathf.Clamp(value, 0, (teamBattleMode.teamNames.Count > 0) ? ((teamBattleMode.teamNames.Count - 1) / 4) : 0); }
         public int MaxOffset => Mathf.Max(teamBattleMode.teamNames.Count - 1, 0) / 4;
@@ -75,6 +74,7 @@ namespace RainMeadow.UI.Components
             teamColorPickers = new OpTinyColorPicker[teamButtons.Length];
             for (int i = 0; i < teamButtons.Length; i++)
             {
+
                 KeyValuePair<int, string> mapping = actualMappings[num + i];
                 string name = teamBattleMode.teamNames[mapping.Key];
                 Color teamColor = teamBattleMode.teamColors[mapping.Key];
@@ -217,6 +217,7 @@ namespace RainMeadow.UI.Components
         public override void Update()
         {
             base.Update();
+
             if (!teamLerpTextBox.held)
                 teamLerpTextBox.valueFloat = teamBattleMode.lerp;
             if (prevButton != null)
@@ -226,12 +227,14 @@ namespace RainMeadow.UI.Components
             teamLerpTextBox.greyedOut = OwnerSettingsDisabled;
             for (int i = 0; i < teamButtons.Length; i++)
             {
-                int index = teamButtons[i].buttonArrayIndex;
-                string name = teamBattleMode.teamNames[index];
-                Color color = teamBattleMode.teamColors[index];
+                int actualTeamIndex = teamButtons[i].buttonArrayIndex;
+                string name = teamBattleMode.teamNames[actualTeamIndex];
+                Color color = teamBattleMode.teamColors[actualTeamIndex];
                 teamButtons[i].teamColor = color;
-                teamButtons[i].teamName = teamBattleMode.teamNames[index];
+                teamButtons[i].teamName = teamBattleMode.teamNames[actualTeamIndex];
                 teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
+                teamButtons[i].teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
+                teamButtons[i].teamCount.label.color = color;
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
@@ -240,6 +243,7 @@ namespace RainMeadow.UI.Components
 
                 teamNameBoxes[i].greyedOut = greyOutConfig;
                 teamColorPickers[i].greyedOut = greyOutConfig;
+              ;
             }
         }
         public void SetCurrentlySelectedOfSeries(string id, int index) => arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;
@@ -250,10 +254,10 @@ namespace RainMeadow.UI.Components
             public float widthOfText = 190;
             public FSprite symbol;
             public MenuLabel teamLabel;
+            public ProperlyAlignedMenuLabel teamCount;
             public Color teamColor = Color.white;
-            public TeamButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, EventfulSelectOneButton[] selectButtons, int index, string teamName, string symbolName, float symbolSpriteScale = 2.8f): base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
+            public TeamButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size, EventfulSelectOneButton[] selectButtons, int index, string teamName, string symbolName, float symbolSpriteScale = 2.8f) : base(menu, owner, "", "TEAM", pos, size, selectButtons, index)
             {
-
                 this.teamName = teamName;
                 symbol = new(symbolName)
                 {
@@ -261,7 +265,8 @@ namespace RainMeadow.UI.Components
                 };
                 Container.AddChild(symbol);
                 teamLabel = new(menu, this, this.teamName, new(0, -25), new(size.x, 20), true);
-                this.SafeAddSubobjects(teamLabel);
+                teamCount = new(menu, this, "", new Vector2(symbol.x + 10, symbol.y + 10), new(10, 10), false);
+                this.SafeAddSubobjects(teamLabel, teamCount);
             }
             public override void GrafUpdate(float timeStacker)
             {
