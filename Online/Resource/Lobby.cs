@@ -1,7 +1,9 @@
 ﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RainMeadow
@@ -13,6 +15,8 @@ namespace RainMeadow
         public OnlineGameMode.OnlineGameModeType gameModeType;
         public Dictionary<string, WorldSession> worldSessions = new();
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
+        public Dictionary<Type, List<(byte, byte)>> enumMap = new();
+        public Dictionary<string, List<(byte, string)>> unrecognizedEnumMap = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
         public string[] requiredmods;
@@ -55,20 +59,294 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
-
+                BuildEnumMap(true);
             }
             else
             {
                 RainMeadow.Debug("Requesting lobby");
-                RequestLobby(password);
+                MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Downloading resources"));
+                this.password = password;
+                owner.InvokeRPC(DownloadResources);
+                // RequestLobby(password); Once we download the resources we'll request the lobby.
+            }
+        }
+
+        private OutgoingDataChunk enumMapChunkTemplate;
+        public void BuildEnumMap(bool fresh = false)
+        {
+            if (fresh)
+            {
+                enumMap = new();
+                unrecognizedEnumMap = new();
+                foreach (Type key in Serializer.serializedExtEnums)
+                {
+                    enumMap.Add(key, new());
+                    if (ExtEnumBase.GetExtEnumType(key).Count > byte.MaxValue) throw new InvalidOperationException("too many ext enums");
+                    for (byte i = 0; i < ExtEnumBase.GetExtEnumType(key).Count; i++)
+                    {
+                        RainMeadow.Debug($"{ExtEnumBase.GetExtEnumType(key).GetEntry(i)}: local = {i} required = {Serializer.IsExtEnumRequired(key, ExtEnumBase.GetExtEnumType(key).GetEntry(i))}");
+                        enumMap[key].Add((i, i));
+                    }
+                }
+            }
+            
+
+            checked
+            {
+                using (MemoryStream stream = new())
+                using (BinaryWriter writer = new(stream))
+                {
+                    writer.Write(Encoding.ASCII.GetBytes("ENUM"));
+                    writer.Write((byte)(enumMap.Count + unrecognizedEnumMap.Count));
+                    foreach (Type key in enumMap.Keys)
+                    {
+                        var typename = Encoding.UTF8.GetBytes(key.AssemblyQualifiedName);
+                        writer.Write((byte)typename.Length);
+                        writer.Write(typename);
+                        writer.Write((byte)enumMap[key].Count);
+                        foreach (byte enumkey in enumMap[key].Select(x => x.Item1))
+                        {
+                            writer.Write(enumkey);
+                            var entry = ExtEnumBase.GetExtEnumType(key).GetEntry(enumkey);
+                            var entryBytes = Encoding.UTF8.GetBytes(entry);
+                            writer.Write(Serializer.IsExtEnumRequired(key, entry)); 
+                            writer.Write((byte)entryBytes.Length);
+                            writer.Write(entryBytes);
+                        }
+                    }
+
+                    foreach (string key in unrecognizedEnumMap.Keys)
+                    {
+                        var typename = Encoding.UTF8.GetBytes(key);
+                        writer.Write((byte)typename.Length);
+                        writer.Write(typename);
+                        writer.Write((byte)unrecognizedEnumMap[key].Count);
+                        foreach (var enumEntry in unrecognizedEnumMap[key])
+                        {
+                            writer.Write(enumEntry.Item1);
+                            writer.Write(false); // required;
+                            var entry = Encoding.UTF8.GetBytes(enumEntry.Item2);
+                            writer.Write((byte)entry.Length);
+                            writer.Write(entry);
+                        }
+                    }
+
+                    enumMapChunkTemplate = new(1, this, new ArraySegment<byte>((byte[])stream.GetBuffer().Clone(), 0, (int)stream.Position), null, 4096);
+                }
+            }
+        }
+
+        public override void ProcessEntireChunkImpl(IncomingDataChunk chunk)
+        {
+            checked
+            {
+                using (MemoryStream stream = new(chunk.GetData()))
+                using (BinaryReader reader = new(stream))
+                {
+                    if (!isOwner)
+                    {
+                        if (Encoding.ASCII.GetString(reader.ReadBytes(4)) == "ENUM")
+                        {
+                            Dictionary<Type, List<(byte, byte)>> newEnumMap = new();
+                            Dictionary<string, List<(byte, string)>> newUnrecognizedEnumMap = new();
+                            byte typeCount = reader.ReadByte();
+                            for (byte i = 0; i < typeCount; i++)
+                            {
+                                string typeName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+                                byte entryCount = reader.ReadByte();
+
+                                Type? t = null;
+                                try
+                                {
+                                    t = Type.GetType(typeName);
+                                }
+                                catch (Exception except)
+                                {
+                                    RainMeadow.Error(except);
+                                }
+
+                                bool typeValid = true;
+                                if (t is null || !ExtEnumBase.valueDictionary.Keys.Contains(t))
+                                {
+                                    // missing enum type error.
+                                    typeValid = false;
+                                    RainMeadow.Debug($"{typeName}: unrecognized");
+                                }
+                                else
+                                {
+                                    RainMeadow.Debug($"{typeName}: {entryCount}:{ExtEnumBase.GetExtEnumType(t).Count}");
+                                    if (!newEnumMap.ContainsKey(t)) newEnumMap.Add(t, new());
+                                }
+
+
+                                for (byte j = 0; j < entryCount; j++)
+                                {
+                                    byte remotekey = reader.ReadByte();
+                                    bool required = reader.ReadBoolean();
+                                    string entry = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+                                    if (typeValid && ExtEnumBase.TryParse(t, entry, false, out var result))
+                                    {
+                                        newEnumMap[t!].Add((remotekey, (byte)result.Index));
+                                        RainMeadow.Debug($"{entry}: remote={remotekey} local={result.Index}");
+                                        continue;
+                                    }
+
+                                    if (required)
+                                    {
+                                        // missing entry error.
+                                        OnlineManager.QuitWithError($"Missing enum entry: {typeName} : {entry}");
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        if (!newUnrecognizedEnumMap.ContainsKey(typeName)) newUnrecognizedEnumMap.Add(typeName, new());
+                                        newUnrecognizedEnumMap[typeName].Add((remotekey, entry));
+                                        RainMeadow.Debug($"{entry}: remote={remotekey} unrecognized");
+                                    }
+                                }
+                            }
+                            enumMap = newEnumMap;
+                            unrecognizedEnumMap = newUnrecognizedEnumMap;
+
+
+                            Dictionary<Type, List<string>> unacknoledgedEnums = new();
+                            foreach (Type type in Serializer.serializedExtEnums)
+                            {
+                                for (byte i = 0; i < ExtEnumBase.GetExtEnumType(type).Count; i++)
+                                {
+                                    var entry = ExtEnumBase.GetExtEnumType(type).GetEntry(i);
+                                    if (enumMap.Keys.Contains(type) && enumMap[type].Select(x => x.Item2).Contains(i)) continue;
+                                    if (unrecognizedEnumMap.Keys.Contains(type.AssemblyQualifiedName) && unrecognizedEnumMap[type.AssemblyQualifiedName].Select(x => x.Item2).Contains(entry)) continue;
+
+                                    if (Serializer.IsExtEnumRequired(type, entry))
+                                    {
+                                        OnlineManager.QuitWithError($"Remote is missing enum entry: {type.AssemblyQualifiedName} : {entry}");
+                                    }
+                                    else
+                                    {
+                                        RainMeadow.Debug($"Remote is missing enum entry: {type.AssemblyQualifiedName} : {entry}");
+                                    }
+
+                                    if (!unacknoledgedEnums.ContainsKey(type)) unacknoledgedEnums.Add(type, new());
+                                    unacknoledgedEnums[type].Add(entry);
+                                }
+                            }
+
+                            if (unacknoledgedEnums.Count > 0)
+                            {
+                                // Tell host to make room for these unrecognised enums
+                                SendUnacknoledgedEnums(unacknoledgedEnums);
+                            }
+                            else
+                            {
+                                downloadedEnums = true;
+                                enumMapChunkTemplate = new(1, this, new ArraySegment<byte>(chunk.GetData()), null, 4096);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Encoding.ASCII.GetString(reader.ReadBytes(4)) == "UAEX") // unacknoledged extenums
+                        {
+                            byte typeCount = reader.ReadByte();
+                            for (byte i = 0; i < typeCount; i++)
+                            {
+                                string typeName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+                                if (!unrecognizedEnumMap.ContainsKey(typeName)) unrecognizedEnumMap.Add(typeName, new());
+                                byte entryCount = reader.ReadByte();
+                                for (byte j = 0; j < entryCount; j++)
+                                {
+                                    string entryName = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadByte()));
+
+                                    var usedIndexes = unrecognizedEnumMap[typeName].Select(x => x.Item1);
+                                    if (Type.GetType(typeName, false) is Type t && enumMap.ContainsKey(t))
+                                    {
+                                        usedIndexes = usedIndexes.Concat(enumMap[t].Select(x => x.Item1));
+                                    }
+
+
+                                    var possibleIndexes = usedIndexes.Select(x => { checked { return (byte)(x + 1); } } );
+                                    byte unusedIndex = possibleIndexes.Except(usedIndexes).First();
+                                    RainMeadow.Debug($"Added Enum {typeName} : {entryName}");
+                                    unrecognizedEnumMap[typeName].Add((unusedIndex, entryName));
+                                }
+                            }
+
+                            BuildEnumMap(false);
+                            foreach (OnlinePlayer p in OnlineManager.players)
+                            {
+                                p.QueueChunk(new OutgoingDataChunk(enumMapChunkTemplate, p, p.NextChunkId()));
+                            }
+                        }
+                    }
+                }
             }
 
-
-
+            if (!isAvailable && !isPending && DownloadedAllResources())
+            {
+                RequestLobby(password);
+            }
         }
+
+        void SendUnacknoledgedEnums(Dictionary<Type, List<string>> unacknoledgedEnums)
+        {
+            MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Resolving missing entries"));
+            using (MemoryStream stream = new())
+            using (BinaryWriter writer = new(stream))
+            {
+                writer.Write(Encoding.ASCII.GetBytes("UAEX"));
+                writer.Write((byte)unacknoledgedEnums.Count);
+                foreach (Type key in unacknoledgedEnums.Keys)
+                {
+                    var typename = Encoding.UTF8.GetBytes(key.AssemblyQualifiedName);
+                    writer.Write((byte)typename.Length);
+                    writer.Write(typename);
+                    writer.Write((byte)unacknoledgedEnums[key].Count);
+                    foreach (string entry in unacknoledgedEnums[key])
+                    {
+                        var entryBytes = Encoding.UTF8.GetBytes(entry);
+                        writer.Write((byte)entryBytes.Length);
+                        writer.Write(entryBytes);
+                    }
+                }
+
+                owner.QueueChunk(this, true, new ArraySegment<byte>((byte[])stream.GetBuffer().Clone(), 0, (int)stream.Position));
+            }
+        }
+
+
+
+
+        public override void ProcessSliceImpl(IncomingDataChunk chunk, Slice slice)
+        {
+            base.ProcessSliceImpl(chunk, slice);
+
+            if (slice.index == 0)
+            {
+                checked
+                {
+                    using (MemoryStream stream = new(slice.data.Array))
+                    using (BinaryReader reader = new(stream))
+                    {
+                        if (Encoding.ASCII.GetString(reader.ReadBytes(4)) == "ENUM")
+                        {
+                            MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Recieving ExtEnum entries"));
+                        }
+                    }
+                }
+            }
+        }  
+
+        [RPCMethod]
+        public void DownloadResources(RPCEvent request)
+        {
+            request.from.QueueChunk(new OutgoingDataChunk(enumMapChunkTemplate, request.from, request.from.NextChunkId()));
+        }
+
 
         public void RequestLobby(string? key)
         {
+            MatchmakingManager.OnChangedJoiningStateEvent(Utils.Translate("Pending lobby request"));
             RainMeadow.Debug(this);
             if (isPending) throw new InvalidOperationException("pending");
             if (isAvailable) throw new InvalidOperationException("available");
@@ -88,8 +366,12 @@ namespace RainMeadow
                     return;
                 }
             }
+
             Requested(request);
         }
+
+        bool downloadedEnums = false;
+        public bool DownloadedAllResources() =>  isOwner || (downloadedEnums /*&& ...*/); // for now the only pre-request resource we need is Ext-Enums
 
         public void ResolveLobbyRequest(GenericResult requestResult)
         {
@@ -305,7 +587,9 @@ namespace RainMeadow
                 RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
+
             }
+
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
         }
