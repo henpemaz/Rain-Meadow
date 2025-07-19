@@ -113,8 +113,8 @@ namespace RainMeadow
         private bool flipDirection;
         [OnlineField]
         private bool glowing;
-        [OnlineFieldHalf]
-        public float sleepCurlUp;
+        [OnlineField]
+        private bool afkSleep;
         [OnlineField(nullable = true)]
         private OnlineEntity.EntityId? spearOnBack;
         [OnlineField(nullable = true)]
@@ -159,7 +159,10 @@ namespace RainMeadow
             standing = p.standing;
             flipDirection = p.flipDirection > 0;
             glowing = p.glowing;
-            sleepCurlUp = p.sleepCurlUp;
+
+            var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
+            afkSleep = extras.afkSleep;
+
             burstX = p.burstX;
             burstY = p.burstY;
             spearOnBack = (p.spearOnBack?.spear?.abstractPhysicalObject is AbstractPhysicalObject apo
@@ -179,9 +182,6 @@ namespace RainMeadow
                     tongueStateOnBack = new TongueState(tongue2);
                 }
             }
-
-
-
 
             var i = p.input[0];
             inputs = (ushort)(
@@ -267,7 +267,9 @@ namespace RainMeadow
             p.standing = standing;
             p.flipDirection = flipDirection ? 1 : -1;
             p.glowing = glowing;
-            p.sleepCurlUp = sleepCurlUp;
+
+            var extras = RainMeadow.playerExtras.GetOrCreateValue(p);
+            extras.afkSleep = afkSleep;
 
             if (p.spearOnBack != null)
                 p.spearOnBack.spear = (spearOnBack?.FindEntity() as OnlinePhysicalObject)?.apo?.realizedObject as Spear;
