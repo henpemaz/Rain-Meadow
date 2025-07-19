@@ -178,7 +178,7 @@ namespace RainMeadow
                 ];
                 slugcatSelectPainCatJokeDescriptions =
                 [
-                    ".kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil ton s'ti tub ,uoy dnuora ni esolc seimene ruoY",
+                    ".kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY",
                     "Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!",
                     "$5 to unlock this description.",
                     "egg",
