@@ -82,6 +82,7 @@ namespace RainMeadow
 
 
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
+        public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
 
 
         public ArenaClientSettings arenaClientSettings;

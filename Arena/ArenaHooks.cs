@@ -436,13 +436,11 @@ namespace RainMeadow
         }
         private float SetCamoDuration(Func<Player, float> orig, Player self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                return 600f;
+                return arena.watcherCamoTimer * 40;
             }
             return orig(self);
-            IL.Player.Collide += (il) => Player_Collide2(il, typeof(Player).GetMethod(nameof(Player.Collide)));
-            new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
         }
         private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
         {

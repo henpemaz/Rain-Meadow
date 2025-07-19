@@ -52,6 +52,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int saintAscendanceTimer;
             [OnlineField(group = "arenaSetup")]
+            public int watcherCamoLimit;
+            [OnlineField(group = "arenaSetup")]
             public bool sainot;
             [OnlineField(group = "arenaSetup")]
             public bool painCatEgg;
@@ -128,6 +130,7 @@ namespace RainMeadow
                 initiatedLobbyCountDown = arena.initiateLobbyCountdown;
                 sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
+                watcherCamoLimit = arena.watcherCamoTimer;
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
@@ -175,6 +178,8 @@ namespace RainMeadow
 
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
+                (lobby.gameMode as ArenaOnlineGameMode).watcherCamoTimer = watcherCamoLimit;
+
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
