@@ -23,6 +23,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ChatLogOnOff;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
+    public readonly Configurable<int> ArenaWatcherCamoTimer;
+
     public readonly Configurable<bool> ArenaSAINOT;
     public readonly Configurable<bool> PainCatThrows;
     public readonly Configurable<bool> PainCatEgg;
@@ -88,6 +90,8 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
+        ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
+
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
 

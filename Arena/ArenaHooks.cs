@@ -438,9 +438,9 @@ namespace RainMeadow
         }
         private float SetCamoDuration(Func<Player, float> orig, Player self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                return 600f;
+                return arena.watcherCamoTimer * 40;
             }
             return orig(self);
         }
