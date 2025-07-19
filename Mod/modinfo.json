@@ -7,5 +7,6 @@
   "description": "A multiplayer engine, custom game mode inspired by Might & Delight's 'Meadow', and online arena / story experience.<LINE><LINE>For the full credits see the workshop or the credits page in the Meadow menu.",
   "requirements": [],
   "requirements_names": [],
+  "tags": [ "Game Modes" ],
   "checksum_override_version": false
 }
