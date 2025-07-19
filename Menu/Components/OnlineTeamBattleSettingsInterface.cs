@@ -227,27 +227,13 @@ namespace RainMeadow.UI.Components
             teamLerpTextBox.greyedOut = OwnerSettingsDisabled;
             for (int i = 0; i < teamButtons.Length; i++)
             {
-                int index = teamButtons[i].buttonArrayIndex;
-                string name = teamBattleMode.teamNames[index];
-                Color color = teamBattleMode.teamColors[index];
+                int actualTeamIndex = teamButtons[i].buttonArrayIndex;
+                string name = teamBattleMode.teamNames[actualTeamIndex];
+                Color color = teamBattleMode.teamColors[actualTeamIndex];
                 teamButtons[i].teamColor = color;
-                teamButtons[i].teamName = teamBattleMode.teamNames[index];
+                teamButtons[i].teamName = teamBattleMode.teamNames[actualTeamIndex];
                 teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
-                var count = 0;
-                foreach (var p in OnlineManager.players)
-                {
-                    if (p != null)
-                    {
-                        if (OnlineManager.lobby.clientSettings.TryGetValue(p, out var c) && c.TryGetData<ArenaTeamClientSettings>(out var teamClientSettings))
-                        {
-                            if (teamClientSettings != null && teamClientSettings.team == i)
-                            {
-                                count++;
-                            }
-                        }
-                    }
-                }
-                teamButtons[i].teamCount.text = count.ToString();
+                teamButtons[i].teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
                 teamButtons[i].teamCount.label.color = color;
 
                 if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
