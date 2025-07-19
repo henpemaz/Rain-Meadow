@@ -3,13 +3,6 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class FloatController : MenuObject
-    {
-        public FloatController(Menu.Menu menu, PositionedMenuObject powner) : base(menu, powner)
-        {
-        }
-    }
-
     public class Floater : MenuObject
     {
         //"This place is not a place of honor... no highly esteemed deed is commemorated here... nothing valued is here."
@@ -17,259 +10,45 @@ namespace RainMeadow
         private PositionedMenuObject powner;
         private readonly Vector2 sinAmpl;
         private readonly Vector2 sinFreq;
-        private readonly Vector2[] targets;
         private readonly Vector2 initOffset;
-        private Vector2[] rootPoses;
 
-        public float progress = 0f;
-        private float lastprogress = 0f;
-        float velocityorsmthlol;
-        private Vector2 rootroot;
-        public Floater(Menu.Menu menu, PositionedMenuObject powner, float velocityorsmthlol, Vector2 initOffset, Vector2 sinFreq, Vector2 sinAmpl) : base(menu, powner)
+        private float progress;
+        private readonly Vector2 rootroot;
+        private Vector2 centerpos;
+
+        public Floater(PauseMenu menu, PositionedMenuObject powner, Vector2 initOffset, Vector2 sinFreq, Vector2 sinAmpl) : base(menu, powner)
         {
             this.powner = powner;
             rootroot = powner.pos;
+            centerpos = rootroot + initOffset;
 
+            powner.pos = centerpos;
+            powner.lastPos = centerpos;
+
+            this.initOffset = initOffset;
             this.sinFreq = sinFreq;
             this.sinAmpl = sinAmpl;
-            this.initOffset = initOffset;
-
-            targets =           new Vector2[powner.subObjects.Count];
-            rootPoses =         new Vector2[powner.subObjects.Count];
-
-            for (int i = 0; i < powner.subObjects.Count; i++)
-            {
-                var thing = powner.subObjects[i];
-                if (thing is PositionedMenuObject PMO)
-                {
-                    targets[i] = PMO.pos;
-                    PMO.pos += initOffset;
-                    rootPoses[i] = PMO.pos;
-                    powner.subObjects[i] = PMO;
-                }
-            }
-            this.velocityorsmthlol = velocityorsmthlol;
         }
 
         public override void Update()
         {
             base.Update();
+            progress = (menu as PauseMenu).blackFade;
 
-            for (int i = 0; i < powner.subObjects.Count; i++)
-            {
-                Vector2 dummala = new Vector2(0f, 0f);
-                var thing = powner.subObjects[i];
-                if (thing is PositionedMenuObject PMO) 
-                {
-                    Vector2 targetPos = Vector2.Lerp(targets[i] + initOffset, targets[i], 1f - Mathf.Pow(1f - progress, 2.4f));
-                    rootPoses[i] = Vector2.Lerp(rootPoses[i], targetPos, Mathf.Lerp((velocityorsmthlol / (lastprogress < progress ? 10f : 2f)), 0.9f, (lastprogress < progress ? 0f : (Mathf.Pow(1f - progress, 2.5f)))));
-
-                    if (RainMeadow.rainMeadowOptions.DisableMeadowPauseAnimation.Value)
-                    {
-                        dummala = rootPoses[i] + Vector2.one * progress;
-                    }
-                    else
-                    {
-                        dummala = rootPoses[i] + new Vector2(
-                            Mathf.Sin((Time.time * sinFreq.x) + (rootroot.y * Mathf.PI / 200f)) * progress,
-                            Mathf.Sin((Time.time * sinFreq.y) + (rootroot.y * Mathf.PI / 200f)) * progress) * sinAmpl;
-                    }
-
-                    PMO.pos = dummala;
-                    powner.subObjects[i] = PMO;
-                    //FUCK THIS, DUCKTAPE TIMEEEEE
-                    if (powner is FloatyCheckBox hehe) { if (i == 0) hehe.SetHummala(dummala, progress); }
-                    else if (powner is FloatySlider ahah) { if (i == 0) ahah.SetHummala(dummala, progress); };//
-                }
-            }
-            lastprogress = progress;
-        }
-    }
-    public class MusicTitleDisplay : MenuLabel
-    {
-        static int dttt = 20;
-        static float lastprogress = 0f;
-        public FSprite musicSprite;
-        public MusicTitleDisplay(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size, false)
-        {
-            musicSprite = new FSprite("musicSymbol", true);
-            musicSprite.SetPosition(pos); // + size / 2
-            musicSprite.alpha = 0f;
-            owner.menu.container.AddChild(musicSprite);
-            lastprogress = 0f;
-            label.alignment = FLabelAlignment.Left;
-        }
-        public void Display(string desiredtext, float progress)
-        {
-            bool appearing = lastprogress <= progress;
-            if (appearing && (progress < 0.5f)) return;
-            if (!appearing) desiredtext = "";
-            lastprogress = progress;
-            if (desiredtext == text) return;
-            if (dttt > 0) 
-                dttt--;
-            else {
-                dttt = appearing ? 4 : 0;
-                bool correct = true;
-                char goodletter = 'a';
-                if (desiredtext.Length < text.Length) correct = false;
-                else
-                {
-                    for (int i = 0; i < desiredtext.Length; i++) 
-                    {
-                        if (i == text.Length) {
-                            goodletter = desiredtext[i];
-                            break;
-                        }
-                        if (desiredtext[i] != text[i])
-                        {
-                            correct = false;
-                            break;
-                        }
-                    }
-                }
-                if (!correct) { text = text.Substring(0, text.Length - 1); } else { text = text + goodletter; }
-                if (!appearing && (progress < 0.7) && text.Length > 0) text = text.Substring(0, text.Length - 1);
-                if (!appearing && (progress < 0.4) && text.Length > 0) text = text.Substring(0, text.Length - 1);
-            }
-        }
-
-        public override void Update()
-        {
-            base.Update();
-            musicSprite.alpha = RWCustom.Custom.SCurve(lastprogress, 0.65f);
-            musicSprite.x = pos.x - 16f; // ((1 - RWCustom.Custom.SCurve(lastprogress + 0.4f, 0.65f)) * 30)  // + size.x / 2  - (label.textRect.width / 2 + 10f);
-            musicSprite.y = pos.y + size.y / 2 + Mathf.Sin(Time.time * 3f) * 2f - ((1 - RWCustom.Custom.SCurve(lastprogress + 0.4f, 0.65f)) * 30);
-        }
-    } 
-
-    public class FloatyButton : SimplerButton
-    {
-        private float initx;
-        private float inity;
-        private float xPos;
-        public float progress = 0f;
-        public FloatyButton(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, string description = "") : base(menu, owner, displayText, pos, size, description)
-        {
-            this.initx = pos.x;
-            this.inity = pos.y;
-            pos.x += 600;
-            xPos = pos.x;
-            base.pos = pos;
-            base.lastPos = pos;
-        }
-        public override void Update()
-        {
-            base.Update();
-            float targetxPos = Mathf.Lerp(initx + 600f, initx, 1f - Mathf.Pow(1f - progress, 3));
-            xPos = Mathf.Lerp(xPos, targetxPos, inity / (xPos > targetxPos ? 1800f : 520f) - 0.05f);
-
+            // slide in
+            Vector2 targetPos = Vector2.Lerp(rootroot + initOffset, rootroot, 1f - Mathf.Pow(1f - progress, 2.4f));
+            centerpos = Vector2.Lerp(centerpos, targetPos, rootroot.y / (centerpos.x > targetPos.x ? 1800f : 520f) + 0.05f);
+            
+            // oscilate
             if (RainMeadow.rainMeadowOptions.DisableMeadowPauseAnimation.Value)
             {
-                pos.x = xPos + progress * 3.5f;
-                pos.y = inity + progress;
+                powner.pos = centerpos + Vector2.one * progress;
             }
             else
             {
-                pos.x = xPos + Mathf.Sin((Time.time * 3.5f) + (inity * Mathf.PI / 200f)) * progress * 3.5f;
-                pos.y = inity + Mathf.Sin((Time.time * 3f) + (inity * Mathf.PI / 200f)) * progress;
-            }
-        }
-    }
-    public class FloatyCheckBox : CheckBox
-    {
-        private float progress;
-        private Vector2 hummala;
-        private Vector2 dummala;
-        
-        public FloatyCheckBox(Menu.Menu menu, MenuObject owner, IOwnCheckBox reportTo, Vector2 pos, float textWidth, string displayText, string IDString, bool textOnRight = false)
-            : base(menu, owner, reportTo, pos, textWidth, displayText, IDString, textOnRight)
-        {
-        }
-        public void SetHummala(Vector2 newhummala, float progress)
-        {
-            this.progress = progress;   
-            dummala = hummala;
-            hummala = newhummala;
-        }
-        public override void GrafUpdate(float timeStacker)
-        {
-            if (progress < 0.01f) 
-            { 
-                pos += new Vector2(0f, 20000f); 
-                lastPos += new Vector2(0f, 20000f);
-                base.pos += new Vector2(0f, 20000f);
-                base.lastPos += new Vector2(0f, 20000f);
-
-            }
-            base.GrafUpdate(timeStacker);
-            
-            Vector2 hehe = Vector2.Lerp(dummala, hummala, timeStacker) + pos;
-            Vector2 teehee = Vector2.Lerp(lastSize, size, timeStacker);
-            symbolSprite.x = hehe.x + teehee.x / 2f;
-            symbolSprite.y = hehe.y + teehee.y / 2f;
-
-            if (progress < 0.01f)
-            {
-                pos -= new Vector2(0f, 20000f); 
-                lastPos -= new Vector2(0f, 20000f);
-                base.pos -= new Vector2(0f, 20000f);
-                base.lastPos -= new Vector2(0f, 20000f);
-            }
-        }
-    }
-    public class FloatySlider : HorizontalSlider
-    {
-        public Vector2 initpos;
-        public float progress = 0f;
-        private float lastprogress = 0f;
-
-        private Vector2 hummala;
-        private Vector2 dummala;
-        private Vector2 badonka = new Vector2(8000f, 200);
-        private Vector2 badabonka = new Vector2(8000f, 200);
-        public FloatySlider(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, SliderID ID, bool subtleSlider)
-            : base(menu, owner, text, pos, size, ID, subtleSlider)
-        {
-            lastPos = new Vector2(20000f, 0f);
-            initpos = pos;
-        }
-        public override void Update()
-        {
-            base.Update();
-
-            badabonka = badonka;
-            Vector2 targetPos = Vector2.Lerp(initpos + new Vector2(750f, 0f), initpos, 1f - Mathf.Pow(1f - progress, 2.4f));
-            badonka = Vector2.Lerp(badonka, targetPos, Mathf.Lerp((1.0f / (lastprogress < progress ? 10f : 2f)), 0.9f, (lastprogress < progress ? 0f : (Mathf.Pow(1f - progress, 2.5f)))));
-            lastprogress = progress;
-        }
-        public void SetHummala(Vector2 newhummala, float progress)
-        {
-            this.progress = progress;
-            dummala = hummala;
-            hummala = newhummala;
-        }
-        public override void GrafUpdate(float timeStacker)
-        {
-            if (progress < 0.01f)
-            {
-                pos += new Vector2(0f, 20000f);
-                lastPos += new Vector2(0f, 20000f);
-                anchorPoint += new Vector2(0f, 20000f);
-            }
-            base.GrafUpdate(timeStacker);
-            anchorPoint  = Vector2.Lerp(badabonka, badonka, timeStacker);
-
-            Vector2 screehehe = Vector2.Lerp(dummala, hummala, timeStacker) + pos + (new Vector2(0, 4f));
-            Vector2 screeteehee = Vector2.Lerp(lastSize, size, timeStacker);
-            menuLabel.label.x = screehehe.x + screeteehee.x / 2f;
-            menuLabel.label.y = screehehe.y + screeteehee.y / 2f;
-
-            if (progress < 0.01f)
-            {
-                pos -= new Vector2(0f, 20000f);
-                lastPos -= new Vector2(0f, 20000f);
-                anchorPoint -= new Vector2(0f, 20000f);
+                powner.pos = centerpos + new Vector2(
+                    Mathf.Sin((Time.time * sinFreq.x) + (rootroot.y * Mathf.PI / 200f)) * progress,
+                    Mathf.Sin((Time.time * sinFreq.y) + (rootroot.y * Mathf.PI / 200f)) * progress) * sinAmpl;
             }
         }
     }
