@@ -1,6 +1,6 @@
 VS_F01,1300,3500,Litri
-indufor
-me
+Indufor
+Me
 Folkada
 Trists
 Walked

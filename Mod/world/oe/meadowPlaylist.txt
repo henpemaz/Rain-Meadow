@@ -1,7 +1,7 @@
 OE_TREETOP,2800,4800,Sine
 Eyes' Vain
 Woodback
-me
+Me
 Cascen
 Folkada
 Gray Orange
@@ -15,7 +15,7 @@ Swan ode
 my
 OE_TOWER06,1000,2400,Litri
 Eyes' Vain
-indufor
+Indufor
 Eyto
 Folkada
 Ones

@@ -1,5 +1,5 @@
 UW_J02,1200,6660,Clar
-indufor
+Indufor
 Eyto
 Gray Orange
 Icy Parchment

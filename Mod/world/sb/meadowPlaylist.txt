@@ -1,5 +1,5 @@
 SB_B02,1000,3600,Litri
-indufor
+Indufor
 Eyto
 Trists
 Porls

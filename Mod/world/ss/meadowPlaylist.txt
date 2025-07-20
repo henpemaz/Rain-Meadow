@@ -1,6 +1,6 @@
 SS_I03,1300,6000,Litri
 Eyes' Vain
-indufor
+Indufor
 Eyto
 Trists
 Void Genesis
