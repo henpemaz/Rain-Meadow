@@ -50,6 +50,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
+        Futile.atlasManager.LoadAtlas("illustrations/ui_elements");
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
             Arena.currentGameMode = FFA.FFAMode.value;
 
