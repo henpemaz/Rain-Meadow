@@ -546,10 +546,33 @@ namespace RainMeadow
         {
             try
             {
+                var c = new ILCursor(il);
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Room self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        if (RoomSession.map.TryGetValue(self.abstractRoom, out RoomSession rs))
+                        {
+                            if (!rs.isAvailable)
+                            {
+                                rs.Needed();
+                                rs.loadedPending = true;
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+                ILLabel label = c.DefineLabel();
+                c.Emit(OpCodes.Brtrue, label);
+                c.Emit(OpCodes.Ret);
+                c.MarkLabel(label);
+
+
                 // if (this.world != null && this.game != null && this.abstractRoom.firstTimeRealized && (!this.game.IsArenaSession || this.game.GetArenaGameSession.GameTypeSetup.levelItems))
                 //becomes
                 // if (this.world != null && this.game != null && this.abstractRoom.firstTimeRealized && (OnlineManager.lobby == null || gameMode.ShouldSpawnRoomItems()) && (!this.game.IsArenaSession || this.game.GetArenaGameSession.GameTypeSetup.levelItems))
-                var c = new ILCursor(il);
                 var skip = il.DefineLabel();
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchLdarg(0),
@@ -581,7 +604,7 @@ namespace RainMeadow
                     );
                     //c.MoveAfterLabels();
                     c.Emit(OpCodes.Ldarg_0);
-                    c.EmitDelegate((Room self) => OnlineManager.lobby == null || OnlineManager.lobby.isOwner); //roomsession not available yet
+                    c.EmitDelegate((Room self) => self.abstractRoom.GetResource().isOwner);
                     c.Emit(OpCodes.Brfalse, skipApo);
                 }
             }
