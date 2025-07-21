@@ -70,9 +70,10 @@ namespace RainMeadow
         public bool saveToDisk = false;
 
         public StoryGameMode(Lobby lobby) : base(lobby)
-        {  
+        {
             avatarSettings = new SlugcatCustomization[4];
-            for (int i = 0; i < avatarSettings.Length; i++) {
+            for (int i = 0; i < avatarSettings.Length; i++)
+            {
                 avatarSettings[i] = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             }
         }
@@ -258,14 +259,16 @@ namespace RainMeadow
             RainMeadow.Debug(self.StoryPlayerCount);
             AbstractCreature MainAvatar = null!;
             AbstractCreature abstractCreature;
-            
-            for (int i = 0; i < self.StoryPlayerCount; i++) {
+
+            for (int i = 0; i < self.StoryPlayerCount; i++)
+            {
                 abstractCreature = new AbstractCreature(self.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, location, new EntityID(-1, i));
                 abstractCreature.state = new PlayerState(abstractCreature, i, avatarSettings[i].playingAs, false) { isPup = avatarSettings[i].fakePup };
                 self.world.GetAbstractRoom(abstractCreature.pos.room).AddEntity(abstractCreature);
                 self.session.AddPlayer(abstractCreature);
 
-                if (i == 0) {
+                if (i == 0)
+                {
                     MainAvatar = abstractCreature;
                 }
             }
@@ -279,9 +282,11 @@ namespace RainMeadow
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             int avatarsettings_index = 0;
-            if (onlineCreature.abstractCreature.state is PlayerState playerState) {
+            if (onlineCreature.abstractCreature.state is PlayerState playerState)
+            {
                 avatarsettings_index = playerState.playerNumber;
-            } else RainMeadow.Error("No Player State for playerNumber?");
+            }
+            else RainMeadow.Error("No Player State for playerNumber?");
 
             onlineCreature.AddData(avatarSettings[avatarsettings_index]);
         }
@@ -325,7 +330,11 @@ namespace RainMeadow
                 return false;
             }
 
-            if (!oc.isAvatar) return false;
+            if (!oc.isAvatar)
+            {
+                RainMeadow.Debug("Friendly Fire: Not an avatar");
+                return false;
+            }
 
             if (RainMeadow.isArenaMode(out var arena))
             {
@@ -349,7 +358,6 @@ namespace RainMeadow
             {
                 return !story.friendlyFire;
             }
-
             return false;
         }
     }

@@ -1889,11 +1889,13 @@ namespace RainMeadow
                     if (!OnlinePhysicalObject.map.TryGetValue(shortcutVessel.creature.abstractPhysicalObject, out var onlineVessel))
                     {
                         Error("Error getting online vessel");
+                        return false;
                     }
 
                     if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
                     {
                         Error("Error getting exit manager room");
+                        return false;
                     }
 
                     if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
@@ -1907,8 +1909,10 @@ namespace RainMeadow
                             }
                             else
                             {
-                                player.InvokeRPC(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
-
+                                if (player != null)
+                                {
+                                    player.InvokeRPC(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                                }
                             }
                         }
 
