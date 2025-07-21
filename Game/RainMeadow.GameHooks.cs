@@ -503,6 +503,7 @@ namespace RainMeadow
         // Prevent gameplay items
         private void Room_ctor(On.Room.orig_ctor orig, Room self, RainWorldGame game, World world, AbstractRoom abstractRoom, bool devUI)
         {
+            if (abstractRoom.GetResource() is RoomSession rs) rs.loadedPending = false;
             orig(self, game, world, abstractRoom, devUI);
             if (game != null && OnlineManager.lobby != null)
             {
