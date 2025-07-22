@@ -93,7 +93,20 @@ namespace MyNamespace
     }
 }
 ```
-5. Your new game mode will now be accessible in the online Arena menu! Use the large arrows at the top of the menu to switch modes.
+5. Override the arena.externalGameMode's `GetGameModeId`
+(**NOTE**: Must match enum's value you set in `arena.registeredGameModes`)
+6. 
+```csharp
+public override ArenaSetup.GameTypeID GetGameModeId
+{
+    get
+    {
+        return MyGameModeName; // Set to YOUR cool game mode
+    }
+    set { GetGameModeId = value; }
+}
+```
+7. Your new game mode will now be accessible in the online Arena menu! Use the large arrows at the top of the menu to switch modes.
 
 ## GameMode Check
 ```csharp
@@ -225,19 +238,6 @@ OnUIEnabled, OnUIDisabled, OnUIUpdate, OnUIShutdowdn
 ```
 
 ### Adding Tabs
-
-Override the arena.externalGameMode's GetGameModeId
-```csharp
-public virtual ArenaSetup.GameTypeID GetGameModeId
-{
-    get
-    {
-        return FFA.FFAMode; // Set to YOUR cool game mode
-    }
-    set { GetGameModeId = value; }
-
-}
-```
 ```csharp
 base.OnUIEnabled(menu);
 myTab = menu.arenaMainLobbyPage.tabContainer.AddTab("My Tab");
