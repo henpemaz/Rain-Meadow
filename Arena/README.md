@@ -93,7 +93,8 @@ namespace MyNamespace
     }
 }
 ```
-5.Override the arena.externalGameMode's GetGameModeId (Warning: has to follow what you set to arena's registered game modes)
+5. Override the arena.externalGameMode's GetGameModeId
+(NOTE: Must match enum's value you set in arena.registeredGameModes)
 6. 
 ```csharp
 public virtual ArenaSetup.GameTypeID GetGameModeId
