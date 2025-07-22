@@ -326,13 +326,11 @@ namespace RainMeadow
         {
             if (creature.abstractCreature.GetOnlineCreature() is not OnlineCreature oc)
             {
-                RainMeadow.Error($"{creature.abstractCreature} does not have an OnlineCreature or is null.");
                 return false;
             }
 
             if (!oc.isAvatar)
             {
-                RainMeadow.Debug("Friendly Fire: Not an avatar");
                 return false;
             }
 
