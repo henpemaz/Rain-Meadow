@@ -167,7 +167,7 @@ namespace RainMeadow
 
                 if (obj is Creature c && WeaponIsDangerous(self))
                 {
-                    return !c.FriendlyFireSafetyCandidate(self.thrownBy);
+                    return orig(self, obj) && !c.FriendlyFireSafetyCandidate(self.thrownBy);
                 }
 
             }
