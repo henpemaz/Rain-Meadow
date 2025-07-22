@@ -106,7 +106,7 @@ public override ArenaSetup.GameTypeID GetGameModeId
     set { GetGameModeId = value; }
 }
 ```
-7. Your new game mode will now be accessible in the online Arena menu! Use the large arrows at the top of the menu to switch modes.
+7. Your new game mode will now be accessible in the online Arena menu!
 
 ## GameMode Check
 ```csharp
