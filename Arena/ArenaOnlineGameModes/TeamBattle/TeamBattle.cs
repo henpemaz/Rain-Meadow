@@ -10,12 +10,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
 
-        public override ArenaSetup.GameTypeID GetGameModeId
+        public abstract ArenaSetup.GameTypeID GetGameModeId { get; set; }
         {
             get
             {
                 return TeamBattle;
             }
+            set { GetGameModeId = value; }
+
         }
 
         public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)
