@@ -25,7 +25,7 @@ namespace RainMeadow
         private bool UpdateList()
         {
             List<PlayerButton> playerButtons = PlayerButtons;
-            List<OnlinePlayer> newPlayers = [..OnlineManager.players.OrderBy(onlineP => onlineP.isMe ? 0 : 1)]; // will keep this logic for LAN
+            List<OnlinePlayer> newPlayers = [.. OnlineManager.players.OrderBy(onlineP => onlineP.isMe ? 0 : 1)]; // will keep this logic for LAN
             List<OnlineCreature> realizedPlayers = [.. OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true)).OfType<OnlineCreature>().OrderBy(opo => opo.isMine ? 0 : 1)];
             if (newPlayers.Count == playerButtons.Count) return false; // race condition that will Never Happen(TM)
 
@@ -142,11 +142,7 @@ namespace RainMeadow
                 {
                     OnlineCreature? spectatee = Overlay?.spectatee?.GetOnlineCreature();
                     var spectatable_avatars = GetSpectableAvatars().ToList();
-                    if (player.isMe)
-                    {
-                        spectatee = null;
-                    }
-                    else if (spectatee is not null)
+                    if (spectatee is not null)
                     {
                         if (spectatable_avatars.Contains(spectatee))
                         {
@@ -158,7 +154,7 @@ namespace RainMeadow
                         }
                         else
                         {
-                            spectatee = spectatable_avatars.FirstOrDefault();
+                            spectatee = spectatable_avatars.FirstOrDefault(x => x.owner == OnlineManager.mePlayer) ?? spectatable_avatars.FirstOrDefault();
                         }
                     }
                     else
@@ -166,7 +162,8 @@ namespace RainMeadow
                         spectatee = spectatable_avatars.FirstOrDefault();
                     }
 
-                    if (spectatee is not null) {
+                    if (spectatee is not null)
+                    {
                         toggled = true;
                     }
 

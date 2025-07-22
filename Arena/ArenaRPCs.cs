@@ -235,6 +235,10 @@ namespace RainMeadow
             if (RainMeadow.isArenaMode(out var arena))
             {
                 var game = (RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame);
+                if (game == null)
+                {
+                    return;
+                }
                 if (game.manager.upcomingProcess != null)
                 {
                     return;
@@ -301,7 +305,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (game.manager.upcomingProcess != null)
+            if (game?.manager.upcomingProcess != null)
             {
                 return;
             }
@@ -309,7 +313,7 @@ namespace RainMeadow
             var room = roomSess.absroom.world;
             var roomPos = room.GetAbstractRoom(0);
             var shortCutVessel = new ShortcutHandler.ShortCutVessel(pos, creature, roomPos, wait);
-            game.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
+            game?.GetArenaGameSession.exitManager.playersInDens.Add(shortCutVessel);
 
         }
 

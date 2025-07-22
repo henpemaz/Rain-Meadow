@@ -1,18 +1,16 @@
-using IL.Watcher;
-using HarmonyLib;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI;
+using RainMeadow.UI.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using RainMeadow.UI.Components;
-using RainMeadow.UI;
-using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 
 namespace RainMeadow
@@ -1850,7 +1848,7 @@ namespace RainMeadow
         private bool ExitManager_PlayerTryingToEnterDen(On.ArenaBehaviors.ExitManager.orig_PlayerTryingToEnterDen orig, ArenaBehaviors.ExitManager self, ShortcutHandler.ShortCutVessel shortcutVessel)
         {
 
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
 
                 if (!(shortcutVessel.creature is Player))
@@ -1889,26 +1887,37 @@ namespace RainMeadow
                     if (!OnlinePhysicalObject.map.TryGetValue(shortcutVessel.creature.abstractPhysicalObject, out var onlineVessel))
                     {
                         Error("Error getting online vessel");
+                        return false;
                     }
 
                     if (!RoomSession.map.TryGetValue(self.room.abstractRoom, out var roomSession))
                     {
                         Error("Error getting exit manager room");
+                        return false;
                     }
 
                     if (!roomSession.owner.OutgoingEvents.Any(e => e is RPCEvent rpc && rpc.IsIdentical(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0)))
                     {
-                        foreach (OnlinePlayer player in OnlineManager.players)
+                        if (roomSession.isOwner)
                         {
-                            if (roomSession.isOwner)
+                            ArenaRPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)
                             {
-
-                                ArenaRPCs.AddShortCutVessel(new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
-                            }
-                            else
-                            {
-                                player.InvokeRPC(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
-
+                                OnlinePlayer? player = ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
+                                if (player != null)
+                                {
+                                    if (player == roomSession.owner)
+                                    {
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        player.InvokeRPC(ArenaRPCs.AddShortCutVessel, new RWCustom.IntVector2(-1, -1), onlineVessel, roomSession, 0);
+                                    }
+                                }
                             }
                         }
 

@@ -8,7 +8,7 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
-        public  SpectatorOverlay? spectatorOverlay;
+        public SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
         public bool isActive;
 
@@ -53,22 +53,33 @@ namespace RainMeadow
             spectatorOverlay?.ShutDownProcess();
             spectatorOverlay = null;
             isActive = false;
-            
+
         }
 
         public void ReturnCameraToPlayer()
         {
             RainMeadow.DebugMe();
             AbstractCreature? return_to_player = null;
-            for (int i = 0; i < camera.game.Players.Count; i++)
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
             {
-                if (camera.game.Players[i].state.dead) continue;
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                {
+                    if (opo.owner == OnlineManager.mePlayer)
+                    {
+                        return_to_player = ac;
+                        RainMeadow.Debug($"Me Player: Setting return to player to: {return_to_player}");
+                        break;
+                    }
+                    //return_to_player = ac;
+                    //RainMeadow.Debug($"Setting return to player to: {return_to_player}");
+                    //break;
 
-                return_to_player = camera.game.Players[i];
-                break;
+                }
+
             }
 
-            
+
             if (return_to_player?.Room == null)
             {
                 RainMeadow.Debug($"spectatee {return_to_player} not in room!");
@@ -105,12 +116,6 @@ namespace RainMeadow
                 }
                 spectatorOverlay.forceNonMouseSelectFreeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
                 spectatorOverlay.Update();
-
-                if (spectatorOverlay.spectatee is null && isSpectating)
-                {
-                    ReturnCameraToPlayer();
-                    spectatee = null;
-                }
                 spectatee = spectatorOverlay.spectatee;
             }
 
