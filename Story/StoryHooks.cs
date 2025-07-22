@@ -1307,7 +1307,7 @@ namespace RainMeadow
                 {
                     // tell host to move everyone else
                     //OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToStarveScreen, storyGameMode.myLastDenPos);
-                    //return;
+                    return;
                 }
             }
 
