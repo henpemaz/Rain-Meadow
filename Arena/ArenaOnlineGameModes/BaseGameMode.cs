@@ -19,14 +19,6 @@ namespace RainMeadow
         private int _timerDuration;
 
         public abstract ArenaSetup.GameTypeID GetGameModeId { get; set; }
-        {
-            get
-            {
-                return FFA.FFAMode;
-            }
-            set { GetGameModeId = value; }
-
-        }
 
         public virtual void ResetOnSessionEnd()
         {
