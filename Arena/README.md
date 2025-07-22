@@ -7,7 +7,7 @@ Your cool new gamemode must be added to the `arena.registeredGameModes`. You can
 
 1. Make a new file that includes your hooks and plugin information:
 2. 
-```
+```csharp
 // MyCoolNewModPlugin.cs
 using BepInEx;
 using IL;
@@ -77,7 +77,7 @@ namespace MyNamespace
 ```
 3. Make a file that includes your mod's inheritance from Arena's ExternalGameMode:
 4. 
-```
+```csharp
 // ExternalCoolGame.cs
 using RainMeadow;
 using System.Text.RegularExpressions;
@@ -158,7 +158,7 @@ Each group means an extra bool that is continuously sent on every message about 
 If any field in the field-group has changed, that entire field-group will be re-sent (because that's more efficient that just supporting every single field be optional).
 ```
 
-```
+```csharp
  public override void ResourceAvailable(OnlineResource onlineResource)
  {
      base.ResourceAvailable(onlineResource);
@@ -172,7 +172,7 @@ If any field in the field-group has changed, that entire field-group will be re-
 Check [ArenaLobbyData](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaLobbyData.cs) for example utilization. 
 ## ClientData
 
-```
+```csharp
  public class MyClientSettings : OnlineEntity.EntityData
  {
      public int someonesNumber;
@@ -225,14 +225,27 @@ OnUIEnabled, OnUIDisabled, OnUIUpdate, OnUIShutdowdn
 ```
 
 ### Adding Tabs
+
+Override the arena.externalGameMode's GetGameModeId
+```csharp
+public virtual ArenaSetup.GameTypeID GetGameModeId
+{
+    get
+    {
+        return FFA.FFAMode; // Set to YOUR cool game mode
+    }
+    set { GetGameModeId = value; }
+
+}
 ```
+```csharp
 base.OnUIEnabled(menu);
 myTab = menu.arenaMainLobbyPage.tabContainer.AddTab("My Tab");
 myTab.AddObjects(myInterface = new MyCoolNewInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
 ```
 
 ### Remove Tabs
-```
+```csharp
 base.OnUIDisabled(menu);
 myCoolNewInterface?.OnShutdown();
 if (myTab != null) menu.arenaMainLobbyPage.tabContainer.RemoveTab(myTab);
@@ -247,7 +260,7 @@ foreach (ArenaPlayerBox playerBox in menu.arenaMainLobbyPage.playerDisplayer?.Ge
 
 ### UI - In-Game: Adding or Updating Custom Icons
 Leverage ExternalArenaGameMode's virtual functions
-```c#
+```csharp
     public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
 
