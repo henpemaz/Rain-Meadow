@@ -18,7 +18,7 @@ namespace RainMeadow
     {
         private int _timerDuration;
 
-        public virtual ArenaSetup.GameTypeID GetGameModeId
+        public abstract ArenaSetup.GameTypeID GetGameModeId { get; set; }
         {
             get
             {
