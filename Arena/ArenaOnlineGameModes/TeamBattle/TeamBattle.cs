@@ -16,6 +16,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             {
                 return TeamBattle;
             }
+            set { GetGameModeId = value; }
+
         }
 
         public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)

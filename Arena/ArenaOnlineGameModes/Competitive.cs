@@ -12,13 +12,15 @@ namespace RainMeadow
         public static ArenaSetup.GameTypeID FFAMode = new ArenaSetup.GameTypeID("Free For All", register: false);
 
         private int _timerDuration;
-        //public override ArenaSetup.GameTypeID GetGameModeId
-        //{
-        //    get
-        //    {
-        //        return FFAMode;
-        //    }
-        //}
+        public override ArenaSetup.GameTypeID GetGameModeId
+        {
+            get
+            {
+                return FFA.FFAMode;
+            }
+            set { GetGameModeId = value; }
+
+        }
         public static bool isFFA(ArenaOnlineGameMode arena, out FFA ffa)
         {
 
