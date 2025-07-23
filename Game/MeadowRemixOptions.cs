@@ -111,7 +111,7 @@ public class RainMeadowOptions : OptionInterface
         OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
         DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
         ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
-        TeamColorLerp = config.Bind("TeamColorLerp", 0.7f);
+        TeamColorLerp = config.Bind("TeamColorLerp", 1f);
 
 
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
