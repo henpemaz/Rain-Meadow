@@ -195,7 +195,9 @@ namespace RainMeadow
             // // Lobby machine go!
             MatchmakingManager.OnLobbyListReceived += OnlineManager_OnLobbyListReceived;
             MatchmakingManager.OnLobbyJoined += OnlineManager_OnLobbyJoined;
-            if (MatchmakingManager.supported_matchmakers.Contains(MatchmakingManager.MatchMakingDomain.Steam)) {
+            MatchmakingManager.OnChangedJoiningState += ShowLoadingDialog;
+            if (MatchmakingManager.supported_matchmakers.Contains(MatchmakingManager.MatchMakingDomain.Steam))
+            {
                 SteamNetworkingUtils.InitRelayNetworkAccess();
             }   
             
@@ -405,6 +407,12 @@ namespace RainMeadow
 
         public void ShowLoadingDialog(string text)
         {
+            if (popupDialog is DialogBoxAsyncWait dialogBox)
+            {
+                dialogBox.SetText(text);
+                return;
+            }
+
             if (popupDialog != null) HideDialog();
 
             text = Translate(text);
