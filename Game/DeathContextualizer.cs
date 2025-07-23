@@ -39,6 +39,7 @@ namespace RainMeadow.Game
             IL.Player.Tongue.Update += (il) => Bind(il, typeof(Player.Tongue).GetMethod(nameof(Player.Tongue.Update)));
             IL.LocustSystem.Swarm.Update += (il) => Bind(il, typeof(LocustSystem.Swarm).GetMethod(nameof(LocustSystem.Swarm.Update)));
             IL.Player.RippleSpawnInteractions += (il) => Bind(il, typeof(Player).GetMethod(nameof(Player.RippleSpawnInteractions)));
+            IL.ARKillRect.Update += (il) => Bind(il, typeof(ARKillRect).GetMethod(nameof(ARKillRect.Update)));
 
             // VIOLENCE
             IL.ElectricDeath.Update += (il) => BindViolence(il, typeof(ElectricDeath).GetMethod(nameof(ElectricDeath.Update)));
