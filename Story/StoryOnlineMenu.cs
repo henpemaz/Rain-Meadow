@@ -22,7 +22,7 @@ namespace RainMeadow
         private StoryMenuSlugcatSelector? slugcatSelector;
         private SlugcatCustomization personaSettings;
         private SlugcatStats.Name[] selectableSlugcats;
-        public SlugcatStats.Name?[] playerSelectedSlugcats;
+        public SlugcatStats.Name? singleplayerSelectedSlugcat;
         private StoryGameMode storyGameMode;
         private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
@@ -45,19 +45,18 @@ namespace RainMeadow
                 return selectableSlugcats;
             }
         }
-        public SlugcatStats.Name PlayerSelectedSlugcat
+        public SlugcatStats.Name SinglePlayerSelectedSlugcat
         {
             get
             {
-                return playerSelectedSlugcats?[0] ?? slugcatColorOrder[slugcatPageIndex];
+                return singleplayerSelectedSlugcat ?? slugcatColorOrder[slugcatPageIndex];
             }
             set
             {
-                if (ModManager.JollyCoop) {
-                    this.RefreshJollySummary();
-                }
-
-                playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                SlugcatStats.Name? newSlugcat = value == slugcatColorOrder[slugcatPageIndex] ? null : value;
+                if (SinglePlayerSelectedSlugcat == newSlugcat) return;
+                singleplayerSelectedSlugcat = newSlugcat;
+                UpdateUponChangingSlugcat(SinglePlayerSelectedSlugcat);
             }
         }
         public static int MaxVisibleOnList => 8;
@@ -68,7 +67,6 @@ namespace RainMeadow
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
-            playerSelectedSlugcats = new SlugcatStats.Name[4];
             SetupSelectableSlugcats();
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
@@ -77,19 +75,6 @@ namespace RainMeadow
             restartCheckboxPos = restartCheckbox.pos;       
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
-
-            if (ModManager.JollyCoop) {
-                if (base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]))
-                {
-                    AddJollyButtons();
-                }
-                else if (colorChecked)
-                {
-                    AddColorButtons();
-                } 
-            }
-
-
             
             if (OnlineManager.lobby.isOwner)
             {
@@ -135,14 +120,10 @@ namespace RainMeadow
                 this.manager.rainWorld.RequestPlayerSignIn(i, null);
 
             if (OnlineManager.lobby.isOwner)
-            {
                 storyGameMode.currentCampaign = storyGameCharacter;
-            }
 
-            var jollyallowed = ModManager.JollyCoop && base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
-            storyGameMode.avatarCount = jollyallowed ? manager.rainWorld.options.JollyPlayerCount : 1;
-            if (jollyallowed) PlayerGraphics.PopulateJollyColorArray(PlayerSelectedSlugcat);
-
+            storyGameMode.avatarCount = ModManager.CoopAvailable ? manager.rainWorld.options.JollyPlayerCount : 1;
+            RainMeadow.Debug(manager.rainWorld.options.JollyPlayerCount);
             for (int i = 1; i < storyGameMode.avatarCount; i++)
             {
                 manager.rainWorld.ActivatePlayer(i);
@@ -151,66 +132,30 @@ namespace RainMeadow
             {
                 manager.rainWorld.DeactivatePlayer(j);
             }
-
             for (int i = 0; i < storyGameMode.avatarSettings.Length; i++)
             {
-                storyGameMode.avatarSettings[i].playingAs = storyGameMode.currentCampaign;
-                if (!storyGameMode.requireCampaignSlugcat && (playerSelectedSlugcats[i] is SlugcatStats.Name name))
+                storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name;
+                if (ModManager.CoopAvailable)
                 {
-                    storyGameMode.avatarSettings[i].playingAs = name;
-                }
+                    storyGameMode.avatarSettings[i].playingAs = storyGameMode.requireCampaignSlugcat ? storyGameMode.currentCampaign : JollyCoop.JollyCustom.SlugClassMenu(i, SinglePlayerSelectedSlugcat);
+                    storyGameMode.avatarSettings[i].currentColors = ColorHelpers.GetJollyCoopColors(i, storyGameMode.avatarSettings[i].playingAs);
+                    JollyCoop.JollyMenu.JollyPlayerOptions options = manager.rainWorld.options.jollyPlayerOptionsArray[i];
+                    storyGameMode.avatarSettings[i].fakePup = options.isPup;
 
-                if ((storyGameMode.avatarCount > 1) && jollyallowed)
-                {
-                    storyGameMode.avatarSettings[i].nickname = OnlineManager.mePlayer.id.name + ":" + JollyCoop.JollyCustom.GetPlayerName(i);
+                    if (storyGameMode.avatarCount > 1)
+                        storyGameMode.avatarSettings[i].nickname += ":" + JollyCoop.JollyCustom.GetPlayerName(i);
+                    continue;
                 }
+                //non jolly, use remix color or default color
+                storyGameMode.avatarSettings[i].playingAs = storyGameMode.requireCampaignSlugcat ? storyGameMode.currentCampaign : SinglePlayerSelectedSlugcat;
+                storyGameMode.avatarSettings[i].currentColors = manager.rainWorld.progression.GetCustomColors(storyGameMode.avatarSettings[i].playingAs);
+                storyGameMode.avatarSettings[i].fakePup = false;
 
-                if (jollyallowed)
-                {
-                    if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.CUSTOM)
-                    {
-                        storyGameMode.avatarSettings[i].currentColors = new List<Color>
-                            {
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetBodyColor(),
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetFaceColor(),
-                                manager.rainWorld.options.jollyPlayerOptionsArray[i].GetUniqueColor()
-                            };
-
-                    }
-                    else if (manager.rainWorld.options.jollyColorMode == Options.JollyColorMode.AUTO)
-                    {
-                        if (i == 0)
-                        {
-                            storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
-                        }
-                        else
-                        {
-                            storyGameMode.avatarSettings[i].currentColors = new List<Color>
-                            {
-                                PlayerGraphics.JollyColor(i, 0),
-                                PlayerGraphics.JollyColor(i, 1),
-                                PlayerGraphics.JollyColor(i, 2)
-                            };
-                        }
-                    }
-                    else
-                    {
-                        storyGameMode.avatarSettings[i].currentColors = [.. PlayerGraphics.DefaultBodyPartColorHex(storyGameMode.avatarSettings[i].playingAs).Select(Custom.hexToColor)];
-                    }
-                    storyGameMode.avatarSettings[i].fakePup = manager.rainWorld.options.jollyPlayerOptionsArray[i].isPup;
-                }
-                else
-                {
-                    // TODO: seperate custom colors for each avatar
-                    storyGameMode.avatarSettings[i].currentColors = manager.rainWorld.progression.GetCustomColors(storyGameMode.avatarSettings[i].playingAs); //abt colors, color config updates to campaign when required campaign is on. Client side, the host still needs to be in the menu to update it so they will notice the color config update
-                    storyGameMode.avatarSettings[i].fakePup = false;
-                }
 
             }
             
 
             // TODO: figure out how to reuse vanilla StartGame
-            // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
             
@@ -232,30 +177,6 @@ namespace RainMeadow
 
         public override void Update()
         {
-            var jollyallowed = false;
-            if (ModManager.JollyCoop)
-            {
-                jollyallowed = base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
-                if (jollyallowed && jollyToggleConfigMenu is null)
-                {
-                    AddJollyButtons();
-                }
-                else if ((!jollyallowed) && (jollyToggleConfigMenu is not null))
-                {
-                    RemoveJollyButtons();
-                }
-
-                if (jollyallowed && colorInterface is not null)
-                {
-                    RemoveColorButtons();
-                }
-                else if (colorChecked && (!jollyallowed) && (colorInterface is null))
-                {
-                    AddColorButtons();
-                }
-
-                colorsCheckbox.buttonBehav.greyedOut = jollyallowed;
-            }
 
 
             if (ChatTextBox.blockInput)
@@ -270,16 +191,6 @@ namespace RainMeadow
                 ChatTextBox.blockInput = true;
             }
             base.Update();
-
-            if (ModManager.JollyCoop) {
-                this.storyGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
-                if (jollyallowed)
-                {
-                    this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
-                    this.RefreshJollySummary();
-                }
-                
-            }
             
 
             if (this.isChatToggled)
@@ -311,7 +222,8 @@ namespace RainMeadow
                 {
                     startButton.buttonBehav.greyedOut = OnlineManager.lobby.clientSettings.Values.Any(cs => cs.inGame);
                 }
-
+                if (ModManager.JollyCoop)
+                    storyGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
             }
             else
             {
@@ -331,21 +243,31 @@ namespace RainMeadow
                     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
                 }
             }
-            if (storyGameMode.requireCampaignSlugcat)
+            if (!ModManager.CoopAvailable)
             {
-                RemoveSlugcatList();
-                for (int i = 0; i < playerSelectedSlugcats.Length; i++) {
-                    playerSelectedSlugcats[i] = storyGameMode.currentCampaign;
+                if (storyGameMode.requireCampaignSlugcat)
+                {
+                    RemoveSlugcatList();
+                    SinglePlayerSelectedSlugcat = storyGameMode.currentCampaign;
                 }
+                else
+                    SetupSlugcatList();
             }
             else
             {
-                SetupSlugcatList();
+                RemoveSlugcatList();
+                if (storyGameMode.requireCampaignSlugcat)
+                {
+                    for (int i = 0; i < manager.rainWorld.options.jollyPlayerOptionsArray.Length; i++)
+                    {
+                        if (i == 0 && manager.rainWorld.options.jollyPlayerOptionsArray[i].playerClass != storyGameMode.currentCampaign)
+                            PlayerGraphics.PopulateJollyColorArray(storyGameMode.currentCampaign);
+                        manager.rainWorld.options.jollyPlayerOptionsArray[i].playerClass = storyGameMode.currentCampaign;
+                    }
+                }
             }
             if (slugcatSelector != null)
-            {
-                slugcatSelector.Slug = PlayerSelectedSlugcat;
-            }
+                slugcatSelector.Slug = SinglePlayerSelectedSlugcat;
 
         }
 
@@ -433,7 +355,7 @@ namespace RainMeadow
             if (slugcatSelector == null)
             {
                 //first player button is 30 pos below size of list. and list top part is 30 below the title. Plus
-                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
+                slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, SinglePlayerSelectedSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
 
@@ -542,7 +464,7 @@ namespace RainMeadow
                 {
                     StoryMenuSlugcatButton storyMenuSlugcatButton = new(this, buttonScroller, SelectableSlugcats[i], (scug) =>
                     {
-                        PlayerSelectedSlugcat = scug;
+                        SinglePlayerSelectedSlugcat = scug;
                         slugcatSelector.OpenCloseList(false, true, true);
                     });
                     slugcatButtons.Add(storyMenuSlugcatButton);
@@ -550,12 +472,11 @@ namespace RainMeadow
             }
             return [.. slugcatButtons];
         }
-        private void UpdateUponChangingSlugcat(SlugcatStats.Name scug)
+        private void UpdateUponChangingSlugcat(SlugcatStats.Name scug) //called by when u only select ur slugcat on list via clicking a button
         {
-            if (colorsCheckbox != null)
-            {
-                colorsCheckbox.Checked = colorChecked; //this.IsCustomColorEnabled(scug); //automatically opens color interface if enabled
-            }
+            RemoveColorButtons();
+            if (colorsCheckbox?.GetButtonBehavior?.greyedOut == false) //slugcatselectmenu greyouts it on Update() when Coop is avaliable
+                colorsCheckbox.Checked = colorChecked;
         }
 
         public void AddMessage(string user, string message)
