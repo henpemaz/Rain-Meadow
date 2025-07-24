@@ -49,10 +49,6 @@ namespace RainMeadow
             IL.Menu.CharacterSelectPage.UpdateSelectedSlugcat += SoftDisableJollyCoOP;
             IL.Menu.InitializationScreen.Update += SoftDisableJollyCoOP;
             IL.Menu.MainMenu.ctor += SoftDisableJollyCoOP;
-
-            IL.Menu.SlugcatSelectMenu.AddColorInterface += SoftDisableJollyCoOP;
-            IL.Menu.SlugcatSelectMenu.ctor += SoftDisableJollyCoOP;
-            IL.Menu.SlugcatSelectMenu.Update += SoftDisableJollyCoOP;
             
             // IL.Menu.SlugcatSelectMenu.CheckJollyCoopAvailable += SoftDisableJollyCoOP;
 
@@ -97,8 +93,6 @@ namespace RainMeadow
             IL.Menu.ExpeditionMenu.CommunicateWithUpcomingProcess += SoftDisableJollyCoOP;
             IL.Menu.InputOptionsMenu.Singal += SoftDisableJollyCoOP;
             IL.Menu.SlugcatSelectMenu.CommunicateWithUpcomingProcess += SoftDisableJollyCoOP;
-            IL.Menu.SlugcatSelectMenu.StartGame += SoftDisableJollyCoOP;
-            IL.Menu.SlugcatSelectMenu.Update += SoftDisableJollyCoOP;
             IL.MoreSlugcats.BreathMeter.Update += SoftDisableJollyCoOP;
             IL.MoreSlugcats.MSCRoomSpecificScript.GW_C05ArtificerMessage.Update += SoftDisableJollyCoOP;
             IL.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.Update += SoftDisableJollyCoOP;
@@ -261,28 +255,24 @@ namespace RainMeadow
         void JollySlidingMenu_Singal(On.JollyCoop.JollyMenu.JollySlidingMenu.orig_Singal orig, JollyCoop.JollyMenu.JollySlidingMenu self, Menu.MenuObject sender, string message)
         {
 
-
             if (isStoryMode(out var story))
             {
                 if (message.Contains("CLASSCHANGE"))
                 {
+                    if (story.requireCampaignSlugcat)
+                    {
+                        self.menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Select_Mouse);
+                        return;
+                    }
                     for (int i = 0; i < self.playerSelector.Length; i++)
                     {
                         if (message == "CLASSCHANGE" + i)
                         {
                             if (self.menu.manager.currentMainLoop is StoryOnlineMenu story_menu)
                             {
-                                var currentslugcat = story_menu.playerSelectedSlugcats[i];
-                                if (currentslugcat is null)
-                                {
-                                    currentslugcat = story.currentCampaign;
-                                }
-
-                                int current_index = story_menu.SelectableSlugcats.IndexOf(currentslugcat);
+                                int actualSelectorIndex = self.playerSelector[i].index, current_index = story_menu.SelectableSlugcats.IndexOf(self.playerSelector[i].slugName);
                                 int newcharacterindex = (current_index + 1) % story_menu.SelectableSlugcats.Length;
-                                story_menu.playerSelectedSlugcats[i] = story_menu.SelectableSlugcats[newcharacterindex];
-
-                                self.JollyOptions(i).playerClass = story_menu.SelectableSlugcats[newcharacterindex];
+                                self.JollyOptions(actualSelectorIndex).playerClass = story_menu.SelectableSlugcats[newcharacterindex];
                                 self.menu.PlaySound(SoundID.MENU_Error_Ping);
                                 self.SetPortraitsDirty();
                                 return;
@@ -290,7 +280,6 @@ namespace RainMeadow
                         }
                     }
                 }
-
                 if (message.Equals("friendly_fire"))
                 {
                     story.friendlyFire = message.Contains("on");
@@ -304,7 +293,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                SlugcatStats.Name playerClass = self.JollyOptions(self.index).playerClass;
+                SlugcatStats.Name playerClass = JollyCoop.JollyCustom.SlugClassMenu(self.index, self.dialog.currentSlugcatPageName);
                 if (ModManager.MSC && playerClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
                 {
                     return "pup_on";
@@ -314,46 +303,12 @@ namespace RainMeadow
             return orig(self);
         }
 
-
         private void JollySetupDialog_Update(On.JollyCoop.JollyMenu.JollySetupDialog.orig_Update orig, JollyCoop.JollyMenu.JollySetupDialog self)
         {
             orig(self);
 
             if (isStoryMode(out var story))
             {
-                for (int i = 0; i < story.avatarCount; i++)
-                {
-                    if (self.manager.currentMainLoop is StoryOnlineMenu story_menu)
-                    {
-                        var currentslugcat = story_menu.playerSelectedSlugcats[i];
-                        
-                        if (currentslugcat != self.slidingMenu.playerSelector[i].slugName)
-                            self.slidingMenu.playerSelector[i].dirty = true;
-                        
-                        if (currentslugcat is null)
-                        {
-                            currentslugcat = story.currentCampaign;
-                        }
-
-                        if (!ModManager.MSC)
-                        {
-                            self.slidingMenu.playerSelector[i].pupButton.buttonBehav.greyedOut = true;
-                            if (self.slidingMenu.playerSelector[i].pupButton.isToggled)
-                            {
-                                self.slidingMenu.playerSelector[i].pupButton.Toggle();
-                            }
-                        }
-                        else
-                        {
-                            if (currentslugcat == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
-                            {
-                                self.slidingMenu.playerSelector[i].pupButton.buttonBehav.greyedOut = true;
-                            }
-                        }
-
-
-                    }
-                }
 
                 // self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
                 // self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
@@ -516,20 +471,21 @@ namespace RainMeadow
 
             return orig(self, tracker);
         }
-
         private SlugcatStats.Name JollyCoop_JollyCustom_SlugClassMenu(On.JollyCoop.JollyCustom.orig_SlugClassMenu orig, int playerNumber, SlugcatStats.Name fallBack)
         {
             if (isStoryMode(out var story))
             {
+                SlugcatStats.Name name = JollyCoop.JollyCustom.JollyOptions(playerNumber).playerClass;
                 if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is StoryOnlineMenu menu)
                 {
-                    return menu.playerSelectedSlugcats?[playerNumber] ?? menu.slugcatColorOrder[menu.slugcatPageIndex];
+                    if (menu.SelectableSlugcats.Contains(name))
+                        return name!;
                 }
-
+                if (name != null && name.Index > -1 && !(ModManager.MSC && name != MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup && SlugcatStats.HiddenOrUnplayableSlugcat(name)))
+                    return name;
             }
             return orig(playerNumber, fallBack);
         }
-
         private void HUD_InitSinglePlayerHud1(On.HUD.HUD.orig_InitSinglePlayerHud orig, HUD.HUD self, RoomCamera cam)
         {
             orig(self, cam);
@@ -567,13 +523,14 @@ namespace RainMeadow
             }
 
         }
-
         private void JollyPlayerSelector_Update(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_Update orig, JollyCoop.JollyMenu.JollyPlayerSelector self)
         {
             orig(self);
             if (isStoryMode(out var story))
             {
                 self.playerLabelSelector.greyedOut = !self.Joined || (self.dialog.Options.JollyPlayerCount > 1);
+                if (story.requireCampaignSlugcat)
+                    self.dirty = true;
             }
         }
 
