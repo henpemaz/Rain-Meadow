@@ -21,7 +21,7 @@ namespace RainMeadow
             // startEndSpacing is true, then it will add spacing to the start and end instead of button height
             return startEndSpacing ? amtOfButtonsView * (buttonHeight + spacing) + spacing : buttonHeight + Mathf.Max(amtOfButtonsView - 1, 0) * (buttonHeight + spacing);
         }
-        public virtual float MaxVisibleItemsShown => (UpperBound - LowerBound) / ButtonHeightAndSpacing;
+        public virtual float MaxVisibleItemsShown => (UpperBound - LowerBound - GetBoundSizeOffset()) / ButtonHeightAndSpacing;
         public virtual float MaxDownScroll => Mathf.Max(0, (buttons.Count - MaxVisibleItemsShown));
         public virtual float DownScrollOffset
         {
@@ -103,6 +103,7 @@ namespace RainMeadow
                 sideButtonLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
             }
         }
+        public virtual float GetBoundSizeOffset() => startEndWithSpacing ? buttonSpacing : -buttonSpacing; //difference in how size would follow if its just buttonHeight + spacing
         public virtual float GetCurrentScrollOffset() => DownScrollOffset;
         public  void SliderSetValue(Slider slider, float f)
         {
@@ -166,7 +167,7 @@ namespace RainMeadow
         }
         public Vector2 GetIdealNormalPosForButton(int index)
         {
-            return new(0, UpperBound - ((startEndWithSpacing? ButtonHeightAndSpacing : buttonHeight) + (index * ButtonHeightAndSpacing)));
+            return new(0, UpperBound - GetBoundSizeOffset() - ((index + 1) * ButtonHeightAndSpacing));
         }
         public Vector2 GetIdealPosWithScrollForButton(int index) => new(GetIdealNormalPosForButton(index).x, GetIdealYPosWithScroll(index));
         public virtual float GetIdealYPosWithScroll(int index) => Math.Min(UpperBound + (ButtonHeightAndSpacing / 3), Mathf.Max(LowerBound - (ButtonHeightAndSpacing / 3), GetIdealNormalPosForButton(index).y + ScrollOffsetPos));
