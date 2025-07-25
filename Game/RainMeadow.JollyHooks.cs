@@ -288,7 +288,6 @@ namespace RainMeadow
 
             orig(self, sender, message);
         }
-
         private string GetPupButtonOffName(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_GetPupButtonOffName orig, JollyCoop.JollyMenu.JollyPlayerSelector self)
         {
             if (OnlineManager.lobby != null)
@@ -317,8 +316,7 @@ namespace RainMeadow
                 self.slidingMenu.friendlySteal.buttonBehav.greyedOut = true;
                 // self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
 
-                if (self.slidingMenu.friendlyToggle.isToggled == story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
-                if (!self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
+                if (self.slidingMenu.friendlyToggle.isToggled != story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
                 // if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
                 if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
                 if (self.slidingMenu.friendlySteal.isToggled) self.slidingMenu.friendlySteal.Toggle();
@@ -326,8 +324,6 @@ namespace RainMeadow
             }
 
         }
-
-
         private void SU_C04StartUp_Update(ILContext context)
         {
             try
@@ -481,8 +477,9 @@ namespace RainMeadow
                     if (menu.SelectableSlugcats.Contains(name))
                         return name!;
                 }
-                if (name != null && name.Index > -1 && !(ModManager.MSC && name != MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup && SlugcatStats.HiddenOrUnplayableSlugcat(name)))
-                    return name;
+                if (name != null && name.Index > -1)
+                    if (!SlugcatStats.HiddenOrUnplayableSlugcat(name) || (ModManager.MSC && name == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup))
+                        return name;
             }
             return orig(playerNumber, fallBack);
         }
@@ -529,6 +526,8 @@ namespace RainMeadow
             if (isStoryMode(out var story))
             {
                 self.playerLabelSelector.greyedOut = !self.Joined || (self.dialog.Options.JollyPlayerCount > 1);
+                if (ModManager.MSC && self.slugName == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                    self.pupButton.GetButtonBehavior.greyedOut = true;
                 if (story.requireCampaignSlugcat)
                     self.dirty = true;
             }

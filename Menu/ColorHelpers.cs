@@ -83,12 +83,12 @@ namespace RainMeadow
         {
             return progression.IsCustomColorEnabled(id)? [..progression.GetCustomColorHSLs(id).Select(HSL2RGB)] : GetDefaultColors(id);
         }
-        public static List<Color> GetJollyCoopColors(int playerNumber, SlugcatStats.Name fallBackIfColorsNull)
+        public static List<Color> GetJollyCoopColors(int playerNumber, SlugcatStats.Name defaultColorSlugcat, SlugcatStats.Name fallBackIfColorsNull)
         {
             if (PlayerGraphics.jollyColors == null)
                 PlayerGraphics.PopulateJollyColorArray(fallBackIfColorsNull);
             Color?[] jollyColors = PlayerGraphics.jollyColors!.GetValueOrDefault(playerNumber) ?? [];
-            List<Color> colors = [], defaultColors = GetDefaultColors(Custom.rainWorld.options.jollyPlayerOptionsArray[playerNumber].playerClass);
+            List<Color> colors = [], defaultColors = GetDefaultColors(defaultColorSlugcat);
             for (int i = 0; i < defaultColors.Count; i++)
             {
                 if (jollyColors.GetValueOrDefault(i) == null)

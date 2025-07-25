@@ -54,7 +54,7 @@ namespace RainMeadow
             set
             {
                 SlugcatStats.Name? newSlugcat = value == slugcatColorOrder[slugcatPageIndex] ? null : value;
-                if (SinglePlayerSelectedSlugcat == newSlugcat) return;
+                if (singleplayerSelectedSlugcat == newSlugcat) return;
                 singleplayerSelectedSlugcat = newSlugcat;
                 UpdateUponChangingSlugcat(SinglePlayerSelectedSlugcat);
             }
@@ -138,7 +138,7 @@ namespace RainMeadow
                 if (ModManager.CoopAvailable)
                 {
                     storyGameMode.avatarSettings[i].playingAs = storyGameMode.requireCampaignSlugcat ? storyGameMode.currentCampaign : JollyCoop.JollyCustom.SlugClassMenu(i, SinglePlayerSelectedSlugcat);
-                    storyGameMode.avatarSettings[i].currentColors = ColorHelpers.GetJollyCoopColors(i, storyGameMode.avatarSettings[i].playingAs);
+                    storyGameMode.avatarSettings[i].currentColors = ColorHelpers.GetJollyCoopColors(i, storyGameMode.avatarSettings[i].playingAs, storyGameMode.avatarSettings[i].playingAs);
                     JollyCoop.JollyMenu.JollyPlayerOptions options = manager.rainWorld.options.jollyPlayerOptionsArray[i];
                     storyGameMode.avatarSettings[i].fakePup = options.isPup;
 
