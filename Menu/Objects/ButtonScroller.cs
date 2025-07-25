@@ -103,7 +103,7 @@ namespace RainMeadow
                 sideButtonLines[i].color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.DarkGrey);
             }
         }
-        public virtual float GetBoundSizeOffset() => startEndWithSpacing ? buttonSpacing : -buttonSpacing; //difference in how size would follow if its just buttonHeight + spacing
+        public virtual float GetBoundSizeOffset() => startEndWithSpacing ? buttonSpacing : -buttonSpacing; //difference in how size would follow if its just index * (buttonHeight + spacing)
         public virtual float GetCurrentScrollOffset() => DownScrollOffset;
         public  void SliderSetValue(Slider slider, float f)
         {
