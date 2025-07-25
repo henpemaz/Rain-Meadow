@@ -308,7 +308,6 @@ namespace RainMeadow
 
             if (isStoryMode(out var story))
             {
-
                 // self.slidingMenu.friendlyToggle.buttonBehav.greyedOut = true;
                 // self.slidingMenu.cameraCyclesToggle.buttonBehav.greyedOut = true;
                 self.slidingMenu.smartShortcutToggle.buttonBehav.greyedOut = true;
@@ -526,8 +525,17 @@ namespace RainMeadow
             if (isStoryMode(out var story))
             {
                 self.playerLabelSelector.greyedOut = !self.Joined || (self.dialog.Options.JollyPlayerCount > 1);
-                if (ModManager.MSC && self.slugName == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                if (ModManager.MSC)
+                {
+                    if (self.slugName == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
+                        self.pupButton.GetButtonBehavior.greyedOut = true;
+                }
+                else
+                {
+                    if (self.pupButton.isToggled)
+                        self.pupButton.Toggle();
                     self.pupButton.GetButtonBehavior.greyedOut = true;
+                }
                 if (story.requireCampaignSlugcat)
                     self.dirty = true;
             }
