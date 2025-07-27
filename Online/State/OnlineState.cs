@@ -39,16 +39,20 @@ namespace RainMeadow
 
         public static OnlineState ParsePolymorph(Serializer serializer)
         {
-            return handlersByEnum[new StateType(StateType.values.GetEntry(serializer.reader.ReadByte()))].factory();
+            if (!serializer.IsWriting) throw new InvalidProgrammerException("ParsePolymorph called when not reading");
+            StateType type = null!;
+            serializer.SerializeExtEnum(ref type);
+            return handlersByEnum[type].factory();
         }
 
         public void WritePolymorph(Serializer serializer)
         {
-            serializer.writer.Write((byte)handler.stateType.index);
+            if (!serializer.IsWriting) throw new InvalidProgrammerException("WritePolymorph called when not writing");
+            serializer.SerializeExtEnum(ref handler.stateType);
         }
 
-        private static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
-        private static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
+        public static Dictionary<StateType, StateHandler> handlersByEnum = new Dictionary<StateType, StateHandler>();
+        public static Dictionary<Type, StateHandler> handlersByType = new Dictionary<Type, StateHandler>();
 
         public static void RegisterState(Type type)
         {
@@ -62,6 +66,12 @@ namespace RainMeadow
         internal static void InitializeBuiltinTypes()
         {
             _ = StateType.Unknown; // runs static init
+
+            if (!Serializer.serializedExtEnums.Contains(typeof(StateType)))
+            {
+                Serializer.serializedExtEnums.Add(typeof(StateType));
+            }
+            
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().ToList())
             {
                 bool isMain = assembly == Assembly.GetExecutingAssembly();

@@ -52,9 +52,9 @@ namespace RainMeadow
             public abstract EntityDataState MakeState(OnlineEntity entity, OnlineResource inResource);
 
             [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-            public abstract class EntityDataState : OnlineState, IIdentifiable<byte>
+            public abstract class EntityDataState : OnlineState, IIdentifiable<OnlineState.StateType>
             {
-                public byte ID => (byte)handler.stateType.index;
+                OnlineState.StateType IIdentifiable<OnlineState.StateType>.ID => handler.stateType;
 
                 public EntityDataState() { }
 
