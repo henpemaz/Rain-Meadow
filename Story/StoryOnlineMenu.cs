@@ -53,8 +53,17 @@ namespace RainMeadow
             }
             set
             {
-                if (ModManager.JollyCoop) {
-                    this.RefreshJollySummary();
+                if (ModManager.JollyCoop)
+                {
+                    if (jollyToggleConfigMenu is not null)
+                    {
+                        this.RefreshJollySummary();
+                    }
+
+                    if (ModManager.JollyCoop && manager.rainWorld.options.jollyPlayerOptionsArray.Length > 0)
+                    {
+                        manager.rainWorld.options.jollyPlayerOptionsArray[0].playerClass = value;
+                    }
                 }
 
                 playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
@@ -236,6 +245,7 @@ namespace RainMeadow
             if (ModManager.JollyCoop)
             {
                 jollyallowed = base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
+                storyGameMode.avatarCount = jollyallowed ? manager.rainWorld.options.JollyPlayerCount : 1;
                 if (jollyallowed && jollyToggleConfigMenu is null)
                 {
                     AddJollyButtons();
@@ -334,7 +344,13 @@ namespace RainMeadow
             if (storyGameMode.requireCampaignSlugcat)
             {
                 RemoveSlugcatList();
-                for (int i = 0; i < playerSelectedSlugcats.Length; i++) {
+                for (int i = 0; i < playerSelectedSlugcats.Length; i++)
+                {
+                    if (ModManager.JollyCoop && i < manager.rainWorld.options.jollyPlayerOptionsArray.Length)
+                    {
+                        manager.rainWorld.options.jollyPlayerOptionsArray[i].playerClass = storyGameMode.currentCampaign;
+                    }
+
                     playerSelectedSlugcats[i] = storyGameMode.currentCampaign;
                 }
             }
