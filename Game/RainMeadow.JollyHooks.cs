@@ -296,6 +296,10 @@ namespace RainMeadow
                                 int current_index = story_menu.SelectableSlugcats.IndexOf(currentslugcat);
                                 int newcharacterindex = (current_index + 1) % story_menu.SelectableSlugcats.Length;
                                 story_menu.playerSelectedSlugcats[i] = story_menu.SelectableSlugcats[newcharacterindex];
+                                if (story_menu.playerSelectedSlugcats[i] == story_menu.slugcatColorOrder[story_menu.slugcatPageIndex])
+                                {
+                                    story_menu.playerSelectedSlugcats[i] = null;
+                                }
 
                                 self.JollyOptions(i).playerClass = story_menu.SelectableSlugcats[newcharacterindex];
                                 self.menu.PlaySound(SoundID.MENU_Error_Ping);
@@ -368,8 +372,8 @@ namespace RainMeadow
                 self.slidingMenu.friendlySteal.buttonBehav.greyedOut = true;
                 // self.slidingMenu.hudToggle.buttonBehav.greyedOut = true;
 
-                if (self.slidingMenu.friendlyToggle.isToggled == story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
-                if (!self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyToggle.Toggle();
+                if (self.slidingMenu.friendlyToggle.isToggled != story.friendlyFire) self.slidingMenu.friendlyToggle.Toggle();
+                if (self.slidingMenu.friendlyLizardsToggle.isToggled) self.slidingMenu.friendlyLizardsToggle.Toggle();
                 // if (!self.slidingMenu.cameraCyclesToggle.isToggled) self.slidingMenu.cameraCyclesToggle.Toggle();
                 if (self.slidingMenu.smartShortcutToggle.isToggled) self.slidingMenu.smartShortcutToggle.Toggle();
                 if (self.slidingMenu.friendlySteal.isToggled) self.slidingMenu.friendlySteal.Toggle();
@@ -588,13 +592,6 @@ namespace RainMeadow
 
         private void JollyPlayerSelector_Update(On.JollyCoop.JollyMenu.JollyPlayerSelector.orig_Update orig, JollyCoop.JollyMenu.JollyPlayerSelector self)
         {
-            if (self.menu is StoryOnlineMenu SOM)
-            {
-                if (self.index == 0 && self.slugName != SOM.PlayerSelectedSlugcat)
-                {
-                    self.dirty = true;
-                }
-            }
             orig(self);
             if (isStoryMode(out var story))
             {

@@ -93,7 +93,16 @@ namespace RainMeadow
             RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
 
-            if (ModManager.JollyCoop) {
+            if (ModManager.JollyCoop)
+            {
+                for (int i = 0; i < playerSelectedSlugcats.Length; i++)
+                {
+                    if (ModManager.JollyCoop && i < manager.rainWorld.options.jollyPlayerOptionsArray.Length)
+                    {
+                        manager.rainWorld.options.jollyPlayerOptionsArray[i].playerClass = storyGameMode.currentCampaign;
+                    }
+                }
+
                 if (base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]))
                 {
                     AddJollyButtons();
