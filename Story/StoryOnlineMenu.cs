@@ -66,7 +66,13 @@ namespace RainMeadow
                     }
                 }
 
-                playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex]? null : value;
+                playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex] ? null : value;
+
+                if (colorInterface is not null)
+                {
+                    RemoveColorButtons();
+                    AddColorButtons();
+                }
             }
         }
         public static int MaxVisibleOnList => 8;
