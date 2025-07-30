@@ -33,6 +33,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
 
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
+            On.Menu.MenuScene.SaveToFile += On_MenuScene_SaveToFile;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
             On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
@@ -154,7 +155,15 @@ namespace RainMeadow
                 orig(self);
             }
         }
-
+        private void On_MenuScene_SaveToFile(On.Menu.MenuScene.orig_SaveToFile orig, MenuScene self)
+        {
+            if (self.menu is ArenaOnlineLobbyMenu && self.flatMode)
+            {
+                Debug("Prevented overriding positions.txt");
+                return;
+            }
+            orig(self);
+        }
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
             orig(self);
