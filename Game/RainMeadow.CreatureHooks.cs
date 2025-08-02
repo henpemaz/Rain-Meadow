@@ -49,13 +49,8 @@ namespace RainMeadow
         private bool Creature_Grab(On.Creature.orig_Grab orig, Creature self, PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
         {
             var ret = orig(self, obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying);
-            if (ret && obj.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject grabbingOnline && !grabbingOnline.isMine)
+            if (ret && obj.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject grabbingOnline && !grabbingOnline.isMine && self.IsLocal())
             {
-                if (obj is Weapon && !grabbingOnline.isPending && grabbingOnline.isTransferable)
-                {
-                    grabbingOnline.Request();
-                }
-
                 OnlineCreature? oc = self.abstractCreature.GetOnlineCreature();
                 if (oc is null)
                 {
@@ -64,11 +59,16 @@ namespace RainMeadow
                 }
 
                 GraspRef grasp = GraspRef.FromGrasp(self.grasps[graspUsed]);
-                grabbingOnline.graspLocked += 1;
+                grabbingOnline.graspLocked.Add(grabbingOnline.owner);
                 grabbingOnline.owner.InvokeRPC(CreatureGrabRPC, oc.id, grasp).Then((result) =>
                 {
-                    grabbingOnline.graspLocked -= 1;
-                }); 
+                    grabbingOnline.graspLocked.Remove(grabbingOnline.owner);
+                });
+
+                if (!grabbingOnline.isPending && grabbingOnline.isTransferable)
+                {
+                    grabbingOnline.Request();
+                } 
             }
             
             return ret;
