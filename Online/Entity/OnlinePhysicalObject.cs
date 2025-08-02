@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -194,7 +195,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        public int graspLocked = 0;
+        public List<OnlinePlayer> graspLocked = new();
         static public bool creatingRemoteObject { get; private set; } = false;
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {
