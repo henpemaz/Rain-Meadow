@@ -53,26 +53,7 @@ namespace RainMeadow
             }
             set
             {
-                if (ModManager.JollyCoop)
-                {
-                    if (jollyToggleConfigMenu is not null)
-                    {
-                        this.RefreshJollySummary();
-                    }
-
-                    if (ModManager.JollyCoop && manager.rainWorld.options.jollyPlayerOptionsArray.Length > 0)
-                    {
-                        manager.rainWorld.options.jollyPlayerOptionsArray[0].playerClass = value;
-                    }
-                }
-
-                playerSelectedSlugcats[0] = value == slugcatColorOrder[slugcatPageIndex] ? null : value;
-
-                if (colorInterface is not null)
-                {
-                    RemoveColorButtons();
-                    AddColorButtons();
-                }
+                SetSelectedSlugcat(0, value);
             }
         }
         public static int MaxVisibleOnList => 8;
@@ -117,7 +98,7 @@ namespace RainMeadow
             
             if (OnlineManager.lobby.isOwner)
             {
-                storyGameMode.requireCampaignSlugcat = false; // Default option is in remix menu.
+                storyGameMode.requireCampaignSlugcat = false;
                 storyGameMode.saveToDisk = true;
             }
             else
@@ -140,21 +121,41 @@ namespace RainMeadow
             ChatLogManager.Subscribe(this);
         }
 
-        public void SetupSelectableSlugcats() {
-            if (selectableSlugcats == null) {
+        public void SetupSelectableSlugcats()
+        {
+            if (selectableSlugcats == null)
+            {
                 var SelectableSlugcatsEnumerable = slugcatColorOrder.AsEnumerable();
-                if (ModManager.MSC) {
+                if (ModManager.MSC)
+                {
                     if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
                         SelectableSlugcatsEnumerable = SelectableSlugcatsEnumerable.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                     }
                 }
                 selectableSlugcats = SelectableSlugcatsEnumerable.ToArray();
             }
+        }
+
+        public void SetSelectedSlugcat(int player, SlugcatStats.Name slugcat)
+        {
+            if ((playerSelectedSlugcats[player] != slugcat && playerSelectedSlugcats[player] != null) || (playerSelectedSlugcats[player] == null && slugcatColorOrder[slugcatPageIndex] != slugcat))
+            {
+                playerSelectedSlugcats[player] = slugcat == slugcatColorOrder[slugcatPageIndex] ? null : slugcat;
+
+                if (player == 0)
+                {
+                    if (colorInterface is not null)
+                    {
+                        RemoveColorButtons();
+                        AddColorButtons();
+                    }
+                }
+            }
         }   
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
-    
+
             for (int i = 1; i < storyGameMode.avatarCount; i++)
                 this.manager.rainWorld.RequestPlayerSignIn(i, null);
 
@@ -231,13 +232,13 @@ namespace RainMeadow
                 }
 
             }
-            
+
 
             // TODO: figure out how to reuse vanilla StartGame
             // * override singleplayer custom colours
             // * fix intro cutscenes messing with resource acquisition
             // ? how to deal with statistics screen (not supposed to continue, we should require wipe)
-            
+
             manager.arenaSitting = null;
 
             if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
@@ -366,7 +367,7 @@ namespace RainMeadow
                         manager.rainWorld.options.jollyPlayerOptionsArray[i].playerClass = storyGameMode.currentCampaign;
                     }
 
-                    playerSelectedSlugcats[i] = storyGameMode.currentCampaign;
+                    SetSelectedSlugcat(i, storyGameMode.currentCampaign);
                 }
             }
             else
