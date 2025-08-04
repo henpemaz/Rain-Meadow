@@ -140,6 +140,10 @@ namespace RainMeadow
         {
             if ((playerSelectedSlugcats[player] != slugcat && playerSelectedSlugcats[player] != null) || (playerSelectedSlugcats[player] == null && slugcatColorOrder[slugcatPageIndex] != slugcat))
             {
+                if (ModManager.JollyCoop)
+                {
+                    manager.rainWorld.options.jollyPlayerOptionsArray[player].playerClass = slugcat;
+                }
                 playerSelectedSlugcats[player] = slugcat == slugcatColorOrder[slugcatPageIndex] ? null : slugcat;
 
                 if (player == 0)
