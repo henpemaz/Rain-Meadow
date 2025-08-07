@@ -42,7 +42,12 @@ namespace RainMeadow.UI.Components
             if (ModManager.MSC && slugcat == MSCScugs.Sofanthiel && randomizeSofSlugcatPortrait)
                 return $"Multiplayerportrait{UnityEngine.Random.Range(0, 5)}{deadIndex}-{slugcat.value}";
 
-            return $"Multiplayerportrait{(ModManager.MSC && slugcat == MSCScugs.Slugpup ? 4 : colorIndex)}{deadIndex}-{slugcat.value}";
+            if (ModManager.MSC && slugcat == MSCScugs.Slugpup)
+            {
+                if (colorIndex != 0) colorIndex = 4;
+            }
+
+            return $"Multiplayerportrait{colorIndex}{deadIndex}-{slugcat.value}";
         }
         public static bool IsMSCSlugcat(SlugcatStats.Name slugcat)
         {
