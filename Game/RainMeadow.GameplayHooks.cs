@@ -2,6 +2,7 @@
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            
+
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -72,20 +73,23 @@ namespace RainMeadow
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
         }
 
-        private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig, 
-            SocialEventRecognizer self, PhysicalObject item, Creature creature) {
+        private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
+            SocialEventRecognizer self, PhysicalObject item, Creature creature)
+        {
 
             orig(self, item, creature);
             if (OnlineManager.lobby != null) return;
             if (!creature.IsLocal()) return;
 
-            if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession)) {
+            if (RoomSession.map.TryGetValue(creature.room.abstractRoom, out var roomSession))
+            {
                 if (creature.abstractCreature.GetOnlineCreature(out OnlineCreature? oc) &&
-                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo)) {
-                    oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround, 
+                    item.abstractPhysicalObject.GetOnlineObject(out OnlinePhysicalObject? opo))
+                {
+                    oc?.BroadcastRPCInRoom(roomSession.CreaturePutItemOnGround,
                         opo.id, oc.id);
-                } 
-                
+                }
+
             }
         }
 
@@ -144,22 +148,29 @@ namespace RainMeadow
             orig(self, obj);
         }
 
+        bool WeaponIsDangerous(Weapon weapon)
+        {
+            if (ModManager.DLCShared && weapon is MoreSlugcats.LillyPuck) return true;
+            if (weapon is Spear) return true;
+
+            return false;
+        }
+
         private bool Weapon_HitThisObject(On.Weapon.orig_HitThisObject orig, Weapon self, PhysicalObject obj)
         {
-            if (!self.IsLocal()) {
-                return false;
-            }
-
-            if (!obj.FriendlyFireSafetyCandidate() && obj is Player && self is Spear && self.thrownBy != null && self.thrownBy is Player)
+            if (OnlineManager.lobby != null)
             {
-                return true;
-            }
+                if (ModManager.MSC && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
+                {
+                    return false;
+                }
 
-            if (ModManager.MSC && (OnlineManager.lobby != null) && obj is Player pl && pl.slugOnBack?.slugcat != null && pl.slugOnBack.slugcat == self.thrownBy)
-            {
-                return false;
-            }
+                if (obj is Creature c && WeaponIsDangerous(self))
+                {
+                    return !c.FriendlyFireSafetyCandidate(self.thrownBy);
+                }
 
+            }
             return orig(self, obj);
         }
 
@@ -474,35 +485,38 @@ namespace RainMeadow
 
         void HookWeaponHitSomething<T>() where T : Weapon => new Hook(typeof(T).GetMethod("HitSomething"), Weapon_HitSomething<T>);
         delegate bool Weapon_orig_HitSomething<T>(T self, SharedPhysics.CollisionResult result, bool eu);
-        private bool Weapon_HitSomething<WeaponT>(Weapon_orig_HitSomething<WeaponT> orig, WeaponT self, SharedPhysics.CollisionResult result, bool eu) 
-            where WeaponT : Weapon 
+        private bool Weapon_HitSomething<WeaponT>(Weapon_orig_HitSomething<WeaponT> orig, WeaponT self, SharedPhysics.CollisionResult result, bool eu)
+            where WeaponT : Weapon
         {
 
             if (OnlineManager.lobby == null)
-            {    
+            {
                 return orig(self, result, eu);
             }
 
-            if (result.obj == null) 
+            if (result.obj == null)
             {
                 return orig(self, result, eu);
             }
 
             OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var WeaponOnline);
             OnlinePhysicalObject.map.TryGetValue(result.obj.abstractPhysicalObject, out var onlineHit);
-            if (onlineHit == null) {
+            if (onlineHit == null)
+            {
                 RainMeadow.Debug($"Object hit by weapon not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
                 return orig(self, result, eu);
             }
 
-            if (WeaponOnline == null) {
+            if (WeaponOnline == null)
+            {
                 RainMeadow.Debug($"weapon that hit object not found in online space. object: {onlineHit}, weapon: {WeaponOnline}");
                 return orig(self, result, eu);
             }
 
-            if (WeaponOnline.HittingRemotely) {
+            if (WeaponOnline.HittingRemotely)
+            {
                 bool wasthrown = self.mode == Weapon.Mode.Thrown;
-				if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
+                if (self.thrownBy != null && result.obj != null && result.obj is Creature critter)
                 {
                     self.thrownClosestToCreature = null;
                     self.closestCritDist = float.MaxValue;
@@ -511,21 +525,24 @@ namespace RainMeadow
 
                 bool ret = orig(self, result, eu);
 
-                if (self is ExplosiveSpear explosiveSpear) {
-                    if (wasthrown && explosiveSpear.mode != Weapon.Mode.Thrown && explosiveSpear.igniteCounter < 1) {
+                if (self is ExplosiveSpear explosiveSpear)
+                {
+                    if (wasthrown && explosiveSpear.mode != Weapon.Mode.Thrown && explosiveSpear.igniteCounter < 1)
+                    {
                         explosiveSpear.Ignite();
                     }
                 }
 
                 return ret;
             }
-            else if (self.IsLocal()) {
+            else if (self.IsLocal())
+            {
                 RealizedPhysicalObjectState realizedstate = null!;
-                if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);    
+                if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);
                 else realizedstate = new RealizedWeaponState(WeaponOnline);
 
 
-                BodyChunkRef? chunk = result.chunk is null? null : new BodyChunkRef(onlineHit, result.chunk.index);
+                BodyChunkRef? chunk = result.chunk is null ? null : new BodyChunkRef(onlineHit, result.chunk.index);
                 AppendageRef? appendageRef = result.onAppendagePos is null ? null : new AppendageRef(result.onAppendagePos);
 
                 if (!onlineHit.owner.isMe)
@@ -536,7 +553,7 @@ namespace RainMeadow
                 }
 
                 return orig(self, result, eu);
-            } 
+            }
             return true;
         }
 
@@ -547,20 +564,123 @@ namespace RainMeadow
                 orig(self);
                 return;
             }
+            RainMeadow.isStoryMode(out var storyGameMode);
 
-            if (RainMeadow.isStoryMode(out var storyGameMode) && !self.Broken)
+            if (storyGameMode is not null && StoryRPCs.RPCcloseShelter)
             {
                 storyGameMode.storyClientData.readyForWin = true;
-                if (!storyGameMode.readyForWin) return;
+            }
+            else if (storyGameMode is not null && !self.Broken)
+            {
+                bool ready_for_win = true;
+                bool starving = false;
+                for (int i = 0; i < self.room.game.Players.Count; i++)
+                {
+                    AbstractCreature? player = self.room.game.Players[i];
+                    if (player is null) continue;
+                    if (player.state.dead)
+                    {
+                        if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.EASY)
+                        {
+                            if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.EASY)
+                            {
+                                continue;
+                            }
+                            else if (self.room.world.game.rainWorld.options.jollyDifficulty == Options.JollyDifficulty.HARD)
+                            {
+                                // RainMeadow.Debug("not ready for win since somebody is dead on hard mode");
+                                ready_for_win = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (Custom.ManhattanDistance(player.pos.Tile, self.room.shortcuts[0].StartTile) <= 6)
+                    {
+                        // RainMeadow.Debug("not ready for win since somebody is to close to the entrance");
+                        ready_for_win = false;
+                        break;
+                    }
+
+                    if (!ShelterDoor.IsTileInsideShelterRange(self.room.abstractRoom, player.pos.Tile))
+                    {
+                        // RainMeadow.Debug("not ready for win since somebody is not in the shelters range");
+                        ready_for_win = false;
+                        break;
+                    }
+
+                    if (player.Room != self.room.abstractRoom)
+                    {
+                        // RainMeadow.Debug($"not ready for win since somebody is not in the room. is_dead: {player.state.dead}");
+                        ready_for_win = false;
+                        continue;
+                    }
+
+                    if (player.realizedCreature is Player p && !player.state.dead)
+                    {
+                        if (p.forceSleepCounter <= 0)
+                        {
+                            if (p.timeSinceInCorridorMode < 10)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody is in a corridor. is_dead: {player.state.dead}");
+                                ready_for_win = false;
+                                break;
+                            }
+
+                            if (p.touchedNoInputCounter < 80)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody is touching iputs. is_dead: {player.state.dead}");
+                                ready_for_win = false;
+                                break;
+                            }
+
+                            if (!p.readyForWin)
+                            {
+                                // RainMeadow.Debug($"not ready for win since somebody isn't ready for win. is_dead: {player.state.dead}");
+                                ready_for_win = false;
+                                break;
+                            }
+                        }
+
+
+                        if (p.forceSleepCounter > 0)
+                        {
+                            starving = true;
+                        }
+                    }
+                }
+
+                if (ready_for_win)
+                {
+                    storyGameMode.storyClientData.readyForWin = true;
+                }
+
+                if (!(ready_for_win && starving && OnlineManager.lobby.isOwner))
+                {
+                    if (!storyGameMode.readyForWin)
+                    {
+                        if (self.room.updateList[self.room.updateIndex] is Player smeepy)
+                        {
+                            // wake us up
+                            smeepy.sleepCounter = 0;
+                            smeepy.forceSleepCounter = Mathf.Min(smeepy.forceSleepCounter, 260);
+                        }
+
+                        return;
+                    }
+                }
+
             }
             else
             {
+                // invalidunits: Since we're only supporting jolly in Story mode, I aint gonna mess with this.
                 var scug = self.room.game.Players.First(); //needs to be changed if we want to support Jolly
                 var realizedScug = (Player)scug.realizedCreature;
                 if (realizedScug == null || !self.room.PlayersInRoom.Contains(realizedScug)) return;
                 if (!realizedScug.readyForWin) return;
             }
 
+            bool wasClosing = self.IsClosing;
             orig(self);
 
             if (self.IsClosing)
@@ -570,7 +690,18 @@ namespace RainMeadow
                     storyGameMode.myLastDenPos = self.room.abstractRoom.name;
                     storyGameMode.myLastWarp = null; //do not warp anymore!
                     storyGameMode.hasSheltered = true;
+
+                    if (OnlineManager.lobby.isOwner && !wasClosing)
+                    {
+                        foreach (OnlinePlayer p in OnlineManager.players)
+                        {
+                            p.InvokeOnceRPC(StoryRPCs.CloseAllShelters);
+                        }
+                    }
                 }
+            }
+            else
+            {
             }
         }
 

@@ -56,7 +56,8 @@ namespace RainMeadow
             triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck,
             smoothsquareiwouldeatmyarmforthishoe,
             sawwaveiguesswhyareyouherewearenotevendubsteprndude,
-            BandNoiseOhhhhManYourTheBasicButTheBest
+            BandNoiseOhhhhManYourTheBasicButTheBest,
+            bellassthingyidontevenknowyoubutidobaby
         }
         public List<Plop> plops = new();
         //public List<SamplePlop> sampleplops = new();
@@ -218,7 +219,7 @@ namespace RainMeadow
                 AudioClip TrackClip = owner.audioSource.clip;
                 float[] TrackClipData = new float[samplestorender * 2];
                 TrackClip.GetData(TrackClipData, TrackSampleStartsAt + ploprendered - ((ploprendered + TrackSampleStartsAt) < TrackClip.samples ? 0 : TrackClip.samples));
-                float attenuation = (1f - (float)oct / 20);
+                float attenuation = 1f - (float)oct / 20;
                 float atan3 = Mathf.Atan(3);
                 Parallel.For(ploprendered * 2, ploprendered * 2 + TrackClipData.Length, i =>
                 {
@@ -243,6 +244,7 @@ namespace RainMeadow
                     TrackClipData[i - (ploprendered * 2)] += type switch
                     {
                         Wavetype.sineiloveyousineohmygodhavemybabies => Mathf.Sin(iPhase) * iValue,
+                        Wavetype.bellassthingyidontevenknowyoubutidobaby => Mathf.Sin(Mathf.Sin(iPhase*5)*4) * iValue,
                         Wavetype.smoothsquareiwouldeatmyarmforthishoe => Mathf.Atan(Mathf.Sin(iPhase) * 3) / atan3 * iValue,
                         Wavetype.triangleohmyfuckinggodyouthebestsidebitchmainbitchdudesisfuckbitchfuck => Mathf.Asin(Mathf.Cos(iPhase)) * iValue,
                         Wavetype.square => ((Mathf.Sin(iPhase) > 0) ? iValue : -iValue) * 0.75f,
@@ -251,7 +253,6 @@ namespace RainMeadow
                         //TrackClipData[i - (ploprendered * 2)] += (Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue;
                         //TrackClipData[i - (ploprendered * 2)] += (((ii * Frequency / 44100f) - Mathf.Floor(ii * Frequency / 44100f)) * 2f - 1f) * iValue;
                         //(Mathf.Sin(iPhase) + Mathf.Sin(iPhase * 2) / 2f + Mathf.Sin(iPhase * 3) / 3f) * (2 / (Mathf.PI)) * iValue,//TrackClipData[i - (ploprendered * 2)] += ((2*Mathf.Atan(Mathf.Tan(iPhase/2f)))/Mathf.PI) * iValue * 0.8f;
-                        //mod(x, 1)
                         Wavetype.sawwaveiguesswhyareyouherewearenotevendubsteprndude => ((((iPhase / (Mathf.PI * 2)) % 1f) * 2) - 1f) * iValue,
                         Wavetype.BandNoiseOhhhhManYourTheBasicButTheBest => Mathf.Sin(iPhase) * iValue,//Todo :D Make something cool
                         _ => Mathf.Sin(iPhase) * iValue,
