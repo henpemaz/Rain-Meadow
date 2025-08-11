@@ -1,6 +1,7 @@
 ﻿using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -62,9 +63,6 @@ namespace RainMeadow
                 RainMeadow.Debug("Requesting lobby");
                 RequestLobby(password);
             }
-
-
-
         }
 
         public void RequestLobby(string? key)
@@ -305,7 +303,9 @@ namespace RainMeadow
                 RainMeadow.Debug($"Assigned inLobbyId of {nextId} to player {player}");
                 nextId++;
                 // todo overflows and repeats (unrealistic but it's a ushort)
+
             }
+
             base.NewParticipantImpl(player);
             gameMode.NewPlayerInLobby(player);
         }
