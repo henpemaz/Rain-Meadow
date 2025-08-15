@@ -569,9 +569,9 @@ namespace RainMeadow
             try {
                 this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 this.socket.EnableBroadcast = true;
+                port = DEFAULT_PORT;
                 // Proton 8.0/Wine for FreeBSD bug: GetActiveUdpListeners is unavailable and not correctly emulated
                 try {
-                    port = DEFAULT_PORT;
                     var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
                     bool alreadyinuse = false;
                     for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
