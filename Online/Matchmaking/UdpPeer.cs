@@ -584,7 +584,7 @@ namespace RainMeadow
                     if (alreadyinuse) {
                         throw new Exception("Failed to claim a socket port");
                     }
-                }  catch (NullReferenceException e) {
+                }  catch (Exception e) {
                     RainMeadow.Error($"{e}");
                 }
                 socket.Bind(new IPEndPoint(IPAddress.Any, port));
