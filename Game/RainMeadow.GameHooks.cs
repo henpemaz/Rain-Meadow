@@ -58,15 +58,13 @@ namespace RainMeadow
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
-        {
-            if (ModManager.ActiveMods.Select(x => x.id).Contains("henpemaz_rainmeadow"))
+        {s
+            if (self.saveSlot != 0)
             {
-                if (self.saveSlot != 0)
-                {
-                    return "online_sav" + (self.saveSlot + 1);
-                }
-                return "online_sav";
+                return "online_sav" + (self.saveSlot + 1);
             }
+            return "online_sav";
+
             return orig(self);
         }
 
@@ -275,19 +273,14 @@ namespace RainMeadow
         private void PlayerProgression_CopySaveFile(On.PlayerProgression.orig_CopySaveFile orig, PlayerProgression self, string sourceName, string destinationDirectory)
         {
             orig(self, sourceName, destinationDirectory);
-            if (ModManager.ActiveMods.Select(x => x.id).Contains("henpemaz_rainmeadow"))
-            {
-                orig(self, "online_" + sourceName, destinationDirectory);
-            }
+            orig(self, "online_" + sourceName, destinationDirectory);
+
         }
 
         private void BackupManager_RestoreSaveFile(On.Menu.BackupManager.orig_RestoreSaveFile orig, Menu.BackupManager self, string sourceName)
         {
             orig(self, sourceName);
-            if (ModManager.ActiveMods.Select(x => x.id).Contains("henpemaz_rainmeadow"))
-            {
-                orig(self, "online_" + sourceName);
-            }
+            orig(self, "online_" + sourceName);
         }
 
         private void Room_PlaceQuantifiedCreaturesInRoom(On.Room.orig_PlaceQuantifiedCreaturesInRoom orig, Room self, CreatureTemplate.Type critType)
