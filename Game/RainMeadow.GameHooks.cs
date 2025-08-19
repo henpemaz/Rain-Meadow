@@ -58,7 +58,7 @@ namespace RainMeadow
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
-        {s
+        {
             if (self.saveSlot != 0)
             {
                 return "online_sav" + (self.saveSlot + 1);
