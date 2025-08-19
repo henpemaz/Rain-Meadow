@@ -64,8 +64,6 @@ namespace RainMeadow
                 return "online_sav" + (self.saveSlot + 1);
             }
             return "online_sav";
-
-            return orig(self);
         }
 
 
@@ -268,6 +266,15 @@ namespace RainMeadow
         {
             //TODO: Impliment graceful exist
             orig(self);
+        }
+
+        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                return "online_" + orig(self);
+            }
+            return orig(self);
         }
 
         private void PlayerProgression_CopySaveFile(On.PlayerProgression.orig_CopySaveFile orig, PlayerProgression self, string sourceName, string destinationDirectory)
