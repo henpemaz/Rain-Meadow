@@ -40,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -71,6 +71,21 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+        }
+
+        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
+                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+
+                if (!obj.IsLocal() && wep1 != null && wep2 != null)
+                {
+                    wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
+                }
+            }
+            orig(self, obj);
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,

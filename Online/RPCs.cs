@@ -6,6 +6,19 @@ namespace RainMeadow
     public static class RPCs
     {
         [RPCMethod]
+        public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc, OnlinePhysicalObject weapon1, OnlinePhysicalObject weapon2)
+        {
+            if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
+            {
+                if (weapon1.apo.realizedObject != null && weapon2.apo.realizedObject != null)
+                {
+                    (weapon1.apo.realizedObject as Weapon).HitAnotherThrownWeapon(weapon2.apo.realizedObject as Weapon);
+                }
+            }
+        }
+
+
+        [RPCMethod]
         public static void DeltaReset(RPCEvent rpcEvent, OnlineResource onlineResource, OnlineEntity.EntityId entity)
         {
             RainMeadow.Debug($"from {rpcEvent.from} resource {onlineResource} entity {entity}");
@@ -39,7 +52,7 @@ namespace RainMeadow
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
-            if(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 foreach (var onlineHud in game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>())
                 {
@@ -143,7 +156,7 @@ namespace RainMeadow
                 if ((target.apo as AbstractCreature).creatureTemplate.type == CreatureTemplate.Type.Slugcat)
                 {
                     DeathMessage.PlayerKillPlayer(myKiller, myTarget, context);
-                } 
+                }
                 else
                 {
                     DeathMessage.PlayerKillCreature(myKiller, myTarget, context);
