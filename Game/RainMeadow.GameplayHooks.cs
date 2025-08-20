@@ -75,7 +75,7 @@ namespace RainMeadow
 
         private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
-            if (OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null && self.IsLocal())
             {
                 OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
                 OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
