@@ -376,6 +376,7 @@ namespace RainMeadow
             this.gradient.RemoveFromContainer();
             this.arrowSprite.RemoveFromContainer();
             this.username.RemoveFromContainer();
+            pingLabel.RemoveFromContainer();
             foreach (var label in this.messageLabels) label.RemoveFromContainer();
             this.slugIcon.RemoveFromContainer();
         }
