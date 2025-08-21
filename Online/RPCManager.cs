@@ -29,6 +29,7 @@ namespace RainMeadow
         NoSecurity,
         InLobby,
         InResource,
+        Owner,
     }
 
     /// <summary>
@@ -343,7 +344,9 @@ namespace RainMeadow
                     return;
                 }
 
-                OnlineResource securityResource = null;
+                OnlineResource? securityResource = null;
+                OnlinePlayer? securityOwner = null;
+
                 if (handler.security >= RPCSecurity.InLobby)
                 {
                     if (OnlineManager.lobby is null)
@@ -356,16 +359,17 @@ namespace RainMeadow
                     securityResource = OnlineManager.lobby;
                 }
 
-                if (handler.security == RPCSecurity.InResource)
+                
+                if (handler.security == RPCSecurity.InResource || handler.security == RPCSecurity.Owner)
                 {
-
                     if (target is OnlineResource resource)
                     {
                         securityResource = resource;
+                        securityOwner = resource.owner;
                     }
                     else if (target is OnlineEntity entity)
                     {
-                        if (entity.currentlyJoinedResource is null)
+                        if (handler.security == RPCSecurity.InResource && entity.currentlyJoinedResource is null)
                         {
                             RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, entity is not in any resources.");
                             from.QueueEvent(new GenericResult.Error(this));
@@ -373,6 +377,7 @@ namespace RainMeadow
                         }
 
                         securityResource = entity.currentlyJoinedResource;
+                        securityOwner = entity.owner;
                     }
                     else
                     {
@@ -381,10 +386,17 @@ namespace RainMeadow
                         return;
                     }   
                 }
+                
+                if (handler.security == RPCSecurity.Owner && (securityOwner is null || securityOwner != from))
+                {
+                    RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, {from} is NOT the owner of {target.ToString()}.");
+                    from.QueueEvent(new GenericResult.Error(this));
+                    return;
+                }
 
                 if (securityResource is not null && !securityResource.participants.Contains(from))
                 {
-                    RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, {from} is NOT a participant of {securityResource.Id()}");
+                    RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, {from} is NOT a participant of {securityResource.ToString()}");
                     from.QueueEvent(new GenericResult.Error(this));
                     return;
                 }
