@@ -19,7 +19,8 @@ namespace RainMeadow
             // Group: arenaLobby
             [OnlineField(group = "arenaLobby")]
             public bool isInGame;
-
+            [OnlineField(group = "arenaLobby")]
+            public bool hasPermissionToRejoin;
             [OnlineField(group = "arenaLobby")]
             public bool allPlayersReadyLockLobby;
             [OnlineField(group = "arenaLobby")]
@@ -51,6 +52,8 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public int saintAscendanceTimer;
             [OnlineField(group = "arenaSetup")]
+            public int watcherCamoLimit;
+            [OnlineField(group = "arenaSetup")]
             public bool sainot;
             [OnlineField(group = "arenaSetup")]
             public bool painCatEgg;
@@ -79,11 +82,15 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public int currentLevel;
             [OnlineField(group = "arenaGameplay")]
-            public Dictionary<int, int> playerNumberWithKills;
+            public Dictionary<int, int> playerNumberWithScore;
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithDeaths;
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithWins;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerNumberWithKills;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, int> playerTotScore;
             [OnlineField(group = "arenaGameplay")]
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
@@ -92,7 +99,8 @@ namespace RainMeadow
             public bool leaveForNextLevel;
             [OnlineField]
             public bool weaponCollisionFix;
-
+            [OnlineField]
+            public bool playersEqualToOnlineSitting;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -107,20 +115,22 @@ namespace RainMeadow
                 onlineArenaSettingsInterfaceBool = arena.onlineArenaSettingsInterfaceeBool;
                 playersReadiedUp = new(arena.playersReadiedUp.list.ToList());
                 reigningChamps = new(arena.reigningChamps.list.ToList());
-                playerNumberWithKills = new(arena.playerNumberWithKills);
+                playerNumberWithScore = new(arena.playerNumberWithScore);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
+                playerNumberWithKills = new(arena.playerNumberWithKills);
+                playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
                 countdownInitiatedHoldFire = arena.countdownInitiatedHoldFire;
                 playerResultColors = arena.playerResultColors;
-                playerEnteredGame = arena.playerEnteredGame;
                 arenaSetupTime = arena.setupTime;
                 lobbyCountDown = arena.lobbyCountDown;
                 initiatedLobbyCountDown = arena.initiateLobbyCountdown;
                 sainot = arena.sainot;
                 saintAscendanceTimer = arena.arenaSaintAscendanceTimer;
+                watcherCamoLimit = arena.watcherCamoTimer;
                 currentGameMode = arena.currentGameMode;
                 currentLevel = arena.currentLevel;
                 totalLevels = arena.totalLevelCount;
@@ -131,9 +141,10 @@ namespace RainMeadow
                 disableArtiStun = arena.disableArtiStun;
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
-
-                leaveForNextLevel = arena.leaveForNextLevel;
                 weaponCollisionFix = arena.weaponCollisionFix;
+                leaveForNextLevel = arena.leaveForNextLevel;
+                hasPermissionToRejoin = arena.hasPermissionToRejoin;
+                playersEqualToOnlineSitting = arena.playersEqualToOnlineSitting;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -150,22 +161,25 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playersInLobbyChoosingSlugs = playersChoosingSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).playersReadiedUp = playersReadiedUp;
                 (lobby.gameMode as ArenaOnlineGameMode).reigningChamps = reigningChamps;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore = playerNumberWithScore;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
+                (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;
 
 
                 (lobby.gameMode as ArenaOnlineGameMode).countdownInitiatedHoldFire = countdownInitiatedHoldFire;
                 (lobby.gameMode as ArenaOnlineGameMode).playerResultColors = playerResultColors;
-                (lobby.gameMode as ArenaOnlineGameMode).playerEnteredGame = playerEnteredGame;
                 (lobby.gameMode as ArenaOnlineGameMode).setupTime = arenaSetupTime;
                 (lobby.gameMode as ArenaOnlineGameMode).lobbyCountDown = lobbyCountDown;
                 (lobby.gameMode as ArenaOnlineGameMode).initiateLobbyCountdown = initiatedLobbyCountDown;
 
                 (lobby.gameMode as ArenaOnlineGameMode).sainot = sainot;
                 (lobby.gameMode as ArenaOnlineGameMode).arenaSaintAscendanceTimer = saintAscendanceTimer;
+                (lobby.gameMode as ArenaOnlineGameMode).watcherCamoTimer = watcherCamoLimit;
+
                 (lobby.gameMode as ArenaOnlineGameMode).currentGameMode = currentGameMode;
                 (lobby.gameMode as ArenaOnlineGameMode).currentLevel = currentLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).totalLevelCount = totalLevels;
@@ -176,11 +190,11 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).disableMaul = disableMaul;
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
-
-
-                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
-
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
+                (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
+                (lobby.gameMode as ArenaOnlineGameMode).hasPermissionToRejoin = hasPermissionToRejoin;
+                (lobby.gameMode as ArenaOnlineGameMode).playersEqualToOnlineSitting = playersEqualToOnlineSitting;
+
 
             }
 

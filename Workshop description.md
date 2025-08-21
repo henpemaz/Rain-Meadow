@@ -1,6 +1,6 @@
 A multiplayer engine, custom game mode, and online arena / story experience for Rain World!
 
-The Watcher campaign is currently NOT supported.
+The Watcher campaign is PARTIALLY supported. Expect bugs.
 
 ## How it works
 - For the best possible experience, **disable all non-essential content mods**. If you're experiencing crashes, try with less mods on.

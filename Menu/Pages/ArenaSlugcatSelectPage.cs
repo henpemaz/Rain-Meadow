@@ -19,7 +19,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
-    public string countdownText;
     public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -66,7 +65,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         descriptionGradients = new FSprite[4];
         descriptionGradientsPos = new Vector2[4];
-        countdownText = $"The match is starting in {Arena.lobbyCountDown}! Ready up!!";
 
         for (int i = 0; i < descriptionGradients.Length; i++)
         {
@@ -96,7 +94,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     {
         SlugcatStats.Name nonNullSlugcat = slugcat ?? SlugcatStats.Name.White;
         selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(nonNullSlugcat), 0);
-        slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
+        nonNullSlugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
         ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
@@ -120,6 +118,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public string GetPainCatDescription()
     {
+
         WeightedList<List<string>> descriptionCategories = new();
         descriptionCategories.Add(Arena.slugcatSelectPainCatNormalDescriptions, 0.4f);
         descriptionCategories.Add(Arena.slugcatSelectPainCatJokeDescriptions, 0.1f);
@@ -149,7 +148,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         else warningCounter = -1;
         if (readyWarningLabel != null)
         {
-            readyWarningLabel.text = Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in {Arena.lobbyCountDown}! Ready up!!") : defaultReadyWarningText;
+            readyWarningLabel.text = RainMeadow.isArenaMode(out _) && Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in <COUNTDOWN>! Ready up!!").Replace("<COUNTDOWN>", Arena.lobbyCountDown.ToString()) : menu.LongTranslate(defaultReadyWarningText);
         }
 
         if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)

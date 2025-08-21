@@ -569,22 +569,24 @@ namespace RainMeadow
             try {
                 this.socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 this.socket.EnableBroadcast = true;
-
                 port = DEFAULT_PORT;
-                var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
-                bool alreadyinuse = false;
-                for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
-                    port = DEFAULT_PORT + i;
-                    alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
-                    if (!alreadyinuse)
-                        break;
+                // Proton 8.0/Wine for FreeBSD bug: GetActiveUdpListeners is unavailable and not correctly emulated
+                try {
+                    var activeUdpListeners = IPGlobalProperties.GetIPGlobalProperties().GetActiveUdpListeners();
+                    bool alreadyinuse = false;
+                    for (int i = 0; i < FIND_PORT_ATTEMPTS; i++) {
+                        port = DEFAULT_PORT + i;
+                        alreadyinuse = activeUdpListeners.Any(p => p.Port == port);
+                        if (!alreadyinuse)
+                            break;
+                    }
+    
+                    if (alreadyinuse) {
+                        throw new Exception("Failed to claim a socket port");
+                    }
+                }  catch (Exception e) {
+                    RainMeadow.Error($"{e}");
                 }
-
-                if (alreadyinuse) {
-                    throw new Exception("Failed to claim a socket port");
-                }
-
-
                 socket.Bind(new IPEndPoint(IPAddress.Any, port));
             } catch (SocketException except) {
                 RainMeadow.Error(except.SocketErrorCode);

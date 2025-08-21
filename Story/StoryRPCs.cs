@@ -22,11 +22,23 @@ namespace RainMeadow
         [RPCMethod]
         public static void ChangeFood(short amt)
         {
-            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.Players[0]?.state is PlayerState state)
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
-                var newFood = Math.Max(0, Math.Min(state.foodInStomach * 4 + state.quarterFoodPoints + amt, game.session.characterStats.maxFood * 4));
-                state.foodInStomach = newFood / 4;
-                state.quarterFoodPoints = newFood % 4;
+                for (int i = 0; i < game.StoryPlayerCount; i++)
+                {
+                    if (game.Players[i]?.state is PlayerState state)
+                    {
+                        var newFood = Math.Max(0, Math.Min(state.foodInStomach * 4 + state.quarterFoodPoints + amt, game.session.characterStats.maxFood * 4));
+                        state.foodInStomach = newFood / 4;
+                        state.quarterFoodPoints = newFood % 4;
+                    }
+
+                    if (game.Players[i].realizedCreature is Player p)
+                    {
+                        // refreshes malnourished and red's illness state.
+                        p.AddFood(0);
+                    }
+                }
             }
         }
 
@@ -328,6 +340,38 @@ namespace RainMeadow
                     OnlineManager.lobby.owner.InvokeOnceRPC(RegionGateOrWarpMeetRequirement);
                 }
             }
+        }
+
+        static public bool RPCcloseShelter = false;
+        [RPCMethod]
+        public static void CloseAllShelters()
+        {
+            try
+            {
+                if (RPCEvent.currentRPCEvent?.from is OnlinePlayer op && op == OnlineManager.lobby.owner)
+                {
+                    if (RainMeadow.isStoryMode(out var storyGameMode))
+                    {
+                        int i = 0;
+                        if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)) return;
+                        foreach (Room shelter in game.world.activeRooms.Where(x => x.shelterDoor != null))
+                        {
+                            RPCcloseShelter = true;
+                            shelter.shelterDoor.Close();
+                            i++;
+                        }
+                        RainMeadow.Error($"Closed {i} Shelters.");
+                    }
+                }
+                else
+                {
+                    RainMeadow.Error("Denied closing shelter because sender is not host");
+                }
+            } finally {
+                RPCcloseShelter = false;
+            }
+                        
+            
         }
     }
 }

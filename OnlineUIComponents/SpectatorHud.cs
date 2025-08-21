@@ -8,9 +8,11 @@ namespace RainMeadow
     {
         private RoomCamera camera;
         private RainWorldGame game;
-        public  SpectatorOverlay? spectatorOverlay;
+        public SpectatorOverlay? spectatorOverlay;
         private AbstractCreature? spectatee;
         public bool isActive;
+
+        public bool isSpectating { get => spectatee is not null; }
 
         public SpectatorHud(HUD.HUD hud, RoomCamera camera) : base(hud)
         {
@@ -27,7 +29,7 @@ namespace RainMeadow
                 if (spectatorOverlay == null)
                 {
                     RainMeadow.Debug("Creating spectator overlay");
-                    spectatorOverlay = new SpectatorOverlay(game.manager, game);
+                    spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
                     isActive = true;
                 }
                 else
@@ -39,6 +41,61 @@ namespace RainMeadow
                 }
             }
             spectatorOverlay?.GrafUpdate(timeStacker);
+        }
+
+        public void ClearSpectatee()
+        {
+            if (spectatee != null)
+            {
+                ReturnCameraToPlayer();
+            }
+            spectatee = null;
+            spectatorOverlay?.ShutDownProcess();
+            spectatorOverlay = null;
+            isActive = false;
+
+        }
+
+        public void ReturnCameraToPlayer()
+        {
+            RainMeadow.DebugMe();
+            AbstractCreature? return_to_player = null;
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature != null && ac.realizedCreature.State.alive)
+                {
+                    if (opo.owner == OnlineManager.mePlayer)
+                    {
+                        return_to_player = ac;
+                        RainMeadow.Debug($"Me Player: Setting return to player to: {return_to_player}");
+                        break;
+                    }
+                    //return_to_player = ac;
+                    //RainMeadow.Debug($"Setting return to player to: {return_to_player}");
+                    //break;
+
+                }
+
+            }
+
+
+            if (return_to_player?.Room == null)
+            {
+                RainMeadow.Debug($"spectatee {return_to_player} not in room!");
+            }
+            else
+            {
+                camera.followAbstractCreature = return_to_player;
+                if (return_to_player.Room.realizedRoom == null)
+                {
+                    this.game.world.ActivateRoom(return_to_player.Room);
+                }
+                if (return_to_player.Room.realizedRoom != null && camera.room.abstractRoom != return_to_player.Room)
+                {
+                    camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
+                }
+            }
         }
 
         public override void Update()
@@ -60,6 +117,11 @@ namespace RainMeadow
                 spectatorOverlay.forceNonMouseSelectFreeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
+            }
+
+            if (camera.InCutscene)
+            {
+                return;
             }
 
             OnlineManager.mePlayer.isActuallySpectating = spectatee != null && !spectatee.IsLocal();
