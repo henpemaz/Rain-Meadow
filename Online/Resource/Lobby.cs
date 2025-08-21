@@ -80,7 +80,7 @@ namespace RainMeadow
             supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
         }
 
-        [RPCMethod]
+        [RPCMethod(security = RPCSecurity.NoSecurity)]
         public void RequestedLobby(RPCEvent request, string? key)
         {
             if (this.hasPassword)
