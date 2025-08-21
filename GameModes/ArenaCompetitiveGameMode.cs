@@ -46,6 +46,8 @@ namespace RainMeadow
 
         public override bool PlayersCanHandhold => false;
 
+        public override bool PlayersCanStack => piggyBack;
+
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
         public List<string> slugcatSelectPainCatNames = [];
