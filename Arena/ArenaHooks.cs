@@ -453,6 +453,10 @@ namespace RainMeadow
                         return false;
                     }
                 }
+                if (isArenaMode(out var arena) && !arena.piggyBack)
+                {
+                    return false;
+                }
             }
             return orig(self);
         }

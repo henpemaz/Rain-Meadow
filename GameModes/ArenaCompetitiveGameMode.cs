@@ -39,6 +39,7 @@ namespace RainMeadow
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
+        public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -94,6 +95,7 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
+        public List<int> bannedSlugs = new List<int>();
         public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
@@ -321,6 +323,18 @@ namespace RainMeadow
                     break;
             }
 
+        }
+
+        public void AddRemoveBannedSlug(int slugcatIndex)
+        {
+            if (bannedSlugs.Contains(slugcatIndex))
+            {
+                RainMeadow.Debug($"Removing slugcat index: {slugcatIndex}");
+                bannedSlugs.Remove(slugcatIndex);
+                return;
+            }
+            RainMeadow.Debug($"Adding slugcat index: {slugcatIndex}");
+            bannedSlugs.Add(slugcatIndex);
         }
 
         public void AddExternalGameModes(ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert

@@ -36,6 +36,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
+    public readonly Configurable<bool> EnablePiggyBack;
 
     public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
     public readonly Configurable<string> MartyrTeamName;
@@ -125,6 +126,7 @@ public class RainMeadowOptions : OptionInterface
 
         StoryItemSteal = config.Bind("StoryItemSteal", false);
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
+        EnablePiggyBack = config.Bind("EnablePiggyBack", true);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
