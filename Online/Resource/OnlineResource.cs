@@ -18,6 +18,7 @@ namespace RainMeadow
         public bool isOwner => (owner is not null) && owner.isMe;
         public bool isSupervisor => super.isOwner;
         public OnlinePlayer supervisor => super.owner;
+        public virtual bool canBeRequested => true;
 
         public bool isNeeded { get; protected set; } // The game is using this resource
         public bool isRequesting { get; protected set; } // Ongoing request op
