@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mono.Cecil;
 
 namespace RainMeadow
 {
@@ -18,7 +19,16 @@ namespace RainMeadow
     [AttributeUsage(AttributeTargets.Method)]
     public class RPCMethodAttribute : Attribute
     {
-        public bool runDeferred; // run after state is processed, at end of network-frame
+        public RPCSecurity security = RPCSecurity.InLobby;
+        public bool runDeferred = false; // run after state is processed, at end of network-frame
+    }
+
+    public enum RPCSecurity : byte
+    {
+        PlaceHolder = 0, // 0 often means an error
+        NoSecurity,
+        InLobby,
+        InResource,
     }
 
     /// <summary>
@@ -39,6 +49,7 @@ namespace RainMeadow
 
         public class RPCDefinition
         {
+            public RPCSecurity security;
             public ushort index;
             public MethodInfo method;
             public Action<RPCEvent, Serializer> serialize;
@@ -232,6 +243,7 @@ namespace RainMeadow
                         eventArgIndex = argsEventIndex,
                         isStatic = isStatic,
                         runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
+                        security = method.GetCustomAttribute<RPCMethodAttribute>().security,
                         summary = $"{targetType.Name}.{method.Name}"
                     };
                     defsByMethod[method] = entry;
@@ -247,6 +259,7 @@ namespace RainMeadow
                         eventArgIndex = argsEventIndex,
                         isStatic = isStatic,
                         runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
+                        security = method.GetCustomAttribute<RPCMethodAttribute>().security,
                         summary = $"{targetType.Name}.{method.Name}"
                     };
 
@@ -326,6 +339,52 @@ namespace RainMeadow
                 if (!handler.isStatic && target == null)
                 {
                     RainMeadow.Error($"Target of RPC not found for " + handler.summary);
+                    from.QueueEvent(new GenericResult.Error(this));
+                    return;
+                }
+
+                OnlineResource securityResource = null;
+                if (handler.security >= RPCSecurity.InLobby)
+                {
+                    if (OnlineManager.lobby is null)
+                    {
+                        RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, lobby does not exist.");
+                        from.QueueEvent(new GenericResult.Error(this));
+                        return;
+                    }
+
+                    securityResource = OnlineManager.lobby;
+                }
+
+                if (handler.security == RPCSecurity.InResource)
+                {
+
+                    if (target is OnlineResource resource)
+                    {
+                        securityResource = resource;
+                    }
+                    else if (target is OnlineEntity entity)
+                    {
+                        if (entity.currentlyJoinedResource is null)
+                        {
+                            RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, entity is not in any resources.");
+                            from.QueueEvent(new GenericResult.Error(this));
+                            return;
+                        }
+
+                        securityResource = entity.currentlyJoinedResource;
+                    }
+                    else
+                    {
+                        RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, target is not an OnlineResource or OnlineEntity.");
+                        from.QueueEvent(new GenericResult.Error(this));
+                        return;
+                    }   
+                }
+
+                if (securityResource is not null && !securityResource.participants.Contains(from))
+                {
+                    RainMeadow.Error($"{from} failed security check for RPC {handler.summary}, {from} is NOT a participant of {securityResource.Id()}");
                     from.QueueEvent(new GenericResult.Error(this));
                     return;
                 }
