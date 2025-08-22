@@ -41,18 +41,7 @@ namespace RainMeadow
 
         private void VultureGrub_AttemptCallVulture(On.VultureGrub.orig_AttemptCallVulture orig, VultureGrub self)
         {
-            if (OnlineManager.lobby != null)
-            {
-                if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
-                {
-                    Error($"Entity {self} doesn't exist in online space!");
-                    return;
-                }
-                if (!opo.isMine)
-                {
-                    return;
-                }
-            }
+            if (OnlineManager.lobby != null && !self.IsLocal()) return;
             orig(self);
         }
 

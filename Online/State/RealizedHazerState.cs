@@ -8,9 +8,9 @@
 
         public RealizedHazerState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
-            var grub = (Hazer)onlineEntity.apo.realizedObject;
+            var hazer = (Hazer)onlineEntity.apo.realizedObject;
 
-            this.bites = (byte)grub.bites;
+            this.bites = (byte)hazer.bites;
 
         }
 
@@ -18,8 +18,8 @@
         {
             base.ReadTo(onlineEntity);
 
-            var grub = (Hazer)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            grub.bites = bites;
+            var hazer = (Hazer)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
+            hazer.bites = bites;
         }
     }
 }

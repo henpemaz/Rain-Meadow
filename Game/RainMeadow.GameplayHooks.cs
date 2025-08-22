@@ -83,22 +83,9 @@ namespace RainMeadow
                 spraying = self.spraying;
             }
             orig(self, eu);
-            if (OnlineManager.lobby != null && self.IsLocal() && spraying != self.spraying)
+            if (OnlineManager.lobby != null && self.IsLocal() && self.abstractPhysicalObject.GetOnlineObject(out var opo))
             {
-                if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
-                {
-                    Error($"Entity {self} doesn't exist in online space!");
-                    return;
-                }
-                if (opo.roomSession.isOwner && (opo.isMine || RPCEvent.currentRPCEvent is not null))
-                {
-                    opo.BroadcastRPCInRoom(opo.HazerSync, self.spraying, self.hasSprayed);
-                }
-                else if (RPCEvent.currentRPCEvent is null)
-                {
-                    if (!opo.isMine) return;  // wait to be RPC'd
-                    opo.roomSession.owner.InvokeOnceRPC(opo.HazerSync, self.spraying, self.hasSprayed);
-                }
+                opo.BroadcastRPCInRoom(opo.HazerSync, self.spraying, self.hasSprayed);
             }
         }
 
