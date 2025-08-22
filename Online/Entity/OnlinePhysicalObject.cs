@@ -617,13 +617,5 @@ namespace RainMeadow
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
         }
-
-        [RPCMethod]
-        public void HazerSync(bool spraying, bool hasSprayed)
-        {
-            if (apo.realizedObject is null || apo.realizedObject is not Hazer hazer) return;
-            hazer.spraying = spraying;
-            hazer.hasSprayed = hasSprayed;
-        }
     }
 }
