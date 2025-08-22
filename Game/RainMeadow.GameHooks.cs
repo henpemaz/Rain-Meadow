@@ -23,9 +23,9 @@ namespace RainMeadow
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
-            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
             On.PlayerProgression.CopySaveFile += PlayerProgression_CopySaveFile;
             On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
+            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
             On.RegionState.InfectRegionRoomWithSentientRot += RegionState_InfectRegionRoomWithSentientRot;
@@ -53,11 +53,23 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
-        
+
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
         }
 
-        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il) {
+        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
+        {
+            if (self.saveSlot != 0)
+            {
+                return "online_sav" + (self.saveSlot + 1);
+            }
+            return "online_sav";
+        }
+
+
+
+        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il)
+        {
             try
             {
                 var c = new ILCursor(il);
@@ -216,7 +228,7 @@ namespace RainMeadow
                                 state.quarterFoodPoints = first_state.quarterFoodPoints;
                             }
                         }
-                        
+
 
                         if (avatar?.abstractCreature?.realizedCreature is Player p && first_player is not null)
                         {
@@ -269,6 +281,7 @@ namespace RainMeadow
         {
             orig(self, sourceName, destinationDirectory);
             orig(self, "online_" + sourceName, destinationDirectory);
+
         }
 
         private void BackupManager_RestoreSaveFile(On.Menu.BackupManager.orig_RestoreSaveFile orig, Menu.BackupManager self, string sourceName)
@@ -391,7 +404,7 @@ namespace RainMeadow
             }
             orig(self, dt);
             // riskier chat stuff is run after orig, to minimize chances of orig not being run if things go wrong
-            if(closeChat)
+            if (closeChat)
             {
                 self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                 ChatTextBox.InvokeShutDownChat();
