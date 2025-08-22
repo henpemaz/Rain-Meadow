@@ -62,6 +62,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
+            if (onlineObject.apo.realizedObject is Hazer) return new RealizedHazerState(onlineObject);
 
             return new RealizedPhysicalObjectState(onlineObject);
         }
