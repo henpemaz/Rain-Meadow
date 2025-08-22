@@ -351,8 +351,6 @@ namespace RainMeadow
                 hud.owner.PlayHUDSound(radialVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             }
 
-            if (radialVisible || radialPickerActive) radialDisplayer.positionssss(initradialtime, fliptotheright);
-
             if (!toggleHidden && radialVisible && !radialPickerActive) // mouse input
             {
                 Vector2 offset = ((Vector2)Futile.mousePosition - this.mainWheelPos);
@@ -444,6 +442,8 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (radialVisible || radialPickerActive) radialDisplayer.positionssss(initradialtime, fliptotheright);
 
             if (radialPickerActive)
             {
