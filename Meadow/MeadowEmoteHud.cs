@@ -351,7 +351,7 @@ namespace RainMeadow
                 hud.owner.PlayHUDSound(radialVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             }
 
-            if (radialVisible) radialDisplayer.positionssss(initradialtime, fliptotheright);
+            if (radialVisible || radialPickerActive) radialDisplayer.positionssss(initradialtime, fliptotheright);
 
             if (!toggleHidden && radialVisible && !radialPickerActive) // mouse input
             {
@@ -588,7 +588,7 @@ namespace RainMeadow
                 this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
                 this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
 
-                centerLabel.isVisible = true;
+                centerLabel.isVisible = radialDisplayer.isVisible;
             }
         }
 
