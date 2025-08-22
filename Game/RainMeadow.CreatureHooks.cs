@@ -36,6 +36,24 @@ namespace RainMeadow
             On.EggBug.DropEggs += EggBug_DropEggs;
             On.Vulture.DropMask += Vulture_DropMask;
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
+            On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
+        }
+
+        private void VultureGrub_AttemptCallVulture(On.VultureGrub.orig_AttemptCallVulture orig, VultureGrub self)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                {
+                    Error($"Entity {self} doesn't exist in online space!");
+                    return;
+                }
+                if (!opo.isMine)
+                {
+                    return;
+                }
+            }
+            orig(self);
         }
 
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)

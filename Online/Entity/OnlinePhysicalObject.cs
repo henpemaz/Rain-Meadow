@@ -581,6 +581,8 @@ namespace RainMeadow
                     o.Tossed(null); return;
                 case Snail o:
                     o.Click(); return;
+                case VultureGrub o:
+                    o.InitiateSignal(); return;
                 default:
                     RainMeadow.Error($"unknown trigger {this}"); return;
             }
@@ -614,6 +616,14 @@ namespace RainMeadow
                 default:
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
+        }
+
+        [RPCMethod]
+        public void HazerSync(bool spraying, bool hasSprayed)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not Hazer hazer) return;
+            hazer.spraying = spraying;
+            hazer.hasSprayed = hasSprayed;
         }
     }
 }

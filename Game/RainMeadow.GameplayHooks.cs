@@ -56,6 +56,8 @@ namespace RainMeadow
             IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
             IL.JellyFish.Tossed += PhysicalObject_Trigger;
             IL.Snail.Click += PhysicalObject_Trigger;
+            IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
+            On.Hazer.Update += Hazer_Update;
 
             On.Spear.Spear_makeNeedle += Spear_makeNeedle;
 
@@ -71,6 +73,33 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
+        }
+
+        private void Hazer_Update(On.Hazer.orig_Update orig, Hazer self, bool eu)
+        {
+            bool spraying = false;
+            if (OnlineManager.lobby != null && self.IsLocal())
+            {
+                spraying = self.spraying;
+            }
+            orig(self, eu);
+            if (OnlineManager.lobby != null && self.IsLocal() && spraying != self.spraying)
+            {
+                if (!self.abstractPhysicalObject.GetOnlineObject(out var opo))
+                {
+                    Error($"Entity {self} doesn't exist in online space!");
+                    return;
+                }
+                if (opo.roomSession.isOwner && (opo.isMine || RPCEvent.currentRPCEvent is not null))
+                {
+                    opo.BroadcastRPCInRoom(opo.HazerSync, self.spraying, self.hasSprayed);
+                }
+                else if (RPCEvent.currentRPCEvent is null)
+                {
+                    if (!opo.isMine) return;  // wait to be RPC'd
+                    opo.roomSession.owner.InvokeOnceRPC(opo.HazerSync, self.spraying, self.hasSprayed);
+                }
+            }
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
