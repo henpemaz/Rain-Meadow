@@ -41,7 +41,7 @@ namespace RainMeadow
 
         private void VultureGrub_AttemptCallVulture(On.VultureGrub.orig_AttemptCallVulture orig, VultureGrub self)
         {
-            if (OnlineManager.lobby != null && !self.IsLocal()) return;
+            if (!self.IsLocal()) return;
             orig(self);
         }
 

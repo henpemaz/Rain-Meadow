@@ -57,7 +57,6 @@ namespace RainMeadow
             IL.JellyFish.Tossed += PhysicalObject_Trigger;
             IL.Snail.Click += PhysicalObject_Trigger;
             IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
-            On.Hazer.Update += Hazer_Update;
 
             On.Spear.Spear_makeNeedle += Spear_makeNeedle;
 
@@ -73,20 +72,6 @@ namespace RainMeadow
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
-        }
-
-        private void Hazer_Update(On.Hazer.orig_Update orig, Hazer self, bool eu)
-        {
-            bool spraying = false;
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                spraying = self.spraying;
-            }
-            orig(self, eu);
-            if (OnlineManager.lobby != null && self.IsLocal() && self.abstractPhysicalObject.GetOnlineObject(out var opo))
-            {
-                opo.BroadcastRPCInRoom(opo.HazerSync, self.spraying, self.hasSprayed);
-            }
         }
 
         private void SocialEventRecognizer_CreaturePutItemOnGround(On.SocialEventRecognizer.orig_CreaturePutItemOnGround orig,
