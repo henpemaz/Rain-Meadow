@@ -617,5 +617,16 @@ namespace RainMeadow
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
         }
+        [RPCMethod]
+        public void GrubResultSync(byte result)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not VultureGrub grub) return;
+            if (result == 1)
+            {
+                grub.callingMode = 1;
+                if (grub.graphicsModule != null) (grub.graphicsModule as VultureGrubGraphics).blinking = 220;
+                grub.vultureCalled = true;
+            }
+        }
     }
 }

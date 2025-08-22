@@ -41,7 +41,12 @@ namespace RainMeadow
 
         private void VultureGrub_AttemptCallVulture(On.VultureGrub.orig_AttemptCallVulture orig, VultureGrub self)
         {
-            if (!self.IsLocal()) return;
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
+            {
+                orig(self);
+                opo.BroadcastRPCInRoomExceptOwners(opo.GrubResultSync, (byte)self.callingMode);
+                return;
+            }
             orig(self);
         }
 
