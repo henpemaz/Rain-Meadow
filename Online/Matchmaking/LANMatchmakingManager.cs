@@ -289,20 +289,6 @@ namespace RainMeadow {
             }
         }
 
-        public override void JoinLobby(bool success) {
-            if (success)
-            {
-                RainMeadow.Debug("Joining lobby");
-                OnLobbyJoinedEvent(true);
-            }
-            else
-            {
-                OnlineManager.LeaveLobby();
-                RainMeadow.Debug("Failed to join local game. Wrong Password");
-                OnLobbyJoinedEvent(false, Utils.Translate("Wrong password!"));
-            }
-        }
-
         public override void JoinLobbyUsingArgs(params string?[] args)
         {
             if (args.Length >= 2 && long.TryParse(args[0], out var address) && int.TryParse(args[1], out var port))

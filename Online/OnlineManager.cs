@@ -172,7 +172,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0 || toPlayer.OutgoingChunks.Count > 0 || toPlayer.PendingOutgoingChunks.Count > 0)
             {
                 netIO?.SendSessionData(toPlayer);
             }
@@ -365,17 +365,24 @@ namespace RainMeadow
             return null;
         }
 
-        public static void QuitWithError(string v)
+        public static void QuitWithError(string error)
         {
-            RainMeadow.Error(v);
-            if (lobby != null && instance.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu)
+            RainMeadow.Error(error);
+            if (currentlyJoiningLobby != null)
             {
-                instance.manager.upcomingProcess = null;
-                instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-                instance.manager.ShowDialog(new Menu.DialogNotify(v, Utils.Translate("Leaving Lobby"), new Vector2(240, 320), instance.manager, () => { }));
-                LeaveLobby();
-                throw new Exception(v);
+                MatchmakingManager.currentInstance.JoinLobby(false, error);
             }
+            else
+            {
+                if (lobby != null && instance.manager.upcomingProcess != RainMeadow.Ext_ProcessID.LobbySelectMenu)
+                {
+                    instance.manager.upcomingProcess = null;
+                    instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                    instance.manager.ShowDialog(new Menu.DialogNotify(error, Utils.Translate("Leaving Lobby"), new Vector2(240, 320), instance.manager, () => { }));
+                }
+                LeaveLobby();
+            }
+            throw new Exception(error);
         }
     }
 }
