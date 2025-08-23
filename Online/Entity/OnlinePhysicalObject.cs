@@ -628,5 +628,13 @@ namespace RainMeadow
                 grub.vultureCalled = true;
             }
         }
+        [RPCMethod]
+        public void HazerSpraySync(bool spraying, float inkLeft)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not Hazer hazer) return;
+            hazer.spraying = spraying;
+            if (spraying) hazer.hasSprayed = true;
+            hazer.inkLeft = Mathf.Clamp01(inkLeft);
+        }
     }
 }
