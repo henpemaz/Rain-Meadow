@@ -1152,7 +1152,7 @@ public partial class RainMeadow
         //Sleeping when AFK
         if (OnlineManager.lobby != null)
         {
-            var extas = playerExtras.GetOrCreateValue(self); 
+            var extras = playerExtras.GetOrCreateValue(self); 
             if (self.IsLocal())
             {
                 if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
@@ -1163,18 +1163,22 @@ public partial class RainMeadow
                     && self.touchedNoInputCounter > 1200
                    )
                 {
-                    extas.afkSleep = true;
+                    extras.afkSleep = true;
                 }
                 else
                 {
-                    extas.afkSleep = false;
+                    extras.afkSleep = false;
                 }
             }
-            if (extas.afkSleep)
+            if (extras.afkSleep)
             {
                 self.standing = false;
                 self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
                 self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
+            }
+            if (self.sleepCurlUp > 0 && (self.dead || self.Stunned)) //When stunned or dead, the vanilla code stops decaying sleepCurlUp so we need to handle it ourselves. Technically this fixes an esoteric vanilla bug too.
+            {
+                self.sleepCurlUp = 0f;
             }
         }
     }
