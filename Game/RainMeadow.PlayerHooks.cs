@@ -1156,6 +1156,7 @@ public partial class RainMeadow
             if (self.IsLocal())
             {
                 if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
+                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
                     ( //Check if we can fit a sleeping animation.
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
@@ -1176,8 +1177,9 @@ public partial class RainMeadow
                 self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
                 self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
             }
-            if (self.sleepCurlUp > 0 && (self.dead || self.Stunned)) //When stunned or dead, the vanilla code stops decaying sleepCurlUp so we need to handle it ourselves. Technically this fixes an esoteric vanilla bug too.
+            if (self.sleepCurlUp > 0 && !self.Consious) //When stunned or dead, the vanilla code stops decaying sleepCurlUp so we need to handle it ourselves. Technically this fixes an esoteric vanilla bug too.
             {
+                //RainMeadow.Debug("Wake up and feel the PAIN, slugcat!");
                 self.sleepCurlUp = 0f;
             }
         }
