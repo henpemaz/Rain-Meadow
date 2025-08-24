@@ -26,9 +26,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
-    public int painCatIndex;
+    public int painCatIndex, customTextDescriptionCounter;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
-    public string painCatName;
+    public string painCatName, customTextDescription;
     public bool initiateStartGameAfterCountDown;
     private int lastCountdownSoundPlayed = -1;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
@@ -123,6 +123,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         GetArenaSetup.playerClass[0] = slugcat;
         pendingScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
+    }
+    public void SetTemporaryDescription(string desc, int overideDescForHowManyTicks) //how many ticks before it will no longer override UpdateInfoText
+    {
+        customTextDescription = desc;
+        customTextDescriptionCounter = overideDescForHowManyTicks;
     }
     public void GoToChangeCharacter()
     {
@@ -276,9 +281,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
         if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
+        if (customTextDescriptionCounter <= 0) customTextDescription = "";
+        else
+        {
+            customTextDescriptionCounter--;
+            infoLabel.text = UpdateInfoText();
+            if (!string.IsNullOrEmpty(infoLabel.text))
+                infoLabelFade = 1;
+        }
         UpdateOnlineUI();
         UpdateElementBindings();
-
+        if (!RainMeadow.isArenaMode(out _)) return;
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
             Arena.ResetOnReturnMenu(manager);
@@ -320,6 +333,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public override string UpdateInfoText()
     {
+        if (!string.IsNullOrEmpty(customTextDescription))
+            return customTextDescription;
         if (selectedObject is CheckBox checkBox)
         {
             bool check = checkBox.Checked;
@@ -334,6 +349,18 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
             if (idString == "WEAPONCOLLISIONFIX")
                 return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
+        }
+        if (selectedObject is SelectOneButton selectOneButton)
+        {
+            int index = selectOneButton.buttonArrayIndex;
+            string idString = selectOneButton.signalText;
+            if (idString == "scug select")
+            {
+                if (OnlineManager.lobby?.isOwner == true)
+                    return Translate("Press grab to toggle active slugcats");
+                else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
+                    return Translate("You aren't allowed to play as this slugcat");
+            }
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {

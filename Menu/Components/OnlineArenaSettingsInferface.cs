@@ -101,9 +101,7 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is ButtonTemplate btn)
