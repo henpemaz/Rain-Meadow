@@ -1155,14 +1155,15 @@ public partial class RainMeadow
             var extras = playerExtras.GetOrCreateValue(self); 
             if (self.IsLocal())
             {
-                if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
-                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong without a good way to fix).
-                    ( //Check if we can fit a sleeping animation (the animation checks double as consiousness check).
+                if (self.sleepCounter != 0 || //Reuse afk sleep to sync the shelter sleeping animation.
+                    !self.stillInStartShelter && //For some reason waking up from shelter sleep doesn't reset touchedNoInputCounter, so this prevents waking up immediately retriggering AFK sleep.
+                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
+                    ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
                     )
                     && self.touchedNoInputCounter > 1200
-                   )
+                )
                 {
                     extras.afkSleep = true;
                 }
