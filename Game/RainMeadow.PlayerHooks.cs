@@ -1156,7 +1156,7 @@ public partial class RainMeadow
             if (self.IsLocal())
             {
                 if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
-                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
+                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong without a good way to fix).
                     ( //Check if we can fit a sleeping animation.
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
@@ -1179,8 +1179,12 @@ public partial class RainMeadow
             }
             if (self.sleepCurlUp > 0 && !self.Consious) //When stunned or dead, the vanilla code stops decaying sleepCurlUp so we need to handle it ourselves. Technically this fixes an esoteric vanilla bug too.
             {
-                //RainMeadow.Debug("Wake up and feel the PAIN, slugcat!");
+                //RainMeadow.Debug("Wake up and smell the PAIN, slugcat!");
                 self.sleepCurlUp = 0f;
+            }
+            if (ModManager.MSC && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear && extras.afkSleep && self.sleepCurlUp == 1f)
+            { //For reasons beyond my comprehension, Spearmaster specifically has a weirdly specific check to make them *not* close their eyes when sleepCurlUp but not sleepCounter.
+                self.Blink(2); //Naturally this breaks Spearmaster's AFK sleep animation, so I need an equally specific check to add the closed eyes back.
             }
         }
     }
