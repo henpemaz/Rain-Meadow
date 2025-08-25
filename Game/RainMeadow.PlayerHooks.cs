@@ -751,7 +751,7 @@ public partial class RainMeadow
     {
         if (OnlineManager.lobby != null)
         {
-            //upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
+            upPicker.abstractPhysicalObject.GetOnlineObject().didParry = false;
         }
         orig(self, upPicker);
     }
@@ -1109,7 +1109,6 @@ public partial class RainMeadow
                 }
             }
         }
-
         if (isArenaMode(out var arena) && !self.inShortcut)
         {
             if (arena.countdownInitiatedHoldFire)
@@ -1739,10 +1738,6 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby.gameMode is MeadowGameMode) return; // do not run
 
-        if (self.abstractCreature.GetOnlineCreature().didParry)
-        {
-            return;
-        }
         if (!OnlinePhysicalObject.map.TryGetValue(self.abstractPhysicalObject, out var onlineEntity))
         {
             if (isArenaMode(out var _))

@@ -74,17 +74,21 @@ namespace RainMeadow
 
         private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
+            OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
+            OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+            RainMeadow.Debug(wep1.owner);
+            RainMeadow.Debug(wep2.owner);
+            RainMeadow.Debug($"{wep1.owner} -- PARRIED???");
+
             if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
             {
 
-                OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
-                OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
+
 
                 if (wep1 != null && wep2 != null)
                 {
 
-                    RainMeadow.Debug(wep1.owner);
-                    RainMeadow.Debug(wep2.owner);
+
                     if (OnlineManager.lobby != null && self.IsLocal())
                     {
                         if (self.thrownBy.abstractCreature.GetOnlineCreature() != null)
@@ -565,9 +569,9 @@ namespace RainMeadow
 
                 if (!onlineHit.owner.isMe)
                 {
-                    OnlineManager.RunDeferred(() => onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
                         onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                    )));
+                    ));
                 }
 
 
