@@ -543,10 +543,10 @@ namespace RainMeadow
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
-            if ((OnlineManager.lobby != null) && this.didParry)
+            if ((OnlineManager.lobby != null) && (this.apo.realizedObject as Weapon).thrownBy != null && (this.apo.realizedObject as Weapon).thrownBy.abstractCreature.GetOnlineCreature().didParry)
             {
                 RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
+                OnlineManager.RunDeferred(() => (this.apo.realizedObject as Weapon).thrownBy.abstractCreature.GetOnlineCreature().didParry = false);
                 return;
             }
 

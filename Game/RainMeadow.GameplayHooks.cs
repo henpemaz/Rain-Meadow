@@ -40,7 +40,7 @@ namespace RainMeadow
 
             // for super calls
             HookWeaponHitSomething<Weapon>();
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon1;
+            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
 
 
             On.PhysicalObject.HitByExplosion += PhysicalObject_HitByExplosion;
@@ -67,21 +67,33 @@ namespace RainMeadow
             IL.Player.TerrainImpact += Player_TerrainImpact;
             On.DeafLoopHolder.Update += DeafLoopHolder_Update;
             On.Weapon.HitThisObject += Weapon_HitThisObject;
-            On.Weapon.HitAnotherThrownWeapon += Weapon_HitAnotherThrownWeapon;
             On.Weapon.Thrown += Weapon_Thrown;
             On.SharedPhysics.TraceProjectileAgainstBodyChunks += SharedPhysics_TraceProjectileAgainstBodyChunks;
             On.SocialEventRecognizer.CreaturePutItemOnGround += SocialEventRecognizer_CreaturePutItemOnGround;
         }
 
-        private void Weapon_HitAnotherThrownWeapon1(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
+        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
         {
             if (OnlineManager.lobby != null && self.IsLocal() && !obj.IsLocal())
             {
+
                 OnlinePhysicalObject? wep1 = self.abstractPhysicalObject.GetOnlineObject();
                 OnlinePhysicalObject? wep2 = obj.abstractPhysicalObject.GetOnlineObject();
 
                 if (wep1 != null && wep2 != null)
                 {
+
+                    RainMeadow.Debug(wep1.owner);
+                    RainMeadow.Debug(wep2.owner);
+                    if (OnlineManager.lobby != null && self.IsLocal())
+                    {
+                        if (self.thrownBy.abstractCreature.GetOnlineCreature() != null)
+                        {
+                            RainMeadow.Debug($"{wep1.owner} -- PARRIED!");
+                            self.thrownBy.abstractCreature.GetOnlineCreature().didParry = true;
+                        }
+                    }
+
                     wep1.BroadcastRPCInRoom(RPCs.Weapon_HitAnotherThrownWeapon, wep1, wep2);
                 }
             }
@@ -152,15 +164,6 @@ namespace RainMeadow
                 self.firstChunk.lastPos = firstFrameTraceFromPos.Value;
             }
             orig(self, thrownBy, thrownPos, firstFrameTraceFromPos, throwDir, frc, eu);
-        }
-
-        private void Weapon_HitAnotherThrownWeapon(On.Weapon.orig_HitAnotherThrownWeapon orig, Weapon self, Weapon obj)
-        {
-            if (OnlineManager.lobby != null && self.IsLocal())
-            {
-                self.thrownBy.abstractPhysicalObject.GetOnlineObject().didParry = true;
-            }
-            orig(self, obj);
         }
 
         bool WeaponIsDangerous(Weapon weapon)
@@ -562,10 +565,11 @@ namespace RainMeadow
 
                 if (!onlineHit.owner.isMe)
                 {
-                    onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
+                    OnlineManager.RunDeferred(() => onlineHit.owner.InvokeRPC(WeaponOnline.WeaponHitSomething, realizedstate, new OnlinePhysicalObject.OnlineCollisionResult(
                         onlineHit.id, chunk, appendageRef, result.hitSomething, result.collisionPoint
-                    ));
+                    )));
                 }
+
 
                 return orig(self, result, eu);
             }
