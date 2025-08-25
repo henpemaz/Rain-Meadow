@@ -395,12 +395,15 @@ namespace RainMeadow
                     apo.Room?.RemoveEntity(apo);
                     if (apo.realizedObject is PhysicalObject po)
                     {
-                        if (po is Player player) {
-                            if (player.slugOnBack != null) {
+                        if (po is Player player)
+                        {
+                            if (player.slugOnBack != null)
+                            {
                                 player.slugOnBack.DropSlug();
                             }
 
-                            if (player.onBack != null) {
+                            if (player.onBack != null)
+                            {
                                 player.onBack.slugOnBack.DropSlug();
                             }
                         }
@@ -501,7 +504,7 @@ namespace RainMeadow
 
             public Vector2 collisionPoint;
 
-            public OnlineCollisionResult() {}
+            public OnlineCollisionResult() { }
             public OnlineCollisionResult(OnlineEntity.EntityId obj, BodyChunkRef? chunk, AppendageRef onAppendagePos, bool hitSomething, Vector2 collisionPoint)
             {
                 this.obj = obj;
@@ -511,55 +514,61 @@ namespace RainMeadow
                 this.collisionPoint = collisionPoint;
             }
 
-            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer) {
+            void Serializer.ICustomSerializable.CustomSerialize(Serializer serializer)
+            {
                 serializer.Serialize(ref obj);
                 serializer.SerializeNullable(ref chunk);
                 serializer.SerializeNullable(ref onAppendagePos);
                 serializer.Serialize(ref hitSomething);
                 serializer.Serialize(ref collisionPoint);
             }
-            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result) {
+            public void BuildCollisionResult(out SharedPhysics.CollisionResult? result)
+            {
                 result = null;
                 OnlinePhysicalObject? collision_obj = this.obj.FindEntity() as OnlinePhysicalObject;
-                if (collision_obj == null) {
+                if (collision_obj == null)
+                {
                     RainMeadow.Error("Invalid collision result");
                     return;
                 }
 
-                if (collision_obj.apo.realizedObject == null) {
+                if (collision_obj.apo.realizedObject == null)
+                {
                     RainMeadow.Error("Object not realized");
                     return;
                 }
 
-                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject, 
-                    chunk?.ToBodyChunk(), 
+                result = new SharedPhysics.CollisionResult(collision_obj.apo.realizedObject,
+                    chunk?.ToBodyChunk(),
                     onAppendagePos?.GetAppendagePos(collision_obj.apo.realizedObject), hitSomething, collisionPoint);
             }
         }
 
 
-        public bool HittingRemotely { get; private set; }=  false;
+        public bool HittingRemotely { get; private set; } = false;
         [RPCMethod]
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
-            if ((OnlineManager.lobby != null) && (this.apo.realizedObject as Weapon).thrownBy != null && (this.apo.realizedObject as Weapon).thrownBy.abstractCreature.GetOnlineCreature().didParry)
-            {
-                RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => (this.apo.realizedObject as Weapon).thrownBy.abstractCreature.GetOnlineCreature().didParry = false);
-                return;
-            }
 
-            if (this.apo.realizedObject != null) {
+            if (this.apo.realizedObject != null)
+            {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
-                if (result.HasValue) {
+                if (result.HasValue)
+                {
+                    if ((OnlineManager.lobby != null) && (result.Value.obj.abstractPhysicalObject.GetOnlineObject().didParry))
+                    {
+                        RainMeadow.Debug("WeaponHitSomething: Parried!");
+                        OnlineManager.RunDeferred(() => result.Value.obj.abstractPhysicalObject.GetOnlineObject().didParry = false);
+                        return;
+                    }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
-                
+
             }
-            
+
             HittingRemotely = false;
         }
 
