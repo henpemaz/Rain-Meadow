@@ -218,6 +218,7 @@ namespace RainMeadow
                 this.input[0].jmp = false;
                 this.input[0].thrw = false;
                 this.input[0].pckp = false;
+                this.input[0].spec = false;
                 this.Blink(5);
             }
 
