@@ -141,14 +141,24 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
                 return;
             }
-            var index = ArenaHelpers.selectableSlugcats.IndexOf(GetArenaSetup.playerClass[0]); //supposed to be ArenaSetup.playerclass -> arena client settings >:(
+            var index = arenaSlugcatSelectPage.selectedSlugcatIndex;
             if (index == -1) index = 0;
             else
             {
                 index += 1;
                 index %= ArenaHelpers.selectableSlugcats.Count;
             }
-            arenaSlugcatSelectPage?.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+            if (arenaMode)
+            {
+                int unbannedIndex = Arena.GetNewAvailableSlugcatIndex(index);
+                if (unbannedIndex == arenaSlugcatSelectPage.selectedSlugcatIndex)
+                {
+                    PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                    return;
+                }
+                index = unbannedIndex;
+            }
+            arenaSlugcatSelectPage.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
             PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
             return;
         }
