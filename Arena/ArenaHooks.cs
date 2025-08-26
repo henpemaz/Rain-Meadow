@@ -1502,7 +1502,7 @@ namespace RainMeadow
                             }
                             else
                             {
-                                arena.localAllKills[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData);
+                                arena.localAllKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills;
                             }
                             if (OnlineManager.lobby.isOwner)
                             {
