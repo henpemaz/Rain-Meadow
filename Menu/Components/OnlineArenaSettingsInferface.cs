@@ -44,7 +44,7 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Piggyback"), "PIGGY");
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Piggyback:"), "PIGGY");
 
             allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
 
@@ -60,7 +60,7 @@ namespace RainMeadow.UI.Components
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
 
-            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.PosY), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
 
 
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
@@ -101,9 +101,7 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is ButtonTemplate btn)
@@ -209,7 +207,6 @@ namespace RainMeadow.UI.Components
         public OpComboBox arenaGameModeComboBox;
         public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
-        public OpComboBox arenaTeamComboBox;
 
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public PatchedUIelementWrapper countdownWrapper, gameModeWrapper;
