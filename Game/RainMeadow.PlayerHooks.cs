@@ -1054,6 +1054,8 @@ public partial class RainMeadow
     {
         public bool afkSleep;
     }
+    public int afkSleepRequiredTime = 1200;
+    public int timeSinceShelterWakeup;
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
@@ -1152,16 +1154,21 @@ public partial class RainMeadow
         //Sleeping when AFK
         if (OnlineManager.lobby != null)
         {
-            var extras = playerExtras.GetOrCreateValue(self); 
+            var extras = playerExtras.GetOrCreateValue(self);
+            if (self.sleepCounter > 0)
+            { timeSinceShelterWakeup = 0; }
+            else
+            { timeSinceShelterWakeup++; }
+
             if (self.IsLocal())
             {
-                if (!self.stillInStartShelter && //For some reason waking up from shelter sleep doesn't reset touchedNoInputCounter, so this prevents waking up immediately retriggering AFK sleep.
+                if (timeSinceShelterWakeup > afkSleepRequiredTime && //Both touchedNoInputCounter and stillInStartShelter are bugged/unreliable, so congrats, you get your own variable. Now STOP FALLING ASLEEP WHEN WAKING UP.
                     self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
                     ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
                     )
-                    && self.touchedNoInputCounter > 1200
+                    && self.touchedNoInputCounter > afkSleepRequiredTime
                 )
                 {
                     extras.afkSleep = true;
