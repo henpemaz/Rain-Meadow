@@ -147,7 +147,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     {
         SlugcatStats.Name[] newAvaliableSlugs = Arena!.AvailableSlugcats();
         if (newAvaliableSlugs.Length == 1 && newAvaliableSlugs.Contains(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
-            ArenaMenu?.SetTemporaryDescription(menu.Translate("Having random only will allow all players to rotate between all other slugcats"), 200);
+            ArenaMenu?.SetTemporaryDescription(menu.Translate("Players will rotate through all slugcats"), 200);
         else ArenaMenu?.SetTemporaryDescription("", 1); //remove desc above
     }
     public void OnSlugcatPressedBan(int index)
