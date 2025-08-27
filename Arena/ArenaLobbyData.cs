@@ -35,6 +35,8 @@ namespace RainMeadow
             public Dictionary<string, int> playerResultColors;
             [OnlineField(nullable = true, group = "arenaLobby")]
             public Generics.DynamicOrderedPlayerIDs playersReadiedUp;
+            [OnlineField(group = "arenaLobby")]
+            public List<int> bannedSlugs;
 
             // Group: arenaSetup
             [OnlineField(group = "arenaSetup")]
@@ -101,6 +103,8 @@ namespace RainMeadow
             public bool weaponCollisionFix;
             [OnlineField]
             public bool playersEqualToOnlineSitting;
+            [OnlineField]
+            public bool piggyBack;
             public State() { }
             public State(ArenaLobbyData arenaLobbyData, OnlineResource onlineResource)
             {
@@ -145,6 +149,9 @@ namespace RainMeadow
                 leaveForNextLevel = arena.leaveForNextLevel;
                 hasPermissionToRejoin = arena.hasPermissionToRejoin;
                 playersEqualToOnlineSitting = arena.playersEqualToOnlineSitting;
+                piggyBack = arena.piggyBack;
+
+                bannedSlugs = new(arena.bannedSlugs);
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -191,9 +198,13 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
+
                 (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).hasPermissionToRejoin = hasPermissionToRejoin;
                 (lobby.gameMode as ArenaOnlineGameMode).playersEqualToOnlineSitting = playersEqualToOnlineSitting;
+
+                (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
+                (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
 
 
             }
