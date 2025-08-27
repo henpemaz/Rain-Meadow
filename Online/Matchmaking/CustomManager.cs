@@ -21,14 +21,7 @@ namespace RainMeadow
 
         public static void SendCustomData(OnlinePlayer toPlayer, string key, byte[] data, ushort size, NetIO.SendType sendType)
         {
-            if (toPlayer.id is SteamMatchmakingManager.SteamPlayerId)
-            {
-                OnlineManager.SendCustomData(toPlayer, new CustomPacket(key, data, size), sendType);
-            }
-            else if (toPlayer.id is LANMatchmakingManager.LANPlayerId)
-            {
-                OnlineManager.netIO.SendP2P(toPlayer, new CustomPacket(key, data, size), sendType);
-            }
+            OnlineManager.SendCustomData(toPlayer, new CustomPacket(key, data, size), sendType);
         }
 
         public static void ReadCustom(OnlinePlayer fromPlayer, byte[] data)

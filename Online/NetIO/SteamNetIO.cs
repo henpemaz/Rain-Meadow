@@ -98,8 +98,8 @@ namespace RainMeadow
 
             lock (OnlineManager.serializer)
             {
-                int n;
-                int c;
+                int n; // Session
+                int c; // Custom
                 IntPtr[] messages = new IntPtr[32];
                 do // process in batches
                 {
