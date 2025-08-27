@@ -57,9 +57,9 @@ namespace RainMeadow.UI.Components
             }
             return slugcat == MSCScugs.Gourmand || slugcat == MSCScugs.Artificer || slugcat == MSCScugs.Rivulet || slugcat == MSCScugs.Spear || slugcat == MSCScugs.Saint || slugcat == MSCScugs.Slugpup || slugcat == MSCScugs.Sofanthiel;
         }
-        public SlugcatColorableButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 sizeOffset, SlugcatStats.Name? slugcat, bool isColored, bool isDead = false, string signal = "") : base(menu, owner, pos, "", GetFileForSlugcat(slugcat, isColored, isDead), signal)
+        public SlugcatColorableButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 desiredSize, SlugcatStats.Name? slugcat, bool isColored, bool isDead = false, string signal = "") : base(menu, owner, pos, "", GetFileForSlugcat(slugcat, isColored, isDead), signal)
         {
-            size += sizeOffset;
+            size = desiredSize;
             this.isColored = isColored;
             this.slugcat = slugcat;
         }
