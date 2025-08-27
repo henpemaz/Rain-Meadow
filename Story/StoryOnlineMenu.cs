@@ -138,7 +138,7 @@ namespace RainMeadow
 
         public void SetSelectedSlugcat(int player, SlugcatStats.Name slugcat)
         {
-            if ((playerSelectedSlugcats[player] != slugcat && playerSelectedSlugcats[player] != null) || (playerSelectedSlugcats[player] == null && slugcatColorOrder[slugcatPageIndex] != slugcat))
+            if ((currentCampaign != slugcat && playerSelectedSlugcats[player] != null) || (playerSelectedSlugcats[player] == null && currentCampaign != slugcat))
             {
                 if (ModManager.JollyCoop)
                 {
@@ -692,4 +692,5 @@ namespace RainMeadow
         }
     }
 }
+
 
