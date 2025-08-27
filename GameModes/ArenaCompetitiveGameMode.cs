@@ -677,13 +677,25 @@ namespace RainMeadow
             }
             return true;
         }
+
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
         {
-            if (onlineResource is WorldSession || onlineResource is RoomSession)
+            if (onlineResource is OverworldSession || onlineResource is WorldSession || onlineResource is RoomSession)
             {
                 return lobby.owner == from;
             }
             return true;
+        }
+
+        public override void EstablishWorlds(OverworldSession overworldSession)
+        {
+            overworldSession.EstablishWorld("arena", 0);
+        }
+        
+        public override WorldSession LinkWorld(World world)
+        {
+            OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var worldSession);
+            return worldSession;
         }
 
 

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    internal class MeadowLobbyData : OnlineResource.ResourceData
+    internal class MeadowRegionData : OnlineResource.ResourceData
     {
         public float[] regionSpawnWeights;
         public ushort[] regionRedTokensGoal;
@@ -32,7 +32,7 @@ namespace RainMeadow
             [OnlineField]
             Generics.FixedOrderedUshorts regionGhostsGoal;
             public State() { }
-            public State(MeadowLobbyData meadowLobbyData)
+            public State(MeadowRegionData meadowLobbyData)
             {
                 regionRedTokensGoal = new(meadowLobbyData.regionRedTokensGoal.ToList());
                 regionBlueTokensGoal = new(meadowLobbyData.regionBlueTokensGoal.ToList());
@@ -40,11 +40,11 @@ namespace RainMeadow
                 regionGhostsGoal = new(meadowLobbyData.regionGhostsGoal.ToList());
             }
 
-            public override Type GetDataType() => typeof(MeadowLobbyData);
+            public override Type GetDataType() => typeof(MeadowRegionData);
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
             {
-                MeadowLobbyData? meadowLobbyData = (data as MeadowLobbyData);
+                MeadowRegionData? meadowLobbyData = (data as MeadowRegionData);
                 meadowLobbyData.regionRedTokensGoal = regionRedTokensGoal.list.ToArray();
                 meadowLobbyData.regionBlueTokensGoal = regionBlueTokensGoal.list.ToArray();
                 meadowLobbyData.regionGoldTokensGoal = regionGoldTokensGoal.list.ToArray();
