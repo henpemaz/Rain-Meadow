@@ -533,7 +533,7 @@ namespace RainMeadow
             {
                 if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is StoryOnlineMenu menu)
                 {
-                    return menu.playerSelectedSlugcats?[playerNumber] ?? menu.slugcatColorOrder[menu.slugcatPageIndex];
+                    return menu.playerSelectedSlugcats?[playerNumber] ?? story.currentCampaign;
                 }
 
             }
