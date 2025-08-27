@@ -296,7 +296,7 @@ namespace RainMeadow
                                 int current_index = story_menu.SelectableSlugcats.IndexOf(currentslugcat);
                                 int newcharacterindex = (current_index + 1) % story_menu.SelectableSlugcats.Length;
                                 story_menu.playerSelectedSlugcats[i] = story_menu.SelectableSlugcats[newcharacterindex];
-                                if (story_menu.playerSelectedSlugcats[i] == story_menu.slugcatColorOrder[story_menu.slugcatPageIndex])
+                                if (story_menu.playerSelectedSlugcats[i] == story.currentCampaign)
                                 {
                                     story_menu.playerSelectedSlugcats[i] = null;
                                 }
