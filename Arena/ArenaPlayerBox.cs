@@ -5,6 +5,7 @@ using RWCustom;
 using UnityEngine;
 using HarmonyLib;
 using static RainMeadow.ButtonScroller;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 
 namespace RainMeadow.UI.Components
 {
@@ -56,7 +57,7 @@ namespace RainMeadow.UI.Components
             };
             Container.AddChild(pingLabel);
             lines = [];
-            slugcatButton = new(menu, this, new(10, 10), new Vector2(16, 16), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
+            slugcatButton = new(menu, this, new(10, 10), new Vector2(100, 100), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
             nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
@@ -96,7 +97,7 @@ namespace RainMeadow.UI.Components
         {
             base.Update();
             rainbowColor.hue = GetLerpedRainbowHue();
-            slugcatButton.portraitSecondaryLerpFactor = GetLerpedRainbowHue(0.75f);
+            slugcatButton.portraitSecondaryLerpFactor = showRainbow? GetLerpedRainbowHue(0.75f) : desiredPortraitSecondaryLerpFactor;
             realPing = Math.Max(1, profileIdentifier.ping - 16);
             lastTextOverlayFade = textOverlayFade;
             textOverlayFade = enabledTextOverlay ? Custom.LerpAndTick(textOverlayFade, 1f, 0.02f, 1f / 60f) : Custom.LerpAndTick(textOverlayFade, 0f, 0.12f, 0.1f);
@@ -111,6 +112,7 @@ namespace RainMeadow.UI.Components
             pingLabel.x = pos.x + size.x;
             pingLabel.y = pos.y + 7;
             pingLabel.color = pingColor;
+
             for (int i = 0; i < 3; i++)
             {
                 if (i == 2)
@@ -126,13 +128,14 @@ namespace RainMeadow.UI.Components
                 sprites[i].color = MenuColorEffect.rgbVeryDarkGrey;
             }
             lines.Do(x => x.lineConnector.alpha = 0.5f);
-            textOverlayLabel.label.alpha = Custom.SCurve(Mathf.Lerp(lastTextOverlayFade, textOverlayFade, timeStacker), 0.3f);
+            textOverlayLabel.label.alpha = RWCustom.Custom.SCurve(Mathf.Lerp(lastTextOverlayFade, textOverlayFade, timeStacker), 0.3f);
 
             lines.Do(x => x.lineConnector.color = MenuColorEffect.rgbDarkGrey);
             Color rainbow = MyRainbowColor(rainbowColor, showRainbow);
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
             slugcatButton.secondaryColor = showRainbow ? rainbow : desiredSlugcatButtonSecondaryColor;
+
         }
         public void InitButtons(bool canKick)
         {
@@ -178,7 +181,7 @@ namespace RainMeadow.UI.Components
             enabledTextOverlay = enable;
         }
 
-        public float textOverlayFade = 0, lastTextOverlayFade = 0;
+        public float textOverlayFade = 0, lastTextOverlayFade = 0, desiredPortraitSecondaryLerpFactor = 0;
         public int realPing;
         public bool showRainbow, enabledTextOverlay;
         public HSLColor? baseColor;

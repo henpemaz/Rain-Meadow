@@ -42,7 +42,12 @@ namespace RainMeadow.UI.Components
             if (ModManager.MSC && slugcat == MSCScugs.Sofanthiel && randomizeSofSlugcatPortrait)
                 return $"Multiplayerportrait{UnityEngine.Random.Range(0, 5)}{deadIndex}-{slugcat.value}";
 
-            return $"Multiplayerportrait{(ModManager.MSC && slugcat == MSCScugs.Slugpup ? 4 : colorIndex)}{deadIndex}-{slugcat.value}";
+            if (ModManager.MSC && slugcat == MSCScugs.Slugpup)
+            {
+                if (colorIndex != 0) colorIndex = 4;
+            }
+
+            return $"Multiplayerportrait{colorIndex}{deadIndex}-{slugcat.value}";
         }
         public static bool IsMSCSlugcat(SlugcatStats.Name slugcat)
         {
@@ -52,9 +57,9 @@ namespace RainMeadow.UI.Components
             }
             return slugcat == MSCScugs.Gourmand || slugcat == MSCScugs.Artificer || slugcat == MSCScugs.Rivulet || slugcat == MSCScugs.Spear || slugcat == MSCScugs.Saint || slugcat == MSCScugs.Slugpup || slugcat == MSCScugs.Sofanthiel;
         }
-        public SlugcatColorableButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 sizeOffset, SlugcatStats.Name? slugcat, bool isColored, bool isDead = false, string signal = "") : base(menu, owner, pos, "", GetFileForSlugcat(slugcat, isColored, isDead), signal)
+        public SlugcatColorableButton(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 desiredSize, SlugcatStats.Name? slugcat, bool isColored, bool isDead = false, string signal = "") : base(menu, owner, pos, "", GetFileForSlugcat(slugcat, isColored, isDead), signal)
         {
-            size += sizeOffset;
+            size = desiredSize;
             this.isColored = isColored;
             this.slugcat = slugcat;
         }

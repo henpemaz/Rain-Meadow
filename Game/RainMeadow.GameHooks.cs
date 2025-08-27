@@ -23,9 +23,9 @@ namespace RainMeadow
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
 
-            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
             On.PlayerProgression.CopySaveFile += PlayerProgression_CopySaveFile;
             On.Menu.BackupManager.RestoreSaveFile += BackupManager_RestoreSaveFile;
+            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
 
             On.RegionState.AdaptWorldToRegionState += RegionState_AdaptWorldToRegionState;
             On.RegionState.InfectRegionRoomWithSentientRot += RegionState_InfectRegionRoomWithSentientRot;
@@ -54,7 +54,7 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
-        
+
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
         }
 
@@ -80,8 +80,18 @@ namespace RainMeadow
                 Logger.LogError(e);
             }
         }
+      
+        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
+        {
+            if (self.saveSlot != 0)
+            {
+                return "online_sav" + (self.saveSlot + 1);
+            }
+            return "online_sav";
+        }
 
-        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il) {
+        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il)
+        {
             try
             {
                 var c = new ILCursor(il);
@@ -223,6 +233,32 @@ namespace RainMeadow
                 }
             }
 
+            if (isStoryMode(out var story))
+            {
+                // synchronize food between all local avatars
+                PlayerState? first_state = story.avatars[0]?.abstractCreature?.state as PlayerState;
+                Player? first_player = story.avatars[0]?.abstractCreature?.realizedCreature as Player;
+                if (story.lobby.isOwner)
+                {
+                    foreach (OnlineCreature avatar in story.avatars)
+                    {
+                        if (first_state is not null)
+                        {
+                            if (avatar?.abstractCreature?.state is PlayerState state)
+                            {
+                                state.foodInStomach = first_state.foodInStomach;
+                                state.quarterFoodPoints = first_state.quarterFoodPoints;
+                            }
+                        }
+
+
+                        if (avatar?.abstractCreature?.realizedCreature is Player p && first_player is not null)
+                        {
+                            p.mushroomCounter = first_player.mushroomCounter;
+                        }
+                    }
+                }
+            }
 
             orig(self);
 
@@ -254,19 +290,12 @@ namespace RainMeadow
             orig(self);
         }
 
-        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                return "online_" + orig(self);
-            }
-            return orig(self);
-        }
 
         private void PlayerProgression_CopySaveFile(On.PlayerProgression.orig_CopySaveFile orig, PlayerProgression self, string sourceName, string destinationDirectory)
         {
             orig(self, sourceName, destinationDirectory);
             orig(self, "online_" + sourceName, destinationDirectory);
+
         }
 
         private void BackupManager_RestoreSaveFile(On.Menu.BackupManager.orig_RestoreSaveFile orig, Menu.BackupManager self, string sourceName)
@@ -389,7 +418,7 @@ namespace RainMeadow
             }
             orig(self, dt);
             // riskier chat stuff is run after orig, to minimize chances of orig not being run if things go wrong
-            if(closeChat)
+            if (closeChat)
             {
                 self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                 ChatTextBox.InvokeShutDownChat();

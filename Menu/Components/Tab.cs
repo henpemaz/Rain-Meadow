@@ -105,6 +105,7 @@ public class TabContainer : RectangularMenuObject
             int previousOffset = CurrentOffset;
             registeredTabButtons.RemoveAt(index);
             if (PagesOn) DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
+            else DefaultTabButtonYSize = 125;
             PopulatePages(CurrentOffset);
             if (tab == container.activeTab) container.SwitchTab(activeTabButtons.Last().myTab);
         }

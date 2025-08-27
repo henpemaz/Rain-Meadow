@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using Menu.Remix.MixedUI.ValueTypes;
+using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
@@ -21,11 +26,11 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public Page slugcatSelectPage;
     public MenuScene.SceneID? pendingScene;
     public bool pagesMoving = false, pushClientIntoGame, forceFlatIllu;
-    public int painCatIndex;
+    public int painCatIndex, customTextDescriptionCounter;
     public float pageMovementProgress = 0, desiredBgCoverAlpha = 0, lastDesiredBgCoverAlpha = 0;
-    public string painCatName;
+    public string painCatName, customTextDescription;
     public bool initiateStartGameAfterCountDown;
-    private int lastCountdownSoundPlayed;
+    private int lastCountdownSoundPlayed = -1;
     public bool SettingsDisabled => OnlineManager.lobby?.isOwner != true || Arena.initiateLobbyCountdown;
     public override bool CanEscExit => base.CanEscExit && currentPage == 0 && !pagesMoving;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
@@ -45,11 +50,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (backObject is SimplerButton btn) btn.description = Translate("Exit to Lobby Select");
         if (Arena.myArenaSetup == null) manager.arenaSetup = Arena.myArenaSetup = new ArenaOnlineSetup(manager); //loading it on game mode ctor loads the base setup prob due to lobby still being null
         Futile.atlasManager.LoadAtlas("illustrations/arena_ui_elements");
-
-        Arena.AddExternalGameModes(new Competitive(), Competitive.CompetitiveMode);
-
+        Futile.atlasManager.LoadAtlas("illustrations/ui_elements");
         if (Arena.currentGameMode == "" || Arena.currentGameMode == null)
-            Arena.currentGameMode = Competitive.CompetitiveMode.value;
+            Arena.currentGameMode = FFA.FFAMode.value;
 
         pages.Add(slugcatSelectPage = new Page(this, null, "slugcat select", 1));
         slugcatSelectPage.pos.x += 1500f;
@@ -65,7 +68,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         ChatLogManager.Subscribe(arenaMainLobbyPage.chatMenuBox);
         mainPage.SafeAddSubobjects(competitiveShadow, competitiveTitle, arenaMainLobbyPage);
         slugcatSelectPage.SafeAddSubobjects(arenaSlugcatSelectPage);
-        ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+        Arena.ResetOnReturnMenu(manager);
+        RemoveAndAddNewExtGameModeTab(Arena.externalArenaGameMode);
         initiateStartGameAfterCountDown = false;
         lastCountdownSoundPlayed = -1;
     }
@@ -120,12 +124,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         GetArenaSetup.playerClass[0] = slugcat;
         pendingScene = Arena.slugcatSelectMenuScenes.TryGetValue(slugcat.value, out MenuScene.SceneID newScene) ? newScene : GetScene;
     }
+    public void SetTemporaryDescription(string desc, int overideDescForHowManyTicks) //how many ticks before it will no longer override UpdateInfoText
+    {
+        customTextDescription = desc;
+        customTextDescriptionCounter = overideDescForHowManyTicks;
+    }
     public void GoToChangeCharacter()
     {
-        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown)
-        {
-            return;
-        }
+        if (OnlineManager.lobby.isOwner && Arena.initiateLobbyCountdown) return;
 
         bool arenaMode = RainMeadow.isArenaMode(out _);
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
@@ -135,14 +141,24 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
                 return;
             }
-            var index = ArenaHelpers.selectableSlugcats.IndexOf(GetArenaSetup.playerClass[0]); //supposed to be ArenaSetup.playerclass -> arena client settings >:(
+            var index = arenaSlugcatSelectPage.selectedSlugcatIndex;
             if (index == -1) index = 0;
             else
             {
                 index += 1;
                 index %= ArenaHelpers.selectableSlugcats.Count;
             }
-            arenaSlugcatSelectPage?.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
+            if (arenaMode)
+            {
+                int unbannedIndex = Arena.GetNewAvailableSlugcatIndex(index);
+                if (unbannedIndex == arenaSlugcatSelectPage.selectedSlugcatIndex)
+                {
+                    PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+                    return;
+                }
+                index = unbannedIndex;
+            }
+            arenaSlugcatSelectPage.SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[index]);
             PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
             return;
         }
@@ -165,15 +181,18 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         if (OnlineManager.lobby == null || !OnlineManager.lobby.isActive) return;
 
-        if (OnlineManager.lobby.isOwner && Arena.lobbyCountDown > 0)
+        if (OnlineManager.lobby.isOwner)
         {
-            Arena.initiateLobbyCountdown = true;
-            return;
+            if (Arena.lobbyCountDown > 0)
+            {
+                Arena.initiateLobbyCountdown = true;
+                return;
+            }
         }
 
         while (manager.dialog != null)
             manager.StopSideProcess(manager.dialog);
-        ArenaHelpers.OnStartGame(Arena, manager);
+        Arena.OnStartGame(manager);
         Arena.InitializeSlugcat();
         InitializeNewOnlineSitting();
         ArenaHelpers.SetupOnlineArenaStting(Arena, manager);
@@ -223,21 +242,22 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             manager.arenaSitting.currentLevel = Arena.currentLevel;
         }
 
-        if (Arena.registeredGameModes.Values.Contains(Arena.currentGameMode))
+        if (Arena.registeredGameModes.Keys.Contains(Arena.currentGameMode))
         {
-            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Arena.currentGameMode).Key;
-            RainMeadow.Debug($"Playing GameMode: {Arena.onlineArenaGameMode}");
+            Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == Arena.currentGameMode).Value;
+            RainMeadow.Debug($"Playing GameMode: {Arena.externalArenaGameMode}");
         }
         else
         {
-            RainMeadow.Error("Could not find game mode in list! Setting to Competitive as a fallback");
-            Arena.onlineArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Value == Competitive.CompetitiveMode.value).Key;
+            RainMeadow.Error("Could not find game mode in list! Setting to FFA as a fallback");
+            Arena.externalArenaGameMode = Arena.registeredGameModes.FirstOrDefault(kvp => kvp.Key == FFA.FFAMode.value).Value;
         }
 
-        Arena.onlineArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
+        Arena.externalArenaGameMode.InitAsCustomGameType(GetGameTypeSetup);
     }
     public override void ShutDownProcess()
     {
+        if (RainMeadow.isArenaMode(out _)) Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
         if (OnlineManager.lobby?.isOwner == true)
@@ -263,6 +283,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Update()
     {
         base.Update();
+
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
             MovePage(new Vector2(1500f, 0f), 0);
         if (pendingScene == scene.sceneID) pendingScene = null;
@@ -270,12 +291,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
         if (pendingScene != null && menuDarkSprite.darkSprite.alpha >= 1) ChangeScene();
         if (pagesMoving) UpdateMovingPage();
+        if (customTextDescriptionCounter <= 0) customTextDescription = "";
+        else
+        {
+            customTextDescriptionCounter--;
+            infoLabel.text = UpdateInfoText();
+            if (!string.IsNullOrEmpty(infoLabel.text))
+                infoLabelFade = 1;
+        }
         UpdateOnlineUI();
         UpdateElementBindings();
-
+        if (!RainMeadow.isArenaMode(out _)) return;
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
-            ArenaHelpers.ResetOnReturnMenu(Arena, manager);
+            Arena.ResetOnReturnMenu(manager);
             Arena.currentLobbyOwner = OnlineManager.lobby.owner;
         }
 
@@ -286,6 +315,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 initiateStartGameAfterCountDown = true;
                 StartGame();
             }
+        }
+        else
+        {
+            
+            if (Arena.hasPermissionToRejoin && !initiateStartGameAfterCountDown && Arena.arenaClientSettings.ready)
+            {
+                initiateStartGameAfterCountDown = true;
+                StartGame();
+            }
+        }
+
+        if (!Arena.allowJoiningMidRound)
+        {
+            Arena.arenaClientSettings.ready = true;
         }
 
         if (Arena.initiateLobbyCountdown)
@@ -300,6 +343,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public override string UpdateInfoText()
     {
+        if (!string.IsNullOrEmpty(customTextDescription))
+            return customTextDescription;
         if (selectedObject is CheckBox checkBox)
         {
             bool check = checkBox.Checked;
@@ -314,6 +359,20 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
             if (idString == "WEAPONCOLLISIONFIX")
                 return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
+            if (idString == "PIGGY")
+                return check ? Translate("Players can piggyback each other") : Translate("Players cannot piggyback each other");
+        }
+        if (selectedObject is SelectOneButton selectOneButton)
+        {
+            int index = selectOneButton.buttonArrayIndex;
+            string idString = selectOneButton.signalText;
+            if (idString == "scug select")
+            {
+                if (OnlineManager.lobby?.isOwner == true)
+                    return Translate("Press grab to toggle active slugcats");
+                else if (RainMeadow.isArenaMode(out _) && Arena.bannedSlugs.Contains(index))
+                    return Translate("You aren't allowed to play as this slugcat");
+            }
         }
         if (selectedObject is MultipleChoiceArray.MultipleChoiceButton arrayBtn)
         {
@@ -341,6 +400,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
+        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", teamBtn.teamName);
         return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff
@@ -350,6 +410,13 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         Arena.arenaClientSettings.playingAs = slugcat;
         Arena.arenaClientSettings.selectingSlugcat = currentPage == 1;
         if (manager.upcomingProcess == null) Arena.arenaClientSettings.slugcatColor = manager.rainWorld.progression.IsCustomColorEnabled(slugcat) ? ColorHelpers.HSL2RGB(ColorHelpers.RWJollyPicRange(manager.rainWorld.progression.GetCustomColorHSL(slugcat, 0))) : Color.black;
+
+        if (!(Arena.currentGameMode == Arena.externalArenaGameMode?.GetGameModeId?.value))
+        {
+            if (!Arena.registeredGameModes.TryGetValue(Arena.currentGameMode, out var extGameMode)) return;
+            RemoveAndAddNewExtGameModeTab(extGameMode);
+        }
+        Arena.externalArenaGameMode?.OnUIUpdate(this);
 
     }
     public void UpdateMovingPage()
@@ -382,5 +449,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
     }
+    public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
+    {
+        if (gameMode == null) return;
+        Arena.externalArenaGameMode?.OnUIDisabled(this);
+        Arena.externalArenaGameMode = gameMode;
+        Arena.externalArenaGameMode.OnUIEnabled(this);
 
+    }
 }

@@ -33,6 +33,7 @@ namespace RainMeadow
             IL.Menu.SlugcatSelectMenu.SlugcatPage.AddImage += SlugcatPage_AddImage;
 
             On.Menu.MenuScene.BuildScene += MenuScene_BuildScene;
+            On.Menu.MenuScene.SaveToFile += On_MenuScene_SaveToFile;
 
             On.Menu.SlugcatSelectMenu.SlugcatUnlocked += SlugcatSelectMenu_SlugcatUnlocked;
             On.Menu.SlugcatSelectMenu.StartGame += SlugcatSelectMenu_StartGame;
@@ -106,11 +107,12 @@ namespace RainMeadow
         {
             if (self is StoryOnlineMenu sOM)
             {
+                if (sOM.jollyToggleConfigMenu is not null) return; // jolly has it's own coloring system. 
                 if (sOM.colorInterface == null)
                 {
                     sOM.SetupSelectableSlugcats();
                     Vector2 pos = new(1000f - (1366f - sOM.manager.rainWorld.options.ScreenSize.x) / 2f, sOM.manager.rainWorld.options.ScreenSize.y - 100f);
-                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.CurrentSlugcat, pos);
+                    self.colorInterface = self.GetColorInterfaceForSlugcat(sOM.PlayerSelectedSlugcat, pos);
                     self.pages[0].subObjects.Add(self.colorInterface);
                     //return; removed return due to the orig making a new the color interface if it is null, so unnecessary
                 }
@@ -153,7 +155,15 @@ namespace RainMeadow
                 orig(self);
             }
         }
-
+        private void On_MenuScene_SaveToFile(On.Menu.MenuScene.orig_SaveToFile orig, MenuScene self)
+        {
+            if (self.menu is ArenaOnlineLobbyMenu && self.flatMode)
+            {
+                Debug("Prevented overriding positions.txt");
+                return;
+            }
+            orig(self);
+        }
         private void MenuScene_BuildScene(On.Menu.MenuScene.orig_BuildScene orig, MenuScene self)
         {
             orig(self);
@@ -447,7 +457,7 @@ namespace RainMeadow
                 if (!(OnlineManager.netIO is SteamNetIO) && !showed_no_steam_warning)
                 {
                     showed_no_steam_warning = true;
-                    self.manager.ShowDialog(new DialogNotify(self.Translate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager,
+                    self.manager.ShowDialog(new DialogNotify(self.LongTranslate("Steam is not currently available. Some features of Rain Meadow have been disabled."), self.manager,
                         () => self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu)));
                     return;
                 }

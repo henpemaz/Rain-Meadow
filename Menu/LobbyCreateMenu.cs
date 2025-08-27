@@ -98,18 +98,6 @@ public class LobbyCreateMenu : SmartMenu
 
         UpdateModeDescription();
 
-        if (manager.musicPlayer != null)
-        {
-            manager.musicPlayer.MenuRequestsSong("Establish", 1, 0);
-            if (manager.musicPlayer.nextSong == null)
-            {
-                manager.musicPlayer.song.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
-            }
-            else
-            {
-                manager.musicPlayer.nextSong.Loop = true; //well if you want that you gotta also make it disable when out of the menu hehe
-            }
-        }
     }
 
     private void UpdateModeDescription()
@@ -119,12 +107,6 @@ public class LobbyCreateMenu : SmartMenu
 
     private void CreateLobby(SimplerButton obj)
     {
-        if (ModManager.JollyCoop)
-        {
-            ShowErrorDialog("Please disable JollyCoop before playing Online");
-            return;
-        }
-
         ShowLoadingDialog("Creating lobby...");
         ApplyLobbyLimit();
         RainMeadow.Debug($"Creating a lobby with a max player limit of {maxPlayerCount}");

@@ -23,6 +23,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ChatLogOnOff;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
+    public readonly Configurable<int> ArenaWatcherCamoTimer;
+
     public readonly Configurable<bool> ArenaSAINOT;
     public readonly Configurable<bool> PainCatThrows;
     public readonly Configurable<bool> PainCatEgg;
@@ -34,7 +36,14 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
+    public readonly Configurable<bool> EnablePiggyBack;
 
+    public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
+    public readonly Configurable<string> MartyrTeamName;
+    public readonly Configurable<string> OutlawsTeamName;
+    public readonly Configurable<string> DragonSlayersTeamName;
+    public readonly Configurable<string> ChieftainTeamName;
+    public readonly Configurable<float> TeamColorLerp;
 
     public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
     public readonly Configurable<bool> ShowPing;
@@ -82,6 +91,8 @@ public class RainMeadowOptions : OptionInterface
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
+        ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
+
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
 
@@ -90,6 +101,19 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+
+
+        MartyrTeamColor = config.Bind("MartyrTeamColor", new Color(1, 0.49f, 0.49f));
+        OutlawsTeamColor = config.Bind("OutlawsTeamColor", new Color(1, 1, 0.49f));
+        DragonSlayersTeamColor = config.Bind("DragonSlayersTeamColor", new Color(0.49f, 1, 0.49f));
+        ChieftainTeamColor = config.Bind("ChieftainTeamColor", new Color(0.49f, 0.49f, 1));
+
+        MartyrTeamName = config.Bind("MartyrTeamName", "Martyrs");
+        OutlawsTeamName = config.Bind("OutlawsTeamName", "Outlaws");
+        DragonSlayersTeamName = config.Bind("DragonSlayersTeamName", "Dragonslayers");
+        ChieftainTeamName = config.Bind("ChieftainTeamName", "Chieftains");
+        TeamColorLerp = config.Bind("TeamColorLerp", 1f);
+
 
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
 
@@ -102,6 +126,7 @@ public class RainMeadowOptions : OptionInterface
 
         StoryItemSteal = config.Bind("StoryItemSteal", false);
         ArenaItemSteal = config.Bind("ArenaItemSteal", false);
+        EnablePiggyBack = config.Bind("EnablePiggyBack", true);
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
@@ -216,13 +241,13 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410, 120f, Translate("Chat Log On/Off")),
                 new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
 
-                new OpLabel(10, 120, Translate("Introroll")),
-                introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
-                downpourWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
-                watcherWarning = new OpLabel(introroll.pos.x + 170, 90, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
-
-                new OpLabel(10f, 50, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
-                new OpTextBox(ScrollSpeed, new Vector2(10, 25), 160f)
+                new OpLabel(10, 100, Translate("Introroll")),
+               introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 70f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+               downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
+               watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+            
+               new OpLabel(10f, 30, Translate("Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5"), bigText: false),
+               new OpTextBox(ScrollSpeed, new Vector2(10, 5), 160f)
                 {
                     accept = OpTextBox.Accept.Float
                 },
@@ -240,8 +265,27 @@ public class RainMeadowOptions : OptionInterface
                 }
                 else watcherWarning.Hide();
             };
-            downpourWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Downpour && ModManager.MSC;
-            watcherWarning.Hidden = PickedIntroRoll.Value == IntroRoll.Watcher && ModManager.Watcher;
+            if (!ModManager.MSC && introroll.value == "Downpour")
+            {
+                downpourWarning.Hidden = false;
+                watcherWarning.Hidden = true;
+            }
+            else
+            {
+                downpourWarning.Hidden = ModManager.MSC;
+            }
+
+
+            if (!ModManager.Watcher && introroll.value == "Watcher")
+            {
+                watcherWarning.Hidden = false;
+                downpourWarning.Hidden = true;
+            }
+            else
+            {
+                watcherWarning.Hidden = ModManager.Watcher;
+            }
+
 
             chatBgOpacity.OnValueChanged += (config, value, oldValue) =>
             {

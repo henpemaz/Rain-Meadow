@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
+using static RainMeadow.UI.Components.TabContainer;
 
 namespace RainMeadow.UI.Pages;
 
@@ -13,14 +15,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public SimplerButton backButton;
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
+    public MenuIllustration[] slugcatIllustrations;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
-    public bool readyWarning;
+    public bool readyWarning, lastBanSlugInput, banSlugInput;
     public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
-    public string countdownText;
-    public ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
+    public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
     public ArenaSlugcatSelectPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
@@ -32,6 +34,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
+        slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
 
         int buttonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
         int buttonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - buttonsInTopRow;
@@ -43,8 +46,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
-            MenuIllustration portrait = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
-            btn.subObjects.Add(portrait);
+            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
+            btn.subObjects.Add(slugcatIllustrations[i]);
             if (i >= buttonsInTopRow)
                 btn.TryBind(backButton, right: i + 1 == buttonsInBottomRow, bottom: true);
             subObjects.Add(btn);
@@ -59,14 +62,13 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
 
-        slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310f), default, true);
+        slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, OnlineManager.lobby.isOwner ? 280f : 310), default, true);
         slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
-        descriptionLabel = new MenuLabel(menu, this, "", new Vector2(680f, 210f), default, true);
+        descriptionLabel = new MenuLabel(menu, this, "", new Vector2(680f, OnlineManager.lobby.isOwner ? 180 : 210f), default, true);
         descriptionLabel.label.color = new Color(0.8f, 0.8f, 0.8f);
 
         descriptionGradients = new FSprite[4];
         descriptionGradientsPos = new Vector2[4];
-        countdownText = $"The match is starting in {Arena.lobbyCountDown}! Ready up!!";
 
         for (int i = 0; i < descriptionGradients.Length; i++)
         {
@@ -77,7 +79,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 anchorX = 0.6f,
                 anchorY = 0f,
             };
-            descriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
+            descriptionGradientsPos[i] = new Vector2(680f, i > 1 ? (OnlineManager.lobby.isOwner ? 240f : 280f) : 125f);
             Container.AddChild(descriptionGradients[i]);
         }
 
@@ -96,7 +98,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     {
         SlugcatStats.Name nonNullSlugcat = slugcat ?? SlugcatStats.Name.White;
         selectedSlugcatIndex = Mathf.Max(ArenaHelpers.selectableSlugcats.IndexOf(nonNullSlugcat), 0);
-        slugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
+        nonNullSlugcat = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
         ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
@@ -120,6 +122,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public string GetPainCatDescription()
     {
+
         WeightedList<List<string>> descriptionCategories = new();
         descriptionCategories.Add(Arena.slugcatSelectPainCatNormalDescriptions, 0.4f);
         descriptionCategories.Add(Arena.slugcatSelectPainCatJokeDescriptions, 0.1f);
@@ -140,20 +143,65 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         List<string> descriptions = descriptionCategories.GetRandom();
         return descriptions[UnityEngine.Random.Range(0, descriptions.Count)];
     }
+    public void OnMakingNewAvailableSlugcats()
+    {
+        SlugcatStats.Name[] newAvaliableSlugs = Arena!.AvailableSlugcats();
+        if (newAvaliableSlugs.Length == 1 && newAvaliableSlugs.Contains(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
+            ArenaMenu?.SetTemporaryDescription(menu.Translate("Players will rotate through all slugcats"), 200);
+        else ArenaMenu?.SetTemporaryDescription("", 1); //remove desc above
+    }
+    public void OnSlugcatPressedBan(int index)
+    {
+        SlugcatStats.Name[] availableSlugs = Arena!.AvailableSlugcats();
+        bool oneSlugLeft = availableSlugs.Length - 1 == 0;
+        if (!Arena.bannedSlugs.Contains(index) && oneSlugLeft)
+        {
+            menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+            return;
+        }
+        menu.PlaySound(Arena.AddRemoveBannedSlug(index) ? SoundID.MENU_Checkbox_Uncheck : SoundID.MENU_Checkbox_Check); //true = no wawa
+        OnMakingNewAvailableSlugcats();
+    }
     public override void Update()
     {
         base.Update();
+        lastBanSlugInput = banSlugInput;
+        banSlugInput = RWInput.PlayerInput(0).pckp;
         if (warningCounter >= 0) warningCounter++;
         if (readyWarning)
             warningCounter = Mathf.Max(warningCounter, 0);
         else warningCounter = -1;
         if (readyWarningLabel != null)
         {
-            readyWarningLabel.text = Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in {Arena.lobbyCountDown}! Ready up!!") : defaultReadyWarningText;
+            readyWarningLabel.text = Arena != null && Arena.initiateLobbyCountdown && Arena.lobbyCountDown > 0 ? menu.LongTranslate($"The match is starting in <COUNTDOWN>! Ready up!!").Replace("<COUNTDOWN>", Arena.lobbyCountDown.ToString()) : menu.LongTranslate(defaultReadyWarningText);
         }
-
-        if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+        if (Arena != null && OnlineManager.lobby.isOwner && banSlugInput && !lastBanSlugInput && slugcatSelectButtons.Contains(menu.selectedObject))
+            OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
+        for (int i = 0; i < slugcatIllustrations.Length; i++)
+        {
+            bool banned = Arena?.bannedSlugs?.Contains(i) == true;
+            MenuIllustration illu = slugcatIllustrations[i];
+            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
+            illu.fileName = file;
+            illu.LoadFile();
+            illu.sprite.SetElementByName(illu.fileName); 
+            //WHY CANT MENUILLUSTRATION HAVE THEIR OWN SETNEWIMAGE.
+            //Menuscene has a similar thing happening for gourmand dream scenes, Multiplayer has it, IT COULD HAVE MADE EVERYONE'S LIVES EASIER
+            illu.color = banned ? MenuColorEffect.rgbDarkGrey : Color.white;
+        }
+        if (Arena != null)
+        {
+            int newSlugIndex = Arena.GetNewAvailableSlugcatIndex(selectedSlugcatIndex);
+            if (newSlugIndex != selectedSlugcatIndex)
+            {
+                SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[newSlugIndex]);
+                ArenaMenu?.ChangeScene();
+            }
+        }
+        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+
     }
     public override void GrafUpdate(float timeStacker)
     {
@@ -181,6 +229,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SetCurrentlySelectedOfSeries(string series, int to)
     {
+        if (Arena?.bannedSlugs?.Contains(to) == true)
+        {
+            menu.PlaySound(SoundID.MENU_Greyed_Out_Button_Clicked);
+            return;
+        }
         if (selectedSlugcatIndex == to) return;
         SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[to]);
     }

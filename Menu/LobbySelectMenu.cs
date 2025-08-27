@@ -96,12 +96,18 @@ namespace RainMeadow
 
             // filters
 
-            Vector2 where = new Vector2(300f, 400f);
+            Vector2 where = new(300f, 400f);
 
             var filterModeLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mode"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModeLabel);
             where.y -= 27;
-            filterModeDropDown = new OpComboBox2(new Configurable<LobbyCardsList.LobbyCardsFilter.GameModeFilter>(LobbyCardsList.LobbyCardsFilter.GameModeFilter.All), where, 160f, OpResourceSelector.GetEnumNames(null, typeof(LobbyCardsList.LobbyCardsFilter.GameModeFilter)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            // Depends on nullable enum - if null => no filter
+            var filterEnumNames = OpResourceSelector.GetEnumNames(null, typeof(OnlineGameMode.OnlineGameModeType)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList();
+            filterEnumNames.Add(new ListItem("All", Translate("All")));
+            filterModeDropDown = new OpComboBox2(new Configurable<string>("All"), where, 160f, filterEnumNames)
+            {
+                colorEdge = MenuColorEffect.rgbWhite
+            };
             filterModeDropDown.OnChange += UpdateLobbyFilter;
             new UIelementWrapper(this.tabWrapper, filterModeDropDown);
             where.y -= 30;
@@ -125,11 +131,18 @@ namespace RainMeadow
             var filterModsLabel = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Lobby Mods"), where, new Vector2(200f, 20f), false);
             mainPage.subObjects.Add(filterModsLabel);
             where.y -= 27;
-            List<ListItem> requiredModsList = [new("Any", Translate("Unfiltered"), 0), new("Exact", Translate("Exact order"), 1), new("All", Translate("Any order"), Int32.MaxValue)];
+            List<ListItem> requiredModsList = [
+                new("Any", Translate("Unfiltered"), 0),
+                new("MSC", Translate("MSC"), 1),
+                new("Watcher", Translate("Watcher"), 2),
+                new("MSC + Watcher", Translate("MSC + Watcher"), 3),
+                new("Exact", Translate("Exact order"), 4),
+                new("All", Translate("Any order"), Int32.MaxValue)
+            ];
             string[] requiredModIDs = RainMeadowModManager.GetRequiredMods();
             foreach (string id in requiredModIDs)
             { //adding Rain Meadow is quite redundant, so I'll leave it out.
-                if (id != "henpemaz_rainmeadow") requiredModsList.Add(new ListItem(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count));
+                if (id != "henpemaz_rainmeadow") requiredModsList.Add(new(id, "+" + RainMeadowModManager.ModIdToName(id), requiredModsList.Count));
             }
             filterModsDropDown = new OpComboBox2(new Configurable<string>("Any"), where, 160f, requiredModsList) { colorEdge = MenuColorEffect.rgbWhite };
             filterModsDropDown.OnChange += UpdateLobbyFilter;
@@ -253,11 +266,6 @@ namespace RainMeadow
 
         public bool VerifyPlay(LobbyInfo lobbyInfo, bool care_about_lobby_size = true) {
             domainDropDown.greyedOut = true;
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return false;
-            }
             lastClickedLobby = lobbyInfo;
 
 
@@ -279,11 +287,6 @@ namespace RainMeadow
                 return;
             }
 
-            if (ModManager.JollyCoop)
-            {
-                ShowErrorDialog("Please disable JollyCoop before playing Online");
-                return;
-            }
             lastClickedLobby = lobbyInfo;
 
             if (lobbyInfo is LANMatchmakingManager.LANLobbyInfo) {
