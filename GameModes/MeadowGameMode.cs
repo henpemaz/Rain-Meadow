@@ -18,9 +18,9 @@ namespace RainMeadow
             this.avatarData = new MeadowAvatarData();
 
             MeadowProgression.ReloadProgression();
-            lobby.AddData(new MeadowLobbyData());
             lobby.AddData(new MeadowMusic.LobbyMusicData());
         }
+
         public override List<string> nonGameplayRemixSettings
         {
             get => null;
@@ -158,50 +158,55 @@ namespace RainMeadow
             base.ResourceActive(res);
             if (res is Lobby lobby)
             {
-                RainMeadow.Debug("Setting up lobby data");
-                MeadowLobbyData lobbyData = lobby.GetData<MeadowLobbyData>();
+                lobby.overworld.AddData(new MeadowRegionData());
+            }
+
+            if (res is OverworldSession overworld)
+            {
+                RainMeadow.Debug("Setting up region data");
+                MeadowRegionData regionData = overworld.GetData<MeadowRegionData>();
 
                 var totalRooms = 0;
-                var totalRegions = lobby.subresources.Count;
+                var totalRegions = overworld.overWorld.regions.Length;
 
-                lobbyData.regionSpawnWeights = new float[totalRegions];
-                if (lobby.isOwner)
+                regionData.regionSpawnWeights = new float[totalRegions];
+                if (overworld.isOwner)
                 {
                     RainMeadow.Debug($"Goal setup for {totalRegions} regions");
-                    lobbyData.regionRedTokensGoal = new ushort[totalRegions];
-                    lobbyData.regionBlueTokensGoal = new ushort[totalRegions];
-                    lobbyData.regionGoldTokensGoal = new ushort[totalRegions];
-                    lobbyData.regionGhostsGoal = new ushort[totalRegions];
+                    regionData.regionRedTokensGoal = new ushort[totalRegions];
+                    regionData.regionBlueTokensGoal = new ushort[totalRegions];
+                    regionData.regionGoldTokensGoal = new ushort[totalRegions];
+                    regionData.regionGhostsGoal = new ushort[totalRegions];
                 } // otherwise the above is initialized on state receive
 
                 for (int i = 0; i < totalRegions; i++)
                 {
-                    var region = (lobby.subresources[i] as WorldSession).region;
+                    var region = overworld.overWorld.regions[i];
                     totalRooms += region.numberOfRooms;
                 }
 
                 // around 60 per region, or 1 per room
-                lobbyData.redTokensGoal = (int)(16 * totalRegions + 0.4f * totalRooms);
-                lobbyData.blueTokensGoal = (int)(8 * totalRegions + 0.2f * totalRooms);
-                lobbyData.goldTokensGoal = (int)(4 * totalRegions + 0.1f * totalRooms);
+                regionData.redTokensGoal = (int)(16 * totalRegions + 0.4f * totalRooms);
+                regionData.blueTokensGoal = (int)(8 * totalRegions + 0.2f * totalRooms);
+                regionData.goldTokensGoal = (int)(4 * totalRegions + 0.1f * totalRooms);
 
                 // around 7 per region
-                lobbyData.ghostsGoal = (int)(5 * totalRegions + 0.05f * totalRooms);
+                regionData.ghostsGoal = (int)(5 * totalRegions + 0.05f * totalRooms);
 
                 for (int i = 0; i < totalRegions; i++)
                 {
-                    var region = (lobby.subresources[i] as WorldSession).region;
+                    var region = overworld.overWorld.regions[i];
                     // weighted half by region plus half by relative number of rooms
                     var spawnWeight = 0.5f / totalRegions + 0.5f * region.numberOfRooms / (float)totalRooms;
 
-                    lobbyData.regionSpawnWeights[i] = spawnWeight;
-                    if (lobby.isOwner)
+                    regionData.regionSpawnWeights[i] = spawnWeight;
+                    if (overworld.isOwner)
                     {
                         // default starting values
-                        lobbyData.regionRedTokensGoal[i] = (ushort)(lobbyData.redTokensGoal * spawnWeight);
-                        lobbyData.regionBlueTokensGoal[i] = (ushort)(lobbyData.blueTokensGoal * spawnWeight);
-                        lobbyData.regionGoldTokensGoal[i] = (ushort)(lobbyData.goldTokensGoal * spawnWeight);
-                        lobbyData.regionGhostsGoal[i] = (ushort)(lobbyData.ghostsGoal * spawnWeight);
+                        regionData.regionRedTokensGoal[i] = (ushort)(regionData.redTokensGoal * spawnWeight);
+                        regionData.regionBlueTokensGoal[i] = (ushort)(regionData.blueTokensGoal * spawnWeight);
+                        regionData.regionGoldTokensGoal[i] = (ushort)(regionData.goldTokensGoal * spawnWeight);
+                        regionData.regionGhostsGoal[i] = (ushort)(regionData.ghostsGoal * spawnWeight);
                     } // otherwise received from owner
                 }
             }
@@ -255,7 +260,7 @@ namespace RainMeadow
                         return spawnedItems;
                     }
 
-                    var lobbyData = (ws.super as Lobby).GetData<MeadowLobbyData>();
+                    var lobbyData = (ws.super as OverworldSession).GetData<MeadowRegionData>();
                     ushort regionId = ws.ShortId();
                     SpawnItems(lobbyData.regionRedTokensGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed);
                     SpawnItems(lobbyData.regionBlueTokensGoal[regionId], RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue);
@@ -347,7 +352,7 @@ namespace RainMeadow
             if (OnlineManager.lobby.isOwner && OnlineManager.lobby.isActive)
             {
                 RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
-                var lobbyData = OnlineManager.lobby.GetData<MeadowLobbyData>();
+                var lobbyData = OnlineManager.lobby.GetData<MeadowRegionData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
                 if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
                 {
