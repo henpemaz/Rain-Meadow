@@ -267,11 +267,7 @@ namespace RainMeadow.UI
                 this.slugcatList = slugcatList;
                 desiredResultPosY = lastResultPosY = resultPosY = -150;
                 float scaleOffset = 100 * desiredScale, offset = scaleOffset * 0.5f;
-                slugcatButton = new(menu, this, new(-offset, -offset), new(scaleOffset, scaleOffset), slugcatList.IndexOf(name) == -1 ? slugcatList[0] : name, false)
-                {
-                    size = new(scaleOffset, scaleOffset) //cuz inv portraits are not scaled properly
-                };
-                slugcatButton.portrait.texture.filterMode = FilterMode.Bilinear;
+                slugcatButton = new(menu, this, new(-offset, -offset), new(scaleOffset, scaleOffset), slugcatList.IndexOf(name) == -1 ? slugcatList[0] : name, false);
                 slugcatButton.portrait.sprite.scale = desiredScale;
                 slugcatResult = new(Custom.GetDisplayFont(), "")
                 {
