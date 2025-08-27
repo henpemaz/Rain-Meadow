@@ -49,7 +49,7 @@ namespace RainMeadow
         {
             get
             {
-                return playerSelectedSlugcats?[0] ?? storyGameMode.currentCampaign;
+                return playerSelectedSlugcats?[0] ?? storyGameMode?.currentCampaign ?? slugcatColorOrder[slugcatPageIndex];
             }
             set
             {
@@ -692,6 +692,7 @@ namespace RainMeadow
         }
     }
 }
+
 
 
 
