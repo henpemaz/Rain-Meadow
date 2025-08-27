@@ -25,7 +25,7 @@ namespace RainMeadow
             health = ((DaddyLongLegs.DaddyState)tentacle.daddy.State)?.tentacleHealth?[tentacle.tentacleNumber] ?? 1f;
             pos = tentacle.Tip.pos;
             floatGrabDest = tentacle.floatGrabDest;
-            task = tentacle.task;
+            task = tentacle.task ?? DaddyTentacle.Task.Locomotion;
             grabChunk = BodyChunkRef.FromBodyChunk(tentacle.grabChunk);
             //RainMeadow.Debug($"daddytentacle[{tentacle.tentacleNumber}]: {health} {pos} {floatGrabDest} {task} {grabChunk}");
         }
