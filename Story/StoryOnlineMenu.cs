@@ -144,7 +144,7 @@ namespace RainMeadow
                 {
                     manager.rainWorld.options.jollyPlayerOptionsArray[player].playerClass = slugcat;
                 }
-                playerSelectedSlugcats[player] = slugcat == slugcatColorOrder[slugcatPageIndex] ? null : slugcat;
+                playerSelectedSlugcats[player] = slugcat == storyGameMode.currentCampaign? null : slugcat;
 
                 if (player == 0)
                 {
@@ -692,3 +692,4 @@ namespace RainMeadow
         }
     }
 }
+
