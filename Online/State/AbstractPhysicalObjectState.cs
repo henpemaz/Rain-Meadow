@@ -46,10 +46,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
             if (onlineObject.apo.realizedObject is Oracle oracle)
             {
-                if (oracle.oracleBehavior is SLOracleBehavior)
-                {
-                    return new RealizedSLOracleState(onlineObject);
-                }
+                if (oracle.oracleBehavior is SSOracleBehavior) return new RealizedSSOracleState(onlineObject); //5P
+                if (oracle.oracleBehavior is SLOracleBehavior) return new RealizedSLOracleState(onlineObject); //Lttm
                 return new RealizedOracleState(onlineObject);
             }
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
