@@ -15,7 +15,7 @@ namespace RainMeadow.UI.Components
         public IllustrationButton(Menu.Menu menu, MenuObject owner, Vector2 pos, string folderName, string fileName, string signal = "") : base(menu, owner, pos, Vector2.zero)
         {
             signalText = signal;
-            portrait = new(menu, this, folderName, fileName, Vector2.zero, true, true);
+            portrait = new(menu, this, folderName, fileName, Vector2.zero, false, true);
             size = portrait.size;
             portrait.pos = size / 2;
             roundedRect = new(menu, this, Vector2.zero, size, true);

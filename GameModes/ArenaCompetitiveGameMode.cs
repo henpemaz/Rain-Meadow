@@ -1,8 +1,10 @@
-﻿using Menu;
+﻿using HarmonyLib;
+using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -39,11 +41,14 @@ namespace RainMeadow
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
+        public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
 
         public string paincatName;
         public int lizardEvent;
 
         public override bool PlayersCanHandhold => false;
+
+        public override bool PlayersCanStack => piggyBack;
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
@@ -94,6 +99,7 @@ namespace RainMeadow
         public List<string> playList = new List<string>();
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
+        public List<int> bannedSlugs = new List<int>();
         public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
@@ -323,6 +329,31 @@ namespace RainMeadow
 
         }
 
+        public bool AddRemoveBannedSlug(int slugcatIndex)
+        {
+            if (bannedSlugs.Contains(slugcatIndex))
+            {
+                RainMeadow.Debug($"Removing slugcat index: {slugcatIndex}");
+                bannedSlugs.Remove(slugcatIndex);
+                return false;
+            }
+            RainMeadow.Debug($"Adding slugcat index: {slugcatIndex}");
+            bannedSlugs.Add(slugcatIndex);
+            return true;
+        }
+        public int GetNewAvailableSlugcatIndex(int slugcatIndex) //has to be part of selectableSlugcats
+        {
+            int newIndex = slugcatIndex;
+            while (bannedSlugs.Contains(newIndex))
+            {
+                newIndex++;
+                newIndex %= ArenaHelpers.selectableSlugcats.Count;
+                if (newIndex == slugcatIndex)
+                    break; //just incase;
+            }
+            return newIndex;
+        }
+        public SlugcatStats.Name[] AvailableSlugcats() => [.. ArenaHelpers.selectableSlugcats.Where((x, i) => !bannedSlugs.Contains(i))];
         public void AddExternalGameModes(ArenaSetup.GameTypeID gametypeID, ExternalArenaGameMode externMode) // external mods will hook and insert
         {
 
@@ -374,10 +405,19 @@ namespace RainMeadow
 
         public void InitializeSlugcat()
         {
+            int slugIndex = ArenaHelpers.selectableSlugcats.FindIndex(x => x.Equals(arenaClientSettings.playingAs)), newSlugIndex = GetNewAvailableSlugcatIndex(slugIndex);
+            if (slugIndex != newSlugIndex)
+            {
+                myArenaSetup.playerClass[0] = ArenaHelpers.selectableSlugcats.GetValueOrDefault(newSlugIndex, arenaClientSettings.playingAs)!;
+                arenaClientSettings.playingAs = myArenaSetup.playerClass[0]!; //try to prevent cheats ig
+            }
+
             if (arenaClientSettings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat)
             {
                 System.Random random = new System.Random((int)DateTime.Now.Ticks);
-                avatarSettings.playingAs = ArenaHelpers.allSlugcats[random.Next(ArenaHelpers.allSlugcats.Count)]!;
+                SlugcatStats.Name[] allowedSelectableScugs = AvailableSlugcats(), allowedPlayableScugs = [..ArenaHelpers.allSlugcats.Where(allowedSelectableScugs.Contains)];
+                allowedPlayableScugs = allowedPlayableScugs.Length == 0 ? [..ArenaHelpers.allSlugcats] : allowedPlayableScugs;
+                avatarSettings.playingAs = allowedPlayableScugs[random.Next(allowedPlayableScugs.Length)];
                 arenaClientSettings.randomPlayingAs = avatarSettings.playingAs;
             }
             else

@@ -44,9 +44,11 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Piggyback:"), "PIGGY");
+
             allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
 
-            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, stealItemCheckBox.pos.y - 38), new Vector2(0, 20), false);
+            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, stealItemCheckBox.pos.y - 68), new Vector2(0, 20), false);
             countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(55, countdownTimerLabel.pos.y - 6), 50)
             {
                 alignment = FLabelAlignment.Center,
@@ -58,7 +60,8 @@ namespace RainMeadow.UI.Components
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
 
-            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.PosY), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+
 
             arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
             arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
@@ -72,7 +75,7 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox);
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox);
 
         }
         public override void RemoveSprites()
@@ -98,9 +101,7 @@ namespace RainMeadow.UI.Components
         }
         public override void Update()
         {
-            if (tabWrapper.IsAllRemixUINotHeld() && tabWrapper.holdElement) tabWrapper.holdElement = false;
             base.Update();
-
             foreach (MenuObject obj in subObjects)
             {
                 if (obj is ButtonTemplate btn)
@@ -128,6 +129,8 @@ namespace RainMeadow.UI.Components
                 if (id == "ITEMSTEAL") return arena.itemSteal;
                 if (id == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
                 if (id == "WEAPONCOLLISIONFIX") return arena.weaponCollisionFix;
+                if (id == "PIGGY") return arena.piggyBack;
+
             }
             return false;
         }
@@ -151,6 +154,11 @@ namespace RainMeadow.UI.Components
                 if (id == "WEAPONCOLLISIONFIX")
                 {
                     arena.weaponCollisionFix = c;
+                    return;
+                }
+                if (id == "PIGGY")
+                {
+                    arena.piggyBack = c;
                     return;
                 }
             }
@@ -197,9 +205,8 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox;
+        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
-        public OpComboBox arenaTeamComboBox;
 
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;
         public PatchedUIelementWrapper countdownWrapper, gameModeWrapper;
