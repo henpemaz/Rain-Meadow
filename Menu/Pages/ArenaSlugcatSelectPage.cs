@@ -178,7 +178,18 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (Arena != null && OnlineManager.lobby.isOwner && banSlugInput && !lastBanSlugInput && slugcatSelectButtons.Contains(menu.selectedObject))
             OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
-            slugcatIllustrations[i].color = Arena?.bannedSlugs?.Contains(i) == true ? MenuColorEffect.rgbDarkGrey : Color.white;
+        {
+            bool banned = Arena?.bannedSlugs?.Contains(i) == true;
+            MenuIllustration illu = slugcatIllustrations[i];
+            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
+            illu.fileName = file;
+            illu.LoadFile();
+            illu.sprite.SetElementByName(illu.fileName); 
+            //WHY CANT MENUILLUSTRATION HAVE THEIR OWN SETNEWIMAGE.
+            //Menuscene has a similar thing happening for gourmand dream scenes, Multiplayer has it, IT COULD HAVE MADE EVERYONE'S LIVES EASIER
+            illu.color = banned ? MenuColorEffect.rgbDarkGrey : Color.white;
+        }
         if (Arena != null)
         {
             int newSlugIndex = Arena.GetNewAvailableSlugcatIndex(selectedSlugcatIndex);
