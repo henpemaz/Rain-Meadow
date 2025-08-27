@@ -170,7 +170,7 @@ namespace RainMeadow
 
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
         {
-            if (onlineResource is WorldSession)
+            if (onlineResource is OverworldSession || onlineResource is WorldSession)
             {
                 return lobby.owner == from;
             }
