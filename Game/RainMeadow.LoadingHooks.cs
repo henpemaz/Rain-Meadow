@@ -314,11 +314,11 @@ namespace RainMeadow
                     if (isArenaMode(out var _))
                     {
                         RainMeadow.Debug("Arena: Setting up world session");
-                        ws = OnlineManager.lobby.overworld.worldSessions["arena"];
+                        ws = OnlineManager.lobby.worldSessions["arena"];
                     }
                     else
                     {
-                        ws = OnlineManager.lobby.overworld.worldSessions[region.name];
+                        ws = OnlineManager.lobby.worldSessions[region.name];
                     }
 
                     if (ws is null)
