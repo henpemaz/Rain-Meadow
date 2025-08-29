@@ -1083,9 +1083,11 @@ public partial class RainMeadow
     public class PlayerExtras
     {
         public bool afkSleep;
+        public int manualSleepDownCounter;
+        public int timeSinceShelterWakeup;
     }
     public int afkSleepRequiredTime = 1200;
-    public int timeSinceShelterWakeup;
+    public int manualSleepRequiredTime = 200;
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
@@ -1185,28 +1187,28 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             var extras = playerExtras.GetOrCreateValue(self);
-            if (self.sleepCounter > 0)
-            { timeSinceShelterWakeup = 0; }
-            else
-            { timeSinceShelterWakeup++; }
-
             if (self.IsLocal())
             {
-                if (timeSinceShelterWakeup > afkSleepRequiredTime && //Both touchedNoInputCounter and stillInStartShelter are bugged/unreliable, so congrats, you get your own variable. Now STOP FALLING ASLEEP WHEN WAKING UP.
+                if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
+                else                       { extras.timeSinceShelterWakeup++;   }
+                if (self.input[0].y < 0)   { extras.manualSleepDownCounter++;   }
+                else if ( //Reset if we press anything but down, or if we release down before entering the animation.
+                    (self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec) ||
+                    (self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime)
+                )
+                { extras.manualSleepDownCounter = 0; }
+
+                if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
                     self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
                     ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
                     )
-                    && self.touchedNoInputCounter > afkSleepRequiredTime
+                    && (self.touchedNoInputCounter > afkSleepRequiredTime || extras.manualSleepDownCounter > manualSleepRequiredTime)
                 )
-                {
-                    extras.afkSleep = true;
-                }
+                { extras.afkSleep = true; }
                 else
-                {
-                    extras.afkSleep = false;
-                }
+                { extras.afkSleep = false; }
             }
             if (extras.afkSleep)
             {
