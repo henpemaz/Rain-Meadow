@@ -1083,7 +1083,11 @@ public partial class RainMeadow
     public class PlayerExtras
     {
         public bool afkSleep;
+        public int manualSleepDownCounter;
+        public int timeSinceShelterWakeup;
     }
+    public int afkSleepRequiredTime = 1200;
+    public int manualSleepRequiredTime = 200;
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
@@ -1182,29 +1186,44 @@ public partial class RainMeadow
         //Sleeping when AFK
         if (OnlineManager.lobby != null)
         {
-            var extas = playerExtras.GetOrCreateValue(self);
+            var extras = playerExtras.GetOrCreateValue(self);
             if (self.IsLocal())
             {
-                if (self.sleepCounter == 0 && //Check we're not already sleeping in a shelter; otherwise waking up from a shelter can trigger AFK sleep instantly.
-                    ( //Check if we can fit a sleeping animation.
+                if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
+                else                       { extras.timeSinceShelterWakeup++;   }
+                if (self.input[0].y < 0)   { extras.manualSleepDownCounter++;   }
+                else if ( //Reset if we press anything but down, or if we release down before entering the animation.
+                    (self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec) ||
+                    (self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime)
+                )
+                { extras.manualSleepDownCounter = 0; }
+
+                if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
+                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
+                    ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
                     )
-                    && self.touchedNoInputCounter > 1200
-                   )
-                {
-                    extas.afkSleep = true;
-                }
+                    && (self.touchedNoInputCounter > afkSleepRequiredTime || extras.manualSleepDownCounter > manualSleepRequiredTime)
+                )
+                { extras.afkSleep = true; }
                 else
-                {
-                    extas.afkSleep = false;
-                }
+                { extras.afkSleep = false; }
             }
-            if (extas.afkSleep)
+            if (extras.afkSleep)
             {
                 self.standing = false;
                 self.sleepCurlUp = Mathf.Max(wasSleepCurlUp, self.sleepCurlUp); // prevent decay
                 self.sleepCurlUp = Mathf.Min(1f, self.sleepCurlUp + 0.02f); // add up
+            }
+            if (self.sleepCurlUp > 0 && !self.Consious) //When stunned or dead, the vanilla code stops decaying sleepCurlUp so we need to handle it ourselves. Technically this fixes an esoteric vanilla bug too.
+            {
+                //RainMeadow.Debug("Wake up and smell the PAIN, slugcat!");
+                self.sleepCurlUp = 0f;
+            }
+            if (ModManager.MSC && self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Spear && extras.afkSleep && self.sleepCurlUp == 1f)
+            { //For reasons beyond my comprehension, PlayerBlink() has a weird, possibly unintended "else" that makes specifically Spearmaster *not* close their eyes during sleepCurlUp.
+                self.Blink(2); //Vanilla only avoids this issue because sleepCounter also closes eyes directly using Blink(). We're not using sleepCounter, so Spearmaster needs this insomnia cure.
             }
         }
     }
