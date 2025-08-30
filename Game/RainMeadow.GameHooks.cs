@@ -44,6 +44,7 @@ namespace RainMeadow
             On.AntiGravity.BrokenAntiGravity.Update += AntiGravity_BrokenAntiGravity_Update;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
+            IL.Rope.CollideWithCorners += Rope_CollideWithCorners;
 
             // can't pause it's online mom
             new Hook(typeof(RainWorldGame).GetProperty("GamePaused").GetGetMethod(), this.RainWorldGame_GamePaused);
@@ -57,6 +58,29 @@ namespace RainMeadow
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
         }
 
+        private void Rope_CollideWithCorners(ILContext il) {
+            try
+            {
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                int recursion = 0;
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(out recursion),
+                    i => i.MatchLdcI4(10),
+                    i => i.MatchBle(out skip)
+                );
+                c.MoveAfterLabels();
+                c.Emit(OpCodes.Ldarg, recursion);
+                c.EmitDelegate((int value) => OnlineManager.lobby == null || value < 5);
+                c.Emit(OpCodes.Brtrue, skip);
+                c.Emit(OpCodes.Ret);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+      
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
         {
             if (self.saveSlot != 0)
@@ -65,8 +89,6 @@ namespace RainMeadow
             }
             return "online_sav";
         }
-
-
 
         private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il)
         {
@@ -90,8 +112,8 @@ namespace RainMeadow
             {
                 Logger.LogError(e);
             }
-        }
-
+        }            
+  
         private void RainWorldGame_ctor(On.RainWorldGame.orig_ctor orig, RainWorldGame self, ProcessManager manager)
         {
             if (OnlineManager.lobby != null)

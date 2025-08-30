@@ -1,13 +1,119 @@
 ﻿using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System;
+using UnityEngine;
+
 namespace RainMeadow
 {
     public partial class RainMeadow
     {
+        internal static int splashObjectCount = 0;
+        internal static int splashTickCount = 0;
+        internal static int dripObjectCount = 0;
+        internal static int dripTickCount = 0;
+
         private void ObjectHooks()
         {
             IL.Room.Update += Room_Update;
+
+            // Centipede lag seems to occur due to 3 main factors:
+            // - Unbounded water drip particles
+            // - Unbounded water splash particles
+            // - Too many bodychunks have to be synched (surprisingly not a major factor)
+            // Such that, this pair of functions aims to strictly bound the amount of particles
+            // per second, since the game runs at 40 TPS we measure a second as 40 ticks, this should
+            // be good enough to prevent any gameplay-affecting lag.
+            // While the game does bound the particles per tick, it doesn't bound them entirely, leading
+            // to thousands of spurious particles created within a short timeframe, leading to lag.
+            // Remember that each body chunk is capable to producing about 10 drip + 20 splash water particles
+            // each tick, hence, 40 * (10 + 20) = 1200 particles per body chunk going at ridicolous speeds.
+            IL.Water.Update += CentiLag_Water_Update;
+            On.Water.Update += CentiLag_Water_Update2;
+            On.RainWorldGame.Update += CentiLag_RainWorldGame_Update;
+            On.Creature.TerrainImpact += CentiLag_Creature_TerrainImpact;
+        }
+
+        private void CentiLag_Creature_TerrainImpact(On.Creature.orig_TerrainImpact orig, Creature self, int chunk, RWCustom.IntVector2 direction, float speed, bool firstContact) {
+            if (OnlineManager.lobby != null)
+            {
+                var oldCount = self.room.updateList.Count;
+                if (dripObjectCount < 10 && Math.Min(5, (int)((1f + Mathf.Lerp(speed * Mathf.Lerp(self.bodyChunks[chunk].mass, 1f, 0.75f), 1f, 0.8f) * 0.4f) * self.room.roomSettings.CeilingDrips)) <= 5.0f)
+                {
+                    orig(self, chunk, direction, speed, firstContact);
+                }
+                dripObjectCount += (int)Mathf.Max((float)(self.room.updateList.Count - oldCount), 0.0f);
+            }
+            else
+            {
+                orig(self, chunk, direction, speed, firstContact);
+            }
+        }
+
+        private void CentiLag_RainWorldGame_Update(On.RainWorldGame.orig_Update orig, RainWorldGame self) {
+            if (dripTickCount >= 40)
+            {
+                dripTickCount = 0;
+                dripObjectCount = 0;
+            }
+            orig(self);
+            dripTickCount += 1;
+        }
+
+        private void CentiLag_Water_Update2(On.Water.orig_Update orig, Water self)
+        {
+            if (splashTickCount >= 40)
+            { //40 ticks per second, good metric, very primtive but works
+                splashTickCount = 0;
+                splashObjectCount = 0;
+            }
+            orig(self);
+            splashTickCount += 1;
+        }
+
+        // дLimits particles to about 7-10 per splash, as to not lag everyone because some random creature decided
+        // to glitch out near a pond
+        private void CentiLag_Water_Update(ILContext il)
+        {
+            try
+            {
+                int numIndex = 0;
+                int tmpIndex1 = 0;
+                ILLabel label1 = null;
+                var c = new ILCursor(il);
+                var skip = il.DefineLabel();
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchBleUn(out label1),
+                    i => i.MatchLdloc(out tmpIndex1),
+                    i => i.MatchLdflda<BodyChunk>("vel"),
+                    i => i.MatchLdfld<UnityEngine.Vector2>("y"),
+                    i => i.MatchStloc(out numIndex)
+                );
+                c.MoveAfterLabels();
+                c.EmitDelegate(() => OnlineManager.lobby != null);
+                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Ldloc, numIndex);
+                c.EmitDelegate((float value) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        float minVelY = -50.0F;
+                        float maxVelY = 50.0F;
+                        if (splashObjectCount >= 25 || value <= minVelY || value >= maxVelY)
+                        { //dont spawn any splashes after N splashes over 40 ticks OR has too much velocity
+                            return 0.0F;
+                        }
+                        splashObjectCount += (int)Mathf.Abs(value * ((value < 0f) ? 0.25f : 0.55f));
+                        return Math.Max(Math.Min(value, 10.0F), -20.0F);
+                    }
+                    return value; //default behaviour on singleplayer, just in case
+                });
+                c.Emit(OpCodes.Stloc, numIndex);
+                c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
         }
 
         private void Room_Update(ILContext il)
