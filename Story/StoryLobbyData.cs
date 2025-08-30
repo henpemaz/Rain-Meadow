@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Menu;
+using RainMeadow.Generics;
+using UnityEngine;
 using static RainMeadow.OnlineResource;
 
 namespace RainMeadow
@@ -61,6 +64,7 @@ namespace RainMeadow
             public List<OnlineEntity.EntityId> pups;
             [OnlineField]
             public bool storyItemSteal;
+
             //watcher stuff
             // TODO: Food for tought, what if we use a LUT and encode these in bytes? afterall
             // we know they can only go from 1-10 (integer) and 0, 0.25 and 0.5
@@ -70,6 +74,9 @@ namespace RainMeadow
             public float minimumRippleLevel;
             [OnlineFieldHalf]
             public float maximumRippleLevel;
+
+            [OnlineField(nullable = true)]
+            public MenuSaveStateState? currentMenuSaveState;  
 
             public State() { }
 
@@ -100,15 +107,32 @@ namespace RainMeadow
                     reinforcedKarma = storySession.saveState.deathPersistentSaveData.reinforcedKarma;
                     malnourished = storySession.saveState.malnourished;
                     lastMalnourished = storySession.saveState.lastMalnourished;
+
+                    currentMenuSaveState = new MenuSaveStateState(storySession.saveState);
                 }
+                else
+                {
+                    if (SlugcatSelectMenu.MineForSaveData(RWCustom.Custom.rainWorld.processManager, currentCampaign) is SlugcatSelectMenu.SaveGameData savedata)
+                    {
+                        currentMenuSaveState = new MenuSaveStateState(savedata);
+                    }
+                    else
+                    {
+                        currentMenuSaveState = null;
+                    }
+                }
+
+                
 
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
                 mushroomCounter = (currentGameState?.Players[0].realizedCreature as Player)?.mushroomCounter ?? 0;
 
                 pups = new();
-                foreach (AbstractCreature apo in storyGameMode.pups) {
-                    if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe)) {
+                foreach (AbstractCreature apo in storyGameMode.pups)
+                {
+                    if (OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                    {
                         pups.Add(oe.id);
                     }
                 }
@@ -123,20 +147,24 @@ namespace RainMeadow
                 RainWorldGame currentGameState = RWCustom.Custom.rainWorld.processManager.currentMainLoop as RainWorldGame;
 
                 var lobby = (resource as Lobby);
+                var story = (StoryGameMode)lobby.gameMode;
+
                 (lobby.gameMode as StoryGameMode).rippleLevel = rippleLevel;
 
-                if (currentGameState is not null) {
-                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++) {
+                if (currentGameState is not null)
+                {
+                    for (int i = 0; i < currentGameState.StoryPlayerCount; i++)
+                    {
 
                         var playerstate = (currentGameState?.Players[i].state as PlayerState);
-                        
+
 
                         if (playerstate != null)
                         {
                             playerstate.foodInStomach = food;
                             playerstate.quarterFoodPoints = quarterfood;
                         }
-                                        
+
                         if ((currentGameState?.Players[i].realizedCreature is Player player))
                         {
                             player.mushroomCounter = mushroomCounter;
@@ -145,13 +173,22 @@ namespace RainMeadow
                     }
                 }
 
+                if (story.menuSaveState != currentMenuSaveState)
+                {
+                    story.menuSaveState = currentMenuSaveState;
+                    story.menuSaveGameData = story.menuSaveState?.CreateSaveData();
+                    story.needMenuSaveUpdate = true;
+                }
+                
+                
+
                 if (currentGameState?.session is StoryGameSession storySession)
                 {
                     storySession.saveState.cycleNumber = cycleNumber;
                     storySession.saveState.deathPersistentSaveData.karma = karma;
                     storySession.saveState.deathPersistentSaveData.karmaCap = karmaCap;
                     storySession.saveState.deathPersistentSaveData.rippleLevel = rippleLevel;
-                    
+
                     storySession.saveState.deathPersistentSaveData.minimumRippleLevel = minimumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.maximumRippleLevel = maximumRippleLevel;
                     storySession.saveState.deathPersistentSaveData.reinforcedKarma = reinforcedKarma;
@@ -164,24 +201,172 @@ namespace RainMeadow
                             (currentGameState.Players[i].realizedCreature as Player).glowing = theGlow;
                     }
                 }
-                (lobby.gameMode as StoryGameMode).currentCampaign = currentCampaign;
+                story.currentCampaign = currentCampaign;
 
-                (lobby.gameMode as StoryGameMode).requireCampaignSlugcat = requireCampaignSlugcat;
-                (lobby.gameMode as StoryGameMode).isInGame = isInGame;
-                (lobby.gameMode as StoryGameMode).changedRegions = changedRegions;
-                (lobby.gameMode as StoryGameMode).readyForWin = readyForWin;
-                (lobby.gameMode as StoryGameMode).readyForTransition = (StoryGameMode.ReadyForTransition)readyForTransition;
-                (lobby.gameMode as StoryGameMode).friendlyFire = friendlyFire;
-                (lobby.gameMode as StoryGameMode).region = region;
+                story.requireCampaignSlugcat = requireCampaignSlugcat;
+                story.isInGame = isInGame;
+                story.changedRegions = changedRegions;
+                story.readyForWin = readyForWin;
+                story.readyForTransition = (StoryGameMode.ReadyForTransition)readyForTransition;
+                story.friendlyFire = friendlyFire;
+                story.region = region;
 
-                (lobby.gameMode as StoryGameMode).saveStateString = saveStateString;
-                (lobby.gameMode as StoryGameMode).itemSteal = storyItemSteal;
+                story.saveStateString = saveStateString;
+                story.itemSteal = storyItemSteal;
 
 
-                foreach (OnlineEntity.EntityId pupid in pups) {
-                    if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo) {
+                foreach (OnlineEntity.EntityId pupid in pups)
+                {
+                    if ((pupid.FindEntity() as OnlineCreature)?.apo is AbstractCreature apo)
+                    {
                         (lobby.gameMode as StoryGameMode).pups.Add(apo);
                     }
+                }
+            }
+        }
+
+        public class MenuSaveStateState : Serializer.ICustomSerializable
+        {
+            public int karma;
+            public float rippleLevel;
+            public int food;
+            public int cycle;
+            public bool karmaReinforced;
+            public bool hasGlow;
+            public bool hasMark;
+            public bool ascended;
+            public string shelterName;
+            public int gameTimeAlive;
+            public int gameTimeDead;
+
+            public MenuSaveStateState() { }
+            public MenuSaveStateState(SlugcatSelectMenu.SaveGameData saveData)
+            {
+                karma = saveData.karma;
+                rippleLevel = saveData.rippleLevel;
+                food = saveData.food;
+                cycle = saveData.cycle;
+                karmaReinforced = saveData.karmaReinforced;
+                hasGlow = saveData.hasGlow;
+                hasMark = saveData.hasMark;
+                ascended = saveData.ascended;
+                shelterName = saveData.shelterName;
+                gameTimeAlive = saveData.gameTimeAlive;
+                gameTimeDead = saveData.gameTimeDead;
+            }
+
+            public MenuSaveStateState(SaveState saveState)
+            {
+                karma = saveState.deathPersistentSaveData.karma;
+                rippleLevel = saveState.deathPersistentSaveData.rippleLevel;
+                food = saveState.food;
+                cycle = saveState.cycleNumber;
+                karmaReinforced = saveState.deathPersistentSaveData.reinforcedKarma;
+                hasGlow = saveState.theGlow;
+                hasMark = saveState.deathPersistentSaveData.theMark;
+                ascended = false;
+                shelterName = saveState.GetSaveStateDenToUse();
+                gameTimeAlive = saveState.totTime;
+                gameTimeDead = saveState.deathPersistentSaveData.deathTime;
+            }
+
+            public SlugcatSelectMenu.SaveGameData CreateSaveData()
+            {
+                var saveGameData = new SlugcatSelectMenu.SaveGameData();
+                saveGameData.karma = karma;
+                saveGameData.karmaCap = karma; // undisplayed
+                saveGameData.rippleLevel = rippleLevel;
+                saveGameData.food = food;
+                saveGameData.cycle = cycle;
+                saveGameData.karmaReinforced = karmaReinforced;
+                saveGameData.hasGlow = hasGlow;
+                saveGameData.hasMark = hasMark;
+                saveGameData.ascended = ascended;
+                saveGameData.shelterName = shelterName;
+                saveGameData.gameTimeAlive = gameTimeAlive;
+                saveGameData.gameTimeDead = gameTimeDead;
+                
+                return saveGameData;
+            }   
+
+            public void CustomSerialize(Serializer serializer)
+            {
+                if (serializer.IsWriting)
+                {
+                    serializer.writer.Write(
+                        (byte)(
+                            (karmaReinforced ? 1 : 0) |
+                            ((hasGlow ? 1 : 0) << 1) |
+                            ((hasMark ? 1 : 0) << 2) |
+                            ((ascended ? 1 : 0) << 3)
+                        )
+                    );
+
+                    serializer.writer.Write(gameTimeAlive);
+                    serializer.writer.Write(gameTimeDead);
+                    serializer.writer.Write((byte)karma);
+                    serializer.writer.Write((byte)(rippleLevel / 0.25f));
+                    serializer.writer.Write((byte)food);
+                    serializer.writer.Write(shelterName);
+                }
+
+                if (serializer.IsReading)
+                {
+                    byte flags = serializer.reader.ReadByte();
+                    karmaReinforced = (flags & 1) != 0;
+                    hasGlow = (flags & 2) != 0;
+                    hasMark = (flags & 4) != 0;
+                    ascended = (flags & 8) != 0;
+
+                    gameTimeAlive = serializer.reader.ReadInt32();
+                    gameTimeDead = serializer.reader.ReadInt32();
+                    karma = serializer.reader.ReadByte();
+                    rippleLevel = serializer.reader.ReadByte() * 0.25f;
+                    food = serializer.reader.ReadByte();
+                    shelterName = serializer.reader.ReadString();
+                }
+            }
+
+            // override object.Equals
+            public override bool Equals(object obj)
+            {
+                if (obj == null || GetType() != obj.GetType())
+                {
+                    return false;
+                }
+
+                var other = (MenuSaveStateState)obj;
+                return karma == other.karma &&
+                    rippleLevel == other.rippleLevel &&
+                    food == other.food &&
+                    cycle == other.cycle &&
+                    karmaReinforced == other.karmaReinforced &&
+                    hasGlow == other.hasGlow &&
+                    hasMark == other.hasMark &&
+                    ascended == other.ascended &&
+                    shelterName == other.shelterName &&
+                    gameTimeAlive == other.gameTimeAlive &&
+                    gameTimeDead == other.gameTimeDead;
+
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    int hash = 17;
+                    hash = hash * 23 + karma.GetHashCode();
+                    hash = hash * 23 + rippleLevel.GetHashCode();
+                    hash = hash * 23 + food.GetHashCode();
+                    hash = hash * 23 + cycle.GetHashCode();
+                    hash = hash * 23 + karmaReinforced.GetHashCode();
+                    hash = hash * 23 + hasGlow.GetHashCode();
+                    hash = hash * 23 + hasMark.GetHashCode();
+                    hash = hash * 23 + ascended.GetHashCode();
+                    hash = hash * 23 + (shelterName != null ? shelterName.GetHashCode() : 0);
+                    hash = hash * 23 + gameTimeAlive.GetHashCode();
+                    hash = hash * 23 + gameTimeDead.GetHashCode();
+                    return hash;
                 }
             }
         }

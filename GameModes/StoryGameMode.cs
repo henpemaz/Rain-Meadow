@@ -1,3 +1,4 @@
+using Menu;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,11 @@ namespace RainMeadow
         public float rippleLevel;
 
         public List<AbstractCreature> pups;
+
+        public StoryLobbyData.MenuSaveStateState? menuSaveState;
+        public SlugcatSelectMenu.SaveGameData? menuSaveGameData;
+        public bool needMenuSaveUpdate = false;
+
 
         public bool itemSteal = RainMeadow.rainMeadowOptions.StoryItemSteal.Value;
 
@@ -227,6 +233,13 @@ namespace RainMeadow
                         readyForTransition = ReadyForTransition.Closed;
                     }
                 }
+            }
+
+            if (OnlineManager.lobby.isOwner && menuSaveState != null)
+            {
+                menuSaveState = null;
+                menuSaveGameData = null;
+                needMenuSaveUpdate = true;
             }
         }
 

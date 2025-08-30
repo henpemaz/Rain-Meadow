@@ -45,6 +45,7 @@ namespace RainMeadow
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
 
+            On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
         }
         void IL_Menu_Update(ILContext il)
         {
@@ -366,12 +367,12 @@ namespace RainMeadow
                     }
                 }
 
-                if (isStoryMode(out var _) && !OnlineManager.lobby.isOwner)
-                {
-                    sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
-                    self.sceneOffset = new Vector2(-10f, 100f);
-                    self.slugcatDepth = 3.1000001f;
-                }
+                // if (isStoryMode(out var _) && !OnlineManager.lobby.isOwner)
+                // {
+                //     sceneID = Menu.MenuScene.SceneID.Intro_6_7_Rain_Drop;
+                //     self.sceneOffset = new Vector2(-10f, 100f);
+                //     self.slugcatDepth = 3.1000001f;
+                // }
             });
         }
 
@@ -457,6 +458,18 @@ namespace RainMeadow
                 self.manager.RequestMainProcessSwitch(Ext_ProcessID.LobbySelectMenu);
                 self.PlaySound(SoundID.MENU_Switch_Page_In);
             }, self.mainMenuButtons.Count - 2);
+        }
+
+        private Menu.SlugcatSelectMenu.SaveGameData SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                if (isStoryMode(out var story) && story.menuSaveGameData != null)
+                {
+                    return story.menuSaveGameData;
+                }
+            }
+            return orig(self, pageIndex);
         }
     }
 }

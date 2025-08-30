@@ -24,7 +24,6 @@ namespace RainMeadow
         private SlugcatStats.Name[] selectableSlugcats;
         public SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
-        private MenuLabel onlineDifficultyLabel;
         private Vector2 restartCheckboxPos;
         
         //Chat constants
@@ -75,7 +74,6 @@ namespace RainMeadow
             storyGameMode.Sanitize();
             storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
             restartCheckboxPos = restartCheckbox.pos;       
-            RemoveExcessStoryObjects();
             ModifyExistingMenuItems();
 
             if (ModManager.JollyCoop) {
@@ -109,6 +107,9 @@ namespace RainMeadow
 
             SetupOnlineMenuItems();
             UpdatePlayerList();
+
+            slugcatPageIndex = indexFromColor(storyGameMode.currentCampaign);
+            UpdateSelectedSlugcatInMiscProg();
 
             MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
 
@@ -302,9 +303,16 @@ namespace RainMeadow
                 }
             }
 
+            if (storyGameMode.needMenuSaveUpdate) RefreshPages();
+
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.isOwner)
             {
+                restartCheckbox.buttonBehav.greyedOut = false;
+                nextButton.buttonBehav.greyedOut = false;
+                prevButton.buttonBehav.greyedOut = false;
+
+
                 storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
                 storyGameMode.region = CurrentRegion();
                 if (startButton != null)
@@ -315,20 +323,40 @@ namespace RainMeadow
             }
             else
             {
-                if (onlineDifficultyLabel == null)
-                {
-                    onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
-                    onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
-                    onlineDifficultyLabel.label.alpha = 0.5f;
-                    pages[0].subObjects.Add(onlineDifficultyLabel);
-                }
+                
+                restartCheckbox.buttonBehav.greyedOut = true;
+                nextButton.buttonBehav.greyedOut = true;
+                prevButton.buttonBehav.greyedOut = true;
+
+                // if (onlineDifficultyLabel == null)
+                // {
+                //     onlineDifficultyLabel = new MenuLabel(this, pages[0], $"{GetCurrentCampaignName()}", new Vector2(startButton.pos.x - 100f, startButton.pos.y + 100f), new Vector2(200f, 30f), bigText: true);
+                //     onlineDifficultyLabel.label.alignment = FLabelAlignment.Center;
+                //     onlineDifficultyLabel.label.alpha = 0.5f;
+                //     pages[0].subObjects.Add(onlineDifficultyLabel);
+                // }
+
                 if (startButton != null)
                 {
                     startButton.buttonBehav.greyedOut = !storyGameMode.canJoinGame;
                 }
-                if (onlineDifficultyLabel != null)
+                // if (onlineDifficultyLabel != null)
+                // {
+                //     onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
+                // }
+
+                if (storyGameMode.currentCampaign != slugcatColorOrder[slugcatPageIndex])
                 {
-                    onlineDifficultyLabel.text = GetCurrentCampaignName() + (string.IsNullOrEmpty(storyGameMode.region) ? Translate(" - New Game") : " - " + Translate(storyGameMode.region));
+                    scroll = -(float)(indexFromColor(storyGameMode.currentCampaign) - slugcatPageIndex);
+                    if (scroll > (slugcatColorOrder.Count/2))
+                    {
+                        // scroll from oposite side
+                        scroll = (float)(slugcatPageIndex - indexFromColor(storyGameMode.currentCampaign));
+                    }
+
+                    lastScroll = scroll;
+                    slugcatPageIndex = indexFromColor(storyGameMode.currentCampaign);
+                    UpdateSelectedSlugcatInMiscProg();
                 }
             }
             if (storyGameMode.requireCampaignSlugcat)
@@ -438,6 +466,28 @@ namespace RainMeadow
             }
 
         }
+
+        void RefreshPages()
+        {
+            for (int i = 1; i < pages.Count; i++) pages[i].RemoveSprites();
+            pages.RemoveRange(1, pages.Count - 1);
+            for (int j = 0; j < this.slugcatColorOrder.Count; j++)
+            {
+                if (OnlineManager.lobby.isOwner ? (this.saveGameData[this.slugcatColorOrder[j]] != null) : (storyGameMode.menuSaveGameData != null))
+                {
+                    this.slugcatPages.Add(new SlugcatPageContinue(this, null, 1 + j, this.slugcatColorOrder[j]));
+                }
+                else
+                {
+                    this.slugcatPages.Add(new SlugcatPageNewGame(this, null, 1 + j, this.slugcatColorOrder[j]));
+                }
+
+                this.pages.Add(this.slugcatPages[j]);
+            }
+            UpdateSelectedSlugcatInMiscProg();
+            storyGameMode.needMenuSaveUpdate = false;
+        }
+
         private void RemoveSlugcatList()
         {
             pages[0].ClearMenuObject(ref slugcatLabel);
@@ -448,34 +498,7 @@ namespace RainMeadow
         {
             personaSettings = storyGameMode.avatarSettings[0];
         }
-
-        private void RemoveExcessStoryObjects()
-        {
-            if (!OnlineManager.lobby.isOwner)
-            {
-                StoryMenuHelpers.RemoveMenuObjects(restartCheckbox, nextButton, prevButton);
-
-                foreach (var page in slugcatPages)
-                {
-                    switch (page)
-                    {
-                        case SlugcatPageContinue continuePage:
-                            StoryMenuHelpers.RemoveMenuObjects(continuePage.regionLabel);
-                            foreach (var part in continuePage.hud.parts.Where(x => x is HUD.KarmaMeter or HUD.FoodMeter).ToList())
-                            {
-                                part.slatedForDeletion = true;
-                                part.ClearSprites();
-                                continuePage.hud.parts.Remove(part);
-                            }
-                            break;
-                        case SlugcatPageNewGame newPage:
-                            StoryMenuHelpers.RemoveMenuObjects(newPage.infoLabel, newPage.difficultyLabel);
-                            break;
-                    }
-                }
-            }
-        }
-
+        
         private void SetupOnlineMenuItems()
         {
             // Player lobby label
