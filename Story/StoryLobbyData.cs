@@ -235,6 +235,7 @@ namespace RainMeadow
             public bool hasGlow;
             public bool hasMark;
             public bool ascended;
+            public bool altEnd;
             public string shelterName;
             public int gameTimeAlive;
             public int gameTimeDead;
@@ -250,6 +251,7 @@ namespace RainMeadow
                 hasGlow = saveData.hasGlow;
                 hasMark = saveData.hasMark;
                 ascended = saveData.ascended;
+                altEnd = saveData.altEnding;
                 shelterName = saveData.shelterName;
                 gameTimeAlive = saveData.gameTimeAlive;
                 gameTimeDead = saveData.gameTimeDead;
@@ -264,7 +266,8 @@ namespace RainMeadow
                 karmaReinforced = saveState.deathPersistentSaveData.reinforcedKarma;
                 hasGlow = saveState.theGlow;
                 hasMark = saveState.deathPersistentSaveData.theMark;
-                ascended = false;
+                ascended = saveState.deathPersistentSaveData.ascended;
+                altEnd = saveState.deathPersistentSaveData.altEnding;
                 shelterName = saveState.GetSaveStateDenToUse();
                 gameTimeAlive = saveState.totTime;
                 gameTimeDead = saveState.deathPersistentSaveData.deathTime;
@@ -282,6 +285,7 @@ namespace RainMeadow
                 saveGameData.hasGlow = hasGlow;
                 saveGameData.hasMark = hasMark;
                 saveGameData.ascended = ascended;
+                saveGameData.altEnding = altEnd;
                 saveGameData.shelterName = shelterName;
                 saveGameData.gameTimeAlive = gameTimeAlive;
                 saveGameData.gameTimeDead = gameTimeDead;
@@ -297,7 +301,9 @@ namespace RainMeadow
                     serializer.writer.Write(hasGlow);
                     serializer.writer.Write(hasMark);
                     serializer.writer.Write(ascended);
+                    serializer.writer.Write(altEnd);
 
+                    serializer.writer.Write(cycle);
                     serializer.writer.Write(gameTimeAlive);
                     serializer.writer.Write(gameTimeDead);
                     serializer.writer.Write((byte)karma);
@@ -312,8 +318,9 @@ namespace RainMeadow
                     hasGlow = serializer.reader.ReadBoolean();
                     hasMark = serializer.reader.ReadBoolean();
                     ascended = serializer.reader.ReadBoolean();
+                    altEnd = serializer.reader.ReadBoolean();
 
-
+                    cycle = serializer.reader.ReadInt32();
                     gameTimeAlive = serializer.reader.ReadInt32();
                     gameTimeDead = serializer.reader.ReadInt32();
                     karma = serializer.reader.ReadByte();
@@ -321,17 +328,6 @@ namespace RainMeadow
                     food = serializer.reader.ReadByte();
                     shelterName = serializer.reader.ReadString();
                 }
-
-                RainMeadow.Debug(karmaReinforced);
-                RainMeadow.Debug(hasGlow);
-                RainMeadow.Debug(hasMark);
-                RainMeadow.Debug(ascended);
-                RainMeadow.Debug(gameTimeAlive);
-                RainMeadow.Debug(gameTimeDead);
-                RainMeadow.Debug(karma);
-                RainMeadow.Debug(rippleLevel);
-                RainMeadow.Debug(food);
-                RainMeadow.Debug(shelterName);
             }
 
             public static bool operator !=(MenuSaveStateState? left, MenuSaveStateState? right) => !(left == right);
@@ -352,6 +348,7 @@ namespace RainMeadow
                     (hasGlow == other.hasGlow) &&
                     (hasMark == other.hasMark) &&
                     (ascended == other.ascended) &&
+                    (altEnd == other.altEnd) &&
                     (shelterName == other.shelterName) &&
                     (gameTimeAlive == other.gameTimeAlive) &&
                     (gameTimeDead == other.gameTimeDead);

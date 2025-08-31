@@ -359,11 +359,11 @@ namespace RainMeadow
                     int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight)? cycleAroundleft : cycleAroundRight;
                     if (Mathf.Abs(moveInPage) < Mathf.Abs(bestCycleAround))
                     {
-                        scroll = moveInPage;
+                        scroll = -moveInPage;
                     }
                     else
                     {
-                        scroll = bestCycleAround;
+                        scroll = -bestCycleAround;
                     }
 
                     slugcatPageIndex = currentcampaignindex;
@@ -483,15 +483,35 @@ namespace RainMeadow
 
         void RefreshPages()
         {
-            int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
-            Page page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
-            pages[pageindex].RemoveSprites();
-            pages.RemoveAt(pageindex);
-            slugcatPages.RemoveAt(pageindex - 1);
+            if (OnlineManager.lobby.isOwner)
+            {
+                for (int i = 0; i < slugcatColorOrder.Count; i++)
+                {
+                    int pageindex = 1 + i;
+                    SlugcatPage page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
+                    pages[pageindex].RemoveSprites();
+                    pages.RemoveAt(pageindex);
+                    slugcatPages.RemoveAt(pageindex - 1);
 
-            pages.Insert(pageindex, page);
-            pages.Insert(pageindex - 1, page);
+                    pages.Insert(pageindex, page);
+                    slugcatPages.Insert(pageindex - 1, page);
+                }
+
+            }
+            else
+            {
+                int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
+                SlugcatPage page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
+                pages[pageindex].RemoveSprites();
+                pages.RemoveAt(pageindex);
+                slugcatPages.RemoveAt(pageindex - 1);
+
+                pages.Insert(pageindex, page);
+                slugcatPages.Insert(pageindex - 1, page);
+            }
+            
             UpdateSelectedSlugcatInMiscProg();
+
         }
 
         private void RemoveSlugcatList()
