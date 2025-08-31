@@ -182,6 +182,10 @@ namespace RainMeadow
         {
             if (toPlayer.isMe)
                 return;
+            if (!lobby.clientSettings.TryGetValue(toPlayer, out var settings) || !settings.TryGetData<CustomClientSettings>(out var customSettings))
+                return;
+            if (!customSettings.keys.Contains(customPacket.key))
+                return;
             netIO?.SendCustomData(toPlayer, customPacket, sendType);
         }
 
