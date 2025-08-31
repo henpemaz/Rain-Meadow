@@ -287,36 +287,32 @@ namespace RainMeadow
                 saveGameData.gameTimeDead = gameTimeDead;
                 
                 return saveGameData;
-            }   
+            }
 
             public void CustomSerialize(Serializer serializer)
             {
                 if (serializer.IsWriting)
                 {
-                    serializer.writer.Write(
-                        (byte)(
-                            (karmaReinforced ? 1 : 0) |
-                            ((hasGlow ? 1 : 0) << 1) |
-                            ((hasMark ? 1 : 0) << 2) |
-                            ((ascended ? 1 : 0) << 3)
-                        )
-                    );
+                    serializer.writer.Write(karmaReinforced);
+                    serializer.writer.Write(hasGlow);
+                    serializer.writer.Write(hasMark);
+                    serializer.writer.Write(ascended);
 
                     serializer.writer.Write(gameTimeAlive);
                     serializer.writer.Write(gameTimeDead);
                     serializer.writer.Write((byte)karma);
-                    serializer.writer.Write((byte)(rippleLevel / 0.25f));
+                    serializer.writer.Write((byte)Mathf.FloorToInt(rippleLevel / 0.25f));
                     serializer.writer.Write((byte)food);
                     serializer.writer.Write(shelterName);
                 }
 
                 if (serializer.IsReading)
                 {
-                    byte flags = serializer.reader.ReadByte();
-                    karmaReinforced = (flags & 1) != 0;
-                    hasGlow = (flags & 2) != 0;
-                    hasMark = (flags & 4) != 0;
-                    ascended = (flags & 8) != 0;
+                    karmaReinforced = serializer.reader.ReadBoolean();
+                    hasGlow = serializer.reader.ReadBoolean();
+                    hasMark = serializer.reader.ReadBoolean();
+                    ascended = serializer.reader.ReadBoolean();
+
 
                     gameTimeAlive = serializer.reader.ReadInt32();
                     gameTimeDead = serializer.reader.ReadInt32();
@@ -325,49 +321,40 @@ namespace RainMeadow
                     food = serializer.reader.ReadByte();
                     shelterName = serializer.reader.ReadString();
                 }
+
+                RainMeadow.Debug(karmaReinforced);
+                RainMeadow.Debug(hasGlow);
+                RainMeadow.Debug(hasMark);
+                RainMeadow.Debug(ascended);
+                RainMeadow.Debug(gameTimeAlive);
+                RainMeadow.Debug(gameTimeDead);
+                RainMeadow.Debug(karma);
+                RainMeadow.Debug(rippleLevel);
+                RainMeadow.Debug(food);
+                RainMeadow.Debug(shelterName);
             }
 
-            // override object.Equals
-            public override bool Equals(object obj)
+            public static bool operator !=(MenuSaveStateState? left, MenuSaveStateState? right) => !(left == right);
+
+            public static bool operator ==(MenuSaveStateState? left, MenuSaveStateState? right)
             {
-                if (obj == null || GetType() != obj.GetType())
-                {
-                    return false;
-                }
-
-                var other = (MenuSaveStateState)obj;
-                return karma == other.karma &&
-                    rippleLevel == other.rippleLevel &&
-                    food == other.food &&
-                    cycle == other.cycle &&
-                    karmaReinforced == other.karmaReinforced &&
-                    hasGlow == other.hasGlow &&
-                    hasMark == other.hasMark &&
-                    ascended == other.ascended &&
-                    shelterName == other.shelterName &&
-                    gameTimeAlive == other.gameTimeAlive &&
-                    gameTimeDead == other.gameTimeDead;
-
+                if (left is null) return right is null;
+                if (right is null) return false;
+                return left.Compare(right);
             }
-
-            public override int GetHashCode()
+            public bool Compare(MenuSaveStateState other)
             {
-                unchecked
-                {
-                    int hash = 17;
-                    hash = hash * 23 + karma.GetHashCode();
-                    hash = hash * 23 + rippleLevel.GetHashCode();
-                    hash = hash * 23 + food.GetHashCode();
-                    hash = hash * 23 + cycle.GetHashCode();
-                    hash = hash * 23 + karmaReinforced.GetHashCode();
-                    hash = hash * 23 + hasGlow.GetHashCode();
-                    hash = hash * 23 + hasMark.GetHashCode();
-                    hash = hash * 23 + ascended.GetHashCode();
-                    hash = hash * 23 + (shelterName != null ? shelterName.GetHashCode() : 0);
-                    hash = hash * 23 + gameTimeAlive.GetHashCode();
-                    hash = hash * 23 + gameTimeDead.GetHashCode();
-                    return hash;
-                }
+                return (karma == other.karma) &&
+                    (rippleLevel == other.rippleLevel) &&
+                    (food == other.food) &&
+                    (cycle == other.cycle) &&
+                    (karmaReinforced == other.karmaReinforced) &&
+                    (hasGlow == other.hasGlow) &&
+                    (hasMark == other.hasMark) &&
+                    (ascended == other.ascended) &&
+                    (shelterName == other.shelterName) &&
+                    (gameTimeAlive == other.gameTimeAlive) &&
+                    (gameTimeDead == other.gameTimeDead);
             }
         }
     }

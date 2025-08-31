@@ -303,7 +303,12 @@ namespace RainMeadow
                 }
             }
 
-            if (storyGameMode.needMenuSaveUpdate) RefreshPages();
+            if (storyGameMode.needMenuSaveUpdate)
+            {
+                RainMeadow.Debug("page refresh");
+                storyGameMode.needMenuSaveUpdate = false;
+                RefreshPages();
+            }
 
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.isOwner)
@@ -347,15 +352,24 @@ namespace RainMeadow
 
                 if (storyGameMode.currentCampaign != slugcatColorOrder[slugcatPageIndex])
                 {
-                    scroll = -(float)(indexFromColor(storyGameMode.currentCampaign) - slugcatPageIndex);
-                    if (scroll > (slugcatColorOrder.Count/2))
+                    var currentcampaignindex = indexFromColor(storyGameMode.currentCampaign);
+                    int moveInPage = currentcampaignindex - slugcatPageIndex;
+                    int cycleAroundleft = moveInPage - slugcatColorOrder.Count;
+                    int cycleAroundRight = moveInPage + slugcatColorOrder.Count;
+                    int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight)? cycleAroundleft : cycleAroundRight;
+                    if (Mathf.Abs(moveInPage) < Mathf.Abs(bestCycleAround))
                     {
-                        // scroll from oposite side
-                        scroll = (float)(slugcatPageIndex - indexFromColor(storyGameMode.currentCampaign));
+                        scroll = moveInPage;
+                    }
+                    else
+                    {
+                        scroll = bestCycleAround;
                     }
 
-                    lastScroll = scroll;
-                    slugcatPageIndex = indexFromColor(storyGameMode.currentCampaign);
+                    slugcatPageIndex = currentcampaignindex;
+                    quedSideInput = 0;
+                    
+
                     UpdateSelectedSlugcatInMiscProg();
                 }
             }
@@ -469,23 +483,15 @@ namespace RainMeadow
 
         void RefreshPages()
         {
-            for (int i = 1; i < pages.Count; i++) pages[i].RemoveSprites();
-            pages.RemoveRange(1, pages.Count - 1);
-            for (int j = 0; j < this.slugcatColorOrder.Count; j++)
-            {
-                if (OnlineManager.lobby.isOwner ? (this.saveGameData[this.slugcatColorOrder[j]] != null) : (storyGameMode.menuSaveGameData != null))
-                {
-                    this.slugcatPages.Add(new SlugcatPageContinue(this, null, 1 + j, this.slugcatColorOrder[j]));
-                }
-                else
-                {
-                    this.slugcatPages.Add(new SlugcatPageNewGame(this, null, 1 + j, this.slugcatColorOrder[j]));
-                }
+            int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
+            Page page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
+            pages[pageindex].RemoveSprites();
+            pages.RemoveAt(pageindex);
+            slugcatPages.RemoveAt(pageindex - 1);
 
-                this.pages.Add(this.slugcatPages[j]);
-            }
+            pages.Insert(pageindex, page);
+            pages.Insert(pageindex - 1, page);
             UpdateSelectedSlugcatInMiscProg();
-            storyGameMode.needMenuSaveUpdate = false;
         }
 
         private void RemoveSlugcatList()
