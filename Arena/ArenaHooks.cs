@@ -469,7 +469,7 @@ namespace RainMeadow
                     // Make a skip label
                     var skip = il.DefineLabel();
 
-                    // Get caller type
+                    // Get caller typ                   
                     c.Emit(OpCodes.Ldtoken, original.DeclaringType);
                     c.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
 
@@ -483,6 +483,7 @@ namespace RainMeadow
                         c.Emit(OpCodes.Ldarg_0);
                     }
 
+
                     // Replace creature.Violence with a delegate that calls our event first.
                     c.EmitDelegate((Creature self, BodyChunk source, Vector2? directionAndMomentum, BodyChunk hitChunk, PhysicalObject.Appendage.Pos hitAppendage, Creature.DamageType type, float damage, float stunBonus, Type callerType, object caller) =>
                     {
@@ -494,6 +495,7 @@ namespace RainMeadow
                                 (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
                             }
                         }
+                        self.Violence(source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
                     });
                     c.Emit(OpCodes.Br, skip);
                     c.GotoNext(moveType: MoveType.After,
