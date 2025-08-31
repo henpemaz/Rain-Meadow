@@ -172,7 +172,7 @@ namespace RainMeadow
             if (toPlayer.isMe)
                 return;
 
-            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0)
+            if (toPlayer.needsAck || toPlayer.OutgoingEvents.Count > 0 || toPlayer.OutgoingStates.Count > 0 || toPlayer.OutgoingChunks.Count > 0 || toPlayer.PendingOutgoingChunks.Count > 0)
             {
                 netIO?.SendSessionData(toPlayer);
             }
