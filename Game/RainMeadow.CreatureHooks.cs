@@ -36,6 +36,46 @@ namespace RainMeadow
             On.EggBug.DropEggs += EggBug_DropEggs;
             On.Vulture.DropMask += Vulture_DropMask;
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
+            On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
+
+            IL.Hazer.Update += Hazer_HasSprayed;
+            IL.Hazer.Die += Hazer_HasSprayed;
+        }
+
+        private void Hazer_HasSprayed(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchLdcI4(1),
+                    i => i.MatchStfld<Hazer>(nameof(Hazer.hasSprayed))
+                    );
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate((Hazer hazer) =>
+                {
+                    if (OnlineManager.lobby != null && hazer.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
+                    {
+                        opo.BroadcastRPCInRoomExceptOwners(opo.HazerSpraySync, hazer.spraying, hazer.inkLeft);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void VultureGrub_AttemptCallVulture(On.VultureGrub.orig_AttemptCallVulture orig, VultureGrub self)
+        {
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
+            {
+                orig(self);
+                opo.BroadcastRPCInRoomExceptOwners(opo.GrubResultSync, (byte)self.callingMode);
+                return;
+            }
+            orig(self);
         }
 
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
