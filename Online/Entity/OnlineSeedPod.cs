@@ -37,7 +37,7 @@
         {
             var consumableDef = (OnlineSeedCobDefinition)newObjectEvent;
             var apo = base.ApoFromDef(newObjectEvent, inResource, initialState);
-            RoomSettings roomsetting = new RoomSettings(apo.Room.name, apo.world.region, false, false, OnlineManager.lobby.gameMode.LoadWorldAs(apo.world.game));
+            RoomSettings roomsetting = new RoomSettings(apo.Room.name, apo.world.region, false, false, OnlineManager.lobby.gameMode.LoadWorldIn(apo.world.game), apo.world.game);
 
             var asc = new SeedCob.AbstractSeedCob(apo.world, apo.realizedObject, apo.pos, apo.ID, consumableDef.originRoom, consumableDef.placedObjectIndex, consumableDef.originallyDead,
                 roomsetting.placedObjects[consumableDef.placedObjectIndex].data as PlacedObject.ConsumableObjectData)

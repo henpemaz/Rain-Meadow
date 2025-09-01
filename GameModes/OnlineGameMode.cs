@@ -215,6 +215,11 @@ namespace RainMeadow
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
 
+        public virtual SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
+        {
+            return SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+        }
+
         public abstract ProcessManager.ProcessID MenuProcessId();
 
         public virtual void AddClientData()
