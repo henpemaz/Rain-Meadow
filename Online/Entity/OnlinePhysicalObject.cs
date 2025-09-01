@@ -543,18 +543,19 @@ namespace RainMeadow
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
-            if ((OnlineManager.lobby != null) && this.didParry)
-            {
-                RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
-                return;
-            }
 
             if (this.apo.realizedObject != null) {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
                 if (result.HasValue) {
+                    OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
+                    if ((OnlineManager.lobby != null) && onlineResult != null && onlineResult.didParry)
+                    {
+                        RainMeadow.Debug("Parried!");
+                        OnlineManager.RunDeferred(() => onlineResult.didParry = false);
+                        return;
+                    }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
                 
