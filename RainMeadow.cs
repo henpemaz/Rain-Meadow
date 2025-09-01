@@ -152,10 +152,23 @@ namespace RainMeadow
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
+                var dynamicsw = Stopwatch.StartNew();
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
                 sw.Stop();
                 RainMeadow.Debug($"OnlineState.InitializeBuiltinTypes: {sw.Elapsed}");
+
+                sw = Stopwatch.StartNew();
+                RPCManager.SetupRPCs();
+                sw.Stop();
+                RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
+
+                sw = Stopwatch.StartNew();
+                MethodCache.SaveDynamicMethods();
+                sw.Stop();
+                RainMeadow.Debug($"MethodCache.SaveDynamicMethods: {sw.Elapsed}");
+                dynamicsw.Stop();
+                RainMeadow.Debug($"State & RPC Initialization time: {dynamicsw.Elapsed}");
 
                 sw = Stopwatch.StartNew();
                 OnlineGameMode.InitializeBuiltinTypes();
@@ -167,10 +180,7 @@ namespace RainMeadow
                 sw.Stop();
                 RainMeadow.Debug($"MeadowProgression.InitializeBuiltinTypes: {sw.Elapsed}");
 
-                sw = Stopwatch.StartNew();
-                RPCManager.SetupRPCs();
-                sw.Stop();
-                RainMeadow.Debug($"RPCManager.SetupRPCs: {sw.Elapsed}");
+               
 
                 AssetBundle bundle = AssetBundle.LoadFromFile(AssetManager.ResolveFilePath("assetbundles/rainmeadow"));
                 Shader[] newShaders = bundle.LoadAllAssets<Shader>();
