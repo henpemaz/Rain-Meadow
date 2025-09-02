@@ -550,7 +550,7 @@ namespace RainMeadow
                 hit.BuildCollisionResult(out result);
                 if (result.HasValue) {
                     OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
-                    if ((OnlineManager.lobby != null) && onlineResult != null && onlineResult.didParry)
+                    if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
                     {
                         RainMeadow.Debug("Parried!");
                         OnlineManager.RunDeferred(() => onlineResult.didParry = false);
