@@ -1,13 +1,14 @@
 // HACK
+using BepInEx;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components;
+using RainMeadow.UI.Pages;
+using RWCustom;
 using System;
 using System.Linq;
-using RWCustom;
 using UnityEngine;
-using BepInEx;
-using RainMeadow.UI.Components;
 
 namespace RainMeadow;
 
@@ -96,10 +97,14 @@ public class LobbyCreateMenu : SmartMenu
         mainPage.subObjects.Add(versionLabel);
 
         if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
-        selectedObject = modeDropDown.wrapper;
 
         UpdateModeDescription();
         CreateElementBindings();
+    }
+    public override void Init()
+    {
+        base.Init();
+        selectedObject = modeDropDown.wrapper;
     }
 
     private void UpdateModeDescription()
