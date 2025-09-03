@@ -7,6 +7,7 @@ using System.Linq;
 using RWCustom;
 using UnityEngine;
 using BepInEx;
+using RainMeadow.UI.Components;
 
 namespace RainMeadow;
 
@@ -97,12 +98,44 @@ public class LobbyCreateMenu : SmartMenu
         if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
 
         UpdateModeDescription();
-
+        CreateElementBindings();
     }
 
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
+    }
+    private void CreateElementBindings()
+    {
+        Extensions.TryBind(modeDropDown.wrapper, lobbyLimitNumberTextBox.wrapper, top: true);
+        Extensions.TryBind(modeDropDown.wrapper, visibilityDropDown.wrapper, bottom: true);
+        Extensions.TryBind(modeDropDown.wrapper, backObject, left: true);
+        Extensions.TryBind(modeDropDown.wrapper, createButton, right: true);
+
+        Extensions.TryBind(visibilityDropDown.wrapper, modeDropDown.wrapper, top: true);
+        Extensions.TryBind(visibilityDropDown.wrapper, passwordInputBox.wrapper, bottom: true);
+        Extensions.TryBind(visibilityDropDown.wrapper, backObject, left: true);
+        Extensions.TryBind(visibilityDropDown.wrapper, createButton, right: true);
+
+        Extensions.TryBind(passwordInputBox.wrapper, visibilityDropDown.wrapper, top: true);
+        Extensions.TryBind(passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper, bottom: true);
+        Extensions.TryBind(passwordInputBox.wrapper, backObject, left: true);
+        Extensions.TryBind(passwordInputBox.wrapper, createButton, right: true);
+
+        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, passwordInputBox.wrapper, top: true);
+        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, bottom: true);
+        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, backObject, left: true);
+        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, right: true);
+
+        Extensions.TryBind(backObject, lobbyLimitNumberTextBox.wrapper, top: true);
+        Extensions.TryBind(backObject, modeDropDown.wrapper, bottom: true);
+        Extensions.TryBind(backObject, createButton, left: true);
+        Extensions.TryBind(backObject, createButton, right: true);
+
+        Extensions.TryBind(createButton, lobbyLimitNumberTextBox.wrapper, top: true);
+        Extensions.TryBind(createButton, modeDropDown.wrapper, bottom: true);
+        Extensions.TryBind(createButton, backObject, left: true);
+        Extensions.TryBind(createButton, backObject, right: true);
     }
 
     private void CreateLobby(SimplerButton obj)
