@@ -278,7 +278,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Init()
     {
         base.Init();
-        selectedObject = arenaMainLobbyPage.chatMenuBox.chatTypingBox;
+        selectedObject = arenaMainLobbyPage.readyButton;
     }
     public override void Update()
     {
@@ -446,8 +446,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void UpdateElementBindings()
     {
-        MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
+        //MutualHorizonalButtonBind freaks out if you put things in a loop, so we've got to do it manually.
+        Extensions.TryBind(backObject, arenaMainLobbyPage.readyButton, left: true);
+        Extensions.TryBind(backObject, arenaMainLobbyPage.startButton, right: true);
+        Extensions.TryBind(arenaMainLobbyPage.startButton, backObject, left: true);
+        Extensions.TryBind(arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, right: true);
+        Extensions.TryBind(arenaMainLobbyPage.readyButton, arenaMainLobbyPage.startButton, left: true);
+        Extensions.TryBind(arenaMainLobbyPage.readyButton, backObject, right: true);
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {
