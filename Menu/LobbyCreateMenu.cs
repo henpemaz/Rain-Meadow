@@ -96,6 +96,7 @@ public class LobbyCreateMenu : SmartMenu
         mainPage.subObjects.Add(versionLabel);
 
         if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
+        selectedObject = modeDropDown.wrapper;
 
         UpdateModeDescription();
         CreateElementBindings();
