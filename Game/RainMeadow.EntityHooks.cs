@@ -363,16 +363,11 @@ namespace RainMeadow
                         }
                         StoryRPCs.GoToSaintEnding(null);
                     }
-                    else
-                    {
-                        orig(self, callback, roomName);
-                    }
+
                 }
             }
-            else
-            {
-                orig(self, callback, roomName);
-            }
+
+            orig(self, callback, roomName);
         }
 
         private void WarpPoint_NewWorldLoaded_Room(On.Watcher.WarpPoint.orig_NewWorldLoaded_Room orig, Watcher.WarpPoint self, Room newRoom)
