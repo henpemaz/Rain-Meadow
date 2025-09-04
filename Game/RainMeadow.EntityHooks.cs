@@ -363,9 +363,11 @@ namespace RainMeadow
                         }
                         StoryRPCs.GoToSaintEnding(null);
                     }
+                    else
+                    {
+                        orig(self, callback, roomName);
+                    }
                 }
-                // do nothinf
-                RainMeadow.Debug("initiate special warp: RIVULET DOES NOTHINF");
             }
             else
             {
