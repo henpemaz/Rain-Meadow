@@ -447,14 +447,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void UpdateElementBindings()
     {
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
-        Extensions.TryMutualBind(this, backObject, arenaMainLobbyPage.startButton, leftRight: true);
-        Extensions.TryMutualBind(this, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, leftRight: true);
-        Extensions.TryMutualBind(this, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton, leftRight: true);
-        Extensions.TryMutualBind(this, arenaMainLobbyPage.arenaGameStatsButton, backObject, leftRight: true);
-        if (arenaMainLobbyPage.startButton == null)
-        {
-            Extensions.TryMutualBind(this, backObject, arenaMainLobbyPage.readyButton, leftRight: true);
-        }
+
+        List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
+        Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {

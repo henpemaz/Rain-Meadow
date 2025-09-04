@@ -7,6 +7,7 @@ using RainMeadow.UI.Components;
 using RainMeadow.UI.Pages;
 using RWCustom;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -113,35 +114,17 @@ public class LobbyCreateMenu : SmartMenu
     }
     private void CreateElementBindings()
     {
-        Extensions.TryBind(modeDropDown.wrapper, lobbyLimitNumberTextBox.wrapper, top: true);
-        Extensions.TryBind(modeDropDown.wrapper, visibilityDropDown.wrapper, bottom: true);
-        Extensions.TryBind(modeDropDown.wrapper, backObject, left: true);
-        Extensions.TryBind(modeDropDown.wrapper, createButton, right: true);
+        List<MenuObject> VerticalElements = new List<MenuObject>() { modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper };
+        Extensions.TryMassBind(VerticalElements, backObject, left:true);
+        Extensions.TryMassBind(VerticalElements, createButton, right:true);
+        Extensions.TryMassMutualBind(this, VerticalElements, bottomTop:true, loopLastIndex:true, reverseList:true);
 
-        Extensions.TryBind(visibilityDropDown.wrapper, modeDropDown.wrapper, top: true);
-        Extensions.TryBind(visibilityDropDown.wrapper, passwordInputBox.wrapper, bottom: true);
-        Extensions.TryBind(visibilityDropDown.wrapper, backObject, left: true);
-        Extensions.TryBind(visibilityDropDown.wrapper, createButton, right: true);
+        List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, createButton };
+        Extensions.TryMassBind(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
+        Extensions.TryMassBind(BottomRowElements, modeDropDown.wrapper, bottom:true);
+        Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
 
-        Extensions.TryBind(passwordInputBox.wrapper, visibilityDropDown.wrapper, top: true);
-        Extensions.TryBind(passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper, bottom: true);
-        Extensions.TryBind(passwordInputBox.wrapper, backObject, left: true);
-        Extensions.TryBind(passwordInputBox.wrapper, createButton, right: true);
-
-        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, passwordInputBox.wrapper, top: true);
-        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, bottom: true);
-        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, backObject, left: true);
-        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, right: true);
-
-        Extensions.TryBind(backObject, lobbyLimitNumberTextBox.wrapper, top: true);
-        Extensions.TryBind(backObject, modeDropDown.wrapper, bottom: true);
-        Extensions.TryBind(backObject, createButton, left: true);
-        Extensions.TryBind(backObject, createButton, right: true);
-
-        Extensions.TryBind(createButton, lobbyLimitNumberTextBox.wrapper, top: true);
-        Extensions.TryBind(createButton, modeDropDown.wrapper, bottom: true);
-        Extensions.TryBind(createButton, backObject, left: true);
-        Extensions.TryBind(createButton, backObject, right: true);
+        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, bottom:true);
     }
 
     private void CreateLobby(SimplerButton obj)

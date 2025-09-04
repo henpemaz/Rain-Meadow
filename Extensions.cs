@@ -334,5 +334,30 @@ namespace RainMeadow
                 }
             }
         }
+        ///<summary>Directionally binds a list of UI elements to a target element. For example, with fromObjects[A,B,C] and ToObject D, Bind A→D, B→D, and C→D.</summary>
+        public static void TryMassBind(List<MenuObject> fromObjects, MenuObject toObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            foreach (MenuObject fromObject in fromObjects)
+            {
+                TryBind(fromObject, toObject, left, right, top, bottom);
+            }
+        }
+        ///<summary>Chains MutualBinds together from a list. For example, with menuObjects[A,B,C,D], MutualBind A↔B, B↔C, C↔D, and optionally D↔A. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right. Use reverseList if you need.</summary>
+        public static void TryMassMutualBind(this Menu.Menu menu, List<MenuObject> menuObjects, bool leftRight = false, bool bottomTop = false, bool loopLastIndex = false, bool reverseList = false)
+        {
+            List<MenuObject> WorkingObjects = menuObjects.Where(MenuObject => MenuObject != null).ToList(); //If our input list contains null entries (such as uninitialized), just remove them and continue gracefully.
+            if (reverseList)
+            {
+                WorkingObjects.Reverse();
+            }
+            for (int i = 0; i < WorkingObjects.Count - 1; i++)
+            {
+                TryMutualBind(menu, WorkingObjects[i], WorkingObjects[i+1], leftRight, bottomTop);
+            }
+            if (loopLastIndex)
+            {
+                TryMutualBind(menu, WorkingObjects[WorkingObjects.Count - 1], WorkingObjects[0], leftRight, bottomTop);
+            }
+        }
     }
 }
