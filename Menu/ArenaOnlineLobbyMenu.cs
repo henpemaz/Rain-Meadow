@@ -447,13 +447,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void UpdateElementBindings()
     {
         MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
-        //MutualHorizonalButtonBind freaks out if you put things in a loop, so we've got to do it manually.
-        Extensions.TryBind(backObject, arenaMainLobbyPage.readyButton, left: true);
-        Extensions.TryBind(backObject, arenaMainLobbyPage.startButton, right: true);
-        Extensions.TryBind(arenaMainLobbyPage.startButton, backObject, left: true);
-        Extensions.TryBind(arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, right: true);
-        Extensions.TryBind(arenaMainLobbyPage.readyButton, arenaMainLobbyPage.startButton, left: true);
-        Extensions.TryBind(arenaMainLobbyPage.readyButton, backObject, right: true);
+        Extensions.TryMutualBind(this, backObject, arenaMainLobbyPage.startButton, leftRight: true);
+        Extensions.TryMutualBind(this, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, leftRight: true);
+        Extensions.TryMutualBind(this, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton, leftRight: true);
+        Extensions.TryMutualBind(this, arenaMainLobbyPage.arenaGameStatsButton, backObject, leftRight: true);
+        if (arenaMainLobbyPage.startButton == null)
+        {
+            Extensions.TryMutualBind(this, backObject, arenaMainLobbyPage.readyButton, leftRight: true);
+        }
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {
