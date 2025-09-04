@@ -446,8 +446,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void UpdateElementBindings()
     {
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
-
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
         Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
     }
