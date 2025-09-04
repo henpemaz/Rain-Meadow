@@ -3,8 +3,6 @@ using BepInEx;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
-using RainMeadow.UI.Components;
-using RainMeadow.UI.Pages;
 using RWCustom;
 using System;
 using System.Collections.Generic;
