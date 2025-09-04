@@ -278,6 +278,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Init()
     {
         base.Init();
+        UpdateElementBindings();
         selectedObject = arenaMainLobbyPage.readyButton;
     }
     public override void Update()
@@ -300,7 +301,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 infoLabelFade = 1;
         }
         UpdateOnlineUI();
-        UpdateElementBindings();
         if (!RainMeadow.isArenaMode(out _)) return;
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
