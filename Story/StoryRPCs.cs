@@ -165,7 +165,7 @@ namespace RainMeadow
             if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
             game.manager.statsAfterCredits = true;
-            game.manager.desiredCreditsSong = "NA_11 - Digital Sundown";
+            game.manager.desiredCreditsSong = "BLIZZARD";
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
         }
 
