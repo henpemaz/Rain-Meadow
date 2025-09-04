@@ -129,7 +129,7 @@ namespace RainMeadow
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
-            On.Watcher.SpinningTop.Update += SpinningTop_Update;            
+            On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
             {
@@ -1937,29 +1937,26 @@ namespace RainMeadow
                     if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac)
                     {
                         // do things with the AbstractCreature we found
-                        if (ac is not null && opo is not null && !ac.IsLocal())
+                        if (!ac.IsLocal() && opo.apo.realizedObject?.Submersion > 0.5f)
                         {
-                            if (opo.apo.realizedObject?.Submersion > 0.5f)
-                            {
-                                Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
-                                RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
-                                opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
-                                opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
-                                opo.apo.realizedObject.RemoveFromRoom();
-                            }
-                            else if (opo.apo.realizedObject?.Submersion > 0.5f)
-                            {
-                                inVoidSea = true;
-                            }
-                            else if (!(opo.apo.realizedObject?.Submersion > 0.5f))
-                            {
-                                inVoidSea = false;
-                            }
+                            Vector2 position = ac.realizedCreature.bodyChunks[0].pos;
+                            RainMeadow.Debug("Removed onlinePlayer avatar on submersion at pos: " + position);
+                            opo.apo.realizedObject.room.AddObject(new ShockWave(position, 300f, 0.2f, 15, false));
+                            opo.apo.realizedObject.room.PlaySound(SoundID.MENU_Karma_Ladder_Hit_Upper_Cap, 0f, 3f, 1f);
+                            opo.apo.realizedObject.RemoveFromRoom();
                         }
-
+                        else if (ac.IsLocal() && opo.apo.realizedObject?.Submersion > 0.5f)
+                        {
+                            inVoidSea = true;
+                        }
+                        else if (ac.IsLocal() && !(opo.apo.realizedObject?.Submersion > 0.5f))
+                        {
+                            inVoidSea = false;
+                        }
                     }
                 }
             }
+
         }
     }
 }
