@@ -303,7 +303,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                if (isStoryMode(out var _))
+                if (isStoryMode(out var story))
                 {
                     if (roomName == "MS_COMMS")
                     {
@@ -342,6 +342,26 @@ namespace RainMeadow
                             OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToSpearmasterEnding);
                         }
                         StoryRPCs.GoToSpearmasterEnding(null);
+                    }
+                    else if (roomName == "SI_SAINTINTRO")
+                    {
+                        RainMeadow.Debug("Running Saint ending...");
+                        if (OnlineManager.lobby.isOwner)
+                        {
+                            foreach (var player in OnlineManager.players)
+                            {
+                                if (!player.isMe)
+                                {
+                                    player.InvokeOnceRPC(StoryRPCs.GoToSaintEnding);
+                                }
+                            }
+                        }
+                        else if (RPCEvent.currentRPCEvent is null)
+                        {
+                            // tell host to move everyone else
+                            OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.GoToSaintEnding);
+                        }
+                        StoryRPCs.GoToSaintEnding(null);
                     }
                 }
                 // do nothinf
