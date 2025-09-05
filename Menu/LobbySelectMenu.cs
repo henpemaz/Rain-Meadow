@@ -16,6 +16,8 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
+        private SimplerButton creditsButton;
+        private SimplerButton directConnectButton;
         private OpComboBox2 filterModsDropDown;
         private OpComboBox2 domainDropDown;
         private OpComboBox2 filterModeDropDown;
@@ -45,7 +47,7 @@ namespace RainMeadow
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
             this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
-            var creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
+            creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
             creditsButton.OnClick += (_) =>
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowCredits);
@@ -133,7 +135,7 @@ namespace RainMeadow
             where.y -= 27;
             List<ListItem> requiredModsList = [
                 new("Any", Translate("Unfiltered"), 0),
-                new("MSC", Translate("MSC"), 1),
+                new("MSC", Translate("MSC"), 1),    
                 new("Watcher", Translate("Watcher"), 2),
                 new("MSC + Watcher", Translate("MSC + Watcher"), 3),
                 new("Exact", Translate("Exact order"), 4),
@@ -152,7 +154,7 @@ namespace RainMeadow
             where = new Vector2(manager.rainWorld.screenSize.x - 320f , 400f);
 
 
-            var directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
+            directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
             directConnectButton.OnClick += (_) =>
             {   
                 if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN)
@@ -185,7 +187,8 @@ namespace RainMeadow
 
 
             new UIelementWrapper(this.tabWrapper, domainDropDown);
-    
+
+            CreateElementBindings();
 
             // if (OnlineManager.currentlyJoiningLobby != default)
             // {
@@ -247,6 +250,22 @@ namespace RainMeadow
                 statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
                 statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             }
+        }
+        public void CreateElementBindings()
+        {
+            List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper, backObject };
+            List<MenuObject> RightColumnElements = new List<MenuObject>() { creditsButton, directConnectButton, domainDropDown.wrapper, createButton };
+            Extensions.TryMassMutualBind(this, LeftColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TryMassMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TryMassBindTo(LeftColumnElements, domainDropDown.wrapper, left: true); //This binds the cancel button which we don't want, but it gets overwritten later.
+
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
+            Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
+
+            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true); //These aren't working and I don't know why...
+            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //Tried a lot of stuff too.
+            Extensions.TryBind(directConnectButton, filterModeDropDown.wrapper, right: true);
+            Extensions.TryBind(domainDropDown.wrapper, filterModeDropDown.wrapper, right: true);
         }
 
         public override void GrafUpdate(float timeStacker)
