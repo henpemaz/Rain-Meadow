@@ -181,8 +181,8 @@ namespace RainMeadow
             List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, nextButton };
             List<MenuObject> SkinColumnElements = skinButtons.Cast<MenuObject>().ToList();
 
-            Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
-            Extensions.TryMassMutualBind(this, SkinColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
+            Extensions.TrySequentialMutualBind(this, SkinColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
 
             Extensions.TryMassBind(SkinColumnElements, startButton, right: true);
             Extensions.TryMassBind(SkinColumnElements, backObject, left: true);
@@ -256,7 +256,6 @@ namespace RainMeadow
                 RainMeadow.Debug("personaSettings.tint: " + personaSettings.tint);
                 RainMeadow.Debug("personaSettings.tintAmount: " + personaSettings.tintAmount);
             }
-            UpdateElementBindings();
         }
 
         private void ReadCharacterSettings()

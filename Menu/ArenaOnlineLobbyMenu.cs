@@ -447,10 +447,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public void UpdateElementBindings()
     {
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
-        Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
+        Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
+
+        List<MenuObject> RepeatRoomsSubElements = new List<MenuObject>() { backObject, backObject };
+        List<MenuObject> RainTimerSubElements = new List<MenuObject>() { backObject, backObject, backObject, backObject, backObject };
+        //Extensions.TryParallelStitchBind(RainTimerSubElements, RepeatRoomsSubElements);
 
         //Extensions.TryBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.activeTab, right: true);
         //Extensions.TryBind(arenaMainLobbyPage.levelSelector.selectedLevelsPlaylist.scrollSlider, arenaMainLobbyPage.tabContainer.activeTab, left: true);
+
+        //arenaSettingsInterface
+        //slugcatAbilitiesInterface
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {

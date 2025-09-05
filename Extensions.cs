@@ -338,25 +338,25 @@ namespace RainMeadow
         ///<summary>Directionally binds a list of UI elements to a target element. For example, with fromObjects[A,B,C] and ToObject D, Bind A→D, B→D, and C→D.</summary>
         public static void TryMassBind(List<MenuObject> fromObjects, MenuObject toObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
         {
-            foreach (MenuObject fromObject in fromObjects)
+            foreach (MenuObject FromObject in fromObjects)
             {
-                TryBind(fromObject, toObject, left, right, top, bottom);
+                TryBind(FromObject, toObject, left, right, top, bottom);
             }
         }
         ///<summary>Chains MutualBinds together from a list. For example, with menuObjects[A,B,C,D], MutualBind A↔B, B↔C, C↔D, and optionally D↔A. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right. Use reverseList if you need.</summary>
-        public static void TryMassMutualBind(this Menu.Menu menu, List<MenuObject> menuObjects, bool leftRight = false, bool bottomTop = false, bool loopLastIndex = false, bool reverseList = false)
+        public static void TrySequentialMutualBind(this Menu.Menu menu, List<MenuObject> menuObjects, bool leftRight = false, bool bottomTop = false, bool loopLastIndex = false, bool reverseList = false)
         {
             List<MenuObject> WorkingObjects = menuObjects.Where(MenuObject => MenuObject != null).ToList(); //If our input list contains null entries (such as uninitialized), just remove them and continue gracefully.
             if (WorkingObjects.Count < 2)
             {
-                RainMeadow.Warn(" Tried to keybind less than two UI elements to each other, skipping. Is the list not populated?");
+                RainMeadow.Warn(" Tried to keybind " + WorkingObjects.Count + " UI element(s) to each other, cancelling operation. Is the list not yet populated?");
                 return;
             }
             if (reverseList)
             {
                 WorkingObjects.Reverse();
             }
-            for (int i = 0; i < WorkingObjects.Count - 1; i++)
+            for (int i=0; i < WorkingObjects.Count - 1; i++)
             {
                 TryMutualBind(menu, WorkingObjects[i], WorkingObjects[i+1], leftRight, bottomTop);
             }
@@ -364,6 +364,80 @@ namespace RainMeadow
             {
                 TryMutualBind(menu, WorkingObjects[WorkingObjects.Count - 1], WorkingObjects[0], leftRight, bottomTop);
             }
+        }
+        /// <summary>Mutually binds two different lists of elements together based on their UI position, designed for handling parallel rows or columns with potentially-unequal length.</summary>
+        public static void TryParallelStitchBind(List<MenuObject> objectsListA, List<MenuObject> objectsListB, bool areRows = false, bool areColumns = false, bool reverseFromList = false, bool reverseToList = false)
+        {
+            List<MenuObject> ListA = objectsListA.Where(MenuObject => MenuObject != null).ToList(); //If our input lists contain null entries (such as uninitialized), just remove them and continue as if they don't exist.
+            List<MenuObject> ListB = objectsListB.Where(MenuObject => MenuObject != null).ToList();
+            if (ListA.Count < 1) { RainMeadow.Warn(" Tried to keybind to an empty or null fromObjects, cancelling operation. Is the list not yet populated?"); return; }
+            if (ListB.Count < 1) { RainMeadow.Warn(" Tried to keybind to an empty or null toObjects, cancelling operation. Is the list not yet populated?");   return; }
+            if (reverseFromList) { ListA.Reverse(); }
+            if (reverseToList  ) { ListB.Reverse(); }
+
+
+
+
+
+
+            //int NotSoLeastCommonMultiple = ListA.Count * ListB.Count;
+            //int ListAStepper = 0;
+            //int ListBStepper = 0;
+            //RainMeadow.Debug(ListAStepper + " " + ListBStepper + " - " + NotSoLeastCommonMultiple);
+            //while (ListAStepper < NotSoLeastCommonMultiple || ListBStepper < NotSoLeastCommonMultiple)
+            //{
+            //    if (ListAStepper <= ListBStepper)
+            //    {
+            //        ListAStepper += ListB.Count;
+            //    }
+            //    else
+            //    {
+            //        ListBStepper += ListA.Count;
+            //    }
+            //    RainMeadow.Debug(ListAStepper + " " + ListBStepper);
+            //}
+
+            //if ((ListBStepper - ListAStepper) <= ((ListBStepper + ListB.Count) - ListAStepper))
+            //{
+            //    RainMeadow.Debug("Binding 0[" + ListAStepper / ListA.Count + "] to 1[" + ListBStepper / ListB.Count + "]");
+            //    //TryBind(ListA[ListAStepper / ListA.Count], ListB[ListBStepper / ListB.Count]);
+            //}
+            //else
+            //{
+            //    RainMeadow.Debug("Binding 0[" + ListAStepper / ListA.Count + "] to 1[" + (ListBStepper / ListB.Count) + 1 + "]");
+            //    //TryBind(fromObjects[ListAStepper / ListA.Count], ListB[(ListBStepper / ListB.Count)+1]);
+            //}
+
+            //if ((ListAStepper - ListBStepper) <= ((ListAStepper + ListA.Count) - ListBStepper))
+            //{
+            //    RainMeadow.Debug("Binding 1[" + ListBStepper / ListB.Count + "] to 0[" + ListAStepper / ListA.Count + "]");
+            //    //TryBind(ListB[ListBStepper / ListB.Count], ListA[ListAStepper / ListA.Count]);
+            //}
+            //else
+            //{
+            //    RainMeadow.Debug("Binding 1[" + ListBStepper / ListB.Count + "] to 0[" + (ListAStepper / ListA.Count) + 1 + "]");
+            //    //TryBind(ListB[ListBStepper / ListB.Count], ListA[(ListAStepper / ListA.Count)+1]);
+            //}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //int BestTargetID = 0;
+            //float BestTargetVector = float.PositiveInfinity;
+            //foreach (MenuObject CurrentObject in ListA)
+            //{
+            //    RainMeadow.Debug(CurrentObject.Container.GetPosition());
+            //}
         }
     }
 }

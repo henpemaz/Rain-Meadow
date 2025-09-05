@@ -255,12 +255,12 @@ namespace RainMeadow
         {
             List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper};
             List<MenuObject> RightColumnElements = new List<MenuObject>() { creditsButton, directConnectButton, domainDropDown.wrapper, createButton };
-            Extensions.TryMassMutualBind(this, LeftColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
-            Extensions.TryMassMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TrySequentialMutualBind(this, LeftColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TrySequentialMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
             Extensions.TryMassBind(LeftColumnElements, domainDropDown.wrapper, left: true);
 
             List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
-            Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
+            Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
 
             Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true); //These aren't working and I don't know why...
             Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //Tried a lot of stuff too.
