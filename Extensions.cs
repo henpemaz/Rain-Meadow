@@ -336,17 +336,9 @@ namespace RainMeadow
         }
         //I've been told these could go in Menu/MenuHelpers.cs, but separating them from the functions they're based off of seems wrong. If someone else wants to though, go for it.
         ///<summary>Directionally binds a list of UI elements to a target element. For example, with fromObjects[A,B,C] and ToObject D, Bind A→D, B→D, and C→D.</summary>
-        public static void TryMassBindTo(List<MenuObject> fromObjects, MenuObject toObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        public static void TryMassBind(List<MenuObject> fromObjects, MenuObject toObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
         {
             foreach (MenuObject fromObject in fromObjects)
-            {
-                TryBind(fromObject, toObject, left, right, top, bottom);
-            }
-        }
-        ///<summary>Directionally binds a UI element to a list of target elements. For example, with fromObject A and ToObjects[B,C,D], Bind A→B, A→C, and A→D.</summary>
-        public static void TryMassBindFrom(MenuObject fromObject, List<MenuObject> toObjects, bool left = false, bool right = false, bool top = false, bool bottom = false)
-        {
-            foreach (MenuObject toObject in toObjects)
             {
                 TryBind(fromObject, toObject, left, right, top, bottom);
             }

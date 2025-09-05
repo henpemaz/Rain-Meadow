@@ -113,16 +113,16 @@ public class LobbyCreateMenu : SmartMenu
     public void CreateElementBindings()
     {
         List<MenuObject> VerticalElements = new List<MenuObject>() { modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper };
-        Extensions.TryMassBindTo(VerticalElements, backObject, left:true);
-        Extensions.TryMassBindTo(VerticalElements, createButton, right:true);
+        Extensions.TryMassBind(VerticalElements, backObject, left:true);
+        Extensions.TryMassBind(VerticalElements, createButton, right:true);
         Extensions.TryMassMutualBind(this, VerticalElements, bottomTop:true, loopLastIndex:true, reverseList:true);
 
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, createButton };
-        Extensions.TryMassBindTo(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
-        Extensions.TryMassBindTo(BottomRowElements, modeDropDown.wrapper, bottom:true);
+        Extensions.TryMassBind(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
+        Extensions.TryMassBind(BottomRowElements, modeDropDown.wrapper, bottom:true);
         Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
 
-        Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, bottom:true);
+        //Extensions.TryBind(lobbyLimitNumberTextBox.wrapper, createButton, bottom:true);
     }
 
     private void CreateLobby(SimplerButton obj)

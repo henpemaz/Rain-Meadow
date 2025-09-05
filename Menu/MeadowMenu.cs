@@ -1,5 +1,6 @@
 ﻿using Menu;
 using Menu.Remix;
+using RainMeadow.UI.Pages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -173,7 +174,32 @@ namespace RainMeadow
                 tintSlider.Hidden = true;
                 tintPreview.isVisible = false;
             }
+            UpdateElementBindings();
         }
+        public void UpdateElementBindings()
+        {
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, nextButton };
+            List<MenuObject> SkinColumnElements = skinButtons.Cast<MenuObject>().ToList();
+
+            Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
+            Extensions.TryMassMutualBind(this, SkinColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
+
+            Extensions.TryMassBind(SkinColumnElements, startButton, right: true);
+            Extensions.TryMassBind(SkinColumnElements, backObject, left: true);
+            Extensions.TryMassBind(BottomRowElements, SkinColumnElements.Last(), top: true);
+            Extensions.TryMassBind(BottomRowElements, SkinColumnElements.First(), bottom: true);
+
+            Extensions.TryBind(SkinColumnElements.Last(), backObject, bottom: true);
+            Extensions.TryMutualBind(this, tintSlider, colorpicker.wrapper, bottomTop: true);
+            Extensions.TryBind(tintSlider, colorpicker.wrapper, bottom:true);
+        }
+        public override void Init()
+        {
+            base.Init();
+            UpdateElementBindings();
+            selectedObject = startButton;
+        }
+
 
         public override void Update()
         {
@@ -230,6 +256,7 @@ namespace RainMeadow
                 RainMeadow.Debug("personaSettings.tint: " + personaSettings.tint);
                 RainMeadow.Debug("personaSettings.tintAmount: " + personaSettings.tintAmount);
             }
+            UpdateElementBindings();
         }
 
         private void ReadCharacterSettings()

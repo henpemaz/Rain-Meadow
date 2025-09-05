@@ -253,11 +253,11 @@ namespace RainMeadow
         }
         public void CreateElementBindings()
         {
-            List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper, backObject };
+            List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper};
             List<MenuObject> RightColumnElements = new List<MenuObject>() { creditsButton, directConnectButton, domainDropDown.wrapper, createButton };
-            Extensions.TryMassMutualBind(this, LeftColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TryMassMutualBind(this, LeftColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
             Extensions.TryMassMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
-            Extensions.TryMassBindTo(LeftColumnElements, domainDropDown.wrapper, left: true); //This binds the cancel button which we don't want, but it gets overwritten later.
+            Extensions.TryMassBind(LeftColumnElements, domainDropDown.wrapper, left: true);
 
             List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
             Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);

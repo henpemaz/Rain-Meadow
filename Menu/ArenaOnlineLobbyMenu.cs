@@ -448,6 +448,9 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     {
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
         Extensions.TryMassMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
+
+        //Extensions.TryBind(arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider, arenaMainLobbyPage.tabContainer.activeTab, right: true);
+        //Extensions.TryBind(arenaMainLobbyPage.levelSelector.selectedLevelsPlaylist.scrollSlider, arenaMainLobbyPage.tabContainer.activeTab, left: true);
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {
