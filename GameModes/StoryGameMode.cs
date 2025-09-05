@@ -140,6 +140,7 @@ namespace RainMeadow
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
             if (unsyncedAbstractObjectTypes.Contains(apo.type)) return false;
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SSOracleSwarmer) return false;
             return true;
         }
 
