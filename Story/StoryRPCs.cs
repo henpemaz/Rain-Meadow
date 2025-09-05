@@ -159,6 +159,16 @@ namespace RainMeadow
             game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
         }
 
+        [RPCMethod]
+        public static void GoToSaintEnding(RPCEvent rpc)
+        {
+            if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
+            if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+            game.manager.statsAfterCredits = true;
+            game.manager.desiredCreditsSong = "BLIZZARD";
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Credits);
+        }
+
         // Raises ripple level, usually client also tells
         [RPCMethod]
         public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
