@@ -43,6 +43,8 @@ namespace RainMeadow
             On.Menu.FastTravelScreen.Update += FastTravelScreen_Update;
             On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal_ClientLoadGameNormally;
 
+            On.Menu.StatsDialog.Update += StatsDialog_Update;
+
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
             IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner;
@@ -158,6 +160,7 @@ namespace RainMeadow
                 }
             };
         }
+
 
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
         {
@@ -1753,7 +1756,7 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (isStoryMode(out var storyGameMode) && self.continueButton != null)
+            if (isStoryMode(out var storyGameMode) && self.continueButton != null && self.ID != ProcessManager.ProcessID.Statistics)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
