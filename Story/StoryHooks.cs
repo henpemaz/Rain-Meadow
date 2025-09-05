@@ -159,6 +159,7 @@ namespace RainMeadow
             };
         }
 
+
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
         {
             orig(game, roomName, saveWorldStates);
@@ -1753,7 +1754,7 @@ namespace RainMeadow
         {
             orig(self);
 
-            if (isStoryMode(out var storyGameMode) && self.continueButton != null)
+            if (isStoryMode(out var storyGameMode) && self.continueButton != null && self.ID != ProcessManager.ProcessID.Statistics)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
