@@ -135,7 +135,7 @@ namespace RainMeadow
             where.y -= 27;
             List<ListItem> requiredModsList = [
                 new("Any", Translate("Unfiltered"), 0),
-                new("MSC", Translate("MSC"), 1),    
+                new("MSC", Translate("MSC"), 1),
                 new("Watcher", Translate("Watcher"), 2),
                 new("MSC + Watcher", Translate("MSC + Watcher"), 3),
                 new("Exact", Translate("Exact order"), 4),
