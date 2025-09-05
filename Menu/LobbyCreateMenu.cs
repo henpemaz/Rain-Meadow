@@ -113,9 +113,9 @@ public class LobbyCreateMenu : SmartMenu
     public void CreateElementBindings()
     {
         List<MenuObject> VerticalElements = new List<MenuObject>() { modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper };
+        Extensions.TryMassMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);
         Extensions.TryMassBind(VerticalElements, backObject, left:true);
         Extensions.TryMassBind(VerticalElements, createButton, right:true);
-        Extensions.TryMassMutualBind(this, VerticalElements, bottomTop:true, loopLastIndex:true, reverseList:true);
 
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, createButton };
         Extensions.TryMassBind(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
