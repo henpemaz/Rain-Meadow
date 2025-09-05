@@ -43,8 +43,6 @@ namespace RainMeadow
             On.Menu.FastTravelScreen.Update += FastTravelScreen_Update;
             On.Menu.FastTravelScreen.Singal += FastTravelScreen_Singal_ClientLoadGameNormally;
 
-            On.Menu.StatsDialog.Update += StatsDialog_Update;
-
             On.HUD.HUD.InitSinglePlayerHud += HUD_InitSinglePlayerHud;
 
             IL.HUD.FoodMeter.TrySpawnPupBars += FoodMeter_TrySpawnPupBars_LobbyOwner;
