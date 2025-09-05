@@ -195,7 +195,7 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
-        public List<OnlinePlayer> graspLocked = new();
+        public List<RPCEvent> graspLocked = new();
         static public bool creatingRemoteObject { get; private set; } = false;
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {

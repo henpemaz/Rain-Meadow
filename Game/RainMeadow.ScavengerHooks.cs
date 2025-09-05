@@ -17,6 +17,18 @@ namespace RainMeadow
             On.Scavenger.Throw += Scavenger_Throw;
             On.Scavenger.TryToMeleeCreature += Scavenger_TryToMeleeCreature;
             On.Scavenger.ArrangeInventory += Scavenger_ArrangeInventory;
+
+            On.Scavenger.ForcedLookCreature += Scavenger_ForcedLookCreature;
+        }
+
+        public Tracker.CreatureRepresentation Scavenger_ForcedLookCreature(On.Scavenger.orig_ForcedLookCreature orig, global::Scavenger self)
+        {
+            if (!self.IsLocal())
+            {
+                return null!; // we'll recieve the lookcreature from state
+            }
+
+            return orig(self);
         }
 
         public bool Scavenger_ArrangeInventory(On.Scavenger.orig_ArrangeInventory orig, Scavenger self)
