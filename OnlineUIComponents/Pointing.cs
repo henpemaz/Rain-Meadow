@@ -1,7 +1,6 @@
 ﻿using HUD;
 using Rewired;
 using UnityEngine;
-
 namespace RainMeadow
 {
     public class Pointing : HudPart
@@ -17,7 +16,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
             var avatars = OnlineManager.lobby.gameMode.avatars;
-            if (avatars.Count > 0 && avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature is Player player)
+            if (avatars?.Count > 0 && avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac?.realizedCreature is not null && ac?.realizedCreature is Player player)
             {
                 if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 {
@@ -36,18 +35,21 @@ namespace RainMeadow
         /// </summary>
         private static void LookAtPoint(Creature realizedPlayer, Vector2 pointingVector, int handIndex)
         {
-            var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
-            if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
+            if (realizedPlayer != null)
             {
+                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+                if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
+                {
 
-                Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
-                Vector2 finalHandPos = (controller is Joystick ? targetPosition : new Vector2(Futile.mousePosition.x, Futile.mousePosition.y) + player.room.game.cameras[0].pos);
+                    Vector2 targetPosition = realizedPlayer.mainBodyChunk.pos + pointingVector * 100f;
+                    Vector2 finalHandPos = (controller is Joystick ? targetPosition : new Vector2(Futile.mousePosition.x, Futile.mousePosition.y) + player.room.game.cameras[0].pos);
 
-                playerGraphics.LookAtPoint(finalHandPos, Pointing.LookInterest);
-                var handModule = playerGraphics.hands[handIndex];
-                handModule.reachingForObject = true;
-                handModule.absoluteHuntPos = finalHandPos;
-                player.handPointing = handIndex;
+                    playerGraphics.LookAtPoint(finalHandPos, Pointing.LookInterest);
+                    var handModule = playerGraphics.hands[handIndex];
+                    handModule.reachingForObject = true;
+                    handModule.absoluteHuntPos = finalHandPos;
+                    player.handPointing = handIndex;
+                }
             }
         }
 
