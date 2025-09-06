@@ -1,7 +1,6 @@
 ﻿using HUD;
 using Rewired;
 using UnityEngine;
-using System.Collections.Generic;
 namespace RainMeadow
 {
     public class Pointing : HudPart
