@@ -278,7 +278,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Init()
     {
         base.Init();
-        UpdateElementBindings();
+        CreateAndUpdateElementBindings();
         selectedObject = arenaMainLobbyPage.readyButton;
     }
     public override void Update()
@@ -444,23 +444,27 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             lastCountdownSoundPlayed = Arena.lobbyCountDown;
         }
     }
+    public void CreateAndUpdateElementBindings()
+    {
+        //Match Settings submenu
+        List<MenuObject> MatchSettingsRow1Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.spearsHitCheckbox, arenaMainLobbyPage.arenaSettingsInterface.evilAICheckBox };
+        List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage.arenaSettingsInterface.roomRepeatArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow3Elements = arenaMainLobbyPage.arenaSettingsInterface.rainTimerArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow4Elements = arenaMainLobbyPage.arenaSettingsInterface.wildlifeArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow5Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.stealItemCheckBox, arenaMainLobbyPage.arenaSettingsInterface.allowMidGameJoinCheckbox };
+        List<MenuObject> MatchSettingsRow6Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.piggyBackCheckbox, arenaMainLobbyPage.arenaSettingsInterface.weaponCollisionCheckBox };
+        List<MenuObject> MatchSettingsRow7Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.countdownTimerTextBox.wrapper };
+        List<MenuObject> MatchSettingsRow8Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.arenaGameModeComboBox.wrapper };
+        List<List<MenuObject>> MatchSettingsElementRowList = new List<List<MenuObject>>() { MatchSettingsRow1Elements, MatchSettingsRow2Elements, MatchSettingsRow3Elements, MatchSettingsRow4Elements, MatchSettingsRow5Elements, MatchSettingsRow6Elements, MatchSettingsRow7Elements, MatchSettingsRow8Elements };
+        Extensions.TrySequentialParallelStitchBind(MatchSettingsElementRowList, areRows: true, loopLastIndex: true, reverseListList: true);
+
+        UpdateElementBindings();
+    }
     public void UpdateElementBindings()
     {
         //Primary page
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
         Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
-
-        //Match Settings submenu
-        List<MenuObject> MatchSettingsRow1Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.spearsHitCheckbox, arenaMainLobbyPage.arenaSettingsInterface.evilAICheckBox};
-        List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage.arenaSettingsInterface.roomRepeatArray.buttons.Cast<MenuObject>().ToList();
-        List<MenuObject> MatchSettingsRow3Elements = arenaMainLobbyPage.arenaSettingsInterface.rainTimerArray.buttons.Cast<MenuObject>().ToList();
-        List<MenuObject> MatchSettingsRow4Elements = arenaMainLobbyPage.arenaSettingsInterface.wildlifeArray.buttons.Cast<MenuObject>().ToList();
-        List<MenuObject> MatchSettingsRow5Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.stealItemCheckBox, arenaMainLobbyPage.arenaSettingsInterface.allowMidGameJoinCheckbox};
-        List<MenuObject> MatchSettingsRow6Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.piggyBackCheckbox, arenaMainLobbyPage.arenaSettingsInterface.weaponCollisionCheckBox};
-        List<MenuObject> MatchSettingsRow7Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.countdownTimerTextBox.wrapper};
-        List<MenuObject> MatchSettingsRow8Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.arenaGameModeComboBox.wrapper};
-        List<List<MenuObject>> MatchSettingsElementRowList = new List<List<MenuObject>>() { MatchSettingsRow1Elements, MatchSettingsRow2Elements, MatchSettingsRow3Elements, MatchSettingsRow4Elements, MatchSettingsRow5Elements, MatchSettingsRow6Elements, MatchSettingsRow7Elements, MatchSettingsRow8Elements };
-        Extensions.TrySequentialParallelStitchBind(MatchSettingsElementRowList, areRows: true, loopLastIndex: true, reverseListList: true);
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {
