@@ -262,8 +262,8 @@ namespace RainMeadow
             List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
             Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
 
-            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true); //These aren't working and I don't know why...
-            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //Tried a lot of stuff too.
+            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true);
+            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //I can't get OrderButton to work for some reason, this line does nothing. Keeping it in case someone else knows a fix.
             Extensions.TryBind(directConnectButton, filterModeDropDown.wrapper, right: true);
             Extensions.TryBind(domainDropDown.wrapper, filterModeDropDown.wrapper, right: true);
         }
