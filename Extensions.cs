@@ -419,7 +419,6 @@ namespace RainMeadow
                 TargetStep -= (ListA.Count - 1);
             }
             //Find which direction we need to bind, then bind. Referencing the index of a division is conceptually sketchy, but the math checks out and has been throughly tested. Worst-case scenario it's integer division anyway.
-            RainMeadow.Debug(ListA.Count + " " + ListB.Count + " " + ListAStepper + " " + ListBStepper + " " + TargetStep);
             TryBind(
                 ListA[ListAStepper / Math.Max(1, ListB.Count - 1)],
                 ListB[TargetStep   / Math.Max(1, ListA.Count - 1)],
