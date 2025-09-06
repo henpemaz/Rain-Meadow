@@ -365,79 +365,91 @@ namespace RainMeadow
                 TryMutualBind(menu, WorkingObjects[WorkingObjects.Count - 1], WorkingObjects[0], leftRight, bottomTop);
             }
         }
-        /// <summary>Mutually binds two different lists of elements together based on their UI position, designed for handling parallel rows or columns with potentially-unequal length.</summary>
-        public static void TryParallelStitchBind(List<MenuObject> objectsListA, List<MenuObject> objectsListB, bool areRows = false, bool areColumns = false, bool reverseFromList = false, bool reverseToList = false)
+        /// <summary>Mutually binds two different lists of elements together based on their mathematical relative positions; designed for handling parallel rows or columns with equal length, but different numbers of elements. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right, use swapLists if you want the readability.</summary>
+        public static void TryParallelStitchBind(List<MenuObject> fromObjectsList, List<MenuObject> toObjectsList, bool areRows = false, bool areColumns = false, bool swapLists = false, bool reverseFromList = false, bool reverseToList = false)
         {
-            List<MenuObject> ListA = objectsListA.Where(MenuObject => MenuObject != null).ToList(); //If our input lists contain null entries (such as uninitialized), just remove them and continue as if they don't exist.
-            List<MenuObject> ListB = objectsListB.Where(MenuObject => MenuObject != null).ToList();
-            if (ListA.Count < 1) { RainMeadow.Warn(" Tried to keybind to an empty or null fromObjects, cancelling operation. Is the list not yet populated?"); return; }
-            if (ListB.Count < 1) { RainMeadow.Warn(" Tried to keybind to an empty or null toObjects, cancelling operation. Is the list not yet populated?");   return; }
+            //Clean up the lists
+            List<MenuObject> ListA = fromObjectsList.Where(MenuObject => MenuObject != null).ToList(); //If our input lists contain null entries (such as uninitialized), just remove them and continue as if they don't exist.
+            List<MenuObject> ListB =   toObjectsList.Where(MenuObject => MenuObject != null).ToList();
+            if (ListA.Count < 1) { RainMeadow.Warn(" Tried to UI keybind to an empty or null fromObjects, cancelling operation. Is the list not yet populated?"); return; }
+            if (ListB.Count < 1) { RainMeadow.Warn(" Tried to UI keybind to an empty or null toObjects, cancelling operation. Is the list not yet populated?");   return; }
             if (reverseFromList) { ListA.Reverse(); }
-            if (reverseToList  ) { ListB.Reverse(); }
-
-
-
-
-
-
-            //int NotSoLeastCommonMultiple = ListA.Count * ListB.Count;
-            //int ListAStepper = 0;
-            //int ListBStepper = 0;
-            //RainMeadow.Debug(ListAStepper + " " + ListBStepper + " - " + NotSoLeastCommonMultiple);
-            //while (ListAStepper < NotSoLeastCommonMultiple || ListBStepper < NotSoLeastCommonMultiple)
-            //{
-            //    if (ListAStepper <= ListBStepper)
-            //    {
-            //        ListAStepper += ListB.Count;
-            //    }
-            //    else
-            //    {
-            //        ListBStepper += ListA.Count;
-            //    }
-            //    RainMeadow.Debug(ListAStepper + " " + ListBStepper);
-            //}
-
-            //if ((ListBStepper - ListAStepper) <= ((ListBStepper + ListB.Count) - ListAStepper))
-            //{
-            //    RainMeadow.Debug("Binding 0[" + ListAStepper / ListA.Count + "] to 1[" + ListBStepper / ListB.Count + "]");
-            //    //TryBind(ListA[ListAStepper / ListA.Count], ListB[ListBStepper / ListB.Count]);
-            //}
-            //else
-            //{
-            //    RainMeadow.Debug("Binding 0[" + ListAStepper / ListA.Count + "] to 1[" + (ListBStepper / ListB.Count) + 1 + "]");
-            //    //TryBind(fromObjects[ListAStepper / ListA.Count], ListB[(ListBStepper / ListB.Count)+1]);
-            //}
-
-            //if ((ListAStepper - ListBStepper) <= ((ListAStepper + ListA.Count) - ListBStepper))
-            //{
-            //    RainMeadow.Debug("Binding 1[" + ListBStepper / ListB.Count + "] to 0[" + ListAStepper / ListA.Count + "]");
-            //    //TryBind(ListB[ListBStepper / ListB.Count], ListA[ListAStepper / ListA.Count]);
-            //}
-            //else
-            //{
-            //    RainMeadow.Debug("Binding 1[" + ListBStepper / ListB.Count + "] to 0[" + (ListAStepper / ListA.Count) + 1 + "]");
-            //    //TryBind(ListB[ListBStepper / ListB.Count], ListA[(ListAStepper / ListA.Count)+1]);
-            //}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            //int BestTargetID = 0;
-            //float BestTargetVector = float.PositiveInfinity;
-            //foreach (MenuObject CurrentObject in ListA)
-            //{
-            //    RainMeadow.Debug(CurrentObject.Container.GetPosition());
-            //}
+            if (reverseToList)   { ListB.Reverse(); }
+            if (swapLists) { (ListA, ListB) = (ListB, ListA); }
+            //Create 2 button pointers, one for each list
+            int NotSoLeastCommonMultiple = (ListA.Count - 1) * (ListB.Count - 1);
+            int ListAStepper = 0;
+            int ListBStepper = 0;
+            if (ListA.Count > 1 && ListB.Count > 1)
+            {
+                while (ListAStepper <= NotSoLeastCommonMultiple || ListBStepper <= NotSoLeastCommonMultiple)
+                {
+                    //At the lower pointer, compare the distance to the higher pointer's current button and the one before it, then increment the lower pointer to the next button.
+                    if (ListAStepper <= ListBStepper)
+                    {
+                        ParallelStitchBindFindClosest(ListA, ListB, ListAStepper, ListBStepper, areRows, areColumns, isTempSwap: false);
+                        ListAStepper += (ListB.Count - 1);
+                    }
+                    else
+                    {
+                        ParallelStitchBindFindClosest(ListB, ListA, ListBStepper, ListAStepper, areRows, areColumns, isTempSwap: true);
+                        ListBStepper += (ListA.Count - 1);
+                    }
+                }
+            }
+            //1-length lists are evil and create a catch-22 between "infinite while loop" and "OOB causing misbinds". So, gaslight the second step into thinking its a TryMassBind with extra directional logic.
+            else
+            {
+                foreach (MenuObject fromObject in ListA)
+                {
+                    ParallelStitchBindFindClosest(new List<MenuObject>() { fromObject }, new List<MenuObject>() { ListB[0] }, 0, 0, areRows, areColumns, false);
+                }
+                foreach (MenuObject fromObject in ListB)
+                {
+                    ParallelStitchBindFindClosest(new List<MenuObject>() { fromObject }, new List<MenuObject>() { ListA[0] }, 0, 0, areRows, areColumns, true);
+                }
+            }
+        }
+        private static void ParallelStitchBindFindClosest(List<MenuObject> ListA, List<MenuObject> ListB, int ListAStepper, int ListBStepper, bool areRows, bool areColumns, bool isTempSwap)
+        {
+            //Get the scaled index of whichever button is closer. Button "positions" are basically a 0%-100% through the list, but stored as an integer because it's clean and I don't even want to bother with floats.
+            int TargetStep = ListBStepper;
+            if (ListAStepper - (ListBStepper - (ListA.Count - 1)) <= ListBStepper - ListAStepper)
+            {
+                TargetStep -= (ListA.Count - 1);
+            }
+            //Find which direction we need to bind, then bind. Referencing the index of a division is conceptually sketchy, but the math checks out and has been throughly tested. Worst-case scenario it's integer division anyway.
+            RainMeadow.Debug(ListA.Count + " " + ListB.Count + " " + ListAStepper + " " + ListBStepper + " " + TargetStep);
+            TryBind(
+                ListA[ListAStepper / Math.Max(1, ListB.Count - 1)],
+                ListB[TargetStep   / Math.Max(1, ListA.Count - 1)],
+                top:   !isTempSwap && areRows,
+                bottom: isTempSwap && areRows,
+                right: !isTempSwap && areColumns,
+                left:   isTempSwap && areColumns
+            );
+        }
+        /// <summary>Hybrid of TrySeqentualMutualBind() and TryParallelStitchBind(); find the best way to bind a list of lists together. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right, use reverseListList if you want the readability.</summary>
+        public static void TrySequentialParallelStitchBind(List<List<MenuObject>> listList, bool areRows = false, bool areColumns = false, bool loopLastIndex = false, bool reverseListList = false)
+        {
+            List<List<MenuObject>> WorkingLists = listList.Where(List => List != null).ToList(); //If our input list contains null entries (such as uninitialized), just remove them and continue gracefully.
+            if (WorkingLists.Count < 2)
+            {
+                RainMeadow.Warn(" Tried to keybind stitch " + listList.Count + " UI element list(s) to each other, cancelling operation. Is the list not yet populated?");
+                return;
+            }
+            if (reverseListList)
+            {
+                WorkingLists.Reverse();
+            }
+            for (int i = 0; i < listList.Count - 1; i++)
+            {
+                TryParallelStitchBind(listList[i + 1], listList[i], areRows, areColumns);
+            }
+            if (loopLastIndex)
+            {
+                TryParallelStitchBind(listList[0], listList[listList.Count - 1], areRows, areColumns);
+            }
         }
     }
 }
