@@ -1,7 +1,7 @@
 ﻿using HUD;
 using Rewired;
 using UnityEngine;
-
+using System.Collections.Generic;
 namespace RainMeadow
 {
     public class Pointing : HudPart
@@ -17,7 +17,7 @@ namespace RainMeadow
         {
             base.Draw(timeStacker);
             var avatars = OnlineManager.lobby.gameMode.avatars;
-            if (avatars.Count > 0 && avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac.realizedCreature is Player player)
+            if (avatars?.Count > 0 && avatars[0] is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && ac?.realizedCreature is not null && ac?.realizedCreature is Player player)
             {
                 if (Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
                 {
