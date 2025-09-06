@@ -554,6 +554,7 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Parried!");
                         OnlineManager.RunDeferred(() => onlineResult.didParry = false);
+                        HittingRemotely = false;
                         return;
                     }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
