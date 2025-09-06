@@ -76,15 +76,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             OnlinePhysicalObject? onlineP = acPlayer.GetOnlineObject();
                             if (onlineP != null)
                             {
-                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP.owner].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings.TryGetValue(onlineP.owner, out var onlineClientP);
                                 if (gotPlayerTeam)
                                 {
-                                    if (acPlayer.realizedCreature != null)
+                                    onlineClientP.TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                    if (gotPlayerTeam)
                                     {
-
-                                        if (acPlayer.realizedCreature.State.alive)
+                                        if (acPlayer.realizedCreature != null)
                                         {
-                                            aliveTeams.Add(playerTeam.team);
+
+                                            if (acPlayer.realizedCreature.State.alive)
+                                            {
+                                                aliveTeams.Add(playerTeam.team);
+                                            }
                                         }
                                     }
                                 }
@@ -493,7 +497,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
         public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
         {
-            if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false) {
+            if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
+            {
                 return "";
             }
 
