@@ -2,6 +2,7 @@
 using Menu;
 using RWCustom;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ namespace RainMeadow
         private Creature avatarCreature;
         private int targetHub;
         private int suco4;
+
+        private HorizontalSlider2 hubVolumeSlider;
         
         public static Slider.SliderID HubVolume = new Slider.SliderID("Thingy", true);
         public MeadowPauseMenu(ProcessManager manager, RainWorldGame game, MeadowGameMode mgm) : base(manager, game)
@@ -89,9 +92,9 @@ namespace RainMeadow
             pos.y -= 40f;
 
             pos.y -= (buttonCount) * 40f;
-            var slider = new HorizontalSlider2(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), HubVolume, false);
-            slider.subObjects.Add(new Floater(this, slider, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f)));
-            pages[0].subObjects.Add(slider);
+            hubVolumeSlider = new HorizontalSlider2(this, pages[0], this.Translate("Hub zone volume"), pos, new Vector2(60f, 10f), HubVolume, false);
+            hubVolumeSlider.subObjects.Add(new Floater(this, hubVolumeSlider, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(0f, 1f)));
+            pages[0].subObjects.Add(hubVolumeSlider);
 
             pos.y -= 40f;
             var namesCb = new CheckBox(this, pages[0], this, pos, 70f, this.Translate("Display names"), "NAMES", true);
@@ -107,6 +110,8 @@ namespace RainMeadow
             this.controlMap.RemoveSprites();
             this.pages[0].subObjects.Remove(this.controlMap);
             //this.blackSprite.scaleX = manager.rainWorld.options.ScreenSize.x / 4f;
+
+            CreateElementBinds();
         }
 
         public override void SliderSetValue(Slider slider, float f)
@@ -212,6 +217,16 @@ namespace RainMeadow
                 MeadowProgression.progressionData.collisionOn = c;
                 avatarCreature.ChangeCollisionLayer(MeadowProgression.progressionData.collisionOn ? 1 : 0);
             }
+        }
+        public void CreateElementBinds()
+        {
+            List<MenuObject> PauseElements = pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(SimplerButton)).ToList();
+            PauseElements.Add(hubVolumeSlider.subObjects[0]); //oh you special little snowflake
+            PauseElements.AddRange(pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(CheckBox)).ToList());
+
+            Extensions.TryMassDeleteBind(PauseElements, left: true, right: true); //Fix left/right causing nonsense by just removing left/right.
+            Extensions.TrySequentialMutualBind(this, PauseElements, bottomTop: true, loopLastIndex: true, reverseList: true); //Fix the up/down binds not linking properly.
+            Extensions.TryBind(continueButton, exitButton, top: true); //When pressing up at Continue, move to Quit instead of the collision checkbox.
         }
     }
 }

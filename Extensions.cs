@@ -335,12 +335,28 @@ namespace RainMeadow
             }
         }
         //I've been told these could go in Menu/MenuHelpers.cs, but separating them from the functions they're based off of seems wrong. If someone else wants to though, go for it.
+        ///<summary>Effectively deletes a UI element's directional keybind(s) by binding the button to itself.</summary>
+        public static void TryDeleteBind(MenuObject menuObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            menuObject.nextSelectable[0] = (left ? menuObject : menuObject.nextSelectable[0]);
+            menuObject.nextSelectable[1] = (top ? menuObject : menuObject.nextSelectable[1]);
+            menuObject.nextSelectable[2] = (right ? menuObject : menuObject.nextSelectable[2]);
+            menuObject.nextSelectable[3] = (bottom ? menuObject : menuObject.nextSelectable[3]);
+        }
         ///<summary>Directionally binds a list of UI elements to a target element. For example, with fromObjects[A,B,C] and ToObject D, Bind A→D, B→D, and C→D.</summary>
         public static void TryMassBind(List<MenuObject> fromObjects, MenuObject toObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
         {
             foreach (MenuObject FromObject in fromObjects)
             {
                 TryBind(FromObject, toObject, left, right, top, bottom);
+            }
+        }
+        ///<summary>Effectively deletes a UI list of elements' directional keybind(s) by binding each button to itself.</summary>
+        public static void TryMassDeleteBind(List<MenuObject> objects, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            foreach (MenuObject Object in objects)
+            {
+                TryDeleteBind(Object, left, right, top, bottom);
             }
         }
         ///<summary>Chains MutualBinds together from a list. For example, with menuObjects[A,B,C,D], MutualBind A↔B, B↔C, C↔D, and optionally D↔A. Rain World handles MutualBinds from BOTTOM TO TOP, or left to right. Use reverseList if you need.</summary>
