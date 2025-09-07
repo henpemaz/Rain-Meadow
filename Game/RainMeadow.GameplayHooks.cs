@@ -550,7 +550,7 @@ namespace RainMeadow
 
                 return ret;
             }
-            else if (self.IsLocal())
+            else if (WeaponOnline.isMine || WeaponOnline.isPending)
             {
                 RealizedPhysicalObjectState realizedstate = null!;
                 if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);

@@ -35,6 +35,12 @@ namespace RainMeadow
         virtual public bool ShouldPosBeLenient(PhysicalObject po) {
             if (po.grabbedBy.Any((x) => {
                 if (x.grabber == null) return false;
+                if (x.grabber is Scavenger || x.grabber is Lizard || (x.grabber is Player p && !p.HeavyCarry(x.grabbed)))
+                {
+                    return true;
+                }
+
+
                 var onlinegrabber = x.grabber.abstractCreature.GetOnlineCreature();
                 if (onlinegrabber == null) return false;
                 return onlinegrabber.lenientPos;
@@ -45,7 +51,7 @@ namespace RainMeadow
 
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
-            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; };
+            if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; }
             var opo = onlineEntity as OnlinePhysicalObject;
             var po = opo.apo.realizedObject;
 
@@ -84,10 +90,22 @@ namespace RainMeadow
             serializer.SerializeHalf(ref vel);
         }
 
+        float closeEnough = 10f;
+
         public void ReadTo(BodyChunk c)
         {
-            c.pos = pos;
+
+            if ((pos - c.pos).sqrMagnitude < (closeEnough * closeEnough))
+            {
+                c.pos = Vector2.Lerp(pos, c.pos, 0.5f);
+            }
+            else
+            {
+                c.pos = pos;
+            }
+
             c.vel = vel;
+           
         }
 
         public override bool Equals(object obj)
