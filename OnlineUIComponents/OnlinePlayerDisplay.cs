@@ -275,6 +275,9 @@ namespace RainMeadow
             {
                 pingLabel.color = Color.red;
             }
+            RainMeadow.Debug(messageQueue.Count);
+            RainMeadow.Debug(player.isInteracting);
+
 
             if (messageQueue.Count > 0)
             {
@@ -308,7 +311,18 @@ namespace RainMeadow
             }
             else
             {
-                this.username.text = customization.nickname;
+                if (messageQueue.Count == 0 && player.isInteracting)
+                {
+                    int numDots = (onlineTimeSinceSpawn / 20) % 4;
+
+                    string[] dotPatterns = { "", ".", "..", "..." };
+
+                    this.username.text = dotPatterns[numDots];
+                }
+                else
+                {
+                    this.username.text = customization.nickname;
+                }
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username

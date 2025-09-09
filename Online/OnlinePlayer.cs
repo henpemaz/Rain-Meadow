@@ -27,6 +27,7 @@ namespace RainMeadow
 
         public bool isActuallySpectating;
         public bool needsAck;
+        public bool isInteracting;
 
         public bool isMe;
         public bool hasLeft;
