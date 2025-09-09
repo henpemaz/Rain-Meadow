@@ -1,6 +1,5 @@
 ﻿using Menu;
 using Menu.Remix;
-using RainMeadow.UI.Pages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -178,17 +177,18 @@ namespace RainMeadow
         }
         public void UpdateElementBindings()
         {
+            //Group up elements
             List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, prevButton, startButton, colorpicker.wrapper, nextButton };
             List<MenuObject> SkinColumnElements = skinButtons.Cast<MenuObject>().ToList();
-
+            //Enforce row/column element order
             Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
             Extensions.TrySequentialMutualBind(this, SkinColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
-
+            //Make the row and column play nicely
             Extensions.TryMassBind(SkinColumnElements, startButton, right: true);
             Extensions.TryMassBind(SkinColumnElements, backObject, left: true);
             Extensions.TryMassBind(BottomRowElements, SkinColumnElements.Last(), top: true);
             Extensions.TryMassBind(BottomRowElements, SkinColumnElements.First(), bottom: true);
-
+            //Tweaks and cleanup
             Extensions.TryBind(SkinColumnElements.Last(), backObject, bottom: true);
             Extensions.TryMutualBind(this, tintSlider, colorpicker.wrapper, bottomTop: true);
             Extensions.TryBind(tintSlider, colorpicker.wrapper, bottom:true);

@@ -253,19 +253,21 @@ namespace RainMeadow
         }
         public void CreateElementBindings()
         {
+            //Group up elements
             List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper};
             List<MenuObject> RightColumnElements = new List<MenuObject>() { creditsButton, directConnectButton, domainDropDown.wrapper, createButton };
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
+            //Enforce order for the left column, right column, and bottom row
             Extensions.TrySequentialMutualBind(this, LeftColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
             Extensions.TrySequentialMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
-            Extensions.TryMassBind(LeftColumnElements, domainDropDown.wrapper, left: true);
-
-            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
             Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
-
-            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true);
-            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //I can't get OrderButton to work for some reason, this line does nothing. Keeping it in case someone else knows a fix.
+            //Improve upon moving horizontally through the screen edge
+            Extensions.TryMassBind(LeftColumnElements, domainDropDown.wrapper, left: true);
             Extensions.TryBind(directConnectButton, filterModeDropDown.wrapper, right: true);
             Extensions.TryBind(domainDropDown.wrapper, filterModeDropDown.wrapper, right: true);
+            //Tweaks and cleanup
+            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true);
+            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //I can't get OrderButton to work for some reason, this line does nothing. Keeping it in case someone else knows a fix.
         }
 
         public override void GrafUpdate(float timeStacker)

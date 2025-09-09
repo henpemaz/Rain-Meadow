@@ -446,7 +446,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void CreateAndUpdateElementBindings()
     {
-        //Match Settings submenu
+        //Set up for and fix the match settings submenu. This is not exactly the cleanest-looking implementation, but it's the friendliest to modification.
         List<MenuObject> MatchSettingsRow1Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.spearsHitCheckbox, arenaMainLobbyPage.arenaSettingsInterface.evilAICheckBox };
         List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage.arenaSettingsInterface.roomRepeatArray.buttons.Cast<MenuObject>().ToList();
         List<MenuObject> MatchSettingsRow3Elements = arenaMainLobbyPage.arenaSettingsInterface.rainTimerArray.buttons.Cast<MenuObject>().ToList();
@@ -462,7 +462,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     }
     public void UpdateElementBindings()
     {
-        //Primary page
+        //Enforce the bottom row's element order. Wow was this broken. TrySequentualMutualBind has a built-in per-entry null check, so if startButton doesn't exist, it will gracefully rebind around it.
         List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
         Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
     }

@@ -220,13 +220,14 @@ namespace RainMeadow
         }
         public void CreateElementBinds()
         {
+            //Group up elements
             List<MenuObject> PauseElements = pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(SimplerButton)).ToList();
             PauseElements.Add(hubVolumeSlider.subObjects[0]); //oh you special little snowflake
             PauseElements.AddRange(pages[0].subObjects.Where(MenuObject => MenuObject.GetType() == typeof(CheckBox)).ToList());
-
+            //Apply new binds
             Extensions.TryMassDeleteBind(PauseElements, left: true, right: true); //Fix left/right causing nonsense by just removing left/right.
             Extensions.TrySequentialMutualBind(this, PauseElements, bottomTop: true, loopLastIndex: true, reverseList: true); //Fix the up/down binds not linking properly.
-            Extensions.TryBind(continueButton, exitButton, top: true); //When pressing up at Continue, move to Quit instead of the collision checkbox.
+            Extensions.TryBind(continueButton, exitButton, top: true); //When pressing up at Continue, move to Quit instead of the collision checkbox, so Quit is easier to get to.
         }
     }
 }
