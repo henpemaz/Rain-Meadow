@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace RainMeadow
 {
@@ -41,7 +42,11 @@ namespace RainMeadow
         public int bytesSnapIndex; // used to loop through the array and overwrite old data
         public readonly int[] bytesIn = new int[40];
         public readonly int[] bytesOut = new int[40];
-
+        public void SetPlayerInteractionState(bool newState)
+        {
+            this.isInteracting = newState;
+        }
+        
         public OnlinePlayer(MeadowPlayerId id)
         {
             this.id = id;

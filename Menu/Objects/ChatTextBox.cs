@@ -36,7 +36,7 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
             ShouldCapture(true);
-            OnlineManager.mePlayer.isInteracting = true;
+            OnlineManager.mePlayer.SetPlayerInteractionState(true);
         }
 
         public void DelayedUnload(float delay)
@@ -88,7 +88,7 @@ namespace RainMeadow
             }
             else if (input == '\n' || input == '\r')
             {
-                OnlineManager.mePlayer.isInteracting = false;
+                OnlineManager.mePlayer.SetPlayerInteractionState(false);
                 if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                 {
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
