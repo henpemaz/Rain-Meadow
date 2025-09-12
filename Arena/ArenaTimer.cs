@@ -66,42 +66,46 @@ namespace RainMeadow
         public override void Draw(float timeStacker)
         {
             base.Draw(timeStacker);
-            if (showMode == TimerMode.Waiting)
+            if (RainMeadow.isArenaMode(out var arena))
             {
-                safetyCatchTimer++;
-            }
-            if (!arena.playersEqualToOnlineSitting)
-            {
-                showMode = TimerMode.Waiting;
-                matchMode = TimerMode.Waiting;
-                modeLabel.text = Utils.Translate(showMode.ToString());
-            }
-            else
-            {
-                showMode = TimerMode.Countdown;
-            }
+                if (showMode == TimerMode.Waiting)
+                {
+                    safetyCatchTimer++;
+                }
+                if (!arena.playersEqualToOnlineSitting)
+                {
+                    showMode = TimerMode.Waiting;
+                    matchMode = TimerMode.Waiting;
+                    modeLabel.text = Utils.Translate(showMode.ToString());
+                }
+                else
+                {
+                    showMode = TimerMode.Countdown;
+                }
 
-            if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
-            {
-                showMode = TimerMode.Countdown;
-            };
+                if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
+                {
+                    showMode = TimerMode.Countdown;
+                }
+                ;
 
-            arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
+                arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
 
 
-            if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
-            {
-                matchMode = TimerMode.Countdown;
-                modeLabel.text = arena.externalArenaGameMode.TimerText();
+                if (arena.setupTime > 0 && showMode == TimerMode.Countdown)
+                {
+                    matchMode = TimerMode.Countdown;
+                    modeLabel.text = arena.externalArenaGameMode.TimerText();
+                }
+
+                if (arena.setupTime <= 0 && !countdownInitiated)
+                {
+                    countdownInitiated = true;
+                    hud.PlaySound(SoundID.MENU_Start_New_Game);
+                    ClearSprites();
+                }
+                timerLabel.text = FormatTime(arena.setupTime);
             }
-
-            if (arena.setupTime <= 0 && !countdownInitiated)
-            {
-                countdownInitiated = true;
-                hud.PlaySound(SoundID.MENU_Start_New_Game);
-                ClearSprites();
-            }
-            timerLabel.text = FormatTime(arena.setupTime);
 
         }
 
