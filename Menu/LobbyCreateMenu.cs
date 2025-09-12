@@ -3,6 +3,7 @@ using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
@@ -97,12 +98,30 @@ public class LobbyCreateMenu : SmartMenu
         if (backObject is SimplerButton backButton) backButton.menuLabel.text = Utils.Translate("CANCEL");
 
         UpdateModeDescription();
-
+        CreateElementBindings();
+    }
+    public override void Init()
+    {
+        base.Init();
+        selectedObject = modeDropDown.wrapper;
     }
 
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
+    }
+    public void CreateElementBindings()
+    {
+        //Column; enforce element order, and fix/adjust left/right binds.
+        List<MenuObject> VerticalElements = new List<MenuObject>() { modeDropDown.wrapper, visibilityDropDown.wrapper, passwordInputBox.wrapper, lobbyLimitNumberTextBox.wrapper };
+        Extensions.TrySequentialMutualBind(this, VerticalElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+        Extensions.TryMassBind(VerticalElements, backObject, left:true);
+        Extensions.TryMassBind(VerticalElements, createButton, right:true);
+        //Bottom row; enforce element order and fix/adjust up/down binds.
+        List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, createButton };
+        Extensions.TryMassBind(BottomRowElements, lobbyLimitNumberTextBox.wrapper, top:true);
+        Extensions.TryMassBind(BottomRowElements, modeDropDown.wrapper, bottom:true);
+        Extensions.TryMutualBind(this, backObject, createButton, leftRight: true);
     }
 
     private void CreateLobby(SimplerButton obj)

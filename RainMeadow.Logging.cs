@@ -26,6 +26,10 @@ namespace RainMeadow
         {
             instance.Logger.LogInfo($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}");
         }
+        public static void Warn(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
+        {
+            instance.Logger.LogWarning($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");
+        }
         public static void Error(object data, [CallerFilePath] string callerFile = "", [CallerMemberName] string callerName = "")
         {
             instance.Logger.LogError($"{LogDOT()}|{LogTime()}|{TrimCaller(callerFile)}.{callerName}:{data}");

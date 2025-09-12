@@ -16,6 +16,8 @@ namespace RainMeadow
     public class LobbySelectMenu : SmartMenu
     {
         private SimplerButton createButton;
+        private SimplerButton creditsButton;
+        private SimplerButton directConnectButton;
         private OpComboBox2 filterModsDropDown;
         private OpComboBox2 domainDropDown;
         private OpComboBox2 filterModeDropDown;
@@ -45,7 +47,7 @@ namespace RainMeadow
             this.scene.AddIllustration(new MenuIllustration(this, this.scene, "illustrations/rainmeadowtitle", Utils.GetMeadowTitleFileName(false), new Vector2(-2.99f, 265.01f), true, false));
             this.scene.flatIllustrations[this.scene.flatIllustrations.Count - 1].sprite.shader = this.manager.rainWorld.Shaders["MenuText"];
 
-            var creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
+            creditsButton = new SimplerButton(this, mainPage, Translate("Credits"), new Vector2(1056f, 600f), new Vector2(110f, 30f));
             creditsButton.OnClick += (_) =>
             {
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.MeadowCredits);
@@ -152,7 +154,7 @@ namespace RainMeadow
             where = new Vector2(manager.rainWorld.screenSize.x - 320f , 400f);
 
 
-            var directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
+            directConnectButton = new SimplerButton(this, mainPage, Translate("Direct Connect"), new Vector2(where.x, where.y), new Vector2(160f, 30f));
             directConnectButton.OnClick += (_) =>
             {   
                 if (MatchmakingManager.currentDomain != MatchmakingManager.MatchMakingDomain.LAN)
@@ -185,7 +187,8 @@ namespace RainMeadow
 
 
             new UIelementWrapper(this.tabWrapper, domainDropDown);
-    
+
+            CreateElementBindings();
 
             // if (OnlineManager.currentlyJoiningLobby != default)
             // {
@@ -247,6 +250,24 @@ namespace RainMeadow
                 statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
                 statisticsLabel.size = new Vector2(statisticsLabel.label.textRect.width, statisticsLabel.size.y);
             }
+        }
+        public void CreateElementBindings()
+        {
+            //Group up elements
+            List<MenuObject> LeftColumnElements = new List<MenuObject>() { filterModeDropDown.wrapper, filterPublicLobbiesOnly.wrapper, filterLobbyLimit.wrapper, filterModsDropDown.wrapper};
+            List<MenuObject> RightColumnElements = new List<MenuObject>() { creditsButton, directConnectButton, domainDropDown.wrapper, createButton };
+            List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, lobbyList.scrollDownButton, lobbyList.RefreshButton, createButton };
+            //Enforce order for the left column, right column, and bottom row
+            Extensions.TrySequentialMutualBind(this, LeftColumnElements.Concat(new List<MenuObject>() { backObject }).ToList(), bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TrySequentialMutualBind(this, RightColumnElements, bottomTop: true, loopLastIndex: true, reverseList: true);
+            Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true, reverseList: false);
+            //Improve upon moving horizontally through the screen edge
+            Extensions.TryMassBind(LeftColumnElements, domainDropDown.wrapper, left: true);
+            Extensions.TryBind(directConnectButton, filterModeDropDown.wrapper, right: true);
+            Extensions.TryBind(domainDropDown.wrapper, filterModeDropDown.wrapper, right: true);
+            //Tweaks and cleanup
+            Extensions.TryMutualBind(this, lobbyList.scrollUpButton, creditsButton, leftRight: true);
+            Extensions.TryMutualBind(this, lobbyList.RefreshButton, lobbyList.OrderButton, bottomTop: true); //I can't get OrderButton to work for some reason, this line does nothing. Keeping it in case someone else knows a fix.
         }
 
         public override void GrafUpdate(float timeStacker)
