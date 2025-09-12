@@ -1,4 +1,5 @@
 ﻿
+using RWCustom;
 using UnityEngine;
 
 namespace RainMeadow
@@ -33,13 +34,13 @@ namespace RainMeadow
             arena.trackSetupTime = arena.externalArenaGameMode.SetTimer(arena);
             matchMode = TimerMode.Waiting;
 
-            timerLabel = new FLabel("font", FormatTime(0))
+            timerLabel = new FLabel(Custom.GetFont(), FormatTime(0))
             {
                 scale = 2.4f,
                 alignment = FLabelAlignment.Left
             };
 
-            modeLabel = new FLabel("font", currentMode.ToString())
+            modeLabel = new FLabel(Custom.GetFont(), currentMode.ToString())
             {
                 scale = 1.6f,
                 alignment = FLabelAlignment.Left
@@ -48,7 +49,7 @@ namespace RainMeadow
             pos = new Vector2(80f, hud.rainWorld.options.ScreenSize.y - 60f);
             lastPos = pos;
             timerLabel.SetPosition(DrawPos(1f));
-            modeLabel.SetPosition(DrawPos(1f) + new Vector2(135f, 0f));
+            modeLabel.SetPosition(DrawPos(1f) + new Vector2(timerLabel.textRect.width * timerLabel.scaleX + 5.4f, 0f)); //135f
 
             fContainer.AddChild(timerLabel);
             fContainer.AddChild(modeLabel);
@@ -71,7 +72,6 @@ namespace RainMeadow
                 {
                     safetyCatchTimer++;
                 }
-
                 if (!arena.playersEqualToOnlineSitting)
                 {
                     showMode = TimerMode.Waiting;
@@ -86,7 +86,7 @@ namespace RainMeadow
                 if ((safetyCatchTimer > 300)) // Something went wrong with the timer. Let's move on
                 {
                     showMode = TimerMode.Countdown;
-                };
+                }
 
                 arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
 
@@ -105,6 +105,7 @@ namespace RainMeadow
                 }
                 timerLabel.text = FormatTime(arena.setupTime);
             }
+
         }
 
         // Format time to MM:SS:MMM
