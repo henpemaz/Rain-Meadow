@@ -46,7 +46,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
-            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, true, true);
+            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
             btn.subObjects.Add(slugcatIllustrations[i]);
             if (i >= buttonsInTopRow)
                 btn.TryBind(backButton, right: i + 1 == buttonsInBottomRow, bottom: true);
