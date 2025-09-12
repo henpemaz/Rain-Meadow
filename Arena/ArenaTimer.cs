@@ -87,7 +87,6 @@ namespace RainMeadow
                 {
                     showMode = TimerMode.Countdown;
                 }
-                ;
 
                 arena.externalArenaGameMode.HoldFireWhileTimerIsActive(arena);
 
