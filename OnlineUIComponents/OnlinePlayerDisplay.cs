@@ -278,7 +278,7 @@ namespace RainMeadow
 
             if (messageQueue.Count > 0)
             {
-                this.username.text = customization.nickname + ": ";
+                this.username.text = this.player.isInteracting ? SetTypingUsername() : customization.nickname + ": ";
 
                 while (messageQueue.Count > messageLabels.Count) messageQueue.Dequeue();
                 bool first = true;
@@ -308,7 +308,8 @@ namespace RainMeadow
             }
             else
             {
-                SetDisplayedUsername();
+                this.username.text = customization.nickname;
+
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
@@ -370,21 +371,15 @@ namespace RainMeadow
             }
         }
 
-        public string SetDisplayedUsername()
+        public string SetTypingUsername()
         {
-            if (messageQueue.Count == 0 && player.isInteracting)
-            {
-                int numDots = (onlineTimeSinceSpawn / 20) % 4;
 
-                string[] dotPatterns = { "", ".", "..", "..." };
+            int numDots = (onlineTimeSinceSpawn / 20) % 4;
 
-                this.username.text = dotPatterns[numDots];
-            }
-            else
-            {
-                this.username.text = customization.nickname;
-            }
-            return username.text;
+            string[] dotPatterns = { "", ".", "..", "..." };
+
+            return this.username.text = dotPatterns[numDots];
+
         }
 
         public override void ClearSprites()

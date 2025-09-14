@@ -195,7 +195,7 @@ namespace RainMeadow.UI.Components
                         MatchmakingManager.currentInstance.SendChatMessage(msg);
                         foreach (var player in OnlineManager.players)
                         {
-                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
+                            player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg, false);
                         }
                         HandleTextSubmit();
                     }

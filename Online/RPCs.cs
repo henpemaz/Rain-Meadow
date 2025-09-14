@@ -46,12 +46,15 @@ namespace RainMeadow
             }
         }
         [RPCMethod]
-        public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
+        public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage, bool isInteracting)
         {
             string incomingUsername = rpc.from.id.name;
+            
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
+            OnlinePlayer sourceUser = OnlineManager.players.Find(p => p.id.name == incomingUsername);
+            sourceUser.isInteracting = isInteracting;
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 foreach (var onlineHud in game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>())

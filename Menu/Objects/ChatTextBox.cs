@@ -36,7 +36,11 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
             ShouldCapture(true);
-            OnlineManager.mePlayer.SetPlayerInteractionState(true);
+            bool isInteracting = OnlineManager.mePlayer.SetPlayerInteractionState(true);
+            foreach (var player in OnlineManager.players)
+            {
+                player.InvokeRPC(RPCs.UpdateUsernameTemporarily, "", isInteracting);
+            }
         }
 
         public void DelayedUnload(float delay)
@@ -88,13 +92,13 @@ namespace RainMeadow
             }
             else if (input == '\n' || input == '\r')
             {
-                OnlineManager.mePlayer.SetPlayerInteractionState(false);
+                bool isLocalPlayerInteracting = OnlineManager.mePlayer.SetPlayerInteractionState(false);
                 if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                 {
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)
                     {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
+                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg, isLocalPlayerInteracting);
                     }
                 }
                 else
