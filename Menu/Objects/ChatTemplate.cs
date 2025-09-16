@@ -47,13 +47,13 @@ namespace RainMeadow
         {
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false);
-            cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 8f : 15f) + this.pos.x;
+            cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 11f : 15f) + this.pos.x;
             cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
             cursorWrap.sprite.isVisible = ChatTextBox.selectionPos == -1;
             if (ChatTextBox.selectionPos != -1)
             {
                 selectionWrap.sprite.isVisible = true;
-                selectionWrap.sprite.x = _cursorWidth + this.pos.x + 7f;
+                selectionWrap.sprite.x = _cursorWidth + this.pos.x + 11f;
                 selectionWrap.sprite.width = LabelTest.GetWidth(menuLabel.label.text.Substring(lowest, Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos)), false);
             }
             else selectionWrap.sprite.isVisible = false;

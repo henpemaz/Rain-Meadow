@@ -131,7 +131,7 @@ namespace RainMeadow
             menuLabel.text = lastSentMessage;
         }
 
-        public override void GrafUpdate(float timeStacker)
+        public override void Update()
         {
             var msg = lastSentMessage;
             var len = msg.Length;
@@ -194,7 +194,7 @@ namespace RainMeadow
                 else
                 {
                     backspaceHeld = 0;
-                    if (Input.GetKeyDown(KeyCode.Home))
+                    if (Input.GetKey(KeyCode.Home))
                     {
                         bool changeSprite = cursorPos == len;
                         cursorPos = 0;
@@ -202,14 +202,14 @@ namespace RainMeadow
                         if (changeSprite) SetCursorSprite(true);
                     }
 
-                    else if (Input.GetKeyDown(KeyCode.End) && cursorPos < len)
+                    else if (Input.GetKey(KeyCode.End) && cursorPos < len)
                     {
                         cursorPos = len;
                         selectionPos = -1;
                         SetCursorSprite(false);
                     }
 
-                    else if (Input.GetKeyDown(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+                    else if (Input.GetKey(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
                     {
                         if (cursorPos == len)
                         {
@@ -236,13 +236,13 @@ namespace RainMeadow
                             else
                             {
                                 var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
-                                if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && newPos > 0)
                                 {
                                     newPos = msg.Substring(0, newPos - 1).LastIndexOf(' ') + 1;
                                     if (newPos < 0 || newPos > len) newPos = 0;
                                 }
-                                else newPos--;
-                                if(shiftHeld)
+                                else newPos = Math.Max(0, newPos - 1);
+                                if (shiftHeld)
                                 {
                                     // stops the selection if it's on the same index as the anchor
                                     selectionPos = (newPos == cursorPos) ? -1 : newPos;
@@ -303,7 +303,7 @@ namespace RainMeadow
                 }
                 blockInput = true;
             }
-            base.GrafUpdate(timeStacker);
+            base.Update();
         }
 
         private void DeleteSelection()
@@ -322,7 +322,7 @@ namespace RainMeadow
                 _cursor.height = 13f;
                 float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, cursorPos), false);
                 _cursorWidth = width;
-                cursorWrap.sprite.x = width + 8f + pos.x;
+                cursorWrap.sprite.x = width + 11f + pos.x;
             }
             else
             {

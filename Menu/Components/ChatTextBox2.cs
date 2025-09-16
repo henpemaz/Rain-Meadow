@@ -118,7 +118,7 @@ namespace RainMeadow.UI.Components
             if (cursorIsInMiddle)
             {
                 if (cursorSprite.element.name != "pixel") cursorSprite.SetElementByName("pixel");
-                cursorSprite.x = cursorPosition + 10 + screenPos.x;
+                cursorSprite.x = cursorPosition + 11 + screenPos.x;
                 cursorSprite.height = 13;
             }
             else
@@ -143,7 +143,7 @@ namespace RainMeadow.UI.Components
                 float width = LabelTest.GetWidth(menuLabel.text.Substring(start, Mathf.Min(Mathf.Abs(selectionStartPos - cursorPos), maxVisibleLength - start)), false);
                 cursorSprite.isVisible = false;
                 selectionSprite.isVisible = true;
-                selectionSprite.x = cursorPosition + screenPos.x + 10;
+                selectionSprite.x = cursorPosition + screenPos.x + 11;
                 selectionSprite.y = screenPos.y + size.y / 2;
                 selectionSprite.width = width;
             }
@@ -281,17 +281,17 @@ namespace RainMeadow.UI.Components
                 else
                 {
                     backspaceHeld = 0;
-                    if (Input.GetKeyDown(KeyCode.Home))
+                    if (Input.GetKey(KeyCode.Home))
                     {
                         cursorPos = 0;
                         selectionStartPos = -1;
                     }
-                    else if (Input.GetKeyDown(KeyCode.End) && cursorPos < len)
+                    else if (Input.GetKey(KeyCode.End) && cursorPos < len)
                     {
                         cursorPos = len;
                         selectionStartPos = -1;
                     }
-                    else if (Input.GetKeyDown(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+                    else if (Input.GetKey(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
                     {
                         cursorPos = msg.Length;
                         selectionStartPos = 0;
