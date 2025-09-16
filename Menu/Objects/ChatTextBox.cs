@@ -37,10 +37,6 @@ namespace RainMeadow
             typingHandler.Assign(this);
             ShouldCapture(true);
             bool isInteracting = OnlineManager.mePlayer.SetPlayerInteractionState(true);
-            foreach (var player in OnlineManager.players)
-            {
-                player.InvokeRPC(RPCs.UpdateUsernameTemporarily, "", isInteracting);
-            }
         }
 
         public void DelayedUnload(float delay)
@@ -92,13 +88,13 @@ namespace RainMeadow
             }
             else if (input == '\n' || input == '\r')
             {
-                bool isLocalPlayerInteracting = OnlineManager.mePlayer.SetPlayerInteractionState(false);
+                OnlineManager.mePlayer.SetPlayerInteractionState(false);
                 if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                 {
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)
                     {
-                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg, isLocalPlayerInteracting);
+                        player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
                 }
                 else

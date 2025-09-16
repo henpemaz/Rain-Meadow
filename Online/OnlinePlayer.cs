@@ -44,6 +44,13 @@ namespace RainMeadow
         public bool SetPlayerInteractionState(bool newState)
         {
             this.isInteracting = newState;
+            foreach (var player in OnlineManager.lobby.participants)
+            {
+                if (player == this) {
+                    continue;
+                }
+                player.InvokeOnceRPC(RPCs.UpdatePlayerInteractionState, newState);
+            }
             return newState;
         }
         

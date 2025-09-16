@@ -278,7 +278,7 @@ namespace RainMeadow
 
             if (messageQueue.Count > 0)
             {
-                this.username.text = this.player.isInteracting ? SetTypingUsername() : customization.nickname + ": ";
+                this.username.text = customization.nickname + ": ";
 
                 while (messageQueue.Count > messageLabels.Count) messageQueue.Dequeue();
                 bool first = true;
@@ -308,8 +308,7 @@ namespace RainMeadow
             }
             else
             {
-                this.username.text = customization.nickname;
-
+                this.username.text = this.player.isInteracting ? SetTypingUsername() : customization.nickname;
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
