@@ -52,6 +52,7 @@ namespace RainMeadow
             string incomingUsername = rpc.from.id.name;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
             OnlinePlayer sourceUser = OnlineManager.players.Find(p => p.id.name == incomingUsername);
+            if (sourceUser == null) return;
             sourceUser.isInteracting = isInteracting;
         }
 
