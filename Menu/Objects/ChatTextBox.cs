@@ -36,7 +36,7 @@ namespace RainMeadow
             typingHandler ??= gameObject.AddComponent<ButtonTypingHandler>();
             typingHandler.Assign(this);
             ShouldCapture(true);
-            bool isInteracting = OnlineManager.mePlayer.SetPlayerInteractionState(true);
+            OnlineManager.mePlayer.SetPlayerInteractionState(true);
         }
 
         public void DelayedUnload(float delay)

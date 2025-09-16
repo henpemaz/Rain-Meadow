@@ -189,11 +189,11 @@ namespace RainMeadow.UI.Components
                 }
                 else if ((input == '\n' || input == '\r'))
                 {
+                    OnlineManager.mePlayer.SetPlayerInteractionState(false);
                     if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                     {
                         // /n is type a new line, not supported and usually its ENTER, so we sending message. sending to players if messg has one letter
                         MatchmakingManager.currentInstance.SendChatMessage(msg);
-                        OnlineManager.mePlayer.SetPlayerInteractionState(false);
                         foreach (var player in OnlineManager.players)
                         {
                             player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
