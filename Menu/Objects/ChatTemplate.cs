@@ -43,7 +43,7 @@ namespace RainMeadow
 
         }
 
-        public override void Update()
+        public override void GrafUpdate(float timeStacker)
         {
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
             _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false);
@@ -57,7 +57,7 @@ namespace RainMeadow
                 selectionWrap.sprite.width = LabelTest.GetWidth(menuLabel.label.text.Substring(lowest, Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos)), false);
             }
             else selectionWrap.sprite.isVisible = false;
-                base.Update();
+                base.GrafUpdate(timeStacker);
             this.roundedRect.fillAlpha = 1.0f;
         }
     }

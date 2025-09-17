@@ -14,8 +14,12 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
-        private int backspaceHeld = 0;
-        private int arrowHeld = 0;
+        private float DASDelay = 1f/2f; //Sec
+        private float DASRepeatRate = 1f/30f; //Procs/sec
+        private float backspaceHeld = 0f;
+        private float backspaceRepeater = 0f;
+        private float arrowHeld = 0f;
+        private float arrowRepeater = 0f;
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
@@ -131,7 +135,7 @@ namespace RainMeadow
             menuLabel.text = lastSentMessage;
         }
 
-        public override void Update()
+        public override void GrafUpdate(float timeStacker)
         {
             var msg = lastSentMessage;
             var len = msg.Length;
@@ -143,7 +147,7 @@ namespace RainMeadow
                 {
                     // no alt + backspace, because alt can be finnicky
                     // activates on either the first frame the key is held, or every other frame after it's been held down for half a second
-                    if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))))
+                    if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
                     {
                         if (selectionPos != -1)
                         {
@@ -159,8 +163,10 @@ namespace RainMeadow
                             menuLabel.text = lastSentMessage;
                             cursorPos = space;
                         }
+                        backspaceRepeater %= DASRepeatRate; //Modulus instead of subtract so the repeater can't scale out of control if DeltaTime > DASRepeatRate.
                     }
-                    backspaceHeld++;
+                    backspaceHeld += Time.deltaTime;
+                    backspaceRepeater += Time.deltaTime;
                 }
 
                 else if (Input.GetKey(KeyCode.Delete))
@@ -170,7 +176,7 @@ namespace RainMeadow
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         DeleteSelection();
                     }
-                    else if ((backspaceHeld == 0 || (backspaceHeld >= 30 && (backspaceHeld % 2 == 0))) && cursorPos < msg.Length)
+                    else if ((backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)) && cursorPos < msg.Length)
                     {
                         if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
                         {
@@ -186,14 +192,17 @@ namespace RainMeadow
                             lastSentMessage = msg.Remove(cursorPos, 1);
                             menuLabel.text = lastSentMessage;
                         }
+                        backspaceRepeater %= DASRepeatRate;
                     }
                     if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
-                    backspaceHeld++;
+                    backspaceHeld += Time.deltaTime;
+                    backspaceRepeater += Time.deltaTime;
                 }
 
                 else
                 {
-                    backspaceHeld = 0;
+                    backspaceHeld = 0f;
+                    backspaceRepeater = 0f;
                     if (Input.GetKey(KeyCode.Home))
                     {
                         bool changeSprite = cursorPos == len;
@@ -222,7 +231,7 @@ namespace RainMeadow
                     else if (Input.GetKey(KeyCode.LeftArrow))
                     {
                         // cursor position is used as the anchor for selection
-                        if ((cursorPos > 0 || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= 30 && (arrowHeld % 2 == 0))))
+                        if ((cursorPos > 0 || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
                         {
                             var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
                             var selectionActive = selectionPos != -1;
@@ -253,13 +262,15 @@ namespace RainMeadow
                                     if (cursorPos < len) SetCursorSprite(true);
                                 }
                             }
+                            arrowRepeater %= DASRepeatRate;
                         }
-                        arrowHeld++;
+                        arrowHeld += Time.deltaTime;
+                        arrowRepeater += Time.deltaTime;
                     }
 
                     else if (Input.GetKey(KeyCode.RightArrow))
                     {
-                        if ((cursorPos < len || selectionPos != -1) && (arrowHeld == 0 || arrowHeld >= 30 && (arrowHeld % 2 == 0)))
+                        if ((cursorPos < len || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
                         {
                             var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
                             var selectionActive = selectionPos != -1;
@@ -292,18 +303,24 @@ namespace RainMeadow
                                     else
                                     {
                                         cursorPos = newPos;
-                                        if(newPos == len) SetCursorSprite(false);
+                                        if (newPos == len) SetCursorSprite(false);
                                     }
                                 }
                             }
+                            arrowRepeater %= DASRepeatRate;
                         }
-                        arrowHeld++;
+                        arrowHeld += Time.deltaTime;
+                        arrowRepeater += Time.deltaTime;
                     }
-                    else arrowHeld = 0;
+                    else
+                    {
+                        arrowHeld = 0f;
+                        arrowRepeater = 0f;
+                    }
                 }
                 blockInput = true;
             }
-            base.Update();
+            base.GrafUpdate(timeStacker);
         }
 
         private void DeleteSelection()
