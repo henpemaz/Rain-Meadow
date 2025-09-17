@@ -606,7 +606,9 @@ public partial class RainMeadow
         {
             // scary math below
             var vector = Custom.DegToVec(Custom.AimFromOneVectorToAnother(self.firstChunk.pos, playerGraphics.hands[hand].pos));
-            return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
+            return vector;
+            //Old second-step vector math. I believe this is supposed to be a basic rotation interpolate, but spearDir does *not* appear to do what it says on the tin, so it just breaks when walking. Keeping a copy commented in case I've misdiagnosed and it needs a revert.
+            //return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
         }
         return orig(self, hand);
     }
