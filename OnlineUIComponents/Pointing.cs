@@ -62,7 +62,7 @@ namespace RainMeadow
             {
                 for (int i = 0; i <= 1; i++)
                 {
-                    if ((realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon) && playerGraphics.hands[1 - i].reachedSnapPosition)
+                    if (realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon)
                     {
                         return i;
                     }
