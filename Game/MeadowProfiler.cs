@@ -33,6 +33,8 @@ namespace RainMeadow
         public static int currentDepth;
         public static List<StackPosition> currentStackTree = new();
 
+        private static int mainThread;
+
         public bool open;
 
         // Code dealing with shaders seems to completely expode so we'll just avoid it
@@ -43,11 +45,21 @@ namespace RainMeadow
             "Menu.Remix",
             "DevInterface",
             "ConfigAcceptable",
+            "Configurable",
+            "InputPackage",
+            "EnumExt",
+            "ModManager",
+            "SoundLoader.SoundData",
+            "MenuSoundObject",
+            "OptionInterface",
+            "AudioSourcePoolItem",
+            "SimplePool"
         ];
 
         public MeadowProfiler()
         {
             Instance = this;
+            mainThread = Thread.CurrentThread.ManagedThreadId;
             RainMeadow.Debug($"MeadowProfiler started.");
         }
 
@@ -55,6 +67,16 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"MeadowProfiler stopped.");
             Instance = null;
+        }
+
+        private static bool IsStruct(Type source)
+        {
+            return source.IsValueType && !source.IsPrimitive && !source.IsEnum;
+        }
+        private static bool IsProperty(MethodBase method)
+        {
+            if (!method.IsSpecialName) return false;
+            return method.Name.StartsWith("get_") || method.Name.StartsWith("set_");
         }
 
         public static void FullPatch()
@@ -87,7 +109,8 @@ namespace RainMeadow
                 .SelectMany(x => x?.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ?? new MethodBase[0])
                 .Where(x =>
                 {
-                    return x.Name.Contains("Update") && !avoid.Any(x.Name.Contains) && !avoid.Any(x.DeclaringType.FullName.Contains);
+                    return x.Name.Contains("Update") && !avoid.Any(x.Name.Contains) && !avoid.Any(x.DeclaringType.FullName.Contains) &&
+                    !x.IsVirtual && !IsStruct(x.DeclaringType) && !IsProperty(x);
                 })
                 .ToList();
 
@@ -106,6 +129,7 @@ namespace RainMeadow
             }
 
             patched = true;
+            RainMeadow.Debug("Advanced Profiling Enabled");
         }
 
         public void Update()
@@ -174,6 +198,8 @@ namespace RainMeadow
 
         public static bool Push(MethodBase __originalMethod, object __instance, ref ProfilerInfo __state)
         {
+            // For now I'm only worried about the main thread
+            if (Thread.CurrentThread.ManagedThreadId != mainThread) return true;
             var hash = GetKeyHash(__originalMethod, __instance);
 
             if (!data.TryGetValue(hash, out var info))
@@ -184,9 +210,13 @@ namespace RainMeadow
 
             info.Depth = currentDepth++;
 
-            info.tree = currentStackTree.ToArray();
-            info.hash = hash;
+            if (currentStackTree.Count > 0)
+            {
+                info.tree = currentStackTree.ToArray();
+            }
             currentStackTree.Add(new StackPosition(hash, info.name));
+
+            info.hash = hash;
 
             info.timer.Reset();
             info.timer.Start();
@@ -198,12 +228,16 @@ namespace RainMeadow
 
         public static void Pop(bool __runOriginal, ProfilerInfo __state)
         {
+            if (Thread.CurrentThread.ManagedThreadId != mainThread) return;
             if (__state == null) return;
 
             var info = __state;
 
             currentDepth = Math.Max(0, currentDepth - 1);
-            currentStackTree.RemoveAt(currentStackTree.FindLastIndex(x => x.hash == info.hash && x.name == info.name));
+            if (currentStackTree.Count > 0)
+            {
+                currentStackTree.RemoveAt(currentStackTree.FindLastIndex(x => x.hash == info.hash && x.name == info.name));
+            }
 
             info.ticksSpent = info.timer.ElapsedTicks;
         }

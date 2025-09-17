@@ -27,7 +27,11 @@ namespace RainMeadow
             instance = this;
             rainMeadowOptions = new RainMeadowOptions(this);
 
-            MeadowProfiler.FullPatch();
+            // TODO fix
+            if (rainMeadowOptions.AdvancedProfiling.Value)
+            {
+                MeadowProfiler.FullPatch();
+            }
 
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;

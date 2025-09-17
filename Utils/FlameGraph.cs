@@ -21,11 +21,14 @@ namespace RainMeadow
             {
                 var folding = "root;";
 
-                for (int i = 0; i < info.tree.Length; i++)
+                if (info.tree != null)
                 {
-                    folding += info.tree[i].name + ";";
+                    for (int i = 0; i < info.tree.Length; i++)
+                    {
+                        folding += info.tree[i].name + ";";
+                    }
                 }
-                if (folding.StartsWith("root; "))
+                if (folding.EndsWith(";"))
                 {
                     folding = folding.TrimEnd(';');
                 }
