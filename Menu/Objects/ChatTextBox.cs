@@ -14,8 +14,8 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
-        private float DASDelay = 1f/2f; //Sec
-        private float DASRepeatRate = 1f/30f; //Procs/sec
+        private float DASDelay = 1f/2f; //In seconds
+        private float DASRepeatRate = 1f/30f; //In seconds/proc
         private float backspaceHeld = 0f;
         private float backspaceRepeater = 0f;
         private float arrowHeld = 0f;
@@ -146,7 +146,7 @@ namespace RainMeadow
                 if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
                 {
                     // no alt + backspace, because alt can be finnicky
-                    // activates on either the first frame the key is held, or every other frame after it's been held down for half a second
+                    // activates on either the first frame the key is held, or for every (DASRepeatRate)th of a second after (DASDelay) seconds of being held
                     if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
                     {
                         if (selectionPos != -1)
