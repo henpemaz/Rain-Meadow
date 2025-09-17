@@ -187,6 +187,7 @@ namespace RainMeadow
 
         private static List<ProfilerGraph> profilerGraphs = new List<ProfilerGraph>();
         private static bool keyDown;
+        private static bool minusDown;
 
         public static void Update(RainWorldGame self, float dt)
         {
@@ -204,6 +205,16 @@ namespace RainMeadow
                 RemoveOverlay(self);
             }
             if (overlayContainer == null) return;
+            if (self.devToolsActive && Input.GetKey(KeyCode.Minus) && MeadowProfiler.patched && !minusDown)
+            {
+                if (MeadowProfiler.Instance is not null)
+                {
+                    MeadowProfiler.Instance.Update();
+                    FlameGraph.OutputFlameGraph();
+                }
+            }
+            minusDown = self.devToolsActive && Input.GetKey(KeyCode.Minus);
+
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
 
             framerate = (int)(1.0f / dt);

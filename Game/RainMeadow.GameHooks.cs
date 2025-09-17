@@ -382,7 +382,6 @@ namespace RainMeadow
 
         private void RainWorldGame_RawUpdate(On.RainWorldGame.orig_RawUpdate orig, RainWorldGame self, float dt)
         {
-            MeadowProfiler.Instance?.Push();
             var closeChat = false;
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is not MeadowGameMode && !self.lastPauseButton && ChatTextBox.blockInput)
             {
@@ -411,7 +410,6 @@ namespace RainMeadow
                 ProfilerOverlay.Update(self, dt);
                 MeadowMusic.RawUpdate(self, dt);
             }
-            MeadowProfiler.Instance?.Pop();
         }
 
         private void RainWorldGame_ShutDownProcess(On.RainWorldGame.orig_ShutDownProcess orig, RainWorldGame self)
