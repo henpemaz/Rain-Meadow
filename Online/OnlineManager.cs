@@ -48,6 +48,7 @@ namespace RainMeadow
                 MatchmakingManager.instances[last].LeaveLobby();
                 LeaveLobby();
             };
+            new StateProfiler();
             RainMeadow.Debug("OnlineManager Created");
         }
 

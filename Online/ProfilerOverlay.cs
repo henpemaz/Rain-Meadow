@@ -1,6 +1,7 @@
 ﻿using RWCustom;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -185,7 +186,124 @@ namespace RainMeadow
             }
         }
 
+        private class StateChart
+        {
+            public FContainer container;
+
+            public FSprite[] sprites;
+            public FLabel mainLabel;
+            public List<FLabel> labels = new();
+
+            public Vector2 pos;
+            public StateChart(FContainer container, Vector2 pos)
+            {
+                this.container = container;
+                this.pos = pos;
+                this.sprites = new FSprite[360];
+
+                for (int i = 0; i < sprites.Length; i++)
+                {
+                    sprites[i] = new FSprite("pixel")
+                    {
+                        x = pos.x,
+                        y = pos.y,
+                        anchorY = 0,
+                        scaleY = 80,
+                        rotation = Mathf.InverseLerp(0f, sprites.Length, i) * 360f,
+                        color = Color.gray
+                    };
+                    container.AddChild(sprites[i]);
+                }
+
+                mainLabel = new FLabel(Custom.GetFont(), "")
+                {
+                    alignment = FLabelAlignment.Left,
+                    x = pos.x - 80,
+                    y = pos.y + 100,
+                };
+                container.AddChild(mainLabel);
+            }
+
+            public void Update()
+            {
+                if (StateProfiler.Instance is null) return;
+                var entries = StateProfiler.Instance.data.Values.OrderBy(x => -x.ticksSpent).ToArray();
+
+                if (entries.Length > 0)
+                {
+                    while (labels.Count != entries.Length)
+                    {
+                        if (labels.Count > entries.Length)
+                        {
+                            labels.Last().RemoveFromContainer();
+                            labels.RemoveAt(labels.Count - 1);
+                        }
+                        if (labels.Count < entries.Length)
+                        {
+                            var label = new FLabel(Custom.GetFont(), "[]")
+                            {
+                                alignment = FLabelAlignment.Left
+                            };
+                            container.AddChild(label);
+                            labels.Add(label);
+                        }
+                    }
+                }
+
+                long total = 0;
+                int index = 0;
+                foreach(var entry in entries)
+                {
+                    total += entry.ticksSpent;
+
+                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / Stopwatch.Frequency) * 1000f}";
+                    labels[index].color = entry.color;
+
+                    labels[index].x = pos.x - 80;
+                    labels[index].y = pos.y - 100 - (index * 15);
+
+                    index++;
+                }
+
+                mainLabel.text = $"Total Write Time - {(float)(total / Stopwatch.Frequency) * 1000f}";
+
+                int stepsTaken = 0;
+                foreach (var entry in entries)
+                {
+                    float percentage = (float)entry.ticksSpent / total;
+
+                    var steps = (int)Mathf.Floor(percentage * 360f);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        if (stepsTaken + i < sprites.Length)
+                        {
+                            sprites[stepsTaken + i].color = entry.color;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    stepsTaken += steps;
+                }
+            }
+
+            public void RemoveSprites()
+            {
+                mainLabel.RemoveFromContainer();
+                foreach(var sprite in sprites)
+                {
+                    sprite.RemoveFromContainer();
+                }
+                foreach(var label in labels)
+                {
+                    label.RemoveFromContainer();
+                }
+            }
+        }
+
         private static List<ProfilerGraph> profilerGraphs = new List<ProfilerGraph>();
+        private static StateChart chart;
         private static bool keyDown;
         private static bool minusDown;
 
@@ -223,6 +341,8 @@ namespace RainMeadow
             {
                 graph.Update();
             }
+
+            chart?.Update();
         }
 
         public static void CreateOverlay(RainWorldGame self)
@@ -293,6 +413,8 @@ namespace RainMeadow
                 return value;
             }, 0f, 50f, true, false));
 
+            chart = new(overlayContainer, new Vector2(screenSize.x - 120, screenSize.y - 120));
+
 
             Futile.stage.AddChild(overlayContainer);
         }
@@ -302,6 +424,8 @@ namespace RainMeadow
             profilerGraphs.Clear();
             overlayContainer?.RemoveFromContainer();
             overlayContainer = null;
+            chart?.RemoveSprites();
+            chart = null;
             MeadowProfiler.Instance?.Destroy();
         }
     }
