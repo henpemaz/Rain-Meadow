@@ -202,7 +202,8 @@ namespace RainMeadow
             {
                 State,
                 Entity,
-                Opo
+                Opo,
+                Comparison
             }
 
             public Vector2 pos;
@@ -261,6 +262,9 @@ namespace RainMeadow
                         break;
                     case Mode.Opo:
                         OpoDisplay();
+                        break;
+                    case Mode.Comparison:
+                        ComparisonDisplay();
                         break;
                 }
             }
@@ -466,13 +470,81 @@ namespace RainMeadow
                 }
             }
 
+            void ComparisonDisplay()
+            {
+                var entries = new List<KeyValuePair<string, int>>();
+                int total = 0;
+
+                var failedComparisons = OnlineManager.recentFailedComparisons.ToList();
+
+                total = failedComparisons.Count;
+                entries = failedComparisons.Distinct().ToDictionary(x => x.DeclaringType.Name + "." + x.Name, x => failedComparisons.Count(y => y == x)).ToList();
+
+                entries.OrderBy(x => -x.Value);
+
+                if (entries.Count > 0)
+                {
+                    while (labels.Count != entries.Count)
+                    {
+                        if (labels.Count > entries.Count)
+                        {
+                            labels.Last().RemoveFromContainer();
+                            labels.RemoveAt(labels.Count - 1);
+                        }
+                        if (labels.Count < entries.Count)
+                        {
+                            var label = new FLabel(Custom.GetFont(), "[]")
+                            {
+                                alignment = FLabelAlignment.Left
+                            };
+                            container.AddChild(label);
+                            labels.Add(label);
+                        }
+                    }
+                }
+
+                int index = 0;
+                foreach (var entry in entries)
+                {
+                    labels[index].text = $"[{index}] {entry.Key} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value}";
+                    labels[index].color = ColorFromString(entry.Key);
+
+                    labels[index].x = pos.x - 130;
+                    labels[index].y = pos.y - 100 - (index * 15);
+
+                    index++;
+                }
+
+                mainLabel.text = $"Total Failed Comparisons - {total}";
+
+                int stepsTaken = 0;
+                foreach (var entry in entries)
+                {
+                    float percentage = (float)entry.Value / total;
+
+                    var steps = (int)Mathf.Floor(percentage * 360f);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        if (stepsTaken + i < sprites.Length)
+                        {
+                            sprites[stepsTaken + i].color = ColorFromString(entry.Key);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    stepsTaken += steps;
+                }
+            }
+
             public void ClearChart()
             {
-                foreach(var sprite in sprites)
+                foreach (var sprite in sprites)
                 {
                     sprite.color = Color.gray;
                 }
-                foreach(var label in labels)
+                foreach (var label in labels)
                 {
                     label.RemoveFromContainer();
                 }
