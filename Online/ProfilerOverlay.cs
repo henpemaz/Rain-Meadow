@@ -194,11 +194,23 @@ namespace RainMeadow
             public FLabel mainLabel;
             public List<FLabel> labels = new();
 
+            public Mode displayMode;
+
+            private bool pageKeyDown;
+
+            public enum Mode
+            {
+                State,
+                Entity,
+                Opo
+            }
+
             public Vector2 pos;
             public StateChart(FContainer container, Vector2 pos)
             {
                 this.container = container;
                 this.pos = pos;
+                this.displayMode = Mode.State;
                 this.sprites = new FSprite[360];
 
                 for (int i = 0; i < sprites.Length; i++)
@@ -209,6 +221,7 @@ namespace RainMeadow
                         y = pos.y,
                         anchorY = 0,
                         scaleY = 80,
+                        scaleX = 1.5f,
                         rotation = Mathf.InverseLerp(0f, sprites.Length, i) * 360f,
                         color = Color.gray
                     };
@@ -227,6 +240,167 @@ namespace RainMeadow
             public void Update()
             {
                 if (StateProfiler.Instance is null) return;
+                if (Input.GetKey(KeyCode.RightBracket) && !pageKeyDown)
+                {
+                    displayMode = (Mode)(((int)displayMode + 1) % Enum.GetValues(typeof(Mode)).Length);
+                    ClearChart();
+                }
+                if (Input.GetKey(KeyCode.LeftBracket) && !pageKeyDown)
+                {
+                    displayMode = (Mode)(((int)displayMode - 1) % Enum.GetValues(typeof(Mode)).Length);
+                    ClearChart();
+                }
+                pageKeyDown = Input.GetKey(KeyCode.RightBracket) || Input.GetKey(KeyCode.LeftBracket);
+                switch (displayMode)
+                {
+                    case Mode.State:
+                        StateDisplay();
+                        break;
+                    case Mode.Entity:
+                        EntityDisplay();
+                        break;
+                    case Mode.Opo:
+                        OpoDisplay();
+                        break;
+                }
+            }
+
+            public void OpoDisplay()
+            {
+                var entries = new List<KeyValuePair<string, int>>();
+                int total = 0;
+
+                var opos = OnlineManager.recentEntities.Values.OfType<OnlinePhysicalObject>().ToList();
+
+                total = opos.Count;
+
+                entries = opos.Select(x => x.apo).GroupBy(x => x.type.value).ToDictionary(x => x.Key, x => x.Count()).ToList();
+
+                entries.OrderBy(x => -x.Value);
+
+                if (entries.Count > 0)
+                {
+                    while (labels.Count != entries.Count)
+                    {
+                        if (labels.Count > entries.Count)
+                        {
+                            labels.Last().RemoveFromContainer();
+                            labels.RemoveAt(labels.Count - 1);
+                        }
+                        if (labels.Count < entries.Count)
+                        {
+                            var label = new FLabel(Custom.GetFont(), "[]")
+                            {
+                                alignment = FLabelAlignment.Left
+                            };
+                            container.AddChild(label);
+                            labels.Add(label);
+                        }
+                    }
+                }
+
+                int index = 0;
+                foreach (var entry in entries)
+                {
+                    labels[index].text = $"[{index}] {entry.Key} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value}";
+                    labels[index].color = ColorFromString(entry.Key);
+
+                    labels[index].x = pos.x - 80;
+                    labels[index].y = pos.y - 100 - (index * 15);
+
+                    index++;
+                }
+
+                mainLabel.text = $"Total OnlinePhysicalObjects - {total}";
+
+                int stepsTaken = 0;
+                foreach (var entry in entries)
+                {
+                    float percentage = (float)entry.Value / total;
+
+                    var steps = (int)Mathf.Floor(percentage * 360f);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        if (stepsTaken + i < sprites.Length)
+                        {
+                            sprites[stepsTaken + i].color = ColorFromString(entry.Key);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    stepsTaken += steps;
+                }
+            }
+
+            public void EntityDisplay()
+            {
+                var entries = new List<KeyValuePair<Type, int>>();
+                int total = 0;
+
+                entries = OnlineManager.recentEntities.Values.GroupBy(x => x.GetType()).ToDictionary(x => x.Key, x => x.Count()).ToList();
+                total = OnlineManager.recentEntities.Values.Count();
+
+                entries.OrderBy(x => -x.Value);
+
+                if (entries.Count > 0)
+                {
+                    while (labels.Count != entries.Count)
+                    {
+                        if (labels.Count > entries.Count)
+                        {
+                            labels.Last().RemoveFromContainer();
+                            labels.RemoveAt(labels.Count - 1);
+                        }
+                        if (labels.Count < entries.Count)
+                        {
+                            var label = new FLabel(Custom.GetFont(), "[]")
+                            {
+                                alignment = FLabelAlignment.Left
+                            };
+                            container.AddChild(label);
+                            labels.Add(label);
+                        }
+                    }
+                }
+
+                int index = 0;
+                foreach (var entry in entries)
+                {
+                    labels[index].text = $"[{index}] {entry.Key.Name} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value}";
+                    labels[index].color = ColorFromType(entry.Key);
+
+                    labels[index].x = pos.x - 80;
+                    labels[index].y = pos.y - 100 - (index * 15);
+
+                    index++;
+                }
+                mainLabel.text = $"Total Entities - {total}";
+
+                int stepsTaken = 0;
+                foreach (var entry in entries)
+                {
+                    float percentage = (float)entry.Value / total;
+
+                    var steps = (int)Mathf.Floor(percentage * 360f);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        if (stepsTaken + i < sprites.Length)
+                        {
+                            sprites[stepsTaken + i].color = ColorFromType(entry.Key);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    stepsTaken += steps;
+                }
+            }
+
+            public void StateDisplay()
+            {
                 var entries = StateProfiler.Instance.data.Values.OrderBy(x => -x.ticksSpent).ToArray();
 
                 if (entries.Length > 0)
@@ -251,12 +425,16 @@ namespace RainMeadow
                 }
 
                 long total = 0;
-                int index = 0;
+
                 foreach(var entry in entries)
                 {
                     total += entry.ticksSpent;
+                }
 
-                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / Stopwatch.Frequency) * 1000f}";
+                int index = 0;
+                foreach (var entry in entries)
+                {
+                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / total) * 100}%";
                     labels[index].color = entry.color;
 
                     labels[index].x = pos.x - 80;
@@ -265,7 +443,7 @@ namespace RainMeadow
                     index++;
                 }
 
-                mainLabel.text = $"Total Write Time - {(float)(total / Stopwatch.Frequency) * 1000f}";
+                mainLabel.text = $"Total Write Delay - {(float)(total / Stopwatch.Frequency)}";
 
                 int stepsTaken = 0;
                 foreach (var entry in entries)
@@ -288,6 +466,19 @@ namespace RainMeadow
                 }
             }
 
+            public void ClearChart()
+            {
+                foreach(var sprite in sprites)
+                {
+                    sprite.color = Color.gray;
+                }
+                foreach(var label in labels)
+                {
+                    label.RemoveFromContainer();
+                }
+                labels.Clear();
+            }
+
             public void RemoveSprites()
             {
                 mainLabel.RemoveFromContainer();
@@ -299,6 +490,27 @@ namespace RainMeadow
                 {
                     label.RemoveFromContainer();
                 }
+            }
+
+            public Color ColorFromType(Type type)
+            {
+                return ColorFromString(type.Name);
+            }
+
+            public Color ColorFromString(string s)
+            {
+                uint fnvOffset = 2166136261;
+                uint fnvPrime = 16777619;
+
+                uint hash = fnvOffset;
+
+                for(int i = 0; i < s.Length; i++)
+                {
+                    hash ^= s[i];
+                    hash *= fnvPrime;
+                }
+
+                return Color.HSVToRGB(hash / (float)uint.MaxValue, 0.8f, 0.8f);
             }
         }
 

@@ -40,10 +40,16 @@ namespace RainMeadow
             stateRed.ticksSpent = stateRed.timer.ElapsedTicks;
         }
 
+        public enum Category
+        {
+
+        }
+
         public class StateRep
         {
             public readonly Type type;
             public readonly Color color;
+            public readonly Category category;
 
             public readonly Stopwatch timer;
 
