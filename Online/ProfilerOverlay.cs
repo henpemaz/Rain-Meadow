@@ -203,7 +203,8 @@ namespace RainMeadow
                 State,
                 Entity,
                 Opo,
-                Comparison
+                Comparison,
+                Player
             }
 
             public Vector2 pos;
@@ -248,7 +249,7 @@ namespace RainMeadow
                 }
                 if (Input.GetKey(KeyCode.LeftBracket) && !pageKeyDown)
                 {
-                    displayMode = (Mode)(((int)displayMode - 1) % Enum.GetValues(typeof(Mode)).Length);
+                    displayMode = displayMode - 1 < 0 ? (Mode)Enum.GetValues(typeof(Mode)).Length - 1 : (Mode)(((int)displayMode - 1) % Enum.GetValues(typeof(Mode)).Length);
                     ClearChart();
                 }
                 pageKeyDown = Input.GetKey(KeyCode.RightBracket) || Input.GetKey(KeyCode.LeftBracket);
@@ -266,10 +267,13 @@ namespace RainMeadow
                     case Mode.Comparison:
                         ComparisonDisplay();
                         break;
+                    case Mode.Player:
+                        PlayerDisplay();
+                        break;
                 }
             }
 
-            public void OpoDisplay()
+            private void OpoDisplay()
             {
                 var entries = new List<KeyValuePair<string, int>>();
                 int total = 0;
@@ -282,26 +286,7 @@ namespace RainMeadow
 
                 entries = entries.OrderBy(x => -x.Value).ToList();
 
-                if (entries.Count > 0)
-                {
-                    while (labels.Count != entries.Count)
-                    {
-                        if (labels.Count > entries.Count)
-                        {
-                            labels.Last().RemoveFromContainer();
-                            labels.RemoveAt(labels.Count - 1);
-                        }
-                        if (labels.Count < entries.Count)
-                        {
-                            var label = new FLabel(Custom.GetFont(), "[]")
-                            {
-                                alignment = FLabelAlignment.Left
-                            };
-                            container.AddChild(label);
-                            labels.Add(label);
-                        }
-                    }
-                }
+                UpdateLabels(entries.Count);
 
                 int index = 0;
                 foreach (var entry in entries)
@@ -338,7 +323,7 @@ namespace RainMeadow
                 }
             }
 
-            public void EntityDisplay()
+            private void EntityDisplay()
             {
                 var entries = new List<KeyValuePair<Type, int>>();
                 int total = 0;
@@ -348,26 +333,7 @@ namespace RainMeadow
 
                 entries = entries.OrderBy(x => -x.Value).ToList();
 
-                if (entries.Count > 0)
-                {
-                    while (labels.Count != entries.Count)
-                    {
-                        if (labels.Count > entries.Count)
-                        {
-                            labels.Last().RemoveFromContainer();
-                            labels.RemoveAt(labels.Count - 1);
-                        }
-                        if (labels.Count < entries.Count)
-                        {
-                            var label = new FLabel(Custom.GetFont(), "[]")
-                            {
-                                alignment = FLabelAlignment.Left
-                            };
-                            container.AddChild(label);
-                            labels.Add(label);
-                        }
-                    }
-                }
+                UpdateLabels(entries.Count);
 
                 int index = 0;
                 foreach (var entry in entries)
@@ -403,30 +369,11 @@ namespace RainMeadow
                 }
             }
 
-            public void StateDisplay()
+            private void StateDisplay()
             {
                 var entries = StateProfiler.Instance.data.Values.OrderBy(x => -x.ticksSpent).ToArray();
 
-                if (entries.Length > 0)
-                {
-                    while (labels.Count != entries.Length)
-                    {
-                        if (labels.Count > entries.Length)
-                        {
-                            labels.Last().RemoveFromContainer();
-                            labels.RemoveAt(labels.Count - 1);
-                        }
-                        if (labels.Count < entries.Length)
-                        {
-                            var label = new FLabel(Custom.GetFont(), "[]")
-                            {
-                                alignment = FLabelAlignment.Left
-                            };
-                            container.AddChild(label);
-                            labels.Add(label);
-                        }
-                    }
-                }
+                UpdateLabels(entries.Length);
 
                 long total = 0;
 
@@ -470,7 +417,7 @@ namespace RainMeadow
                 }
             }
 
-            void ComparisonDisplay()
+            private void ComparisonDisplay()
             {
                 var entries = new List<KeyValuePair<string, int>>();
                 int total = 0;
@@ -482,26 +429,7 @@ namespace RainMeadow
 
                 entries = entries.OrderBy(x => -x.Value).ToList();
 
-                if (entries.Count > 0)
-                {
-                    while (labels.Count != entries.Count)
-                    {
-                        if (labels.Count > entries.Count)
-                        {
-                            labels.Last().RemoveFromContainer();
-                            labels.RemoveAt(labels.Count - 1);
-                        }
-                        if (labels.Count < entries.Count)
-                        {
-                            var label = new FLabel(Custom.GetFont(), "[]")
-                            {
-                                alignment = FLabelAlignment.Left
-                            };
-                            container.AddChild(label);
-                            labels.Add(label);
-                        }
-                    }
-                }
+                UpdateLabels(entries.Count);
 
                 int index = 0;
                 foreach (var entry in entries)
@@ -536,6 +464,87 @@ namespace RainMeadow
                     }
                     stepsTaken += steps;
                 }
+            }
+
+            private void PlayerDisplay()
+            {
+                var entries = new List<KeyValuePair<OnlinePlayer, int>>();
+                int total = 0;
+                var players = OnlineManager.players;
+
+                entries = players.ToDictionary(x => x, x =>
+                {
+                    int value = 0;
+                    foreach (var bytes in x.bytesIn)
+                    {
+                        value += bytes;
+                    }
+                    total += value;
+                    return value;
+                }).ToList();
+
+                entries = entries.OrderBy(x => -x.Value).ToList();
+
+                UpdateLabels(entries.Count);
+
+                int index = 0;
+                foreach (var entry in entries)
+                {
+                    labels[index].text = $"[{index}] {entry.Key.id.name} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value}";
+                    labels[index].color = ColorFromString(entry.Key.id.name);
+
+                    labels[index].x = pos.x - 130;
+                    labels[index].y = pos.y - 100 - (index * 15);
+
+                    index++;
+                }
+
+                mainLabel.text = $"Player Bandwidth - {total}";
+
+                int stepsTaken = 0;
+                foreach (var entry in entries)
+                {
+                    float percentage = (float)entry.Value / total;
+
+                    var steps = (int)Mathf.Floor(percentage * 360f);
+                    for (int i = 0; i < steps; i++)
+                    {
+                        if (stepsTaken + i < sprites.Length)
+                        {
+                            sprites[stepsTaken + i].color = ColorFromString(entry.Key.id.name);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    stepsTaken += steps;
+                }
+            }
+
+            public void UpdateLabels(int length)
+            {
+                if (length > 0)
+                {
+                    while (labels.Count != length)
+                    {
+                        if (labels.Count > length)
+                        {
+                            labels.Last().RemoveFromContainer();
+                            labels.RemoveAt(labels.Count - 1);
+                        }
+                        if (labels.Count < length)
+                        {
+                            var label = new FLabel(Custom.GetFont(), "[]")
+                            {
+                                alignment = FLabelAlignment.Left
+                            };
+                            container.AddChild(label);
+                            labels.Add(label);
+                        }
+                    }
+                }
+
             }
 
             public void ClearChart()
