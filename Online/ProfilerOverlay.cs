@@ -280,7 +280,7 @@ namespace RainMeadow
 
                 entries = opos.Select(x => x.apo).GroupBy(x => x.type.value).ToDictionary(x => x.Key, x => x.Count()).ToList();
 
-                entries.OrderBy(x => -x.Value);
+                entries = entries.OrderBy(x => -x.Value).ToList();
 
                 if (entries.Count > 0)
                 {
@@ -346,7 +346,7 @@ namespace RainMeadow
                 entries = OnlineManager.recentEntities.Values.GroupBy(x => x.GetType()).ToDictionary(x => x.Key, x => x.Count()).ToList();
                 total = OnlineManager.recentEntities.Values.Count();
 
-                entries.OrderBy(x => -x.Value);
+                entries = entries.OrderBy(x => -x.Value).ToList();
 
                 if (entries.Count > 0)
                 {
@@ -480,7 +480,7 @@ namespace RainMeadow
                 total = failedComparisons.Count;
                 entries = failedComparisons.Distinct().ToDictionary(x => x.DeclaringType.Name + "." + x.Name, x => failedComparisons.Count(y => y == x)).ToList();
 
-                entries.OrderBy(x => -x.Value);
+                entries = entries.OrderBy(x => -x.Value).ToList();
 
                 if (entries.Count > 0)
                 {
