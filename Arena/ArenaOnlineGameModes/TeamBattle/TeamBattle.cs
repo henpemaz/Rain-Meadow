@@ -441,7 +441,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
                             AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big :( 
                             room.abstractRoom.AddEntity(bringTheTrain);
-                            bringTheTrain.RealizeInRoom();
+                            bringTheTrain.Realize();
+                            bringTheTrain.realizedCreature.PlaceInRoom(room);
+
 
                             self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
                             self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos);
