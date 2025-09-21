@@ -487,12 +487,12 @@ namespace RainMeadow
             {
                 var entries = new List<KeyValuePair<OnlinePlayer, int>>();
                 int total = 0;
-                var players = OnlineManager.players;
+                var playersWritten = DebugOverlay.playersWritten.items;
 
-                entries = players.ToDictionary(x => x, x =>
+                entries = playersWritten.ToDictionary(x => x.player, x =>
                 {
                     int value = 0;
-                    foreach (var bytes in x.bytesIn)
+                    foreach (var bytes in x.player.bytesOut)
                     {
                         value += bytes;
                     }
@@ -507,7 +507,7 @@ namespace RainMeadow
                 int index = 0;
                 foreach (var entry in entries)
                 {
-                    labels[index].text = $"[{index}] {entry.Key.id.name} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value}";
+                    labels[index].text = $"[{index}] {entry.Key.id.name} - {String.Format("{0:P2}", (float)entry.Value / total)} - {entry.Value / 1000}Kbps";
                     labels[index].color = ColorFromString(entry.Key.id.name);
 
                     labels[index].x = pos.x - 130;
@@ -516,7 +516,7 @@ namespace RainMeadow
                     index++;
                 }
 
-                mainLabel.text = $"Player Bandwidth - {total}";
+                mainLabel.text = $"Player Writes - {total / 1000}Kbps";
 
                 int stepsTaken = 0;
                 foreach (var entry in entries)
@@ -643,6 +643,8 @@ namespace RainMeadow
             }
             minusDown = self.devToolsActive && Input.GetKey(KeyCode.Minus);
 
+            ReadWriteUpdate();
+
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
 
             framerate = (int)(1.0f / dt);
@@ -745,6 +747,42 @@ namespace RainMeadow
             chart?.RemoveSprites();
             chart = null;
             MeadowProfiler.Instance?.Destroy();
+        }
+
+        private static void ReadWriteUpdate()
+        {
+            DebugOverlay.playersWritten.removeExpired();
+            DebugOverlay.playersRead.removeExpired();
+
+            totalRead = 0;
+            totalWritten = 0;
+
+            var averageBytes = 0;
+            foreach (var idv in DebugOverlay.playersWritten.items)
+            {
+                var player = idv.player;
+                foreach (var bytes in player.bytesOut)
+                {
+                    averageBytes += bytes;
+                }
+                averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond);
+                var averageBits = averageBytes * 8;
+
+                totalWritten += averageBits;
+            }
+            averageBytes = 0;
+            foreach (var idv in DebugOverlay.playersRead.items)
+            {
+                var player = idv.player;
+                foreach (var bytes in player.bytesIn)
+                {
+                    averageBytes += bytes;
+                }
+                averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond);
+                var averageBits = averageBytes * 8;
+
+                totalRead += averageBits;
+            }
         }
     }
 }
