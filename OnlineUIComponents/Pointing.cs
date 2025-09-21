@@ -60,9 +60,9 @@ namespace RainMeadow
         {
             if (realizedPlayer is not null && realizedPlayer.graphicsModule is PlayerGraphics playerGraphics)
             {
-                for (int i = 1; i >= 0; i--)
+                for (int i = 0; i <= 1; i++)
                 {
-                    if ((realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon) && playerGraphics.hands[1 - i].reachedSnapPosition)
+                    if (realizedPlayer.grasps[i] == null || realizedPlayer.grasps[i].grabbed is Weapon)
                     {
                         return i;
                     }
