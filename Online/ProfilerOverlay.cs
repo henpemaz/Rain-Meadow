@@ -648,6 +648,16 @@ namespace RainMeadow
             Vector2 screenSize = self.rainWorld.options.ScreenSize;
             overlayContainer = new FContainer();
 
+            if (MeadowProfiler.patched)
+            {
+                overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Advanced Profiling Enabled, press '-' to generate a collapsed stack.")
+                {
+                    x = screenSize.x / 2f + 0.01f,
+                    y = 740.01f,
+                    color = new Color(1f, 1f, 0.5f)
+                });
+            }
+
             // Framerate
             overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Framerate")
             {

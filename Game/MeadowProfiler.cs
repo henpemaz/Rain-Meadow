@@ -134,12 +134,13 @@ namespace RainMeadow
 
         public void Update()
         {
+            if (!patched) return;
             snapshot.Clear();
 
             snapshot.AddRange(data.Values.OrderBy(x => -x.ticksSpent));
         }
 
-        private string FormatedName(MethodBase method)
+        private static string FormatedName(MethodBase method)
         {
             return $"{method.DeclaringType.FullName}.{method.Name}";
         }
@@ -174,7 +175,7 @@ namespace RainMeadow
             public ProfilerInfo(MethodBase method)
             {
                 this.method = method;
-                this.name = $"{method.DeclaringType.FullName}.{method.Name}";
+                this.name = FormatedName(method);
 
                 this.timer = new Stopwatch();
             }

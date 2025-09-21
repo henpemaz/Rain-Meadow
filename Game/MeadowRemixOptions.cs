@@ -56,8 +56,6 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
-    public readonly Configurable<bool> AdvancedProfiling;
-
     public enum IntroRoll
     {
         Meadow,
@@ -139,8 +137,6 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
-
-        AdvancedProfiling = config.Bind("AdvancedProfiling", false);
     }
 
     public override void Initialize()
@@ -152,11 +148,10 @@ public class RainMeadowOptions : OptionInterface
             OpTab arenaTab = new OpTab(this, Translate("Arena"));
             OpTab storyTab = new OpTab(this, Translate("Story"));
             OpTab lanTab = new OpTab(this, Translate("LAN"));
-            OpTab advancedTab = new OpTab(this, Translate("Advanced"));
 
 
 
-            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab, advancedTab };
+            Tabs = new OpTab[] { opTab, meadowTab, arenaTab, storyTab, lanTab };
 
             List<UIelement> meadowCheats;
             OpTextBox meadowCheatBox;
@@ -404,19 +399,6 @@ public class RainMeadowOptions : OptionInterface
 
         };
             lanTab.AddItems(OnlineLANSettings);
-
-            OnlineAdvancedSettings = 
-                [
-                    new OpLabel(10f, 550f, Translate("Advanced"), bigText: true),
-
-                    new OpLabel(10f, 530f, Translate("Warning: You should only touch these settings if you know what you're doing."), bigText: false),
-
-                    new OpLabel(10f, 445f, Translate("Advanced Profiler")),
-                    new OpLabel(10f, 415f, Custom.ReplaceLineDelimeters(Translate("Advanced Profiling will allow you to monitor CPU usage and determine what's using up the most CPU.<LINE>This WILL cause a lot of lag and may cause unexpected behavior and crashes.<LINE>Requires Restart."))),
-
-                    new OpCheckBox(AdvancedProfiling, new Vector2(310f, 360)),
-                ];
-            advancedTab.AddItems(OnlineAdvancedSettings);
         }
 
         catch (Exception ex)

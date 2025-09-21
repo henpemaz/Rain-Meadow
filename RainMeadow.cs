@@ -27,8 +27,7 @@ namespace RainMeadow
             instance = this;
             rainMeadowOptions = new RainMeadowOptions(this);
 
-            // TODO fix
-            if (rainMeadowOptions.AdvancedProfiling.Value)
+            if (AdvancedProfilingEnabled())
             {
                 MeadowProfiler.FullPatch();
             }
@@ -46,6 +45,15 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
 
             DeathContextualizer.CreateBindings();
+        }
+
+        private bool AdvancedProfilingEnabled()
+        {
+            foreach(var arg in Environment.GetCommandLineArgs())
+            {
+                if (arg == "-meadowprofiler") return true;
+            }
+            return false;
         }
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
