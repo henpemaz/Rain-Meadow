@@ -207,6 +207,9 @@ namespace RainMeadow
             playersWritten.removeExpired();
             playersRead.removeExpired();
 
+            ProfilerOverlay.totalRead = 0;
+            ProfilerOverlay.totalWritten = 0;
+
             int line = 0;
             foreach (playerCache.Individual idv in playersWritten.items)
             {
@@ -220,6 +223,8 @@ namespace RainMeadow
                 // averageBytes = bytes per 40 frames
                 averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
                 var averageBits = averageBytes * 8;
+
+                ProfilerOverlay.totalWritten += averageBits;
 
                 FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
                 {
@@ -250,6 +255,8 @@ namespace RainMeadow
                 // averageBytes = bytes per 40 frames
                 averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
                 var averageBits = averageBytes * 8;
+
+                ProfilerOverlay.totalRead += averageBits;
 
                 FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
                 {

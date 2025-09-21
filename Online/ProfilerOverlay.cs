@@ -14,6 +14,9 @@ namespace RainMeadow
     {
         public static bool profilerActive;
 
+        public static int totalWritten = 0;
+        public static int totalRead = 0;
+
         private static FContainer overlayContainer;
         private static int framerate;
 
@@ -24,9 +27,11 @@ namespace RainMeadow
             public enum Format
             {
                 None,
-                MB
+                MB,
+                KBPS
             }
             private Format format;
+            private string formatString;
 
             public FSprite[] graphLines;
             public FSprite[] indexLines;
@@ -57,6 +62,18 @@ namespace RainMeadow
                 this.max = max;
                 this.inverted = inverted;
                 this.format = format;
+
+                this.formatString = "";
+
+                switch (format)
+                {
+                    case Format.MB:
+                        this.formatString = "MB";
+                        break;
+                    case Format.KBPS:
+                        this.formatString = "Kbps";
+                        break;
+                }
 
                 backDrop = new FSprite("pixel")
                 {
@@ -107,7 +124,7 @@ namespace RainMeadow
 
                 labels = new FLabel[3];
 
-                labels[0] = new FLabel(Custom.GetFont(), min.ToString() + (format == Format.MB ? " MB" : "")) // Min
+                labels[0] = new FLabel(Custom.GetFont(), min.ToString() + formatString) // Min
                 {
                     alignment = FLabelAlignment.Left,
                     x = indexLines[0].x + width + 5f,
@@ -115,7 +132,7 @@ namespace RainMeadow
                 };
                 container.AddChild(labels[0]);
 
-                labels[1] = new FLabel(Custom.GetFont(), max.ToString() + (format == Format.MB ? " MB" : "")) // Max
+                labels[1] = new FLabel(Custom.GetFont(), max.ToString() + formatString) // Max
                 {
                     alignment = FLabelAlignment.Left,
                     x = indexLines[1].x + width + 5f,
@@ -123,7 +140,7 @@ namespace RainMeadow
                 };
                 container.AddChild(labels[1]);
 
-                labels[2] = new FLabel(Custom.GetFont(), (max / 2).ToString() + (format == Format.MB ? " MB" : "")) // Average
+                labels[2] = new FLabel(Custom.GetFont(), (max / 2).ToString() + formatString) // Average
                 {
                     alignment = FLabelAlignment.Left,
                     x = indexLines[2].x + width + 5f,
@@ -162,7 +179,7 @@ namespace RainMeadow
                 indexLines[2].y = pos.y + graphY;
 
                 labels[2].y = indexLines[2].y;
-                labels[2].text = CurrentValue.ToString() + (format == Format.MB ? " MB" : "");
+                labels[2].text = CurrentValue.ToString() + formatString;
 
                 index++;
                 if (index >= width) index = 0;
@@ -684,37 +701,35 @@ namespace RainMeadow
                 return Profiler.GetTotalAllocatedMemoryLong() / (1024f * 1024f); // MB Value
             }, 0f, SystemInfo.systemMemorySize, true, false, ProfilerGraph.Format.MB));
 
-            // Bandwidth
-            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Bandwidth Usage")
+            // Read Bandwidth
+            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Total Read")
             {
                 alignment = FLabelAlignment.Left,
                 x = 5.01f,
                 y = screenSize.y - 410,
             });
-            // TODO Implement this
+
             profilerGraphs.Add(new ProfilerGraph(overlayContainer, new Vector2(5.01f, screenSize.y - 520), 240, 80, () =>
             {
-                return 0;
-            }, 0f, 10f, true, false, ProfilerGraph.Format.MB));
+                int value = totalRead / 1000;
+                if (profilerGraphs[2].max < value) profilerGraphs[2].max = value;
+                return value;
+            }, 0f, 1000f, true, false, ProfilerGraph.Format.KBPS));
 
-            // Update Timing
-            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Game Update (ms)")
+            // Write Bandwidth
+            overlayContainer.AddChild(new FLabel(Custom.GetFont(), "Total Written")
             {
                 alignment = FLabelAlignment.Left,
                 x = 5.01f,
                 y = screenSize.y - 610,
             });
-            // TODO Implement this
+
             profilerGraphs.Add(new ProfilerGraph(overlayContainer, new Vector2(5.01f, screenSize.y - 720), 240, 80, () =>
             {
-                float value = 0;
-                value = (float)MeadowProfiler.Instance?.gameUpdateTiming;
-                if (profilerGraphs[3].max < value)
-                {
-                    profilerGraphs[3].max = value;
-                }
+                int value = totalWritten / 1000;
+                if (profilerGraphs[3].max < value) profilerGraphs[3].max = value;
                 return value;
-            }, 0f, 50f, true, false));
+            }, 0f, 1000f, true, false, ProfilerGraph.Format.KBPS));
 
             chart = new(overlayContainer, new Vector2(screenSize.x - 120, screenSize.y - 120));
 
