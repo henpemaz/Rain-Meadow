@@ -1189,7 +1189,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             var extras = playerExtras.GetOrCreateValue(self);
-            if (self.IsLocal())
+            if (self.IsLocal() && !self.inShortcut) //When entering a shortcut, Player.Update() *should* exit way before it gets here, but, occasionally it just decides not to I guess.
             {
                 if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
                 else                       { extras.timeSinceShelterWakeup++;   }
@@ -1201,7 +1201,7 @@ public partial class RainMeadow
                 { extras.manualSleepDownCounter = 0; }
 
                 if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
-                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
+                    self.onBack == null && //Check we're not piggybacked onto someone else (hilarious but looked very wrong).
                     ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))
