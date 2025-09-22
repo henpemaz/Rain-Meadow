@@ -24,6 +24,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
+
+    public int maxButtonsPerRow = 6;
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -35,31 +37,38 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
+        int maxButtonsInTopRow = (int)Mathf.Floor(Math.Min(maxButtonsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
+        float maxTopRowStartingXPos = 633f - (maxButtonsInTopRow / 2 * 110f - ((maxButtonsInTopRow % 2 == 0) ? 55f : 0f));
+        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxTopRowStartingXPos - 30f - 24f, 433f));
+        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxTopRowStartingXPos + 20f + (110f * maxButtonsInTopRow), 433f));
+        prevButton.symbolSprite.rotation = 270;
+        nextButton.symbolSprite.rotation = 90;
+        if (ArenaHelpers.selectableSlugcats.Count <= maxButtonsPerRow * 2)
+        {
+            prevButton.buttonBehav.greyedOut = true;
+            nextButton.buttonBehav.greyedOut = true;
+        }
+
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
 
-        int buttonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
-        int buttonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - buttonsInTopRow;
-        float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
-        float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
+        int currentButtonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
+        int currentButtonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - currentButtonsInTopRow;
+        float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
+        float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
         for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
         {
-            Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
+            Vector2 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
             EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
             SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
             btn.subObjects.Add(slugcatIllustrations[i]);
-            if (i >= buttonsInTopRow)
-                btn.TryBind(backButton, right: i + 1 == buttonsInBottomRow, bottom: true);
+            if (i >= currentButtonsInTopRow)
+                btn.TryBind(backButton, right: i + 1 == currentButtonsInBottomRow, bottom: true);
             subObjects.Add(btn);
             slugcatSelectButtons[i] = btn;
         }
-
-        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(topRowStartingXPos - 30 - 24f, 433));
-        prevButton.symbolSprite.rotation = 270;
-        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(topRowStartingXPos + 20 + (110f * buttonsInTopRow), 433));
-        nextButton.symbolSprite.rotation = 90;
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
@@ -98,6 +107,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             SwitchSelectedSlugcat(savedSlugcat);
             ArenaMenu.ChangeScene();
         }
+
+    }
+
+    public void SwitchSlugcatTab()
+    {
 
     }
 
