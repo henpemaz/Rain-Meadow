@@ -17,6 +17,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
     public List<SlugcatStats.Name[]> slugcatSelectButtonPages;
+    public int currentSlugcatSelectButtonPage = 0;
     public SimplerSymbolButton prevButton;
     public SimplerSymbolButton nextButton;
     public FSprite[] descriptionGradients;
@@ -64,24 +65,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 RainMeadow.Debug("    " + j + ": " + slugcatSelectButtonPages[i][j]);
             }
         }
-
-        int currentButtonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
-        int currentButtonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - currentButtonsInTopRow;
-        float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
-        float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
-        for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
-        {
-            Vector2 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
-            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
-            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
-            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
-            btn.subObjects.Add(slugcatIllustrations[i]);
-            if (i >= currentButtonsInTopRow)
-                btn.TryBind(backButton, right: i + 1 == currentButtonsInBottomRow, bottom: true);
-            subObjects.Add(btn);
-            slugcatSelectButtons[i] = btn;
-        }
+        SwitchToSlugcatTab(currentSlugcatSelectButtonPage);
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
@@ -123,9 +107,25 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     }
 
-    public void SwitchSlugcatTab()
+    public void SwitchToSlugcatTab(int currentPage)
     {
-
+        int currentButtonsInTopRow = (int)Mathf.Floor(slugcatSelectButtonPages[currentPage].Length / 2f);
+        int currentButtonsInBottomRow = slugcatSelectButtonPages[currentPage].Length - currentButtonsInTopRow;
+        float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
+        float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
+        for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
+        {
+            Vector2 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
+            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
+            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
+            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
+            btn.subObjects.Add(slugcatIllustrations[i]);
+            if (i >= currentButtonsInTopRow)
+                btn.TryBind(backButton, right: i + 1 == currentButtonsInBottomRow, bottom: true);
+            subObjects.Add(btn);
+            slugcatSelectButtons[i] = btn;
+        }
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
