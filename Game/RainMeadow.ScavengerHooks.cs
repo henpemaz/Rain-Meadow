@@ -17,8 +17,34 @@ namespace RainMeadow
             On.Scavenger.Throw += Scavenger_Throw;
             On.Scavenger.TryToMeleeCreature += Scavenger_TryToMeleeCreature;
             On.Scavenger.ArrangeInventory += Scavenger_ArrangeInventory;
-
             On.Scavenger.ForcedLookCreature += Scavenger_ForcedLookCreature;
+            IL.Scavenger.Act += Scavenger_Act_ContinueAnimation;
+        }
+
+        public void Scavenger_Act_ContinueAnimation(ILContext ctx)
+        {
+            try
+            {
+                ILCursor cursor = new(ctx);
+                int i = 0;
+                while (cursor.TryGotoNext(MoveType.After, x => x.MatchCallOrCallvirt(
+                    typeof(Scavenger.ScavengerAnimation).GetProperty(nameof(Scavenger.ScavengerAnimation.Continue)).GetGetMethod())))
+                {
+                    i++;
+                    cursor.MoveBeforeLabels();
+                    cursor.Emit(OpCodes.Ldarg_0);
+                    cursor.EmitDelegate((bool Continue, Scavenger self) =>
+                    {
+                        return Continue || !self.IsLocal();
+                    });
+                }
+
+                RainMeadow.Debug($"Replace {i} ScavengerAnimation.Continue checks in {ctx.Method.Name}");
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
+            }
         }
 
         public Tracker.CreatureRepresentation Scavenger_ForcedLookCreature(On.Scavenger.orig_ForcedLookCreature orig, global::Scavenger self)

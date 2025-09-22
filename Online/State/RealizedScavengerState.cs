@@ -505,12 +505,9 @@ namespace RainMeadow
 
                     scav.lookPoint = lookPoint;
                 }
-                
-
-                
 
                 scav.movMode = movementMode;
-                scav.moveModeChangeCounter = 0;
+                scav.moveModeChangeCounter = 10;
             }
         }
     }

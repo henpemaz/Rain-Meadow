@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace RainMeadow
@@ -257,6 +258,13 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
+
+            // nullable value types
+            if (Nullable.GetUnderlyingType(fieldType) is Type t)
+            {
+                return typeof(Serializer).GetMethod(nameof(SerializeNullableValueType)).MakeGenericMethod(t);
+            }
+
             return typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
         }
     }
