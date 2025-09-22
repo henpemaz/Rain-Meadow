@@ -14,7 +14,7 @@ namespace RainMeadow
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
 
-        public WorldSession(Region region, Lobby lobby) : base(lobby)
+        public WorldSession(Region region, OverworldSession overworld) : base(overworld)
         {
             this.region = region;
         }
@@ -23,9 +23,9 @@ namespace RainMeadow
         {
             this.world = world;
             this.worldLoader = worldLoader;
-            if (RainMeadow.isArenaMode(out var _)) {
-
-                world.region = new Region("arena", 0, 0, SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer));
+            if (RainMeadow.isArenaMode(out var _))
+            {
+                world.region = this.region;
             }
             map.Add(world, this);
         }
@@ -71,6 +71,7 @@ namespace RainMeadow
         protected override void DeactivateImpl()
         {
             this.roomSessions.Clear();
+            if (world != null && map.TryGetValue(world, out var ws) && ws == this) map.Remove(world);
             world = null;
         }
 

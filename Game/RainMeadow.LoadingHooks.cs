@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 namespace RainMeadow
 {
 
@@ -42,7 +45,7 @@ namespace RainMeadow
                     OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                     if (currentName != null)
                     {
-                       arena.ReadFromStats(player, currentName);
+                        arena.ReadFromStats(player, currentName);
                     }
                 }
 
@@ -294,18 +297,26 @@ namespace RainMeadow
                     if (isArenaMode(out var _))
                     {
                         RainMeadow.Debug("Arena: Setting up world session");
-
-                        ws = OnlineManager.lobby.worldSessions["arena"];
+                        ws = OnlineManager.lobby.overworld.worldSessions["arena"];
                     }
                     else
                     {
-                        ws = OnlineManager.lobby.worldSessions[region.name];
+                        ws = OnlineManager.lobby.overworld.worldSessions[region.name];
                     }
-                    ws.BindWorld(self, self.world);
+
+                    if (ws is null)
+                    {
+                        RainMeadow.Error($"Could not find world session for newly loaded World.");
+                    }
+                    else
+                    {
+                        ws.BindWorld(self, self.world);
+                    }
                 }
                 catch (System.NullReferenceException e) // happens in riv ending
                 {
-                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
+                    RainMeadow.Error(e);
+                    RainMeadow.Error("rivulet hackfix null ref exception is bad!");
                 }
             }
         }
