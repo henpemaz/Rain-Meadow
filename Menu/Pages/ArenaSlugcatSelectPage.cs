@@ -16,6 +16,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
+    public SimplerSymbolButton prevButton;
+    public SimplerSymbolButton nextButton;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
     public bool readyWarning, lastBanSlugInput, banSlugInput;
@@ -54,6 +56,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             slugcatSelectButtons[i] = btn;
         }
 
+        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(topRowStartingXPos - 30 - 24f, 433));
+        prevButton.symbolSprite.rotation = 270;
+        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(topRowStartingXPos + 20 + (110f * buttonsInTopRow), 433));
+        nextButton.symbolSprite.rotation = 90;
+
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
         MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
@@ -83,7 +90,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Container.AddChild(descriptionGradients[i]);
         }
 
-        this.SafeAddSubobjects(backButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
+        this.SafeAddSubobjects(backButton, prevButton, nextButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
         if (ArenaMenu != null)
         {
             SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
