@@ -16,6 +16,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
+    public List<SlugcatStats.Name[]> slugcatSelectButtonPages;
     public SimplerSymbolButton prevButton;
     public SimplerSymbolButton nextButton;
     public FSprite[] descriptionGradients;
@@ -25,7 +26,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
-    public int maxButtonsPerRow = 6;
+    public int maxScugsPerRow = 6;
+    public float prevNextButtonsPadding = 20f;
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -37,13 +39,13 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
 
-        int maxButtonsInTopRow = (int)Mathf.Floor(Math.Min(maxButtonsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
-        float maxTopRowStartingXPos = 633f - (maxButtonsInTopRow / 2 * 110f - ((maxButtonsInTopRow % 2 == 0) ? 55f : 0f));
-        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxTopRowStartingXPos - 30f - 24f, 433f));
-        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxTopRowStartingXPos + 20f + (110f * maxButtonsInTopRow), 433f));
+        int maxButtonsInBiggerRow = (int)Mathf.Ceil(Math.Min(maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
+        float maxBiggerRowStartingXPos = 633f - (maxButtonsInBiggerRow / 2 * 110f - ((maxButtonsInBiggerRow % 2 == 0) ? 55f : 0f));
+        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxBiggerRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
+        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxBiggerRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInBiggerRow), 433f));
         prevButton.symbolSprite.rotation = 270;
         nextButton.symbolSprite.rotation = 90;
-        if (ArenaHelpers.selectableSlugcats.Count <= maxButtonsPerRow * 2)
+        if (ArenaHelpers.selectableSlugcats.Count <= 2 * maxScugsPerRow)
         {
             prevButton.buttonBehav.greyedOut = true;
             nextButton.buttonBehav.greyedOut = true;
@@ -51,6 +53,17 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
+        slugcatSelectButtonPages = new List<SlugcatStats.Name[]>();
+        for (int i=0; i<Mathf.Ceil(ArenaHelpers.selectableSlugcats.Count / (2*maxScugsPerRow))+1; i++)
+        {
+            slugcatSelectButtonPages.Add(new SlugcatStats.Name[Math.Min(2*maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count - (2*maxScugsPerRow*i))]);
+            RainMeadow.Debug("Page " + i + " should hold " + slugcatSelectButtonPages[i].Length + " scugs:");
+            for (int j=0; j<slugcatSelectButtonPages[i].Length; j++)
+            {
+                slugcatSelectButtonPages[i][j] = ArenaHelpers.selectableSlugcats[(i*(2*maxScugsPerRow))+j];
+                RainMeadow.Debug("    " + j + ": " + slugcatSelectButtonPages[i][j]);
+            }
+        }
 
         int currentButtonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
         int currentButtonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - currentButtonsInTopRow;
