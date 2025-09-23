@@ -45,6 +45,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxBiggerRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInBiggerRow), 433f));
         prevButton.symbolSprite.rotation = 270;
         nextButton.symbolSprite.rotation = 90;
+        prevButton.OnClick += _ => SwitchSlugcatTabBy(-1);
+        nextButton.OnClick += _ => SwitchSlugcatTabBy(1);
         if (ArenaHelpers.selectableSlugcats.Count <= 2 * maxScugsPerRow)
         {
             prevButton.buttonBehav.greyedOut = true;
@@ -64,8 +66,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 RainMeadow.Debug("    " + j + ": " + slugcatSelectNamePages[i][j]);
             }
         }
-        currentSlugcatSelectPage = 1;
-        SwitchToSlugcatTab(currentSlugcatSelectPage);
+        SwitchSlugcatTabBy(0);
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
@@ -107,9 +108,15 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     }
 
-    public void SwitchToSlugcatTab(int currentPage)
+    public void SwitchSlugcatTabBy(int increasePageBy)
     {
-        currentSlugcatSelectPage = currentPage;
+        foreach (MenuObject oldButton in slugcatSelectButtons)
+        {
+            this.ClearMenuObject(oldButton);
+        }
+
+        currentSlugcatSelectPage = Extensions.RealModulo((currentSlugcatSelectPage + increasePageBy), slugcatSelectNamePages.Count);
+
         slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
         slugcatIllustrations = new MenuIllustration[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
         for (int i = 0; i < slugcatSelectNamePages[currentSlugcatSelectPage].Length; i++)
