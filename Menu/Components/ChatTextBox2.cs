@@ -20,6 +20,7 @@ namespace RainMeadow.UI.Components
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
         public bool SelectionActive => selectionStartPos != -1;
         public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
+        public bool TypingOnOtherObjects = CanBeTypedExt._handler?._focused != null;
         public bool Focused
         {
             get => focused;
@@ -84,7 +85,7 @@ namespace RainMeadow.UI.Components
             base.Update();
             if (previouslySubmittedText) previouslySubmittedText = previouslySubmittedText && menu.selectedObject == this;
             buttonBehav.Update();
-            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut) SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ? null : SoundID.None);
+            if (Focused) CheckToUnfocus();
             if (menu.allowSelectMove) menu.allowSelectMove = !Focused;
             UpdateSelection();
             roundedRect.fillAlpha = 1.0f;
@@ -149,6 +150,16 @@ namespace RainMeadow.UI.Components
             }
 
         }
+        public void CheckToUnfocus()
+        {
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut)
+            {
+                SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ? null : SoundID.None);
+                return;
+            }
+            if (TypingOnOtherObjects)
+                SetFocused(false, SoundID.None);
+        }
         public void CaptureInputs(char input)
         {
             if (isUnloading || DontGetInputs) return;
@@ -157,7 +168,8 @@ namespace RainMeadow.UI.Components
             {
                 Player.InputPackage currentInput = RWInput.PlayerUIInput(-1); //race conditions when update isnt called on time
                 bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
-                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput)
+                RainMeadow.Debug(TypingOnOtherObjects);
+                if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput && !TypingOnOtherObjects)
                 {
                     SetFocused(true);
                     forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
