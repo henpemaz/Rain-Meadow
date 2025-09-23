@@ -16,14 +16,13 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
-    public List<SlugcatStats.Name[]> slugcatSelectButtonPages;
-    public int currentSlugcatSelectButtonPage = 0;
+    public List<SlugcatStats.Name[]> slugcatSelectNamePages;
     public SimplerSymbolButton prevButton;
     public SimplerSymbolButton nextButton;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
-    public bool readyWarning, lastBanSlugInput, banSlugInput;
-    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
+    public bool readyWarning, lastBanSlugInput, banSlugInput, lastSainot;
+    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1, currentSlugcatSelectPage = 0;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
@@ -54,18 +53,19 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
-        slugcatSelectButtonPages = new List<SlugcatStats.Name[]>();
+        slugcatSelectNamePages = new List<SlugcatStats.Name[]>();
         for (int i=0; i<Mathf.Ceil(ArenaHelpers.selectableSlugcats.Count / (2*maxScugsPerRow))+1; i++)
         {
-            slugcatSelectButtonPages.Add(new SlugcatStats.Name[Math.Min(2*maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count - (2*maxScugsPerRow*i))]);
-            RainMeadow.Debug("Page " + i + " should hold " + slugcatSelectButtonPages[i].Length + " scugs:");
-            for (int j=0; j<slugcatSelectButtonPages[i].Length; j++)
+            slugcatSelectNamePages.Add(new SlugcatStats.Name[Math.Min(2*maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count - (2*maxScugsPerRow*i))]);
+            RainMeadow.Debug("Page " + i + " should hold " + slugcatSelectNamePages[i].Length + " scugs:");
+            for (int j=0; j<slugcatSelectNamePages[i].Length; j++)
             {
-                slugcatSelectButtonPages[i][j] = ArenaHelpers.selectableSlugcats[(i*(2*maxScugsPerRow))+j];
-                RainMeadow.Debug("    " + j + ": " + slugcatSelectButtonPages[i][j]);
+                slugcatSelectNamePages[i][j] = ArenaHelpers.selectableSlugcats[(i*(2*maxScugsPerRow))+j];
+                RainMeadow.Debug("    " + j + ": " + slugcatSelectNamePages[i][j]);
             }
         }
-        SwitchToSlugcatTab(currentSlugcatSelectButtonPage);
+        currentSlugcatSelectPage = 1;
+        SwitchToSlugcatTab(currentSlugcatSelectPage);
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
@@ -109,22 +109,26 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void SwitchToSlugcatTab(int currentPage)
     {
-        int currentButtonsInTopRow = (int)Mathf.Floor(slugcatSelectButtonPages[currentPage].Length / 2f);
-        int currentButtonsInBottomRow = slugcatSelectButtonPages[currentPage].Length - currentButtonsInTopRow;
-        float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
-        float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
-        for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
+        currentSlugcatSelectPage = currentPage;
+        slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
+        slugcatIllustrations = new MenuIllustration[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
+        for (int i = 0; i < slugcatSelectNamePages[currentSlugcatSelectPage].Length; i++)
         {
+            int currentButtonsInTopRow = (int)Mathf.Floor(slugcatSelectNamePages[currentSlugcatSelectPage].Length / 2f);
+            int currentButtonsInBottomRow = slugcatSelectNamePages[currentSlugcatSelectPage].Length - currentButtonsInTopRow;
+            float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
+            float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
+
             Vector2 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
-            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage*2*maxScugsPerRow));
+            SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
             btn.subObjects.Add(slugcatIllustrations[i]);
+            slugcatSelectButtons[i] = btn;
             if (i >= currentButtonsInTopRow)
                 btn.TryBind(backButton, right: i + 1 == currentButtonsInBottomRow, bottom: true);
             subObjects.Add(btn);
-            slugcatSelectButtons[i] = btn;
         }
     }
 
@@ -145,7 +149,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(nonNullSlugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+        {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
+        }
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
@@ -213,9 +220,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
         {
-            bool banned = Arena?.bannedSlugs?.Contains(i) == true;
+            bool banned = Arena?.bannedSlugs?.Contains(i + (currentSlugcatSelectPage*2*maxScugsPerRow)) == true;
             MenuIllustration illu = slugcatIllustrations[i];
-            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
             illu.fileName = file;
             illu.LoadFile();
@@ -233,9 +240,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 ArenaMenu?.ChangeScene();
             }
         }
-        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
+        {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-
+            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
+        }
+        lastSainot = Arena.sainot;
     }
     public override void GrafUpdate(float timeStacker)
     {
