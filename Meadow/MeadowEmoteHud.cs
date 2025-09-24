@@ -311,6 +311,7 @@ namespace RainMeadow
                 else gridVisible = !gridVisible;
                 initgridtime = Time.time;
                 hud.owner.PlayHUDSound( gridVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck );
+                uiNeeded = Mathf.Max(uiNeeded, 80);
             }
 
             if (!toggleHidden && gridVisible && !radialPickerActive)
