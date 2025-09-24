@@ -606,7 +606,9 @@ public partial class RainMeadow
         {
             // scary math below
             var vector = Custom.DegToVec(Custom.AimFromOneVectorToAnother(self.firstChunk.pos, playerGraphics.hands[hand].pos));
-            return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
+            return vector;
+            //Old second-step vector math. I believe this is supposed to be a basic rotation interpolate, but spearDir does *not* appear to do what it says on the tin, so it just breaks when walking. Keeping a copy commented in case I've misdiagnosed and it needs a revert.
+            //return Vector3.Slerp(vector, Custom.DegToVec(90f + (80f + Mathf.Cos((float)(self.animationFrame + (self.leftFoot ? 9 : 3)) / 12f * 2f * (float)Math.PI) * 4f * playerGraphics.spearDir) * playerGraphics.spearDir), Mathf.Abs(playerGraphics.spearDir));
         }
         return orig(self, hand);
     }
@@ -1187,7 +1189,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             var extras = playerExtras.GetOrCreateValue(self);
-            if (self.IsLocal())
+            if (self.IsLocal() && !self.inShortcut) //When entering a shortcut, Player.Update() *should* exit way before it gets here, but, occasionally it just decides not to I guess.
             {
                 if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
                 else                       { extras.timeSinceShelterWakeup++;   }
@@ -1199,7 +1201,7 @@ public partial class RainMeadow
                 { extras.manualSleepDownCounter = 0; }
 
                 if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
-                    self.onBack == null && //Check we're not piggybacking someone else (hilarious but looked very wrong).
+                    self.onBack == null && //Check we're not piggybacked onto someone else (hilarious but looked very wrong).
                     ( //Check if we can fit a sleeping animation (the animation checks double as a consiousness check).
                         (self.bodyMode == Player.BodyModeIndex.Stand && self.IsTileSolid(1, -1, -1) && self.IsTileSolid(1, 0, -1) && self.IsTileSolid(1, 1, -1)) ||
                         (self.bodyMode == Player.BodyModeIndex.Crawl && self.IsTileSolid(0, 0, -1) && self.IsTileSolid(1, 0, -1))

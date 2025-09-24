@@ -543,18 +543,20 @@ namespace RainMeadow
         public void WeaponHitSomething(RealizedWeaponState statewhenhit, OnlineCollisionResult hit)
         {
             HittingRemotely = true;
-            if ((OnlineManager.lobby != null) && this.didParry)
-            {
-                RainMeadow.Debug("Parried!");
-                OnlineManager.RunDeferred(() => this.didParry = false);
-                return;
-            }
 
             if (this.apo.realizedObject != null) {
                 statewhenhit.ReadTo(this);
                 SharedPhysics.CollisionResult? result = null;
                 hit.BuildCollisionResult(out result);
                 if (result.HasValue) {
+                    OnlinePhysicalObject? onlineResult = result.Value.obj.abstractPhysicalObject.GetOnlineObject();
+                    if (OnlineManager.lobby != null && onlineResult != null && onlineResult.didParry)
+                    {
+                        RainMeadow.Debug("Parried!");
+                        OnlineManager.RunDeferred(() => onlineResult.didParry = false);
+                        HittingRemotely = false;
+                        return;
+                    }
                     (this.apo.realizedObject as Weapon)!.HitSomething(result.Value, true);
                 }
                 
@@ -581,6 +583,8 @@ namespace RainMeadow
                     o.Tossed(null); return;
                 case Snail o:
                     o.Click(); return;
+                case VultureGrub o:
+                    o.InitiateSignal(); return;
                 default:
                     RainMeadow.Error($"unknown trigger {this}"); return;
             }
@@ -614,6 +618,25 @@ namespace RainMeadow
                 default:
                     RainMeadow.Error($"unknown explode {this}"); return;
             }
+        }
+        [RPCMethod]
+        public void GrubResultSync(byte result)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not VultureGrub grub) return;
+            if (result == 1)
+            {
+                grub.callingMode = 1;
+                if (grub.graphicsModule != null) (grub.graphicsModule as VultureGrubGraphics).blinking = 220;
+                grub.vultureCalled = true;
+            }
+        }
+        [RPCMethod]
+        public void HazerSpraySync(bool spraying, float inkLeft)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not Hazer hazer) return;
+            hazer.spraying = spraying;
+            if (spraying) hazer.hasSprayed = true;
+            hazer.inkLeft = Mathf.Clamp01(inkLeft);
         }
     }
 }

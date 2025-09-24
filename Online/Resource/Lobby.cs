@@ -22,6 +22,9 @@ namespace RainMeadow
         public bool modsChecked;
         public bool bannedUsersChecked = false;
 
+        public bool lobbyRequestable = false;
+        public override bool canBeRequested => lobbyRequestable;
+
         public Dictionary<string, bool> configurableBools;
         public Dictionary<string, float> configurableFloats;
         public Dictionary<string, int> configurableInts;
@@ -77,7 +80,7 @@ namespace RainMeadow
             supervisor.InvokeRPC(RequestedLobby, key).Then(ResolveLobbyRequest);
         }
 
-        [RPCMethod]
+        [RPCMethod(security = RPCSecurity.NoSecurity)]
         public void RequestedLobby(RPCEvent request, string? key)
         {
             if (this.hasPassword)
@@ -88,7 +91,15 @@ namespace RainMeadow
                     return;
                 }
             }
-            Requested(request);
+            try
+            {
+                lobbyRequestable = true;
+                Requested(request);
+            }
+            finally
+            {
+                lobbyRequestable = false;
+            }
         }
 
         public void ResolveLobbyRequest(GenericResult requestResult)

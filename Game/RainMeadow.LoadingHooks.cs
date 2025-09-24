@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 namespace RainMeadow
 {
 
@@ -15,6 +19,21 @@ namespace RainMeadow
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+
+            // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
+            // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
+        }
+
+        SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
+        {
+            if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldAs(self);
+            return orig(self);
+        }
+
+        SlugcatStats.Timeline RainWorldGame_TimelinePoint(Func<RainWorldGame, SlugcatStats.Timeline> orig, RainWorldGame self)
+        {
+            if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldIn(self);
+            return orig(self);
         }
 
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
@@ -42,7 +61,7 @@ namespace RainMeadow
                     OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                     if (currentName != null)
                     {
-                       arena.ReadFromStats(player, currentName);
+                        arena.ReadFromStats(player, currentName);
                     }
                 }
 
@@ -214,16 +233,21 @@ namespace RainMeadow
         // Room wait and activate
         private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
         {
-            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
+            if (OnlineManager.lobby != null)
             {
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
-                    RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
-                    rs.Needed();
-                    if (!rs.isAvailable || rs.isPending) return;
-                    if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
+
+                    if (!self.shortcutsOnly && self.room.game != null)
+                    {
+                        RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
+                        rs.Needed();
+                        if (!rs.isAvailable || rs.isPending) return;
+                        if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
+                    }
                 }
-            }
+
+            } 
             orig(self);
         }
 
@@ -284,6 +308,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 playerCharacter = OnlineManager.lobby.gameMode.LoadWorldAs(game);
+                timeline = OnlineManager.lobby.gameMode.LoadWorldIn(game);
             }
             orig(self, game, playerCharacter, timeline, singleRoomWorld, worldName, region, setupValues);
             if (OnlineManager.lobby != null && self.game != null)
@@ -294,18 +319,26 @@ namespace RainMeadow
                     if (isArenaMode(out var _))
                     {
                         RainMeadow.Debug("Arena: Setting up world session");
-
                         ws = OnlineManager.lobby.worldSessions["arena"];
                     }
                     else
                     {
                         ws = OnlineManager.lobby.worldSessions[region.name];
                     }
-                    ws.BindWorld(self, self.world);
+
+                    if (ws is null)
+                    {
+                        RainMeadow.Error($"Could not find world session for newly loaded World.");
+                    }
+                    else
+                    {
+                        ws.BindWorld(self, self.world);
+                    }
                 }
                 catch (System.NullReferenceException e) // happens in riv ending
                 {
-                    RainMeadow.Debug("NOTE: rivulet hackfix null ref exception is bad!");
+                    RainMeadow.Error(e);
+                    RainMeadow.Error("rivulet hackfix null ref exception is bad!");
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace RainMeadow
 
         public WorldSession worldSession => super as WorldSession;
         public World World => worldSession.world;
+        public bool loadedPending = false;
 
         public RoomSession(WorldSession ws, AbstractRoom absroom) : base(ws)
         {
@@ -19,7 +20,18 @@ namespace RainMeadow
 
         protected override void AvailableImpl()
         {
-
+            if (loadedPending)
+            {
+                loadedPending = false;
+                if (absroom.realizedRoom is null)
+                {
+                    RainMeadow.Error("RoomSession was available without being realized first");
+                }
+                else
+                {
+                    absroom.realizedRoom.Loaded();
+                }
+            }
         }
 
         protected override void ActivateImpl()

@@ -83,13 +83,11 @@ namespace RainMeadow.UI.Components
                 teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, name, mapping.Value);
 
                 Vector2 namePickerPos = i == 0 ? new(posXMultipler - 75, dividerY - 40) : i % 2 == 0 ? new(teamNameBoxes[0].pos.x, teamNameBoxes[0].pos.y - 40) : new(posXMultipler * 3 - 95, teamNameBoxes[i - 1].pos.y);
-                OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 150)
-                {
-                    allowSpace = true,
-                };
+                OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 150);
+                textBox.allowSpace = true;
+                textBox.accept = OpTextBox.Accept.StringASCII;
                 textBox.OnValueUpdate += (config, value, oldValue) => NameTextBox_OnValueUpdated(mapping.Key, value);
                 new PatchedUIelementWrapper(tabWrapper, textBox);
-
                 OpTinyColorPicker tinyPicker = teamColorPickers[i] = new(menu, new(namePickerPos.x + 10 + textBox.size.x, namePickerPos.y), teamColor, tabWrapper);
                 tinyPicker.colorPicker.OnValueUpdate += (config, value, oldValue) =>
                 {
@@ -236,7 +234,7 @@ namespace RainMeadow.UI.Components
                 teamButtons[i].teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
                 teamButtons[i].teamCount.label.color = color;
 
-                if (!teamNameBoxes[i].held) teamNameBoxes[i].value = name;
+                if (!teamNameBoxes[i]._KeyboardOn) teamNameBoxes[i].value = name;
                 if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
 
                 bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);

@@ -386,11 +386,17 @@ namespace RainMeadow
                         {
                             if (onlinePhysicalObject.apo.type == AbstractPhysicalObject.AbstractObjectType.Creature)
                             {
-                                AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
-
-                                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
+                                try
                                 {
-                                    isMe = true;
+                                    AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
+
+                                    if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
+                                    {
+                                        isMe = true;
+                                    }
+                                } catch
+                                {
+                                    RainMeadow.Error($"Failed to cast {onlinePhysicalObject.apo} to AbstractCreature type");
                                 }
                             }
                         }

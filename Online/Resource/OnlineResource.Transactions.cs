@@ -75,7 +75,7 @@ namespace RainMeadow
         protected void Requested(RPCEvent request)
         {
             RainMeadow.Debug(this);
-            if (isSupervisor && !super.isReleasing)
+            if (canBeRequested && isSupervisor && !super.isReleasing)
             {
                 if (owner == null)
                 {
