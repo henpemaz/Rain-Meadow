@@ -17,7 +17,7 @@ namespace RainMeadow
             // don't drop it
             IL.Lizard.CarryObject += Lizard_CarryObject1;
             // swim, bastard
-            IL.Lizard.SwimBehavior += Lizard_SwimBehavior;
+            //IL.Lizard.SwimBehavior += Lizard_SwimBehavior;
 
             On.Lizard.SwimBehavior += Lizard_SwimBehavior1;
             On.Lizard.FollowConnection += Lizard_FollowConnection;

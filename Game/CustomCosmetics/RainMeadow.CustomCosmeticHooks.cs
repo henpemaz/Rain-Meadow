@@ -16,7 +16,7 @@ namespace RainMeadow
             On.PlayerGraphics.Reset += PlayerGraphics_ResetCosmetics;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSpritesCosmetics;
             On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainerCosmetics;
-            IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
+            //IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
         }
 
         void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor) {
