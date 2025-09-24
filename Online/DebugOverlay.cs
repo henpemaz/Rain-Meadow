@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static RainMeadow.StoryGameMode;
 
 namespace RainMeadow
 {
@@ -246,7 +247,17 @@ namespace RainMeadow
                 averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
                 var averageBits = averageBytes * 8;
 
-                FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
+                string isReadyForWin = "", isReadyForTransition = "", isDead = "";
+                if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var playerExists))
+                {
+                    OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings);
+                    OnlineManager.lobby.TryGetData<StoryLobbyData>(out var currentClientSettings2);
+                    isReadyForWin = currentClientSettings.readyForWin               ? "S" : "";
+                    isReadyForTransition = currentClientSettings.readyForTransition ? "G" : "";
+                    isDead = currentClientSettings.isDead                           ? "D" : ""; //Lobbied counts as "dead"
+                }
+
+                FLabel label = new FLabel(Custom.GetFont(), $"{player}[{isReadyForWin}{isReadyForTransition}{isDead}] ({averageBits / 1000}kbps - {playerTruePing}ms)")
                 {
                     x = 205.01f,
                     y = screenSize.y - 25 - 15 * line,
