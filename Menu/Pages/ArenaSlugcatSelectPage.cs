@@ -156,11 +156,13 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 TopRowElements.Concat(
                 new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
             //Link the two rows to each other (I should maybe make this an extension but eh)
+            TopRowElements.Reverse(); //Goal is to have switching between unequal rows to be / instead of \, so we want the odd one out to be on the left.
+            BottomRowElements.Reverse(); //To switch it back to \ if wanted, remove these two reverses and change the eventual .Last()s to .First()s.
             for (int i=0; i<BottomRowElements.Count; i++)
             {
                 Extensions.TryMutualBind(menu, BottomRowElements[i], TopRowElements[i], bottomTop: true);
             }
-            Extensions.TryBind(TopRowElements.Last(), BottomRowElements.Last(), bottom: true); //If counts are equal this does nothing new, if counts are unequal it fixes the top right entry.
+            Extensions.TryBind(TopRowElements.Last(), BottomRowElements.Last(), bottom: true); //If counts are equal this does nothing new, if counts are unequal it fixes the top left entry.
             //Chain up/down edges to the back button
             Extensions.TryMassBind(TopRowElements, backButton, top: true);
             Extensions.TryMassBind(BottomRowElements, backButton, bottom: true);
