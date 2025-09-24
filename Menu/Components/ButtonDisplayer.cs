@@ -42,7 +42,6 @@ namespace RainMeadow.UI.Components
             AddScrollUpDownButtons();
             displayToggleButton = AddSideButton(GetDisplayButtonSprite, "", DescriptionOfDisplayButton(), "Display_Toggle");
             displayToggleButton.OnClick += _ => IsCurrentlyLargeDisplay = !IsCurrentlyLargeDisplay;
-            subObjects.Add(displayToggleButton);
         }
         public void CallForRefresh()
         {
