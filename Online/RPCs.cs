@@ -47,16 +47,6 @@ namespace RainMeadow
         }
 
         [RPCMethod]
-        public static void UpdatePlayerInteractionState(RPCEvent rpc, bool isInteracting)
-        {
-            string incomingUsername = rpc.from.id.name;
-            if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
-            OnlinePlayer sourceUser = OnlineManager.players.Find(p => p.id.name == incomingUsername);
-            if (sourceUser == null) return;
-            sourceUser.isInteracting = isInteracting;
-        }
-
-        [RPCMethod]
         public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
         {
             string incomingUsername = rpc.from.id.name;

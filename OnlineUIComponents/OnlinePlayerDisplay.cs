@@ -308,7 +308,7 @@ namespace RainMeadow
             }
             else
             {
-                this.username.text = this.player.isInteracting ? SetTypingUsername() : customization.nickname;
+                this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : customization.nickname;
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username

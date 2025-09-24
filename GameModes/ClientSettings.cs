@@ -17,6 +17,7 @@ namespace RainMeadow
         }
 
         public bool inGame;
+        public bool isInteracting;
         public List<OnlineEntity.EntityId> avatars = new();
 
         public ClientSettings(EntityDefinition entityDefinition, OnlineResource inResource, EntityState initialState) : base(entityDefinition, inResource, initialState)
@@ -43,6 +44,8 @@ namespace RainMeadow
         {
             [OnlineField]
             public bool inGame;
+            [OnlineField]
+            public bool isInteracting;
             [OnlineField(nullable = true)]
             public Generics.DynamicOrderedEntityIDs avatars;
 
@@ -51,6 +54,7 @@ namespace RainMeadow
             public State(ClientSettings clientSettings, OnlineResource inResource, uint ts) : base(clientSettings, inResource, ts)
             {
                 inGame = clientSettings.inGame;
+                isInteracting = clientSettings.isInteracting;
                 avatars = new(clientSettings.avatars.ToList());
             }
 
@@ -59,6 +63,7 @@ namespace RainMeadow
                 base.ReadTo(onlineEntity);
                 var clientSettings = (ClientSettings)onlineEntity;
                 clientSettings.inGame = inGame;
+                clientSettings.isInteracting = isInteracting;
                 clientSettings.avatars = avatars.list;
             }
         }

@@ -189,7 +189,10 @@ namespace RainMeadow.UI.Components
                 }
                 else if ((input == '\n' || input == '\r'))
                 {
-                    OnlineManager.mePlayer.SetPlayerInteractionState(false);
+                    if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
+                    {
+                        cs.isInteracting = false;
+                    }
                     if (msg.Length > 0 && !string.IsNullOrWhiteSpace(msg))
                     {
                         // /n is type a new line, not supported and usually its ENTER, so we sending message. sending to players if messg has one letter
