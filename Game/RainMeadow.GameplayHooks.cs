@@ -56,6 +56,7 @@ namespace RainMeadow
             IL.MoreSlugcats.EnergyCell.Explode += PhysicalObject_Explode;
             IL.JellyFish.Tossed += PhysicalObject_Trigger;
             IL.Snail.Click += PhysicalObject_Trigger;
+            IL.VultureGrub.InitiateSignal += PhysicalObject_Trigger;
 
             On.Spear.Spear_makeNeedle += Spear_makeNeedle;
 
