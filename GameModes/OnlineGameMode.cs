@@ -266,6 +266,9 @@ namespace RainMeadow
             if (onlineResource is Lobby)
             {
                 this.clientSettings = new ClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
+                var customSettings = new CustomClientSettings();
+                customSettings.Refresh();
+                this.clientSettings.AddData(customSettings);
                 AddClientData();
                 clientSettings.EnterResource(lobby);
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());

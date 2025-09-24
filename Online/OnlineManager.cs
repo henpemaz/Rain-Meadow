@@ -178,6 +178,17 @@ namespace RainMeadow
             }
         }
 
+        public static void SendCustomData(OnlinePlayer toPlayer, CustomPacket customPacket, NetIO.SendType sendType)
+        {
+            if (toPlayer.isMe)
+                return;
+            if (!lobby.clientSettings.TryGetValue(toPlayer, out var settings) || !settings.TryGetData<CustomClientSettings>(out var customSettings))
+                return;
+            if (!customSettings.keys.Contains(customPacket.key))
+                return;
+            netIO?.SendCustomData(toPlayer, customPacket, sendType);
+        }
+
         public void ProcessSelfEvents()
         {
             // Stuff mePlayer set to itself, events from the distributed lease system
