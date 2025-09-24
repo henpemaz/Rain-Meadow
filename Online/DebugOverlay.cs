@@ -1,10 +1,8 @@
-using Ionic.Zlib;
 using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static RainMeadow.StoryGameMode;
 
 namespace RainMeadow
 {
