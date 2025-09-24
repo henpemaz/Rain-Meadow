@@ -15,6 +15,7 @@ namespace RainMeadow
                 p.input[0].thrw = false;
                 p.input[0].pckp = false;
                 p.input[0].mp = false;
+                p.input[0].spec = false;
             } else
             {
                 RainMeadow.Debug("Player is null while trying to stop movement");
