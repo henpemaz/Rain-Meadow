@@ -16,12 +16,17 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
+    public List<SlugcatStats.Name[]> slugcatSelectNamePages;
+    public SimplerSymbolButton prevButton;
+    public SimplerSymbolButton nextButton;
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
-    public bool readyWarning, lastBanSlugInput, banSlugInput;
-    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1;
+    public bool readyWarning, lastBanSlugInput, banSlugInput, lastSainot;
+    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1, currentSlugcatSelectPage = 0;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
+
+    public int maxScugsPerRow = 6;
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -32,27 +37,24 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
+        backButton.OnClick += _ => ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton; //Ideally this'd be the portrait button that you came from, but actually navigating there is a super evil hardcode.
+
+        CreateArrowButtons();
 
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
-
-        int buttonsInTopRow = (int)Mathf.Floor(ArenaHelpers.selectableSlugcats.Count / 2f);
-        int buttonsInBottomRow = ArenaHelpers.selectableSlugcats.Count - buttonsInTopRow;
-        float topRowStartingXPos = 633f - (buttonsInTopRow / 2 * 110f - ((buttonsInTopRow % 2 == 0) ? 55f : 0f));
-        float bottomRowStartingXPos = 633f - (buttonsInBottomRow / 2 * 110f - ((buttonsInBottomRow % 2 == 0) ? 55f : 0f));
-        for (int i = 0; i < ArenaHelpers.selectableSlugcats.Count; i++)
+        slugcatSelectNamePages = new List<SlugcatStats.Name[]>();
+        for (int i=0; i<Mathf.Ceil(ArenaHelpers.selectableSlugcats.Count / (2*maxScugsPerRow))+1; i++)
         {
-            Vector2 buttonPos = i < buttonsInTopRow ? new Vector2(topRowStartingXPos + 110f * i, 450f) : new Vector2(bottomRowStartingXPos + 110f * (i - buttonsInTopRow), 340f);
-            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i);
-            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
-            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
-            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
-            btn.subObjects.Add(slugcatIllustrations[i]);
-            if (i >= buttonsInTopRow)
-                btn.TryBind(backButton, right: i + 1 == buttonsInBottomRow, bottom: true);
-            subObjects.Add(btn);
-            slugcatSelectButtons[i] = btn;
+            slugcatSelectNamePages.Add(new SlugcatStats.Name[Math.Min(2*maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count - (2*maxScugsPerRow*i))]);
+            RainMeadow.Debug("Page " + i + " should hold " + slugcatSelectNamePages[i].Length + " scugs:");
+            for (int j=0; j<slugcatSelectNamePages[i].Length; j++)
+            {
+                slugcatSelectNamePages[i][j] = ArenaHelpers.selectableSlugcats[(i*(2*maxScugsPerRow))+j];
+                RainMeadow.Debug("    " + j + ": " + slugcatSelectNamePages[i][j]);
+            }
         }
+        SwitchSlugcatTabBy(0);
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
@@ -83,7 +85,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             Container.AddChild(descriptionGradients[i]);
         }
 
-        this.SafeAddSubobjects(backButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
+        this.SafeAddSubobjects(backButton, prevButton, nextButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
         if (ArenaMenu != null)
         {
             SlugcatStats.Name? savedSlugcat = ArenaMenu.GetArenaSetup.playerClass[0];
@@ -92,6 +94,112 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             ArenaMenu.ChangeScene();
         }
 
+    }
+
+    public void SwitchSlugcatTabBy(int increasePageBy)
+    {
+        foreach (MenuObject oldButton in slugcatSelectButtons)
+            this.ClearMenuObject(oldButton);
+
+        currentSlugcatSelectPage = Extensions.RealModulo((currentSlugcatSelectPage + increasePageBy), slugcatSelectNamePages.Count);
+        slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
+        slugcatIllustrations = new MenuIllustration[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
+
+        int currentButtonsInTopRow = (int)Mathf.Ceil(slugcatSelectNamePages[currentSlugcatSelectPage].Length / 2f);
+        int currentButtonsInBottomRow = slugcatSelectNamePages[currentSlugcatSelectPage].Length - currentButtonsInTopRow;
+        float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
+        float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
+        float currentSingleRowStartingXPos = 688f - (slugcatSelectNamePages[currentSlugcatSelectPage].Length * 55f);
+        for (int i = 0; i < slugcatSelectNamePages[currentSlugcatSelectPage].Length; i++)
+        {
+            Vector2 buttonPos;
+            if (slugcatSelectNamePages[currentSlugcatSelectPage].Length <= maxScugsPerRow)
+                buttonPos = new Vector2(currentSingleRowStartingXPos + 110f * i, 395f);
+            else
+                buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
+
+            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage*2*maxScugsPerRow));
+            SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
+            string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
+            slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
+            btn.subObjects.Add(slugcatIllustrations[i]);
+            slugcatSelectButtons[i] = btn;
+            subObjects.Add(btn);
+        }
+
+        if (slugcatSelectNamePages[currentSlugcatSelectPage].Length <= maxScugsPerRow)
+        {
+            //Enforce row order
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                slugcatSelectButtons.Concat(
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            //Chain up/down edges to the back button
+            Extensions.TryMassBind(slugcatSelectButtons.Cast<MenuObject>().ToList(), backButton, top: true, bottom: true);
+        }
+        else
+        {
+            //Group up elements
+            int midpoint = (slugcatSelectButtons.Length + 1) / 2;
+            List<MenuObject> TopRowElements = slugcatSelectButtons.Take(midpoint).Cast<MenuObject>().ToList();
+            List<MenuObject> BottomRowElements = slugcatSelectButtons.Skip(midpoint).Cast<MenuObject>().ToList();
+            //Enforce row order
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                BottomRowElements.Concat( //Bottom row first so the top row takes priority when moving from the side buttons.
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                TopRowElements.Concat(
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            //Link the two rows to each other (I should maybe make this an extension but eh)
+            TopRowElements.Reverse(); //Goal is to have switching between unequal rows to be / instead of \, so we want the odd one out to be on the left.
+            BottomRowElements.Reverse(); //To switch it back to \ if wanted, remove these two reverses and change the eventual .Last()s to .First()s.
+            for (int i=0; i<BottomRowElements.Count; i++)
+            {
+                Extensions.TryMutualBind(menu, BottomRowElements[i], TopRowElements[i], bottomTop: true);
+            }
+            Extensions.TryBind(TopRowElements.Last(), BottomRowElements.Last(), bottom: true); //If counts are equal this does nothing new, if counts are unequal it fixes the top left entry.
+            //Chain up/down edges to the back button
+            Extensions.TryMassBind(TopRowElements, backButton, top: true);
+            Extensions.TryMassBind(BottomRowElements, backButton, bottom: true);
+        }
+    }
+
+    public void CreateArrowButtons()
+    {
+        float prevNextButtonsPadding = 20f;
+        int maxButtonsInRow;
+        float maxRowStartingXPos;
+        if (ArenaHelpers.selectableSlugcats.Count <= maxScugsPerRow)
+        {
+            maxButtonsInRow = ArenaHelpers.selectableSlugcats.Count;
+            maxRowStartingXPos = 688f - (maxButtonsInRow * 55f);
+        }
+        else
+        {
+            maxButtonsInRow = (int)Mathf.Ceil(Math.Min(maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count / 2f));
+            maxRowStartingXPos = 633f - (maxButtonsInRow / 2 * 110f - ((maxButtonsInRow % 2 == 0) ? 55f : 0f));
+        }
+        prevButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "PREVSINGAL", new(maxRowStartingXPos - prevNextButtonsPadding - 10f - 24f, 433f));
+        nextButton = new SimplerSymbolButton(menu, this, "Menu_Symbol_Arrow", "NEXTSINGAL", new(maxRowStartingXPos + prevNextButtonsPadding + (110f * maxButtonsInRow), 433f));
+        prevButton.symbolSprite.rotation = 270;
+        nextButton.symbolSprite.rotation = 90;
+        prevButton.OnClick += _ => SwitchSlugcatTabBy(-1);
+        nextButton.OnClick += _ => SwitchSlugcatTabBy(1);
+        prevButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        nextButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
+        if (ArenaHelpers.selectableSlugcats.Count <= 2 * maxScugsPerRow)
+        {
+            prevButton.buttonBehav.greyedOut = true;
+            nextButton.buttonBehav.greyedOut = true;
+        }
+
+        List<MenuObject> ArrowButtons = new List<MenuObject> { prevButton, nextButton };
+        Extensions.TrySequentialMutualBind(menu, ArrowButtons, leftRight: true, loopLastIndex: true);
+        Extensions.TryMassBind(ArrowButtons, backButton, top: true, bottom: true);
+        Extensions.TryBind(backButton, prevButton, left: true, top: true, bottom: true);
+        Extensions.TryBind(backButton, nextButton, right: true);
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
@@ -111,7 +219,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(nonNullSlugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+        {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
+        }
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
         {
@@ -179,9 +290,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
         {
-            bool banned = Arena?.bannedSlugs?.Contains(i) == true;
+            bool banned = Arena?.bannedSlugs?.Contains(i + (currentSlugcatSelectPage*2*maxScugsPerRow)) == true;
             MenuIllustration illu = slugcatIllustrations[i];
-            SlugcatStats.Name slugcat = ArenaHelpers.selectableSlugcats[i];
+            SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
             illu.fileName = file;
             illu.LoadFile();
@@ -199,9 +310,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 ArenaMenu?.ChangeScene();
             }
         }
-        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint)
+        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
+        {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-
+            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
+        }
+        lastSainot = Arena.sainot;
     }
     public override void GrafUpdate(float timeStacker)
     {

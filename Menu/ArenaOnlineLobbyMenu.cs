@@ -163,6 +163,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             return;
         }
         MovePage(new Vector2(-1500f, 0f), 1);
+        selectedObject = arenaSlugcatSelectPage.slugcatSelectButtons[0];
     }
     public void GoToSlugcatSelector()
     {
@@ -286,7 +287,10 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         base.Update();
 
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
+        {
             MovePage(new Vector2(1500f, 0f), 0);
+            selectedObject = arenaMainLobbyPage.readyButton;
+        }
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
