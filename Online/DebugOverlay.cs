@@ -467,7 +467,6 @@ namespace RainMeadow
             string clientFlags = "";
             if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var playerExists) && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                clientFlags += " [";
                 OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings);
                 if (!OnlineManager.lobby.clientSettings[player].inGame)
                 {
@@ -479,7 +478,7 @@ namespace RainMeadow
                     clientFlags += currentClientSettings.readyForTransition ? "G" : "";
                     clientFlags += currentClientSettings.isDead             ? "D" : "";
                 }
-                clientFlags += "]";
+                clientFlags = $" [{clientFlags}]";
             }
             return clientFlags;
         }
