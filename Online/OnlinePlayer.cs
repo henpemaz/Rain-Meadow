@@ -27,7 +27,6 @@ namespace RainMeadow
 
         public bool isActuallySpectating;
         public bool needsAck;
-
         public bool isMe;
         public bool hasLeft;
 
@@ -40,7 +39,7 @@ namespace RainMeadow
         public int bytesSnapIndex; // used to loop through the array and overwrite old data
         public readonly int[] bytesIn = new int[40];
         public readonly int[] bytesOut = new int[40];
-
+        
         public OnlinePlayer(MeadowPlayerId id)
         {
             this.id = id;
