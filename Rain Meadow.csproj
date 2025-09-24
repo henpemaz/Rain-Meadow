@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <Version>2.0.8</Version>
@@ -30,6 +30,75 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx.Harmony">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\BepInEx.Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="com.rlabrecque.steamworks.net">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\com.rlabrecque.steamworks.net.dll</HintPath>
+    </Reference>
+    <Reference Include="HarmonyXInterop">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\HarmonyXInterop.dll</HintPath>
+    </Reference>
+    <Reference Include="HOOKS-Assembly-CSharp">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\HOOKS-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\MonoMod.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\MonoMod.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\PUBLIC-Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Rewired.Runtime">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Rewired.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Rewired_Core">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Rewired_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\Unity.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.AssetBundleModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>..\zzzStuffForCloningMeadow\DLLs\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -49,5 +118,14 @@
       <BuildFiles Include="$(Outdir)\*" />
     </ItemGroup>
     <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(ProjectDir)Mod\plugins" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Exec Command="copy /Y &quot;$(ProjectDir)\bin\Debug\net48\Rain Meadow.dll&quot; &quot;E:\Steam Games\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\Rain Meadow Standalone\plugins&quot;" />
+	<Exec Command="copy /Y &quot;$(ProjectDir)\bin\Debug\net48\Rain Meadow.pdb&quot; &quot;E:\Steam Games\steamapps\common\Rain World\RainWorld_Data\StreamingAssets\mods\Rain Meadow Standalone\plugins&quot;" />
+  </Target>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="taskkill /f /fi &quot;imagename eq RainWorld.exe&quot;" />
   </Target>
 </Project>
