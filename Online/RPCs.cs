@@ -54,7 +54,6 @@ namespace RainMeadow
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;
-            OnlinePlayer sourceUser = OnlineManager.players.Find(p => p.id.name == incomingUsername);
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 foreach (var onlineHud in game.cameras[0].hud.parts.OfType<PlayerSpecificOnlineHud>())
