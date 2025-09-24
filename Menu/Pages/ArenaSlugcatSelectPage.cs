@@ -27,7 +27,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
     public int maxScugsPerRow = 6;
-    public float prevNextButtonsPadding = 20f;
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -100,9 +99,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public void SwitchSlugcatTabBy(int increasePageBy)
     {
         foreach (MenuObject oldButton in slugcatSelectButtons)
-        {
             this.ClearMenuObject(oldButton);
-        }
 
         currentSlugcatSelectPage = Extensions.RealModulo((currentSlugcatSelectPage + increasePageBy), slugcatSelectNamePages.Count);
         slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
@@ -171,6 +168,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
     public void CreateArrowButtons()
     {
+        float prevNextButtonsPadding = 20f;
         int maxButtonsInRow;
         float maxRowStartingXPos;
         if (ArenaHelpers.selectableSlugcats.Count <= maxScugsPerRow)
@@ -196,6 +194,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             prevButton.buttonBehav.greyedOut = true;
             nextButton.buttonBehav.greyedOut = true;
         }
+
         List<MenuObject> ArrowButtons = new List<MenuObject> { prevButton, nextButton };
         Extensions.TrySequentialMutualBind(menu, ArrowButtons, leftRight: true, loopLastIndex: true);
         Extensions.TryMassBind(ArrowButtons, backButton, top: true, bottom: true);
