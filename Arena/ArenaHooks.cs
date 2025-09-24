@@ -1598,10 +1598,11 @@ namespace RainMeadow
 
         private void PlayerResultBox_ctor(On.Menu.PlayerResultBox.orig_ctor orig, Menu.PlayerResultBox self, Menu.Menu menu, Menu.MenuObject owner, Vector2 pos, Vector2 size, ArenaSitting.ArenaPlayer player, int index)
         {
-            bool playingAsRandom = false;
+
             // for random class players.
             if (isArenaMode(out var aren))
             {
+                bool playingAsRandom = false;
                 var onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(aren, player.playerNumber);
                 if (onlinePlayer is not null)
                 {
@@ -1663,6 +1664,10 @@ namespace RainMeadow
                     self.portrait = new(menu, self, "", SlugcatColorableButton.GetFileForSlugcat(portraitcat, arenaclientSettings != null && arenaclientSettings.slugcatColor != Color.black, self.DeadPortraint), new(size.y / 2, size.y / 2), true, true);
                     self.subObjects.Add(self.portrait);
                 }
+            }
+            else
+            {
+                orig(self, menu, owner, pos, size, player, index);
             }
 
         }
