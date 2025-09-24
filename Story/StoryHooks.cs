@@ -190,7 +190,7 @@ namespace RainMeadow
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                    var wasOneWay = (self.overrideData != null) ? self.overrideData.wasOneWay : self.Data.wasOneWay;
+                    var wasOneWay = (self.overrideData != null) ? self.overrideData.oneWay : self.Data.oneWay;
                     // Can't warp to warp points with null rooms (echo warps)
                     // remember that echo warps are one way only, so we will NOT gate thru them
                     // so please do not pretend it's a gate, and no requirements can be met, thanks :)
@@ -248,7 +248,7 @@ namespace RainMeadow
             {
                 RainMeadow.Debug("spawning warp point from echo");
                 PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, null);
-                SpinningTopData specialData = self.SpecialData;
+                Watcher.SpinningTopData specialData = self.SpecialData;
                 // setup data
                 if (specialData != null && placedObject.data is Watcher.WarpPoint.WarpPointData warpData)
                 {
