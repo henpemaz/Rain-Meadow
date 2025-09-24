@@ -13,7 +13,7 @@ namespace RainMeadow
     {
         public static int RealModulo(int dividend, int divisor)
         {
-            int remainder = dividend % divisor;               //C#'s % is not a modulo operator, it's a *remainder*, which will return negative values if the dividend is negative. That's stupid.
+            int remainder = dividend % divisor;               //C#'s % is not a modulo operator, it's a *remainder* operator, which will return negative values if the dividend is negative. That's stupid.
             return remainder + (remainder < 0 ? divisor : 0); //C# also doesn't have a Math.Mod() function to fill the hole created by % not being a true modulo. That's even stupider.
         }
         public static Color ColorFromHex(int value)

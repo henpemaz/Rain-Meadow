@@ -38,6 +38,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
         backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
+        backButton.OnClick += _ => ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton; //Ideally this'd be the portrait button that you came from, but actually navigating there is a super evil hardcode.
 
         CreateArrowButtons();
 
@@ -107,7 +108,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         slugcatSelectButtons = new EventfulSelectOneButton[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
         slugcatIllustrations = new MenuIllustration[slugcatSelectNamePages[currentSlugcatSelectPage].Length];
 
-        int currentButtonsInTopRow = (int)Mathf.Floor(slugcatSelectNamePages[currentSlugcatSelectPage].Length / 2f);
+        int currentButtonsInTopRow = (int)Mathf.Ceil(slugcatSelectNamePages[currentSlugcatSelectPage].Length / 2f);
         int currentButtonsInBottomRow = slugcatSelectNamePages[currentSlugcatSelectPage].Length - currentButtonsInTopRow;
         float currentTopRowStartingXPos = 633f - (currentButtonsInTopRow / 2 * 110f - ((currentButtonsInTopRow % 2 == 0) ? 55f : 0f));
         float currentBottomRowStartingXPos = 633f - (currentButtonsInBottomRow / 2 * 110f - ((currentButtonsInBottomRow % 2 == 0) ? 55f : 0f));
@@ -126,9 +127,43 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
             btn.subObjects.Add(slugcatIllustrations[i]);
             slugcatSelectButtons[i] = btn;
-            if (i >= currentButtonsInTopRow)
-                btn.TryBind(backButton, right: i + 1 == currentButtonsInBottomRow, bottom: true);
             subObjects.Add(btn);
+        }
+
+        if (slugcatSelectNamePages[currentSlugcatSelectPage].Length <= maxScugsPerRow)
+        {
+            //Enforce row order
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                slugcatSelectButtons.Concat(
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            //Chain up/down edges to the back button
+            Extensions.TryMassBind(slugcatSelectButtons.Cast<MenuObject>().ToList(), backButton, top: true, bottom: true);
+        }
+        else
+        {
+            //Group up elements
+            int midpoint = (slugcatSelectButtons.Length + 1) / 2;
+            List<MenuObject> TopRowElements = slugcatSelectButtons.Take(midpoint).Cast<MenuObject>().ToList();
+            List<MenuObject> BottomRowElements = slugcatSelectButtons.Skip(midpoint).Cast<MenuObject>().ToList();
+            //Enforce row order
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                BottomRowElements.Concat( //Bottom row first so the top row takes priority when moving from the side buttons.
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            Extensions.TrySequentialMutualBind(menu,
+                new List<MenuObject>() { prevButton }.Concat(
+                TopRowElements.Concat(
+                new List<MenuObject>() { nextButton })).ToList(), leftRight: true, loopLastIndex: true);
+            //Link the two rows to each other (I should maybe make this an extension but eh)
+            for (int i=0; i<BottomRowElements.Count; i++)
+            {
+                Extensions.TryMutualBind(menu, BottomRowElements[i], TopRowElements[i], bottomTop: true);
+            }
+            Extensions.TryBind(TopRowElements.Last(), BottomRowElements.Last(), bottom: true); //If counts are equal this does nothing new, if counts are unequal it fixes the top right entry.
+            //Chain up/down edges to the back button
+            Extensions.TryMassBind(TopRowElements, backButton, top: true);
+            Extensions.TryMassBind(BottomRowElements, backButton, bottom: true);
         }
     }
 
@@ -159,6 +194,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             prevButton.buttonBehav.greyedOut = true;
             nextButton.buttonBehav.greyedOut = true;
         }
+        List<MenuObject> ArrowButtons = new List<MenuObject> { prevButton, nextButton };
+        Extensions.TrySequentialMutualBind(menu, ArrowButtons, leftRight: true, loopLastIndex: true);
+        Extensions.TryMassBind(ArrowButtons, backButton, top: true, bottom: true);
+        Extensions.TryBind(backButton, prevButton, left: true, top: true, bottom: true);
+        Extensions.TryBind(backButton, nextButton, right: true);
     }
 
     public void SwitchSelectedSlugcat(SlugcatStats.Name? slugcat)
