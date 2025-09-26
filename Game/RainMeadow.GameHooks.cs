@@ -44,6 +44,8 @@ namespace RainMeadow
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
 
+            On.Options.GetSaveFileName_SavOrExp += Options_GetSaveFileName_SavOrExp;
+
             // can't pause it's online mom
             new Hook(typeof(RainWorldGame).GetProperty("GamePaused").GetGetMethod(), this.RainWorldGame_GamePaused);
 
@@ -52,11 +54,25 @@ namespace RainMeadow
 
             // Arena specific
             On.GameSession.AddPlayer += GameSession_AddPlayer;
-        
+
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
         }
 
-        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il) {
+        private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self);
+            }
+
+            if (self.saveSlot != 0)
+            {
+                return "online_sav" + (self.saveSlot + 1);
+            }
+            return "online_sav";
+        }
+        private void SleepAndDeathScreen_FixNullKarmaLadder(ILContext il)
+        {
             try
             {
                 var c = new ILCursor(il);
@@ -215,7 +231,7 @@ namespace RainMeadow
                                 state.quarterFoodPoints = first_state.quarterFoodPoints;
                             }
                         }
-                        
+
 
                         if (avatar?.abstractCreature?.realizedCreature is Player p && first_player is not null)
                         {
@@ -382,7 +398,7 @@ namespace RainMeadow
             }
             orig(self, dt);
             // riskier chat stuff is run after orig, to minimize chances of orig not being run if things go wrong
-            if(closeChat)
+            if (closeChat)
             {
                 self.cameras[0]?.hud.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                 ChatTextBox.InvokeShutDownChat();

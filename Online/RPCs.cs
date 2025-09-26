@@ -45,10 +45,12 @@ namespace RainMeadow
                 }
             }
         }
+
         [RPCMethod]
         public static void UpdateUsernameTemporarily(RPCEvent rpc, string lastSentMessage)
         {
             string incomingUsername = rpc.from.id.name;
+            
             RainMeadow.Debug("Incoming: " + incomingUsername + ": " + lastSentMessage);
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(incomingUsername)) return;

@@ -215,6 +215,11 @@ namespace RainMeadow
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
         }
 
+        public virtual SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
+        {
+            return SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+        }
+
         public abstract ProcessManager.ProcessID MenuProcessId();
 
         public virtual void AddClientData()
@@ -261,6 +266,9 @@ namespace RainMeadow
             if (onlineResource is Lobby)
             {
                 this.clientSettings = new ClientSettings(new OnlineEntity.EntityId(OnlineManager.mePlayer.inLobbyId, OnlineEntity.EntityId.IdType.settings, 0), OnlineManager.mePlayer);
+                var customSettings = new CustomClientSettings();
+                customSettings.Refresh();
+                this.clientSettings.AddData(customSettings);
                 AddClientData();
                 clientSettings.EnterResource(lobby);
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());

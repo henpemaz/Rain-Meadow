@@ -308,7 +308,7 @@ namespace RainMeadow
             }
             else
             {
-                this.username.text = customization.nickname;
+                this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : customization.nickname;
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
@@ -368,6 +368,17 @@ namespace RainMeadow
                     color = Color.Lerp(color, new Color(1f, 1f, 1f), Mathf.InverseLerp(0f, 0.5f, Mathf.Lerp(this.lastBlink, this.blink, timeStacker)));
                 }
             }
+        }
+
+        public string SetTypingUsername()
+        {
+
+            int numDots = (onlineTimeSinceSpawn / 20) % 4;
+
+            string[] dotPatterns = { "", ".", "..", "..." };
+
+            return this.username.text = dotPatterns[numDots];
+
         }
 
         public override void ClearSprites()

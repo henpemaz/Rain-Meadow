@@ -34,6 +34,7 @@ namespace RainMeadow
         private Rect gridButtonRect;
         private FContainer gridButtonContainer;
         private IntVector2 gridHover;
+        private IntVector2 lastGridHover;
 
         // radial
         private bool radialVisible;
@@ -297,10 +298,15 @@ namespace RainMeadow
 
             uiLastFade = uiFade;
 
-            if (mousePos != lastMousePos || dragging || this.gridHover.x != -1)
+            if ((mousePos != lastMousePos && this.gridHover.x != -1) || dragging)
             {
-                uiNeeded = Mathf.Max(uiNeeded, 80);
+                uiNeeded = Mathf.Max(uiNeeded, 240);
             }
+            else if (mousePos != lastMousePos && this.gridHover.x == -1 && this.lastGridHover.x != -1) //lastGridHover wouldn't be necessary if we didn't care about the grid showing for 6s when loading in.
+            {
+                uiNeeded = Mathf.Min(uiNeeded, 80);
+            }
+            lastGridHover = gridHover;
             uiNeeded = Mathf.Max(uiNeeded - 1, 0);
             uiFade = Custom.LerpAndTick(uiFade, (uiNeeded > 0) ? 1f : 0f, 0.02f, 0.02f);
 
@@ -311,6 +317,7 @@ namespace RainMeadow
                 else gridVisible = !gridVisible;
                 initgridtime = Time.time;
                 hud.owner.PlayHUDSound( gridVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck );
+                uiNeeded = Mathf.Max(uiNeeded, 80);
             }
 
             if (!toggleHidden && gridVisible && !radialPickerActive)
@@ -350,8 +357,6 @@ namespace RainMeadow
                 
                 hud.owner.PlayHUDSound(radialVisible ? SoundID.MENU_Checkbox_Check : SoundID.MENU_Checkbox_Uncheck);
             }
-
-            if (radialVisible) radialDisplayer.positionssss(initradialtime, fliptotheright);
 
             if (!toggleHidden && radialVisible && !radialPickerActive) // mouse input
             {
@@ -444,6 +449,8 @@ namespace RainMeadow
                     }
                 }
             }
+
+            if (radialVisible || radialPickerActive) radialDisplayer.positionssss(initradialtime, fliptotheright);
 
             if (radialPickerActive)
             {
@@ -588,7 +595,7 @@ namespace RainMeadow
                 this.knobSprite.x = knobDrawPos.x * (mainWheelRad - 18f) + mainWheelPos.x;
                 this.knobSprite.y = knobDrawPos.y * (mainWheelRad - 18f) + mainWheelPos.y;
 
-                centerLabel.isVisible = true;
+                centerLabel.isVisible = radialDisplayer.isVisible;
             }
         }
 

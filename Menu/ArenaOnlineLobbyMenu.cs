@@ -163,6 +163,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             return;
         }
         MovePage(new Vector2(-1500f, 0f), 1);
+        selectedObject = arenaSlugcatSelectPage.slugcatSelectButtons[0];
     }
     public void GoToSlugcatSelector()
     {
@@ -278,14 +279,18 @@ public class ArenaOnlineLobbyMenu : SmartMenu
     public override void Init()
     {
         base.Init();
-        selectedObject = arenaMainLobbyPage.chatMenuBox.chatTypingBox;
+        CreateAndUpdateElementBindings();
+        selectedObject = arenaMainLobbyPage.readyButton;
     }
     public override void Update()
     {
         base.Update();
 
         if (!CanEscExit && RWInput.CheckPauseButton(0) && manager.dialog is null)
+        {
             MovePage(new Vector2(1500f, 0f), 0);
+            selectedObject = arenaMainLobbyPage.readyButton;
+        }
         if (pendingScene == scene.sceneID) pendingScene = null;
         lastDesiredBgCoverAlpha = desiredBgCoverAlpha;
         desiredBgCoverAlpha = Mathf.Clamp(desiredBgCoverAlpha + ((pendingScene != null) ? 0.01f : -0.01f), 0.8f, 1.1f);
@@ -300,7 +305,6 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 infoLabelFade = 1;
         }
         UpdateOnlineUI();
-        UpdateElementBindings();
         if (!RainMeadow.isArenaMode(out _)) return;
         if (Arena.currentLobbyOwner != OnlineManager.lobby.owner)
         {
@@ -444,10 +448,27 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             lastCountdownSoundPlayed = Arena.lobbyCountDown;
         }
     }
+    public void CreateAndUpdateElementBindings()
+    {
+        //Set up for and fix the match settings submenu. This is not exactly the cleanest-looking implementation, but it's the friendliest to modification.
+        List<MenuObject> MatchSettingsRow1Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.spearsHitCheckbox, arenaMainLobbyPage.arenaSettingsInterface.evilAICheckBox };
+        List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage.arenaSettingsInterface.roomRepeatArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow3Elements = arenaMainLobbyPage.arenaSettingsInterface.rainTimerArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow4Elements = arenaMainLobbyPage.arenaSettingsInterface.wildlifeArray.buttons.Cast<MenuObject>().ToList();
+        List<MenuObject> MatchSettingsRow5Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.stealItemCheckBox, arenaMainLobbyPage.arenaSettingsInterface.allowMidGameJoinCheckbox };
+        List<MenuObject> MatchSettingsRow6Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.piggyBackCheckbox, arenaMainLobbyPage.arenaSettingsInterface.weaponCollisionCheckBox };
+        List<MenuObject> MatchSettingsRow7Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.countdownTimerTextBox.wrapper };
+        List<MenuObject> MatchSettingsRow8Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.arenaGameModeComboBox.wrapper };
+        List<List<MenuObject>> MatchSettingsElementRowList = new List<List<MenuObject>>() { MatchSettingsRow1Elements, MatchSettingsRow2Elements, MatchSettingsRow3Elements, MatchSettingsRow4Elements, MatchSettingsRow5Elements, MatchSettingsRow6Elements, MatchSettingsRow7Elements, MatchSettingsRow8Elements };
+        Extensions.TrySequentialParallelStitchBind(MatchSettingsElementRowList, areRows: true, loopLastIndex: true, reverseListList: true);
+
+        UpdateElementBindings();
+    }
     public void UpdateElementBindings()
     {
-        MutualHorizontalButtonBind(backObject, arenaMainLobbyPage.readyButton);
-        MutualHorizontalButtonBind(arenaMainLobbyPage.chatMenuBox.chatTypingBox, arenaMainLobbyPage.chatMenuBox.messageScroller.scrollSlider);
+        //Enforce the bottom row's element order. Wow was this broken. TrySequentualMutualBind has a built-in per-entry null check, so if startButton doesn't exist, it will gracefully rebind around it.
+        List<MenuObject> BottomRowElements = new List<MenuObject>() { backObject, arenaMainLobbyPage.startButton, arenaMainLobbyPage.readyButton, arenaMainLobbyPage.arenaGameStatsButton };
+        Extensions.TrySequentialMutualBind(this, BottomRowElements, leftRight: true, loopLastIndex: true);
     }
     public void RemoveAndAddNewExtGameModeTab(ExternalArenaGameMode? gameMode)
     {
