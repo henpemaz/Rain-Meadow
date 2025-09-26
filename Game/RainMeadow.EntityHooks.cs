@@ -24,8 +24,6 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms1;
-            On.RoomCamera.ChangeRoom += RoomCamera_ChangeRoom;
-
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real, also customization happens here
@@ -38,25 +36,6 @@ namespace RainMeadow
             On.Watcher.SandGrubGraphics.DrawSprites += SandGrubGraphics_DrawSprites;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
-        }
-
-        private void RoomCamera_ChangeRoom(On.RoomCamera.orig_ChangeRoom orig, RoomCamera self, Room newRoom, int cameraPosition)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (self.waterLight != null)
-                {
-                    if (newRoom.waterObject == null && newRoom.water)
-                    {
-                        newRoom.AddWater();
-                    }
-                    if (newRoom.waterObject != null && !newRoom.water)
-                    {
-                        self.waterLight.CleanOut();
-                    }
-                }
-            }
-            orig(self, newRoom, cameraPosition);
         }
 
         private void SandGrubGraphics_DrawSprites(On.Watcher.SandGrubGraphics.orig_DrawSprites orig, Watcher.SandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)

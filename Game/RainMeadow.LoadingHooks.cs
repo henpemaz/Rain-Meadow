@@ -19,9 +19,29 @@ namespace RainMeadow
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
+            On.RoomCamera.ChangeRoom += RoomCamera_ChangeRoom;
 
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
+        }
+
+        private void RoomCamera_ChangeRoom(On.RoomCamera.orig_ChangeRoom orig, RoomCamera self, Room newRoom, int cameraPosition)
+        {
+            if (OnlineManager.lobby != null)
+            {
+                if (self.waterLight != null)
+                {
+                    if (newRoom.waterObject == null && newRoom.water)
+                    {
+                        newRoom.AddWater();
+                    }
+                    if (newRoom.waterObject != null && !newRoom.water)
+                    {
+                        self.waterLight.CleanOut();
+                    }
+                }
+            }
+            orig(self, newRoom, cameraPosition);
         }
 
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
