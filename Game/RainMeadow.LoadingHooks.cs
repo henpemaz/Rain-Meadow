@@ -35,10 +35,6 @@ namespace RainMeadow
                     {
                         newRoom.AddWater();
                     }
-                    //if (newRoom.waterObject != null && !newRoom.water)
-                    //{
-                    //    self.waterLight.CleanOut();
-                    //}
                 }
             }
             orig(self, newRoom, cameraPosition);
