@@ -29,15 +29,21 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
+                if (self.waterLight == null && newRoom.water)
+                {
+                    self.waterLight = new WaterLight(self, newRoom.game.rainWorld.Shaders["WaterLight"]);
+                }
+                else if (self.waterLight != null && !newRoom.water)
+                {
+                    self.waterLight.CleanOut();
+                    self.waterLight = null;
+                }
+
                 if (self.waterLight != null)
                 {
                     if (newRoom.waterObject == null && newRoom.water)
                     {
                         newRoom.AddWater();
-                    }
-                    if (newRoom.waterObject != null && !newRoom.water)
-                    {
-                        self.waterLight.CleanOut();
                     }
                 }
             }
