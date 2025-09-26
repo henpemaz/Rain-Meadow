@@ -414,7 +414,7 @@ namespace RainMeadow
         // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
-            if (OnlineManager.lobby != null && self.worldLoader.Finished)
+            if (OnlineManager.lobby != null)
             {
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
                 WorldSession newWorldSession = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetResource() ?? throw new KeyNotFoundException();
