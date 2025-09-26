@@ -1536,38 +1536,5 @@ namespace RainMeadow
 #endif
         }
 
-        public void SerializeNullableValueType<T>(ref T? value) where T : struct
-        {
-#if TRACING
-            long wasPos = this.Position;
-#endif
-            if (IsWriting)
-            {
-                writer.Write(value.HasValue);
-                if (value.HasValue)
-                {
-                    var inputParams = new object[] { value };
-                    GetSerializationMethod(typeof(T), false, false, false).Invoke(this, inputParams);
-                    value = (T)inputParams[0];
-                }
-            }
-            
-            if (IsReading)
-            {
-                if (reader.ReadBoolean())
-                {
-                    var inputParams = new object[] { value };
-                    GetSerializationMethod(typeof(T), false, false, false).Invoke(this, inputParams);
-                    value = (T)inputParams[0];
-                }
-                else
-                {
-                    value = null;
-                }
-            }
-#if TRACING
-            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
-#endif
-        }
     }
 }
