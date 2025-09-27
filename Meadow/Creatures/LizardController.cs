@@ -81,38 +81,14 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
 
-                // replace "is salamander" checks with custom
+                // replace "this.Swimmer" checks with custom || swimmer
 
-                // if (base.Template.type == CreatureTemplate.Type.Salamander || ...
-                ILLabel norun = null;
-                c.GotoNext(moveType: MoveType.After,
+                ILLabel run = c.DefineLabel();
+                // if (this.Swimmer)
+                c.GotoNext(moveType: MoveType.AfterLabel,
                      i => i.MatchLdarg(0),
-                     i => i.MatchCall<Creature>("get_Template"),
-                     i => i.MatchLdfld<CreatureTemplate>("type"),
-                     i => i.MatchLdsfld<CreatureTemplate.Type>("Salamander"),
-                     i => i.MatchCall("ExtEnum`1<CreatureTemplate/Type>", "op_Inequality"),
-                     i => i.MatchBrfalse(out norun)
-                     );
-                c.Emit(OpCodes.Ldarg_0);
-                c.EmitDelegate((Lizard self) =>
-                {
-                    if (creatureControllers.TryGetValue(self, out var controller))
-                    {
-                        return false;
-                    }
-                    return true;
-                });
-                c.Emit(OpCodes.Brfalse, norun);
-
-                // if (base.Template.type == CreatureTemplate.Type.Salamander || ...
-                ILLabel run = null;
-                c.GotoNext(moveType: MoveType.After,
-                     i => i.MatchLdarg(0),
-                     i => i.MatchCall<Creature>("get_Template"),
-                     i => i.MatchLdfld<CreatureTemplate>("type"),
-                     i => i.MatchLdsfld<CreatureTemplate.Type>("Salamander"),
-                     i => i.MatchCall("ExtEnum`1<CreatureTemplate/Type>", "op_Equality"),
-                     i => i.MatchBrtrue(out run)
+                     i => i.MatchCall<Lizard>("get_Swimmer"),
+                     i => i.MatchBrfalse(out _)
                      );
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Lizard self) =>
@@ -123,7 +99,10 @@ namespace RainMeadow
                     }
                     return false;
                 });
+
                 c.Emit(OpCodes.Brtrue, run);
+                c.Index += 3;
+                c.MarkLabel(run);
             }
             catch (Exception e)
             {

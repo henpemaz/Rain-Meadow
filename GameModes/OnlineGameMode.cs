@@ -280,6 +280,11 @@ namespace RainMeadow
             return true;
         }
 
+        public virtual void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
+        {
+
+        }
+
         public virtual void PlayerLeftLobby(OnlinePlayer player)
         {
 

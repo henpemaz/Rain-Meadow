@@ -60,6 +60,14 @@ namespace RainMeadow
         public static float ButtonSizeWithSpacing => ButtonSize + ButtonSpacingOffset;
         public static float ButtonSize => 30;
 
+        public void SetCampaign(SlugcatStats.Name campaign)
+        {
+            storyGameMode.currentCampaign = campaign;
+            if (GetSaveGameData(indexFromColor(campaign)) is SaveGameData sgd)
+                storyGameMode.menuSaveState = new StoryLobbyData.MenuSaveStateState(sgd);
+            else
+                storyGameMode.menuSaveState = null;
+        }
 
         public StoryOnlineMenu(ProcessManager manager) : base(manager)
         {
@@ -68,8 +76,8 @@ namespace RainMeadow
             ID = OnlineManager.lobby.gameMode.MenuProcessId();
             storyGameMode = (StoryGameMode)OnlineManager.lobby.gameMode;
             storyGameMode.Sanitize();
-            storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
-            restartCheckboxPos = restartCheckbox.pos;       
+            SetCampaign(slugcatPages[slugcatPageIndex].slugcatNumber);
+            restartCheckboxPos = restartCheckbox.pos;
             ModifyExistingMenuItems();
 
             if (ModManager.JollyCoop)
@@ -166,7 +174,7 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.isOwner)
             {
-                storyGameMode.currentCampaign = storyGameCharacter;
+                SetCampaign(storyGameCharacter);
             }
 
             var jollyallowed = ModManager.JollyCoop && base.CheckJollyCoopAvailable(slugcatColorOrder[slugcatPageIndex]);
@@ -351,7 +359,7 @@ namespace RainMeadow
                 prevButton.buttonBehav.greyedOut = false;
 
 
-                storyGameMode.currentCampaign = slugcatPages[slugcatPageIndex].slugcatNumber;
+                SetCampaign(slugcatPages[slugcatPageIndex].slugcatNumber);
                 storyGameMode.region = CurrentRegion();
                 if (startButton != null)
                 {

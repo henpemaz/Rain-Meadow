@@ -675,15 +675,6 @@ namespace RainMeadow
         }
 
 
-        public override void PlayerLeftLobby(OnlinePlayer player)
-        {
-            base.PlayerLeftLobby(player);
-            if (player == lobby.owner)
-            {
-                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-            }
-        }
-
         public override bool AllowedInMode(PlacedObject item)
         {
             if (item.type == PlacedObject.Type.SporePlant)
@@ -734,6 +725,7 @@ namespace RainMeadow
         {
             return roomSession.owner == null || roomSession.isOwner;
         }
+
 
         public override void ResourceAvailable(OnlineResource onlineResource)
         {

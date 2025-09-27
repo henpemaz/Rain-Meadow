@@ -300,6 +300,7 @@ namespace RainMeadow
             }
 
             OnNewOwner?.Invoke(this, newOwner);
+            OnlineManager.lobby?.gameMode?.NewResourceOwner(this, oldOwner, owner);
         }
 
         protected void LeaseModified()

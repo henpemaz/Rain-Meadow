@@ -35,7 +35,7 @@ namespace RainMeadow
         /// </summary>
         private static void LookAtPoint(Creature realizedPlayer, Vector2 pointingVector, int handIndex)
         {
-            if (realizedPlayer != null)
+            if (realizedPlayer != null && realizedPlayer.room != null)
             {
                 var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
                 if (realizedPlayer is Player player && player.graphicsModule is PlayerGraphics playerGraphics)
