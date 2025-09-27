@@ -735,6 +735,18 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
         }
 
+
+        public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
+        {
+            if (resource is Lobby)
+            {
+                if (OnlineManager.instance.manager.currentMainLoop is RainWorldGame)
+                {
+                    OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
+                }
+            }
+        }
+
         public override void ResourceAvailable(OnlineResource onlineResource)
         {
             base.ResourceAvailable(onlineResource);

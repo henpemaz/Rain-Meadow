@@ -244,13 +244,14 @@ namespace RainMeadow
             }
         }
 
-        public override void PlayerLeftLobby(OnlinePlayer player)
+        public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
         {
-            base.PlayerLeftLobby(player);
-            // XXX: does not work as expected, new lobby owner is assigned before we receive this
-            if (player == lobby.owner)
+            if (resource is Lobby)
             {
-                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                if (OnlineManager.instance.manager.currentMainLoop is RainWorldGame)
+                {
+                    OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.StoryMenu);
+                }
             }
         }
 
