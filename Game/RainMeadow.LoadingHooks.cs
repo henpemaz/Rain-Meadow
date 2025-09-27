@@ -23,9 +23,6 @@ namespace RainMeadow
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
         }
-
-
-
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldAs(self);
