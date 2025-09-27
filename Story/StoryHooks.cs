@@ -375,7 +375,8 @@ namespace RainMeadow
             if (isStoryMode(out var storyGameMode))
             {
                 orig(self);
-                World world = self.room.game.overWorld.worldLoader.ReturnWorld();
+
+                World world = ((self.room.game.overWorld.worldLoader == null) ? self.room.game.overWorld.activeWorld : self.room.game.overWorld.worldLoader.ReturnWorld());
                 var ws = world.GetResource() ?? throw new KeyNotFoundException();
                 ws.Deactivate();
                 ws.NotNeeded();
