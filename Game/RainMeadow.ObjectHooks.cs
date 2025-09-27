@@ -13,28 +13,6 @@ namespace RainMeadow
         private void Room_Update(ILContext il)
         {
             ILCursor c = new ILCursor(il);
-
-            c.Emit(OpCodes.Ldarg_0);
-            c.EmitDelegate((Room self) =>
-            {
-                if (OnlineManager.lobby != null)
-                {
-                    if (RoomSession.map.TryGetValue(self.abstractRoom, out RoomSession rs))
-                    {
-                        if (rs.loadedPending)
-                        {
-                            rs.Needed();
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-            ILLabel label = c.DefineLabel();
-            c.Emit(OpCodes.Brtrue, label);
-            c.Emit(OpCodes.Ret);
-            c.MarkLabel(label);
-
             ILLabel skip = null;
             int locuad = -1;
 

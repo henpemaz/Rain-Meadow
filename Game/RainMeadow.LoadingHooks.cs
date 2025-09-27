@@ -233,21 +233,16 @@ namespace RainMeadow
         // Room wait and activate
         private void RoomPreparer_Update(On.RoomPreparer.orig_Update orig, RoomPreparer self)
         {
-            if (OnlineManager.lobby != null)
+            if (!self.shortcutsOnly && self.room.game != null && OnlineManager.lobby != null)
             {
                 if (RoomSession.map.TryGetValue(self.room.abstractRoom, out RoomSession rs))
                 {
-
-                    if (!self.shortcutsOnly && self.room.game != null)
-                    {
-                        RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
-                        rs.Needed();
-                        if (!rs.isAvailable || rs.isPending) return;
-                        if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
-                    }
+                    RainMeadow.Trace($"{rs} : {rs.isPending} {rs.isAvailable} {rs.isActive}");
+                    rs.Needed();
+                    if (!rs.isAvailable || rs.isPending) return;
+                    if ((self.requestShortcutsReady || self.room.shortCutsReady) && !rs.isActive) rs.Activate();
                 }
-
-            } 
+            }
             orig(self);
         }
 
