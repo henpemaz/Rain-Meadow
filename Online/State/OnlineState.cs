@@ -279,7 +279,7 @@ namespace RainMeadow
                     if (!MethodCache.LoadMethod("Serialize" + type.Name, type.Module, out var serializationMethod, 
                         (MethodInfo method) =>
                         {
-                            this.serialize = (Action<OnlineState, Serializer>)method.CreateDelegate(typeof(Func<OnlineState, Serializer>));
+                            this.serialize = (Action<OnlineState, Serializer>)method.CreateDelegate(typeof(Action<OnlineState, Serializer>));
                         }, null!, typeof(OnlineState), typeof(Serializer)))
                     {
                         ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");

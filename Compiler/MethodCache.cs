@@ -21,7 +21,7 @@ namespace RainMeadow
             Type returnType, params Type[] argumentTypes)
         {
             var modCacheDirectory = Path.Combine(ModManager.GetModById("henpemaz_rainmeadow").basePath, "cache");
-            if (Directory.Exists(modCacheDirectory)) Directory.CreateDirectory(modCacheDirectory);
+            if (!Directory.Exists(modCacheDirectory)) Directory.CreateDirectory(modCacheDirectory);
 
             var version = connectedModule.ModuleVersionId;
             var assemblyfile = connectedModule.Name + version.ToString("N") + ".MeadowCache" + ".dll";
