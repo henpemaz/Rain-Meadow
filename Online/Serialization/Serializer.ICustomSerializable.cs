@@ -5,7 +5,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using Unity.Mathematics;
 
 namespace RainMeadow
 {
@@ -264,13 +266,6 @@ namespace RainMeadow
 
             if (Nullable.GetUnderlyingType(fieldType) is Type t)
             {
-                var dynMethod = new DynamicMethod("SerializeNullable" + t.Name, null, [typeof(Serializer), t.MakeByRefType()]);
-                var il = dynMethod.GetILGenerator();
-                var internalValue = il.DeclareLocal(t, true);
-                var afterWrite = il.DefineLabel();
-                var afterRead = il.DefineLabel();
-                var callSerialize = il.DefineLabel();
-
                 // T internalvalue = default(T);
                 // if (serializer.isWriting)
                 // {
@@ -290,70 +285,78 @@ namespace RainMeadow
 
                 // callSerialize:
                 // 
-                // Serialize(ref internalvalue);
-                // value = in
-                // return;
+                //     Serialize(ref internalvalue);
+                //     value = in
+                //     return;
 
-                // Actual IL implementation:
+                // IL implementation:
+                var dynMethod = new DynamicMethod("SerializeNullable" + t.Name, null, [typeof(Serializer), fieldType.MakeByRefType()]);
+
+                var il = dynMethod.GetILGenerator();
+                var internalValue = il.DeclareLocal(t, true);
+                var afterWrite = il.DefineLabel();
+                var afterRead = il.DefineLabel();
+                var callSerialize = il.DefineLabel();
+
+                var writer = typeof(Serializer).GetField(nameof(Serializer.writer));
+                var reader = typeof(Serializer).GetField(nameof(Serializer.reader));
+                var hasValue = fieldType.GetProperty("HasValue").GetGetMethod();
+                var value = fieldType.GetProperty("Value").GetGetMethod();
+                var nullableCtor = fieldType.GetConstructor(new[] { t });
+
+                // internalValue = default;
+                il.Emit(OpCodes.Call, typeof(Activator).GetMethods().First(x => x.Name == nameof(Activator.CreateInstance) && x.IsGenericMethod).MakeGenericMethod(t));
+                il.Emit(OpCodes.Stloc, internalValue);
+
                 // if (serializer.IsWriting)
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Callvirt, typeof(Serializer).GetProperty(nameof(Serializer.IsWriting)).GetGetMethod());
-                il.Emit(OpCodes.Brfalse_S, afterRead);
+                il.Emit(OpCodes.Call, typeof(Serializer).GetProperty(nameof(Serializer.IsWriting)).GetGetMethod());
+                il.Emit(OpCodes.Brfalse_S, afterWrite);
 
                 // serializer.writer.Write(value.HasValue);
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, typeof(Serializer).GetField("writer", BindingFlags.NonPublic | BindingFlags.Instance));
+                il.Emit(OpCodes.Ldfld, writer);
                 il.Emit(OpCodes.Ldarg_1);
-                il.Emit(OpCodes.Call, fieldType.GetProperty("HasValue").GetGetMethod());
-                il.Emit(OpCodes.Callvirt, typeof(BinaryWriter).GetMethod("Write", new[] { typeof(bool) }));
+                il.Emit(OpCodes.Call, hasValue);
+                il.Emit(OpCodes.Callvirt, typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(bool) }));
 
-                // if (!value.HasValue) return;
+                // if (!value.HasValue) goto callSerialize;
                 il.Emit(OpCodes.Ldarg_1);
-                il.Emit(OpCodes.Call, fieldType.GetProperty("HasValue").GetGetMethod());
-                il.Emit(OpCodes.Brfalse_S, afterWrite);
+                il.Emit(OpCodes.Call, hasValue);
+                il.Emit(OpCodes.Brfalse_S, callSerialize);
 
                 // internalvalue = value.Value;
+                // goto callSerialize;
                 il.Emit(OpCodes.Ldarg_1);
-                il.Emit(OpCodes.Call, fieldType.GetProperty("Value").GetGetMethod());
+                il.Emit(OpCodes.Call, value);
                 il.Emit(OpCodes.Stloc, internalValue);
-                il.Emit(OpCodes.Br_S, callSerialize);
+                il.Emit(OpCodes.Br, callSerialize);
 
-                // else if (serializer.IsReading)
+                il.MarkLabel(afterWrite);
+
+                // if (serializer.IsReading)
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, typeof(Serializer).GetProperty(nameof(Serializer.IsReading)).GetGetMethod());
+                il.Emit(OpCodes.Brfalse_S, afterRead);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, reader);
+                il.Emit(OpCodes.Callvirt, typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean)));
+                il.Emit(OpCodes.Brfalse_S, afterRead);
+                il.Emit(OpCodes.Br, callSerialize);
                 il.MarkLabel(afterRead);
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Callvirt, typeof(Serializer).GetProperty(nameof(Serializer.IsReading)).GetGetMethod());
-                il.Emit(OpCodes.Brfalse_S, afterWrite);
-
-                // if (!serializer.reader.ReadBoolean()) return;
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldfld, typeof(Serializer).GetField("reader", BindingFlags.NonPublic | BindingFlags.Instance));
-                il.Emit(OpCodes.Callvirt, typeof(BinaryReader).GetMethod("ReadBoolean"));
-                il.Emit(OpCodes.Brfalse_S, afterWrite);
 
                 // callSerialize:
                 il.MarkLabel(callSerialize);
-
-                // Serialize(ref internalvalue);
-                var serializeMethod = GetSerializationMethod(t, false, polymorphic, longList);
+                var serializeFunc = GetSerializationMethod(t, false, true, true);
                 il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Ldloca_S, internalValue);
-                il.Emit(OpCodes.Callvirt, serializeMethod);
+                il.Emit(OpCodes.Ldloca, internalValue);
+                il.Emit(OpCodes.Call, serializeFunc);
 
-                // if reading, value = new Nullable<T>(internalvalue)
-                il.Emit(OpCodes.Ldarg_0);
-                il.Emit(OpCodes.Callvirt, typeof(Serializer).GetProperty(nameof(Serializer.IsReading)).GetGetMethod());
-                var skipSet = il.DefineLabel();
-                il.Emit(OpCodes.Brfalse_S, skipSet);
-                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Ldarga, 1);
                 il.Emit(OpCodes.Ldloc, internalValue);
-                var nullableCtor = fieldType.GetConstructor(new[] { t });
-                il.Emit(OpCodes.Newobj, nullableCtor);
+                il.Emit(OpCodes.Newobj, fieldType.GetConstructor([t]));
                 il.Emit(OpCodes.Stobj, fieldType);
-                il.MarkLabel(skipSet);
-
-                il.MarkLabel(afterWrite);
                 il.Emit(OpCodes.Ret);
-
                 return dynMethod;
             }
 
