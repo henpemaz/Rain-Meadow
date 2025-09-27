@@ -166,6 +166,7 @@ namespace RainMeadow
                 sw = Stopwatch.StartNew();
                 MethodCache.SaveDynamicMethods();
                 sw.Stop();
+                
                 RainMeadow.Debug($"MethodCache.SaveDynamicMethods: {sw.Elapsed}");
                 dynamicsw.Stop();
                 RainMeadow.Debug($"State & RPC Initialization time: {dynamicsw.Elapsed}");

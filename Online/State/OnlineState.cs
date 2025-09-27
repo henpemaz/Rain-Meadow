@@ -276,7 +276,11 @@ namespace RainMeadow
 
                     // make serialize func
 
-                    if (!MethodCache.LoadMethod("Serialize" + type.Name, type.Module, out var serializationMethod, null, typeof(OnlineState), typeof(Serializer)))
+                    if (!MethodCache.LoadMethod("Serialize" + type.Name, type.Module, out var serializationMethod, 
+                        (MethodInfo method) =>
+                        {
+                            this.serialize = (Action<OnlineState, Serializer>)method.CreateDelegate(typeof(Func<OnlineState, Serializer>));
+                        }, null!, typeof(OnlineState), typeof(Serializer)))
                     {
                         ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
                         ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");
@@ -383,7 +387,12 @@ namespace RainMeadow
                     // if supports delta
                     if (deltaSupport != DeltaSupport.None)
                     {
-                        if (!MethodCache.LoadMethod("Delta" + type.Name, type.Module, out var deltaMethod, typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
+                        if (!MethodCache.LoadMethod("Delta" + type.Name, type.Module, out var deltaMethod,
+                            (MethodInfo method) =>
+                            {
+                                this.delta = (Func<OnlineState, OnlineState, OnlineState>)method.CreateDelegate(typeof(Func<OnlineState, OnlineState, OnlineState>));
+                            },
+                            typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
                         {
                             // make delta func
                             ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
@@ -498,7 +507,12 @@ namespace RainMeadow
 
 
                         // make applydelta func
-                        if (!MethodCache.LoadMethod("ApplyDelta" + type.Name, type.Module, out var applyDeltaMethod, typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
+                        if (!MethodCache.LoadMethod("ApplyDelta" + type.Name, type.Module, out var applyDeltaMethod,
+                            (MethodInfo method) =>
+                            {
+                                this.applydelta = (Func<OnlineState, OnlineState, OnlineState>)method.CreateDelegate(typeof(Func<OnlineState, OnlineState, OnlineState>));
+                            },
+                            typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
                         {
                             ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
                             ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");

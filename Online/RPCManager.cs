@@ -51,19 +51,143 @@ namespace RainMeadow
 
         public class RPCDefinition
         {
+            public delegate void serializeRPC_t(RPCEvent _event, Serializer _serializer);
             public RPCSecurity security;
             public ushort index;
             public MethodInfo method;
-            public Action<RPCEvent, Serializer> serialize;
+            public serializeRPC_t serialize;
             public int eventArgIndex;
             public bool isStatic;
             public string summary;
             public bool runDeferred;
+
+            public RPCDefinition() {}
+            public RPCDefinition(MethodInfo method, RPCMethodAttribute attribute, ushort index)
+            {
+                this.security = attribute.security;
+                this.method = method;
+                this.isStatic = method.IsStatic;
+                this.summary = $"{method.DeclaringType.Name}.{method.Name}";
+                this.runDeferred = attribute.runDeferred;
+                this.index = index;
+
+                var args = method.GetParameters();
+                this.eventArgIndex = -1;
+                for (int i = 0; i < args.Length; i++)
+                {
+                    if (args[i].ParameterType == typeof(RPCEvent))
+                    {
+                        this.eventArgIndex = i;
+                        var tempArgs = args.ToList();
+                        tempArgs.RemoveAt(i);
+                        args = tempArgs.ToArray();
+                    }
+                }
+
+
+                RainMeadow.Debug($"New RPC: {method.DeclaringType}-{method.Name}");
+                if (!MethodCache.LoadMethod($"SerializeRPC{method.DeclaringType}{method.Name}", method.DeclaringType.Module, out var serializationMethod, (MethodInfo info) =>
+                    {
+                        serialize = (serializeRPC_t)info.CreateDelegate(typeof(serializeRPC_t));
+                    }, typeof(RPCEvent), typeof(Serializer)))
+                {
+
+
+                    RainMeadow.Debug(args.Aggregate("", (e, a) => e + " - " + a));
+
+                    // make serialize method(rpcEvent, serializer)
+                    ParameterExpression targetVar = Expression.Variable(method.DeclaringType, "target");
+                    ParameterExpression isReading = Expression.Variable(typeof(bool), "isReading");
+                    var expressions = new List<Expression>();
+                    var vars = new List<ParameterExpression>()
+                    {
+                        targetVar, argsVar, isReading
+                    };
+                    expressions.Add(Expression.Assign(isReading, Expression.Property(serializerParam, serializerIsReadingProp))); // minimize invokes :pensive:
+
+                    if (!isStatic)
+                    {
+                        expressions.Add(Expression.Assign(targetVar, Expression.Convert(Expression.Field(rpceventParam, rpcEventTargetAccessor), method.DeclaringType)));
+
+                        // serialize the target type
+                        // for Resource or Entity we know what to do
+                        // dunno how to make this extensible, it's probably enough for now
+                        if (typeof(OnlineResource).IsAssignableFrom(method.DeclaringType))
+                        {
+                            RainMeadow.Debug("target is OnlineResource");
+                            expressions.Add(Expression.Call(serializerParam, serializeResourceByRef.MakeGenericMethod(method.DeclaringType), targetVar));
+                        }
+                        else if (typeof(OnlineEntity).IsAssignableFrom(method.DeclaringType))
+                        {
+                            RainMeadow.Debug("target is OnlineEntity");
+                            expressions.Add(Expression.Call(serializerParam, serializeEntityById.MakeGenericMethod(method.DeclaringType), targetVar));
+                        }
+                        else if (typeof(RainMeadow).IsAssignableFrom(method.DeclaringType)) // lambdas aren't static lol
+                        {
+                            RainMeadow.Debug("target is RainMeadow");
+                            expressions.Add(Expression.Assign(targetVar, Expression.Constant(RainMeadow.instance)));
+                        }
+                        else
+                        {
+                            throw new NotSupportedException($"can't register non-static RPC on type {method.DeclaringType}, poke Henpemaz about it");
+                        }
+
+                        expressions.Add(Expression.Assign(Expression.Field(rpceventParam, rpcEventTargetAccessor), targetVar));
+                    }
+
+                    if (args.Length > 0)
+                    {
+                        // args = event.args;
+                        // if(serializer.IsReading) args = new[x];
+                        // event.args = args;
+                        expressions.Add(Expression.Assign(argsVar, Expression.Field(rpceventParam, rpcEventArgsAccessor)));
+                        expressions.Add(Expression.IfThen(isReading,
+                            Expression.Assign(argsVar, Expression.NewArrayBounds(typeof(object), Expression.Constant(args.Length)))
+                        ));
+                        expressions.Add(Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), argsVar));
+
+                        for (int i = 0; i < args.Length; i++)
+                        {
+                            // T arg
+                            // if(isWritting) arg = (T)args[i];
+                            // serializer.Serialize(ref arg);
+                            // if(isReading) args[i] = (object)arg;
+
+                            var argType = args[i].ParameterType;
+                            ParameterExpression argVar = Expression.Variable(argType);
+                            vars.Add(argVar);
+                            expressions.Add(Expression.IfThen(Expression.Not(isReading), Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType))));
+                            var serializerMethod = Serializer.GetSerializationMethod(argType, !(argType.IsValueType || (argType.IsArray && argType.GetElementType().IsValueType)) || Nullable.GetUnderlyingType(argType) != null, true, true); if (serializerMethod == null)
+                            {
+                                throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {method.DeclaringType}");
+                            }
+                            expressions.Add(Expression.Call(serializerParam, serializerMethod, argVar));
+                            expressions.Add(Expression.IfThen(isReading, Expression.Assign(Expression.ArrayAccess(argsVar, Expression.Constant(i)), Expression.Convert(argVar, typeof(object)))));
+                        }
+                    }
+                    else
+                    {
+                        // if(serializer.IsReading) args = new[0];
+                        expressions.Add(Expression.IfThen(isReading,
+                            Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), Expression.NewArrayBounds(typeof(object), Expression.Constant(0)))
+                        ));
+                    }
+
+                    Expression.Lambda<Action<RPCEvent, Serializer>>(Expression.Block(vars, expressions), rpceventParam, serializerParam).CompileToMethod((MethodBuilder)serializationMethod);
+                }
+            }
         }
 
         public class SoftRPCDefinition : RPCDefinition
         {
             public Guid key;
+
+            public SoftRPCDefinition() {}
+            public SoftRPCDefinition(MethodInfo method, RPCMethodAttribute attribute, ushort index) : base(method, attribute, index)
+            {
+                key = method.DeclaringType.Module.ModuleVersionId;
+            }
+            
         }
 
         public static void SetupRPCs()
@@ -135,143 +259,19 @@ namespace RainMeadow
                 var isStatic = method.IsStatic;
                 var isSoft = method.GetCustomAttribute<RPCMethodAttribute>() is SoftRPCMethodAttribute;
                 // get args
-                RainMeadow.Debug($"New RPC: {targetType}-{method.Name}");
-                var args = method.GetParameters();
-                var argsEventIndex = -1;
-                for (int i = 0; i < args.Length; i++)
-                {
-                    if (args[i].ParameterType == typeof(RPCEvent))
-                    {
-                        argsEventIndex = i;
-                        var tempArgs = args.ToList();
-                        tempArgs.RemoveAt(i);
-                        args = tempArgs.ToArray();
-                    }
-                }
-                Action<RPCEvent, Serializer> serialize;
-                if (!MethodCache.LoadMethod($"SerializeRPC.{targetType}.{method.Name}", targetType.Module, out var serializationMethod, null, typeof(RPCEvent), typeof(Serializer)))
-                {
 
-
-                    RainMeadow.Debug(args.Aggregate("", (e, a) => e + " - " + a));
-
-                    // make serialize method(rpcEvent, serializer)
-                    ParameterExpression targetVar = Expression.Variable(targetType, "target");
-                    ParameterExpression isReading = Expression.Variable(typeof(bool), "isReading");
-                    var expressions = new List<Expression>();
-                    var vars = new List<ParameterExpression>()
-                    {
-                        targetVar, argsVar, isReading
-                    };
-                    expressions.Add(Expression.Assign(isReading, Expression.Property(serializerParam, serializerIsReadingProp))); // minimize invokes :pensive:
-
-                    if (!isStatic)
-                    {
-                        expressions.Add(Expression.Assign(targetVar, Expression.Convert(Expression.Field(rpceventParam, rpcEventTargetAccessor), targetType)));
-
-                        // serialize the target type
-                        // for Resource or Entity we know what to do
-                        // dunno how to make this extensible, it's probably enough for now
-                        if (typeof(OnlineResource).IsAssignableFrom(targetType))
-                        {
-                            RainMeadow.Debug("target is OnlineResource");
-                            expressions.Add(Expression.Call(serializerParam, serializeResourceByRef.MakeGenericMethod(targetType), targetVar));
-                        }
-                        else if (typeof(OnlineEntity).IsAssignableFrom(targetType))
-                        {
-                            RainMeadow.Debug("target is OnlineEntity");
-                            expressions.Add(Expression.Call(serializerParam, serializeEntityById.MakeGenericMethod(targetType), targetVar));
-                        }
-                        else if (typeof(RainMeadow).IsAssignableFrom(targetType)) // lambdas aren't static lol
-                        {
-                            RainMeadow.Debug("target is RainMeadow");
-                            expressions.Add(Expression.Assign(targetVar, Expression.Constant(RainMeadow.instance)));
-                        }
-                        else
-                        {
-                            throw new NotSupportedException($"can't register non-static RPC on type {targetType}, poke Henpemaz about it");
-                        }
-
-                        expressions.Add(Expression.Assign(Expression.Field(rpceventParam, rpcEventTargetAccessor), targetVar));
-                    }
-
-                    if (args.Length > 0)
-                    {
-                        // args = event.args;
-                        // if(serializer.IsReading) args = new[x];
-                        // event.args = args;
-                        expressions.Add(Expression.Assign(argsVar, Expression.Field(rpceventParam, rpcEventArgsAccessor)));
-                        expressions.Add(Expression.IfThen(isReading,
-                            Expression.Assign(argsVar, Expression.NewArrayBounds(typeof(object), Expression.Constant(args.Length)))
-                        ));
-                        expressions.Add(Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), argsVar));
-
-                        for (int i = 0; i < args.Length; i++)
-                        {
-                            // T arg
-                            // if(isWritting) arg = (T)args[i];
-                            // serializer.Serialize(ref arg);
-                            // if(isReading) args[i] = (object)arg;
-
-                            var argType = args[i].ParameterType;
-                            ParameterExpression argVar = Expression.Variable(argType);
-                            vars.Add(argVar);
-                            expressions.Add(Expression.IfThen(Expression.Not(isReading), Expression.Assign(argVar, Expression.Convert(Expression.ArrayAccess(argsVar, Expression.Constant(i)), argType))));
-                            var serializerMethod = Serializer.GetSerializationMethod(argType, !(argType.IsValueType || (argType.IsArray && argType.GetElementType().IsValueType)) || Nullable.GetUnderlyingType(argType) != null, true, true); if (serializerMethod == null)
-                            {
-                                throw new NotSupportedException($"can't serialize parameter {args[i].ParameterType} on type {method} for {targetType}");
-                            }
-                            expressions.Add(Expression.Call(serializerParam, serializerMethod, argVar));
-                            expressions.Add(Expression.IfThen(isReading, Expression.Assign(Expression.ArrayAccess(argsVar, Expression.Constant(i)), Expression.Convert(argVar, typeof(object)))));
-                        }
-                    }
-                    else
-                    {
-                        // if(serializer.IsReading) args = new[0];
-                        expressions.Add(Expression.IfThen(isReading,
-                            Expression.Assign(Expression.Field(rpceventParam, rpcEventArgsAccessor), Expression.NewArrayBounds(typeof(object), Expression.Constant(0)))
-                        ));
-                    }
-
-                    Expression.Lambda<Action<RPCEvent, Serializer>>(Expression.Block(vars, expressions), rpceventParam, serializerParam).CompileToMethod((MethodBuilder)serializationMethod);
-                }
-
-                serialize = (a, b) => { serializationMethod.Invoke(null, [a, b]); };
-                
                 if (isSoft)
                 {
                     var key = targetType.Module.ModuleVersionId;
                     if (!softHandlerClients.ContainsKey(key)) softHandlerClients.Add(key, new Dictionary<ushort, SoftRPCDefinition>());
                     ushort useIndex = (ushort)softHandlerClients[key].Keys.Count;
-                    SoftRPCDefinition entry = new()
-                    {
-                        key = key,
-                        index = useIndex,
-                        method = method,
-                        serialize = serialize,
-                        eventArgIndex = argsEventIndex,
-                        isStatic = isStatic,
-                        runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
-                        security = method.GetCustomAttribute<RPCMethodAttribute>().security,
-                        summary = $"{targetType.Name}.{method.Name}"
-                    };
+                    SoftRPCDefinition entry = new(method, method.GetCustomAttribute<RPCMethodAttribute>(), useIndex);
                     defsByMethod[method] = entry;
                     softHandlerClients[key][useIndex] = entry;
                 }
                 else
                 {
-                    RPCDefinition entry = new()
-                    {
-                        index = index,
-                        method = method,
-                        serialize = serialize,
-                        eventArgIndex = argsEventIndex,
-                        isStatic = isStatic,
-                        runDeferred = method.GetCustomAttribute<RPCMethodAttribute>().runDeferred,
-                        security = method.GetCustomAttribute<RPCMethodAttribute>().security,
-                        summary = $"{targetType.Name}.{method.Name}"
-                    };
-
+                    RPCDefinition entry = new(method, method.GetCustomAttribute<RPCMethodAttribute>(), index);
                     defsByIndex[index] = entry;
                     defsByMethod[method] = entry;
                     index++;
