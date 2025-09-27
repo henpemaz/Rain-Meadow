@@ -7,7 +7,7 @@ namespace RainMeadow {
     public class ArtificialIntelligenceState : OnlineState
     {
 
-        [OnlineField(group: "AImodules", nullable: true)]
+        [OnlineField(group: "AImodules")]
         public DynamicOrderedStates<AIModuleState>? moduleStates;
 
         [OnlineField(nullable: true)]
