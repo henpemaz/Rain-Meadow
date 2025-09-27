@@ -675,15 +675,6 @@ namespace RainMeadow
         }
 
 
-        public override void PlayerLeftLobby(OnlinePlayer player)
-        {
-            base.PlayerLeftLobby(player);
-            if (player == lobby.owner)
-            {
-                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
-            }
-        }
-
         public override bool AllowedInMode(PlacedObject item)
         {
             if (item.type == PlacedObject.Type.SporePlant)
@@ -735,17 +726,6 @@ namespace RainMeadow
             return roomSession.owner == null || roomSession.isOwner;
         }
 
-
-        public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
-        {
-            if (resource is Lobby)
-            {
-                if (OnlineManager.instance.manager.currentMainLoop is RainWorldGame)
-                {
-                    OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.ArenaLobbyMenu);
-                }
-            }
-        }
 
         public override void ResourceAvailable(OnlineResource onlineResource)
         {
