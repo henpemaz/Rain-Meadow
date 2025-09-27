@@ -24,7 +24,6 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms1;
-
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real, also customization happens here

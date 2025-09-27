@@ -300,6 +300,11 @@ namespace RainMeadow
             {
                 line5.Add(self, lines[5]);
             }
+
+            if (OnlineManager.lobby != null && self.water && self.waterObject is null)
+            {
+                self.AddWater();
+            }
         }
 
         private void AbstractCreature_ChangeRooms(On.AbstractCreature.orig_ChangeRooms orig, AbstractCreature self, WorldCoordinate newCoord)

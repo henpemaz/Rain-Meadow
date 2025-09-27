@@ -1,9 +1,11 @@
-﻿using RainMeadow.Generics;
+﻿using MonoMod.Utils;
+using RainMeadow.Generics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace RainMeadow
@@ -269,274 +271,316 @@ namespace RainMeadow
                     var expressions = new List<Expression>();
 
                     // make factory
+                    factory = () => (OnlineState)Activator.CreateInstance(type);
 
-                    factory = Expression.Lambda<Func<OnlineState>>(Expression.New(type.GetConstructor(new Type[] { }))).Compile();
 
                     // make serialize func
 
-                    ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
-                    ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");
-                    ParameterExpression serializer = Expression.Parameter(typeof(Serializer), "serializer");
-
-                    MemberExpression serializerIsDelta = Expression.Field(serializer, serializerIsDeltaAcessor);
-                    MemberExpression selfIsDelta = Expression.Field(self, isDeltaAcessor);
-
-                    expressions = new List<Expression>();
-                    expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
-
-                    switch (deltaSupport)
+                    if (!MethodCache.LoadMethod("Serialize" + type.Name, type.Module, out var serializationMethod, 
+                        (MethodInfo method) =>
+                        {
+                            this.serialize = (Action<OnlineState, Serializer>)method.CreateDelegate(typeof(Action<OnlineState, Serializer>));
+                        }, null!, typeof(OnlineState), typeof(Serializer)))
                     {
-                        case DeltaSupport.None:
-                            // serializer.Serialize(ref field);
-                            expressions.Add(Expression.Block(fields.Select(
-                                f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
-                            ).Where(e => e != null)));
-                            break;
-                        case DeltaSupport.FollowsContainer:
-                            // Main delta-aware serialization logic here
+                        ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
+                        ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");
+                        ParameterExpression serializer = Expression.Parameter(typeof(Serializer), "serializer");
 
-                            // for each group
-                            //      if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
-                            //      if (!serializer.IsDelta || hasGroupValue[n])
-                            //      {
-                            //          serializer.Serialize(ref fieldInGroup);
-                            //      }
+                        MemberExpression serializerIsDelta = Expression.Field(serializer, serializerIsDeltaAcessor);
+                        MemberExpression selfIsDelta = Expression.Field(self, isDeltaAcessor);
 
-                            expressions.Add(Expression.Assign(selfIsDelta, serializerIsDelta));
+                        expressions = new List<Expression>();
+                        expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
 
-                            // always send
-                            if (keys.Count > 0)
+                        switch (deltaSupport)
+                        {
+                            case DeltaSupport.None:
+                                // serializer.Serialize(ref field);
+                                expressions.Add(Expression.Block(fields.Select(
+                                    f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+                                ).Where(e => e != null)));
+                                break;
+                            case DeltaSupport.FollowsContainer:
+                                // Main delta-aware serialization logic here
+
+                                // for each group
+                                //      if (serializer.IsDelta) serializer.Serialize(ref hasGroupValue[n]);
+                                //      if (!serializer.IsDelta || hasGroupValue[n])
+                                //      {
+                                //          serializer.Serialize(ref fieldInGroup);
+                                //      }
+
+                                expressions.Add(Expression.Assign(selfIsDelta, serializerIsDelta));
+
+                                // always send
+                                if (keys.Count > 0)
+                                {
+                                    expressions.Add(Expression.Block(keys.Select(
+                                            f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+                                        ).Where(e => e != null)));
+                                }
+
+                                for (int i = 0; i < ngroups; i++)
+                                {
+                                    if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+
+                                    expressions.Add(Expression.IfThen(serializerIsDelta,
+                                        Expression.Call(serializer, serializeBoolRef, new[] {
+                                    Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i)) })));
+                                    var deltagroupname = deltaGroups.Keys.ToList()[i];
+                                    expressions.Add(Expression.IfThen(Expression.OrElse(Expression.Not(serializerIsDelta),
+                                            Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i))),
+#if TRACING
+                                        Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace("sending " + deltagroupname); }), serializer),
+#endif                                   
+                                        Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                            f =>
+#if TRACING
+                                                Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace(f.Name); }), serializer),
+#endif
+                                                f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
+#if TRACING
+                                            )
+#endif
+                                        ).Where(e => e != null))
+#if TRACING
+                                        )
+#endif
+                                        ));
+
+                                }
+                                break;
+                            case DeltaSupport.NullableDelta:
+                                // if (serializer.IsDelta) // In a non-delta context, can only be non-delta
+                                // {
+                                //     serializer.Serialize(ref IsDelta);
+                                //     serializer.IsDelta = IsDelta;
+                                // }
+                                // if (IsDelta) serializer.Serialize(ref hasGroupValue);
+                                // if (!IsDelta || hasGroupValue)
+                                // {
+                                //     serializer.Serialize(ref fieldInGroup);
+                                // }
+                                expressions.Add(Expression.IfThen(serializerIsDelta, Expression.Block(
+                                        Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }),
+                                        Expression.Assign(serializerIsDelta, selfIsDelta
+                                    ))));
+                                goto case DeltaSupport.FollowsContainer;
+                            case DeltaSupport.Full:
+                                // serializer.Serialize(ref IsDelta);
+                                // if (!serializer.IsDelta && IsDelta) { serializer.Serialize(ref Baseline); }
+                                // serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later
+                                // ...etc
+                                expressions.Add(Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }));
+                                expressions.Add(Expression.IfThen(Expression.AndAlso(Expression.Not(serializerIsDelta),
+                                                                        selfIsDelta),
+                                            Expression.Call(serializer, serializeUintRef, new[] { Expression.Field(selfConverted, baselineAcessor) })));
+                                expressions.Add(Expression.Assign(serializerIsDelta, selfIsDelta));
+                                goto case DeltaSupport.FollowsContainer;
+                        }
+
+                        Expression.Lambda<Action<OnlineState, Serializer>>(Expression.Block(new[] { selfConverted }, expressions), self, serializer).CompileToMethod((MethodBuilder)serializationMethod);
+                    }
+
+                    serialize = (a, b) => serializationMethod.Invoke(null, [a, b]);
+
+                    // if supports delta
+                    if (deltaSupport != DeltaSupport.None)
+                    {
+                        if (!MethodCache.LoadMethod("Delta" + type.Name, type.Module, out var deltaMethod,
+                            (MethodInfo method) =>
                             {
-                                expressions.Add(Expression.Block(keys.Select(
-                                        f => f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
-                                    ).Where(e => e != null)));
+                                this.delta = (Func<OnlineState, OnlineState, OnlineState>)method.CreateDelegate(typeof(Func<OnlineState, OnlineState, OnlineState>));
+                            },
+                            typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
+                        {
+                            // make delta func
+                            ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
+                            ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");
+                            ParameterExpression serializer = Expression.Parameter(typeof(Serializer), "serializer");
+
+                            ParameterExpression baseline = Expression.Parameter(typeof(OnlineState), "baseline");
+                            ParameterExpression baselineConverted = Expression.Variable(type, "baselineConverted");
+                            ParameterExpression output = Expression.Variable(type, "output");
+                            MethodInfo cloneRef = typeof(OnlineState).GetMethod("Clone", anyInstance);
+
+                            // if (baseline == null) throw new InvalidProgrammerException("baseline is null");
+                            // **if (baseline.IsDelta) throw new InvalidProgrammerException("baseline is delta");
+                            // var output = DeepCopy();
+                            // **output.IsDelta = true;
+                            // **output.baseline = baseline.tick;
+                            // 
+                            // output.fieldWithDelta = this.fieldWithDelta?.Delta(baseline.fieldWithDelta);
+                            // 
+                            // output.hasGroupValue = field != baseline.field || field2 != baseline.field2;
+
+                            expressions = new List<Expression>();
+                            // todo arg checking
+                            expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+                            expressions.Add(Expression.Assign(baselineConverted, Expression.Convert(baseline, type)));
+                            expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(selfConverted, cloneRef), type)));
+
+                            expressions.Add(Expression.Assign(Expression.Field(output, isDeltaAcessor), Expression.Constant(true)));
+                            if (deltaSupport == DeltaSupport.Full)
+                                expressions.Add(Expression.Assign(Expression.Field(output, baselineAcessor), Expression.Field(baselineConverted, tickAcessor)));
+
+                            foreach (var f in fields)
+                            {
+                                // fields have already been copied, this is for sub-deltas
+
+                                if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))))
+                                {
+                                    // IPrimaryDelta:   o.f = this.f ? (b.f ? this.f.delta(b.f) : this.f) : null // can this be simplified?
+                                    //                        b.f != null ? f?.delta(b.f) : f;
+                                    // IDelta:          o.f = this.f?.delta(b.f)
+                                    expressions.Add(Expression.Assign(Expression.Field(output, f),
+                                                Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
+                                                    Expression.Constant(null, f.FieldType),
+                                                    (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?
+                                                        Expression.Condition(Expression.Equal(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType)),
+                                                        Expression.Field(selfConverted, f),
+                                                        Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType))
+                                                    : Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType)
+                                                    )
+                                            ));
+                                }
+                            }
+
+                            // set flags for sent/omitted fields
+                            for (int i = 0; i < ngroups; i++)
+                            {
+                                if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
+                                // valueFlags[i] = self.f != baseline.f || self.f2 != baseline.f2 || ...
+                                expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i)),
+                                    OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                            f => Expression.Not(
+                                                (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IPrimaryDelta<>))) ?
+                                                    // (this.f && b.f) ? delta.f.isempty : (this.f == b.f)
+                                                    Expression.Condition(Expression.AndAlso(
+                                                        Expression.NotEqual(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
+                                                        Expression.NotEqual(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType))
+                                                        ),
+                                                        Expression.Call(Expression.Field(output, f), f.FieldType.GetProperty("IsEmptyDelta").GetMethod),
+                                                        Expression.Equal(Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                                    )
+                                                : (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDelta<>))) ?
+                                                    Expression.Equal(Expression.Field(output, f), Expression.Constant(null, f.FieldType))
+                                                : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                                )
+                                        ).Where(e => e != null).ToArray())
+                                    ));
+#if TRACING
+                                expressions.Add(Expression.Block(
+                                    deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
+                                            f => Expression.Invoke(Expression.Constant((string n, bool v) =>
+                                            {
+                                                RainMeadow.Trace(n + " has changed?: " + v);
+                                            }), Expression.Constant(f.Name), Expression.Not(
+                                                (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IPrimaryDelta<>))) ?
+                                                    // (this.f && b.f) ? delta.f.isempty : (this.f == b.f)
+                                                    Expression.Condition(Expression.AndAlso(
+                                                        Expression.NotEqual(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
+                                                        Expression.NotEqual(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType))
+                                                        ),
+                                                        Expression.Call(Expression.Field(output, f), f.FieldType.GetProperty("IsEmptyDelta").GetMethod),
+                                                        Expression.Equal(Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                                    )
+                                                : (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDelta<>))) ?
+                                                    Expression.Equal(Expression.Field(output, f), Expression.Constant(null, f.FieldType))
+                                                : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                                )
+                                        )
+                                    )));
+                                var deltagroupname = deltaGroups.Keys.ToList()[i];
+                                expressions.Add(Expression.Invoke(Expression.Constant((bool v) =>
+                                {
+                                    RainMeadow.Trace(deltagroupname + " has value?: " + v);
+                                }), Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i))));
+#endif
+                            }
+
+                            expressions.Add(output); // return
+                            Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, baselineConverted, output }, expressions), self, baseline).CompileToMethod((MethodBuilder)deltaMethod);
+                        }
+
+                        delta = (a, b) => (OnlineState)deltaMethod.Invoke(null, [a, b]);
+
+
+                        // make applydelta func
+                        if (!MethodCache.LoadMethod("ApplyDelta" + type.Name, type.Module, out var applyDeltaMethod,
+                            (MethodInfo method) =>
+                            {
+                                this.applydelta = (Func<OnlineState, OnlineState, OnlineState>)method.CreateDelegate(typeof(Func<OnlineState, OnlineState, OnlineState>));
+                            },
+                            typeof(OnlineState), typeof(OnlineState), typeof(OnlineState)))
+                        {
+                            ParameterExpression self = Expression.Parameter(typeof(OnlineState), "self");
+                            ParameterExpression selfConverted = Expression.Variable(type, "selfConverted");
+                            ParameterExpression serializer = Expression.Parameter(typeof(Serializer), "serializer");
+
+                            ParameterExpression baseline = Expression.Parameter(typeof(OnlineState), "baseline");
+                            ParameterExpression baselineConverted = Expression.Variable(type, "baselineConverted");
+                            ParameterExpression output = Expression.Variable(type, "output");
+                            MethodInfo cloneRef = typeof(OnlineState).GetMethod("Clone", anyInstance);
+
+                            ParameterExpression incoming = Expression.Parameter(typeof(OnlineState));
+                            ParameterExpression incomingConverted = Expression.Variable(type);
+
+                            // self is baseline
+                            // if (incoming == null) throw new InvalidProgrammerException("incoming is null");
+                            // **if (!incoming.IsDelta) throw new InvalidProgrammerException("incoming not delta");
+                            // var result = DeepClone();
+                            // **result.tick = incoming.tick;
+                            // if incoming.hasGroupValue
+                            //      result.field1 = incoming.field1;
+                            // return result;
+
+                            expressions = new List<Expression>();
+
+                            // todo arg checking
+                            expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
+                            expressions.Add(Expression.Assign(incomingConverted, Expression.Convert(incoming, type)));
+                            expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(selfConverted, cloneRef), type)));
+
+                            if (deltaSupport != DeltaSupport.FollowsContainer && deltaSupport != DeltaSupport.NullableDelta)
+                            {
+                                expressions.Add(Expression.Assign(Expression.Field(output, tickAcessor), Expression.Field(incomingConverted, tickAcessor)));
                             }
 
                             for (int i = 0; i < ngroups; i++)
                             {
                                 if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
 
-                                expressions.Add(Expression.IfThen(serializerIsDelta,
-                                    Expression.Call(serializer, serializeBoolRef, new[] {
-                                Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i)) })));
-                                var deltagroupname = deltaGroups.Keys.ToList()[i];
-                                expressions.Add(Expression.IfThen(Expression.OrElse(Expression.Not(serializerIsDelta),
-                                        Expression.ArrayAccess(Expression.Field(selfConverted, valueFlagsAcessor), Expression.Constant(i))),
-#if TRACING
-                                    Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace("sending " + deltagroupname); }), serializer),
-#endif                                   
-                                    Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-                                        f =>
-#if TRACING
-                                            Expression.Block(Expression.Invoke(Expression.Constant((Serializer s) => { if (s.IsWriting) RainMeadow.Trace(f.Name); }), serializer),
-#endif
-                                            f.GetCustomAttribute<OnlineFieldAttribute>().SerializerCallMethod(f, serializer, Expression.Field(selfConverted, f))
-#if TRACING
-                                        )
-#endif
-                                    ).Where(e => e != null))
-#if TRACING
-                                    )
-#endif
-                                    ));
+                                expressions.Add(Expression.IfThen(Expression.ArrayAccess(Expression.Field(incomingConverted, valueFlagsAcessor), Expression.Constant(i)),
+                                        Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
 
-                            }
-                            break;
-                        case DeltaSupport.NullableDelta:
-                            // if (serializer.IsDelta) // In a non-delta context, can only be non-delta
-                            // {
-                            //     serializer.Serialize(ref IsDelta);
-                            //     serializer.IsDelta = IsDelta;
-                            // }
-                            // if (IsDelta) serializer.Serialize(ref hasGroupValue);
-                            // if (!IsDelta || hasGroupValue)
-                            // {
-                            //     serializer.Serialize(ref fieldInGroup);
-                            // }
-                            expressions.Add(Expression.IfThen(serializerIsDelta, Expression.Block(
-                                    Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }),
-                                    Expression.Assign(serializerIsDelta, selfIsDelta
-                                ))));
-                            goto case DeltaSupport.FollowsContainer;
-                        case DeltaSupport.Full:
-                            // serializer.Serialize(ref IsDelta);
-                            // if (!serializer.IsDelta && IsDelta) { serializer.Serialize(ref Baseline); }
-                            // serializer.IsDelta = IsDelta; // Serializer wraps this call and restores the previous value later
-                            // ...etc
-                            expressions.Add(Expression.Call(serializer, serializeBoolRef, new[] { selfIsDelta }));
-                            expressions.Add(Expression.IfThen(Expression.AndAlso(Expression.Not(serializerIsDelta),
-                                                                     selfIsDelta),
-                                        Expression.Call(serializer, serializeUintRef, new[] { Expression.Field(selfConverted, baselineAcessor) })));
-                            expressions.Add(Expression.Assign(serializerIsDelta, selfIsDelta));
-                            goto case DeltaSupport.FollowsContainer;
-                    }
+                                            // regular:         o.f = i.f;
+                                            // IPrimaryDelta:   o.f = f ? (i.f ? f.applydelta(i.f) : null) : i.f
+                                            // IDelta:          o.f = f ? f.applydelta(i.f) : i.f
 
-                    serialize = Expression.Lambda<Action<OnlineState, Serializer>>(Expression.Block(new[] { selfConverted }, expressions), self, serializer).Compile();
-
-                    // if supports delta
-                    if (deltaSupport != DeltaSupport.None)
-                    {
-                        // make delta func
-
-                        ParameterExpression baseline = Expression.Parameter(typeof(OnlineState), "baseline");
-                        ParameterExpression baselineConverted = Expression.Variable(type, "baselineConverted");
-                        ParameterExpression output = Expression.Variable(type, "output");
-                        MethodInfo cloneRef = typeof(OnlineState).GetMethod("Clone", anyInstance);
-
-                        // if (baseline == null) throw new InvalidProgrammerException("baseline is null");
-                        // **if (baseline.IsDelta) throw new InvalidProgrammerException("baseline is delta");
-                        // var output = DeepCopy();
-                        // **output.IsDelta = true;
-                        // **output.baseline = baseline.tick;
-                        // 
-                        // output.fieldWithDelta = this.fieldWithDelta?.Delta(baseline.fieldWithDelta);
-                        // 
-                        // output.hasGroupValue = field != baseline.field || field2 != baseline.field2;
-
-                        expressions = new List<Expression>();
-                        // todo arg checking
-                        expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
-                        expressions.Add(Expression.Assign(baselineConverted, Expression.Convert(baseline, type)));
-                        expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(selfConverted, cloneRef), type)));
-
-                        expressions.Add(Expression.Assign(Expression.Field(output, isDeltaAcessor), Expression.Constant(true)));
-                        if (deltaSupport == DeltaSupport.Full)
-                            expressions.Add(Expression.Assign(Expression.Field(output, baselineAcessor), Expression.Field(baselineConverted, tickAcessor)));
-
-                        foreach (var f in fields)
-                        {
-                            // fields have already been copied, this is for sub-deltas
-
-                            if (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))))
-                            {
-                                // IPrimaryDelta:   o.f = this.f ? (b.f ? this.f.delta(b.f) : this.f) : null // can this be simplified?
-                                //                        b.f != null ? f?.delta(b.f) : f;
-                                // IDelta:          o.f = this.f?.delta(b.f)
-                                expressions.Add(Expression.Assign(Expression.Field(output, f),
-                                            Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
-                                                Expression.Constant(null, f.FieldType),
-                                                (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?
-                                                    Expression.Condition(Expression.Equal(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType)),
-                                                    Expression.Field(selfConverted, f),
-                                                    Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType))
-                                                : Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("Delta"), Expression.Field(baselineConverted, f)), f.FieldType)
-                                                )
-                                           ));
-                            }
-                        }
-
-                        // set flags for sent/omitted fields
-                        for (int i = 0; i < ngroups; i++)
-                        {
-                            if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
-                            // valueFlags[i] = self.f != baseline.f || self.f2 != baseline.f2 || ...
-                            expressions.Add(Expression.Assign(Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i)),
-                                OrAny(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-                                        f => Expression.Not(
-                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IPrimaryDelta<>))) ?
-                                                // (this.f && b.f) ? delta.f.isempty : (this.f == b.f)
-                                                Expression.Condition(Expression.AndAlso(
-                                                    Expression.NotEqual(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
-                                                    Expression.NotEqual(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType))
-                                                    ),
-                                                    Expression.Call(Expression.Field(output, f), f.FieldType.GetProperty("IsEmptyDelta").GetMethod),
-                                                    Expression.Equal(Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
-                                                )
-                                            : (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDelta<>))) ?
-                                                Expression.Equal(Expression.Field(output, f), Expression.Constant(null, f.FieldType))
-                                            : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
+                                            f => Expression.Assign(Expression.Field(output, f),
+                                                (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>)))) ?
+                                                Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
+                                                    Expression.Field(incomingConverted, f),
+                                                    (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?
+                                                        Expression.Condition(Expression.Equal(Expression.Field(incomingConverted, f), Expression.Constant(null, f.FieldType)),
+                                                        Expression.Constant(null, f.FieldType),
+                                                        Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("ApplyDelta"), Expression.Field(incomingConverted, f)), f.FieldType))
+                                                    : Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("ApplyDelta"), Expression.Field(incomingConverted, f)), f.FieldType)
+                                                    )
+                                                : Expression.Field(incomingConverted, f) // regular
                                             )
-                                    ).Where(e => e != null).ToArray())
-                                ));
-#if TRACING
-                            expressions.Add(Expression.Block(
-                                deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-                                        f => Expression.Invoke(Expression.Constant((string n, bool v) =>
-                                        {
-                                            RainMeadow.Trace(n + " has changed?: " + v);
-                                        }), Expression.Constant(f.Name), Expression.Not(
-                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IPrimaryDelta<>))) ?
-                                                // (this.f && b.f) ? delta.f.isempty : (this.f == b.f)
-                                                Expression.Condition(Expression.AndAlso(
-                                                    Expression.NotEqual(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
-                                                    Expression.NotEqual(Expression.Field(baselineConverted, f), Expression.Constant(null, f.FieldType))
-                                                    ),
-                                                    Expression.Call(Expression.Field(output, f), f.FieldType.GetProperty("IsEmptyDelta").GetMethod),
-                                                    Expression.Equal(Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
-                                                )
-                                            : (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IDelta<>))) ?
-                                                Expression.Equal(Expression.Field(output, f), Expression.Constant(null, f.FieldType))
-                                            : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
-                                            )
-                                    )
-                                )));
-                            var deltagroupname = deltaGroups.Keys.ToList()[i];
-                            expressions.Add(Expression.Invoke(Expression.Constant((bool v) =>
-                            {
-                                RainMeadow.Trace(deltagroupname + " has value?: " + v);
-                            }), Expression.ArrayAccess(Expression.Field(output, valueFlagsAcessor), Expression.Constant(i))));
-#endif
+                                        ))));
+                            }
+
+                            expressions.Add(output); // return
+
+                            RainMeadow.Debug(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions).ToString());
+                            RainMeadow.Debug(Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions), self, incoming).ToString());
+                            Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions), self, incoming).CompileToMethod((MethodBuilder)applyDeltaMethod);
                         }
 
-                        expressions.Add(output); // return
-
-                        delta = Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, baselineConverted, output }, expressions), self, baseline).Compile();
-
-                        // make applydelta func
-
-                        ParameterExpression incoming = Expression.Parameter(typeof(OnlineState));
-                        ParameterExpression incomingConverted = Expression.Variable(type);
-                        // self is baseline
-                        // if (incoming == null) throw new InvalidProgrammerException("incoming is null");
-                        // **if (!incoming.IsDelta) throw new InvalidProgrammerException("incoming not delta");
-                        // var result = DeepClone();
-                        // **result.tick = incoming.tick;
-                        // if incoming.hasGroupValue
-                        //      result.field1 = incoming.field1;
-                        // return result;
-
-                        expressions = new List<Expression>();
-                        // todo arg checking
-                        expressions.Add(Expression.Assign(selfConverted, Expression.Convert(self, type)));
-                        expressions.Add(Expression.Assign(incomingConverted, Expression.Convert(incoming, type)));
-                        expressions.Add(Expression.Assign(output, Expression.Convert(Expression.Call(selfConverted, cloneRef), type)));
-
-                        if (deltaSupport != DeltaSupport.FollowsContainer && deltaSupport != DeltaSupport.NullableDelta)
-                        {
-                            expressions.Add(Expression.Assign(Expression.Field(output, tickAcessor), Expression.Field(incomingConverted, tickAcessor)));
-                        }
-
-                        for (int i = 0; i < ngroups; i++)
-                        {
-                            if (deltaGroups[deltaGroups.Keys.ToList()[i]].Count == 0) continue;
-
-                            expressions.Add(Expression.IfThen(Expression.ArrayAccess(Expression.Field(incomingConverted, valueFlagsAcessor), Expression.Constant(i)),
-                                    Expression.Block(deltaGroups[deltaGroups.Keys.ToList()[i]].Select(
-
-                                        // regular:         o.f = i.f;
-                                        // IPrimaryDelta:   o.f = f ? (i.f ? f.applydelta(i.f) : null) : i.f
-                                        // IDelta:          o.f = f ? f.applydelta(i.f) : i.f
-
-                                        f => Expression.Assign(Expression.Field(output, f),
-                                            (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && (x.GetGenericTypeDefinition() == typeof(Generics.IDelta<>) || x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>)))) ?
-                                            Expression.Condition(Expression.Equal(Expression.Field(selfConverted, f), Expression.Constant(null, f.FieldType)),
-                                                Expression.Field(incomingConverted, f),
-                                                (f.FieldType.GetInterfaces().Any(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(Generics.IPrimaryDelta<>))) ?
-                                                    Expression.Condition(Expression.Equal(Expression.Field(incomingConverted, f), Expression.Constant(null, f.FieldType)),
-                                                    Expression.Constant(null, f.FieldType),
-                                                    Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("ApplyDelta"), Expression.Field(incomingConverted, f)), f.FieldType))
-                                                : Expression.Convert(Expression.Call(Expression.Field(selfConverted, f), f.FieldType.GetMethod("ApplyDelta"), Expression.Field(incomingConverted, f)), f.FieldType)
-                                                )
-                                            : Expression.Field(incomingConverted, f) // regular
-                                        )
-                                    ))));
-                        }
-
-                        expressions.Add(output); // return
-
-                        RainMeadow.Debug(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions).ToString());
-                        RainMeadow.Debug(Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions), self, incoming).ToString());
-                        applydelta = Expression.Lambda<Func<OnlineState, OnlineState, OnlineState>>(Expression.Block(new[] { selfConverted, incomingConverted, output }, expressions), self, incoming).Compile();
+                        applydelta = (a, b) => (OnlineState)applyDeltaMethod.Invoke(null, [a, b]);
                     }
                 }
                 catch (Exception e)

@@ -19,7 +19,6 @@ namespace RainMeadow
             On.RoomPreparer.ctor += RoomPreparer_ctor;
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
-
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
         }
