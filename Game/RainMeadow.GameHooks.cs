@@ -49,7 +49,7 @@ namespace RainMeadow
             // can't pause it's online mom
             new Hook(typeof(RainWorldGame).GetProperty("GamePaused").GetGetMethod(), this.RainWorldGame_GamePaused);
 
-           // IL.RainWorldGame.Update += RainWorldGame_Update;
+            IL.RainWorldGame.Update += RainWorldGame_Update;
             On.RainWorldGame.Update += RainWorldGame_Update1;
 
             // Arena specific
@@ -157,7 +157,7 @@ namespace RainMeadow
                     i => i.MatchLdarg(0),
                     i => i.MatchLdfld<RainWorldGame>("lastPauseButton"),
                     i => i.MatchBrfalse(out var _),
-                    i => i.MatchCall<Kittehface.Framework20.Platform>("get_systemMenuShowing"),
+                    i => i.MatchCall<Kittehface.Framework20.Platform>("get_systemMenuShowingExplicit"),
                     i => i.MatchBrfalse(out skip)
                 );
                 c.MoveAfterLabels();
@@ -169,7 +169,7 @@ namespace RainMeadow
                     i => i.MatchStfld<RainWorldGame>("pauseMenu")
                     );
                 c.GotoPrev(moveType: MoveType.After,
-                    i => i.MatchBrfalse(out skip)
+                    i => i.MatchBrtrue(out skip)
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);

@@ -23,33 +23,6 @@ namespace RainMeadow
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
             // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
         }
-
-
-        private void RoomCamera_ChangeRoom(On.RoomCamera.orig_ChangeRoom orig, RoomCamera self, Room newRoom, int cameraPosition)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (self.waterLight == null && newRoom.water)
-                {
-                    self.waterLight = new WaterLight(self, newRoom.game.rainWorld.Shaders["WaterLight"]);
-                }
-                else if (self.waterLight != null && !newRoom.water)
-                {
-                    self.waterLight.CleanOut();
-                    self.waterLight = null;
-                }
-
-                if (self.waterLight != null)
-                {
-                    if (newRoom.waterObject == null && newRoom.water)
-                    {
-                        newRoom.AddWater();
-                    }
-                }
-            }
-            orig(self, newRoom, cameraPosition);
-        }
-
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldAs(self);
