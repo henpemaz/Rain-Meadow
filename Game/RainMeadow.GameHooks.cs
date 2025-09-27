@@ -558,7 +558,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_0);
                 c.EmitDelegate((Room self) =>
                 {
-                    if (OnlineManager.lobby != null)
+                    if (OnlineManager.lobby != null && self.game != null)
                     {
                         if (RoomSession.map.TryGetValue(self.abstractRoom, out RoomSession rs))
                         {
