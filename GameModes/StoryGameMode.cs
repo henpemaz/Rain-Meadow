@@ -235,13 +235,6 @@ namespace RainMeadow
                     }
                 }
             }
-
-            if (OnlineManager.lobby.isOwner && menuSaveState != null)
-            {
-                menuSaveState = null;
-                menuSaveGameData = null;
-                needMenuSaveUpdate = true;
-            }
         }
 
         public override void PlayerLeftLobby(OnlinePlayer player)
@@ -251,6 +244,11 @@ namespace RainMeadow
             if (player == lobby.owner)
             {
                 OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+            }
+
+            if (lobby.isOwner)
+            {
+                needMenuSaveUpdate = true; // reload menu with local save
             }
         }
 
