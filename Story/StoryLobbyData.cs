@@ -112,9 +112,16 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (SlugcatSelectMenu.MineForSaveData(RWCustom.Custom.rainWorld.processManager, currentCampaign) is SlugcatSelectMenu.SaveGameData savedata)
+                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is StoryOnlineMenu sOM)
                     {
-                        currentMenuSaveState = new MenuSaveStateState(savedata);
+                        if (sOM.saveGameData?[storyGameMode.currentCampaign] is SlugcatSelectMenu.SaveGameData data)
+                        {
+                            currentMenuSaveState = new MenuSaveStateState(data);
+                        }
+                        else
+                        {
+                            currentMenuSaveState = null;
+                        }
                     }
                     else
                     {
