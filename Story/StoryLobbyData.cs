@@ -112,24 +112,8 @@ namespace RainMeadow
                 }
                 else
                 {
-                    if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is StoryOnlineMenu sOM)
-                    {
-                        if (sOM.saveGameData?[storyGameMode.currentCampaign] is SlugcatSelectMenu.SaveGameData data)
-                        {
-                            currentMenuSaveState = new MenuSaveStateState(data);
-                        }
-                        else
-                        {
-                            currentMenuSaveState = null;
-                        }
-                    }
-                    else
-                    {
-                        currentMenuSaveState = null;
-                    }
+                    currentMenuSaveState = storyGameMode.menuSaveState;
                 }
-
-                
 
                 food = (currentGameState?.Players[0].state as PlayerState)?.foodInStomach ?? 0;
                 quarterfood = (currentGameState?.Players[0].state as PlayerState)?.quarterFoodPoints ?? 0;
