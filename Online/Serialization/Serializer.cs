@@ -290,6 +290,7 @@ namespace RainMeadow
             while (toPlayer.OutgoingStates.Count > 0)
             {
                 var s = toPlayer.OutgoingStates.Dequeue();
+                StateProfiler.Instance?.Push(s.state.GetType());
                 if (WriteState(s.state))
                 {
                     RainMeadow.Trace($"{s.state} sent");
@@ -300,6 +301,7 @@ namespace RainMeadow
                     RainMeadow.Error($"State overflow writing to player {toPlayer}, {s.state} not sent");
                     s.Failed();
                 }
+                StateProfiler.Instance?.Pop(s.state.GetType());
             }
 
             EndWriteStates();

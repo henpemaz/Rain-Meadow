@@ -3,6 +3,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ namespace RainMeadow
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
+        public static List<FieldInfo> recentFailedComparisons = new();
         public static float lastSend;
         public static float lastReceive;
         public static OnlinePlayer mePlayer;
@@ -48,6 +50,7 @@ namespace RainMeadow
                 MatchmakingManager.instances[last].LeaveLobby();
                 LeaveLobby();
             };
+            new StateProfiler();
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -144,6 +147,8 @@ namespace RainMeadow
                     player.Update();
                 }
 
+
+                recentFailedComparisons.Clear();
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
                 {
@@ -154,7 +159,6 @@ namespace RainMeadow
                 {
                     feed.Update(mePlayer.tick);
                 }
-
 
 
                 // Outgoing messages

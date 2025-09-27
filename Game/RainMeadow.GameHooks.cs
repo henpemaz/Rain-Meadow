@@ -253,6 +253,10 @@ namespace RainMeadow
                     MeadowProgression.AutosaveProgression();
                 }
             }
+            if (OnlineManager.lobby != null)
+            {
+                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value})";
+            }
         }
 
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
@@ -410,6 +414,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                ProfilerOverlay.Update(self, dt);
                 MeadowMusic.RawUpdate(self, dt);
             }
         }
@@ -420,6 +425,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.RemoveOverlay(self);
+                ProfilerOverlay.RemoveOverlay(self);
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 

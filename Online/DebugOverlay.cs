@@ -179,12 +179,17 @@ namespace RainMeadow
 
         public static void Update(RainWorldGame self, float dt)
         {
-            if (overlayContainer == null && self.devToolsActive)
+            if (overlayContainer == null && self.devToolsActive && !ProfilerOverlay.profilerActive)
             {
                 CreateOverlay(self);
             }
 
             if (overlayContainer != null && !self.devToolsActive)
+            {
+                RemoveOverlay(self);
+            }
+
+            if (overlayContainer != null && self.devToolsActive && ProfilerOverlay.profilerActive)
             {
                 RemoveOverlay(self);
             }

@@ -71,6 +71,7 @@ public class RainMeadowOptions : OptionInterface
     private UIelement[] OnlineArenaSettings;
     private UIelement[] OnlineStorySettings;
     private UIelement[] OnlineLANSettings;
+    private UIelement[] OnlineAdvancedSettings;
 
 
 
@@ -400,7 +401,6 @@ public class RainMeadowOptions : OptionInterface
 
         };
             lanTab.AddItems(OnlineLANSettings);
-
         }
 
         catch (Exception ex)

@@ -396,7 +396,9 @@ namespace RainMeadow
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
             lastStates[inResource] = entityState;
+            StateProfiler.Instance?.Push(entityState.GetType());
             entityState.ReadTo(this);
+            StateProfiler.Instance?.Pop(entityState.GetType());
         }
 
         public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
