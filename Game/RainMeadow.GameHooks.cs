@@ -169,7 +169,7 @@ namespace RainMeadow
                     i => i.MatchStfld<RainWorldGame>("pauseMenu")
                     );
                 c.GotoPrev(moveType: MoveType.After,
-                    i => i.MatchBrfalse(out skip)
+                    i => i.MatchBrtrue(out skip)
                     );
                 c.MoveAfterLabels();
                 c.Emit(OpCodes.Ldarg_0);
