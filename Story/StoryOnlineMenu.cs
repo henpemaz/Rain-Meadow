@@ -532,18 +532,26 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.isOwner)
             {
+                for (int i = 0; i < slugcatPages.Count; i++)
+                {
+                    slugcatPages[i].RemoveSprites();
+                }
+                slugcatPages.Clear();
+
+                pages.RemoveRange(1, slugcatPages.Count - 1);
                 for (int i = 0; i < slugcatColorOrder.Count; i++)
                 {
-                    int pageindex = 1 + i;
-                    SlugcatPage page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
-                    pages[pageindex].RemoveSprites();
-                    pages.RemoveAt(pageindex);
-                    slugcatPages.RemoveAt(pageindex - 1);
+                    if (this.saveGameData[slugcatColorOrder[i]] != null)
+                    {
+                        slugcatPages.Add(new SlugcatPageContinue(this, null, 1 + i, slugcatColorOrder[i]));
+                    }
+                    else
+                    {
+                        slugcatPages.Add(new SlugcatPageNewGame(this, null, 1 + i, slugcatColorOrder[i]));
+                    }
 
-                    pages.Insert(pageindex, page);
-                    slugcatPages.Insert(pageindex - 1, page);
+                    pages.Add(slugcatPages[i]);
                 }
-
             }
             else
             {
@@ -558,7 +566,6 @@ namespace RainMeadow
             }
             
             UpdateSelectedSlugcatInMiscProg();
-
         }
 
         private void RemoveSlugcatList()
