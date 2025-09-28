@@ -35,10 +35,6 @@ namespace RainMeadow
         private bool isChatToggled = false;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
-        public OnlinePlayer currentOwner = OnlineManager.lobby.owner;
-
-        public bool isPrevOwner =>  OnlineManager.lobby.owner == currentOwner;
-
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -315,6 +311,15 @@ namespace RainMeadow
                 }
                 ChatTextBox.blockInput = true;
             }
+
+            if (storyGameMode.needMenuSaveUpdate)
+            {
+                RainMeadow.Debug("page refresh");
+                storyGameMode.needMenuSaveUpdate = false;
+                RefreshPages();
+            }
+
+
             base.Update();
 
             if (ModManager.JollyCoop)
@@ -347,13 +352,6 @@ namespace RainMeadow
                         UpdateLogDisplay();
                     }
                 }
-            }
-
-            if (storyGameMode.needMenuSaveUpdate)
-            {
-                RainMeadow.Debug("page refresh");
-                storyGameMode.needMenuSaveUpdate = false;
-                RefreshPages();
             }
 
             if (OnlineManager.lobby == null) return;
@@ -535,22 +533,53 @@ namespace RainMeadow
 
         void RefreshPages()
         {
-            if (!OnlineManager.lobby.isOwner || !isPrevOwner)
+            if (OnlineManager.lobby.isOwner)
+            {
+                pages.RemoveRange(1, slugcatPages.Count);
+                for (int i = 0; i < slugcatPages.Count; i++)
+                {
+                    slugcatPages[i].RemoveSprites();
+                }
+                slugcatPages.Clear();
+                for (int i = 0; i < slugcatColorOrder.Count; i++)
+                {
+                    if (GetSaveGameData(i) != null)
+                    {
+                        slugcatPages.Add(new SlugcatPageContinue(this, null, 1 + i, slugcatColorOrder[i]));
+                    }
+                    else
+                    {
+                        slugcatPages.Add(new SlugcatPageNewGame(this, null, 1 + i, slugcatColorOrder[i]));
+                    }
 
+                    pages.Add(slugcatPages[i]);
+                }
+            }
+            else
             {
                 currentOwner = OnlineManager.lobby.owner;
                 int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
-                SlugcatPage page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
-                pages[pageindex].RemoveSprites();
-                pages.RemoveAt(pageindex);
-                slugcatPages.RemoveAt(pageindex - 1);
+                if (pageindex != 0)
+                {
+                    pages[pageindex].RemoveSprites();
+                    pages.RemoveAt(pageindex);
+                    slugcatPages.RemoveAt(pageindex - 1);
 
-                pages.Insert(pageindex, page);
-                slugcatPages.Insert(pageindex - 1, page);
+                    SlugcatPage page = (storyGameMode.menuSaveGameData != null)? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
+                    pages.Insert(pageindex, page);
+                    slugcatPages.Insert(pageindex - 1, page);
+                }
+            }
+
+            UpdatePlayerList();
+
+            if (!storyGameMode.requireCampaignSlugcat)
+            {
+                RemoveSlugcatList();
+                SetupSlugcatList();
             }
 
             UpdateSelectedSlugcatInMiscProg();
-
         }
 
         private void RemoveSlugcatList()
