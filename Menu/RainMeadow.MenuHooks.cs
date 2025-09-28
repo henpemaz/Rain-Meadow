@@ -473,7 +473,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
             {
-                if (isStoryMode(out var story)&& story.menuSaveGameData != null)
+                if (isStoryMode(out var story) && story.menuSaveGameData != null)
                 {
                     return story.menuSaveGameData; // we will get this from the owner  if null next lobby tick
                 }

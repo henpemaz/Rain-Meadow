@@ -35,7 +35,7 @@ namespace RainMeadow.UI.Components
                 return $"Multiplayerportrait{colorIndex}2";
             }
             int deadIndex = isDead ? 0 : 1;
-            if (slugcat == SlugcatStats.Name.Night || (ModManager.Watcher && slugcat == Watcher.WatcherEnums.SlugcatStatsName.Watcher))
+            if (slugcat == SlugcatStats.Name.Night)
             {
                 return $"Multiplayerportrait3{deadIndex}"; //no multi color support for night portrait yet
             }
