@@ -13,6 +13,7 @@
 - Fixed Team names not allowing spaces
 - Fixed some water reflection issues related to Watcher 1.5 maps.
 - Added multipage slugcat select to support modded cats
+- Fixed kicking someone else crashing you
 
 - ## Engine:
 - Added additional security measures 
