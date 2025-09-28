@@ -1,7 +1,9 @@
 using HUD;
+using IL.Watcher;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
+using On.Watcher;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -341,7 +343,7 @@ namespace RainMeadow
                 self.vanillaEncounterNumber = num;
             }
         }
-
+        
         // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
@@ -356,7 +358,17 @@ namespace RainMeadow
                 {
                     story.rippleLevel = room.game.GetStorySession.saveState.deathPersistentSaveData.rippleLevel;
                 }
-                if (!OnlineManager.lobby.isOwner && story.rippleLevel < vector.y)
+
+                bool hostIsDead = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value)
+                    .Any(playerAvatar =>
+                        playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none && // is in game
+                        playerAvatar.FindEntity(true) is OnlinePhysicalObject opo &&
+                        opo.owner == OnlineManager.lobby.owner && 
+                        opo.apo is AbstractCreature ac &&
+                        (ac.realizedObject is null || ac.realizedCreature.dead));
+
+
+                if (!OnlineManager.lobby.isOwner && hostIsDead && story.rippleLevel < vector.y)
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.RaiseRippleLevel, vector); // host needs notification that we get new rippleLevel
                 }
