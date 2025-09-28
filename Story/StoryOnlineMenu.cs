@@ -311,6 +311,15 @@ namespace RainMeadow
                 }
                 ChatTextBox.blockInput = true;
             }
+
+            if (storyGameMode.needMenuSaveUpdate)
+            {
+                RainMeadow.Debug("page refresh");
+                storyGameMode.needMenuSaveUpdate = false;
+                RefreshPages();
+            }
+
+
             base.Update();
 
             if (ModManager.JollyCoop) {
@@ -342,13 +351,6 @@ namespace RainMeadow
                         UpdateLogDisplay();
                     }
                 }
-            }
-
-            if (storyGameMode.needMenuSaveUpdate)
-            {
-                RainMeadow.Debug("page refresh");
-                storyGameMode.needMenuSaveUpdate = false;
-                RefreshPages();
             }
 
             if (OnlineManager.lobby == null) return;
@@ -532,16 +534,15 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.isOwner)
             {
+                pages.RemoveRange(1, slugcatPages.Count);
                 for (int i = 0; i < slugcatPages.Count; i++)
                 {
                     slugcatPages[i].RemoveSprites();
                 }
                 slugcatPages.Clear();
-
-                pages.RemoveRange(1, slugcatPages.Count - 1);
                 for (int i = 0; i < slugcatColorOrder.Count; i++)
                 {
-                    if (this.saveGameData[slugcatColorOrder[i]] != null)
+                    if (GetSaveGameData(i) != null)
                     {
                         slugcatPages.Add(new SlugcatPageContinue(this, null, 1 + i, slugcatColorOrder[i]));
                     }
@@ -556,15 +557,26 @@ namespace RainMeadow
             else
             {
                 int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
-                SlugcatPage page = GetSaveGameData(pageindex) != null ? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
-                pages[pageindex].RemoveSprites();
-                pages.RemoveAt(pageindex);
-                slugcatPages.RemoveAt(pageindex - 1);
+                if (pageindex != 0)
+                {
+                    pages[pageindex].RemoveSprites();
+                    pages.RemoveAt(pageindex);
+                    slugcatPages.RemoveAt(pageindex - 1);
 
-                pages.Insert(pageindex, page);
-                slugcatPages.Insert(pageindex - 1, page);
+                    SlugcatPage page = (storyGameMode.menuSaveGameData != null)? new SlugcatPageContinue(this, null, pageindex, storyGameMode.currentCampaign) : new SlugcatPageNewGame(this, null, pageindex, storyGameMode.currentCampaign);
+                    pages.Insert(pageindex, page);
+                    slugcatPages.Insert(pageindex - 1, page);
+                }
             }
-            
+
+            UpdatePlayerList();
+
+            if (!storyGameMode.requireCampaignSlugcat)
+            {
+                RemoveSlugcatList();
+                SetupSlugcatList();
+            }
+
             UpdateSelectedSlugcatInMiscProg();
         }
 
