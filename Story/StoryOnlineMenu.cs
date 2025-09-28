@@ -557,7 +557,6 @@ namespace RainMeadow
             }
             else
             {
-                currentOwner = OnlineManager.lobby.owner;
                 int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
                 if (pageindex != 0)
                 {
