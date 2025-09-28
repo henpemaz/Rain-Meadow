@@ -25,7 +25,7 @@ namespace RainMeadow
         public SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private Vector2 restartCheckboxPos;
-        
+
         //Chat constants
         private const int maxVisibleMessages = 13;
         //Chat variables
@@ -35,7 +35,6 @@ namespace RainMeadow
         private bool isChatToggled = false;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
-
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -97,11 +96,11 @@ namespace RainMeadow
                 else if (colorChecked)
                 {
                     AddColorButtons();
-                } 
+                }
             }
 
 
-            
+
             if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.requireCampaignSlugcat = false;
@@ -137,7 +136,8 @@ namespace RainMeadow
                 var SelectableSlugcatsEnumerable = slugcatColorOrder.AsEnumerable();
                 if (ModManager.MSC)
                 {
-                    if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)) {
+                    if (!SelectableSlugcatsEnumerable.Contains(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup))
+                    {
                         SelectableSlugcatsEnumerable = SelectableSlugcatsEnumerable.Append(MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup);
                     }
                 }
@@ -164,7 +164,7 @@ namespace RainMeadow
                     }
                 }
             }
-        }   
+        }
 
         public new void StartGame(SlugcatStats.Name storyGameCharacter)
         {
@@ -294,7 +294,7 @@ namespace RainMeadow
                     {
                         AddColorButtons();
                     }
-                    
+
                     colorsCheckbox.buttonBehav.greyedOut = jollyallowed;
                 }
             }
@@ -322,16 +322,17 @@ namespace RainMeadow
 
             base.Update();
 
-            if (ModManager.JollyCoop) {
+            if (ModManager.JollyCoop)
+            {
                 this.storyGameMode.friendlyFire = manager.rainWorld.options.friendlyFire;
                 if (jollyallowed)
                 {
                     this.jollyPlayerCountLabel.text = base.Translate("Players: <num_p>").Replace("<num_p>", Custom.rainWorld.options.JollyPlayerCount.ToString());
                     this.RefreshJollySummary();
                 }
-                
+
             }
-            
+
 
             if (this.isChatToggled)
             {
@@ -371,7 +372,7 @@ namespace RainMeadow
             }
             else
             {
-                
+
                 restartCheckbox.buttonBehav.greyedOut = true;
                 nextButton.buttonBehav.greyedOut = true;
                 prevButton.buttonBehav.greyedOut = true;
@@ -399,7 +400,7 @@ namespace RainMeadow
                     int moveInPage = currentcampaignindex - slugcatPageIndex;
                     int cycleAroundleft = moveInPage - slugcatColorOrder.Count;
                     int cycleAroundRight = moveInPage + slugcatColorOrder.Count;
-                    int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight)? cycleAroundleft : cycleAroundRight;
+                    int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight) ? cycleAroundleft : cycleAroundRight;
                     if (Mathf.Abs(moveInPage) < Mathf.Abs(bestCycleAround))
                     {
                         scroll = -moveInPage;
@@ -411,7 +412,7 @@ namespace RainMeadow
 
                     slugcatPageIndex = currentcampaignindex;
                     quedSideInput = 0;
-                    
+
 
                     UpdateSelectedSlugcatInMiscProg();
                 }
@@ -556,6 +557,7 @@ namespace RainMeadow
             }
             else
             {
+                currentOwner = OnlineManager.lobby.owner;
                 int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
                 if (pageindex != 0)
                 {
@@ -590,7 +592,7 @@ namespace RainMeadow
         {
             personaSettings = storyGameMode.avatarSettings[0];
         }
-        
+
         private void SetupOnlineMenuItems()
         {
             // Player lobby label
