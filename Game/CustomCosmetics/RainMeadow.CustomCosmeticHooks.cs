@@ -16,7 +16,7 @@ namespace RainMeadow
             On.PlayerGraphics.Reset += PlayerGraphics_ResetCosmetics;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSpritesCosmetics;
             On.PlayerGraphics.AddToContainer += PlayerGraphics_AddToContainerCosmetics;
-            //IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
+            IL.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSpritesCosmetics;
         }
 
         void PlayerGraphics_InitiateSpritesCosmetics(ILContext cursor) {
@@ -24,19 +24,16 @@ namespace RainMeadow
                 ILCursor c = new(cursor);
 
                 // inserted right after 
-                // num += this.mudSpriteCount;
+                // this.gownIndex = num - 1;
                 int numofsprites_loc = default;
-
-                
                 c.GotoNext(
-                    MoveType.After,
+                    MoveType.Before,
+                    x => x.MatchLdarg(1),
                     x => x.MatchLdloc(0),
-                    x => x.MatchLdarg(0),
-                    x => x.MatchLdfld(out _), // mudsprite
-                    x => x.MatchAdd(),
-                    x => x.MatchStloc(out numofsprites_loc)
+                    x => x.MatchNewarr<FSprite>(),
+                    x => x.MatchStfld<RoomCamera.SpriteLeaser>(nameof(RoomCamera.SpriteLeaser.sprites))
                 );
-
+   
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldloca, numofsprites_loc);
                 c.EmitDelegate((PlayerGraphics self, ref int numofsprites) => {
@@ -50,32 +47,20 @@ namespace RainMeadow
                                     Color? cape_color = CapeManager.HasCape(critter.owner.id);
                                     if (critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingCape && cape_color.HasValue)
                                     {
-                                        cape = new SlugcatCape(self, numofsprites - SlugcatCape.totalSprites, cape_color.Value);
+                                        cape = new SlugcatCape(self, numofsprites, cape_color.Value);
                                     }
                                 }
                             }
 
-                            if (cape is not null)
-                            {
-                                numofsprites += SlugcatCape.totalSprites;
-                                cape.firstSpriteIndex = numofsprites - SlugcatCape.totalSprites;
-                            }
-                            
+                            if (cape is not null) numofsprites += SlugcatCape.totalSprites;
                         }
                     } catch (Exception except) {
                         RainMeadow.Error(except);
                     }
                 });
 
-                c.GotoNext(
-                    MoveType.After,
-                    x => x.MatchLdarg(1),
-                    x => x.MatchLdloc(0),
-                    x => x.MatchNewarr<FSprite>(),
-                    x => x.MatchStfld<RoomCamera.SpriteLeaser>(nameof(RoomCamera.SpriteLeaser.sprites))
-                );
 
-
+                c.Index += 4;
                 c.Emit(OpCodes.Ldarg_0);
                 c.Emit(OpCodes.Ldarg_1);
                 c.Emit(OpCodes.Ldarg_2);
