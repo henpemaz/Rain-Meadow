@@ -469,13 +469,13 @@ namespace RainMeadow
             }, self.mainMenuButtons.Count - 2);
         }
 
-        private Menu.SlugcatSelectMenu.SaveGameData SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)
+        private Menu.SlugcatSelectMenu.SaveGameData? SlugcatSelectMenu_GetSaveGameData(On.Menu.SlugcatSelectMenu.orig_GetSaveGameData orig, global::Menu.SlugcatSelectMenu self, int pageIndex)
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
             {
-                if (isStoryMode(out var story) && story.menuSaveGameData != null)
+                if (isStoryMode(out var story))
                 {
-                    return story.menuSaveGameData;
+                    return story.menuSaveGameData; // we will get this from the owner  if null next lobby tick
                 }
             }
             return orig(self, pageIndex);
