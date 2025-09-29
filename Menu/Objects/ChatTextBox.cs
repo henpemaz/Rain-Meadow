@@ -14,8 +14,8 @@ namespace RainMeadow
         private ButtonTypingHandler typingHandler;
         private GameObject gameObject;
         private bool isUnloading = false;
-        private float DASDelay = 1f/2f; //In seconds
-        private float DASRepeatRate = 1f/30f; //In seconds/proc
+        private float DASDelay = 1f / 2f; //In seconds
+        private float DASRepeatRate = 1f / 30f; //In seconds/proc
         private float backspaceHeld = 0f;
         private float backspaceRepeater = 0f;
         private float arrowHeld = 0f;
@@ -120,14 +120,14 @@ namespace RainMeadow
             }
             else if (!isUnloading)
             {
-                if(selectionPos != -1)
+                if (selectionPos != -1)
                 {
                     // replaces the selected text with the emitted character
                     menu.PlaySound(SoundID.MENU_Checkbox_Check);
                     DeleteSelection();
                     lastSentMessage = lastSentMessage.Insert(cursorPos, input.ToString());
                     cursorPos++;
-                    if(cursorPos == lastSentMessage.Length)
+                    if (cursorPos == lastSentMessage.Length)
                     {
                         SetCursorSprite(false);
                     }
@@ -192,7 +192,7 @@ namespace RainMeadow
                             int space = msg.Substring(cursorPos, len - cursorPos).IndexOf(' ');
                             lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = len - cursorPos) : space + 1);
                             menuLabel.text = lastSentMessage;
-                            
+
                         }
                         else
                         {
@@ -359,7 +359,14 @@ namespace RainMeadow
             }
         }
 
-        public static void InvokeShutDownChat() => OnShutDownRequest.Invoke();
+        public static void InvokeShutDownChat()
+        {
+            if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
+            {
+                cs.isInteracting = false;
+            }
+            OnShutDownRequest.Invoke();
+        }
 
         // input blocker for the sake of dev tools/other outside processes that make use of input keys
         // thanks to SlimeCubed's dev console 
@@ -405,13 +412,13 @@ namespace RainMeadow
         {
             if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
 
-            return blockInput? false : orig(code);
+            return blockInput ? false : orig(code);
         }
         private static bool GetKeyDown(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKeyDown(Func<KeyCode, bool> orig, KeyCode code)
         {
             if (code == KeyCode.Return) return orig(code);
-            
+
             return blockInput ? false : orig(code);
         }
         private static bool GetKeyUp(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
