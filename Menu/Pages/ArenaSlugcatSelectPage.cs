@@ -221,7 +221,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
         {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
         }
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
@@ -309,13 +308,13 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[newSlugIndex]);
                 ArenaMenu?.ChangeScene();
             }
+            if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
+            {
+                descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+                if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("You could have saved them.");
+            }
             lastSainot = Arena.sainot;
 
-        }
-        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
-        {
-            descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
         }
     }
     public override void GrafUpdate(float timeStacker)
