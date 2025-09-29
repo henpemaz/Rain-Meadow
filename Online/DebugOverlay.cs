@@ -216,7 +216,8 @@ namespace RainMeadow
                 averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
                 var averageBits = averageBytes * 8;
 
-                FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
+                string clientFlags = AssembleClientFlags(player);
+                FLabel label = new FLabel(Custom.GetFont(), $"{player}{clientFlags} ({averageBits / 1000}kbps - {playerTruePing}ms)")
                 {
                     x = 5.01f,
                     y = screenSize.y - 25 - 15 * line,
@@ -246,7 +247,8 @@ namespace RainMeadow
                 averageBytes = (int)((float)averageBytes / 40 * OnlineManager.instance.framesPerSecond); // bytes per second
                 var averageBits = averageBytes * 8;
 
-                FLabel label = new FLabel(Custom.GetFont(), $"{player} ({averageBits / 1000}kbps - {playerTruePing}ms)")
+                string clientFlags = AssembleClientFlags(player);
+                FLabel label = new FLabel(Custom.GetFont(), $"{player}{clientFlags} ({averageBits / 1000}kbps - {playerTruePing}ms)")
                 {
                     x = 205.01f,
                     y = screenSize.y - 25 - 15 * line,
@@ -386,17 +388,11 @@ namespace RainMeadow
                         {
                             if (onlinePhysicalObject.apo.type == AbstractPhysicalObject.AbstractObjectType.Creature)
                             {
-                                try
-                                {
-                                    AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
+                                AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
 
-                                    if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
-                                    {
-                                        isMe = true;
-                                    }
-                                } catch
+                                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
                                 {
-                                    RainMeadow.Error($"Failed to cast {onlinePhysicalObject.apo} to AbstractCreature type");
+                                    isMe = true;
                                 }
                             }
                         }
@@ -464,6 +460,25 @@ namespace RainMeadow
             overlayContainer = null;
         }
 
-       
+        private static string AssembleClientFlags(OnlinePlayer player)
+        {
+            string clientFlags = "";
+            if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var playerExists) && OnlineManager.lobby.gameMode is StoryGameMode)
+            {
+                OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings);
+                if (!OnlineManager.lobby.clientSettings[player].inGame)
+                {
+                    clientFlags += "L";
+                }
+                else
+                {
+                    clientFlags += currentClientSettings.readyForWin        ? "S" : "";
+                    clientFlags += currentClientSettings.readyForTransition ? "G" : "";
+                    clientFlags += currentClientSettings.isDead             ? "D" : "";
+                }
+                clientFlags = $" [{clientFlags}]";
+            }
+            return clientFlags;
+        }
     }
 }
