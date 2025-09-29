@@ -131,25 +131,25 @@ namespace RainMeadow
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
-            On.Watcher.SpinningTop.Update += SpinningTop_Update;
+            //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
-            On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
-            {
-                orig(self);
-                if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
-                {
-                    RainMeadow.Debug($"encounter of vanilla echo st. {self.vanillaToRippleEncounter}");
-                    // Only for echo 2!
-                    if (!self.vanillaToRippleEncounter && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.rippleLevel == 0.5f)
-                    {
-                        self.hasRequestedShutDown = true;
-                        self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
-                        self.room.game.Win(false, false);
-                        RainWorldGame.ForceSaveNewDenLocation(self.room.game, "HI_W05", true);
-                        self.DespawnEcho();
-                    }
-                }
-            };
+            //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
+            //{
+            //    orig(self);
+            //    if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            //    {
+            //        RainMeadow.Debug($"encounter of vanilla echo st. {self.vanillaToRippleEncounter}");
+            //        // Only for echo 2!
+            //        if (!self.vanillaToRippleEncounter && (self.room.game.session as StoryGameSession).saveState.deathPersistentSaveData.rippleLevel == 0.5f)
+            //        {
+            //            self.hasRequestedShutDown = true;
+            //            self.room.game.GetStorySession.saveState.sessionEndingFromSpinningTopEncounter = true;
+            //            self.room.game.Win(false, false);
+            //            RainWorldGame.ForceSaveNewDenLocation(self.room.game, "HI_W05", true);
+            //            self.DespawnEcho();
+            //        }
+            //    }
+            //};
             On.RainWorldGame.ForceSaveNewDenLocation += RainWorldGame_ForceSaveNewDenLocation;
 
             On.Conversation.InitalizePrefixColor += (On.Conversation.orig_InitalizePrefixColor orig) =>
@@ -343,7 +343,7 @@ namespace RainMeadow
                 self.vanillaEncounterNumber = num;
             }
         }
-        
+
         // Static method, fortunely, means we dont have to worry about keeping track of a spinning top (echo)
         public void SpinningTop_RaiseRippleLevel(On.Watcher.SpinningTop.orig_RaiseRippleLevel orig, Room room)
         {
@@ -363,7 +363,7 @@ namespace RainMeadow
                     .Any(playerAvatar =>
                         playerAvatar.type != (byte)OnlineEntity.EntityId.IdType.none && // is in game
                         playerAvatar.FindEntity(true) is OnlinePhysicalObject opo &&
-                        opo.owner == OnlineManager.lobby.owner && 
+                        opo.owner == OnlineManager.lobby.owner &&
                         opo.apo is AbstractCreature ac &&
                         (ac.realizedObject is null || ac.realizedCreature.dead));
 
@@ -1593,52 +1593,109 @@ namespace RainMeadow
             return null;
         }
 
-        private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
+        private void SaveStateHandler(PlayerProgression self, StoryGameMode storyGameMode, RainWorldGame game)
         {
-            var currentSaveState = orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
-            if (isStoryMode(out var storyGameMode))
+            RainMeadow.Debug("story: found loaded game state");
+            // Begin story meadow insertion
+            inVoidSea = false;
+            if (OnlineManager.lobby.isOwner)
             {
-                inVoidSea = false;
-                currentSaveState.progression ??= self;
-                if (OnlineManager.lobby.isOwner)
-                {
-                    storyGameMode.saveStateString = SaveStateToString(currentSaveState);
-                }
-                else
-                {
-                    // this already syncs the denpos
-                    currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
-                }
-
-                RainMeadow.Debug($"START DENPOS save:{currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
-                RainMeadow.Debug($"START WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
-
-                if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || currentSaveState.denPosition != storyGameMode.defaultDenPos)
-                {
-                    storyGameMode.myLastDenPos = currentSaveState.denPosition;
-                }
-                else
-                {
-                    currentSaveState.denPosition = storyGameMode.myLastDenPos;
-                }
-                if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
-                {
-                    storyGameMode.myLastWarp = currentSaveState.warpPointTargetAfterWarpPointSave;
-                }
-                else
-                {
-                    currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
-                }
-
-                RainMeadow.Debug($"FINAL DENPOS save:{currentSaveState.denPosition}");
-                RainMeadow.Debug($"FINAL WARPPOS save:{currentSaveState.warpPointTargetAfterWarpPointSave}");
-                if (OnlineManager.lobby.isOwner && storyGameMode.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher && currentSaveState.deathPersistentSaveData != null)
-                {
-                    storyGameMode.rippleLevel = currentSaveState.deathPersistentSaveData.rippleLevel;
-                }
+                storyGameMode.saveStateString = SaveStateToString(self.currentSaveState);
+            }
+            else
+            {
+                // this already syncs the denpos
+                self.currentSaveState.LoadGame(InflateJoarXML(storyGameMode.saveStateString ?? ""), game);
             }
 
-            return currentSaveState;
+            RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
+            RainMeadow.Debug($"START WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
+
+            if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || self.currentSaveState.denPosition != storyGameMode.defaultDenPos)
+            {
+                storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+            }
+            else
+            {
+                self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+            }
+            if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
+            {
+                storyGameMode.myLastWarp = self.currentSaveState.warpPointTargetAfterWarpPointSave;
+            }
+            else
+            {
+                self.currentSaveState.warpPointTargetAfterWarpPointSave = storyGameMode.myLastWarp;
+            }
+
+            RainMeadow.Debug($"FINAL DENPOS save:{self.currentSaveState.denPosition}");
+            RainMeadow.Debug($"FINAL WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave}");
+            if (OnlineManager.lobby.isOwner && storyGameMode.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher && self.currentSaveState.deathPersistentSaveData != null)
+            {
+                RainMeadow.Debug($"ripple level was: {storyGameMode.rippleLevel}");
+                storyGameMode.rippleLevel = self.currentSaveState.deathPersistentSaveData.rippleLevel;
+                RainMeadow.Debug($"ripple level now: {storyGameMode.rippleLevel}");
+
+            }
+            // end story meadow insertion
+        }
+        private SaveState PlayerProgression_GetOrInitiateSaveState(On.PlayerProgression.orig_GetOrInitiateSaveState orig, PlayerProgression self, SlugcatStats.Name saveStateNumber, RainWorldGame game, ProcessManager.MenuSetup setup, bool saveAsDeathOrQuit)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
+            }
+            if (RainMeadow.isStoryMode(out var storyGameMode))
+            {
+                RainMeadow.Debug("story: initiating save state!");
+                if (self.currentSaveState == null && self.starvedSaveState != null && game != null && (!ModManager.MSC || game.manager.artificerDreamNumber == -1))
+                {
+                    Custom.Log("LOADING STARVED STATE");
+                    self.currentSaveState = self.starvedSaveState;
+                    self.currentSaveState.deathPersistentSaveData.winState.ResetLastShownValues();
+                    self.starvedSaveState = null;
+                }
+
+                if (self.currentSaveState != null && self.currentSaveState.saveStateNumber == saveStateNumber)
+                {
+                    if (saveAsDeathOrQuit)
+                    {
+                        self.SaveDeathPersistentDataOfCurrentState(saveAsIfPlayerDied: true, saveAsIfPlayerQuit: true);
+                    }
+                    RainMeadow.Debug("story: save state was not null and equals this save state number, returning save state!");
+                    SaveStateHandler(self, storyGameMode, game);
+                    return self.currentSaveState;
+                }
+
+                self.currentSaveState = new SaveState(saveStateNumber, self);
+
+                
+                if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
+                {
+                    self.currentSaveState.LoadGame("", game);
+                }
+                else
+                {
+                    SaveState saveState = self.LoadGameState(null, game, saveAsDeathOrQuit);
+                    if (saveState != null)
+                    {
+                        SaveStateHandler(self, storyGameMode, game);
+                        return saveState;
+                    }
+
+                    self.currentSaveState.LoadGame("", game);
+                }
+
+
+                if (saveAsDeathOrQuit)
+                {
+                    self.SaveDeathPersistentDataOfCurrentState(saveAsIfPlayerDied: true, saveAsIfPlayerQuit: true);
+                }
+                SaveStateHandler(self, storyGameMode, game);
+                return self.currentSaveState;
+
+            }
+            return orig(self, saveStateNumber, game, setup, saveAsDeathOrQuit);
         }
 
         private bool PlayerProgression_SaveToDisk(On.PlayerProgression.orig_SaveToDisk orig, PlayerProgression self, bool saveCurrentState, bool saveMaps, bool saveMiscProg)
