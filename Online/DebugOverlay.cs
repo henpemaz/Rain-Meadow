@@ -388,11 +388,17 @@ namespace RainMeadow
                         {
                             if (onlinePhysicalObject.apo.type == AbstractPhysicalObject.AbstractObjectType.Creature)
                             {
-                                AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
-
-                                if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
+                                try
                                 {
-                                    isMe = true;
+                                    AbstractCreature creature = (AbstractCreature)onlinePhysicalObject.apo;
+
+                                    if (creature.creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Slugcat)
+                                    {
+                                        isMe = true;
+                                    }
+                                } catch
+                                {
+                                    RainMeadow.Error($"Failed to cast {onlinePhysicalObject.apo} to AbstractCreature type");
                                 }
                             }
                         }
@@ -465,7 +471,7 @@ namespace RainMeadow
             string clientFlags = "";
             if (OnlineManager.lobby.clientSettings.TryGetValue(player, out var playerExists) && OnlineManager.lobby.gameMode is StoryGameMode)
             {
-                OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings);
+             if (OnlineManager.lobby.clientSettings[player].TryGetData<StoryClientSettingsData>(out var currentClientSettings)) {
                 if (!OnlineManager.lobby.clientSettings[player].inGame)
                 {
                     clientFlags += "L";
@@ -477,6 +483,7 @@ namespace RainMeadow
                     clientFlags += currentClientSettings.isDead             ? "D" : "";
                 }
                 clientFlags = $" [{clientFlags}]";
+              }
             }
             return clientFlags;
         }
