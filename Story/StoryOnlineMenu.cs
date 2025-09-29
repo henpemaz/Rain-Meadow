@@ -14,7 +14,7 @@ namespace RainMeadow
 {
     public class StoryOnlineMenu : SlugcatSelectMenu, IChatSubscriber
     {
-        private CheckBox clientWantsToOverwriteSave;
+        //private CheckBox clientWantsToOverwriteSave;
         private CheckBox friendlyFire;
         private CheckBox reqCampaignSlug;
         private MenuLabel? lobbyLabel, slugcatLabel;
@@ -254,7 +254,7 @@ namespace RainMeadow
 
             manager.arenaSitting = null;
 
-            if ((OnlineManager.lobby.isOwner && restartChecked) || (!OnlineManager.lobby.isOwner && clientWantsToOverwriteSave.Checked))
+            if (restartChecked)
             {
                 manager.rainWorld.progression.WipeSaveState(storyGameMode.currentCampaign);
                 manager.menuSetup.startGameCondition = ProcessManager.MenuSetup.StoryGameInitCondition.New;
@@ -535,6 +535,9 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.isOwner)
             {
+                restartCheckbox.IDString = "RESTART";
+                restartCheckbox.label.text = "Restart game";
+
                 pages.RemoveRange(1, slugcatPages.Count);
                 for (int i = 0; i < slugcatPages.Count; i++)
                 {
@@ -557,7 +560,6 @@ namespace RainMeadow
             }
             else
             {
-                currentOwner = OnlineManager.lobby.owner;
                 int pageindex = 1 + indexFromColor(storyGameMode.currentCampaign);
                 if (pageindex != 0)
                 {
@@ -569,6 +571,9 @@ namespace RainMeadow
                     pages.Insert(pageindex, page);
                     slugcatPages.Insert(pageindex - 1, page);
                 }
+                restartCheckbox.IDString = "CLIENTSAVERESET";
+                restartCheckbox.label.text = "Match save";
+
             }
 
             UpdatePlayerList();
@@ -647,8 +652,11 @@ namespace RainMeadow
 
         private void SetupClientOptions()
         {
-            clientWantsToOverwriteSave = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
-            pages[0].subObjects.Add(clientWantsToOverwriteSave);
+            //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
+            restartCheckbox.displayText = "Match save";
+            restartCheckbox.label.text = "Match save";
+            restartCheckbox.IDString = "CLIENTSAVERESET";
+            //pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }
         public StoryMenuSlugcatButton[] GetSlugcatSelectionButtons(StoryMenuSlugcatSelector slugcatSelector, ButtonScroller buttonScroller)
         {
