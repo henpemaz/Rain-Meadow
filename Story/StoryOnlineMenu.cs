@@ -357,7 +357,6 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.isOwner)
             {
-                restartCheckbox.buttonBehav.greyedOut = false;
                 nextButton.buttonBehav.greyedOut = false;
                 prevButton.buttonBehav.greyedOut = false;
 
@@ -373,7 +372,6 @@ namespace RainMeadow
             else
             {
 
-                restartCheckbox.buttonBehav.greyedOut = true;
                 nextButton.buttonBehav.greyedOut = true;
                 prevButton.buttonBehav.greyedOut = true;
 
