@@ -25,6 +25,7 @@ namespace RainMeadow
         public SlugcatStats.Name?[] playerSelectedSlugcats;
         private StoryGameMode storyGameMode;
         private Vector2 restartCheckboxPos;
+        public FContainer? slugPageContainer; //this is sprite container for slugcat images to not overlap sprites when refreshing
 
         //Chat constants
         private const int maxVisibleMessages = 13;
@@ -395,24 +396,25 @@ namespace RainMeadow
                 if (storyGameMode.currentCampaign != slugcatColorOrder[slugcatPageIndex])
                 {
                     var currentcampaignindex = indexFromColor(storyGameMode.currentCampaign);
-                    int moveInPage = currentcampaignindex - slugcatPageIndex;
-                    int cycleAroundleft = moveInPage - slugcatColorOrder.Count;
-                    int cycleAroundRight = moveInPage + slugcatColorOrder.Count;
-                    int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight) ? cycleAroundleft : cycleAroundRight;
-                    if (Mathf.Abs(moveInPage) < Mathf.Abs(bestCycleAround))
+                    if (currentcampaignindex > -1)
                     {
-                        scroll = -moveInPage;
+                        int moveInPage = currentcampaignindex - slugcatPageIndex;
+                        int cycleAroundleft = moveInPage - slugcatColorOrder.Count;
+                        int cycleAroundRight = moveInPage + slugcatColorOrder.Count;
+                        int bestCycleAround = Mathf.Abs(cycleAroundleft) < Mathf.Abs(cycleAroundRight) ? cycleAroundleft : cycleAroundRight;
+                        if (Mathf.Abs(moveInPage) < Mathf.Abs(bestCycleAround))
+                        {
+                            scroll = -moveInPage;
+                        }
+                        else
+                        {
+                            scroll = -bestCycleAround;
+                        }
+
+                        slugcatPageIndex = currentcampaignindex;
+                        quedSideInput = 0;
+                        UpdateSelectedSlugcatInMiscProg();
                     }
-                    else
-                    {
-                        scroll = -bestCycleAround;
-                    }
-
-                    slugcatPageIndex = currentcampaignindex;
-                    quedSideInput = 0;
-
-
-                    UpdateSelectedSlugcatInMiscProg();
                 }
             }
             if (storyGameMode.requireCampaignSlugcat)

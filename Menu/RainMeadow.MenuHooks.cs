@@ -45,7 +45,7 @@ namespace RainMeadow
             On.Menu.MenuObject.GrafUpdate += On_MenuObject_GrafUpdate;
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
-
+            new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
         }
         void IL_Menu_Update(ILContext il)
@@ -103,6 +103,16 @@ namespace RainMeadow
         bool On_ButtonTemplate_Selectable(Func<ButtonTemplate, bool> orig, ButtonTemplate self)
         {
             return orig(self) && !(self is ButtonScroller.IPartOfButtonScroller scrollButton && scrollButton.Alpha < 1);
+        }
+        private FContainer MenuObject_Container(Func<MenuObject, FContainer> orig, MenuObject self)
+        {
+            if (self.menu is StoryOnlineMenu stryMenu && self is SlugcatSelectMenu.SlugcatPage)
+            {
+                if (stryMenu.slugPageContainer == null) //property gets called before StoryOnlineMenu ctor, make new instance here
+                    (self.owner?.Container ?? stryMenu.container).AddChild(stryMenu.slugPageContainer = new());
+                return stryMenu.slugPageContainer; //now all slugcat pages will be in a stored in this container instead of menu.container, so refreshpages will add slugcat sprites here
+            }
+            return orig(self);
         }
         void SlugcatSelectMenu_AddColorButtons(On.Menu.SlugcatSelectMenu.orig_AddColorButtons orig, SlugcatSelectMenu self)
         {
