@@ -1,9 +1,9 @@
 ManifestFileVersion: 0
-CRC: 2530052342
+CRC: 2015376296
 Hashes:
   AssetFileHash:
     serializedVersion: 2
-    Hash: c6682296ad9bd753a7c1e83a17a174ba
+    Hash: 282dd984beb74636537da9347865f4de
   TypeTreeHash:
     serializedVersion: 2
     Hash: 68c985bf88fecc38b460cdb825182138
@@ -15,4 +15,5 @@ SerializeReferenceClassIdentifiers: []
 Assets:
 - Assets/rainmeadow/RM_SceneHidden.shader
 - Assets/rainmeadow/RM_LeveIltem.shader
+- Assets/rainmeadow/RM_NightSkySkin.shader
 Dependencies: []

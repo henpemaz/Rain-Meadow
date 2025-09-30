@@ -13,6 +13,19 @@ namespace RainMeadow
             On.Player.MovementUpdate += Player_MovementUpdate;
 
             On.ShortcutHelper.ctor += ShortcutHelper_ctor;
+
+            On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
+        }
+
+        private static void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+            for (int i = 0; i < 9; i++)
+            {
+                sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+
+
+            }
         }
 
         private static void ShortcutHelper_ctor(On.ShortcutHelper.orig_ctor orig, ShortcutHelper self, Room room)

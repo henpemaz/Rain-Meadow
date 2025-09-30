@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
@@ -11,9 +12,19 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
+
+        private Texture2D nightsky;
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
+
+            byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky.png"));
+            this.nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightsky.LoadImage(array);
+            nightsky.wrapMode = TextureWrapMode.Repeat;
+            nightsky.filterMode = FilterMode.Bilinear;
+            nightsky.Apply();
+            Shader.SetGlobalTexture("_RM_NightSky", nightsky);
 
             GroundCreatureController.Enable();
             CicadaController.EnableCicada();
