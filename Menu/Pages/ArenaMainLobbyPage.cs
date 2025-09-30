@@ -271,7 +271,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                     signalText = "START_MATCH"
                 };
                 subObjects.Add(startButton);
-                ArenaMenu.UpdateElementBindings();
+                ArenaMenu?.UpdateElementBindings();
             }
             Arena.shufflePlayList = levelSelector.selectedLevelsPlaylist.ShuffleStatus;
         }

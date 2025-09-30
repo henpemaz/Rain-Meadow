@@ -859,28 +859,7 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
-                if ((classID is null) || (classID == RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat))
-                {
-                    return "MultiplayerPortrait02";
-                }
-                if (ArenaHelpers.vanillaSlugcats.Contains(classID))
-                {
-                    // subtract 1 since 
-                    return $"MultiplayerPortrait{ArenaHelpers.vanillaSlugcats.IndexOf(classID)}1";
-                }
-                if (ModManager.Watcher && classID == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-                {
-                    return $"MultiplayerPortrait{3}1"; // take advantage of nightcat profile pic
-                }
-                if (ModManager.MSC && ArenaHelpers.mscSlugcats.Contains(classID))
-                {
-                    return $"MultiplayerPortrait{(classID == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? UnityEngine.Random.Range(0, 5) : 4)}1-{classID}";
-
-                }
-                if (!ArenaHelpers.baseGameSlugcats.Contains(classID))
-                {
-                    return $"MultiplayerPortrait{0}{1}-{classID}";
-                }
+                return SlugcatColorableButton.GetFileForSlugcatIndex(classID, color, false);
             }
             return orig(self, classID, color);
         }

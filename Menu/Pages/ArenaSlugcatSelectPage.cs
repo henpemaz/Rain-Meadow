@@ -221,7 +221,6 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
         {
             descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
         }
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Artificer && UnityEngine.Random.Range(0, 1000) == 0)
@@ -290,13 +289,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
         {
-            bool banned = Arena?.bannedSlugs?.Contains(i + (currentSlugcatSelectPage*2*maxScugsPerRow)) == true;
+            int slugIndex = slugcatSelectButtons[i].buttonArrayIndex;
+            bool banned = Arena?.bannedSlugs?.Contains(slugIndex) == true;
             MenuIllustration illu = slugcatIllustrations[i];
             SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
             illu.fileName = file;
             illu.LoadFile();
-            illu.sprite.SetElementByName(illu.fileName); 
+            illu.sprite.SetElementByName(illu.fileName);
             //WHY CANT MENUILLUSTRATION HAVE THEIR OWN SETNEWIMAGE.
             //Menuscene has a similar thing happening for gourmand dream scenes, Multiplayer has it, IT COULD HAVE MADE EVERYONE'S LIVES EASIER
             illu.color = banned ? MenuColorEffect.rgbDarkGrey : Color.white;
@@ -309,13 +309,14 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[newSlugIndex]);
                 ArenaMenu?.ChangeScene();
             }
+            if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
+            {
+                descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
+                if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("You could have saved them.");
+            }
+            lastSainot = Arena.sainot;
+
         }
-        if (Arena != null && ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
-        {
-            descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
-            if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("you could have saved them");
-        }
-        lastSainot = Arena.sainot;
     }
     public override void GrafUpdate(float timeStacker)
     {
