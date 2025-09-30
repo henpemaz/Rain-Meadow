@@ -90,22 +90,10 @@ namespace RainMeadow
             serializer.SerializeHalf(ref vel);
         }
 
-        float closeEnough = 10f;
-
         public void ReadTo(BodyChunk c)
         {
-
-            if ((pos - c.pos).sqrMagnitude < (closeEnough * closeEnough))
-            {
-                c.pos = Vector2.Lerp(pos, c.pos, 0.5f);
-            }
-            else
-            {
-                c.pos = pos;
-            }
-
+            c.pos = pos;
             c.vel = vel;
-           
         }
 
         public override bool Equals(object obj)

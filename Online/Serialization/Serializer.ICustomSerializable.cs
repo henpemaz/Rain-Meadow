@@ -255,8 +255,8 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m => 
-                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == (arguments.nullable ? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
@@ -266,6 +266,9 @@ namespace RainMeadow
 
             if (Nullable.GetUnderlyingType(fieldType) is Type t)
             {
+                var retMethod = typeof(Serializer).GetMethod("SerializeNullable", new[] { fieldType.MakeByRefType() }); ;
+                if (retMethod is not null) return retMethod;
+
                 // T internalvalue = default(T);
                 // if (serializer.isWriting)
                 // {
@@ -273,8 +276,9 @@ namespace RainMeadow
                 //     if (value.HasValue)
                 //     {
                 //          internalvalue = value.Value;
+                //          goto callSerialize;
                 //     }
-                //     goto callSerialize;
+                //     
                 // }
 
                 // if (serializer.isReading && serializer.reader.ReadBoolean())
@@ -290,6 +294,17 @@ namespace RainMeadow
                 //     return;
 
                 // IL implementation:
+                var writer = typeof(Serializer).GetField(nameof(Serializer.writer));
+                var reader = typeof(Serializer).GetField(nameof(Serializer.reader));
+                var hasValue = fieldType.GetProperty("HasValue").GetGetMethod();
+                var value = fieldType.GetProperty("Value").GetGetMethod();
+                var nullableCtor = fieldType.GetConstructor([t]);
+                var serializeFunc = GetSerializationMethod(t, false, true, true);
+                if (serializeFunc == null)
+                {
+                    throw new InvalidOperationException($"No matching serialization method found for type {t.FullName}");
+                }
+
                 var dynMethod = new DynamicMethod("SerializeNullable" + t.Name, null, [typeof(Serializer), fieldType.MakeByRefType()]);
 
                 var il = dynMethod.GetILGenerator();
@@ -298,14 +313,9 @@ namespace RainMeadow
                 var afterRead = il.DefineLabel();
                 var callSerialize = il.DefineLabel();
 
-                var writer = typeof(Serializer).GetField(nameof(Serializer.writer));
-                var reader = typeof(Serializer).GetField(nameof(Serializer.reader));
-                var hasValue = fieldType.GetProperty("HasValue").GetGetMethod();
-                var value = fieldType.GetProperty("Value").GetGetMethod();
-                var nullableCtor = fieldType.GetConstructor(new[] { t });
-
                 // internalValue = default;
-                il.Emit(OpCodes.Call, typeof(Activator).GetMethods().First(x => x.Name == nameof(Activator.CreateInstance) && x.IsGenericMethod).MakeGenericMethod(t));
+                il.Emit(OpCodes.Ldloca, internalValue);
+                il.Emit(OpCodes.Initobj, t);
                 il.Emit(OpCodes.Stloc, internalValue);
 
                 // if (serializer.IsWriting)
@@ -320,10 +330,10 @@ namespace RainMeadow
                 il.Emit(OpCodes.Call, hasValue);
                 il.Emit(OpCodes.Callvirt, typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(bool) }));
 
-                // if (!value.HasValue) goto callSerialize;
+                // if (value.HasValue) goto afterWrite;
                 il.Emit(OpCodes.Ldarg_1);
                 il.Emit(OpCodes.Call, hasValue);
-                il.Emit(OpCodes.Brfalse_S, callSerialize);
+                il.Emit(OpCodes.Brfalse_S, afterWrite);
 
                 // internalvalue = value.Value;
                 // goto callSerialize;
@@ -343,18 +353,19 @@ namespace RainMeadow
                 il.Emit(OpCodes.Callvirt, typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean)));
                 il.Emit(OpCodes.Brfalse_S, afterRead);
                 il.Emit(OpCodes.Br, callSerialize);
+
                 il.MarkLabel(afterRead);
+                il.Emit(OpCodes.Ret);
 
                 // callSerialize:
                 il.MarkLabel(callSerialize);
-                var serializeFunc = GetSerializationMethod(t, false, true, true);
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Ldloca, internalValue);
                 il.Emit(OpCodes.Call, serializeFunc);
 
                 il.Emit(OpCodes.Ldarga, 1);
                 il.Emit(OpCodes.Ldloc, internalValue);
-                il.Emit(OpCodes.Newobj, fieldType.GetConstructor([t]));
+                il.Emit(OpCodes.Newobj, nullableCtor);
                 il.Emit(OpCodes.Stobj, fieldType);
                 il.Emit(OpCodes.Ret);
                 return dynMethod;
