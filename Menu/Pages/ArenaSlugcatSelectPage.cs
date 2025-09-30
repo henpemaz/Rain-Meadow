@@ -289,7 +289,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             OnSlugcatPressedBan(((EventfulSelectOneButton)menu.selectedObject).buttonArrayIndex);
         for (int i = 0; i < slugcatIllustrations.Length; i++)
         {
-            bool banned = Arena?.bannedSlugs?.Contains(i + (currentSlugcatSelectPage * 2 * maxScugsPerRow)) == true;
+            int slugIndex = slugcatSelectButtons[i].buttonArrayIndex;
+            bool banned = Arena?.bannedSlugs?.Contains(slugIndex) == true;
             MenuIllustration illu = slugcatIllustrations[i];
             SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string file = slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, banned, false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false, banned);
