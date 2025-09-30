@@ -5,7 +5,7 @@
 - Adds piggyback toggle
 - Fixed a *specific* edge case where a player might not be protected from a parry.
 - Fixed a crash in Teams mode when another user suddenly disconnected 
-- If you had choppy frame rate in Teams UI, please resubscribe to  ìExtended Color Configî mod. 
+- If you had choppy frame rate in Teams UI, please resubscribe to  ‚ÄúExtended Color Config‚Äù mod. 
 - Fixed dupe trophy awards in results screen 
 - Fixed timer not showing when running some langugages
 - Fixed an issue where Inv's friend would cause you to duplicate your spawn
@@ -15,7 +15,7 @@
 - Added multipage slugcat select to support modded cats
 - Fixed kicking someone else crashing you
 
-- ## Engine:
+## Engine:
 - Added additional security measures 
 - Fixed an issue with shortcut loading 
 - Added custom packet capabilities 
@@ -46,7 +46,7 @@
 ## Story:
 - Fixed Slugcat selection not allowing a specific slug to be chosen 
 - Fixed a crash when selecting slugcat colors
-- Fixed Saintís ending 
+- Fixed Saint‚Äôs ending 
 - Fixed cases where single room warp code  was not running 
 - Fixed players inability to progress past the end-of-game statistics screen
 - Updated client story menu to match host's
