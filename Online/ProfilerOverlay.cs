@@ -402,7 +402,7 @@ namespace RainMeadow
                 int index = 0;
                 foreach (var entry in entries)
                 {
-                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / total) * 100}%";
+                    labels[index].text = $"[{index}] {entry.type.Name} - {(float)(entry.ticksSpent / total)}%";
                     labels[index].color = entry.color;
 
                     labels[index].x = pos.x - 80;
@@ -411,7 +411,7 @@ namespace RainMeadow
                     index++;
                 }
 
-                mainLabel.text = $"Total Write Delay - {(float)(total / Stopwatch.Frequency)}";
+                mainLabel.text = $"Total Write Delay - {total}";
 
                 int stepsTaken = 0;
                 foreach (var entry in entries)
