@@ -14,17 +14,17 @@ namespace RainMeadow
 
             On.ShortcutHelper.ctor += ShortcutHelper_ctor;
 
+            // dev skin
             On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
         }
 
         private static void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
             orig(self, sLeaser, rCam);
-            for (int i = 0; i < 9; i++)
+
+            if (creatureControllers.TryGetValue(self.player, out var p))
             {
-                sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
-
-
+                
             }
         }
 

@@ -52,7 +52,7 @@ namespace RainMeadow
             return new State(this);
         }
 
-        public class State : EntityDataState
+        public class State : AvatarDataState
         {
             [OnlineFieldColorRgb]
             public Color[] customColors;
@@ -71,7 +71,7 @@ namespace RainMeadow
             public bool fakePup { get; set; }
 
             public State() { }
-            public State(SlugcatCustomization slugcatCustomization) : base()
+            public State(SlugcatCustomization slugcatCustomization) : base(slugcatCustomization)
             {
                 customColors = slugcatCustomization.currentColors.ToArray();
                 playingAs = slugcatCustomization.playingAs;

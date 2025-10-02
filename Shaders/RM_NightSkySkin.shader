@@ -32,12 +32,6 @@ Shader "RM_NightSkySkin" //Unlit Transparent Vertex Colored
 #pragma fragment frag
 #include "UnityCG.cginc"
 
-struct appdata
-{
-	float4 vertex : POSITION;
-	float2 uv : TEXCOORD0;
-};
-
 struct v2f
 {
 	float4 pos : SV_POSITION;
@@ -46,11 +40,15 @@ struct v2f
 	float4 clr : COLOR0;
 };
 
+uniform float _RAIN;
+
 sampler2D _MainTex;
 float4 _MainTex_ST;
 sampler2D _RM_NightSky;
+sampler2D _RM_NightSky_glow;
 float4 _RM_NightSky_ST;
 float4 _RM_NightSky_TexelSize;
+//half4 _RM_NightSky_HDR;
 
 v2f vert (appdata_full v)
 {
@@ -62,15 +60,22 @@ v2f vert (appdata_full v)
 	return o;
 }
 
-half4 frag (v2f i) : SV_Target
+half4 frag (v2f input) : SV_Target
 {
-	float2 textureCoordinate = i.uv2.xy / i.uv2.w;
-	textureCoordinate = textureCoordinate * _ScreenParams.xy * _RM_NightSky_TexelSize.xy * 2.0;
-	//float aspect = _ScreenParams.x / _ScreenParams.y;
-    //textureCoordinate.x = textureCoordinate.x * aspect;
-	//textureCoordinate = TRANSFORM_TEX(textureCoordinate, _RM_NightSky);
-	fixed4 color = tex2D (_MainTex, i.uv) * tex2D (_RM_NightSky, textureCoordinate) * i.clr;
-	return color;
+	float2 textureCoordinate = input.uv2.xy / input.uv2.w;
+	textureCoordinate = textureCoordinate * _ScreenParams.xy * _RM_NightSky_TexelSize.xy;// * 2.0;
+	fixed4 mainColor = tex2D (_MainTex, input.uv);
+	if(mainColor.a == 0) return mainColor;
+
+	half glowAmount = saturate(0.1 + (0.9 + 0.1*sin(55*_RAIN)) * (0.6 + 0.4*sin(17*_RAIN)) * sin(2.0*_RAIN) * sin((1.0/3.0)*_RAIN));
+	half4 texColor = half4(tex2D(_RM_NightSky, textureCoordinate).rgb + glowAmount * tex2D(_RM_NightSky_glow, textureCoordinate).rgb,1);
+	if(any(input.clr.xyz)){
+		input.clr.xyz = 0.5 + input.clr.xyz/(max(input.clr.x,max(input.clr.y,input.clr.z))); // cheap and innacurate high-value color
+	}
+	else{
+		input.clr.xyz = 1;
+	}
+	return mainColor * texColor * input.clr;
 }
 				ENDCG
 			}

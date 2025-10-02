@@ -12,19 +12,24 @@ namespace RainMeadow
 {
     public partial class RainMeadow
     {
-
         private Texture2D nightsky;
+        private Texture2D nightskyGlow;
         private void MeadowHooks()
         {
             _ = Ext_SoundID.RM_Slugcat_Call; //load
 
-            byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky.png"));
+            byte[] array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_base.png"));
             this.nightsky = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
             nightsky.LoadImage(array);
             nightsky.wrapMode = TextureWrapMode.Repeat;
             nightsky.filterMode = FilterMode.Bilinear;
-            nightsky.Apply();
             Shader.SetGlobalTexture("_RM_NightSky", nightsky);
+            array = File.ReadAllBytes(AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "rm_nightsky_glow.png"));
+            this.nightskyGlow = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            nightskyGlow.LoadImage(array);
+            nightskyGlow.wrapMode = TextureWrapMode.Repeat;
+            nightskyGlow.filterMode = FilterMode.Bilinear;
+            Shader.SetGlobalTexture("_RM_NightSky_glow", nightskyGlow);
 
             GroundCreatureController.Enable();
             CicadaController.EnableCicada();

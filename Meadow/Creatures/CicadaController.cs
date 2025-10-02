@@ -35,6 +35,25 @@ namespace RainMeadow
 
             // colors
             IL.CicadaGraphics.ApplyPalette += CicadaGraphics_ApplyPalette;
+
+            // dev skin
+            On.CicadaGraphics.InitiateSprites += CicadaGraphics_InitiateSprites;
+        }
+
+        private static void CicadaGraphics_InitiateSprites(On.CicadaGraphics.orig_InitiateSprites orig, CicadaGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.cicada, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static MovementConnection CicadaPather_FollowPath(On.CicadaPather.orig_FollowPath orig, CicadaPather self, WorldCoordinate originPos, bool actuallyFollowingThisPath)

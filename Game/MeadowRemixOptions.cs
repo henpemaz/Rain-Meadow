@@ -1,3 +1,4 @@
+using HarmonyLib;
 using Menu.Remix.MixedUI;
 using RWCustom;
 using System;
@@ -54,6 +55,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> UdpHeartbeat;
     public readonly Configurable<bool> DisableMeadowPauseAnimation;
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
+
+    public readonly Configurable<bool> DevNightskySkin;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
@@ -138,6 +141,8 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
+
+        DevNightskySkin = config.Bind("DevNightskySkin", false);
     }
 
     public override void Initialize()
@@ -198,10 +203,16 @@ public class RainMeadowOptions : OptionInterface
 
             OpTextBox chatBgOpacity;
 
+            OpLabel devOptions;
+
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
                 new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
+
+                devOptions = new OpLabel(410f, 560f, Translate("Dev options")),
+                new OpCheckBox(DevNightskySkin, new Vector2(410f, 535f)),
+                new OpLabel(440f, 535f, Translate("Nightsky Skin")),
 
                 new OpLabel(10, 490f, Translate("Show usernames")),
                 new OpKeyBinder(FriendsListKey, new Vector2(10f, 460f), new Vector2(150f, 30f)),
@@ -251,7 +262,12 @@ public class RainMeadowOptions : OptionInterface
                 {
                     accept = OpTextBox.Accept.Float
                 },
-        };
+            };
+            if (!RainMeadow.IsDev(OnlineManager.mePlayer.id))
+            {
+                GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
+            }
+
             introroll.OnValueChanged += (UIconfig config, string value, string oldValue) =>
             {
                 if (value == "Downpour" && !ModManager.MSC)

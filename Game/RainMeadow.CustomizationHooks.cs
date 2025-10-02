@@ -135,6 +135,18 @@ namespace RainMeadow
                 }
 
                 orig(self, sleaser, rcam);
+
+                // dev nightsky skin
+                if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
+                {
+                    if (customization.IsNightSkySkin(entity))
+                    {
+                        for (int i = 0; i < sleaser.sprites.Length; i++)
+                        {
+                            sleaser.sprites[i].shader = rcam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                        }
+                    }
+                }
             }
             finally
             {
