@@ -409,3 +409,6 @@ Properties/Settings.Designer.cs
 # Capes
 [Mm]od/capes.txt
 [Mm]od/capes_hash.txt
+
+# cache
+[Mm]od/cache/*
