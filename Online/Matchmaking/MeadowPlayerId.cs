@@ -7,6 +7,9 @@ namespace RainMeadow
     {
         public string name;
 
+        /// <summary>
+        /// Returns either the player's real name or their randomized Streamer Mode name if its enabled and you're using Steam.
+        /// </summary>
         public virtual string DisplayName { get => name; }
         public virtual string GetPersonaName() { return name; }
         public virtual void OpenProfileLink() {
