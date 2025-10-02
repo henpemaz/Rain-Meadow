@@ -120,7 +120,7 @@ namespace RainMeadow
         // To explain further, basically try store a value into this field before orig in the relevant methods, then restore to null after orig
         // Allows it to be read when the PlayerGraphics static methods are called
 
-        private void PlayerGraphicsOnInitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sleaser, RoomCamera rcam)
+        private void PlayerGraphicsOnInitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
         {
             var cachedCustomColors = PlayerGraphics.customColors;
 
@@ -134,16 +134,28 @@ namespace RainMeadow
                     PlayerGraphics.customColors = hackySlugcatCustomization.currentColors;
                 }
 
-                orig(self, sleaser, rcam);
+                orig(self, sLeaser, rCam);
 
                 // dev nightsky skin
                 if(customization != null && self.player.abstractCreature.GetOnlineObject() is OnlineEntity entity)
                 {
                     if (customization.IsNightSkySkin(entity))
                     {
-                        for (int i = 0; i < sleaser.sprites.Length; i++)
+                        var nightsky = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                        for (int i = 0; i < 10; i++) // 9 is face, 10 is Mark light
                         {
-                            sleaser.sprites[i].shader = rcam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                            sLeaser.sprites[i].shader = nightsky;
+                        }
+                        if (ModManager.MSC)
+                        {
+                            if (self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer && sLeaser.sprites.Length > 12)
+                            {
+                                sLeaser.sprites[12].shader = nightsky;
+                            }
+                            if (self.player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+                            {
+                                sLeaser.sprites[12].shader = nightsky;
+                            }
                         }
                     }
                 }

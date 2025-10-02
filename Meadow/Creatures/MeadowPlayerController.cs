@@ -13,19 +13,6 @@ namespace RainMeadow
             On.Player.MovementUpdate += Player_MovementUpdate;
 
             On.ShortcutHelper.ctor += ShortcutHelper_ctor;
-
-            // dev skin
-            On.PlayerGraphics.InitiateSprites += PlayerGraphics_InitiateSprites;
-        }
-
-        private static void PlayerGraphics_InitiateSprites(On.PlayerGraphics.orig_InitiateSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
-        {
-            orig(self, sLeaser, rCam);
-
-            if (creatureControllers.TryGetValue(self.player, out var p))
-            {
-                
-            }
         }
 
         private static void ShortcutHelper_ctor(On.ShortcutHelper.orig_ctor orig, ShortcutHelper self, Room room)
