@@ -173,14 +173,18 @@ namespace RainMeadow
         [RPCMethod]
         public static void RaiseRippleLevel(UnityEngine.Vector2 vector)
         {
+
             if (RainMeadow.isStoryMode(out var story))
             {
-                RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
-                if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
-                story.rippleLevel = vector.y;
-                storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
-                storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
-                storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+                if (story.rippleLevel < vector.y)
+                {
+                    RainMeadow.Debug($"Raising Ripple Level from: {story.rippleLevel} to {vector.y}");
+                    if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.session is StoryGameSession storyGameSession && game.manager.upcomingProcess is null)) return;
+                    story.rippleLevel = vector.y;
+                    storyGameSession.saveState.deathPersistentSaveData.minimumRippleLevel = vector.x;
+                    storyGameSession.saveState.deathPersistentSaveData.maximumRippleLevel = vector.y;
+                    storyGameSession.saveState.deathPersistentSaveData.rippleLevel = vector.y;
+                }
             }
         }
 

@@ -74,7 +74,7 @@ public partial class RainMeadow
         new Hook(typeof(Watcher.CamoMeter).GetProperty("ForceShow").GetGetMethod(), this.CamoMeter_SetCamoMeter);
         new Hook(typeof(Player).GetProperty("CanSpawnDynamicWarpPoints").GetGetMethod(), this.Player_CanSpawnDynamicWarpPoints);
 
-        On.Player.TickLevitation += (On.Player.orig_TickLevitation orig, Player self, bool levitateUp) =>
+        On.Player.TickLevitation_bool += (On.Player.orig_TickLevitation_bool orig, Player self, bool levitateUp) =>
         {
             WatcherOverrideForLevitation = true;
             orig(self, levitateUp);

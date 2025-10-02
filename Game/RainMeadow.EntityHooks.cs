@@ -24,7 +24,6 @@ namespace RainMeadow
 
             On.AbstractPhysicalObject.ChangeRooms += AbstractPhysicalObject_ChangeRooms;
             On.AbstractCreature.ChangeRooms += AbstractCreature_ChangeRooms1;
-
             On.AbstractCreature.Abstractize += AbstractCreature_Abstractize; // get real
             On.AbstractPhysicalObject.Abstractize += AbstractPhysicalObject_Abstractize; // get real
             On.AbstractCreature.Realize += AbstractCreature_Realize; // get real, also customization happens here
@@ -418,8 +417,8 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
-                WorldSession newWorldSession = self.worldLoader.world.GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == self.worldLoader.world.name);
+                WorldSession newWorldSession = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetResource() ?? throw new KeyNotFoundException();
+                bool isSameWorld = (self.activeWorld.name == ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).name);
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
@@ -427,7 +426,7 @@ namespace RainMeadow
                 {
                     // Regular gate switch
                     AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
-                    AbstractRoom newAbsroom = self.worldLoader.world.GetAbstractRoom(oldAbsroom.name);
+                    AbstractRoom newAbsroom = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetAbstractRoom(oldAbsroom.name);
                     List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
                     List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
 

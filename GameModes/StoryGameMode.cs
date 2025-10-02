@@ -163,7 +163,7 @@ namespace RainMeadow
 
         public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
         {
-            return game.GetStorySession.saveState.currentTimelinePosition;
+            return game.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
@@ -235,22 +235,21 @@ namespace RainMeadow
                     }
                 }
             }
-
-            if (OnlineManager.lobby.isOwner && menuSaveState != null)
-            {
-                menuSaveState = null;
-                menuSaveGameData = null;
-                needMenuSaveUpdate = true;
-            }
         }
 
-        public override void PlayerLeftLobby(OnlinePlayer player)
+        public override void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
         {
-            base.PlayerLeftLobby(player);
-            // XXX: does not work as expected, new lobby owner is assigned before we receive this
-            if (player == lobby.owner)
+            if (resource is Lobby)
             {
-                OnlineManager.instance.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MainMenu);
+                if (OnlineManager.instance.manager.currentMainLoop is RainWorldGame)
+                {
+                    OnlineManager.instance.manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.StoryMenu);
+                }
+            }
+
+            if (lobby.isOwner)
+            {
+                needMenuSaveUpdate = true; // reload menu with local save
             }
         }
 
