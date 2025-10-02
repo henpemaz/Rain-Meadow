@@ -94,6 +94,7 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
+                base.ReadTo(entityData, onlineEntity);
                 var meadowAvatarSettings = (MeadowAvatarData)entityData;
                 meadowAvatarSettings.skin = skin;
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;

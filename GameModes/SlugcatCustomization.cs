@@ -83,6 +83,7 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
+                base.ReadTo(entityData, onlineEntity);
                 var slugcatCustomization = (SlugcatCustomization)entityData;
                 slugcatCustomization.currentColors = customColors.ToList();
                 slugcatCustomization.playingAs = playingAs;
