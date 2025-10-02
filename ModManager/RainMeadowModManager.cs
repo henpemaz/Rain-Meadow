@@ -37,7 +37,12 @@ namespace RainMeadow
         /// Prefix that indicates the following characters should be ignored in one of the user defined files.
         /// </summary>
         public static string CommentPrefix => "//";
+        public static List<string> modsRequiringForcedRestart = new List<string>
+                {
+                    MoreSlugcats.MoreSlugcats.MOD_ID,
+                    Watcher.Watcher.MOD_ID
 
+                };
         public static string[] GetRequiredMods()
         {
             var modInfo = RainMeadowModInfoManager.MergedModInfo;
@@ -238,6 +243,7 @@ namespace RainMeadow
                 ModApplier modApplier = new(RWCustom.Custom.rainWorld.processManager, pendingEnabled, pendingLoadOrder);
 
                 //mod applier code moved to a task so the game doesn't get frozen?
+                
                 Task.Run(() =>
                 {
                     RainMeadow.Debug("Showing mod check popups");
@@ -252,7 +258,12 @@ namespace RainMeadow
                     {
                         RainMeadow.Debug("Finished applying");
 
-                        if (modApplier.requiresRestart)
+                        if (modApplier.requiresRestart || 
+                        modsRequiringForcedRestart
+                                // 1. Get the IDs from the installed mods
+                                .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
+                                // 2. Check if the resulting intersection collection contains any elements
+                                .Any())
                         {
                             RainMeadow.Debug($"Restarting game with code {restartCode}");
                             Utils.Restart(restartCode);
