@@ -260,9 +260,7 @@ namespace RainMeadow
 
                         if (modApplier.requiresRestart || 
                         modsRequiringForcedRestart
-                                // 1. Get the IDs from the installed mods
                                 .Intersect(ModManager.InstalledMods.Select(mod => mod.id))
-                                // 2. Check if the resulting intersection collection contains any elements
                                 .Any())
                         {
                             RainMeadow.Debug($"Restarting game with code {restartCode}");
