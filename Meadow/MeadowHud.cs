@@ -28,7 +28,7 @@ namespace RainMeadow
 
         public void UpdateAvatars()
         {
-            var activeAvatars = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value.FindEntity(true) as OnlineCreature).Where(e => e != null);
+            var activeAvatars = OnlineManager.lobby.playerAvatars.Select(kv => kv.Value?.FindEntity(true) as OnlineCreature).Where(e => e != null);
             var currentAvatars = indicators.Select(i => i.avatar).ToList(); //needs duplication
             activeAvatars.Except(currentAvatars).Do(AvatarAdded);
             currentAvatars.Except(activeAvatars).Do(AvatarRemoved);
