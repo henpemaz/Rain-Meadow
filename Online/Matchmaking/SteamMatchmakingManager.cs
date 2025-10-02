@@ -51,10 +51,11 @@ namespace RainMeadow
             }
 
             public override string GetPersonaName() {
-                return SteamFriends.GetFriendPersonaName(steamID);
+                return UsernameGenerator.StreamerModeName(SteamFriends.GetFriendPersonaName(steamID));
             }
 
             public override bool canOpenProfileLink { get => true; }
+            public override string DisplayName { get => UsernameGenerator.StreamerModeName(name); }
             public override void OpenProfileLink() {
                 string url = $"https://steamcommunity.com/profiles/{steamID}";
                 SteamFriends.ActivateGameOverlayToWebPage(url);
