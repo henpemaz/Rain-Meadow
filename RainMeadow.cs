@@ -30,6 +30,11 @@ namespace RainMeadow
             instance = this;
             rainMeadowOptions = new RainMeadowOptions(this);
 
+            if (AdvancedProfilingEnabled())
+            {
+                MeadowProfiler.FullPatch();
+            }
+
             On.RainWorld.OnModsInit += RainWorld_OnModsInit;
             On.ModManager.RefreshModsLists += ModManagerOnRefreshModsLists;
             On.RainWorld.Update += RainWorld_Update;
@@ -43,6 +48,15 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
 
             DeathContextualizer.CreateBindings();
+        }
+
+        private bool AdvancedProfilingEnabled()
+        {
+            foreach(var arg in Environment.GetCommandLineArgs())
+            {
+                if (arg == "-meadowprofiler") return true;
+            }
+            return false;
         }
 
         private void Custom_LogWarning(On.RWCustom.Custom.orig_LogWarning orig, string[] values)
