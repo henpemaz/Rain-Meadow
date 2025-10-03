@@ -3,7 +3,9 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -36,6 +38,7 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
+            IL.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame1;
 
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
@@ -56,6 +59,37 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
 
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
+        }
+
+        // Load Meadow room settings if they're present.
+        private void RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame1(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<RoomSettings>(nameof(RoomSettings.Reset))
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_2);
+                c.EmitDelegate((RoomSettings self, string name) =>
+                {
+                    if (isArenaMode(out var arena))
+                    {
+                        var meadowFilePath = WorldLoader.FindRoomFile(name, false, "_meadowsettings.txt", true);
+                        if (File.Exists(meadowFilePath))
+                        {
+                            self.filePath = meadowFilePath;
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
