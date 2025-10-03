@@ -6,7 +6,7 @@
 - Fixed chat "..." from persisting unexpectedly
 - ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
 - Fixed an issue where backpacked slugcats were not dropped on carrier's death
-
+- Added Profiler to Dev Tools. Click "=" to open, "[" and "]" to change views. Use with discretion
 
 
 # Release 1.7.0
