@@ -290,10 +290,17 @@ namespace RainMeadow
                         if (OnlineManager.lobby.isOwner)
                         {
                             StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString()); // maybe just call orig here instead
+                            //note:
+                            //it causes owner to call OverWorld.ISpecialWarp_WarpPoint twice, and set warpWorldLoader to null and make new instance of worldLoader.
+                            //Owner calls PerformWarp, causing OverWorld to force call WorldLoaded() before worldLoader finishes loading. Causing null errors on worldLoader.ReturnWorld().GetResource()
+                            //Client RPC doesnt make owner call performwarp, allowing owner to finish loading worldLoader.
+                            //we need to find a way to see if useNormalLoader is set true on WarpPrecast or smth
                         }
                         else
                         {
                             OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform rift for everyone, only IF its an echo
+                            //This does not call PerformWarp on owner, client is able to freely join because, OverWorld.ISpecialWarp_WarpPoint is called onced
+                            //then warpWorldLoader is not set to null, allowing warpWorldLoader to load, thus worldLoader fully loads
                         }
                         if (!specialData.rippleWarp)
                         {
@@ -384,20 +391,51 @@ namespace RainMeadow
 
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
         {
-            if (isStoryMode(out var storyGameMode))
+            orig(self);
+            if (!isStoryMode(out var storyGameMode)) return;
+            Room room = self.room;
+            AbstractRoom absRoom = room.abstractRoom;
+            
+            if (!RoomSession.map.TryGetValue(absRoom, out var roomSession)) return; //turns out deactivating world session is evil
+            var entities = absRoom.entities;
+            for (int i = entities.Count - 1; i >= 0; i--)
             {
-                orig(self);
+                if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                {
+                    oe.apo.LoseAllStuckObjects();
+                    if (!oe.isMine)
+                    {
+                        // not-online-aware removal
+                        Debug("removing remote entity from game " + oe);
+                        oe.beingMoved = true;
 
-                World world = ((self.room.game.overWorld.worldLoader == null) ? self.room.game.overWorld.activeWorld : self.room.game.overWorld.worldLoader.ReturnWorld());
-                var ws = world.GetResource() ?? throw new KeyNotFoundException();
-                ws.Deactivate();
-                ws.NotNeeded();
-            }
-            else
-            {
-                orig(self);
+                        if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                        {
+                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                        }
+
+                        entities.Remove(oe.apo);
+
+                        absRoom.creatures.Remove(oe.apo as AbstractCreature);
+                        if (oe.apo.realizedObject != null)
+                        {
+                            room.RemoveObject(oe.apo.realizedObject);
+                            room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                        }
+                        oe.beingMoved = false;
+                    }
+                    else
+                    {
+                        Debug("removing my entity from online " + oe);
+                        oe.ExitResource(roomSession);
+                        oe.ExitResource(roomSession.worldSession);
+                    }
+                }
             }
         }
+
+
+            
 
         public void Watcher_PrinceBehavior_InitateConversation(On.Watcher.PrinceBehavior.orig_InitateConversation orig, Watcher.PrinceBehavior self)
         {
