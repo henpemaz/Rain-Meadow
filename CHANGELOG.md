@@ -1,3 +1,14 @@
+# Release 1.7.1
+## Story:
+- Stabilized Watcher warps
+
+## General
+- Fixed chat "..." from persisting unexpectedly
+- ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
+- Fixed an issue where backpacked slugcats were not dropped on carrier's death
+
+
+
 # Release 1.7.0
 
 ## Arena:
