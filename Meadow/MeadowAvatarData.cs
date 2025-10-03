@@ -70,7 +70,7 @@ namespace RainMeadow
             return null;
         }
 
-        public class State : EntityDataState
+        public class State : AvatarDataState
         {
             [OnlineField]
             public Skin skin;
@@ -80,7 +80,7 @@ namespace RainMeadow
             public Color tint;
 
             public State() : base() { }
-            public State(MeadowAvatarData onlineEntity) : base()
+            public State(MeadowAvatarData onlineEntity) : base(onlineEntity)
             {
                 skin = onlineEntity.skin;
                 tintAmount = (byte)(onlineEntity.tintAmount * 255f);
@@ -94,6 +94,7 @@ namespace RainMeadow
 
             public override void ReadTo(OnlineEntity.EntityData entityData, OnlineEntity onlineEntity)
             {
+                base.ReadTo(entityData, onlineEntity);
                 var meadowAvatarSettings = (MeadowAvatarData)entityData;
                 meadowAvatarSettings.skin = skin;
                 meadowAvatarSettings.tintAmount = tintAmount / 255f;

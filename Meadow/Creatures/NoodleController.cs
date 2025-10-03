@@ -27,6 +27,25 @@ namespace RainMeadow
             On.NeedleWorm.Fly += NeedleWorm_Fly1;
 
             IL.NeedleWormGraphics.ApplyPalette += NeedleWormGraphics_ApplyPalette; // colors
+
+            // dev skin
+            On.NeedleWormGraphics.InitiateSprites += NeedleWormGraphics_InitiateSprites;
+        }
+
+        private static void NeedleWormGraphics_InitiateSprites(On.NeedleWormGraphics.orig_InitiateSprites orig, NeedleWormGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.worm, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static void NeedleWormGraphics_ApplyPalette(ILContext il)
