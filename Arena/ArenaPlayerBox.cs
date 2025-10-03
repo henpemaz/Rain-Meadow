@@ -58,7 +58,7 @@ namespace RainMeadow.UI.Components
             Container.AddChild(pingLabel);
             lines = [];
             slugcatButton = new(menu, this, new(10, 10), new Vector2(100, 100), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
-            nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
+            nameLabel = new(menu, this, player.id.DisplayName, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
             InitButtons(canKick);
