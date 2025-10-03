@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -194,9 +195,24 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
+        public List<RPCEvent> graspLocked = new();
+        static public bool creatingRemoteObject { get; private set; } = false;
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {
-            this.apo = ApoFromDef(entityDefinition, inResource, initialState);
+            bool oldCreatingRemoteObject = creatingRemoteObject;
+            creatingRemoteObject = true;
+            try
+            {
+                this.apo = ApoFromDef(entityDefinition, inResource, initialState);
+            }
+            catch (Exception except)
+            {
+                creatingRemoteObject = oldCreatingRemoteObject;
+                throw;
+            }
+            creatingRemoteObject = oldCreatingRemoteObject; 
+
+
             realized = initialState.realized;
             map.Add(apo, this);
         }
