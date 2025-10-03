@@ -37,6 +37,25 @@ namespace RainMeadow
             On.LizardJumpModule.Jump += LizardJumpModule_Jump;
 
             On.LizardBreedParams.TerrainSpeed += LizardBreedParams_TerrainSpeed;
+
+            // dev skin
+            On.LizardGraphics.InitiateSprites += LizardGraphics_InitiateSprites;
+        }
+
+        private static void LizardGraphics_InitiateSprites(On.LizardGraphics.orig_InitiateSprites orig, LizardGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.lizard, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static void Lizard_GripPointBehavior(On.Lizard.orig_GripPointBehavior orig, Lizard self)

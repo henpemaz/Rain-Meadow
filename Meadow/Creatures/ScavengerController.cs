@@ -21,6 +21,25 @@ namespace RainMeadow
 
             // color
             On.ScavengerGraphics.ctor += ScavengerGraphics_ctor;
+
+            // dev skin
+            On.ScavengerGraphics.InitiateSprites += ScavengerGraphics_InitiateSprites;
+        }
+
+        private static void ScavengerGraphics_InitiateSprites(On.ScavengerGraphics.orig_InitiateSprites orig, ScavengerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.scavenger, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static void ScavengerHand_Update(ILContext il)

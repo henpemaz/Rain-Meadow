@@ -21,6 +21,25 @@ namespace RainMeadow
             IL.EggBug.Update += EggBug_Update1;
 
             IL.EggBugGraphics.ApplyPalette += EggBugGraphics_ApplyPalette;
+
+            // dev skin
+            On.EggBugGraphics.InitiateSprites += EggBugGraphics_InitiateSprites;
+        }
+
+        private static void EggBugGraphics_InitiateSprites(On.EggBugGraphics.orig_InitiateSprites orig, EggBugGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.bug, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static void EggBugGraphics_ApplyPalette(ILContext il)

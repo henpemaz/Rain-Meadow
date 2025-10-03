@@ -163,7 +163,12 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject != null)
             {
                 RainMeadow.Trace($"{onlineEntity} realized target exists");
-                realizedObjectState?.ReadTo(onlineEntity);
+                if (realizedObjectState != null)
+                {
+                    StateProfiler.Instance?.Push(realizedObjectState.GetType());
+                    realizedObjectState.ReadTo(onlineEntity);
+                    StateProfiler.Instance?.Pop(realizedObjectState.GetType());
+                }
             }
         }
     }
