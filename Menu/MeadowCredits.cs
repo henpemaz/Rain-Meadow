@@ -36,6 +36,7 @@ namespace RainMeadow
                          Zedreus - {Utils.Translate("Programming, UI, story")}
                          Persondotexe - {Utils.Translate("Programming, modsync")}
                          invalidunits - {Utils.Translate("Programming, UI, LAN")}
+                         @None - {Utils.Translate("Programming, gameplay")}
                          DustyLemmy - {Utils.Translate("Arena, story, UI")}
                          Elizabeth - {Utils.Translate("Programming, story, UI")}
                          niacdoial - {Utils.Translate("LAN")}
