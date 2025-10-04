@@ -26,7 +26,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
-    public int maxScugsPerRow = 6;
+    public static int maxScugsPerRow = 6; //You can change this
+    public static int maxScugsPerPage = maxScugsPerRow * 2; //But don't change this
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -44,13 +45,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         slugcatSelectButtons = new EventfulSelectOneButton[ArenaHelpers.selectableSlugcats.Count];
         slugcatIllustrations = new MenuIllustration[ArenaHelpers.selectableSlugcats.Count];
         slugcatSelectNamePages = new List<SlugcatStats.Name[]>();
-        for (int i=0; i<Mathf.Ceil(ArenaHelpers.selectableSlugcats.Count / (2*maxScugsPerRow))+1; i++)
+
+        int RequiredPages = (int)Mathf.Ceil((float)ArenaHelpers.selectableSlugcats.Count / maxScugsPerPage);
+        RainMeadow.Debug("Need " + RequiredPages + " pages for " + ArenaHelpers.selectableSlugcats.Count + " scugs (@" + maxScugsPerPage + "/page):");
+        for (int i=0; i< RequiredPages; i++)
         {
-            slugcatSelectNamePages.Add(new SlugcatStats.Name[Math.Min(2*maxScugsPerRow, ArenaHelpers.selectableSlugcats.Count - (2*maxScugsPerRow*i))]);
-            RainMeadow.Debug("Page " + i + " should hold " + slugcatSelectNamePages[i].Length + " scugs:");
+            slugcatSelectNamePages.Add(new SlugcatStats.Name[Math.Min(maxScugsPerPage, ArenaHelpers.selectableSlugcats.Count - (i * maxScugsPerPage))]);
+            RainMeadow.Debug("  Page " + i + " should hold " + slugcatSelectNamePages[i].Length + " scugs:");
             for (int j=0; j<slugcatSelectNamePages[i].Length; j++)
             {
-                slugcatSelectNamePages[i][j] = ArenaHelpers.selectableSlugcats[(i*(2*maxScugsPerRow))+j];
+                slugcatSelectNamePages[i][j] = ArenaHelpers.selectableSlugcats[(i*(maxScugsPerPage))+j];
                 RainMeadow.Debug("    " + j + ": " + slugcatSelectNamePages[i][j]);
             }
         }
@@ -118,7 +122,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             else
                 buttonPos = i < currentButtonsInTopRow ? new Vector2(currentTopRowStartingXPos + 110f * i, 450f) : new Vector2(currentBottomRowStartingXPos + 110f * (i - currentButtonsInTopRow), 340f);
 
-            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage*2*maxScugsPerRow));
+            EventfulSelectOneButton btn = new(menu, this, "", "scug select", buttonPos, new Vector2(100f, 100f), slugcatSelectButtons, i + (currentSlugcatSelectPage * maxScugsPerPage));
             SlugcatStats.Name slugcat = slugcatSelectNamePages[currentSlugcatSelectPage][i];
             string portraitFileString = ModManager.MSC && slugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel ? SlugcatColorableButton.GetFileForSlugcatIndex(slugcat, painCatIndex, randomizeSofSlugcatPortrait: false) : SlugcatColorableButton.GetFileForSlugcat(slugcat, false);
             slugcatIllustrations[i] = new(menu, btn, "", portraitFileString, btn.size / 2, false, true);
@@ -189,7 +193,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         nextButton.OnClick += _ => SwitchSlugcatTabBy(1);
         prevButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
         nextButton.OnClick += _ => menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
-        if (ArenaHelpers.selectableSlugcats.Count <= 2 * maxScugsPerRow)
+        if (ArenaHelpers.selectableSlugcats.Count <= maxScugsPerPage)
         {
             prevButton.buttonBehav.greyedOut = true;
             nextButton.buttonBehav.greyedOut = true;
