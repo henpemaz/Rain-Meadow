@@ -13,7 +13,7 @@ namespace RainMeadow.UI.Pages;
 public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.SelectOneButtonOwner
 {
     public SimplerButton backButton;
-    public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel;
+    public MenuLabel slugcatNameLabel, descriptionLabel, readyWarningLabel, chooseYourSlugcatLabel;
     public EventfulSelectOneButton[] slugcatSelectButtons;
     public MenuIllustration[] slugcatIllustrations;
     public List<SlugcatStats.Name[]> slugcatSelectNamePages;
@@ -27,7 +27,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
     public static int maxScugsPerRow = 6; //You can change this
-    public static int maxScugsPerPage = maxScugsPerRow * 2; //But don't change this
+    public static int maxScugsPerPage = maxScugsPerRow * 2; //But don't touch this
     public ArenaOnlineGameMode? Arena => OnlineManager.lobby?.gameMode as ArenaOnlineGameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
 
@@ -58,11 +58,10 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 RainMeadow.Debug("    " + j + ": " + slugcatSelectNamePages[i][j]);
             }
         }
-        SwitchSlugcatTabBy(0);
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
-        MenuLabel chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
+        chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
 
@@ -88,6 +87,8 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             descriptionGradientsPos[i] = new Vector2(680f, i > 1 ? (OnlineManager.lobby.isOwner ? 240f : 280f) : 125f);
             Container.AddChild(descriptionGradients[i]);
         }
+
+        SwitchSlugcatTabBy(0); //Switch by 0 to initialize.
 
         this.SafeAddSubobjects(backButton, prevButton, nextButton, chooseYourSlugcatLabel, readyWarningLabel, slugcatNameLabel, descriptionLabel);
         if (ArenaMenu != null)
@@ -167,6 +168,11 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
             //Chain up/down edges to the back button
             Extensions.TryMassBind(TopRowElements, backButton, top: true);
             Extensions.TryMassBind(BottomRowElements, backButton, bottom: true);
+        }
+
+        if (slugcatSelectNamePages.Count > 1)
+        {
+            chooseYourSlugcatLabel.text = menu.Translate("CHOOSE YOUR SLUGCAT") + " (" + (currentSlugcatSelectPage + 1) + "/" + slugcatSelectNamePages.Count + ")";
         }
     }
 
