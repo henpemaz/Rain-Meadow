@@ -1,6 +1,6 @@
 # Release 1.7.1
 ## Story:
-- Stabilized Watcher warps
+- First pass at stabilizing Watcher warps
 - Fixed missing cursor 
 
 ## General
