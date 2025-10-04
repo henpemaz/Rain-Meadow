@@ -216,6 +216,8 @@ namespace RainMeadow
                 if (uppyWanter.abstractCreature.realizedCreature is Player realizedUppyWanter)
                 {
                     if (realizedPlayer == realizedUppyWanter) return;
+                    if (!realizedPlayer.Consious) return;
+                    if (realizedPlayer.abstractCreature.GetAllConnectedObjects().Contains(realizedUppyWanter.abstractCreature)) return;
                     if (!realizedPlayer.slugOnBack.HasASlug)
                     {
                         realizedPlayer.slugOnBack.SlugToBack(realizedUppyWanter);
