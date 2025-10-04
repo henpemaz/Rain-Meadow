@@ -246,7 +246,44 @@ namespace RainMeadow
 
         public void SpinningTop_SpawnWarpPoint(On.Watcher.SpinningTop.orig_SpawnWarpPoint orig, Watcher.SpinningTop self)
         {
-            if (OnlineManager.lobby != null)
+            orig(self);
+            if (OnlineManager.lobby != null) //this should be fine, orig edits warp point, we get warppoint, make it oneWay and host should create warp
+            {
+                Debug("getting warp point from echo");
+                Watcher.SpinningTopData specialData = self.SpecialData;
+                if (specialData == null)
+                {
+                    Debug("Special data is null!");
+                    return;
+                }
+                PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, specialData.CreateWarpPointData(self.room))
+                {
+                    pos = self.pos
+                };
+                Watcher.WarpPoint warpPoint = self.room.TrySpawnWarpPoint(placedObject, true);
+                //this should get spinning top's warp, theres the destRoom check for warp points in rooms
+                //new warppoint shouldnt spawn unless a mod edits orig warppoint's destination room in il, which is evil so we be evil too
+                if (warpPoint == null)
+                {
+                    Debug("Warp point is null!");
+                    return;
+                }
+                placedObject.pos = warpPoint.pos;
+                Watcher.WarpPoint.WarpPointData warpData = warpPoint.Data;
+                // TODO: All warps by echos are one-way for now this is because we can't reliably obtain the
+                // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
+                // same region and room which WILL cause issues - so to remediate that we simply pretend all
+                // warps made by echoes are one way only.
+                warpData.oneWay = true; 
+                warpPoint.WarpPrecast(); // force cast NOW
+                if (OnlineManager.lobby.isOwner)
+                    StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString());
+                else
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform echo
+
+
+            }
+            /*if (OnlineManager.lobby != null)
             {
                 RainMeadow.Debug("spawning warp point from echo");
                 PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, null);
@@ -290,17 +327,10 @@ namespace RainMeadow
                         if (OnlineManager.lobby.isOwner)
                         {
                             StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString()); // maybe just call orig here instead
-                            //note:
-                            //it causes owner to call OverWorld.ISpecialWarp_WarpPoint twice, and set warpWorldLoader to null and make new instance of worldLoader.
-                            //Owner calls PerformWarp, causing OverWorld to force call WorldLoaded() before worldLoader finishes loading. Causing null errors on worldLoader.ReturnWorld().GetResource()
-                            //Client RPC doesnt make owner call performwarp, allowing owner to finish loading worldLoader.
-                            //we need to find a way to see if useNormalLoader is set true on WarpPrecast or smth
                         }
                         else
                         {
                             OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform rift for everyone, only IF its an echo
-                            //This does not call PerformWarp on owner, client is able to freely join because, OverWorld.ISpecialWarp_WarpPoint is called onced
-                            //then warpWorldLoader is not set to null, allowing warpWorldLoader to load, thus worldLoader fully loads
                         }
                         if (!specialData.rippleWarp)
                         {
@@ -321,7 +351,7 @@ namespace RainMeadow
             else
             {
                 orig(self);
-            }
+            }*/
         }
 
         public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu)
