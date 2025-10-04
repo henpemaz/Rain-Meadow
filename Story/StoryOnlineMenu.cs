@@ -585,6 +585,7 @@ namespace RainMeadow
             }
 
             UpdateSelectedSlugcatInMiscProg();
+            pages[0].mouseCursor.BumToFront(); //add cursor container back
         }
 
         private void RemoveSlugcatList()

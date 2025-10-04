@@ -275,6 +275,7 @@ namespace RainMeadow
             "Hr8BfOHHTBRGgSmQoj4qQdlHqaY6d4DHFbF7wCNFI1U=",
             "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
             "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=
+            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ="
         };
 
         public static bool IsDev(MeadowPlayerId player)
