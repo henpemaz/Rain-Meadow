@@ -1,6 +1,7 @@
 # Release 1.7.1
 ## Story:
 - Stabilized Watcher warps
+- Fixed missing cursor 
 
 ## General
 - Fixed chat "..." from persisting unexpectedly
