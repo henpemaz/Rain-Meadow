@@ -18,7 +18,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.7.0";
+        public const string MeadowVersionStr = "0.1.7.1";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -274,7 +274,9 @@ namespace RainMeadow
             "wZ2+Phw6EOBLv9bZKdSGV+3lWhNxiT2KHwCluqhLdzo=",
             "Hr8BfOHHTBRGgSmQoj4qQdlHqaY6d4DHFbF7wCNFI1U=",
             "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
-            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ="
+            "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=",
+            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ=",
+            "oz6hibRdEiJow7IWhn+T7Ij+agHeNqmxyHO34YMOla4=",
         };
 
         public static bool IsDev(MeadowPlayerId player)
