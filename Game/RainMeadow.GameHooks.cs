@@ -56,6 +56,19 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
 
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
+
+            On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
+        }
+
+        public void ProcessManager_CueAchievement(On.ProcessManager.orig_CueAchievement orig, ProcessManager self, RainWorld.AchievementID ID, float delay)
+        {
+            if (OnlineManager.lobby != null && ID != RainWorld.AchievementID.None)
+            {
+                RainMeadow.Debug("Prevented " + Enum.GetName(typeof(RainWorld.AchievementID), ID) + " from being earned in an online lobby.");
+                return;
+            }
+
+            orig(self, ID, delay);
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
