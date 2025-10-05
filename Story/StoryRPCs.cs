@@ -249,14 +249,15 @@ namespace RainMeadow
             if (!OnlineManager.lobby.isOwner)
             {
                 game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
+                Watcher.WarpPoint.WarpPointData data = warpPoint.overrideData ?? warpPoint.Data;
                 // update camera position
-                string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
-                var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
+                string destRoom = data.destRoom;
+                var destCam = data.destCam;
                 // emulate as if we did actually warp
                 game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
                 RainMeadow.Debug($"switch camera to {destRoom}");
                 warpPoint.activated = false;
-                game.overWorld.readyForWarp = true;
+                game.overWorld.readyForWarp = !useNormalWarpLoader;
             }
             if (game.cameras[0].warpPointTimer == null)
             {
