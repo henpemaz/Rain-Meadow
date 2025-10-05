@@ -2,6 +2,7 @@
 ## Story:
 - First pass at stabilizing Watcher warps
 - Fixed missing cursor 
+- Fixed lobby chat to not select back button on throw input
 
 ## General
 - Fixed chat "..." from persisting unexpectedly
