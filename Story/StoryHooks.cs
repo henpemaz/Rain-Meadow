@@ -192,7 +192,8 @@ namespace RainMeadow
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                    var wasOneWay = (self.overrideData != null) ? self.overrideData.oneWay : self.Data.oneWay;
+                    var data = self.overrideData ?? self.Data;
+                    var wasOneWay = data.oneWay;
                     // Can't warp to warp points with null rooms (echo warps)
                     // remember that echo warps are one way only, so we will NOT gate thru them
                     // so please do not pretend it's a gate, and no requirements can be met, thanks :)
@@ -269,13 +270,14 @@ namespace RainMeadow
                     return;
                 }
                 placedObject.pos = warpPoint.pos;
-                Watcher.WarpPoint.WarpPointData warpData = warpPoint.Data;
+                Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
                 // TODO: All warps by echos are one-way for now this is because we can't reliably obtain the
                 // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
                 // same region and room which WILL cause issues - so to remediate that we simply pretend all
                 // warps made by echoes are one way only.
                 warpData.oneWay = true; 
                 warpPoint.WarpPrecast(); // force cast NOW
+                warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
                 if (OnlineManager.lobby.isOwner)
                     StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString());
                 else
@@ -427,6 +429,7 @@ namespace RainMeadow
             AbstractRoom absRoom = room.abstractRoom;
             
             if (!RoomSession.map.TryGetValue(absRoom, out var roomSession)) return; //turns out deactivating world session is evil
+            Debug($"Removing entities in abstract room, {absRoom.name}");
             var entities = absRoom.entities;
             for (int i = entities.Count - 1; i >= 0; i--)
             {
