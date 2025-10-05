@@ -37,7 +37,13 @@ namespace RainMeadow
                          Persondotexe - {Utils.Translate("Programming, modsync")}
                          invalidunits - {Utils.Translate("Programming, UI, LAN")}
                          forthfora - {Utils.Translate("Programming, modsync")}
-
+                         WillowWisp - {Utils.Translate("Programming, story")}
+                         @None - {Utils.Translate("Programming, gameplay")}
+                         DustyLemmy - {Utils.Translate("Arena, story, UI")}
+                         Elizabeth - {Utils.Translate("Programming, story, UI")}
+                         niacdoial - {Utils.Translate("LAN")}
+                         CaptainRedstone - {Utils.Translate("Meadow, story")}
+                         
                          {Utils.Translate("Thank you playtesters from the Rain Meadow discord as well.")}
 
                          """;
