@@ -69,6 +69,7 @@ public class LobbyCreateMenu : SmartMenu
             allowSpace = true,
             defaultValue = "",
             description = Utils.Translate("Lobby Password"),
+            password = RainMeadow.rainMeadowOptions.StreamerMode.Value,
         };
         passwordInputBox.PosX = modeDropDown.pos.x;
         passwordInputBox.label.text = Utils.Translate("Password");
