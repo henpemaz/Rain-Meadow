@@ -106,7 +106,8 @@ namespace RainMeadow
             [OnlineField(nullable: true)]
             public Generics.DynamicOrderedUshorts realizedRooms;
 
-            // Used to sync RainWorldGame.clock which is used for a few 
+            // Used to sync RainWorldGame.clock which is used for a few APOs introduced in the Watcher as well as a few
+            // other functions in the game. Should be safe to update this way but I would keep a watch on it for a little bit.
             [OnlineField]
             public int clock;
             public WorldState() : base() { }
