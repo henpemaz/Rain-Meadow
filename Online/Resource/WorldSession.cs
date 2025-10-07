@@ -105,11 +105,17 @@ namespace RainMeadow
             public RainCycleData rainCycleData;
             [OnlineField(nullable: true)]
             public Generics.DynamicOrderedUshorts realizedRooms;
+
+            // Used to sync RainWorldGame.clock which is used for a few 
+            [OnlineField]
+            public int clock;
             public WorldState() : base() { }
             public WorldState(WorldSession resource, uint ts) : base(resource, ts)
             {
                 if (resource.world != null)
                 {
+                    clock = resource.world.game.clock;
+
                     RainCycle rainCycle = resource.world.rainCycle;
                     if (rainCycle.brokenAntiGrav == null)
                     {
@@ -128,6 +134,9 @@ namespace RainMeadow
                 if (resource.isActive)
                 {
                     var ws = (WorldSession)resource;
+
+                    ws.world.game.clock = clock;
+
                     RainCycle cycle = ws.world.rainCycle;
                     cycle.preTimer = rainCycleData.preTimer;
                     cycle.timer = rainCycleData.timer;
