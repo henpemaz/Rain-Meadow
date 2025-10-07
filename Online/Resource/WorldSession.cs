@@ -143,6 +143,10 @@ namespace RainMeadow
                     cycle.timer = rainCycleData.timer;
                     cycle.cycleLength = rainCycleData.cycleLength;
 
+                    cycle.waterCycle.timeInStage = rainCycleData.timeInStage;
+                    cycle.waterCycle.stageDuration = rainCycleData.stageDuration;
+                    cycle.waterCycle.stage = (WaterLevelCycle.Stage)rainCycleData.stage;
+
                     if (realizedRooms != null)
                     {
                         foreach (var index in realizedRooms.list)
