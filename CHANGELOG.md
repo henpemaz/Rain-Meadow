@@ -1,3 +1,7 @@
+# Release 1.8.0
+## Arena:
+- The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
+
 # Release 1.7.1
 ## Story:
 - First pass at stabilizing Watcher warps

@@ -29,10 +29,14 @@ namespace RainMeadow
         public override void GrafUpdate(float timeStacker)
         {
             base.GrafUpdate(timeStacker);
+            if (slugcatNameStater != null)
+            {
+                slugcatNameStater.text = Translate(SlugcatStats.getSlugcatName(id));
+                slugcatNameStater.label.color = MenuColorEffect.rgbMediumGrey;
+            }
             if (slugcatPageStater != null)
             {
-                slugcatPageStater.text = Translate(SlugcatStats.getSlugcatName(id));
-                slugcatPageStater.label.color = MenuColorEffect.rgbMediumGrey;
+                slugcatPageStater.text = (selectableSlugcats.IndexOf(id) + 1) + "/" + selectableSlugcats.Count;
             }
         }
         public void GotoNextPrevSlugcat(bool next)
@@ -53,21 +57,26 @@ namespace RainMeadow
         {
             if (prevSlugcatButton == null)
             {
-                prevSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Prev{NextPrevSingal}", new(pos.x + size.x * 0.75f + 5, okButton.pos.y + 3));
+                prevSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Prev{NextPrevSingal}", new(pos.x + size.x * 0.75f - 17.5f, okButton.pos.y + 3));
                 prevSlugcatButton.OnClick += _ => GotoNextPrevSlugcat(false);
                 prevSlugcatButton.symbolSprite.rotation = 270;
                 pages[0].subObjects.Add(prevSlugcatButton);
             }
             if (nextSlugcatButton == null)
             {
-                nextSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Next{NextPrevSingal}", new(prevSlugcatButton.pos.x + prevSlugcatButton.size.x + 10, prevSlugcatButton.pos.y));
+                nextSlugcatButton = new(this, pages[0], "Menu_Symbol_Arrow", $"Next{NextPrevSingal}", new(prevSlugcatButton.pos.x + prevSlugcatButton.size.x + 40, prevSlugcatButton.pos.y));
                 nextSlugcatButton.OnClick += _ => GotoNextPrevSlugcat(true);
                 nextSlugcatButton.symbolSprite.rotation = 90;
                 pages[0].subObjects.Add(nextSlugcatButton);
             }
+            if (slugcatNameStater == null)
+            {
+                slugcatNameStater = new(this, pages[0], "", new(prevSlugcatButton.pos.x + ((nextSlugcatButton.pos.x - prevSlugcatButton.pos.x + prevSlugcatButton.size.x) / 2) - 40, nextSlugcatButton.pos.y + nextSlugcatButton.size.y + 10), new(80, 30), true);
+                pages[0].subObjects.Add(slugcatNameStater);
+            }
             if (slugcatPageStater == null)
             {
-                slugcatPageStater = new(this, pages[0], "", new(prevSlugcatButton.pos.x + ((nextSlugcatButton.pos.x - prevSlugcatButton.pos.x + prevSlugcatButton.size.x) / 2) - 40, nextSlugcatButton.pos.y  + nextSlugcatButton.size.y + 10), new(80, 30), true);
+                slugcatPageStater = new(this, pages[0], "", new(prevSlugcatButton.pos.x + ((nextSlugcatButton.pos.x - prevSlugcatButton.pos.x + prevSlugcatButton.size.x) / 2) - 40, nextSlugcatButton.pos.y - 2), new(80, 30), false);
                 pages[0].subObjects.Add(slugcatPageStater);
             }
             MutualHorizontalButtonBind(prevSlugcatButton, nextSlugcatButton);
@@ -77,10 +86,12 @@ namespace RainMeadow
         {
             pages[0].ClearMenuObject(ref prevSlugcatButton);
             pages[0].ClearMenuObject(ref nextSlugcatButton);
+            pages[0].ClearMenuObject(ref slugcatNameStater);
             pages[0].ClearMenuObject(ref slugcatPageStater);
         }
         public const string NextPrevSingal = "PageSlugcat_COLORMULTIPLESLUGCATS";
         public List<SlugcatStats.Name> selectableSlugcats;
+        public MenuLabel? slugcatNameStater;
         public MenuLabel? slugcatPageStater;
         public SimplerSymbolButton? prevSlugcatButton, nextSlugcatButton;
     }
