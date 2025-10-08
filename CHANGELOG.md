@@ -1,3 +1,7 @@
+# Release 1.8.0
+## Story:
+- Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
+
 # Release 1.7.1
 ## Story:
 - First pass at stabilizing Watcher warps
