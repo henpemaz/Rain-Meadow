@@ -153,6 +153,7 @@ namespace RainMeadow
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
                 UsernameGenerator.Timestamp = DateTime.Now.Ticks;
+                Utils.InitializeFiltering();
 
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
