@@ -18,9 +18,9 @@
             public bool antiGravity = false;
 
             // WaterLevelCycle
-            [OnlineField]
+            [OnlineFieldHalf]
             public float stageDuration;
-            [OnlineField]
+            [OnlineFieldHalf]
             public float timeInStage;
             [OnlineField]
             public byte stage;
