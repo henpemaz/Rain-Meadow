@@ -285,6 +285,8 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                 var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
+                if (rpc != null) //this probably isnt neccessary but just incase
+                    game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(newWarpData.ToString());
                 game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
                 if (RainMeadow.isStoryMode(out var storyGameMode))
                 {
