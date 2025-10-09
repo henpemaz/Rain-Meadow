@@ -9,7 +9,8 @@
 /Utils/		
 /Online/RPCs.cs	
 /Online/ConsumableRPCs.cs	
-/Mod/text/	
+/Mod/text/
+CHANGELOG.md
 
 # team specific
 /Arena/		@6fears7

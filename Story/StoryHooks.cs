@@ -193,23 +193,26 @@ namespace RainMeadow
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
                     var data = self.overrideData ?? self.Data;
-                    var wasOneWay = data.oneWay;
+                    var isEcho = self.room == null || self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()) == true;
                     // Can't warp to warp points with null rooms (echo warps)
                     // remember that echo warps are one way only, so we will NOT gate thru them
                     // so please do not pretend it's a gate, and no requirements can be met, thanks :)
                     // and ensure theyre in the same room as the warp point itself :)
-                    if (rooms.Distinct().Count() == 1 && !wasOneWay && self.room != null && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom)
-                    { // make sure they're at the same room
-                        RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
-                        RainMeadow.Debug($"ready for warp {gateRoom}!");
-                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
-                        readyForWarp = true;
-                    }
-                    else
+                    if (!isEcho)
                     {
-                        storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
-                        storyGameMode.changedRegions = false;
-                        readyForWarp = false;
+                        if (rooms.Distinct().Count() == 1 && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom)
+                        { // make sure they're at the same room
+                            RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
+                            RainMeadow.Debug($"ready for warp {gateRoom}!");
+                            storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
+                            readyForWarp = true;
+                        }
+                        else
+                        {
+                            storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
+                            storyGameMode.changedRegions = false;
+                            readyForWarp = false;
+                        }
                     }
                 }
                 if (!OnlineManager.lobby.isOwner || !readyForWarp)
