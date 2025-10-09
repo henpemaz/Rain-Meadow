@@ -1,3 +1,11 @@
+# Release 1.8.0
+## Arena:
+- The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
+## Story:
+- Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
+- Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
+
+
 # Release 1.7.1
 ## Story:
 - First pass at stabilizing Watcher warps
