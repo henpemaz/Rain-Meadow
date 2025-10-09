@@ -170,14 +170,18 @@ namespace RainMeadow
         private void RainWorldGame_ForceSaveNewDenLocation(On.RainWorldGame.orig_ForceSaveNewDenLocation orig, RainWorldGame game, string roomName, bool saveWorldStates)
         {
             orig(game, roomName, saveWorldStates);
-            if (RainMeadow.isStoryMode(out var story)) { }
-            if (!OnlineManager.lobby.isOwner)
+            if (RainMeadow.isStoryMode(out var story))
             {
-                OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
-            }
-            else
-            {
-                story.myLastDenPos = roomName;
+
+                if (!OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
+                }
+                else
+                {
+                    story.myLastDenPos = roomName;
+
+                }
             }
         }
 
@@ -275,7 +279,7 @@ namespace RainMeadow
                 // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
                 // same region and room which WILL cause issues - so to remediate that we simply pretend all
                 // warps made by echoes are one way only.
-                warpData.oneWay = true; 
+                warpData.oneWay = true;
                 warpPoint.WarpPrecast(); // force cast NOW
                 warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
                 if (OnlineManager.lobby.isOwner)
@@ -427,7 +431,7 @@ namespace RainMeadow
             if (!isStoryMode(out var storyGameMode)) return;
             Room room = self.room;
             AbstractRoom absRoom = room.abstractRoom;
-            
+
             if (!RoomSession.map.TryGetValue(absRoom, out var roomSession)) return; //turns out deactivating world session is evil
             Debug($"Removing entities in abstract room, {absRoom.name}");
             var entities = absRoom.entities;
@@ -468,7 +472,7 @@ namespace RainMeadow
         }
 
 
-            
+
 
         public void Watcher_PrinceBehavior_InitateConversation(On.Watcher.PrinceBehavior.orig_InitateConversation orig, Watcher.PrinceBehavior self)
         {
@@ -1740,7 +1744,7 @@ namespace RainMeadow
 
                 self.currentSaveState = new SaveState(saveStateNumber, self);
 
-                
+
                 if (self.saveFileDataInMemory == null || self.loadInProgress || !self.saveFileDataInMemory.Contains("save") || !setup.LoadInitCondition)
                 {
                     self.currentSaveState.LoadGame("", game);
