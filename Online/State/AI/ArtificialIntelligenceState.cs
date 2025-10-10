@@ -4,22 +4,24 @@ using RainMeadow.Generics;
 
 namespace RainMeadow {
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-    public class ArtificialIntelligenceState : OnlineState {
+    public class ArtificialIntelligenceState : OnlineState
+    {
 
-        [OnlineField(group: "AImodules", nullable: true)]
+        [OnlineField(group: "AImodules")]
         public DynamicOrderedStates<AIModuleState>? moduleStates;
-        public ArtificialIntelligenceState(OnlineCreature onlineCreature) {
-            if (onlineCreature.apo is AbstractCreature creature) {
-                if (creature.creatureTemplate.AI && creature.abstractAI.RealAI is not null) {
-                    InitializefromAI(creature.abstractAI.RealAI);
-                }
-            }
-        }
-        public void InitializefromAI(ArtificialIntelligence artificialIntelligence) {
+
+        [OnlineField(nullable: true)]
+        public OnlineEntity.EntityId? focusCreature;
+
+        public ArtificialIntelligenceState() {}
+        public ArtificialIntelligenceState(ArtificialIntelligence AI)
+        {
             List<AIModuleState> moduleStatesList = new();
-            foreach (AIModule module in artificialIntelligence.modules) {
+            foreach (AIModule module in AI.modules)
+            {
                 var state = GetModuleState(module);
-                if (state is not null) {
+                if (state is not null)
+                {
                     moduleStatesList.Add(state);
                 }
             }
@@ -27,19 +29,26 @@ namespace RainMeadow {
             moduleStates = new DynamicOrderedStates<AIModuleState>(moduleStatesList);
         }
 
-        public AIModuleState? GetModuleState(AIModule module) {
+        public AIModuleState? GetModuleState(AIModule module)
+        {
             if (module is FriendTracker) return new FriendTrackerState(module);
             return null;
         }
 
-        public ArtificialIntelligenceState() {}
 
-        public void ReadTo(ArtificialIntelligence AI) {
+        public void ReadTo(ArtificialIntelligence AI)
+        {
             if (moduleStates is not null)
-            foreach (var state in moduleStates.list) {
-                foreach (var aimodule in AI.modules) {
-                    if (aimodule.GetType() == state.ModuleType) {
-                        state.ReadTo(aimodule);
+            {
+                foreach (var state in moduleStates.list)
+                {
+                    foreach (var aimodule in AI.modules)
+                    {
+                        if (aimodule.GetType() == state.ModuleType)
+                        {
+                            state.ReadTo(aimodule);
+                            break;
+                        }
                     }
                 }
             }
