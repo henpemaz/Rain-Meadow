@@ -214,7 +214,6 @@ namespace RainMeadow
                         else
                         {
                             storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
-                            storyGameMode.changedRegions = false;
                             readyForWarp = false;
                         }
                     }
