@@ -1,0 +1,16 @@
+Template: NONE
+DangerType: Blizzard
+WaveSpeed: 0.6300349
+WaveLength: 0.9349826
+WaveAmplitude: 3.633724E-09
+SecondWaveLength: 0.1666667
+SecondWaveAmplitude: 0
+Grime: 0.2717391
+RandomItemDensity: 0.9239131
+RandomItemSpearChance: 0.3630434
+Palette: 15
+EffectColorA: 18
+EffectColorB: 7
+Effects: Fog-0.3478261-447-137, Wasp-0.3804348-674-245, SkyBloom-0.5434783-20-20, Coldness-1-25-88, 
+PlacedObjects: SnowSource><297.3731><437.0954><Radial~-159~227~50~86.60254~0.4565217~0, SnowSource><745.7733><313.0514><Radial~0~129~50~86.60254~1~0, SnowSource><746.19><583.3124><Radial~0~100~50~86.60254~0.467391~0, SnowSource><1159.806><105.9419><Radial~-3~120~50~86.60254~1~0, SnowSource><1155.093><437.8108><Radial~-14~137~-270~-104.3975~0.5760869~0, SnowSource><1193.927><620.814><Radial~0~100~50~86.60254~1~0, MultiplayerItem><1181.231><69.80095><Spear~-122.6794~66~0.7717391, MultiplayerItem><669.2397><507.4497><Spear~17.32051~-10~0.6847826, MultiplayerItem><182.8769><33.34538><Spear~17.32051~-10~0.7391304, 
+FadePalette: 35, 0.7282609
