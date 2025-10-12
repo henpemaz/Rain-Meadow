@@ -71,7 +71,9 @@ namespace RainMeadow
         /// <returns>A randomized username if you have StreamerMode enabled and are playing via Steam, otherwise MeadowPlayerId.name</returns>
         public static string StreamerModeName(string name)
         {
-            if (!RainMeadow.rainMeadowOptions.StreamerMode.Value) 
+            if (RainMeadow.rainMeadowOptions.StreamerMode.Value == RainMeadowOptions.StreamMode.None) 
+                return name;
+            if (RainMeadow.rainMeadowOptions.StreamerMode.Value == RainMeadowOptions.StreamMode.Me && name != OnlineManager.mePlayer.id.name)
                 return name;
             if (cache.ContainsKey(name)) 
                 return cache[name];
