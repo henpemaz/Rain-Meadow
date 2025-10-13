@@ -58,6 +58,8 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<bool> DevNightskySkin;
 
+    public readonly Configurable<bool> EnableAchievementsOnline;
+
     public readonly Configurable<IntroRoll> PickedIntroRoll;
 
     public enum IntroRoll
@@ -144,6 +146,8 @@ public class RainMeadowOptions : OptionInterface
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
+
+        EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
     }
 
     public override void Initialize()
@@ -336,8 +340,8 @@ public class RainMeadowOptions : OptionInterface
             };
             opTab.AddItems(GeneralUIArrPlayerOptions);
 
-            OnlineStorySettings = new UIelement[11]
-           {    new OpLabel(10f, 550f, Translate("Story"), bigText: true),
+            OnlineStorySettings =
+            [   new OpLabel(10f, 550f, Translate("Story"), bigText: true),
 
                 new OpLabel(10f, 500, Translate("Ready to shelter/gate"), bigText: false),
 
@@ -364,8 +368,12 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(40f, 260, RWCustom.Custom.ReplaceLineDelimeters(Translate("Steal items from other players in Story mode")))
                 {
                     verticalAlignment = OpLabel.LabelVAlignment.Center
-                }
-           };
+                },
+
+                new OpLabel(new Vector2(40, 170), new(25, 25), Custom.ReplaceLineDelimeters(Translate("Gain achievements online")), FLabelAlignment.Left),
+                new OpCheckBox(EnableAchievementsOnline, new Vector2(10, 170)),
+
+            ];
             storyTab.AddItems(OnlineStorySettings);
 
             OpLabel arenaSpoilerLabel, slugpupHellBackgroundLabel;
