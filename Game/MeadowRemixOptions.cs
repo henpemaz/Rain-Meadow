@@ -266,9 +266,12 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(410, 120f, Translate("Chat Log On/Off")),
                 new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
 
-                new OpLabel(480, 120f, Translate("Streamer Mode")),
+                new OpLabel(500, 120f, Translate("Streamer Mode")),
                 //new OpCheckBox(StreamerMode, new Vector2(480f, 90f)),
                 new OpComboBox2(StreamerMode, new Vector2(480f, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(StreamMode)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
+                new OpLabel(310, 10f, Translate("Profanity Filter")),
+                new OpCheckBox(ProfanityFilter, new Vector2(440f, 10f)),
 
                 new OpLabel(10, 100, Translate("Introroll")),
                introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 70f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
