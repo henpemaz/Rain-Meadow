@@ -246,21 +246,25 @@ namespace RainMeadow
             {
                 storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
             }
-            game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
-            // update camera position
-            string destRoom = (warpPoint.overrideData != null) ? warpPoint.overrideData.destRoom : warpPoint.Data.destRoom;
-            var destCam = (warpPoint.overrideData != null) ? warpPoint.overrideData.destCam : warpPoint.Data.destCam;
-            // emulate as if we did actually warp
-            game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
+            if (!OnlineManager.lobby.isOwner)
+            {
+                game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
+                Watcher.WarpPoint.WarpPointData data = warpPoint.overrideData ?? warpPoint.Data;
+                // update camera position
+                string destRoom = data.destRoom;
+                var destCam = data.destCam;
+                // emulate as if we did actually warp
+                game.cameras[0].WarpMoveCameraPrecast(destRoom, destCam);
+                RainMeadow.Debug($"switch camera to {destRoom}");
+                warpPoint.activated = false;
+                game.overWorld.readyForWarp = !useNormalWarpLoader;
+            }
             if (game.cameras[0].warpPointTimer == null)
             {
                 game.cameras[0].warpPointTimer = new Watcher.WarpPoint.WarpPointTimer(warpPoint.activateAnimationTime * 2f, warpPoint);
                 game.cameras[0].warpPointTimer.MoveToSecondHalf();
                 game.cameras[0].BlankWarpPointHoldFrame();
             }
-            RainMeadow.Debug($"switch camera to {destRoom}");
-            warpPoint.activated = false;
-            game.overWorld.readyForWarp = true;
             return warpPoint;
         }
 
@@ -281,6 +285,8 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
                 var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
+                if (rpc != null) //this probably isnt neccessary but just incase
+                    game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(newWarpData.ToString());
                 game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
                 if (RainMeadow.isStoryMode(out var storyGameMode))
                 {

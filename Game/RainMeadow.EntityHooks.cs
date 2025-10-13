@@ -17,6 +17,7 @@ namespace RainMeadow
             On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
             IL.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint2;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
+            IL.OverWorld.Update += OverWorld_Update;
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
@@ -34,10 +35,8 @@ namespace RainMeadow
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
             IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
             On.Watcher.SandGrubGraphics.DrawSprites += SandGrubGraphics_DrawSprites;
-
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
-
         private void SandGrubGraphics_DrawSprites(On.Watcher.SandGrubGraphics.orig_DrawSprites orig, Watcher.SandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
             try
@@ -267,6 +266,7 @@ namespace RainMeadow
             {
                 orig(self, callback, warpData, useNormalWarpLoader);
             }
+            Debug($"active world's name? {self.activeWorld?.name ?? "NULL"}, warpPoint's region: {warpData.RegionString}");
         }
 
         public void OverWorld_InitiateSpecialWarp_WarpPoint2(ILContext il)
@@ -410,15 +410,38 @@ namespace RainMeadow
                 orig(self, newRoom);
             }
         }
-
+        private void OverWorld_Update(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(x => x.MatchCall<OverWorld>("WarpUpdate"));
+                c.GotoPrev(MoveType.After, x => x.MatchLdfld<OverWorld>(nameof(OverWorld.readyForWarp)));
+                c.GotoNext(x => x.MatchBrfalse(out _));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate(delegate (bool origBool, OverWorld overWorld)
+                {
+                    if (OnlineManager.lobby != null)
+                        //prevent readyForWarp to call WorldLoaded when warpWorldLoader is queued and Regions has not fully loaded, this is quick fix for now
+                        return origBool && !overWorld.warpingPreload; 
+                    return origBool;
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
             if (OnlineManager.lobby != null)
             {
+                Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
+                World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
-                WorldSession newWorldSession = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).name);
+                WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
+                bool isSameWorld = (self.activeWorld.name == newWorld.name);
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
@@ -426,7 +449,7 @@ namespace RainMeadow
                 {
                     // Regular gate switch
                     AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
-                    AbstractRoom newAbsroom = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetAbstractRoom(oldAbsroom.name);
+                    AbstractRoom newAbsroom = newWorld.GetAbstractRoom(oldAbsroom.name);
                     List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
                     List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
 
@@ -471,6 +494,7 @@ namespace RainMeadow
                 }
                 else if (warpUsed)
                 {
+                    RainMeadow.Debug("getting warp point!");
                     Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading");
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
                     isFirstWarpWorld = (room == null) || (warpPoint.overrideData != null ? warpPoint.overrideData.rippleWarp : warpPoint.Data.rippleWarp); //do not update gate status afterwards :)
@@ -522,7 +546,8 @@ namespace RainMeadow
                             }
                         }
                     }
-                    RainMeadow.Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {self.worldLoader.worldName}/{self.worldLoader.world?.name}");
+                    Debug($"destination region: {(warpPoint.overrideData ?? warpPoint.Data).destRegion}, worldLoader is null? {self.worldLoader == null}, worldLoader's World is null? {self.worldLoader == null || self.worldLoader.world == null}, activeWorld is null? {self.activeWorld == null}");
+                    Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {(self.worldLoader == null? newWorld.name : ($"{self.worldLoader.worldName}/{newWorld.name}"))}");
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     { //it will move places
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -588,6 +613,7 @@ namespace RainMeadow
 
                 if (!isSameWorld)
                 { // there exists "warps" to the same world, twice, for some bloody reason
+                    //this in fact probably is required for now because rain world devs DESPISE US
                     RainMeadow.Debug("Unsubscribing from old world");
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go

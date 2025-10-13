@@ -1,3 +1,27 @@
+# Release 1.8.0
+## Arena:
+- The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
+## Story:
+- Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
+- Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
+- Fixed an ending 3 crash if playing local with Meadow installed
+- Prevented clients in lobby being allowed to join after warping
+
+
+# Release 1.7.1
+## Story:
+- First pass at stabilizing Watcher warps
+- Fixed missing cursor 
+- Fixed lobby chat to not select back button on throw input
+
+## General
+- Fixed chat "..." from persisting unexpectedly
+- ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
+- Fixed an issue where backpacked slugcats were not dropped on carrier's death
+- Added Profiler to Dev Tools. Click "=" to open, "[" and "]" to change views. Use with discretion
+- Prevented achievements from being unlocked in online multiplayer
+
+
 # Release 1.7.0
 
 ## Arena:

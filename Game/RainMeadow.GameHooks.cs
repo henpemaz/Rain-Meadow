@@ -56,6 +56,19 @@ namespace RainMeadow
             On.GameSession.AddPlayer += GameSession_AddPlayer;
 
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
+
+            On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
+        }
+
+        public void ProcessManager_CueAchievement(On.ProcessManager.orig_CueAchievement orig, ProcessManager self, RainWorld.AchievementID ID, float delay)
+        {
+            if (OnlineManager.lobby != null && ID != RainWorld.AchievementID.None)
+            {
+                RainMeadow.Debug("Prevented " + Enum.GetName(typeof(RainWorld.AchievementID), ID) + " from being earned in an online lobby.");
+                return;
+            }
+
+            orig(self, ID, delay);
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
@@ -253,6 +266,10 @@ namespace RainMeadow
                     MeadowProgression.AutosaveProgression();
                 }
             }
+            if (OnlineManager.lobby != null)
+            {
+                self.devToolsLabel.text = self.devToolsLabel.text + $" | Rain Meadow {RainMeadow.MeadowVersionStr} ({MatchmakingManager.currentDomain.value})";
+            }
         }
 
         public bool RainWorldGame_GamePaused(Func<RainWorldGame, bool> orig, RainWorldGame self)
@@ -410,6 +427,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.Update(self, dt);
+                ProfilerOverlay.Update(self, dt);
                 MeadowMusic.RawUpdate(self, dt);
             }
         }
@@ -420,6 +438,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 DebugOverlay.RemoveOverlay(self);
+                ProfilerOverlay.RemoveOverlay(self);
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 

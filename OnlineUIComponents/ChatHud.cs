@@ -138,6 +138,7 @@ namespace RainMeadow
                 chatInputOverlay.ShutDownProcess();
                 chatInputOverlay = null;
             }
+            
         }
         public void Destroy()
         {
@@ -161,6 +162,10 @@ namespace RainMeadow
             {
                 if (chatInputOverlay != null) ShutDownChatInput();
                 if (chatLogOverlay != null) ShutDownChatLog();
+                if (OnlineManager.lobby != null && OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
+                {
+                    cs.isInteracting = false;
+                }
             }
             else if (showChatLog && chatLogOverlay == null)
             {
