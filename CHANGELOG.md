@@ -6,7 +6,7 @@
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
 - Fixed an ending 3 crash if playing local with Meadow installed
 - Prevented clients in lobby being allowed to join after warping
-
+- Added a remix options to gain achievements online
 
 # Release 1.7.1
 ## Story:
