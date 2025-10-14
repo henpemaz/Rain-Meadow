@@ -468,7 +468,7 @@ namespace RainMeadow
         public override void FilterMessage(ref string message)
         {
             if (!filteringAvailable || !RainMeadow.rainMeadowOptions.ProfanityFilter.Value || OnlineManager.lobby == null) return;
-            if (SteamUtils.FilterText(ETextFilteringContext.k_ETextFilteringContextUnknown, CSteamID.Nil, message, out string pchOutFilteredText, (uint)(message.Length * 2 + 1)) > 0)
+            if (SteamUtils.FilterText(ETextFilteringContext.k_ETextFilteringContextChat, CSteamID.Nil, message, out string pchOutFilteredText, (uint)(message.Length * 2 + 1)) > 0)
             {
                 message = pchOutFilteredText;
             }
