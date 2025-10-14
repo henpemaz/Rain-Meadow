@@ -120,12 +120,27 @@ namespace RainMeadow
             On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
-
-
-
-
+            new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            On.Player.ActivateAscension += Player_ActivateAscension;
         }
 
+        private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
+        {
+            if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private int SetKarmaLevel(Func<Player, int> orig, Player self)
+        {
+            if (isArenaMode(out var arena) && ModManager.MSC && self.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.sainot)
+            {
+                return 9;
+            }
+            return orig(self);
+        }
         private void FinalResultbox_ctor(On.Menu.FinalResultbox.orig_ctor orig, FinalResultbox self, MultiplayerResults resultPage, MenuObject owner, ArenaSitting.ArenaPlayer player, int index)
         {
             if (isArenaMode(out var arena))
