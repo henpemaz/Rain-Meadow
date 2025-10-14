@@ -180,35 +180,6 @@ namespace RainMeadow
         {
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
-        public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
-        {
-            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
-            {
-                if (!arena.sainot)
-                {
-                    if (!arena.countdownInitiatedHoldFire)
-                    {
-
-                        if (player.monkAscension == false && player.godTimer != player.maxGodTime)
-                        {
-
-                            if (player.tongue.mode == Player.Tongue.Mode.Retracted && (player.input[0].x != 0 || player.input[0].y != 0 || player.input[0].jmp))
-                            {
-                                player.godTimer += 0.8f;
-                            }
-                            else
-                            {
-                                player.godTimer -= 0.8f;
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))

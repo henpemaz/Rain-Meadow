@@ -430,6 +430,34 @@ public partial class RainMeadow
     private void Player_UpdateMSC(On.Player.orig_UpdateMSC orig, Player self)
     {
         orig(self);
+        if (isArenaMode(out var arena))
+        {
+            if (self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
+            {
+                if (!arena.sainot)
+                {
+                    if (!arena.countdownInitiatedHoldFire)
+                    {
+
+                        if (self.monkAscension == false && self.godTimer != self.maxGodTime)
+                        {
+
+                            if (self.tongue.mode == Player.Tongue.Mode.Retracted && (self.input[0].x != 0 || self.input[0].y != 0 || self.input[0].jmp))
+                            {
+                                self.godTimer += 0.8f;
+                            }
+                            else
+                            {
+                                self.godTimer -= 0.8f;
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+        }
         if (OnlineManager.lobby != null && HasSlugcatClassOnBack(self, MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint, out Player saint_player))
         {
             if (self.tongue is not null && self.tongue.Attached)
@@ -992,8 +1020,6 @@ public partial class RainMeadow
                 {
                     InputOverride.HoldFire(self);
                 }
-
-                ArenaHelpers.OverideSlugcatClassAbilities(self, arena);
             }
 
             if (ModManager.MSC)
