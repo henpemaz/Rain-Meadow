@@ -76,7 +76,7 @@ namespace RainMeadow.UI.Components
         public void AddMessage(string user, string message)
         {
             if (!(OnlineManager.lobby?.gameMode?.mutedPlayers.Contains(user) == false)) return;
-            Utils.FilterSteamMessage(ref message);
+            MatchmakingManager.currentInstance.FilterMessage(ref message);
             bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
             if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;

@@ -6,42 +6,12 @@ using System.Linq;
 using System.IO;
 using RWCustom;
 using UnityEngine;
-using Steamworks;
 
 namespace RainMeadow
 {
     internal static class Utils
     {
         public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
-
-        public static bool SteamFilterInitialized;
-        public static bool SteamFilterAvailible;
-
-        /// <summary>
-        /// Filters a message using Steam if ProfanityFilter is enabled in Remix options.
-        /// </summary>
-        /// <param name="message"></param>
-        public static void FilterSteamMessage(ref string message)
-        {
-            if (!SteamFilterAvailible || !RainMeadow.rainMeadowOptions.ProfanityFilter.Value || OnlineManager.lobby == null || MatchmakingManager.currentDomain.value != MatchmakingManager.MatchMakingDomain.Steam.value) return;
-            if (SteamUtils.FilterText(ETextFilteringContext.k_ETextFilteringContextUnknown, CSteamID.Nil, message, out string pchOutFilteredText, (uint)(message.Length * 2 + 1)) > 0)
-            {
-                message = pchOutFilteredText;
-            }
-        }
-        public static void InitializeFiltering()
-        {
-            try
-            {
-                if (SteamFilterInitialized) return;
-                SteamFilterInitialized = SteamUtils.InitFilterText();
-                SteamFilterAvailible = true;
-            } 
-            catch (Exception e)
-            {
-                RainMeadow.Error(e);
-            }
-        }
         public static string Translate(string text)
         {
             return Translator.Translate(text);
