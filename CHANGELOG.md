@@ -3,7 +3,7 @@
 - First pass at stabilizing Watcher warps
 - Fixed missing cursor 
 - Fixed lobby chat to not select back button on throw input
-
+- Fixes Passages crashing the game
 ## General
 - Fixed chat "..." from persisting unexpectedly
 - ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
