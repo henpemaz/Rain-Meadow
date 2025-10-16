@@ -2,6 +2,8 @@
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
+- Added a toggle for Watcher's ripple level
+- Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
 ## Story:
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
