@@ -64,7 +64,7 @@ public static class DeathMessage
             {
                 return;
             }
-            var t = opo.owner.id.name;
+            var t = opo.owner.id.DisplayName;
             switch (cause)
             {
                 default:
@@ -163,8 +163,8 @@ public static class DeathMessage
             {
                 return;
             }
-            var k = killer.owner.id.name;
-            var t = target.owner.id.name;
+            var k = killer.owner.id.DisplayName;
+            var t = target.owner.id.DisplayName;
             switch(context)
             {
                 default:
@@ -194,7 +194,7 @@ public static class DeathMessage
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
             var k = (killer.apo as AbstractCreature).creatureTemplate.name;
-            var t = target.owner.id.name;
+            var t = target.owner.id.DisplayName;
             if (!ShouldShowDeath(target)) return;
             if ((killer.apo as AbstractCreature).creatureTemplate.TopAncestor().type == CreatureTemplate.Type.Centipede)
             {
@@ -230,7 +230,7 @@ public static class DeathMessage
         try
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
-            var k = killer.owner.id.name;
+            var k = killer.owner.id.DisplayName;
             var t = (target.apo as AbstractCreature).creatureTemplate.name;
             var realized = (target.apo as AbstractCreature).realizedCreature;
             if (!ShouldShowDeath(target)) return;

@@ -1,7 +1,13 @@
 # Release 1.8.0
+
+## General:
+- Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
+- Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
+
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
+
 ## Story:
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)

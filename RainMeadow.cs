@@ -169,6 +169,8 @@ namespace RainMeadow
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
+                UsernameGenerator.Timestamp = DateTime.Now.Ticks;
+
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
                 sw.Stop();

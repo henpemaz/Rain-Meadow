@@ -1633,7 +1633,7 @@ namespace RainMeadow
                     var userNameBackup = "Unknown user";
                     try
                     {
-                        userNameBackup = currentName.id.name;
+                        userNameBackup = currentName.id.DisplayName;
                         self.playerNameLabel.text = userNameBackup;
                         if (TeamBattleMode.isTeamBattleMode(arena, out var team))
                         {
