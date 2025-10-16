@@ -161,9 +161,10 @@ namespace RainMeadow
             return currentCampaign;
         }
 
-        public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
+        public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame? game)
         {
-            return game.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
+            //fasttravelscreen -> null rainworldGame
+            return game?.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
