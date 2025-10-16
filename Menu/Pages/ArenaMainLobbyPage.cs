@@ -82,7 +82,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
 
 
-        if (ModManager.MSC || ModManager.Watcher)
+        if (ShouldOpenSlugcatAbilitiesTab())
         {
             TabContainer.Tab slugabilitiesTab = tabContainer.AddTab(menu.Translate("Slugcat Abilities"));
             slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new(0,0), menu.Translate(painCatName));
@@ -96,7 +96,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
     }
-
+    public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
     public void BuildPlayerDisplay()
     {
         playerDisplayer = new PlayerDisplayer(menu, this, new Vector2(960f, 130f), [.. OnlineManager.players.OrderByDescending(x => x.isMe)], GetPlayerButton, 4, ArenaPlayerBox.DefaultSize.x, new(ArenaPlayerBox.DefaultSize.y, 0), new(ArenaPlayerSmallBox.DefaultSize.y, 10));
