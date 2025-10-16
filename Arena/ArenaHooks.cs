@@ -365,19 +365,18 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
-                return true;
+                return self.rippleLevel >= 3;
             }
             return orig(self);
         }
         private float SetRippleLevel(Func<Player, float> orig, Player self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                return 1f;
+                return (arena.watcherRippleLevel - 1) * 0.5f + 1;
             }
             return orig(self);
         }
-
         private string? On_Options_LoadArenaSetup(On.Options.orig_LoadArenaSetup orig, Options self, string fallBack)
         {
             if (self.optionsLoaded && self.optionsFile != null && isArenaMode(out _))
