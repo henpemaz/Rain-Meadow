@@ -187,7 +187,7 @@ public class TabContainer : RectangularMenuObject
         public readonly List<TabButton> activeTabButtons;
         public TabContainer container;
     }
-    public class Tab : PositionedMenuObject
+    public class Tab : PositionedMenuObject, IPLEASEUPDATEME //yes for nested tab reasons
     {
         public Tab(Menu.Menu menu, MenuObject owner) : base(menu, owner, Vector2.zero)
         {
@@ -196,10 +196,12 @@ public class TabContainer : RectangularMenuObject
             myTabWrapper = new(menu, this);
             subObjects.Add(myTabWrapper);
         }
-        public bool IsHidden { get; private set; }
+        public bool IsActuallyHidden => IsOwnHidden || IsHidden;
+        public bool IsOwnHidden { get; private set; } //sees if itself is hidden
+        public bool IsHidden { get; set; } //see if a parent tab forces it to be hidden
         public override void Update()
         {
-            if (IsHidden)
+            if (IsActuallyHidden)
             {
                 UpdateHiddenObjects(this);
                 return;
@@ -208,7 +210,7 @@ public class TabContainer : RectangularMenuObject
         }
         public override void GrafUpdate(float timeStacker)
         {
-            if (IsHidden)
+            if (IsActuallyHidden)
             {
                 GrafUpdateHiddenObjects(this, timeStacker);
                 return;
@@ -218,41 +220,59 @@ public class TabContainer : RectangularMenuObject
         public void Show()
         {
             myContainer.isVisible = true;
-            IsHidden = false;
+            IsOwnHidden = false;
             for (int i = 0; i < subObjects.Count; i++)
-            {
                 ShowObject(subObjects[i]);
-            }
         }
         public void Hide()
         {
             myContainer.isVisible = false;
-            IsHidden = true;
+            IsOwnHidden = true;
+            RecursiveRemoveSelectables(this);
             for (int i = 0; i < subObjects.Count; i++)
-            {
                 HideObject(subObjects[i]);
-            }
         }
         public void ShowObject(MenuObject? obj)
         {
+            if (obj == null) return;
             if (obj is SelectableMenuObject selectableObj && !obj.page.selectables.Contains(selectableObj)) obj.page.selectables.Add(selectableObj);
             if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = false;
-            for (int i = 0; i < obj?.subObjects?.Count; i++)
+            if (obj is Tab tab)
             {
-                ShowObject(obj.subObjects[i]);
+                if (!tab.IsOwnHidden) //we got a nested tab that isnt hidden itself, lets not force add their subobjects, tell tab to readd their selectables on their own
+                    tab.Show();
+                return;
+            }
+            for (int i = 0; i < obj.subObjects.Count; i++)
+            {
+                MenuObject? subObj = obj.subObjects[i];
+                ShowObject(subObj);
             }
         }
+
+        /// <summary>
+        /// Remember to call RecursiveRemoveSelectables because this doesnt remove selectables
+        /// </summary>
+        /// <param name="obj"></param>
         public void HideObject(MenuObject? obj)
         {
-            if (obj != null) RecursiveRemoveSelectables(obj);
+            //find all subobjects and nested to hide any IPLEASEUPDATEMES
+            //dont need to call nested tab.Hide(), we removed all selectables and made this tab's container invisible.
+            //so we are telling nested tab that it is being hidden from this tab, not by itself.
+            if (obj == null) return;
             if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = true;
+            for (int i = 0; i < obj.subObjects.Count; i++)
+            {
+                MenuObject? subObj = obj.subObjects[i];
+                HideObject(subObj);
+            }
         }
         public void UpdateHiddenObjects(MenuObject obj)
         {
             for (int i = 0; i < obj.subObjects.Count; i++)
             {
                 MenuObject subObj = obj.subObjects[i];
-                if (subObj is IPLEASEUPDATEME) subObj.Update(); //assuming you update all subobjects as well
+                if (subObj is IPLEASEUPDATEME) subObj.Update(); //assuming you adjusted for isHidden as well
                 else UpdateHiddenObjects(subObj);
             }
         }
@@ -268,9 +288,17 @@ public class TabContainer : RectangularMenuObject
         }
         public void AddObjects(params MenuObject[] objects)
         {
-            this.SafeAddSubobjects(objects);
-            if (IsHidden) Hide();
-            else Show();
+            for (int i = 0; i < objects.Length; i++)
+            {
+                MenuObject? obj = objects[i];
+                if (obj == null || subObjects.Contains(obj)) continue;
+                if (IsActuallyHidden) //dont force show, pretty sure default is show
+                {
+                    HideObject(obj);
+                    RecursiveRemoveSelectables(obj);
+                }
+                subObjects.Add(obj);
+            }
         }
         public MenuTabWrapper myTabWrapper;
     }
