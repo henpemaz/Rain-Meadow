@@ -428,7 +428,7 @@ namespace RainMeadow.UI.Components
         public abstract class SettingsPage(Menu.Menu menu, MenuObject owner) : Tab(menu, owner)
         {
             public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
-            public abstract string Name => "";
+            public abstract string Name { get; }
             public virtual void SelectAndCreateBackButtons(SettingsPage? previousSettingPage,bool forceSelectedObject)
             {
                 if (forceSelectedObject)
