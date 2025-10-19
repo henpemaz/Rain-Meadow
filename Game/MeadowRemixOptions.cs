@@ -41,6 +41,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> WeaponCollisionFix;
     public readonly Configurable<bool> EnablePiggyBack;
     public readonly Configurable<StreamMode> StreamerMode;
+    public readonly Configurable<int> ArenaWatcherRippleLevel;
 
     public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
     public readonly Configurable<string> MartyrTeamName;
@@ -119,6 +120,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
+        ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 
         MartyrTeamColor = config.Bind("MartyrTeamColor", new Color(1, 0.49f, 0.49f));
