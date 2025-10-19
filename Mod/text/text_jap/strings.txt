@@ -1,0 +1,589 @@
+0// Mod Name & Description
+henpemaz_rainmeadow-name|レイン・メドウ
+henpemaz_rainmeadow-description|マルチプレイヤーエンジン、Might&DelightのMeadowにインスパイアされたカスタム<LINE>ゲーム、オンラインアリーナとストーリー体験。<LINE><LINE>すべてのクレジットはレイン・メドウのModメニューから見ることができます。
+
+
+// Mod Tab
+MEADOW|レイン・メドウ
+
+// Lobby Select Menu
+Lobby Mode|ロビーモード
+All|すべて
+Public Lobbies Only|公開ロビーのみ
+Max Lobby Size|ロビーの最大人数
+Lobby Mods|適用MOD
+Unfiltered|なし
+Exact order|全一致
+Any order|部分一致
+Direct Connect|直接接続
+Direct Connection is only available in the Local Matchmaker|直接接続はローカル接続でのみ利用できます
+Lobby Domain|ドメイン名
+Local|ローカル
+Router|ルーター
+Steam|Steam
+Failed to join lobby.<LINE> Lobby is full|ロービーへの参加に失敗しました<LINE>ロービーは満員です 
+Failed to join lobby.<LINE>|ロービーへの参加に失敗しました<LINE>
+Password Required|パスワードを入力してください
+Wrong password!|パスワードが間違っています！
+Joining lobby...|ロービーへ参加中...
+Online:|オンライン
+Lobbies:|ロビー
+Rain Meadow Version:|レイン・メドウのバージョン:
+Credits|クレジット
+
+// Lobby Cards Selector
+Search Lobbies|ロビーを検索...
+Click to join|クリックして参加:
+<USERNAME>'s Lobby|<USERNAME>のロビー
+Private|非公開
+max|人
+player|人のプレイヤー
+players|人のプレイヤー
+Sort by Ping|通信強度
+Sort A to Z|昇順
+Sort Z to A|降順
+Sort by Fullest Lobby|最大人数
+Sort by Emptiest Lobby|最少人数
+Unknown Sorting Method|未知のソート法
+Refresh list|リストを更新
+
+// Lobby Create Menu
+CREATE!|ロビーを作成！
+Mode:|モード：
+Meadow|メドウ
+A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|周囲を探索し、小さな秘密を発見する平和なモード。一人でも一緒でも楽しめます。
+Story|ストーリー
+Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|レインワールドの世界で友達と一緒に冒険し、共に戦い、共に死ぬ… 
+Arena|アリーナランク
+Fight against unforgiving creatues and foes where only the strong survive.|強者だけが生き残る世界で、容赦のない生き物や敵と戦いましょう。
+Visibility:|公開範囲：
+Public|パブリック
+Friends Only|フレンドのみ
+Invite Only|招待のみ
+Password|パスワード...
+Lobby Password|パスワード
+Player max:|最大人数：
+Maximum number of players that can be in the lobby (up to 32)|ロビーに参加できる最大プレイヤー数（最大32人まで）
+Creating lobby...|ロービーを作成中...
+//抜け
+Password:|ロビーパスワード:
+
+// Meadow Character Select
+Locked|ロック中
+ENTER|入る
+Tint color|カラー
+Tint amount|不透明度
+SKINS|スキン
+SLUGCAT|ナメクジネコ
+Survivor|生存者
+Monk|僧侶
+Hunter|ハンター
+Fluffy|ストリーム
+Night|ナイトキャット
+LIZARD|トカゲ
+Pink|ピンク
+Blue|ブルー
+Yellow|イエロー
+Red|レッド
+Black|ブラック
+Axo|サンショウウオ
+Sala|サラマンダー
+Cyan|シアン
+Fluffers|フリル
+CICADA|イカダ
+White|ホワイト
+Dark|ダーク
+SCAVENGER|スカベンジャー
+Twigs|小枝
+Acorn|ドングリ
+Oak|オーク
+Shrub|低木
+Branches|枝
+Sage|セージ
+Cherry|チェリー
+Lavender|ラベンダー
+Peppermint|ペパーミント
+Juniper|ビャクシン
+NOODLEFLY|ヌードルフライ
+Lily|リリー
+Rose|ローズ
+Poppy|ポピー
+Lotus|ロータス
+Lilac|ライラック
+Petunia|ペチュニア
+Jasmine|ジャスミン
+Gardenia|クチナシ
+EGGBUG|エッグバグ
+Citrus|シトラス
+Blueberry|ブルーベリー
+Kiwi|キウイ
+Mango|マンゴー
+Dragonfruit|ドラゴンフルーツ
+LANTERN MOUSE|ランタンマウス
+Saphire|サファイア
+Ruby|ルビー
+Acquamarine|アクアマリン
+Citrine|シトリン
+Emerald|エメラルド
+Quartz|クオーツ
+Amethyst|アメジスト
+Opal|オパール
+Garnet|ガーネット
+New character!|新しいキャラクター！
+
+// Meadow Mode
+CLEAR|取り消し
+//CONTINUE|続ける
+Close this menu|このメニューを閉じる
+TO HUB|拠点へ戻る
+Teleport to the closest hub|直近の拠点へワープ
+TO OUTSKIRTS|郊外へワープ
+Teleport to outskirts|郊外へワープ
+PASSAGE|通路
+Passage to another shelter|雨宿り場内から知っている雨宿り場へ移動します
+UNSTUCK|スタック解消
+Teleport to a nearby pipe|直近のパイプへワープしてスタックを解消します
+LOBBY|ロビーに戻る
+Go back to the charater selection screen|キャラクター選択画面に戻ります
+QUIT|終了
+Exit back to the main menu|メインメニューに戻ります
+Hub zone volume|拠点内の音量
+Display names|名前を表示
+Collision|当たり判定
+New character unlocked|新しいキャラクターがアンロックされました
+New emote unlocked|新しいエモートがアンロックされました
+New skin unlocked|新しいスキンがアンロックされました
+
+// Story Mode
+Selected Slugcat|選択中のナメクジネコ
+Press on the button to open/close the slugcat selection list|クリックしてナメクジネコの選択リストを開く
+Current Campaign: |現在のキャンペーン：
+ - New Game| - 新しいゲーム
+Unknonw Region|不明な地域
+Invite Friends|フレンドを招待
+Friendly Fire|フレンドリーファイヤー
+Require Campaign Slugcat|キャンペーンに遵守
+Match save|マッチ保存
+///Restart game|
+PLAYERS|プレイヤー
+Press again to ban player!|BANするプレイヤーをもう一度選択してください！
+Wait for others to shelter or rescue you, press |ほかのプレイヤーがあなたを救助するか、雨宿り場へたどり着くかを待つ間「
+ to spectate, or press PAUSE BUTTON to dismiss message|」キーで他プレイヤーを観戦できます。「ポーズ」キーでこのメッセージを非表示
+READY|準備完了
+
+// Arena Mode
+ME|自分
+Got All<LINE>ScugSlots!!|
+Joining<LINE>soon!|参加中！
+Ready!|準備完了！
+Selecting<LINE>Slugcat|プレイヤーを<LINE>選択中
+In Game!|プレイ中！
+Showing players in thumbnail view|サムネイル表示
+Showing players in list view|リスト表示
+Current Mode:|現在のモード：
+Do some wacky stuff around here!|ここでちょっと変なことをやってみて！
+Free For All|自由参加
+Trust no one. Last scug standing wins|誰も信じるな。最後に立っていた者が勝者
+Team Battle|チーム戦
+Choose a faction. Last team standing wins.|チームを選択しよう。最後に立っていたチームが勝者
+Join Team "<TEAMNAME>"|"<TEAMNAME>" に参加
+POST-GAME STATS|POST-GAMEステータス
+WINS|勝利
+KILLS|キル
+DEATHS|デス
+This game mode doesnt have any info to give|このゲームモードには設定項目はありません
+Ready:|準備完了：
+Playlist Progress:|プレイリストの進捗：
+WAIT FOR OTHERS|ほかのプレイヤーを待機中
+FORCE READY|開始を強制
+LOBBY WILL LOCK|ロビーはロックされています
+JOIN?|参加申請
+QUEUED TO JOIN|キューに登録しました
+READY?|準備完了
+UNREADY|取り消す
+WAITING|待機中
+Ready up to join the host when the match begins|マッチを開始するには「準備完了」を押してホストに参加してください
+START MATCH!|マッチ開始！
+Waiting for others...|他プレイヤーを待機中...
+Waiting for host...|ホストを待機中...
+Welcome to Arena Online!<LINE>All players must ready up to begin.|アリーナ・オンラインへようこそ、<LINE>すべてのプレイヤーが準備完了するまで始まりません
+Exit to Lobby Select|
+Click to open <TABNAME> tab|<TABNAME>タブをクリックして選択
+Arena Playlist|プレイリスト
+Search for levels|レベルを検索
+Search levels|レベル検索
+Match Settings|マッチ設定
+Spears Hit:|槍のヒット：
+Repeat Rooms:|リピート回数：
+Allow Item Stealing:|アイテムを盗む：
+Players can steal items from each other|現在プレイヤーはアイテムを互いに盗むことができるようになります
+Players cannot steal items from each other|現在プレイヤーはアイテムを盗むことはできません
+Allow Mid-Game Join:|途中参加を許可：
+Players can join each round|現在プレイヤーは各ラウンドごとに参加することができます
+Players can only join at the first round|現在プレイヤーは最初のラウンドが終了するまで参加できません
+Allow PiggyBack:|背中に背負う：
+Players can piggyback each other:|プレイヤーは互いに背負うことができます
+Players cannot piggyback each other:|背中には誰も背うことができません
+Better Hitbox:|当たり判定修正：
+Thrown weapons are corrected to prevent no-clips|投擲武器は衝突判定を妨げるようになります
+Thrown weapons follow vanilla behaviour|投擲武器はバニラと同じ挙動をします
+Countdown Timer:|タイマー(秒)：
+How long the grace timer at the beginning of rounds lasts for. Default 5s.|ラウンド開始前の猶予時間を設定します。デフォルト：5（秒）
+Arena Game Mode:|ゲームモード：
+The game mode for this match|現在のマッチのゲームモード
+Slugcat Abilities|アビリティ
+Disable Mauling:|襲撃を無効：
+Prevent Artificer and <PAINCATNAME> from mauling|<PAINCATNAME>と発明家の襲撃を無効にします
+Disable Artificer Stun:|発明家のスタン無効：
+Prevent Artificer from stunning other players|発明家は他プレイヤーからスタンを受けません
+Sain't:|非・聖人：
+Disable Saint ascendance ability, but allow it to throw spears|聖人の「調和」能力を無効にし、投擲スキルを与えます
+Saint Ascendance Duration:|聖人「調和」時間(秒)：
+How long Saint's ascendance ability lasts for. Default: 3s|聖人の「調和」の持続時間を設定します。デフォルト：3（秒）
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME>はタマゴの投擲スキルが0になる：
+If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|<PAINCATNAME>が投擲スキルゼ0でスポーンするなら、ゼ0エッグもともにスポーンする
+<PAINCATNAME> can always throw spears:|<PAINCATNAME>は常に槍を投げる：
+Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|投擲スキルが0だとしても、槍の投擲を<PAINCATNAME>へ常に許可します
+<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME>はまれに友達を作る：
+Allow <PAINCATNAME> to rarely spawn with a little friend|低確率で<PAINCATNAME>は小さな友達をスポーンさせます
+Watcher Camo Duration:|ウォッチャーの「隠蔽」時間(秒)：
+How long Wacher's abilities last for. Default: 12s|ウォッチャーの「隠蔽」の持続時間を設定します。デフォルト：12（秒）
+Team Settings|チーム設定
+TEAM|チーム
+Team Lerp Color:|チーム色の彩度：
+How much do you want team color to show on players? From 0 to 1|プレイヤーに表示するチーム色はどれくらいにしますか? 0~1で指定
+You cant color without Remix on!|レインワールドRemixが有効になっていないと変えることができません！
+Waiting|待機
+Prepare for combat,|戦いに備えよう、
+Prepare for war,|戦争に備えよう、
+Winner!|勝者！
+<TEAMNAME> WIN!|<TEAMNAME>の勝利！
+Unknown user|不明なユーザー
+TO LOBBY|ロビーへ
+
+// Arena Slugcat Select
+Back To Lobby|ロビーに戻る
+Go back to main lobby|メインロビーに戻る
+You have been unreadied. Switch back to re-ready yourself automatically|準備解除されました。自動的に再準備するには切り替えてください。
+The match is starting in <COUNTDOWN>! Ready up!!|マッチ開始まで<COUNTDOWN>秒！備えよう！
+CHOOSE YOUR SLUGCAT|ナメクジネコの選択
+THE NIGHTCAT|ナイトキャット
+THE FARTIFICER|放屁家
+THE SLUGPUP|ナメクジ幼体
+THE UNKNOWN|アンノウン
+Unknown|不明
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|敵があなたを囲むが、最初の時のようにはならない<LINE>槍と石を手に取り戦え
+Remember: they struck first, so you'll need to hit back harder.|覚えておこう：彼らが先に攻撃したので、それよりもっと強く反撃する必要がある
+Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|初めから苦しめられ、最後まで戦う者<LINE>彼らに苦しみの意味を示せ
+Observe all weakness - then strike while cloaked in shadows.|すべての弱点を観察し、影に隠れて攻撃せよ
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|あなたの波乱万丈の物語はほぼ終わりを迎えている<LINE>最後の任務を遂行せよ
+An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|爆発的な性格と比類なき怒り。<LINE>復讐のために打ち砕き、爆破せよ
+A gnawing hunger grows inside you. Feed it with spears.|自身の内側で疼くような空腹が実る<LINE>その槍で空腹を満たせ
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|目的のない世界で、ついに自分の目的を見つけたのかもしれない。<LINE>今すぐに行動して、それを失わないよう死守せよ
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|槍は脆い器だ<LINE>あなたの心の印から世界を形作れ
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|心は弱い器<LINE>手に持つ槍で腕前を見せよ
+Desperate. Fearful. Violent.|必死。恐怖。暴力。
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|開く：声。選択。重荷。<LINE>閉じる：ささやき。融合。溺れる。<LINE>開く：反響。明瞭。無重力。
+Am I Warrior from the past, or a Messiah from the future?|私は過去の戦士か、それとも未来からの救世主か?
+Am I Cat Searching for many, or a Mouse searching for one?|私は「多く」を探す猫か、それとも「ひとつ」を探す鼠か?
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>私は運命づけられたサマリア人なのか、それとも時空を超えた異常者なのか?
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>私はサマリア人として運命づけられているのか、それとも永遠にあなたの影に縛られているのか?
+<LINE>I do not know, for I am not one. I am many.|<LINE>わからない、私はそうではない。私は多くの者だ。
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|ひとつの道を歩む者は大いなる宝を見つけるかもしれない<LINE>多くの道をさまよう者は大いなる真実を見つけるだろう
+
+// Paincat's Names & Descriptions
+Paincat|Paincat
+PAINCAT|PAINCAT
+Inv|Inv
+INV|INV
+Enot|Enot
+ENOT|ENOT
+Sofanthiel|Sofanthiel
+SOFANTHIEL|SOFANTHIEL
+Gorbo|Gorbo
+GORBO|GORBO
+???|???
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|あなたは地獄のような経験をしてきましたが、今こそ過去のサイクルの罪を償う時です。
+...why are you here|...なぜここに
+Thanks, Andrew.|ありがとう、Andrew。
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|。れ取に手を岩と槍。<LINE>う違はと時の初最、がるくてっ迫にち周が敵
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|利益の塔へようこそ：滞在している間は常に重労働をしてもらいます。<LINE>水分を忘れずに持ってきてることを願っています、<USERNAME>！
+$5 to unlock this description.|5ドルでこの説明をアンロック
+egg|卵
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|愛を求めることは、心を打ち砕く悲劇の美しい道へと導くだろう。
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|運試ししてみる?ナメクジネコの写真を持ってきてね ;)
+Did you know:<LINE>Meadow was released this Friday|ご存じですか?：<LINE>レイン・メドウは金曜日にリリースされました。
+Did you know:<LINE>You're bad at Arena|ご存じですか?：<LINE>アリーナではあなたはダメですね。
+Did you know:<LINE>There's more "Did you know"s.|ご存じですか?：<LINE>ここにはさらに「ご存じですか?」シリーズがあります。
+Did you know:<LINE>This is the only "Did you know".|ご存じですか?：<LINE>これが最後の「ご存じですか?」です。
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|あなたはこのラウンドに負けるでしょう<LINE>あなたの体は見つからないでしょう<LINE>6フィート下の地下
+"<USERNAME>, youre gonna get us both killed"|「<USERNAME>、きみのせいで二人とも死ぬことになるよ」
+"no srsly wheres my egg"|「卵は一体どこ?」
+"u dont need 2 be alone, bby."|「一人でいる必要はないよ、ベイビー」
+"sometimes i wake up with a friend ive never met b4"|「時々、知らん友達と一緒に目覚めることがある」
+"i luv u <3"|「だいすきだよ<3」
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|何 故 「num2」が 変 数 で な け れ ば な ら な か っ た の か、文 字 通 り「0」な の に
+Don't Care<LINE>Nuh<LINE>Yuh|きにしなーい<LINE>うん<LINE>うん
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|突然、結果の長方形が表示されなくなり、ソフトロック状態になりました。<LINE>一体何だ。あのバグはしばらく前に直されたと思っていたのに…
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|貢献について考えたことはありますか?<LINE>https://github.com/henpemaz/Rain-Meadow?
+Be careful when selecting the Fartificer|放屁家を選択する際にはお気を付けください
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|午前3時に「Among Usのポーション」を手に入れる気がする。<LINE>それを追加して（冗談）
+Playtesters<LINE>Are<LINE>Replaceable|テストプレーヤー<LINE>達は<LINE>交換可能
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|invについて十分な説明があります。<LINE>空 腹 は 満 た さ れ な い
+"hiiii!"|「やあ！！！！！」
+"i'm ded"|「死」
+bleh|はぁ
+inv? like invalidunits?|inv?「invalidunits」みたいな?
+
+// Scugslots
+Press and hold something on screen to spin the slots / Hope you brought green|画面のどこかを長押ししてスロットを回そう / 緑色であることを願います
+One, two three of a kind / Somewhere on this page you will find|1、2、3の揃い / このページのどこかで見つけられるでしょう
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|メドウのDiscordから始まったジョーク / 全てのプレイヤーが破産し、誰も支払えない
+SCUGSLOTS|ス(ラッグ)ロット
+LET'S ROLL!|ロール！
+Oops, better luck next time!|おっと、次は運がいいといいね！
+Try your luck again!|もう一度、君の運を試そう！
+99% of gamblers quit before they win big|99パーセントのギャンブラーは大勝ちする前に辞めてしまう
+So Close! Keep trying!|あとちょっと！もう一回！
+Almost there!|もうすぐだ！
+Congratulations! You have achieved the ultimate gamble skill!!!|おめでとう！きみは究極のギャンブルスキルを達成した！！！！！！！
+Gahh?? Impossible?!|はぁ～?!ありえない?!
+You got a <SLUGCATNAME>!|<SLUGCATNAME>を獲得した！
+
+// Chat Tutorial
+Press '|「
+' to chat, press '|」キーでチャット、「
+' to toggle the chat log|」キーでチャットログを切り替えます 
+
+// Player Joining / Leaving
+joined the game.|が参加しました
+tried to join the game but was kicked.|が参加しようとしましたがキックされました
+left the game.|が退出しました
+
+// Death Messages
+died.|は死んだ
+was crushed by the rain.|は雨に打ちのめされた
+fell into the abyss.|は奈落に落ちた
+drowned.|は溺れた
+hit the ground too hard.|は地面に強くたたきつけられた
+was killed through unknown means.|は不明な原因により殺された
+tried to swim in burning liquid.|は燃える液体に遊泳を試みた
+spontaneously combusted.|自然発火した
+froze to death.|凍傷による死
+was swallowed by the grass.|は芝生に飲み込まれた
+was swallowed by the walls.|は壁に飲み込まれた
+was electrocuted.|は感電した
+licked the power.|は甘んじた
+was consumed by the swarm.|は群れにより消費された
+was electrocuted in the water.|は水中で感電した
+was obliterated by the sandstorm.|は砂嵐により消し去られた
+died from poison.|毒により死亡した
+was struck by lightning.|に雷が直撃した
+was consumed by locusts.|はイナゴにより消費された
+swam with the ripples.|リップルの中を泳いだ
+experienced the force of fresh fruit.|新鮮な果物の力を体験した
+was burnt to a crisp.|はこんがりと焼けた
+was taken into the abyss by|は奈落に連れ去られた。死因:
+was drowned by|は溺れさせられた。死因:
+was slain by|は殺された。死因:
+was ascended by|は昇天した。死因:
+was zapped by a|は感電した。死因:
+was ambushed by a|は待ち伏せされていた。死因:
+was taken by a|は連れ去られた。死因:
+was slain by a|は殺された。死因:
+
+// creature names for death messages
+Pink Lizard|ピンクトカゲ
+Green Lizard|グリーントカゲ
+Blue Lizard|ブルートカゲ
+Yellow Lizard|イエロートカゲ
+White Lizard|ホワイトトカゲ
+Red Lizard|レッドトカゲ
+Black Lizard|ブラックトカゲ
+Salamander|サラマンダー
+Cyan Lizard|シアントカゲ
+Leech|ヒル
+Sea Leech|シーヒル
+Snail|カタツムリ
+Vulture|ハゲタカ
+Garbage Worm|ガベッジワーム
+Lantern Mouse|ランタンマウス
+Cicada A|イカダA
+Cicada B|イカダB
+Jet Fish|ジェットフィッシュ
+Big Eel|ビッグヒル
+Deer|レインディア
+Tube Worm|チューブワーム
+Daddy Long Legs|ダディロングレッグ
+Brother Long Legs|ブラザーロングレッグ
+Tentacle Plant|グラスワーム
+Pole Mimic|ポールミミック
+Miros Bird|ミロス鳥
+Temple Guard|守護者
+Centipede|ムカデ
+Red Centipede|赤ムカデ
+Scavenger|スカベンジャー
+Centiwing|空ムカデ
+Small Centipede|小ムカデ
+Overseer|監視者
+Vulture Grub|ハゲタカグラブ
+Big Spider|大グモ
+Spitter Spider|スピッターグモ
+Egg Bug|エッグバグ
+Small Needle|小さな針
+Big Needle|大きな針
+Drop Bug|ドロップウィング
+King Vulture|キングハゲタカ
+Hazer|ヘイザー
+Miros Vulture|ミロスハゲタカ
+Caramel Lizard|キャラメルトカゲ
+Eel|ウナギトカゲ
+Strawberry|ストロベリー
+Mother Spider|母グモ
+Terror Long Legs|テラーロングレッグ
+Aquapede|水ムカデ
+Stowaway Bug|ストロベリーバグ
+Elite Scavenger|エリートスカベンジャー
+Inspector|観察者
+Yeek|イーク
+Big Jellyfish|オオクラゲ
+Jungle Leech|ジャングルヒル
+Hell Bug|地獄バグ
+King Scavenger|キングスカベンジャー
+Slugpup|ナメクジの幼体
+Train Lizard|トレイントカゲ
+Barnacle|バーナクル
+DrillCrab|ドリルクラブ
+SandGrub|サンドグラブ
+BigSandGrub|オオサンドグラブ
+BigMoth|ビッグモス
+SmallMoth|モス
+Box Worm|ボックスワーム
+Fire Sprite|ファイアスプライト?
+Rattler|ラットラー？
+SkyWhale|スカイホエール
+ScavengerTemplar|騎士スカベンジャー
+ScavengerDisciple|弟子スカベンジャー
+Loach|ローチ
+Rot Behemoth|ロットローチ
+Blizzard Lizard|ブリザードトカゲ
+Basilisk Lizard|バジリスクトカゲ
+Indigo Lizard|インディゴトカゲ
+Rat|ネズミ
+Frog|カエル
+Tardigrade|ターディグレード?
+
+// Direct Connection Dialogue
+Direct Connection... |直接接続…
+Password:|パスワード:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|無効なアドレス。<LINE>IPアドレスは「xxx.xxx.xxx.xxx:port」形式でなければいけません
+This address is possibly not local to your current network.|アドレスは現在のネットワーク上ではローカルIPではないかもしれません。
+If so, This is very unstable and will most likely NOT work|もしそうなら、これは非常に不安定で、ほとんど動作しない可能性が高いです。
+Are you SURE you know what you're doing?|これは意図的に行っていますか？
+
+// LAN Matchmaking Manager
+LAN Lobby|LAN ロビー
+Nobody|誰でも
+Your network interface(s) are|あなたのネットワークインターフェースは
+<NAME> network interface is |<NAME>のネットワークインターフェースは
+You are the owner of the lobby.|あなたがロビーのオーナーです
+This player is the owner of the lobby.|このプレイヤーがロビーのオーナーです
+Players can “Direct Connect” to this lobby through your interface(s).|あなたのネットワークインターフェースを通して、プレイヤーは「直接接続」をすることができます
+Players can “Direct Connect” to this lobby through their interface(s).|彼らのネットワークインターフェースを通して、プレイヤーは「直接接続」をすることができます
+You cannot use this feature here.|この機能を使用できません
+
+// Mod Applier
+Error loading mods!|Modのロードエラー
+A restart is required to finish applying the mod changes.|Modの変更を保存するにはゲームを再起動する必要があります。
+Restarting now...|再起動中...
+Mod Mismatch!|Modが一致しません！
+Mods that have to be enabled: |これらのModが必要です：
+Mods that have to be disabled: |これらのModは無効である必要があります：
+Mods that have to be installed: |導入が必要なMod：
+Apply these changes now?|変更をすぐに適用しますか？
+Warning: Differing Mod Load Orders!|！警告！異なるModローダーです！
+This may cause unstable play.|プレイが不安定になる可能性があります
+Reorder your mods now?|再度Modを要求しますか？
+Cannot join due to missing DLC!|必要なDLCがないため参加できません！
+Missing DLC Mods that have to be enabled: |有効にする必要があるModは以下の通りです：
+
+// Remix Options
+Note: These inputs are not used in Meadow mode|注意:これらの入力設定はメドウモードでは使われません
+Show usernames|ユーザーネームを表示
+Username Toggle|ユーザーネーム・切り替え
+Replace holding with toggling|ホールドを切り替えに変更する
+Key used for toggling spectator mode|観戦モード切り替えキー
+Stop Inputs While Spectating|観戦モード中は入力を無効
+Pointing Key|ゆびさしキー
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|以下のファイルを編集して、クライアント側で許可されるModを調整してください。<LINE>手順はフォルダ内のファイルを参照してください。
+Edit High-Impact Mods|同期必須Modを編集
+Edit Banned Mods|拒否されたModを編集
+Chat Log Toggle|ログを切り替え
+Chat Talk Button|チャットキー
+Chat Background Opacity|チャットの不透明度
+Show Ping|Pingを表示
+Playtesting Gift|ﾃｽﾀｰｷﾞﾌﾄ
+Chat Log On/Off|ログを有効化
+Introroll|タイトル画面
+Vanilla|バニラ
+Downpour|さらにﾅﾒｸｼﾞﾈｺの拡張
+Downpour DLC is not activated, vanilla intro will be used instead|「さらにﾅﾒｸｼﾞﾈｺの拡張」が無効です。バニラのタイトル画面に置き換えます
+Watcher DLC is not activated, vanilla intro will be used instead|「ウォッチャー」が無効です。バニラのタイトル画面に置き換えます
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|観戦モード、ストーリー、アリーナメニューのクロール速度。デフォルト：5
+Disable Pause Menu Animation|ポーズ中のアニメーションを無効化
+If selected, disables the sway animation in the pause menu|有効にすると、ポーズ中の波アニメーションがなくなります
+Input “cheats” to access cheats|チートにアクセスするには「cheats」と入力してください
+Just make sure not to ruin the fun for yourself...|楽しさを自分で台無しにしないように気をつけてください…
+Emote and skin unlocks will affect the currently selected character|エモートとスキンの全解除は現在選択しているキャラクターに影響します
+Unlock Emote|エモート解除
+Unlock Skin|スキン解除
+Unlock Character|キャラ解除
+Reset all progression|進捗状況をリセットする
+Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|マッチ設定はアリーナメニューに移動しました。残りの設定はイースターエッグのみです。
+The following option may contain spoilers for Saint's campaign.|この設定は聖人のキャンペーンのネタバレを含みます。
+OKIE DOKIE|おっけー
+Slugpup: Rubicon background in select menu|ナメクジの幼体：選択画面にルビコンの背景
+Ready to shelter/gate|ゲート・雨宿り場アイコン
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|有効にすると、ゲートや雨宿り場にいるナメクジネコのユーザー名とアイコンは<LINE>常に画面に表示されるようになります
+[Experimental Features]|[試験的機能] 
+WARNING: Experimental features may cause data corruption, back up your saves|！警告！試験的機能はデータが破壊される可能性があります。バックアップを忘れずに！
+Custom Story Slugcat:|カスタムストーリー
+If selected, hosts can choose slugcat campaigns that are unstable.|有効にすると、ホストは未検証のナメクジネコのカスタムキャンペーンを選択でき<LINE>るようになります
+Steal items from other players in Story mode|ストーリーモードでプレイヤーから槍を盗む
+LAN|LAN
+Username|ユーザーネーム
+UDP timeout (ms)|UDP接続タイムアウト (ms)
+UDP heartbeat (ms)|UDP接続ハートビート (ms)
+
+// Credits
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadowは、ユニークなゲームのためのユニークなマルチプレイヤーエンジンです。他には何も合いません。- Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|『Meadow』は、Might & Delight の同名ゲームに触発されたゲームモードです。バグが多く、ほとんどプレイできないゲームですが、<LINE>夢中になってしまう魅力があります。どこかで聞いたことがありますか？
+This mod and all its features were brought to you by really awesome people from the community.|このModとそのすべての機能は、コミュニティの本当に素晴らしい人々によって提供されました。
+Lead Developer|メイン開発者
+Lead Artist|メインアーティスト
+Lead Audio Designer|メインサウンドデザイナー
+Programming, engine|プログラム・エンジン
+Programming, sound|プログラム・サウンド
+UI Design|UIデザイン
+Programming, menus|プログラム・メニュー
+Programming, arena|プログラム・アリーナ
+Programming, story|プログラム・ストーリー
+Programming, modsync|プログラム・Mod同期
+Programming, story, arena|プログラム・ストーリー、アリーナ
+Programming, UI, chat|プログラム・UI、チャット機能
+Illustration|イラスト
+Programming, UI, menus|プログラム・UI、メニュー
+Programming, UI, story|プログラム・UI、ストーリー
+Programming, UI, LAN|プログラム・UI、LAN機能
+Thank you playtesters from the Rain Meadow discord as well.|レイン・メドウのDiscordのプレイテスターの皆さんにも感謝します。
+
+// misc
+Players|プレイヤー
+CONFIRM|適用
+Leaving Lobby|ロビーから退出
+You were removed from the previous online game|前回のオンラインプレイから除外されました
+This player does not have a profile.|このプレイヤーはプロファイルを持っていません
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steamは現在無効です。レイン・メドウのいくつかの機能は無効になりました
+Rain Meadow failed to start|レイン・メドウの開始に失敗
+Rain Meadow: Please use an external mod to access Inv's campaign.|レインメドウ：Invのキャンペーンにアクセスするには、外部のモッドを使用してください
