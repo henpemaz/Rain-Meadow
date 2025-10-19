@@ -334,10 +334,10 @@ There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|invについ�
 "hiiii!"|「やあ！！！！！」
 "i'm ded"|「死」
 bleh|はぁ
-inv? like invalidunits?|inv?「無効な単位」みたいな?
+inv? like invalidunits?|inv?「invalidunits」みたいな?
 
 // Scugslots
-Press and hold something on screen to spin the slots / Hope you brought green|画面のどこかを長押ししてスロットを回そう / 緑色をであることを願います
+Press and hold something on screen to spin the slots / Hope you brought green|画面のどこかを長押ししてスロットを回そう / 緑色であることを願います
 One, two three of a kind / Somewhere on this page you will find|1、2、3の揃い / このページのどこかで見つけられるでしょう
 A joke started from the Meadow Discord / Makes all players broke, and none can afford|メドウのDiscordから始まったジョーク / 全てのプレイヤーが破産し、誰も支払えない
 SCUGSLOTS|ス(ラッグ)ロット
@@ -553,8 +553,8 @@ If selected, hosts can choose slugcat campaigns that are unstable.|有効にす�
 Steal items from other players in Story mode|ストーリーモードでプレイヤーから槍を盗む
 LAN|LAN
 Username|ユーザーネーム
-UDP timeout (ms)|UBP接続 タイムアウト (ms)
-UDP heartbeat (ms)|UDP ハートビート (ms)
+UDP timeout (ms)|UBP接続タイムアウト (ms)
+UDP heartbeat (ms)|UDP接続ハートビート (ms)
 
 // Credits
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadowは、ユニークなゲームのためのユニークなマルチプレイヤーエンジンです。他には何も合いません。- Henpemaz
