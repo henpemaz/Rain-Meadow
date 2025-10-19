@@ -553,7 +553,7 @@ If selected, hosts can choose slugcat campaigns that are unstable.|有効にす�
 Steal items from other players in Story mode|ストーリーモードでプレイヤーから槍を盗む
 LAN|LAN
 Username|ユーザーネーム
-UDP timeout (ms)|UBP接続タイムアウト (ms)
+UDP timeout (ms)|UDP接続タイムアウト (ms)
 UDP heartbeat (ms)|UDP接続ハートビート (ms)
 
 // Credits
