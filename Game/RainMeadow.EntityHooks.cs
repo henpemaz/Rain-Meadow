@@ -467,17 +467,7 @@ namespace RainMeadow
                             if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
                                 // not-online-aware removal
-                                Debug("removing remote entity from game " + opo);
-                                opo.beingMoved = true;
-                                if (apo.realizedObject is Creature c && c.inShortcut)
-                                {
-                                    c.RemoveFromShortcuts();
-                                }
-                                entities.Remove(apo);
-                                room.abstractRoom.creatures.Remove(apo as AbstractCreature);
-                                room.RemoveObject(apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(apo.realizedObject);
-                                opo.beingMoved = false;
+                                opo.RemoveEntityFromGame(false);
                             }
                         }
                     }
@@ -522,20 +512,7 @@ namespace RainMeadow
                                 if (!oe.isMine)
                                 {
                                     // not-online-aware removal
-                                    RainMeadow.Debug("removing remote entity from game " + oe);
-                                    oe.beingMoved = true;
-                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
-                                    {
-                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                                    }
-                                    entities.Remove(oe.apo);
-                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                    if (oe.apo.realizedObject != null)
-                                    {
-                                        room.RemoveObject(oe.apo.realizedObject);
-                                        room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                    }
-                                    oe.beingMoved = false;
+                                    oe.RemoveEntityFromGame(false);
                                 }
                                 else // mine leave the old online world elegantly
                                 {
