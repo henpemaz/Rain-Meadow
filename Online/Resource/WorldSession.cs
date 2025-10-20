@@ -12,6 +12,7 @@ namespace RainMeadow
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
         public World World => world;
+        public OverworldSession overworldSession => (OverworldSession)super;
 
         public string worldID;
         public ushort shortWorldID;

@@ -349,10 +349,10 @@ namespace RainMeadow
         [RPCMethod]
         public static void ItemConsumed(RPCEvent evt, byte region, AbstractPhysicalObject.AbstractObjectType type)
         {
-            if (OnlineManager.lobby.isOwner && OnlineManager.lobby.isActive)
+            if (OnlineManager.lobby.overworld.isOwner && OnlineManager.lobby.overworld.isActive)
             {
                 RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
-                var lobbyData = OnlineManager.lobby.GetData<MeadowRegionData>();
+                var lobbyData = OnlineManager.lobby.overworld.GetData<MeadowRegionData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
                 if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
                 {
