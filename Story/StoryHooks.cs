@@ -131,6 +131,7 @@ namespace RainMeadow
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
+            IL.Watcher.SpinningTop.SpawnBackupWarpPoint += SpinningTop_SpawnBackupWarpPoint;
             //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
@@ -427,6 +428,30 @@ namespace RainMeadow
             }
         }
 
+        //make saved spinning top warp point not one way if data does not have one way.
+        //Prevents oneway warps softlocking while trying to get 3rd ending
+        //Saved means host got spinning top so we wanna undo the oneway set
+        public void SpinningTop_SpawnBackupWarpPoint(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(MoveType.After, x => x.MatchLdcI4(1), x => x.MatchStloc(2));
+                c.Emit(OpCodes.Ldloc_0);
+                c.Emit(OpCodes.Ldloc, 4);
+                c.EmitDelegate(delegate (Watcher.WarpPoint.WarpPointData data, Watcher.WarpPoint roomWarpPoint)
+                {
+                    if (OnlineManager.lobby == null) return;
+                    Debug($"SpawnBackupWarpPoint existing warpPoint found.");
+                    roomWarpPoint.placedObject.data = data; 
+                });
+
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
         {
             orig(self);
