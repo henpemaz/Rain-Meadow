@@ -284,10 +284,7 @@ namespace RainMeadow
         {
             foreach(Region region in overworldSession.overWorld.regions)
             {
-                checked
-                {
-                    overworldSession.EstablishWorld(region.name, (ushort)region.regionNumber);
-                }
+                overworldSession.EstablishWorld(region.name, checked((ushort)region.regionNumber));
             }
         }
         
