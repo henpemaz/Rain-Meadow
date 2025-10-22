@@ -122,6 +122,10 @@ namespace RainMeadow
             {
                 // stuff runs in ctor
             }
+            else if (res is OverworldSession overworldSession)
+            {
+                lobby.overworld.AddData(new MeadowRegionData());
+            }
             else if (res is WorldSession ws)
             {
                 ws.AddData(new MeadowWorldData());
@@ -156,11 +160,6 @@ namespace RainMeadow
         public override void ResourceActive(OnlineResource res)
         {
             base.ResourceActive(res);
-            if (res is Lobby lobby)
-            {
-                lobby.overworld.AddData(new MeadowRegionData());
-            }
-
             if (res is OverworldSession overworld)
             {
                 RainMeadow.Debug("Setting up region data");
