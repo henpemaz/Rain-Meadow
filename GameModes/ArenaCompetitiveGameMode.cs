@@ -677,10 +677,6 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            if (item.type == PlacedObject.Type.SporePlant)
-            {
-                return false;
-            }
             if (item.type == PlacedObject.Type.StuckDaddy)
             {
                 return OnlineManager.lobby.isOwner;
