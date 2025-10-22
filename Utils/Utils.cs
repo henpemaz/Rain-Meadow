@@ -12,7 +12,6 @@ namespace RainMeadow
     internal static class Utils
     {
         public static InGameTranslator Translator => Custom.rainWorld.inGameTranslator;
-
         public static string Translate(string text)
         {
             return Translator.Translate(text);

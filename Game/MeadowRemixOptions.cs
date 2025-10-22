@@ -26,6 +26,8 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<int> ArenaWatcherCamoTimer;
 
+    public readonly Configurable<bool> ProfanityFilter;
+
     public readonly Configurable<bool> ArenaSAINOT;
     public readonly Configurable<bool> PainCatThrows;
     public readonly Configurable<bool> PainCatEgg;
@@ -38,6 +40,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
     public readonly Configurable<bool> EnablePiggyBack;
+    public readonly Configurable<StreamMode> StreamerMode;
     public readonly Configurable<int> ArenaWatcherRippleLevel;
 
     public readonly Configurable<Color> MartyrTeamColor, OutlawsTeamColor, DragonSlayersTeamColor, ChieftainTeamColor;
@@ -71,6 +74,13 @@ public class RainMeadowOptions : OptionInterface
         Watcher
     }
 
+    public enum StreamMode
+    {
+        None,
+        Me,
+        Everyone
+    }
+
 
     private UIelement[] OnlineMeadowSettings;
     private UIelement[] GeneralUIArrPlayerOptions;
@@ -99,6 +109,8 @@ public class RainMeadowOptions : OptionInterface
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
+
+        ProfanityFilter = config.Bind("ProfanityFilter", false);
 
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
@@ -146,6 +158,7 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
+        StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
 
@@ -258,6 +271,13 @@ public class RainMeadowOptions : OptionInterface
 
                 new OpLabel(410, 120f, Translate("Chat Log On/Off")),
                 new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
+
+                new OpLabel(500, 120f, Translate("Streamer Mode")),
+                //new OpCheckBox(StreamerMode, new Vector2(480f, 90f)),
+                new OpComboBox2(StreamerMode, new Vector2(480f, 90f), 160f, OpResourceSelector.GetEnumNames(null, typeof(StreamMode)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
+                new OpLabel(310, 10f, Translate("Profanity Filter")),
+                new OpCheckBox(ProfanityFilter, new Vector2(440f, 10f)),
 
                 new OpLabel(10, 100, Translate("Introroll")),
                introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 70f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
