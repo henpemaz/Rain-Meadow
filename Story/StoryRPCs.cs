@@ -198,7 +198,16 @@ namespace RainMeadow
             game.cameras[0].hud.karmaMeter.UpdateGraphic();
             game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
         }
-
+        internal static void SaveEchoWarp(RainWorldGame game, Watcher.WarpPoint warpPoint, bool saveString = false)
+        {
+            var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
+            if (saveString)
+                game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(newWarpData.ToString());
+            game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
+            if (RainMeadow.isStoryMode(out var storyGameMode))
+                storyGameMode.myLastWarp = newWarpData;
+            game.Win(false, true);
+        }
         internal static Watcher.WarpPoint? PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader, bool hackFixRoom)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return null;
@@ -284,15 +293,7 @@ namespace RainMeadow
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
-                var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
-                if (rpc != null) //this probably isnt neccessary but just incase
-                    game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(newWarpData.ToString());
-                game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
-                if (RainMeadow.isStoryMode(out var storyGameMode))
-                {
-                    storyGameMode.myLastWarp = newWarpData;
-                }
-                game.Win(false, true);
+                SaveEchoWarp(game, warpPoint, true); //save string important
             }
             else
             {
