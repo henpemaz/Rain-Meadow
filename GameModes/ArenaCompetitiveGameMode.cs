@@ -636,7 +636,6 @@ namespace RainMeadow
         static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
-            AbstractPhysicalObject.AbstractObjectType.SporePlant,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee
 
         };
@@ -678,10 +677,6 @@ namespace RainMeadow
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            if (item.type == PlacedObject.Type.SporePlant)
-            {
-                return false;
-            }
             if (item.type == PlacedObject.Type.StuckDaddy)
             {
                 return OnlineManager.lobby.isOwner;
