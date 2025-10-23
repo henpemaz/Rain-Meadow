@@ -18,7 +18,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.7.1";
+        public const string MeadowVersionStr = "0.1.8.0";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
