@@ -1,6 +1,7 @@
 # Release 1.8.0
 ## General:
 - Updated to game version 1.11.3
+- Japanese translation by MisodeN [ミソデン]. どうもありがとう
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
