@@ -381,7 +381,7 @@ public partial class RainMeadow
         {
             if (slugcatStatsPerPlayer.TryGetValue(self, out var stats))
             {
-                return stats.malnourished;
+                return stats.malnourished || stats.malnourishedByCreature;
             }
         }
 
@@ -391,13 +391,15 @@ public partial class RainMeadow
 
 
 
-    void Player_SetMalnourished(On.Player.orig_SetMalnourished orig, Player self, bool m)
+    void Player_SetMalnourished(On.Player.orig_SetMalnourished orig, Player self, bool m, bool malnourishedByCreature)
     {
-        orig(self, m);
+        orig(self, m, malnourishedByCreature);
         if (OnlineManager.lobby != null && !self.isNPC)
         {
             slugcatStatsPerPlayer.Remove(self);
-            slugcatStatsPerPlayer.Add(self, new SlugcatStats(self.SlugCatClass, m));
+            var newStats = new SlugcatStats(self.SlugCatClass, m);
+            newStats.malnourishedByCreature = malnourishedByCreature;
+            slugcatStatsPerPlayer.Add(self, newStats);
         }
     }
     private void SlugOnBack_GraphicsModuleUpdated(ILContext ctx)
