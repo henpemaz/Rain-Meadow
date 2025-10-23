@@ -1,0 +1,23 @@
+Template: NONE
+DangerType: Flood
+CeilingDrips: 0
+RainIntensity: 0
+RumbleIntensity: 0.5108696
+WaveSpeed: 0.5217391
+WaveLength: 1
+WaveAmplitude: 0.02173913
+SecondWaveLength: 0
+SecondWaveAmplitude: 0.5217391
+Clouds: 1
+Grime: 0
+BkgDroneVolume: 0.6043479
+RandomItemDensity: 0.5217391
+RandomItemSpearChance: 0.3086956
+WaterReflectionAlpha: 0
+Palette: 39
+EffectColorA: 18
+EffectColorB: 14
+Effects: LethalWater-1-51-122, HeatWave-0.4130435-20-20, FireFlies-1-480-177, Hue-0-36-74, Bloom-0.4782609-327-238, WaterFluxMinLevel-0.1086956-353-66, WaterFluxMaxLevel-0.1304348-342-114, WaterFluxMinDelay-0-409-4, WaterFluxMaxDelay-0-197-196, WaterFluxFrequency-0.04347826-374-304, Contrast-0-660-262, WaterViscosity-0.8043478-696-118, VoidMelt-0.2065217-30-30, LavaSurface-1-40-40, 
+PlacedObjects: LightSource><1418.595><973.3761><1~EffectColor1~-393~104~50~86.60254~1~0~None~0~0, LightSource><1897.311><709.4408><1~EffectColor1~-510~129~50~86.60254~0~0~None~0~0, LightSource><1715.756><861.3><1~EffectColor1~-276~95~50~86.60254~0~0~None~0~0, LightSource><996.9337><777.6716><1~EffectColor1~-164~97~155~-0.3974609~0~0~None~0~0, LightSource><793.2923><721.9915><1~EffectColor1~239~184~-124~83.60254~0~0~None~0~0, LightSource><1590.902><342.8698><1~EffectColor1~-448~241~50~86.60254~0~0~None~0~0, LightSource><1769.536><1783.053><1~Environment~-525~-167~50~86.60254~0~0~None~0~0, LightSource><1616.981><1450.949><1~Environment~289~319~50~86.60254~0~0~None~0~0, LightSource><422.3009><310.7692><1~EffectColor1~-535~355~56~221.6025~0~0~None~0~0, LightSource><459.948><849.7783><1~EffectColor1~-257~309~50~86.60254~0~0~None~0~0, LightSource><464.3956><1487.922><1~EffectColor1~-553~291~50~86.60254~0~0~None~0~0, LightSource><1882.019><1687.3><1~EffectColor1~-334~44~50~86.60254~0~0~None~0~0, LightSource><1843.947><1520.782><1~EffectColor1~-369~51~50~86.60254~1~0~None~0~0, LightSource><1165.083><727.6397><1~EffectColor1~-302~146~7~251.6025~1~0~None~0~0, LightSource><2179.312><923.5598><1~EffectColor1~-195~154~50~86.60254~1~0~None~0~0, LightSource><1783.439><1079.315><1~EffectColor1~296~28~50~86.60254~1~0~None~0~0, LightSource><2265.947><1256.286><1~EffectColor1~-126~99~50~86.60254~1~0~None~0~0, LightSource><1961.154><1271.176><1~EffectColor1~-256~174~50~86.60254~1~0~None~0~0, InsectGroup><1351.45><666.7419><-150~35~0~0~FireFly~0.1847826, InsectGroup><530.6111><184.6063><-153~230~0~0~FireFly~0.1304348, InsectGroup><468.824><1493.186><-394~91~0~0~FireFly~0.1413043, LightSource><1601.939><152.1857><1~EffectColor2~-49~185~50~86.60254~0~1~None~0~0, LightSource><527.9347><155.0767><0.5326087~EffectColor2~-349~197~50~86.60254~1~1~None~0~0, LightSource><1594.837><141.9102><1~EffectColor2~-178~170~149~6.602539~1~0~None~0~0, LightBeam><1872.617><1582.101><59~640~205~638~40~0~155~126~0.2152173~0~0~1~None~0~0, LightBeam><439.7515><221.8><-286~-208~573~-208~40~0~280~186~0.25~0~1~0~None~0~0, KarmaShrine><1172.948><938.5286><0~15, Vine><1679.447><811.2139><348~121, Vine><592.0582><311.6913><157~-38, Vine><335.8454><657.5742><79~-337, Vine><401.8721><641.5963><385~-109, MultiplayerItem><962.9318><769.9167><Spear~17.32051~-10~0.6956522, MultiplayerItem><1116.264><772.0506><Spear~17.32051~-10~0.4565217, MultiplayerItem><864.1923><632.5552><Spear~17.32051~-10~0.6304348, MultiplayerItem><1476.438><619.9404><Spear~17.32051~-10~0.4021739, MultiplayerItem><774.7905><574.5543><Spear~17.32051~-10~0.326087, MultiplayerItem><422.8475><336.3794><Spear~441.3205~-88~0.7391304, MultiplayerItem><554.0835><340.1817><Spear~291.3205~-28~0.6739131, MultiplayerItem><183.0652><254.3266><Spear~17.32051~-10~0.6630435, MultiplayerItem><136.153><362.4249><Rock~17.32051~-10~0.4891304, MultiplayerItem><277.5659><227.1719><ExplosiveSpear~17.32051~-10~0.5, MultiplayerItem><420.118><849.3824><Spear~17.32051~-10~0.6086956, MultiplayerItem><390.7264><1155.051><Spear~17.32051~-10~0.5869565, MultiplayerItem><331.86><1159.333><ExplosiveSpear~17.32051~-10~0.07608695, MultiplayerItem><368.1624><1541.43><Spear~17.32051~-10~0.3043478, MultiplayerItem><523.3249><1615.653><Rock~17.32051~-10~0.2608696, MultiplayerItem><339.6414><1519.641><Spear~17.32051~-10~0.3586957, MultiplayerItem><1874.351><1775.577><Spear~17.32051~-10~0.5978261, MultiplayerItem><1646.554><1421.04><Spear~17.32051~-10~0.4456518, MultiplayerItem><1897.271><1298.699><Spear~17.32051~-10~0.2717391, MultiplayerItem><2195.545><1363.805><Spear~17.32051~-10~0.7934783, MultiplayerItem><1971.816><600.0612><Spear~17.32051~-10~0.5978261, 
+AmbientSounds: OMNI><SO_SFX-UnderWaterSub.ogg><764.1857><340.6758><0.7282609><0.6086956, OMNI><SO_SFX-Doomsday.ogg><724.1852><548.3108><0.3695652><0.726087, OMNI><SO_NAT-Fire.ogg><754.4193><439.6434><0.5434783><1.45, 
+FadePalette: 38, 0, 0, 0, 0, 0, 0, 0, 0
