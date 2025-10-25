@@ -31,6 +31,7 @@ namespace RainMeadow
         public int painCatThrowingSkill;
         public int forceReadyCountdownTimer;
         public bool leaveForNextLevel;
+        public bool leaveToRestart;
 
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
@@ -403,7 +404,121 @@ namespace RainMeadow
             ResetChampAddition();
 
         }
+        public void RestartGame()
+        {
+            if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+            for (int i = arenaSittingOnlineOrder.Count - 1; i >= 0; i--)
+            {
+                OnlinePlayer? missingPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(arenaSittingOnlineOrder[i]);
+                if (missingPlayer is null)
+                {
+                    arenaSittingOnlineOrder.RemoveAt(i);
+                }
+            }
 
+            AbstractRoom absRoom = game.world.abstractRooms[0];
+            Room room = absRoom.realizedRoom;
+            WorldSession worldSession = WorldSession.map.GetValue(game.world, (w) => throw new KeyNotFoundException());
+
+            if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
+            {
+                // we go over all APOs in the room
+                RainMeadow.Debug("Restarting level...");
+                var entities = absRoom.entities;
+                for (int i = entities.Count - 1; i >= 0; i--)
+                {
+                    if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                    {
+                        oe.apo.LoseAllStuckObjects();
+                        if (!oe.isMine)
+                        {
+                            // not-online-aware removal
+                            RainMeadow.Debug("removing remote entity from game " + oe);
+                            oe.beingMoved = true;
+
+                            if (oe.apo.realizedObject is Creature c && c.inShortcut)
+                            {
+                                if (c.RemoveFromShortcuts()) c.inShortcut = false;
+                            }
+
+                            entities.Remove(oe.apo);
+
+                            absRoom.creatures.Remove(oe.apo as AbstractCreature);
+                            if (oe.apo.realizedObject != null)
+                            {
+                                room.RemoveObject(oe.apo.realizedObject);
+                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
+                            }
+                            oe.beingMoved = false;
+                        }
+                        else // mine leave the old online world elegantly
+                        {
+                            RainMeadow.Debug("removing my entity from online " + oe);
+                            oe.ExitResource(roomSession);
+                            oe.ExitResource(roomSession.worldSession);
+                        }
+                    }
+                }
+            }
+
+            List<OnlinePlayer> restartingGamePlayers = new();
+            var arenaSitting = game.GetArenaGameSession.arenaSitting;
+            List<OnlinePlayer> waitingPlayers = [.. OnlineManager.players.Where(x => ArenaHelpers.GetArenaClientSettings(x)?.ready == true && !x.isMe)];
+            arenaSitting.players.Clear();
+            for (int i = 0; i < arenaSittingOnlineOrder.Count; i++)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(arenaSittingOnlineOrder[i]);
+                if (pl != null)
+                {
+                    ArenaSitting.ArenaPlayer newArenaPlayer = new(i)
+                    {
+                        playerNumber = i,
+                        playerClass = ArenaHelpers.GetArenaClientSettings(pl)!.playingAs,
+                        hasEnteredGameArea = true
+                    };
+
+                    RainMeadow.Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                    AddOrInsertPlayerStats(this, newArenaPlayer, pl);
+                    restartingGamePlayers.Add(pl);
+                    arenaSitting.players.Add(newArenaPlayer);
+                }
+            }
+
+            // Add waiting players
+            if (allowJoiningMidRound)
+            {
+                foreach (OnlinePlayer player in waitingPlayers)
+                {
+                    if (player != null) // always gotta check in case something happened to them
+                    {
+                        if (!arenaSittingOnlineOrder.Contains(player.inLobbyId) && OnlineManager.lobby.isOwner)
+                        {
+                            arenaSittingOnlineOrder.Add(player.inLobbyId);
+                        }
+                        ArenaSitting.ArenaPlayer newArenaPlayer = new(arenaSittingOnlineOrder.Count - 1)
+                        {
+                            playerNumber = arenaSittingOnlineOrder.Count - 1,
+                            playerClass = ArenaHelpers.GetArenaClientSettings(player)!.playingAs,
+                            hasEnteredGameArea = true
+                        };
+                        RainMeadow.Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
+                        AddOrInsertPlayerStats(this, newArenaPlayer, player);
+                        arenaSitting.players.Add(newArenaPlayer);
+                    }
+                }
+            }
+
+            if (OnlineManager.lobby.isOwner)
+            {
+                foreach (OnlinePlayer player in restartingGamePlayers)
+                {
+                    if (!player.isMe) player.InvokeOnceRPC(ArenaRPCs.Arena_RestartGame);
+                }
+            }
+
+            game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
+        }
+        
         public void InitializeSlugcat()
         {
             int slugIndex = ArenaHelpers.selectableSlugcats.FindIndex(x => x.Equals(arenaClientSettings.playingAs)), newSlugIndex = GetNewAvailableSlugcatIndex(slugIndex);
@@ -692,6 +807,12 @@ namespace RainMeadow
         private int previousSecond = -1;
         public override void LobbyTick(uint tick)
         {
+            if (leaveToRestart)
+            {
+                leaveToRestart = false;
+                RestartGame();
+            }
+            
             base.LobbyTick(tick);
             if (OnlineManager.lobby.isOwner)
             {

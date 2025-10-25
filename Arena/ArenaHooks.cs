@@ -122,6 +122,30 @@ namespace RainMeadow
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
             On.Player.ActivateAscension += Player_ActivateAscension;
+
+            On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
+        }
+
+        private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
+        {
+            if (isArenaMode(out var arena))
+            {
+                orig(self);
+                if (OnlineManager.lobby.isOwner)
+                {
+                    var restartButton = new SimplerButton(self, self.pages[0], self.Translate("RESTART"), new Vector2(self.exitButton.pos.x - (self.continueButton.pos.x - self.exitButton.pos.x) - self.moveLeft - self.manager.rainWorld.options.SafeScreenOffset.x, Mathf.Max(self.manager.rainWorld.options.SafeScreenOffset.y, 15f)), new Vector2(110f, 30f));
+                    restartButton.OnClick += (_) =>
+                    {
+                        arena.RestartGame();
+                    };
+                    self.pages[0].subObjects.Add(restartButton);
+                }
+                else
+                {
+                    self.pauseWarningActive = false;
+                }
+            }
+            
         }
 
         private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
