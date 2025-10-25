@@ -198,14 +198,19 @@ namespace RainMeadow
             game.cameras[0].hud.karmaMeter.UpdateGraphic();
             game.cameras[0].hud.karmaMeter.forceVisibleCounter = 120; //it's max for a reason(?)
         }
-        internal static void SaveEchoWarp(RainWorldGame game, Watcher.WarpPoint warpPoint, bool saveString = false)
+        internal static void SaveEchoWarp(RainWorldGame game, Watcher.WarpPoint warpPoint, bool saveRoomWarp = false, bool saveString = false)
         {
-            var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
+            var warpData = warpPoint.overrideData ?? warpPoint.Data;
+            if (saveRoomWarp && warpPoint.room != null)
+            {
+                RainMeadow.Debug("Trying to spawn echo warp point");
+                warpPoint.room.TrySpawnWarpPoint(warpPoint.placedObject);
+            }
             if (saveString)
-                game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(newWarpData.ToString());
-            game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = newWarpData;
+                game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(warpData.ToString());
+            game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave = warpData;
             if (RainMeadow.isStoryMode(out var storyGameMode))
-                storyGameMode.myLastWarp = newWarpData;
+                storyGameMode.myLastWarp = warpData;
             game.Win(false, true);
         }
         internal static Watcher.WarpPoint? PerformWarpHelper(string? sourceRoomName, string warpData, bool useNormalWarpLoader, bool hackFixRoom)
@@ -218,7 +223,7 @@ namespace RainMeadow
             PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, newWarpData);
             Watcher.WarpPoint warpPoint = new(null, placedObject);
 
-            if (hackFixRoom)
+            /*if (hackFixRoom)
             {
                 foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                 { //it will move places
@@ -235,7 +240,7 @@ namespace RainMeadow
                 }
             }
             else
-            {
+            {*/
                 if (sourceRoomName is not null)
                 {
                     var abstractRoom2 = game.overWorld.activeWorld.GetAbstractRoom(sourceRoomName);
@@ -250,11 +255,7 @@ namespace RainMeadow
                     // do nat throw everyone into the same room?
                     warpPoint.room = abstractRoom2.realizedRoom;
                 }
-            }
-            if (RainMeadow.isStoryMode(out var storyGameMode))
-            {
-                storyGameMode.myLastWarp = newWarpData; // SAVE THE WARP POINT!
-            }
+            //}
             if (!OnlineManager.lobby.isOwner)
             {
                 game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
@@ -282,18 +283,24 @@ namespace RainMeadow
         public static void NormalExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, bool useNormalWarpLoader)
         {
             if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
-            PerformWarpHelper(sourceRoomName, warpData, useNormalWarpLoader, false);
+            Watcher.WarpPoint? warpPoint = PerformWarpHelper(sourceRoomName, warpData, useNormalWarpLoader, false);
+            if (warpPoint != null && RainMeadow.isStoryMode(out var story))
+            {
+                var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
+                story.myLastWarp = newWarpData;
+            }
+
         }
 
         // Performs a warp via an echo, can be triggered by anyone
         [RPCMethod]
         public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData)
         {
-            Watcher.WarpPoint? warpPoint = PerformWarpHelper(sourceRoomName, warpData, true, true);
+            Watcher.WarpPoint? warpPoint = PerformWarpHelper(sourceRoomName, warpData, false, true);
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
-                SaveEchoWarp(game, warpPoint, true); //save string important
+                SaveEchoWarp(game, warpPoint, false, true); //save string incase
             }
             else
             {

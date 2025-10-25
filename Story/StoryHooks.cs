@@ -255,8 +255,8 @@ namespace RainMeadow
         {
             orig(self);
             //this should be fine, orig edits warp point, we get warppoint, make it oneWay and host should teleport
-            //todo: we check if echo has ascended yet, else no forced teleport
-            if (OnlineManager.lobby != null)
+            //Even if ascended, it is called to spawn the remaining echos the player missed so lets not surprise them with teleportation. Especially when echo's room is loaded before they visit the actual room
+            if (OnlineManager.lobby != null && !self.Ascended)
             {
                 Debug("getting warp point from echo");
                 Watcher.SpinningTopData specialData = self.SpecialData;
@@ -287,9 +287,12 @@ namespace RainMeadow
                     // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
                     // same region and room which WILL cause issues - so to remediate that we simply pretend all
                     // warps made by echoes are one way only.
+
+                    // after testing, two way works normally especially from a client, we can consider loading the source room and spawn the warp on host side so host can save the echo warp
+                    // tho maybe have an rpc or add a parameter to tell this echo has been marked, not ideal to have echo and the portal in the same place...
                     Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
-                    warpData.oneWay = true;
                     warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
+                    warpData.oneWay = true;
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform echo
                 }
 
