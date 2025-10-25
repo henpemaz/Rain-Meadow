@@ -63,7 +63,7 @@ namespace RainMeadow
 
         public override ushort ShortId()
         {
-            return (ushort)absroom.index;
+            return (ushort)(absroom.index - absroom.world.firstRoomIndex);
         }
 
         public override OnlineResource SubresourceFromShortId(ushort shortId)

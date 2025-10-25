@@ -11,7 +11,7 @@ namespace RainMeadow
     {
         public OnlineGameMode gameMode;
         public OnlineGameMode.OnlineGameModeType gameModeType;
-        public Dictionary<string, WorldSession> worldSessions = new();
+        public OverworldSession overworld;
         public Dictionary<OnlinePlayer, ClientSettings> clientSettings = new();
         public List<KeyValuePair<OnlinePlayer, OnlineEntity.EntityId>> playerAvatars = new(); // guess we can support multiple avatars per client
 
@@ -140,27 +140,8 @@ namespace RainMeadow
 
         protected override void ActivateImpl()
         {
-            if (RainMeadow.isArenaMode(out var _)) // Arena
-            {
-                Region arenaRegion = new Region("arena", 0, 0, RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
-
-                var ws = new WorldSession(arenaRegion, this);
-                worldSessions.Add(arenaRegion.name, ws);
-                subresources.Add(ws);
-
-                RainMeadow.Debug(subresources.Count);
-            }
-            else
-            {
-                foreach (var r in Region.LoadAllRegions(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer))
-                {
-                    RainMeadow.Debug(r.name);
-                    var ws = new WorldSession(r, this);
-                    worldSessions.Add(r.name, ws);
-                    subresources.Add(ws);
-                }
-                RainMeadow.Debug(subresources.Count);
-            }
+            overworld = new OverworldSession(this);
+            subresources.Add(overworld);
         }
 
         protected override void AvailableImpl()
