@@ -286,7 +286,7 @@ namespace RainMeadow
                 {
                     Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
                     warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString(), spinningTopID); //tell owner to perform echo
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString(), spinningTopID, warpPoint.pos); //tell owner to perform echo
                     //tell owner echo is met we dont want to accidentally have echo and portal at the same place
                 }
 
