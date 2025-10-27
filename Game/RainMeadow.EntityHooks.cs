@@ -259,7 +259,7 @@ namespace RainMeadow
                     Debug("Forced warp found");
                     if (warpData != forcedWarp)
                     {
-                        Debug("Another warp point is calling for precast? Replacing called Warp data with forced warp data");
+                        Debug("Replacing called Warp data with forced warp data");
                         warpData = forcedWarp;
                     }
                 }

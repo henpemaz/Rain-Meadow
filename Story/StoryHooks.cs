@@ -437,11 +437,11 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 4);
                 c.EmitDelegate(delegate (Watcher.WarpPoint.WarpPointData data, Watcher.WarpPoint roomWarpPoint)
                 {
-                    if (OnlineManager.lobby == null) return;
+                    if (OnlineManager.lobby == null || !OnlineManager.lobby.isOwner) return;
                     Debug($"SpawnBackupWarpPoint existing warpPoint found.");
                     //If two way echo warp is saved as host, it is saved as oneway and you cant seal the portal
-                    //but game saved the warp as twoway and thus softlocks you from 3rd ending
-                    //we essentially replace the saved echo warp data to spinning top's warp data when host visits the room with the saved warp to fix this issue
+                    //thus softlocking you from 3rd ending
+                    //Although two way is added now, i guess we give a chance to hosts having existing saves and replace the saved echo warp data to spinning top's warp data
                     roomWarpPoint.placedObject.data = data; 
                 });
 
