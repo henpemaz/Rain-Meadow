@@ -505,10 +505,15 @@ namespace RainMeadow
                 else if (warpUsed)
                 {
                     RainMeadow.Debug("getting warp point!");
-                    Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading"); //somehow WorldLoaded() gets called more than once in a row and leads to this exception when spawning from echo warp. No big issue tho..
+                    //somehow WorldLoaded() gets called more than once in a row and leads to this exception when spawning from echo warp. No big issue tho..
+                    Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading");
+
+                    Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
+
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
-                    isFirstWarpWorld = (room == null) || (warpPoint.overrideData != null ? warpPoint.overrideData.rippleWarp : warpPoint.Data.rippleWarp); //do not update gate status afterwards :)
-                    if (isEchoWarp || isFirstWarpWorld)
+                    isFirstWarpWorld = room == null; //do not update gate status afterwards :)
+
+                    if (isEchoWarp || isFirstWarpWorld || warpData.rippleWarp)
                     { //echo activation is special edge case
                         if (room == null) RainMeadow.Error("warp point with a null room");
                         RainMeadow.Debug("this an echo warp");
@@ -556,7 +561,7 @@ namespace RainMeadow
                             }
                         }
                     }
-                    Debug($"destination region: {(warpPoint.overrideData ?? warpPoint.Data).destRegion}, worldLoader is null? {self.worldLoader == null}, worldLoader's World is null? {self.worldLoader == null || self.worldLoader.world == null}, activeWorld is null? {self.activeWorld == null}");
+                    Debug($"destination region: {warpData.destRegion}, worldLoader is null? {self.worldLoader == null}, worldLoader's World is null? {self.worldLoader == null || self.worldLoader.world == null}, activeWorld is null? {self.activeWorld == null}");
                     Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {(self.worldLoader == null ? newWorld.name : ($"{self.worldLoader.worldName}/{newWorld.name}"))}");
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     { //it will move places

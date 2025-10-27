@@ -265,6 +265,7 @@ namespace RainMeadow
                     Debug("Special data is null!");
                     return;
                 }
+                int spinningTopID = specialData.spawnIdentifier;
                 PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, specialData.CreateWarpPointData(self.room))
                 {
                     pos = self.pos
@@ -283,17 +284,10 @@ namespace RainMeadow
                     StoryRPCs.SaveEchoWarp(self.room.game, warpPoint);
                 else
                 {
-                    // TODO: All warps by echos are one-way for now this is because we can't reliably obtain the
-                    // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
-                    // same region and room which WILL cause issues - so to remediate that we simply pretend all
-                    // warps made by echoes are one way only.
-
-                    // after testing, two way works normally especially from a client, we can consider loading the source room and spawn the warp on host side so host can save the echo warp
-                    // tho maybe have an rpc or add a parameter to tell this echo has been marked, not ideal to have echo and the portal in the same place...
                     Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
                     warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
-                    warpData.oneWay = true;
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform echo
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString(), spinningTopID); //tell owner to perform echo
+                    //tell owner echo is met we dont want to accidentally have echo and portal at the same place
                 }
 
 
@@ -368,7 +362,6 @@ namespace RainMeadow
                 orig(self);
             }*/
         }
-
         public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu)
         {
             orig(self, eu);

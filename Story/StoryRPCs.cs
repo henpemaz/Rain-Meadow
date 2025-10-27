@@ -201,10 +201,12 @@ namespace RainMeadow
         internal static void SaveEchoWarp(RainWorldGame game, Watcher.WarpPoint warpPoint, bool saveRoomWarp = false, bool saveString = false)
         {
             var warpData = warpPoint.overrideData ?? warpPoint.Data;
-            if (saveRoomWarp && warpPoint.room != null)
+            if (saveRoomWarp)
             {
-                RainMeadow.Debug("Trying to spawn echo warp point");
-                warpPoint.room.TrySpawnWarpPoint(warpPoint.placedObject);
+                RainMeadow.Debug("Trying to spawn echo warp point in room");
+                if (warpPoint.room != null)
+                    warpPoint.room.TrySpawnWarpPoint(warpPoint.placedObject);
+                else RainMeadow.Debug("Failed due to null room");
             }
             if (saveString)
                 game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Add(warpData.ToString());
@@ -294,13 +296,15 @@ namespace RainMeadow
 
         // Performs a warp via an echo, can be triggered by anyone
         [RPCMethod]
-        public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData)
+        public static void EchoExecuteWatcherRiftWarp(RPCEvent rpc, string? sourceRoomName, string warpData, int spinningTopID)
         {
             Watcher.WarpPoint? warpPoint = PerformWarpHelper(sourceRoomName, warpData, false, true);
             if (warpPoint != null && RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
                 RainMeadow.Debug($"warp of kind echo executed; going to win screen warp={warpData}");
-                SaveEchoWarp(game, warpPoint, false, true); //save string incase
+                if (!game.GetStorySession.saveState.deathPersistentSaveData.spinningTopEncounters.Contains(spinningTopID))
+                    game.GetStorySession.saveState.deathPersistentSaveData.spinningTopEncounters.Add(spinningTopID);
+                SaveEchoWarp(game, warpPoint, true, true); //save string incase
             }
             else
             {
