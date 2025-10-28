@@ -1,3 +1,11 @@
+# Release 1.9.0
+## Story:
+- Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
+- Host is now way less likely to be puppetted by a client after warping from echo
+- Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
+- Prevent players being able to join after warping through ripple warps
+
+
 # Release 1.8.0
 ## General:
 - Updated to game version 1.11.3
