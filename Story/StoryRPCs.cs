@@ -260,8 +260,11 @@ namespace RainMeadow
             //}
             if (!OnlineManager.lobby.isOwner)
             {
-                game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
                 Watcher.WarpPoint.WarpPointData data = warpPoint.overrideData ?? warpPoint.Data;
+                if (RainMeadow.isStoryMode(out var story))
+                    story.myLastWarp = newWarpData;
+                game.overWorld.InitiateSpecialWarp_WarpPoint(warpPoint, newWarpData, useNormalWarpLoader);
+              
                 // update camera position
                 string destRoom = data.destRoom;
                 var destCam = data.destCam;
@@ -286,11 +289,6 @@ namespace RainMeadow
         {
             if (rpc != null && OnlineManager.lobby.owner != rpc.from) return;
             Watcher.WarpPoint? warpPoint = PerformWarpHelper(sourceRoomName, warpData, useNormalWarpLoader, false);
-            if (warpPoint != null && RainMeadow.isStoryMode(out var story))
-            {
-                var newWarpData = warpPoint.overrideData ?? warpPoint.Data;
-                story.myLastWarp = newWarpData;
-            }
 
         }
 
