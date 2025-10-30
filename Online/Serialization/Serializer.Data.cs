@@ -1534,5 +1534,31 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+        public void Serialize(ref Counter counter)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                writer.Write(counter.min);
+                writer.Write(counter.max);
+                writer.Write(counter.counter);
+                writer.Write(counter.countsUp);
+                writer.Write(counter.needReset);
+            }
+            if (IsReading)
+            {
+                counter.min = reader.ReadInt32();
+                counter.max = reader.ReadInt32();
+                counter.counter = reader.ReadInt32();
+                counter.countsUp = reader.ReadBoolean();
+                counter.needReset = reader.ReadBoolean();
+
+            }
+#if TRACING
+            if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
+#endif
+        }
     }
 }
