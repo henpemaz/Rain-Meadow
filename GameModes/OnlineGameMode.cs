@@ -280,6 +280,20 @@ namespace RainMeadow
             return true;
         }
 
+        public virtual void EstablishWorlds(OverworldSession overworldSession)
+        {
+            foreach(Region region in overworldSession.overWorld.regions)
+            {
+                overworldSession.EstablishWorld(region.name, checked((ushort)region.regionNumber));
+            }
+        }
+        
+        public virtual WorldSession LinkWorld(World world)
+        {
+            OnlineManager.lobby.overworld.worldSessions.TryGetValue(world.region.name, out var worldSession);
+            return worldSession;
+        }
+
         public virtual void NewResourceOwner(OnlineResource resource, OnlinePlayer? oldOwner, OnlinePlayer? newOwner)
         {
 

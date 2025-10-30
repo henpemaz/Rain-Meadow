@@ -65,12 +65,13 @@ namespace RainMeadow
             if (!online.isMine) { throw new InvalidProgrammerException("not owner: " + online); }
             if (collected) { return; }
             RainMeadow.Debug("Collected:" + online);
-            var ws = world.GetResource();
             collected = true;
             collectedAt = world.game.clock;
-            collectedTR = ws.owner.MakeTickReference();
-
-            OnlineManager.lobby.owner.InvokeRPC(MeadowGameMode.ItemConsumed, (byte)ws.ShortId(), type);
+            if (world.GetResource() is WorldSession ws)
+            {
+                collectedTR = ws.overworldSession.owner.MakeTickReference();
+                ws.overworldSession.owner.InvokeRPC(MeadowGameMode.ItemConsumed, (byte)ws.ShortId(), type);
+            }
         }
 
         [RPCMethod]
