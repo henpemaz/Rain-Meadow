@@ -52,7 +52,6 @@ namespace RainMeadow
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
-            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -690,22 +689,6 @@ namespace RainMeadow
             else
             {
                 orig(self, abstractPhysicalObject, world);
-            }
-        }
-
-
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
-        {
-            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant))
-            {
-
-                return;
-
-            }
-            else
-            {
-                orig(self, room, placedObj);
-
             }
         }
 
