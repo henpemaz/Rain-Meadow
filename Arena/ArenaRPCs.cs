@@ -229,6 +229,17 @@ namespace RainMeadow
 
         }
 
+
+        [RPCMethod(runDeferred = true)]
+        public static void Arena_RestartGame(RPCEvent rpcEvent)
+        {
+            
+            if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
+            {
+                arena.leaveToRestart = true;
+            }
+        }
+
         [RPCMethod]
         public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
