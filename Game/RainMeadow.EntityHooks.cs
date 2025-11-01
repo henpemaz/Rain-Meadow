@@ -35,7 +35,63 @@ namespace RainMeadow
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
             IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
             On.Watcher.SandGrubGraphics.DrawSprites += SandGrubGraphics_DrawSprites;
+            On.Watcher.BigSandGrubGraphics.DrawSprites += BigSandGrubGraphics_DrawSprites;
+            On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
+            On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
+            On.Watcher.SandGrub.Collide += SandGrub_Collide;
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
+        }
+        private void BigSandGrubGraphics_UpdateSegments(On.Watcher.BigSandGrubGraphics.orig_UpdateSegments orig, Watcher.BigSandGrubGraphics self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+
+        private void BigSandGrubNeck_Update(On.Watcher.BigSandGrubNeck.orig_Update orig, Watcher.BigSandGrubNeck self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+
+        // This occurs because sandgrub is attempting to collide to an object not present on the client's end yet - and or
+        // is attempting to grab a chunk that the entity does not posses or the sandgrub doesnt posses due to ID desyncs
+        private void SandGrub_Collide(On.Watcher.SandGrub.orig_Collide orig, Watcher.SandGrub self, PhysicalObject otherObject, int myChunk, int otherChunk)
+        {
+            try
+            {
+                orig(self, otherObject, myChunk, otherChunk);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+        private void BigSandGrubGraphics_DrawSprites(On.Watcher.BigSandGrubGraphics.orig_DrawSprites orig, Watcher.BigSandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            try
+            {
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
         }
         private void SandGrubGraphics_DrawSprites(On.Watcher.SandGrubGraphics.orig_DrawSprites orig, Watcher.SandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
