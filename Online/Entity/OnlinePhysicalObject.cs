@@ -371,6 +371,92 @@ namespace RainMeadow
             }
         }
 
+        public void RemoveEntityFromRoom(bool onlineaware = true)
+        {
+            RainMeadow.Debug("Removing entity from room: " + this);
+            if (apo.realizedObject is PhysicalObject po)
+            {
+                if (po.room is Room room)
+                {
+                    room.RemoveObject(po);
+                    room.CleanOutObjectNotInThisRoom(po);
+                }
+                if (po is Creature c && c.inShortcut && apo.Room is not null)
+                {
+                    RainMeadow.Debug("removing from shortcuts");
+                    c.RemoveFromShortcuts(apo.Room);
+                }
+            }
+
+            if (onlineaware)
+            {
+                bool wasmoved = beingMoved;
+                beingMoved = true;
+                apo.Room?.RemoveEntity(apo);
+                beingMoved = wasmoved;
+            }
+            else
+            {
+                apo.Room?.entities?.Remove(apo);
+                apo.Room?.entitiesInDens?.Remove(apo);
+                if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
+            }
+        }
+        
+        public void RemoveEntityFromGame(bool onlineaware = true)
+        {
+            RainMeadow.Debug("Removing entity from game: " + this);
+            if (apo.stuckObjects != null)
+            {
+                foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
+                {
+                    if (stick.A.realizedObject is Weapon weapon)
+                    {
+                        weapon.ChangeMode(Weapon.Mode.Free);
+                    }
+                }
+            }
+
+            if (apo.realizedObject is PhysicalObject po)
+            {
+                foreach (Creature.Grasp grabbedBy in po.grabbedBy)
+                {
+                    grabbedBy.Release();
+                }
+
+                if (po is Creature creature)
+                {
+                    foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                    {
+                        grabbing.Release();
+                    }
+                }
+
+                if (po is Player player)
+                {
+                    if (player.slugOnBack != null)
+                    {
+                        player.slugOnBack.DropSlug();
+                    }
+
+                    if (player.onBack != null)
+                    {
+                        player.onBack.slugOnBack.DropSlug();
+                    }
+
+                    if (player.spearOnBack != null)
+                    {
+                        if (player.spearOnBack.HasASpear)
+                        {
+                            player.spearOnBack.DropSpear();
+                        }
+                    }
+                }
+            }
+            apo.LoseAllStuckObjects();
+            RemoveEntityFromRoom(onlineaware);
+        }
+
         protected override void LeaveImpl(OnlineResource inResource)
         {
             RainMeadow.Debug($"{this} leaving {inResource}");
@@ -379,61 +465,11 @@ namespace RainMeadow
                 AllMoving(true);
                 if (primaryResource == null) // gone
                 {
-                    RainMeadow.Debug("Removing entity from game: " + this);
-                    if (apo.stuckObjects != null)
-                    {
-                        foreach (var stick in apo.stuckObjects.OfType<AbstractPhysicalObject.AbstractObjectStick>())
-                        {
-                            if (stick.A.realizedObject is Weapon weapon)
-                            {
-                                weapon.ChangeMode(Weapon.Mode.Free);
-                            }
-                        }
-                    }
-                    apo.LoseAllStuckObjects();
-
-                    apo.Room?.RemoveEntity(apo);
-                    if (apo.realizedObject is PhysicalObject po)
-                    {
-                        if (po is Player player) {
-                            if (player.slugOnBack != null) {
-                                player.slugOnBack.DropSlug();
-                            }
-
-                            if (player.onBack != null) {
-                                player.onBack.slugOnBack.DropSlug();
-                            }
-                        }
-
-                        if (apo.Room?.realizedRoom is Room room)
-                        {
-                            room.RemoveObject(po);
-                            room.CleanOutObjectNotInThisRoom(po);
-                        }
-                        if (po is Creature c && c.inShortcut)
-                        {
-                            RainMeadow.Debug("removing from shortcuts");
-                            c.RemoveFromShortcuts();
-                        }
-                    }
+                    RemoveEntityFromGame(true);
                 }
                 if (inResource is RoomSession rs)
                 {
-                    RainMeadow.Debug("Removing entity from room: " + this);
-                    if (apo.realizedObject is PhysicalObject po)
-                    {
-                        if (rs.absroom.realizedRoom is Room room)
-                        {
-                            room.RemoveObject(po);
-                            room.CleanOutObjectNotInThisRoom(po);
-                        }
-                        if (po is Creature c && c.inShortcut)
-                        {
-                            RainMeadow.Debug("removing from shortcuts");
-                            c.RemoveFromShortcuts(rs.absroom);
-                        }
-                    }
-                    rs.absroom.RemoveEntity(apo);
+                    RemoveEntityFromRoom(true);
                 }
                 AllMoving(false);
             }

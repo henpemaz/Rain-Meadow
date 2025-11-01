@@ -330,7 +330,7 @@ namespace RainMeadow
                 Error($"Entity {self} - {self.abstractCreature.ID} doesn't exist in online space!");
                 return;
             }
-
+            
 
             if (onlineEntity.isMine) 
             {
