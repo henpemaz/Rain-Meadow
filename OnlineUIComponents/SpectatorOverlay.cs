@@ -134,7 +134,7 @@ namespace RainMeadow
             {
                 get => menu as SpectatorOverlay;
             }
-            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, List<OnlineCreature> avatars, Vector2 pos, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.name, pos, size == default ? new(110, 30) : size)
+            public PlayerButton(SpectatorOverlay menu, MenuObject owner, OnlinePlayer player, List<OnlineCreature> avatars, Vector2 pos, bool canKick = false, Vector2 size = default) : base(menu, owner, player.id.DisplayName, pos, size == default ? new(110, 30) : size)
             {
                 this.player = player;
                 this.avatars = avatars;

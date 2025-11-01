@@ -52,7 +52,7 @@ namespace Menu
             string text = "";
             float num = 0f;
             menuLabel = new(menu, this, menu.Translate("PLAYER") + (InGameTranslator.LanguageID.UsesSpaces(menu.CurrLang) ? " " : "") + (index + 1) + "\r\n" + text, new Vector2(0.01f, 0.1f + num), size, bigText: false);
-            usernameButton = new(menu, this, profileIdentifier.id.name, new(0, -40), new(100, 30));
+            usernameButton = new(menu, this, profileIdentifier.id.DisplayName, new(0, -40), new(100, 30));
             usernameButton.OnClick += (_) =>
             {
                 profileIdentifier.id.OpenProfileLink();
