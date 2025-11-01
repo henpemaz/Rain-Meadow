@@ -216,6 +216,7 @@ namespace RainMeadow.UI.Components
         {
             base.Update();
 
+            teamLerpTextBox.held = teamLerpTextBox._KeyboardOn;
             if (!teamLerpTextBox.held)
                 teamLerpTextBox.valueFloat = teamBattleMode.lerp;
             if (prevButton != null)
@@ -225,23 +226,27 @@ namespace RainMeadow.UI.Components
             teamLerpTextBox.greyedOut = OwnerSettingsDisabled;
             for (int i = 0; i < teamButtons.Length; i++)
             {
-                int actualTeamIndex = teamButtons[i].buttonArrayIndex;
+                TeamButton teamBtn = teamButtons[i];
+                OpTextBox teamNameBox = teamNameBoxes[i];
+                OpTinyColorPicker teamColorPicker = teamColorPickers[i];
+                int actualTeamIndex = teamBtn.buttonArrayIndex;
                 string name = teamBattleMode.teamNames[actualTeamIndex];
                 Color color = teamBattleMode.teamColors[actualTeamIndex];
-                teamButtons[i].teamColor = color;
-                teamButtons[i].teamName = teamBattleMode.teamNames[actualTeamIndex];
-                teamButtons[i].buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
-                teamButtons[i].teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
-                teamButtons[i].teamCount.label.color = color;
+                teamBtn.teamColor = color;
+                teamBtn.teamName = teamBattleMode.teamNames[actualTeamIndex];
+                teamBtn.buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
+                teamBtn.teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
+                teamBtn.teamCount.label.color = color;
 
-                if (!teamNameBoxes[i]._KeyboardOn) teamNameBoxes[i].value = name;
-                if (!teamColorPickers[i].held) teamColorPickers[i].valuecolor = color;
+                teamNameBox.held = teamNameBox._KeyboardOn;
+                if (!teamNameBox.held) teamNameBox.value = name;
+                if (!teamColorPicker.held) teamColorPicker.valuecolor = color;
 
                 bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);
 
-                teamNameBoxes[i].greyedOut = greyOutConfig;
-                teamColorPickers[i].greyedOut = greyOutConfig;
-              ;
+                teamNameBox.greyedOut = greyOutConfig;
+                teamColorPicker.greyedOut = greyOutConfig;
+              
             }
         }
         public void SetCurrentlySelectedOfSeries(string id, int index) => arenaMode.clientSettings.GetData<ArenaTeamClientSettings>().team = index;

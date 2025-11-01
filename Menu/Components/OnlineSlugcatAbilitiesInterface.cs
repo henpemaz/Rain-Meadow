@@ -164,14 +164,15 @@ namespace RainMeadow.UI.Components
                 bool greyoutAll = SettingsDisabled;
                 foreach (MenuObject obj in subObjects)
                 {
-                    if (obj is ButtonTemplate btn)
+                    if (obj != backButton && obj is ButtonTemplate btn)
                         btn.buttonBehav.greyedOut = greyoutAll;
                 }
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
                 {
                     saintAscendDurationTimerTextBox.greyedOut = greyoutAll;
                     saintAscendDurationTimerTextBox.held = saintAscendDurationTimerTextBox._KeyboardOn;
-                    if (!saintAscendDurationTimerTextBox.held && saintAscendDurationTimerTextBox.valueInt != arena.arenaSaintAscendanceTimer) saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
+                    if (!saintAscendDurationTimerTextBox.held) 
+                        saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
                 }
             }
             public override void GrafUpdate(float timeStacker)
@@ -287,12 +288,12 @@ namespace RainMeadow.UI.Components
 
                 watcherCamoLimitTextBox.greyedOut = greyoutall;
                 watcherCamoLimitTextBox.held = watcherCamoLimitTextBox._KeyboardOn;
-                if (!watcherCamoLimitTextBox.held && watcherCamoLimitTextBox.valueInt != arena.watcherCamoTimer)
+                if (!watcherCamoLimitTextBox.held)
                     watcherCamoLimitTextBox.valueInt = arena.watcherCamoTimer;
 
                 watcherRippleLevelTextBox.greyedOut = greyoutall;
                 watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
-                if (!watcherRippleLevelTextBox.held && watcherRippleLevelTextBox.valueInt != arena.watcherRippleLevel)
+                if (!watcherRippleLevelTextBox.held)
                     watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
             }
             public override void GrafUpdate(float timeStacker)
