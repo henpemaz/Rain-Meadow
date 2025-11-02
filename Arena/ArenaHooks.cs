@@ -147,11 +147,7 @@ namespace RainMeadow
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                 if (pl != null)
                 {
-
-                    if (arena.localAllKills.TryGetValue(pl.inLobbyId, out var kills))
-                    {
-                        player.allKills = kills;
-                    }
+                    player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(arena, player.playerNumber);
 
                     if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
                     {
@@ -798,7 +794,7 @@ namespace RainMeadow
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                         if (onlinePlayer != null)
                         {
-                            arena.ReadFromStats(player, onlinePlayer);
+                            arena.ReadFromStats(self.manager, player, onlinePlayer);
                         }
                     }
                     self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
@@ -1299,7 +1295,7 @@ namespace RainMeadow
                         OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[num2].playerNumber);
                         if (pl != null)
                         {
-                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
+                            arena.AddOrInsertPlayerStats(arena, session, self.players[num2], pl);
                         }
 
                     }
@@ -1474,27 +1470,24 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            if (!arena.localAllKills.ContainsKey(absPlayerCreature.owner.inLobbyId))
-                            {
-                                arena.localAllKills.Add(absPlayerCreature.owner.inLobbyId, self.arenaSitting.players[i].allKills);
-                            }
-                            else
-                            {
-                                arena.localAllKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills;
-                            }
+                            //if (!arena.localAllKills.ContainsKey(absPlayerCreature.owner.inLobbyId))
+                            //{
+                            //    arena.localAllKills.Add(absPlayerCreature.owner.inLobbyId, self.arenaSitting.players[i].allKills);
+                            //}
+                            //else
+                            //{
+                            //    arena.localAllKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills;
+                            //}
                             if (OnlineManager.lobby.isOwner)
                             {
-                                arena.playerNumberWithKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills.Count;
+                                arena.playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData.ToString());
+                                //arena.playerNumberWithKills[absPlayerCreature.owner.inLobbyId] = arena.playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId].Count;
                             }
-                            RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
+                            //RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
 
-                            for (int p = 0; p < OnlineManager.players.Count; p++)
+                            if (!OnlineManager.lobby.isOwner)
                             {
-                                if (OnlineManager.players[p].isMe)
-                                {
-                                    continue;
-                                }
-                                OnlineManager.players[p].InvokeRPC(ArenaRPCs.Arena_AddTrophy, targetAbsCreature, self.arenaSitting.players[i].playerNumber);
+                                OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddTrophy, targetAbsCreature, self.arenaSitting.players[i].playerNumber);
                             }
                         }
 

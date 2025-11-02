@@ -60,7 +60,7 @@ namespace RainMeadow
                     OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                     if (currentName != null)
                     {
-                        arena.ReadFromStats(player, currentName);
+                        arena.ReadFromStats(manager, player, currentName);
                     }
                 }
 
@@ -156,7 +156,8 @@ namespace RainMeadow
                             };
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                            arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+                            arena.AddOrInsertPlayerStats(arena, getArenaGameSession, newArenaPlayer, pl);
+
                             self.players.Add(newArenaPlayer);
                         }
                     }
@@ -179,7 +180,7 @@ namespace RainMeadow
                                     hasEnteredGameArea = true
                                 };
                                 Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
-                                arena.AddOrInsertPlayerStats(arena, newArenaPlayer, player);
+                                arena.AddOrInsertPlayerStats(arena, getArenaGameSession, newArenaPlayer, player);
                                 self.players.Add(newArenaPlayer);
                             }
                         }
