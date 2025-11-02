@@ -490,7 +490,7 @@ namespace RainMeadow
 
             }
         }
-        public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaGameSession session, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
+        public void AddOrInsertPlayerStats(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer newArenaPlayer, OnlinePlayer pl)
         {
 
             if (arena.playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))

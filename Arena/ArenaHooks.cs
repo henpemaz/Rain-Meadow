@@ -1295,7 +1295,7 @@ namespace RainMeadow
                         OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, self.players[num2].playerNumber);
                         if (pl != null)
                         {
-                            arena.AddOrInsertPlayerStats(arena, session, self.players[num2], pl);
+                            arena.AddOrInsertPlayerStats(arena, self.players[num2], pl);
                         }
 
                     }
