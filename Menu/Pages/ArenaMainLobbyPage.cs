@@ -154,6 +154,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
         RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
         RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
+        RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
+
         slugcatAbilitiesInterface?.SaveAllInterfaceOptions();
     }
     public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
