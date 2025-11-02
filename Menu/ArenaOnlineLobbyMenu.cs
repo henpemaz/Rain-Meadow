@@ -366,6 +366,12 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "PIGGY")
                 return check ? Translate("Players can piggyback each other") : Translate("Players cannot piggyback each other");
         }
+        if (selectedObject is SimpleButton simpleBtn)
+        {
+            string id = simpleBtn.signalText;
+            if (id == OnlineSlugcatAbilitiesInterface.BACKTOSELECT)
+                return Translate("Return to Select Settings Page");
+        }
         if (selectedObject is SelectOneButton selectOneButton)
         {
             int index = selectOneButton.buttonArrayIndex;
@@ -405,6 +411,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
         if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", teamBtn.teamName);
+        if (selectedObject is OnlineSlugcatAbilitiesInterface.SelectSettingsPage.SettingsButton settingBtn)
+            return Translate("Go to <SETTINGSNAME> Page").Replace("<SETTINGSNAME>", settingBtn.menuLabel.label.text); //menulabel text is already coded to be translated
         return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
     }
     public void UpdateOnlineUI() //for future online ui stuff

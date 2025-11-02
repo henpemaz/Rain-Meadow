@@ -81,7 +81,7 @@ namespace RainMeadow
 
         public void ProcessManager_CueAchievement(On.ProcessManager.orig_CueAchievement orig, ProcessManager self, RainWorld.AchievementID ID, float delay)
         {
-            if (OnlineManager.lobby != null && ID != RainWorld.AchievementID.None)
+            if (OnlineManager.lobby != null && ID != RainWorld.AchievementID.None && !rainMeadowOptions.EnableAchievementsOnline.Value)
             {
                 RainMeadow.Debug("Prevented " + Enum.GetName(typeof(RainWorld.AchievementID), ID) + " from being earned in an online lobby.");
                 return;

@@ -52,7 +52,6 @@ namespace RainMeadow
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
-            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -120,12 +119,27 @@ namespace RainMeadow
             On.ArenaSitting.PlayerSittingResultSort += ArenaSitting_PlayerSittingResultSort;
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
-
-
-
-
+            new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            On.Player.ActivateAscension += Player_ActivateAscension;
         }
 
+        private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
+        {
+            if (isArenaMode(out var arena) && arena.countdownInitiatedHoldFire)
+            {
+                return;
+            }
+            orig(self);
+        }
+
+        private int SetKarmaLevel(Func<Player, int> orig, Player self)
+        {
+            if (isArenaMode(out var arena) && ModManager.MSC && self.SlugCatClass == MoreSlugcatsEnums.SlugcatStatsName.Saint && !arena.sainot)
+            {
+                return 9;
+            }
+            return orig(self);
+        }
         private void FinalResultbox_ctor(On.Menu.FinalResultbox.orig_ctor orig, FinalResultbox self, MultiplayerResults resultPage, MenuObject owner, ArenaSitting.ArenaPlayer player, int index)
         {
             if (isArenaMode(out var arena))
@@ -365,19 +379,18 @@ namespace RainMeadow
         {
             if (isArenaMode(out var _))
             {
-                return true;
+                return self.rippleLevel >= 3;
             }
             return orig(self);
         }
         private float SetRippleLevel(Func<Player, float> orig, Player self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
-                return 1f;
+                return (arena.watcherRippleLevel - 1) * 0.5f + 1;
             }
             return orig(self);
         }
-
         private string? On_Options_LoadArenaSetup(On.Options.orig_LoadArenaSetup orig, Options self, string fallBack)
         {
             if (self.optionsLoaded && self.optionsFile != null && isArenaMode(out _))
@@ -676,22 +689,6 @@ namespace RainMeadow
             else
             {
                 orig(self, abstractPhysicalObject, world);
-            }
-        }
-
-
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
-        {
-            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant))
-            {
-
-                return;
-
-            }
-            else
-            {
-                orig(self, room, placedObj);
-
             }
         }
 

@@ -96,7 +96,7 @@ namespace RainMeadow
                         if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession
                             && ModManager.MMF && MoreSlugcats.MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(apo))
                         {
-                            storyGameSession.AddNewPersistentTracker(apo);
+                            storyGameSession.AddNewPersistentTracker(apo, apo.world);
                             /* remix key item tracking TODO: get player that puked this up
                             if (apo.Room.NOTRACKERS)
                             {

@@ -1,9 +1,36 @@
+# Release 1.9.0
+## Story:
+- Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
+- Host is now way less likely to be puppetted by a client after warping from echo
+- Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
+- Prevent players being able to join after warping through ripple warps
+- Fix sand grubs softlocking the game
+
+
+# Release 1.8.0
+## General:
+- Updated to game version 1.11.3
+- Japanese translation by MisodeN [ミソデン]. どうもありがとう
+## Arena:
+- The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
+- Fixes Saint's karma activation to mirror game's original behavior.
+- Added a toggle for Watcher's ripple level
+- Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
+- Fixed Beehives not being created in online space leading to Gourmand players being able to "lag-switch".
+## Story:
+- Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
+- Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
+- Fixed an ending 3 crash if playing local with Meadow installed
+- Prevented clients in lobby being allowed to join after warping
+- Added a remix options to gain achievements online. Default is FALSE.
+- Fixed ripple space being shared between players
+
 # Release 1.7.1
 ## Story:
 - First pass at stabilizing Watcher warps
 - Fixed missing cursor 
 - Fixed lobby chat to not select back button on throw input
-
+- Fixes Passages crashing the game
 ## General
 - Fixed chat "..." from persisting unexpectedly
 - ModManager now requires a game restart when it detects a change in DLC activation when joining lobbies
