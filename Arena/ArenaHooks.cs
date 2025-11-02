@@ -1470,20 +1470,10 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            //if (!arena.localAllKills.ContainsKey(absPlayerCreature.owner.inLobbyId))
-                            //{
-                            //    arena.localAllKills.Add(absPlayerCreature.owner.inLobbyId, self.arenaSitting.players[i].allKills);
-                            //}
-                            //else
-                            //{
-                            //    arena.localAllKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills;
-                            //}
                             if (OnlineManager.lobby.isOwner)
                             {
                                 arena.playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData.ToString());
-                                //arena.playerNumberWithKills[absPlayerCreature.owner.inLobbyId] = arena.playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId].Count;
                             }
-                            //RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
 
                             if (!OnlineManager.lobby.isOwner)
                             {

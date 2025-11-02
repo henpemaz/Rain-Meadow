@@ -100,7 +100,6 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public List<int> bannedSlugs = new List<int>();
-        //public Dictionary<int, List<IconSymbol.IconSymbolData>> localAllKills;
 
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
@@ -130,7 +129,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-            //localAllKills = new Dictionary<int, List<IconSymbol.IconSymbolData>>();
 
 
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
@@ -581,13 +579,11 @@ namespace RainMeadow
         {
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.rainWorld.progression.SaveProgression(true, true);
-            //localAllKills.Clear();
             if (!OnlineManager.lobby.isOwner) return;
             arenaSittingOnlineOrder.Clear();
             playerNumberWithWins.Clear();
             playerNumberWithDeaths.Clear();
             playerNumberWithScore.Clear();
-            //playerNumberWithKills.Clear();
             playerTotScore.Clear();
             playerNumberWithTrophies.Clear();
         }
