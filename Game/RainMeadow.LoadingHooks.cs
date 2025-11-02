@@ -60,7 +60,7 @@ namespace RainMeadow
                     OnlinePlayer? currentName = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                     if (currentName != null)
                     {
-                        arena.ReadFromStats(manager, player, currentName);
+                        arena.ReadFromStats(player, currentName);
                     }
                 }
 

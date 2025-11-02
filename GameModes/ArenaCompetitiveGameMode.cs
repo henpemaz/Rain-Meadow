@@ -471,7 +471,7 @@ namespace RainMeadow
             }
         }
 
-        public void ReadFromStats(ProcessManager manager, ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
+        public void ReadFromStats(ArenaSitting.ArenaPlayer player, OnlinePlayer pl)
         {
             if (playerNumberWithWins.TryGetValue(pl.inLobbyId, out var wins))
             {

@@ -794,7 +794,7 @@ namespace RainMeadow
                         OnlinePlayer? onlinePlayer = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                         if (onlinePlayer != null)
                         {
-                            arena.ReadFromStats(self.manager, player, onlinePlayer);
+                            arena.ReadFromStats(player, onlinePlayer);
                         }
                     }
                     self.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
