@@ -124,7 +124,7 @@ namespace RainMeadow
             }
             else if (res is OverworldSession overworldSession)
             {
-                lobby.overworld.AddData(new MeadowRegionData());
+                overworldSession.AddData(new MeadowRegionData());
             }
             else if (res is WorldSession ws)
             {
@@ -350,7 +350,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby.overworld.isOwner && OnlineManager.lobby.overworld.isActive)
             {
-                RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
+                RainMeadow.Debug($"Item consumed: {OnlineManager.lobby.overworld.subresources[region].Id()} {type} from {evt.from}");
                 var lobbyData = OnlineManager.lobby.overworld.GetData<MeadowRegionData>();
                 var newRegion = RandomIndexFromWeightedList(lobbyData.regionSpawnWeights);
                 if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenRed)
@@ -359,7 +359,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionRedTokensGoal[region] -= 1;
                         lobbyData.regionRedTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenBlue)
@@ -368,7 +368,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionBlueTokensGoal[region] -= 1;
                         lobbyData.regionBlueTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowTokenGold)
@@ -377,7 +377,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionGoldTokensGoal[region] -= 1;
                         lobbyData.regionGoldTokensGoal[newRegion] += 1;
-                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
                 else if (type == RainMeadow.Ext_PhysicalObjectType.MeadowGhost)
@@ -386,7 +386,7 @@ namespace RainMeadow
                     {
                         lobbyData.regionGhostsGoal[region] -= 1;
                         lobbyData.regionGhostsGoal[newRegion] += 1;
-                        OnlineManager.lobby.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
+                        OnlineManager.lobby.overworld.subresources[newRegion].owner?.InvokeRPC(SpawnItem, (byte)newRegion, type);
                     }
                 }
             }
@@ -395,10 +395,10 @@ namespace RainMeadow
         [RPCMethod]
         public static void SpawnItem(RPCEvent evt, byte region, AbstractPhysicalObject.AbstractObjectType type)
         {
-            if (OnlineManager.lobby.isActive)
+            if (OnlineManager.lobby.overworld.isActive)
             {
-                RainMeadow.Debug($"Item respawning: {OnlineManager.lobby.subresources[region].Id()} {type} from {evt.from}");
-                var ws = OnlineManager.lobby.subresources[region] as WorldSession;
+                RainMeadow.Debug($"Item respawning: {OnlineManager.lobby.overworld.subresources[region].Id()} {type} from {evt.from}");
+                var ws = OnlineManager.lobby.overworld.subresources[region] as WorldSession;
                 if (ws.isActive && ws.isOwner)
                 {
                     var regionData = ws.GetData<MeadowWorldData>();
