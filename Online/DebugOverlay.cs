@@ -291,7 +291,7 @@ namespace RainMeadow
             }
             inWorldSession = inRoomSession.worldSession;
 
-            var worlds = OnlineManager.lobby.worldSessions.Values.ToList();
+            var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
             worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
 
             int lastWorldLines = 0;
