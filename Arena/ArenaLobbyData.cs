@@ -92,9 +92,9 @@ namespace RainMeadow
             [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerNumberWithWins;
             [OnlineField(group = "arenaGameplay")]
-            public Dictionary<int, int> playerNumberWithKills;
-            [OnlineField(group = "arenaGameplay")]
             public Dictionary<int, int> playerTotScore;
+            [OnlineField(group = "arenaGameplay")]
+            public Dictionary<int, List<string>> playerNumberWithTrophies;
             [OnlineField(group = "arenaGameplay")]
             public bool countdownInitiatedHoldFire;
             [OnlineField(group = "arenaGameplay")]
@@ -123,9 +123,9 @@ namespace RainMeadow
                 reigningChamps = new(arena.reigningChamps.list.ToList());
                 playerNumberWithScore = new(arena.playerNumberWithScore);
                 playerNumberWithDeaths = new(arena.playerNumberWithDeaths);
-                playerNumberWithKills = new(arena.playerNumberWithKills);
                 playerTotScore = new(arena.playerTotScore);
                 playerNumberWithWins = new(arena.playerNumberWithWins);
+                playerNumberWithTrophies = arena.playerNumberWithTrophies;
                 playersLateWaitingInLobby = new(arena.playersLateWaitingInLobbyForNextRound);
 
                 playersChoosingSlugs = new(arena.playersInLobbyChoosingSlugs.ToDictionary<string, int>());
@@ -174,7 +174,10 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithScore = playerNumberWithScore;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithDeaths = playerNumberWithDeaths;
                 (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithWins = playerNumberWithWins;
-                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithKills = playerNumberWithKills;
+
+                (lobby.gameMode as ArenaOnlineGameMode).playerNumberWithTrophies = playerNumberWithTrophies;
+
+
                 (lobby.gameMode as ArenaOnlineGameMode).playerTotScore = playerTotScore;
 
                 (lobby.gameMode as ArenaOnlineGameMode).playersLateWaitingInLobbyForNextRound = playersLateWaitingInLobby;

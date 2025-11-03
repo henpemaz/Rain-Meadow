@@ -260,18 +260,9 @@ namespace RainMeadow
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                             if (pl != null)
                             {
-                                if (!arena.localAllKills.ContainsKey(pl.inLobbyId))
-                                {
-                                    arena.localAllKills.Add(pl.inLobbyId, game.GetArenaGameSession.arenaSitting.players[i].allKills);
-                                }
-                                else
-                                {
-                                    arena.localAllKills[pl.inLobbyId].Add(iconSymbolData);
-                                }
-                                if (OnlineManager.lobby.isOwner)
-                                {
-                                    arena.playerNumberWithKills[pl.inLobbyId] = arena.localAllKills[pl.inLobbyId].Count;
-                                }
+
+                                arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
+
                             }
                         }
 

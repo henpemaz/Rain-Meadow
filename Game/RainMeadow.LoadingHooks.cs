@@ -157,6 +157,7 @@ namespace RainMeadow
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
                             arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+
                             self.players.Add(newArenaPlayer);
                         }
                     }
