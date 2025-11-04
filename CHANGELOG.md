@@ -8,6 +8,7 @@
 ## Arena:
 - Updated menu to better support controller navigation between UI elements in and outside tabs
 - Fixed MSC Settings' back button being greyed out
+- Added round reset button
 
 # Release 1.8.0
 ## General:
