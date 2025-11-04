@@ -81,9 +81,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         };
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
-        menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
-        menu.MutualHorizontalButtonBind(arenaInfoButton, playerDisplayer.scrollUpButton);
-
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
         tabContainer.OnTabButtonsCreated += OnTabButtonsCreated;
         playListTab = new(menu, tabContainer);
@@ -108,8 +105,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
         }
 
-
         this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
+
+        menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
+        menu.MutualHorizontalButtonBind(playerDisplayer.scrollUpButton, arenaInfoButton); //loop
     }
     public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
     public void BuildPlayerDisplay()
@@ -171,7 +170,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 menu.MutualHorizontalButtonBind(chatMenuBox.messageScroller.scrollSlider, tabButtons[i].wrapper);
             else tabBtnContainer.activeTabButtons[i].wrapper.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
         }
-        tabBtnContainer.topArrowButton.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
+        menu.TryMutualBind(arenaInfoButton, tabBtnContainer.topArrowButton, leftRight: true);
+        menu.TryMutualBind(tabBtnContainer.topArrowButton, playerDisplayer.scrollUpButton, leftRight: true);
         tabBtnContainer.bottomArrowButton.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
     }
     public void BindPlaylistTabSelectables(bool isHidden)
@@ -179,18 +179,33 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (isHidden)
         {
             menu.MutualHorizontalButtonBind(arenaInfoButton, playerDisplayer.scrollUpButton);
+            if (tabContainer.tabButtonContainer.topArrowButton != null)
+            {
+                menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton);
+                menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
+            }
             playerDisplayer.scrollDownButton.RemoveMutualBind(leftRight: true, inverted: true);
             return;
         }
-        menu.MutualHorizontalButtonBind(arenaInfoButton, playerDisplayer.scrollUpButton);
-        menu.MutualHorizontalButtonBind(arenaInfoButton, levelSelector.allLevelsPlaylist.scrollUpButton);
+        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
+        if (tabContainer.tabButtonContainer.topArrowButton != null)
+        {
+            menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
+            menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, levelSelector.allLevelsPlaylist.scrollUpButton);
+        }
+        else 
+            menu.MutualHorizontalButtonBind(arenaInfoButton, levelSelector.allLevelsPlaylist.scrollUpButton);
         menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton);
         menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollDownButton, playerDisplayer.scrollDownButton);
+
+        TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];
+        foreach (var lvlBtn in levelSelector.allLevelsPlaylist.LevelItems)
+            lvlBtn.TryBind(tabBtnToBind.wrapper, left: true);
     }
     public void BindSelectSettingsPage(bool isHidden)
     {
         List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
-        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
+        TabButton? abilitiesTabBtn = tabButtons.Find(x => x.myTab == slugabilitiesTab);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           //This technically should return non-null but just in case
         SelectSettingsPage selectSettings = slugcatAbilitiesInterface!.selectSettings!;
         List<SelectSettingsPage.SettingsButton> settingBtns = selectSettings!.SettingBtns;
         if (isHidden)
@@ -200,8 +215,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             return;
         }
         foreach (var btn in tabButtons)
-            btn.wrapper.TryBind(settingBtns[0], right: true);
-        selectSettings.scroller.scrollSlider.TryBind((abilitiesTabBtn ?? tabButtons[0]).wrapper, true);
+            btn.wrapper.TryBind(selectSettings.scroller.scrollSlider, right: true);
+        menu.MutualHorizontalButtonBind((abilitiesTabBtn ?? tabButtons[0]).wrapper, selectSettings.scroller.scrollSlider);
     }
     public void BindMSCSettingsPage(bool isHidden)
     {
@@ -239,7 +254,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     }
     public void BindSlugcatAbilitiesSelectables(SettingsPage settingsPage, bool isHidden)
     {
-        RainMeadow.DebugMe();
         if (settingsPage == slugcatAbilitiesInterface!.selectSettings)
             BindSelectSettingsPage(isHidden);
         if (settingsPage == slugcatAbilitiesInterface.mscSettingsTab)
