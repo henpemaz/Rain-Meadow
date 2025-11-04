@@ -1,13 +1,15 @@
-using System.Collections.Generic;
-using System.Linq;
 using Menu;
+using Menu.Remix;
 using Menu.Remix.MixedUI;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using RainMeadow.UI.Components;
 using RWCustom;
-using UnityEngine;
-using Menu.Remix;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using static RainMeadow.UI.Components.TabContainer;
+using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 
 
 namespace RainMeadow.UI.Pages;
@@ -24,10 +26,10 @@ public class ArenaMainLobbyPage : PositionedMenuObject
     public ChatMenuBox chatMenuBox;
     public OnlineArenaSettingsInferface arenaSettingsInterface;
     public OnlineSlugcatAbilitiesInterface? slugcatAbilitiesInterface;
-    
-    public PlayerDisplayer? playerDisplayer;
+    public PlayerDisplayer playerDisplayer;
     public Dialog? slugcatDialog;
-    public TabContainer.Tab? externalTabContainer;
+    public Tab playListTab, matchSettingsTab;
+    public Tab? slugabilitiesTab;
 
 
     public Dialog? dialog;
@@ -74,24 +76,32 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         MatchmakingManager.OnPlayerListReceived += OnlineManager_OnPlayerListReceived;
         arenaInfoButton = new(menu, this, "Meadow_Menu_SmallQuestionMark", "", new Vector2(chatMenuBox.pos.x + chatMenuBox.size.x / 2 - 12, playerDisplayer!.pos.y + playerDisplayer.scrollUpButton!.pos.y), "");
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
+        menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
-        TabContainer.Tab playListTab = tabContainer.AddTab(menu.Translate("Arena Playlist")),
-            matchSettingsTab = tabContainer.AddTab(menu.Translate("Match Settings"));
-
+        tabContainer.OnTabButtonsCreated += OnTabButtonsCreated;
+        playListTab = new(menu, tabContainer);
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
+        playListTab.BindSelectables += BindPlaylistTabSelectables;
+        tabContainer.AddTab(playListTab, menu.Translate("Arena Playlist"));
+
+        matchSettingsTab = new(menu, tabContainer);
+        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v, menu.Translate(v)))]);
+        arenaSettingsInterface.CallForSync();
+        matchSettingsTab.AddObjects(arenaSettingsInterface);
+        matchSettingsTab.BindSelectables += BindMatchTabSelectables;
+        tabContainer.AddTab(matchSettingsTab, menu.Translate("Match Settings"));
 
 
         if (ShouldOpenSlugcatAbilitiesTab())
         {
-            TabContainer.Tab slugabilitiesTab = tabContainer.AddTab(menu.Translate("Slugcat Abilities"));
+            slugabilitiesTab = new(menu, tabContainer);
             slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new(0,0), menu.Translate(painCatName));
             slugcatAbilitiesInterface.CallForSync();
-            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface);
+            slugcatAbilitiesInterface.UpdateSettingSelectables += BindSlugcatAbilitiesSelectables;
+            slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
+            tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
         }
-        arenaSettingsInterface = new OnlineArenaSettingsInferface(menu, matchSettingsTab, new Vector2(120f, 0f), Arena.currentGameMode, [.. Arena.registeredGameModes.Keys.Select(v => new ListItem(v, menu.Translate(v)))]);
-        arenaSettingsInterface.CallForSync();
-        matchSettingsTab.AddObjects(arenaSettingsInterface);
 
 
         this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
@@ -114,11 +124,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         if (isLargeDisplay)
         {
             ArenaPlayerBox playerBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos); //buttons init prevents kick button if isMe
-            playerBox.slugcatButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
             return playerBox;
         }
         ArenaPlayerSmallBox playerSmallBox = new(menu, playerDisplay, player, OnlineManager.lobby?.isOwner == true, pos);
-        playerSmallBox.playerButton.TryBind(playerDisplay.scrollSlider, true, false, false, false);
         return playerSmallBox;
     }
     public void OpenInfoDialog()
@@ -148,6 +156,98 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         menu.PlaySound(SoundID.MENU_Checkbox_Check);
         dialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); }, ArenaHelpers.allSlugcats, slugcat);
         menu.manager.ShowDialog(dialog);
+    }
+    public void OnTabButtonsCreated(TabButtonsContainer tabBtnContainer, TabButton[] oldTabButtons)
+    {
+        var tabButtons = tabBtnContainer.activeTabButtons;
+        for (int i = 0; i < tabBtnContainer.activeTabButtons.Count; i++)
+        {
+            if (i == 0)
+                menu.MutualHorizontalButtonBind(chatMenuBox.messageScroller.scrollSlider, tabButtons[i].wrapper);
+            else tabBtnContainer.activeTabButtons[i].wrapper.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
+        }
+    }
+    public void BindPlaylistTabSelectables(bool isHidden)
+    {
+        if (isHidden)
+        {
+            arenaInfoButton.RemoveMutualBind(leftRight: true);
+            playerDisplayer.scrollUpButton!.RemoveMutualBind(leftRight: true, inverted: true);
+            playerDisplayer.scrollDownButton!.RemoveMutualBind(leftRight: true, inverted: true);
+            return;
+        }
+        menu.MutualHorizontalButtonBind(arenaInfoButton, levelSelector.allLevelsPlaylist.scrollUpButton);
+        menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton);
+        menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollDownButton, playerDisplayer.scrollDownButton);
+    }
+    public void BindMatchTabSelectables(bool isHidden)
+    {
+        var tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
+        if (isHidden)
+        {
+            arenaSettingsInterface.spearsHitCheckbox.RemoveMutualBind(leftRight: true, inverted: true);
+            return;
+        }
+        menu.MutualHorizontalButtonBind(tabButtons[0].wrapper, arenaSettingsInterface.spearsHitCheckbox);
+    }
+    public void BindSelectSettingsPage(bool isHidden)
+    {
+        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
+        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
+        SelectSettingsPage selectSettings = slugcatAbilitiesInterface!.selectSettings!;
+        List<SelectSettingsPage.SettingsButton> settingBtns = selectSettings!.SettingBtns;
+        if (isHidden)
+        {
+            foreach (var btn in tabButtons)
+                btn.wrapper.RemoveBind(right: true);
+            return;
+        }
+        foreach (var btn in tabButtons)
+            btn.wrapper.TryBind(settingBtns[0], right: true);
+        selectSettings.scroller.scrollSlider.TryBind((abilitiesTabBtn ?? tabButtons[0]).wrapper, true);
+    }
+    public void BindMSCSettingsPage(bool isHidden)
+    {
+        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
+        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
+        MSCSettingsPage mscSettings = slugcatAbilitiesInterface!.mscSettings!;
+        if (isHidden)
+        {
+            foreach (var btn in tabButtons)
+                btn.wrapper.RemoveBind(right: true);
+            mscSettings.backButton.RemoveMutualBind(leftRight: true, inverted: true);
+            return;
+        }
+        foreach (var tabBtn in tabButtons)
+            tabBtn.wrapper.TryBind(mscSettings.blockMaulCheckBox, right: true);
+        var btnToBind = abilitiesTabBtn ?? tabButtons.Last();
+        mscSettings.backButton.TryBind((abilitiesTabBtn ?? tabButtons.Last()).wrapper, left: true);
+
+    }
+    public void BindWatcherSettingsPage(bool isHidden)
+    {
+        List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
+        TabButton? abilitiesTabBtn = tabButtons.Find(t => t.myTab == slugabilitiesTab);
+        WatcherSettingsPage watcherSettings = slugcatAbilitiesInterface!.watcherSettings!;
+        if (isHidden)
+        {
+            foreach (var tabBtn in tabButtons)
+                tabBtn.wrapper.RemoveBind(right: true);
+            watcherSettings.backButton.RemoveMutualBind(leftRight: true, inverted: true);
+            return;
+        }
+        foreach (var tabBtn in tabButtons)
+            tabBtn.wrapper.TryBind(watcherSettings.watcherCamoLimitTextBox.wrapper, right: true);
+        watcherSettings.backButton.TryBind((abilitiesTabBtn ?? tabButtons.Last()).wrapper, left: true);
+    }
+    public void BindSlugcatAbilitiesSelectables(SettingsPage settingsPage, bool isHidden)
+    {
+        if (settingsPage == slugcatAbilitiesInterface!.selectSettings)
+            BindSelectSettingsPage(isHidden);
+        if (settingsPage == slugcatAbilitiesInterface.mscSettings)
+            BindMSCSettingsPage(isHidden);
+        if (settingsPage == slugcatAbilitiesInterface.watcherSettings)
+            BindWatcherSettingsPage(isHidden);
     }
     public void SaveInterfaceOptions()
     {

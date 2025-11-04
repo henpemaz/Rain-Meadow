@@ -1,12 +1,13 @@
+using Menu;
+using Menu.Remix;
+using Menu.Remix.MixedUI;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI.Components.Patched;
+using RainMeadow.UI.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Menu;
-using Menu.Remix;
-using Menu.Remix.MixedUI;
-using RainMeadow.UI.Components.Patched;
-using RainMeadow.UI.Interfaces;
 using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
 
@@ -107,7 +108,9 @@ public class TabContainer : RectangularMenuObject
             if (PagesOn) DefaultTabButtonYSize = (container.size.y - 5) / registeredTabButtons.Count;
             else DefaultTabButtonYSize = 125;
             PopulatePages(CurrentOffset);
-            if (tab == container.activeTab) container.SwitchTab(activeTabButtons.Last().myTab);
+            if (tab == container.activeTab) 
+                container.SwitchTab(activeTabButtons.Last().myTab);
+            else container.activeTab?.BindAllSelectables();
         }
         public void GoPrevPage()
         {
@@ -129,22 +132,24 @@ public class TabContainer : RectangularMenuObject
         }
         public void PopulatePages(int offset)
         {
+            TabButton[] oldTabButtons = [..activeTabButtons];
             ClearVisibleTabButtons();
             CurrentOffset = offset;
-            int num = CurrentOffset * PerPage;
-            while (num < registeredTabButtons.Count && num < (CurrentOffset + 1) * PerPage)
+            int num = CurrentOffset * PerPage, max = Mathf.Min(registeredTabButtons.Count - num, PerPage);
+            for (int i = 0; i < max; i++)
             {
-                float sizeY = DefaultTabButtonYSize, posY = container.size.y - (sizeY + 15) + (-(sizeY + 5) * (num % PerPage));
-                TabButton tabButton = new(registeredTabButtons[num].Item2, registeredTabButtons[num].Item1, container, tabWrapper, new(0, posY), DefaultTabButtonYSize);
+                ValueTuple<Tab, string> registeredTab = registeredTabButtons[i + num];
+                float sizeY = DefaultTabButtonYSize, posY = container.size.y - (sizeY + 15) + (-(sizeY + 5) * i);
+                TabButton tabButton = new(registeredTab.Item2, registeredTab.Item1, container, tabWrapper, new(0, posY), DefaultTabButtonYSize);
                 activeTabButtons.Add(tabButton);
-                num++;
+                TabButton? prevBtn = activeTabButtons.GetValueOrDefault(i - 1);
+                menu.TryMutualBind(tabButton.wrapper, prevBtn?.wrapper, bottomTop: true);
             }
             if (PagesOn)
-            {
                 AddPageButtons();
-                return;
-            }
-            RemovePageButtons();
+            else RemovePageButtons();
+            container.UpdateTabButtonSelectables(this, oldTabButtons);
+
         }
         public void ClearVisibleTabButtons()
         {
@@ -172,6 +177,8 @@ public class TabContainer : RectangularMenuObject
                 bottomArrowButton.OnClick += _ => GoNextPage();
                 subObjects.Add(bottomArrowButton);
             }
+            menu.MutualVerticalButtonBind(activeTabButtons.First().wrapper, topArrowButton);
+            menu.MutualVerticalButtonBind(bottomArrowButton, activeTabButtons.Last().wrapper);
         }
         public void RemovePageButtons()
         {
@@ -189,6 +196,8 @@ public class TabContainer : RectangularMenuObject
     }
     public class Tab : PositionedMenuObject, IPLEASEUPDATEME //yes for nested tab reasons
     {
+        public MenuTabWrapper myTabWrapper;
+        public event Action<bool>? BindSelectables;
         public Tab(Menu.Menu menu, MenuObject owner) : base(menu, owner, Vector2.zero)
         {
             myContainer = new();
@@ -223,6 +232,7 @@ public class TabContainer : RectangularMenuObject
             IsOwnHidden = false;
             for (int i = 0; i < subObjects.Count; i++)
                 ShowObject(subObjects[i]);
+            BindMySelectables();
         }
         public void Hide()
         {
@@ -231,6 +241,7 @@ public class TabContainer : RectangularMenuObject
             RecursiveRemoveSelectables(this);
             for (int i = 0; i < subObjects.Count; i++)
                 HideObject(subObjects[i]);
+            BindMySelectables();
         }
         public void ShowObject(MenuObject? obj)
         {
@@ -261,6 +272,7 @@ public class TabContainer : RectangularMenuObject
             //so we are telling nested tab that it is being hidden from this tab, not by itself.
             if (obj == null) return;
             if (obj is IPLEASEUPDATEME updatableObj) updatableObj.IsHidden = true;
+            if (obj is Tab tab) tab.BindMySelectables();
             for (int i = 0; i < obj.subObjects.Count; i++)
             {
                 MenuObject? subObj = obj.subObjects[i];
@@ -300,11 +312,39 @@ public class TabContainer : RectangularMenuObject
                 subObjects.Add(obj);
             }
         }
-        public MenuTabWrapper myTabWrapper;
+
+        /// <summary>
+        /// When you want to update all selectables in this tab, including all possible nested tabs in it.
+        /// </summary>
+        public void BindAllSelectables()
+        {
+            for (int i = 0; i < subObjects.Count; i++)
+                BindObjectSelectables(subObjects[i]);
+            BindMySelectables();
+        }
+        public void BindObjectSelectables(MenuObject? obj)
+        {
+            if (obj == null) return;
+            if (obj is Tab tab)
+            {
+                tab.BindAllSelectables();
+                return;
+            }           
+            for (int i = 0; i < obj.subObjects.Count; i++)
+            {
+                MenuObject subObj = obj.subObjects[i];
+                BindObjectSelectables(subObj);
+            }
+        }
+        public virtual void BindMySelectables()
+        {
+            BindSelectables?.Invoke(IsActuallyHidden);
+        }
     }
 
     public Tab? activeTab;
     public TabButtonsContainer tabButtonContainer;
+    public event Action<TabButtonsContainer, TabButton[]>? OnTabButtonsCreated;
     public RoundedRect background;
     public MenuTabWrapper tabWrapper;
 
@@ -319,6 +359,11 @@ public class TabContainer : RectangularMenuObject
         tabButtonContainer = new(menu, this);
         subObjects.AddRange([background, tabWrapper, tabButtonContainer]);
     }
+    public void UpdateTabButtonSelectables(TabButtonsContainer tabBtnContainer, TabButton[] oldTabButtons)
+    {
+        OnTabButtonsCreated?.Invoke(tabBtnContainer, oldTabButtons);
+
+    }
     /// <summary>
     /// Objects will not be called for Update/GrafUpdate if they are hidden
     /// </summary>
@@ -327,9 +372,24 @@ public class TabContainer : RectangularMenuObject
         Tab tab = new(menu, this);
         subObjects.Add(tab);
         tabButtonContainer.AddNewTabButton(name, tab);
-        tab.Hide();
+        /*tab.Hide();
         if (activeTab == null) SwitchTab(tab);
+        else activeTab.BindAllSelectables();*/
+        if (activeTab != null) tab.Hide();
+        else activeTab = tab;
+        activeTab.BindAllSelectables(); //update all binds since all tab buttons are recreated
         return tab;
+    }
+    /// <summary>
+    /// Use this if you want to set UpdateSelectables first. Just make a new Tab and call this method
+    /// </summary>
+    public void AddTab(Tab tab, string name)
+    {
+        subObjects.Add(tab);
+        tabButtonContainer.AddNewTabButton(name, tab);
+        if (activeTab != null) tab.Hide();
+        else activeTab = tab;
+        activeTab.BindAllSelectables(); //update all binds since all tab buttons are recreated
     }
     public void RemoveTab(params Tab[] tabsToRemove)
     {
