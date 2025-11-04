@@ -68,8 +68,10 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
         {
             base.OnUIEnabled(menu);
             ArenaSettingsInit();
-            myTab = menu.arenaMainLobbyPage.tabContainer.AddTab(menu.Translate("Team Settings"));
+            //myTab = menu.arenaMainLobbyPage.tabContainer.AddTab(menu.Translate("Team Settings"));
+            myTab = new(menu, menu.arenaMainLobbyPage.tabContainer);
             myTab.AddObjects(myTeamBattleSettingInterface = new OnlineTeamBattleSettingsInterface((ArenaMode)OnlineManager.lobby.gameMode, this, myTab.menu, myTab, new(0, 0), menu.arenaMainLobbyPage.tabContainer.size));
+            menu.arenaMainLobbyPage.tabContainer.AddTab(myTab, menu.Translate("Team Settings"));
         }
         public override void OnUIDisabled(ArenaOnlineLobbyMenu menu)
         {

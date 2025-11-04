@@ -118,7 +118,9 @@ public class TabContainer : RectangularMenuObject
             {
                 menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 PopulatePages(CurrentOffset - 1);
-                container.SwitchTab(activeTabButtons.Last().myTab);
+                var desiredActiveBtn = activeTabButtons.Last();
+                container.SwitchTab(desiredActiveBtn.myTab);
+                menu.selectedObject = desiredActiveBtn.wrapper;
             }
         }
         public void GoNextPage()
@@ -127,7 +129,9 @@ public class TabContainer : RectangularMenuObject
             {
                 menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 PopulatePages(CurrentOffset + 1);
-                container.SwitchTab(activeTabButtons.First().myTab);
+                var desiredActiveBtn = activeTabButtons.First();
+                container.SwitchTab(desiredActiveBtn.myTab);
+                menu.selectedObject = desiredActiveBtn.wrapper;
             }
         }
         public void PopulatePages(int offset)
@@ -197,6 +201,9 @@ public class TabContainer : RectangularMenuObject
     public class Tab : PositionedMenuObject, IPLEASEUPDATEME //yes for nested tab reasons
     {
         public MenuTabWrapper myTabWrapper;
+        /// <summary>
+        /// Used to bind/unbind with outside selectables when shown/hidden
+        /// </summary>
         public event Action<bool>? BindSelectables;
         public Tab(Menu.Menu menu, MenuObject owner) : base(menu, owner, Vector2.zero)
         {
@@ -314,7 +321,7 @@ public class TabContainer : RectangularMenuObject
         }
 
         /// <summary>
-        /// When you want to update all selectables in this tab, including all possible nested tabs in it.
+        /// Update all selectables in this tab, including all possible nested tabs in it.
         /// </summary>
         public void BindAllSelectables()
         {
@@ -344,6 +351,9 @@ public class TabContainer : RectangularMenuObject
 
     public Tab? activeTab;
     public TabButtonsContainer tabButtonContainer;
+    /// <summary>
+    /// Used to bind outside selectables to the new tab buttons. And unbind outside selectables from previous tab buttons
+    /// </summary>
     public event Action<TabButtonsContainer, TabButton[]>? OnTabButtonsCreated;
     public RoundedRect background;
     public MenuTabWrapper tabWrapper;
@@ -365,7 +375,8 @@ public class TabContainer : RectangularMenuObject
 
     }
     /// <summary>
-    /// Objects will not be called for Update/GrafUpdate if they are hidden
+    /// Objects will not be called for Update/GrafUpdate if they are hidden.
+    /// Somewhat obsolete
     /// </summary>
     public Tab AddTab(string name)
     {
@@ -381,7 +392,8 @@ public class TabContainer : RectangularMenuObject
         return tab;
     }
     /// <summary>
-    /// Use this if you want to set UpdateSelectables first. Just make a new Tab and call this method
+    /// Use this if you want to set UpdateSelectables first. Just make a new Tab and call this method.
+    /// Objects will not be called for Update/GrafUpdate if they are hidden
     /// </summary>
     public void AddTab(Tab tab, string name)
     {

@@ -17,11 +17,11 @@ namespace RainMeadow.UI.Components
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
         public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
-        public Action<SettingsPage, bool> UpdateSettingSelectables;
+        public event Action<SettingsPage, bool>? UpdateSettingSelectables;
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
-        public MSCSettingsPage? mscSettings;
-        public WatcherSettingsPage? watcherSettings;
+        public MSCSettingsPage? mscSettingsTab;
+        public WatcherSettingsPage? watcherSettingsTab;
         public SelectSettingsPage? selectSettings;
         public OnlineSlugcatAbilitiesInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
         {
@@ -48,12 +48,12 @@ namespace RainMeadow.UI.Components
         {
             if (ModManager.MSC)
             {
-                MSCSettingsPage mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
+                mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
                 AddSettingsTab(mscSettingsTab, MSCSETTINGS);
             }
             if (ModManager.Watcher)
             {
-                WatcherSettingsPage watcherSettingsTab = new(menu, this, new(0f, 50f));
+                watcherSettingsTab = new(menu, this, new(0f, 50f));
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
         }
@@ -350,6 +350,13 @@ namespace RainMeadow.UI.Components
                 base.RemoveSprites();
                 titleLabel.RemoveFromContainer();
                 titleDivider.RemoveFromContainer();
+            }
+            public override void Update()
+            {
+                base.Update();
+                if (IsActuallyHidden) return;
+                List<SettingsButton> settingBtns = SettingBtns;
+                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count)], right: true);
             }
             public override void GrafUpdate(float timeStacker)
             {
