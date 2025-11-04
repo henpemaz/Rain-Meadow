@@ -13,6 +13,60 @@ namespace RainMeadow
 {
     public static class MenuHelpers
     {
+        public static void RemoveMutualBind(this MenuObject? menuObject, bool leftRight = false, bool bottomTop = false, bool inverted = false)
+        {
+            if (menuObject == null) return;
+            if (leftRight)
+            {
+                //inversed, menuObject is binded on the right side
+                var bindedWith = menuObject.GetBind(left: inverted, right: !inverted);
+                menuObject.RemoveBind(left: inverted, right: !inverted);
+                bindedWith?.RemoveBind(left: !inverted, right: inverted);
+            }
+            if (bottomTop)
+            {
+                //inversed, menuObject is binded on the top
+                var bindedWith = menuObject.GetBind(bottom: inverted, top: !inverted);
+                menuObject.RemoveBind(bottom: inverted, top: !inverted);
+                bindedWith?.RemoveBind(bottom: !inverted, top: inverted);
+            }
+        }
+        public static void RemoveBind(this MenuObject? menuObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            if (menuObject == null) return;
+            if (left)
+                menuObject.nextSelectable[0] = null;
+            if (top)
+                menuObject.nextSelectable[1] = null;
+            if (right)
+                menuObject.nextSelectable[2] = null;
+            if (bottom)
+                menuObject.nextSelectable[3] = null;
+        }
+        /// <summary>
+        /// the first bool to be set true will be returned, you can only get one direction at a time here
+        /// </summary>
+        /// <param name="menuObject"></param>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="top"></param>
+        /// <param name="bottom"></param>
+        /// <returns></returns>
+        public static MenuObject? GetBind(this MenuObject menuObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
+        {
+            if (menuObject != null)
+            {
+                if (left)
+                    return menuObject.nextSelectable[0];
+                if (top)
+                    return menuObject.nextSelectable[1];
+                if (right)
+                    return menuObject.nextSelectable[2];
+                if (bottom)
+                    return menuObject.nextSelectable[3];
+            }
+            return null;
+        }
         public static string LongTranslate(this Menu.Menu menu, string s) => Custom.ReplaceLineDelimeters(menu.Translate(s));
         public static void SafeAddSubobjects(this MenuObject container, params MenuObject?[] subObjectsToAdd)
         {

@@ -5,7 +5,9 @@
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
-
+## Arena:
+- Updated menu to better support controller navigation between UI elements in and outside tabs
+- Fixed MSC Settings' back button being greyed out
 
 # Release 1.8.0
 ## General:
