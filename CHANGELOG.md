@@ -10,6 +10,7 @@
 - Fixed MSC Settings' back button being greyed out
 - Added round reset button
 - Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
+- Saved backpack toggle selction between game restarts
 
 # Release 1.8.0
 ## General:
