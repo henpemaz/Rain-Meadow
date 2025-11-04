@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 namespace RainMeadow
 {
@@ -20,8 +18,8 @@ namespace RainMeadow
             On.AbstractRoom.Abstractize += AbstractRoom_Abstractize;
             On.ArenaSitting.NextLevel += ArenaSitting_NextLevel;
 
-            // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
-            // new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
+            new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.StoryCharacter)).GetGetMethod(), RainWorldGame_StoryCharacter);
+            new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
         }
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
         {
@@ -84,23 +82,7 @@ namespace RainMeadow
                             if (!oe.isMine)
                             {
                                 // not-online-aware removal
-                                Debug("removing remote entity from game " + oe);
-                                oe.beingMoved = true;
-
-                                if (oe.apo.realizedObject is Creature c && c.inShortcut)
-                                {
-                                    if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                                }
-
-                                entities.Remove(oe.apo);
-
-                                absRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                if (oe.apo.realizedObject != null)
-                                {
-                                    room.RemoveObject(oe.apo.realizedObject);
-                                    room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                }
-                                oe.beingMoved = false;
+                                oe.RemoveEntityFromGame(false);
                             }
                             else // mine leave the old online world elegantly
                             {
@@ -157,6 +139,7 @@ namespace RainMeadow
 
                             Debug($"Arena: Local Sitting Data: {newArenaPlayer.playerNumber}: {newArenaPlayer.playerClass}");
                             arena.AddOrInsertPlayerStats(arena, newArenaPlayer, pl);
+
                             self.players.Add(newArenaPlayer);
                         }
                     }
@@ -314,26 +297,10 @@ namespace RainMeadow
             {
                 try
                 {
-                    WorldSession ws = null;
-                    if (isArenaMode(out var _))
-                    {
-                        RainMeadow.Debug("Arena: Setting up world session");
-                        ws = OnlineManager.lobby.worldSessions["arena"];
-                    }
-                    else
-                    {
-                        ws = OnlineManager.lobby.worldSessions[region.name];
-                    }
-
-                    if (ws is null)
-                    {
-                        RainMeadow.Error($"Could not find world session for newly loaded World.");
-                    }
-                    else
-                    {
-                        ws.BindWorld(self, self.world);
-                    }
+                    WorldSession ws = OnlineManager.lobby.gameMode.LinkWorld(self.world);
+                    ws.BindWorld(self, self.world);
                 }
+                // TODO: Why?
                 catch (System.NullReferenceException e) // happens in riv ending
                 {
                     RainMeadow.Error(e);

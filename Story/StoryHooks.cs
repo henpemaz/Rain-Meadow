@@ -126,11 +126,12 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
-            On.Watcher.WarpPoint.PerformWarp += WarpPoint_PerformWarp;
+            //On.Watcher.WarpPoint.PerformWarp += WarpPoint_PerformWarp;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
+            IL.Watcher.SpinningTop.SpawnBackupWarpPoint += SpinningTop_SpawnBackupWarpPoint;
             //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
@@ -190,13 +191,13 @@ namespace RainMeadow
         {
             if (isStoryMode(out var storyGameMode))
             {
-                bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
                 if (OnlineManager.lobby.isOwner && OnlineManager.lobby.clientSettings.Values.Where(cs => cs.inGame) is var inGameClients && inGameClients.Any())
                 {
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
                     var data = self.overrideData ?? self.Data;
+                    var isTransportable = self.transportable; //prevent blocking joining after exiting an echowarp
                     var isEcho = self.room == null || self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()) == true;
                     // Can't warp to warp points with null rooms (echo warps)
                     // remember that echo warps are one way only, so we will NOT gate thru them
@@ -204,20 +205,19 @@ namespace RainMeadow
                     // and ensure theyre in the same room as the warp point itself :)
                     if (!isEcho)
                     {
-                        if (rooms.Distinct().Count() == 1 && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom)
+                        if (rooms.Distinct().Count() == 1 && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom && isTransportable)
                         { // make sure they're at the same room
                             RainWorld.roomIndexToName.TryGetValue(rooms.First(), out var gateRoom);
                             RainMeadow.Debug($"ready for warp {gateRoom}!");
                             storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.MeetRequirement;
-                            readyForWarp = true;
                         }
                         else
                         {
                             storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Closed;
-                            readyForWarp = false;
                         }
                     }
                 }
+                bool readyForWarp = storyGameMode.readyForTransition != StoryGameMode.ReadyForTransition.Closed;
                 if (!OnlineManager.lobby.isOwner || !readyForWarp)
                 { // clients cant activate or update warp points unless it is an echo
                     self.triggerTime = 0;
@@ -254,7 +254,9 @@ namespace RainMeadow
         public void SpinningTop_SpawnWarpPoint(On.Watcher.SpinningTop.orig_SpawnWarpPoint orig, Watcher.SpinningTop self)
         {
             orig(self);
-            if (OnlineManager.lobby != null) //this should be fine, orig edits warp point, we get warppoint, make it oneWay and host should create warp
+            //this should be fine, orig edits warp point, we get warppoint, make it oneWay and host should teleport
+            //Even if ascended, it is called to spawn the remaining echos the player missed so lets not surprise them with teleportation. Especially when echo's room is loaded before they visit the actual room
+            if (OnlineManager.lobby != null && !self.Ascended)
             {
                 Debug("getting warp point from echo");
                 Watcher.SpinningTopData specialData = self.SpecialData;
@@ -263,6 +265,7 @@ namespace RainMeadow
                     Debug("Special data is null!");
                     return;
                 }
+                int spinningTopID = specialData.spawnIdentifier;
                 PlacedObject placedObject = new(PlacedObject.Type.WarpPoint, specialData.CreateWarpPointData(self.room))
                 {
                     pos = self.pos
@@ -276,18 +279,16 @@ namespace RainMeadow
                     return;
                 }
                 placedObject.pos = warpPoint.pos;
-                Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
-                // TODO: All warps by echos are one-way for now this is because we can't reliably obtain the
-                // "source room" of those (see Overworld_WorldLoaded); this leads to warps that warp to the
-                // same region and room which WILL cause issues - so to remediate that we simply pretend all
-                // warps made by echoes are one way only.
-                warpData.oneWay = true;
                 warpPoint.WarpPrecast(); // force cast NOW
-                warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
                 if (OnlineManager.lobby.isOwner)
-                    StoryRPCs.EchoExecuteWatcherRiftWarp(null, self.room.abstractRoom.name, warpData.ToString());
+                    StoryRPCs.SaveEchoWarp(self.room.game, warpPoint);
                 else
-                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString()); //tell owner to perform echo
+                {
+                    Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
+                    warpData = warpPoint.overrideData ?? warpPoint.Data; //WarpPrecast may set overrideData
+                    OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.EchoExecuteWatcherRiftWarp, self.room.abstractRoom.name, warpData.ToString(), spinningTopID, warpPoint.pos); //tell owner to perform echo
+                    //tell owner echo is met we dont want to accidentally have echo and portal at the same place
+                }
 
 
             }
@@ -361,7 +362,6 @@ namespace RainMeadow
                 orig(self);
             }*/
         }
-
         public void SpinningTop_Update(On.Watcher.SpinningTop.orig_Update orig, Watcher.SpinningTop self, bool eu)
         {
             orig(self, eu);
@@ -427,6 +427,30 @@ namespace RainMeadow
             }
         }
 
+        public void SpinningTop_SpawnBackupWarpPoint(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(MoveType.After, x => x.MatchLdcI4(1), x => x.MatchStloc(2));
+                c.Emit(OpCodes.Ldloc_0);
+                c.Emit(OpCodes.Ldloc, 4);
+                c.EmitDelegate(delegate (Watcher.WarpPoint.WarpPointData data, Watcher.WarpPoint roomWarpPoint)
+                {
+                    if (OnlineManager.lobby == null || !OnlineManager.lobby.isOwner) return;
+                    Debug($"SpawnBackupWarpPoint existing warpPoint found.");
+                    //If two way echo warp is saved as host, it is saved as oneway and you cant seal the portal
+                    //thus softlocking you from 3rd ending
+                    //Although two way is added now, i guess we give a chance to hosts having existing saves and replace the saved echo warp data to spinning top's warp data
+                    roomWarpPoint.placedObject.data = data; 
+                });
+
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         public void WarpPoint_PerformWarp(On.Watcher.WarpPoint.orig_PerformWarp orig, Watcher.WarpPoint self)
         {
             orig(self);
@@ -2001,10 +2025,17 @@ namespace RainMeadow
                     if (ac.realizedCreature is Player p)
                     {
                         if (p.touchedNoInputCounter < 20) return false;
-                        if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
+                        // if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
                     }
                 }
             }
+            
+            if (OnlineManager.lobby != null)
+            {
+                // if active cameras are not looking at the region gate that's very bad....
+                if (!self.room.game.cameras.All(x => (x?.room is null) || (x?.room == self.room))) return false;
+            }
+
             return orig(self);
         }
 

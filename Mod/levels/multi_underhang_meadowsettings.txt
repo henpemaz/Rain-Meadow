@@ -1,0 +1,15 @@
+Template: NONE
+DangerType: Thunder
+RainIntensity: 0.01086957
+RumbleIntensity: 0.6195652
+Clouds: 0.2826087
+Grime: 0.1521739
+RandomItemDensity: 0.6630435
+RandomItemSpearChance: 0.3956521
+Palette: 16
+EffectColorA: 18
+EffectColorB: 5
+Effects: Lightning-1-20-20, GreenSparks-1-23-77, ElectricDeath-1-21-134, ExtraLoudThunder-0.3043478-278-17, 
+PlacedObjects: SteamPipe><613.2715><628.7249><-1~-31, SteamPipe><476.6174><616.9108><16~-34, SteamPipe><456.3139><618.8234><-6~-18, SteamPipe><1678.11><494.3657><-10~-18, SteamPipe><1515.516><499.7215><29~-24, SteamPipe><1427.496><579.8447><-8~-22, WallSteamer><1436.794><586.2911><-47~-37, WallSteamer><1731.066><552.4442><33~18, WallSteamer><1605.293><543.6239><-44~48, WallSteamer><1638.076><497.594><38~-72, WallSteamer><1494.708><497.6827><-25~-84, SteamPipe><1784.627><486.8188><-16~-24, SteamPipe><2017.155><547.4778><-26~17, SteamPipe><2051.16><588.4135><9~-48, SteamPipe><2743.105><322.1627><21~-17, SteamPipe><2705.81><358.0649><-26~-19, SteamPipe><2878.131><644.151><7~-19, SteamPipe><2710.732><291.7729><-16~-16, SteamPipe><2825.138><357.1716><30~-17, SteamPipe><2811.95><515.8062><5~23, SteamPipe><2634.555><370.5894><-34~6, SteamPipe><2825.912><461.8243><8~-14, SteamPipe><2765.198><436.9711><3~-20, SteamPipe><2710.445><447.3539><-31~-21, SteamPipe><3372.727><587.0455><13~2, SteamPipe><3328.103><586.6291><-10~-28, SteamPipe><3268.721><635.83><10~-14, SteamPipe><4474.538><587.8378><23~13, SteamPipe><4363.663><539.5187><-17~-24, SteamPipe><4503.416><526.6368><20~-15, SteamPipe><4293.422><597.5958><-15~-11, WallSteamer><4629.056><529.5527><-11~-68, WallSteamer><4302.5><602.9367><-77~-6, WallSteamer><4364.423><528.3624><-42~-73, WallSteamer><4495.804><529.745><-20~-69, WallSteamer><4389.337><151.6806><16~50, WallSteamer><4525.777><196.7281><49~67, WallSteamer><4501.082><138.6074><-42~68, WallSteamer><4408.413><236.3846><33~33, WallSteamer><4440.329><162.4341><19~10, WallSteamer><4597.683><218.607><-63~55, SteamPipe><5668.691><524.7864><-19~-33, SteamPipe><5787.116><571.0676><-35~24, SteamPipe><5793.675><576.1855><15~30, SteamPipe><5727.72><519.9709><-15~-50, SteamPipe><5636.565><586.7562><-22~-25, SteamPipe><5739.289><518.866><4~-28, SteamPipe><5025.121><534.3494><25~-12, SteamPipe><5008.967><525.4604><-5~-9, SteamPipe><5066.43><585.6419><29~-22, SteamPipe><5253.802><604.3135><-4~-20, Corruption><4259.877><132.1964><-1~33, CorruptionTube><4257.445><128.4522><-422~179, CorruptionTube><4004.507><310.0551><-452~23, MultiplayerItem><3462.638><359.332><Spear~-83.75494~-371.8862~0.760644, MultiplayerItem><3564.078><358.3481><Spear~-184.5145~-290.5003~0.6739132, MultiplayerItem><3023.59><240.4031><Spear~12.25092~-158.8567~0.7826087, MultiplayerItem><3080.7><212.5396><Spear~17.32051~-10~0.5657455, MultiplayerItem><3132.535><222.5533><Spear~17.32051~-10~0.467386, 
+AmbientSounds: OMNI><AM_WIN-StrongWnd2.ogg><826.1417><646.5818><0.5><1, OMNI><AM_RAIN-Rumbles.ogg><827.599><569.1738><0.7717391><1, OMNI><AM_RAIN-RollingThunder.ogg><647.699><648.0197><0.6521739><1, OMNI><AM_WIN-HowlingWnd.ogg><648.9432><566.5516><0.6195652><1, 
+FadePalette: 17, 0.25, 0.25, 0.2391304, 0.2391304, 0.25, 0.25

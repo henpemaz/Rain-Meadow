@@ -52,7 +52,6 @@ namespace RainMeadow
             On.ArenaGameSession.PlayersStillActive += ArenaGameSession_PlayersStillActive;
             On.ArenaGameSession.PlayerLandSpear += ArenaGameSession_PlayerLandSpear;
             On.ArenaGameSession.ScoreOfPlayer += ArenaGameSession_ScoreOfPlayer;
-            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
             IL.ArenaGameSession.ctor += OverwriteArenaPlayerMax;
             On.ArenaSitting.SessionEnded += ArenaSitting_SessionEnded;
 
@@ -172,11 +171,7 @@ namespace RainMeadow
                 OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
                 if (pl != null)
                 {
-
-                    if (arena.localAllKills.TryGetValue(pl.inLobbyId, out var kills))
-                    {
-                        player.allKills = kills;
-                    }
+                    player.allKills = ArenaHelpers.GetOnlinePlayerTrophies(arena, player.playerNumber);
 
                     if (arena.playerNumberWithDeaths.TryGetValue(pl.inLobbyId, out var d))
                     {
@@ -717,22 +712,6 @@ namespace RainMeadow
             }
         }
 
-
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
-        {
-            if (isArenaMode(out var _) && ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant))
-            {
-
-                return;
-
-            }
-            else
-            {
-                orig(self, room, placedObj);
-
-            }
-        }
-
         private float CreatureCommunities_LikeOfPlayer(On.CreatureCommunities.orig_LikeOfPlayer orig, CreatureCommunities self, CreatureCommunities.CommunityID commID, int region, int playerNumber)
         {
             if (isArenaMode(out var _))
@@ -784,23 +763,7 @@ namespace RainMeadow
                                     if (!oe.isMine)
                                     {
                                         // not-online-aware removal
-                                        Debug("removing remote entity from game " + oe);
-                                        oe.beingMoved = true;
-
-                                        if (oe.apo.realizedObject is Creature c && c.inShortcut)
-                                        {
-                                            if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                                        }
-
-                                        entities.Remove(oe.apo);
-
-                                        self.room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                        if (oe.apo.realizedObject != null)
-                                        {
-                                            self.room.RemoveObject(oe.apo.realizedObject);
-                                            self.room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                        }
-                                        oe.beingMoved = false;
+                                        oe.RemoveEntityFromGame(false);
                                     }
                                     else // mine leave the old online world elegantly
                                     {
@@ -1515,27 +1478,14 @@ namespace RainMeadow
                         {
                             self.arenaSitting.players[i].roundKills.Add(iconSymbolData);
                             self.arenaSitting.players[i].allKills.Add(iconSymbolData);
-                            if (!arena.localAllKills.ContainsKey(absPlayerCreature.owner.inLobbyId))
-                            {
-                                arena.localAllKills.Add(absPlayerCreature.owner.inLobbyId, self.arenaSitting.players[i].allKills);
-                            }
-                            else
-                            {
-                                arena.localAllKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills;
-                            }
                             if (OnlineManager.lobby.isOwner)
                             {
-                                arena.playerNumberWithKills[absPlayerCreature.owner.inLobbyId] = self.arenaSitting.players[i].allKills.Count;
+                                arena.playerNumberWithTrophies[absPlayerCreature.owner.inLobbyId].Add(iconSymbolData.ToString());
                             }
-                            RainMeadow.Debug($"Arena: All Local Kills Count: {arena.localAllKills.Count}");
 
-                            for (int p = 0; p < OnlineManager.players.Count; p++)
+                            if (!OnlineManager.lobby.isOwner)
                             {
-                                if (OnlineManager.players[p].isMe)
-                                {
-                                    continue;
-                                }
-                                OnlineManager.players[p].InvokeRPC(ArenaRPCs.Arena_AddTrophy, targetAbsCreature, self.arenaSitting.players[i].playerNumber);
+                                OnlineManager.lobby.owner.InvokeRPC(ArenaRPCs.Arena_AddTrophy, targetAbsCreature, self.arenaSitting.players[i].playerNumber);
                             }
                         }
 
