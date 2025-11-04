@@ -9,6 +9,7 @@
 - Updated menu to better support controller navigation between UI elements in and outside tabs
 - Fixed MSC Settings' back button being greyed out
 - Added round reset button
+- Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
 
 # Release 1.8.0
 ## General:
