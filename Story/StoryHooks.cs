@@ -226,6 +226,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
             {
+                //see SpinningTop_SpawnWarpPoint
                 bool isEnteringEchoWarp = self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
                 if (!isEnteringEchoWarp)
                     return; //To prevent race conditions in LoadRegion coroutines when host calls NormalExecuteWatcherRiftWarp
