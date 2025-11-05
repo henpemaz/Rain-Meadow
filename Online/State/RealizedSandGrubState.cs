@@ -48,7 +48,6 @@ namespace RainMeadow
             grub.BitesLeft = bites;
             grub.tentacleHuntCounter = tentacleHuntCounter;
             grub.buryCounter = buryCounter;
-            grub.ai.behavior = SandGrubAI.Behavior.Hide;
            
         }
     }
