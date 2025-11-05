@@ -219,7 +219,6 @@ namespace RainMeadow
                 var storySession = game.GetStorySession;
                 if (!storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Contains(spinningTopID))
                     storySession.saveState.deathPersistentSaveData.spinningTopEncounters.Add(spinningTopID);
-                storySession.spinningTopWarpsLeadingToRippleScreen.Add(warpData.ToString());
                 StoryHelpers.SaveEchoWarp(game, warpPoint, true, true); //save string incase
             }
             else
