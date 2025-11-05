@@ -144,6 +144,10 @@ namespace RainMeadow
                     self.pauseWarningActive = false;
                 }
             }
+             else
+            {
+                orig(self);
+            }
             
         }
 
@@ -2101,3 +2105,4 @@ namespace RainMeadow
         }
     }
 }
+
