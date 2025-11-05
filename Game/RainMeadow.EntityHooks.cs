@@ -39,8 +39,23 @@ namespace RainMeadow
             On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
             On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
             On.Watcher.SandGrub.Collide += SandGrub_Collide;
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
+
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+        private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal
+                //throw;
+            }
+        }
+
         private void BigSandGrubGraphics_UpdateSegments(On.Watcher.BigSandGrubGraphics.orig_UpdateSegments orig, Watcher.BigSandGrubGraphics self)
         {
             try
