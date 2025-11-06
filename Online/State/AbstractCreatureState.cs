@@ -1,3 +1,5 @@
+using Watcher;
+
 namespace RainMeadow
 {
     public class AbstractCreatureState : AbstractPhysicalObjectState
@@ -39,6 +41,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is BigMoth) return new RealizedBigMothState((OnlineCreature)onlineObject);
+
             return base.GetRealizedState(onlineObject);
         }
 
