@@ -725,14 +725,13 @@ namespace RainMeadow
                 cursor.GotoNext(x => x.MatchLdarg(0));
                 cursor.GotoNext(x => x.MatchLdfld<SingularityBomb>(nameof(MoreSlugcats.SingularityBomb.counter)));
                 cursor.GotoNext(x => x.MatchLdcR4(40));
-                cursor.Remove();
-                cursor.EmitDelegate<Func<float>>(() =>
+                cursor.EmitDelegate<Func<float, float>>((float eggtimer) =>
                 {
                     if (RainMeadow.isArenaMode(out var _))
                     {
                         return 120f; 
                     }
-                    return 40f; 
+                    return eggtimer; 
                 });
             }
             catch (Exception except)
