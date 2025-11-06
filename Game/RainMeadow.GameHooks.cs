@@ -3,7 +3,9 @@ using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using static RainMeadow.MeadowProgression;
 
 namespace RainMeadow
 {
@@ -19,6 +21,7 @@ namespace RainMeadow
             On.RainWorldGame.ctor += RainWorldGame_ctor;
             IL.RainWorldGame.ctor += RainWorldGame_ctor2;
             On.StoryGameSession.ctor += StoryGameSession_ctor;
+            IL.OverWorld.ctor += Overworld_ctor; 
             On.RainWorldGame.RawUpdate += RainWorldGame_RawUpdate;
             On.RainWorldGame.ShutDownProcess += RainWorldGame_ShutDownProcess;
             IL.ShortcutHandler.SuckInCreature += ShortcutHandler_SuckInCreature;
@@ -36,6 +39,7 @@ namespace RainMeadow
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
+            IL.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame1;
 
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
@@ -78,6 +82,36 @@ namespace RainMeadow
                 }
             }
         }
+        
+        private void Overworld_ctor(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor = new(context);
+                cursor.GotoNext(MoveType.After,
+                    x => x.MatchStfld<OverWorld>(nameof(OverWorld.regions)));
+                cursor.Emit(OpCodes.Ldarg_0);
+                cursor.EmitDelegate((OverWorld self) =>
+                {
+                    if (OnlineManager.lobby != null)
+                    {
+                        if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
+                        
+                        OnlineManager.lobby.overworld.BindOverworld(self);
+                        OnlineManager.lobby.overworld.Needed();
+                        while (!OnlineManager.lobby.overworld.isAvailable)
+                        {
+                            OnlineManager.ForceLoadUpdate();
+                        }
+                        OnlineManager.lobby.overworld.Activate();
+                    }
+                });
+            }
+            catch (Exception except)
+            {
+                Logger.LogError(except);
+            }
+        }
 
         public void ProcessManager_CueAchievement(On.ProcessManager.orig_CueAchievement orig, ProcessManager self, RainWorld.AchievementID ID, float delay)
         {
@@ -88,6 +122,37 @@ namespace RainMeadow
             }
 
             orig(self, ID, delay);
+        }
+
+        // Load Meadow room settings if they're present.
+        private void RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame1(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+
+                c.GotoNext(moveType: MoveType.After,
+                    i => i.MatchLdarg(0),
+                    i => i.MatchCall<RoomSettings>(nameof(RoomSettings.Reset))
+                );
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_2);
+                c.EmitDelegate((RoomSettings self, string name) =>
+                {
+                    if (isArenaMode(out var arena))
+                    {
+                        var meadowFilePath = WorldLoader.FindRoomFile(name, false, "_meadowsettings.txt", true);
+                        if (File.Exists(meadowFilePath))
+                        {
+                            self.filePath = meadowFilePath;
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+            }
         }
 
         private string Options_GetSaveFileName_SavOrExp(On.Options.orig_GetSaveFileName_SavOrExp orig, Options self)
@@ -461,13 +526,12 @@ namespace RainMeadow
 
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 
-                if (!WorldSession.map.TryGetValue(self.world, out var ws)) return;
 
-                if (ws.isActive) ws.Deactivate();
-                ws.NotNeeded();
+                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
+                OnlineManager.lobby.overworld.NotNeeded();
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
-                    while (ws.isAvailable)
+                    while (OnlineManager.lobby.overworld.isAvailable)
                     {
                         OnlineManager.ForceLoadUpdate();
                     }

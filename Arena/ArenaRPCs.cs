@@ -229,6 +229,17 @@ namespace RainMeadow
 
         }
 
+
+        [RPCMethod(runDeferred = true)]
+        public static void Arena_RestartGame(RPCEvent rpcEvent)
+        {
+            
+            if (rpcEvent.from == OnlineManager.lobby.owner && RainMeadow.isArenaMode(out var arena))
+            {
+                arena.leaveToRestart = true;
+            }
+        }
+
         [RPCMethod]
         public static void Arena_AddTrophy(OnlinePhysicalObject creatureKilled, int playerNum)
         {
@@ -260,18 +271,9 @@ namespace RainMeadow
                             game.GetArenaGameSession.arenaSitting.players[i].allKills.Add(iconSymbolData);
                             if (pl != null)
                             {
-                                if (!arena.localAllKills.ContainsKey(pl.inLobbyId))
-                                {
-                                    arena.localAllKills.Add(pl.inLobbyId, game.GetArenaGameSession.arenaSitting.players[i].allKills);
-                                }
-                                else
-                                {
-                                    arena.localAllKills[pl.inLobbyId].Add(iconSymbolData);
-                                }
-                                if (OnlineManager.lobby.isOwner)
-                                {
-                                    arena.playerNumberWithKills[pl.inLobbyId] = arena.localAllKills[pl.inLobbyId].Count;
-                                }
+
+                                arena.playerNumberWithTrophies[pl.inLobbyId].Add(iconSymbolData.ToString());
+
                             }
                         }
 

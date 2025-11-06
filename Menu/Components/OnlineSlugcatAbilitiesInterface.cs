@@ -5,6 +5,7 @@ using Menu.Remix.MixedUI.ValueTypes;
 using RainMeadow.UI.Components.Patched;
 using RainMeadow.UI.Interfaces;
 using RWCustom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,10 +17,11 @@ namespace RainMeadow.UI.Components
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
         public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
+        public event Action<SettingsPage, bool>? UpdateSettingSelectables;
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
-        public MSCSettingsPage? mscSettings;
-        public WatcherSettingsPage? watcherSettings;
+        public MSCSettingsPage? mscSettingsTab;
+        public WatcherSettingsPage? watcherSettingsTab;
         public SelectSettingsPage? selectSettings;
         public OnlineSlugcatAbilitiesInterface(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName) : base(menu, owner, pos)
         {
@@ -46,12 +48,12 @@ namespace RainMeadow.UI.Components
         {
             if (ModManager.MSC)
             {
-                MSCSettingsPage mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
+                mscSettingsTab = new(menu, this, new(0f, 50f), paincatName);
                 AddSettingsTab(mscSettingsTab, MSCSETTINGS);
             }
             if (ModManager.Watcher)
             {
-                WatcherSettingsPage watcherSettingsTab = new(menu, this, new(0f, 50f));
+                watcherSettingsTab = new(menu, this, new(0f, 50f));
                 AddSettingsTab(watcherSettingsTab, WATCHERSETTINGS);
             }
         }
@@ -62,9 +64,8 @@ namespace RainMeadow.UI.Components
             settings.Hide();
             if (activeSettings == null) SwitchTab(settings);
         }
-        public void SwitchTab(SettingsPage? settings)
+        public void SwitchTab(SettingsPage settings)
         {
-            if (settings == null || activeSettings == settings) return;
             activeSettings?.Hide();
             activeSettings = settings;
             activeSettings.Show();
@@ -83,8 +84,9 @@ namespace RainMeadow.UI.Components
             {
                 SettingsPage settings = settingSignals[message];
                 SettingsPage? prevSettings = activeSettings;
+                if (prevSettings == settings) return;
+                OnSwitchSettingsTab(settings, prevSettings);
                 SwitchTab(settings);
-                OnSwitchSettingsTab(activeSettings, prevSettings);
             }
         }
 
@@ -181,7 +183,6 @@ namespace RainMeadow.UI.Components
                 if (IsActuallyHidden) return;
                 saintAscendanceTimerLabel.label.color = saintAscendDurationTimerTextBox.rect.colorEdge;
             }
-
             public bool GetChecked(CheckBox box)
             {
                 string id = box.IDString;
@@ -309,6 +310,7 @@ namespace RainMeadow.UI.Components
             public FLabel titleLabel;
             public FSprite titleDivider;
             public ButtonScroller scroller;
+            public List<SettingsButton> SettingBtns => scroller.GetSpecificButtons<SettingsButton>();
             public override string Name => "Select Settings";
             public SelectSettingsPage(Menu.Menu menu, MenuObject owner, Dictionary<string, SettingsPage> allSettings) : base(menu, owner)
             {
@@ -324,10 +326,7 @@ namespace RainMeadow.UI.Components
                     color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey)
                 };
                 Container.AddChild(titleDivider);
-                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeYOffset: -40)
-                {
-                    greyOutWhenNoScroll = true,
-                };
+                scroller = new(menu, this, new(80, 420 - ButtonScroller.CalculateHeightBasedOnAmtOfButtons(8, 45, 0)), 8, 290, new(45, 0), sliderPosOffset: new(0, 0), sliderSizeYOffset: -40);
                 scroller.CreateSideButtonLines();
                 KeyValuePair<string, SettingsPage>[] array = [.. allSettings];
                 for (int i = 0; i < array.Length; i++)
@@ -351,6 +350,13 @@ namespace RainMeadow.UI.Components
                 base.RemoveSprites();
                 titleLabel.RemoveFromContainer();
                 titleDivider.RemoveFromContainer();
+            }
+            public override void Update()
+            {
+                base.Update();
+                if (IsActuallyHidden) return;
+                List<SettingsButton> settingBtns = SettingBtns;
+                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count)], right: true);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -430,7 +436,7 @@ namespace RainMeadow.UI.Components
         {
             public bool SettingsDisabled => (menu as ArenaOnlineLobbyMenu)?.SettingsDisabled ?? true;
             public abstract string Name { get; }
-            public virtual void SelectAndCreateBackButtons(SettingsPage? previousSettingPage,bool forceSelectedObject)
+            public virtual void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
                 if (forceSelectedObject)
                     menu.selectedObject = null;
@@ -442,6 +448,11 @@ namespace RainMeadow.UI.Components
             public virtual void SaveInterfaceOptions()
             {
 
+            }
+            public override void BindMySelectables()
+            {
+                (owner as OnlineSlugcatAbilitiesInterface)?.UpdateSettingSelectables?.Invoke(this, IsActuallyHidden);
+                base.BindMySelectables();
             }
         }
 
