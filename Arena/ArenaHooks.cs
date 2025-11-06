@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using static RainMeadow.MeadowProgression;
 
 
 namespace RainMeadow
@@ -103,6 +104,7 @@ namespace RainMeadow
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
+            IL.MoreSlugcats.SingularityBomb.Update += SingularityBomb_Update;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
             new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.SetRippleLevel);
             new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.SetLevitate);
@@ -713,6 +715,32 @@ namespace RainMeadow
             else
             {
                 orig(self, abstractPhysicalObject, world);
+            }
+        }
+
+        public void SingularityBomb_Update(ILContext context)
+        {
+            // remove symbol for wanderer in the random players background image.
+            try
+            {
+                ILCursor cursor = new(context);
+                var skip = cursor.DefineLabel();
+                cursor.GotoNext(x => x.MatchLdarg(0));
+                cursor.GotoNext(x => x.MatchLdfld<SingularityBomb>(nameof(MoreSlugcats.SingularityBomb.counter)));
+                cursor.GotoNext(x => x.MatchLdcR4(40));
+                cursor.Remove();
+                cursor.EmitDelegate<Func<float>>(() =>
+                {
+                    if (RainMeadow.isArenaMode(out var _))
+                    {
+                        return 120f; 
+                    }
+                    return 40f; 
+                });
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
             }
         }
 
