@@ -730,7 +730,7 @@ namespace RainMeadow
                 {
                     if (RainMeadow.isArenaMode(out var _))
                     {
-                        return 120f; 
+                        return 100f;
                     }
                     return 40f; 
                 });
