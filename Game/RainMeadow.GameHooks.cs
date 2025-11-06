@@ -68,10 +68,12 @@ namespace RainMeadow
 
         private void GlobalRain_InitDeathRain(On.GlobalRain.orig_InitDeathRain orig, GlobalRain self)
         {
-            if (OnlineManager.lobby != null && self.deathRain != null) // Avoid recreating DeathRain if we already have one
+            if (OnlineManager.lobby == null)
             {
+                orig(self);
                 return;
             }
+            if (self.deathRain != null) return; // Avoid recreating DeathRain if we already have one
             orig(self);
             if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
             {
