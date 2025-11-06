@@ -718,7 +718,6 @@ namespace RainMeadow
 
         public void SingularityBomb_Update(ILContext context)
         {
-            // remove symbol for wanderer in the random players background image.
             try
             {
                 ILCursor cursor = new(context);
