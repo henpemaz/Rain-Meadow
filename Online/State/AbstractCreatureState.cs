@@ -1,4 +1,4 @@
-using IL.Watcher;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -39,12 +39,12 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is GarbageWorm) return new RealizedGarbageWormState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DaddyLongLegs) return new RealizedDaddyLongLegsState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Deer) return new RealizedDeerState((OnlineCreature)onlineObject);
-            if (onlineObject.apo.realizedObject is Watcher.BigMoth) return new RealizedBigMothState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DropBug) return new RealizedDropBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Scavenger) return new RealizedScavengerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
 

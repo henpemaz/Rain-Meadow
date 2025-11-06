@@ -8,32 +8,33 @@ using Watcher;
 
 namespace RainMeadow
 {
-    public class RealizedBigMothState : RealizedCreatureState
+    public class RealizedMothState : RealizedCreatureState
     {
         [OnlineFieldHalf]
         public Vector2 moveDirection;
         [OnlineField]
         bool drinkingChunk;
         [OnlineField(nullable = true)]
-        BodyChunkRef drinkChunk;
+        BodyChunkRef? drinkChunk;
         [OnlineField]
         Generics.DynamicOrderedStates<MothLegState> legState;
 
-        public RealizedBigMothState() { }
+        public RealizedMothState() { }
 
-        public RealizedBigMothState(OnlineCreature onlineEntity) : base(onlineEntity)
+        public RealizedMothState(OnlineCreature onlineEntity) : base(onlineEntity)
         {
             BigMoth bigMoth = (BigMoth)onlineEntity.realizedCreature;
 
             moveDirection = bigMoth.moveDirection;
             drinkingChunk = bigMoth.drinkingChunk;
-            drinkChunk = BodyChunkRef.FromBodyChunk(bigMoth.drinkChunk);
+            drinkChunk = BodyChunkRef.FromBodyChunk(bigMoth.drinkChunk) ?? null;
+
 
             var legs = new List<BigMoth.MothLeg>();
 
-            for(int i = 0; i < bigMoth.legs.GetLength(0); i++)
+            for (int i = 0; i < bigMoth.legs.GetLength(0); i++)
             {
-                for(int j = 0; j < bigMoth.legs.GetLength(1); j++)
+                for (int j = 0; j < bigMoth.legs.GetLength(1); j++)
                 {
                     legs.Add(bigMoth.legs[i, j]);
                 }
@@ -56,31 +57,32 @@ namespace RainMeadow
                 bigMoth.drinkChunk = drinkChunk.ToBodyChunk();
             }
 
-            for(int i = 0; i < legState.list.Count; i++)
+            for (int i = 0; i < legState.list.Count; i++)
             {
                 legState.list[i].ReadTo(bigMoth.legs[i / 2, i % 2]);
             }
         }
+
     }
 
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class MothLegState : OnlineState
     {
         [OnlineField(nullable = true)]
-        BodyChunkRef grabbedChunk;
+        BodyChunkRef? grabbedChunk;
         [OnlineFieldHalf]
         Vector2 footPos;
         public MothLegState() { }
 
         public MothLegState(BigMoth.MothLeg mothLeg)
         {
-            this.grabbedChunk = BodyChunkRef.FromBodyChunk(mothLeg.grabbedChunk);
+            this.grabbedChunk = BodyChunkRef.FromBodyChunk(mothLeg.grabbedChunk) ?? null;
             this.footPos = mothLeg.footPos;
         }
 
         public void ReadTo(BigMoth.MothLeg mothLeg)
         {
-            mothLeg.grabbedChunk = grabbedChunk.ToBodyChunk();
+            mothLeg.grabbedChunk = grabbedChunk?.ToBodyChunk() ?? null;
             mothLeg.footPos = footPos;
         }
     }
