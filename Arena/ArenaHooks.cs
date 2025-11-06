@@ -11,8 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static RainMeadow.MeadowProgression;
-
 
 namespace RainMeadow
 {
