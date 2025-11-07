@@ -108,7 +108,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
 
         menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
-        menu.MutualHorizontalButtonBind(playerDisplayer.scrollUpButton, arenaInfoButton); //loop
     }
     public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
     public void BuildPlayerDisplay()
@@ -170,32 +169,19 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 menu.MutualHorizontalButtonBind(chatMenuBox.messageScroller.scrollSlider, tabButtons[i].wrapper);
             else tabBtnContainer.activeTabButtons[i].wrapper.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
         }
-        menu.TryMutualBind(arenaInfoButton, tabBtnContainer.topArrowButton, leftRight: true);
-        menu.TryMutualBind(tabBtnContainer.topArrowButton, playerDisplayer.scrollUpButton, leftRight: true);
+        menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
         tabBtnContainer.bottomArrowButton.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
-    }
+    } 
     public void BindPlaylistTabSelectables(bool isHidden)
     {
         if (isHidden)
         {
-            menu.MutualHorizontalButtonBind(arenaInfoButton, playerDisplayer.scrollUpButton);
-            if (tabContainer.tabButtonContainer.topArrowButton != null)
-            {
-                menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton);
-                menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
-            }
+            menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
             playerDisplayer.scrollDownButton.RemoveMutualBind(leftRight: true, inverted: true);
             return;
         }
         List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
-        if (tabContainer.tabButtonContainer.topArrowButton != null)
-        {
-            menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
-            menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, levelSelector.allLevelsPlaylist.scrollUpButton);
-        }
-        else 
-            menu.MutualHorizontalButtonBind(arenaInfoButton, levelSelector.allLevelsPlaylist.scrollUpButton);
-        menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton);
+        menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, levelSelector.allLevelsPlaylist.scrollUpButton, levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
         menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollDownButton, playerDisplayer.scrollDownButton);
 
         TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];

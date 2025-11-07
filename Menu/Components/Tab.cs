@@ -352,7 +352,9 @@ public class TabContainer : RectangularMenuObject
     public Tab? activeTab;
     public TabButtonsContainer tabButtonContainer;
     /// <summary>
-    /// Used to bind outside selectables to the new tab buttons. And unbind outside selectables from previous tab buttons
+    /// Used to bind outside selectables to the new tab buttons and unbind outside selectables from previous tab buttons.
+    /// <para>Called before active tab binds selectables if you add/remove tabs</para>
+    /// <para>If you want to bind tab buttons to selectables in a tab, do so in Tab.BindSelectables event</para>
     /// </summary>
     public event Action<TabButtonsContainer, TabButton[]>? OnTabButtonsCreated;
     public RoundedRect background;
