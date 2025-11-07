@@ -20,7 +20,7 @@ namespace RainMeadow.UI.Components
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));
         public bool SelectionActive => selectionStartPos != -1;
         public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
-        public bool TypingOnOtherObjects = CanBeTypedExt._handler?._focused != null;
+        public bool TypingOnOtherObjects => CanBeTypedExt._handler?._focused != null;
         public bool Focused
         {
             get => focused;

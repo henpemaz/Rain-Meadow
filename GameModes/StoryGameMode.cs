@@ -91,7 +91,7 @@ namespace RainMeadow
 
         public HashSet<PlacedObject.Type> disallowedPlacedObjects = new()
         {
-            PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle
+            //PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle (UPDATE: probably doesn't anymore)
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
             DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
             Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
@@ -161,9 +161,10 @@ namespace RainMeadow
             return currentCampaign;
         }
 
-        public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
+        public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame? game)
         {
-            return game.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
+            //fasttravelscreen -> null rainworldGame
+            return game?.GetStorySession.saveState.currentTimelinePosition ?? SlugcatStats.SlugcatToTimeline(currentCampaign);
         }
 
         public override bool ShouldSpawnFly(FliesWorldAI self, int spawnRoom)
@@ -177,7 +178,7 @@ namespace RainMeadow
 
         public override bool PlayerCanOwnResource(OnlinePlayer from, OnlineResource onlineResource)
         {
-            if (onlineResource is WorldSession)
+            if (onlineResource is OverworldSession || onlineResource is WorldSession)
             {
                 return lobby.owner == from;
             }

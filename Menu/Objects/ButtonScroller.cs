@@ -151,7 +151,12 @@ namespace RainMeadow
             buttons.Clear();
             if (constrainScroll) ConstrainScroll();
         }
-        public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons) => AddScrollObjects(scrollBoxButtons, true, true);
+
+        /// <summary>
+        /// Add scrollButtons first before adding scroll objects when wanted. Slider won't be accessible if scroll buttons were added.
+        /// </summary>
+        /// <param name="scrollBoxButtons"></param>
+        public void AddScrollObjects(params IPartOfButtonScroller[]? scrollBoxButtons) => AddScrollObjects(scrollBoxButtons, true, scrollUpButton == null);
         public void AddScrollObjects(IPartOfButtonScroller[]? scrollBoxButtons, bool addToSubobjects, bool bindToSlider)
         {
             if (scrollBoxButtons == null) return;
@@ -161,8 +166,7 @@ namespace RainMeadow
             {
                 if (addToSubobjects)
                     subObjects.Add(menuObj);
-                if (bindToSlider)
-                    menuObj.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
+                if (bindToSlider) menuObj.TryBind(scrollSlider, !sliderIsOnRightSide, sliderIsOnRightSide);
             }
         }
         public Vector2 GetIdealNormalPosForButton(int index)

@@ -674,7 +674,12 @@ public class ArenaLevelSelector : PositionedMenuObject, IPLEASEUPDATEME
         string[] rawLevelDirData = AssetManager.ListDirectory("Levels");
         for (int j = 0; j < rawLevelDirData.Length; j++)
         {
-            if (rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 4, 4) != ".txt" || rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 13, 13) == "_settings.txt" || rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 10, 10) == "_arena.txt" || rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 15, 15) == "_properties.txt" || rawLevelDirData[j].Contains("unlockall"))
+            if (rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 4, 4) != ".txt" || 
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 13, 13) == "_settings.txt" || 
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 10, 10) == "_arena.txt" || 
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 15, 15) == "_properties.txt" ||
+                rawLevelDirData[j].Substring(rawLevelDirData[j].Length - 19, 19) == "_meadowsettings.txt" ||
+                rawLevelDirData[j].Contains("unlockall"))
                 continue;
 
             string[] levelName = rawLevelDirData[j].Substring(0, rawLevelDirData[j].Length - 4).Split(Path.DirectorySeparatorChar);

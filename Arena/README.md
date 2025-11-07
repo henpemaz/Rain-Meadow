@@ -287,5 +287,79 @@ Leverage ExternalArenaGameMode's virtual functions
         }
 ```
 
+### Adding Slugcat Settings
+Slugcat Abilities Tab has support to add your custom settings for slugcats. First make your class from `SettingsPage`
+```csharp
+ public class MyCustomSettingsPage : SettingsPage
+ {
+      public OpTextBox mySlugcatFlightDurationTextBox;
+      public SimpleButton backButton;
+
+      public override string Name => "My Custom Name"; //this will appear on Select Settings Page
+
+      public MyCustomSettingsPage(Menu.Menu menu, MenuObject owner) : base(menu, owner)
+      {
+           mySlugcatFlightDurationTextBox = new(new Configurable<int>(myOptionsSave.Value), new Vector2(0, 0), 40);
+           mySlugcatFlightDurationTextBox.OnValueUpdate += (UIconfig config, string lastValue, string newValue) =>
+           {
+                //Doesnt have to appear here, just make sure lobby data gets changed accordingly somewhere
+                MyCoolLobbyData data = GetMyLobbyData();
+                data.mySlugcatFlightDuration = mySlugcatFlightDurationTextBox.valueInt;
+           }; 
+      }
+      public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
+      {
+           if (backButton == null)
+           {
+               //Signal Text HAS to be OnlineSlugcatAbilitiesInterface.BACKTOSELECT to return to Select Settings Page
+               backButton = new SimpleButton(menu, this, menu.Translate("BACK"), OnlineSlugcatAbilitiesInterface.BACKTOSELECT, new Vector2(30, 30), new Vector2(80, 30));
+               AddObjects(backButton);
+           }
+           if (forceSelectedObject)
+               menu.selectedObject = backButton;
+      }
+      public override void CallForSync()
+      {
+            MyCoolLobbyData data = GetMyLobbyData();
+            data.mySlugcatFlightDuration = mySlugcatFlightDurationTextBox.valueInt;
+      }
+      public override void SaveInterfaceOptions()
+      {
+           myOptionsSave.mySlugcatFlightDuration.Value = mySlugcatFlightDurationTextBox.valueInt;
+      }
+      public override void Update()
+      {
+           MyCoolLobbyData data = GetMyLobbyData();
+           mySlugcatFlightDurationTextBox.greyedOut = SettingsDisabled
+           if (!mySlugcatFlightDurationTextBox.held)
+                  mySlugcatFlightDurationTextBox.valueInt = data.mySlugcatFlightDuration;
+      }
+}
+```
+You can check `OnlineSlugcatAbilitiesInterface.MSCSettings, OnlineSlugcatAbilitiesInterface.WatcherSettings` [here](https://github.com/henpemaz/Rain-Meadow/blob/main/Menu/Components/OnlineSlugcatAbilitiesInterface.cs) as an example
+
+Once you made the class, you can start hooking
+```csharp
+public void ApplyHooks()
+{
+      new Hook(typeof(OnlineSlugcatAbilitiesInterface).GetMethod("AddAllSettings"), OnlineSlugcatAbilitiesInterface_AddAllSettings);
+
+      new Hook(typeof(ArenaMainLobbyPage).GetMethod("ShouldOpenSlugcatAbilitiesTab"), ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab);
+}
+public void OnlineSlugcatAbilitiesInterface_AddAllSettings(Action<OnlineSlugcatAbilitiesInterface, string> orig, OnlineSlugcatAbilitiesInterface self, string painCatName)
+ {
+      orig(self, painCatName);
+      MyCustomSettingsPage myCustomSettings = new(self.menu, self);
+      self.AddSettingsTab(myCustomSettings);
+ }
+
+//This hook is optional. Slugcat Abilities Tab only appears when MSC or Watcher is on
+//Add this if you want your settings to appear without MSC AND Watcher
+public bool ArenaMainLobbyPage_ShouldOpenSlugcatAbilitiesTab(Func<ArenaMainLobbyPage, bool> orig, ArenaMainLobbyPage self)
+ {
+    return true;
+ }
+```
+
 ## Beyond
 There are a number of virtual functions available for you  in ExternalArenaGameMode to leverage for Arena gameplay. Check the [BaseGameMode.cs](https://github.com/henpemaz/Rain-Meadow/blob/main/Arena/ArenaOnlineGameModes/BaseGameMode.cs) for a full list. They are added as a convenience. If you don't want to use them, hook your own. Best of luck, and ping @UO when you've made a new game mode! 

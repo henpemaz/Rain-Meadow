@@ -176,12 +176,22 @@ namespace RainMeadow
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)
             {
-                if (f.FieldType.IsArray) return Expression.Call(
+                Expression comparisonExpression = Expression.Equal(currentField, baselineField);
+                if (f.FieldType.IsArray) comparisonExpression = Expression.Call(
                     typeof(Enumerable).GetMethods().First(m => m.Name == "SequenceEqual" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(f.FieldType.GetElementType()),
                     Expression.Convert(currentField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType())),
                     Expression.Convert(baselineField, typeof(IEnumerable<>).MakeGenericType(f.FieldType.GetElementType()))
                     );
-                return Expression.Equal(currentField, baselineField);
+
+                return Expression.Condition(
+                    comparisonExpression,
+                    Expression.Constant(true),
+                    Expression.Block(Expression.Call(
+                        Expression.Field(null, typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons))),
+                        typeof(OnlineManager).GetField(nameof(OnlineManager.recentFailedComparisons)).FieldType.GetMethod("Add"),
+                        Expression.Constant(f)
+                    ), Expression.Constant(false))
+                );
             }
         }
 
@@ -455,7 +465,7 @@ namespace RainMeadow
                                             : f.GetCustomAttribute<OnlineFieldAttribute>().ComparisonMethod(f, Expression.Field(selfConverted, f), Expression.Field(baselineConverted, f))
                                             )
                                     ).Where(e => e != null).ToArray())
-                                ));
+                                )); 
 #if TRACING
                             expressions.Add(Expression.Block(
                                 deltaGroups[deltaGroups.Keys.ToList()[i]].Select(

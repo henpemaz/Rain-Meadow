@@ -1,7 +1,9 @@
-﻿using RWCustom;
+using Newtonsoft.Json.Linq;
 using System;
+using RWCustom;
 using System.Collections.Generic;
 using UnityEngine;
+using static RainMeadow.Serializer;
 
 namespace RainMeadow
 {
@@ -1329,8 +1331,59 @@ namespace RainMeadow
 
             }
         }
+        public void Serialize(ref Dictionary<int, List<string>> data)
+        {
+#if TRACING
+            long wasPos = this.Position;
+#endif
+            if (IsWriting)
+            {
+                if (data is null)
+                {
+                    writer.Write((byte)0);
+                }
+                else
+                {
+                    writer.Write((byte)data.Count);
+                    foreach (var kvp in data)
+                    {
+                        writer.Write(kvp.Key);
+                        writer.Write((byte)kvp.Value.Count);
+                        for (int i = 0; i < kvp.Value.Count; i++)
+                        {
 
-        public void Serialize(ref Dictionary<int, int> data)
+                            writer.Write(kvp.Value[i].ToString());
+                        }
+                    }
+                }
+            }
+            if (IsReading)
+            {
+                var dictCount = reader.ReadByte();
+                if (dictCount == 0)
+                {
+                    data = new Dictionary<int, List<string>>();
+                }
+                else
+                {
+                    data = new Dictionary<int, List<string>>(dictCount);
+                    for (int i = 0; i < dictCount; i++)
+                    {
+                        var key = reader.ReadInt32();
+                        var listCount = reader.ReadByte();
+                        var value = new List<string>(listCount);
+
+                        for (int j = 0; j < listCount; j++)
+                        {
+                            value.Add(reader.ReadString());
+
+                        }
+                        data.Add(key, new List<string>(value));
+                    }
+                }
+            }
+        }
+         public void Serialize(ref Dictionary<int, int> data)
         {
 #if TRACING
             long wasPos = this.Position;

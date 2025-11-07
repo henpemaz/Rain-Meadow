@@ -95,7 +95,12 @@ namespace RainMeadow
     public class RealizedPlayerState : RealizedCreatureState
     {
         [OnlineField]
-        public bool malnourished = false;
+        public byte malnourishedState = 0;
+        const byte MALNOURISHED = 1 << 0;
+        const byte MALNOURISHED_BY_CREATURE = 1 << 1;
+        
+
+
 
         [OnlineField(nullable = true)]
         private VinePositionState? vinePosState;
@@ -212,7 +217,13 @@ namespace RainMeadow
                     pointingDir = playerGraphics.hands[handIndex].absoluteHuntPos;
             }
 
-            malnourished = p.Malnourished;
+            malnourishedState = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
+        }
+        
+        byte GetMalnourishedState(bool malnourished, bool malnourishedByCreature)
+        {
+            return (byte)((malnourished ? MALNOURISHED : 0)
+                | (malnourishedByCreature ? MALNOURISHED_BY_CREATURE : 0));
         }
 
         public Player.InputPackage GetInput()
@@ -351,8 +362,9 @@ namespace RainMeadow
                 }
             }
 
-            if (p.Malnourished != malnourished) {
-                p.SetMalnourished(malnourished);
+            byte curmalstate = GetMalnourishedState(p.slugcatStats.malnourished, p.slugcatStats.malnourishedByCreature);
+            if (curmalstate != malnourishedState) {
+                p.SetMalnourished((malnourishedState & MALNOURISHED) != 0,  (malnourishedState & MALNOURISHED_BY_CREATURE) != 0);
             }
         }
     }

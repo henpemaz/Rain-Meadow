@@ -31,6 +31,24 @@ namespace RainMeadow
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("BodyColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("DecalColor").GetGetMethod(), MouseGraphics_ColorHook);
             new MonoMod.RuntimeDetour.Hook(typeof(MouseGraphics).GetProperty("EyesColor").GetGetMethod(), MouseGraphics_ColorHook);
+
+            On.MouseGraphics.InitiateSprites += MouseGraphics_InitiateSprites;
+        }
+
+        private static void MouseGraphics_InitiateSprites(On.MouseGraphics.orig_InitiateSprites orig, MouseGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam)
+        {
+            orig(self, sLeaser, rCam);
+
+            if (creatureControllers.TryGetValue(self.mouse, out var p))
+            {
+                if (p.customization.IsNightSkySkin(p.onlineCreature))
+                {
+                    for (int i = 0; i < sLeaser.sprites.Length; i++)
+                    {
+                        sLeaser.sprites[i].shader = rCam.game.rainWorld.Shaders["RM_NightSkySkin"];
+                    }
+                }
+            }
         }
 
         private static void LanternMouse_Squeak(On.LanternMouse.orig_Squeak orig, LanternMouse self, float stress)

@@ -179,12 +179,17 @@ namespace RainMeadow
 
         public static void Update(RainWorldGame self, float dt)
         {
-            if (overlayContainer == null && self.devToolsActive)
+            if (overlayContainer == null && self.devToolsActive && !ProfilerOverlay.profilerActive)
             {
                 CreateOverlay(self);
             }
 
             if (overlayContainer != null && !self.devToolsActive)
+            {
+                RemoveOverlay(self);
+            }
+
+            if (overlayContainer != null && self.devToolsActive && ProfilerOverlay.profilerActive)
             {
                 RemoveOverlay(self);
             }
@@ -286,7 +291,7 @@ namespace RainMeadow
             }
             inWorldSession = inRoomSession.worldSession;
 
-            var worlds = OnlineManager.lobby.worldSessions.Values.ToList();
+            var worlds = OnlineManager.lobby.overworld.worldSessions.Values.ToList();
             worlds.Sort((x, y) => (x == inWorldSession ? -1 : 0) + (y == inWorldSession ? 1 : 0));
 
             int lastWorldLines = 0;

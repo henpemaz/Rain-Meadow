@@ -15,8 +15,9 @@ namespace RainMeadow
         {
             On.OverWorld.WorldLoaded += OverWorld_WorldLoaded; // creature moving between WORLDS
             On.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint;
-            IL.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint2;
+            //IL.OverWorld.InitiateSpecialWarp_WarpPoint += OverWorld_InitiateSpecialWarp_WarpPoint2;
             On.OverWorld.InitiateSpecialWarp_SingleRoom += OverWorld_InitiateSpecialWarp_SingleRoom;
+            IL.OverWorld.Update += OverWorld_Update;
             On.AbstractRoom.MoveEntityToDen += AbstractRoom_MoveEntityToDen; // maybe leaving room, maybe entering world
             On.AbstractWorldEntity.Destroy += AbstractWorldEntity_Destroy; // creature moving between rooms
             On.AbstractRoom.RemoveEntity_AbstractWorldEntity += AbstractRoom_RemoveEntity; // creature moving between rooms
@@ -34,10 +35,79 @@ namespace RainMeadow
             IL.AbstractCreature.IsExitingDen += AbstractCreature_IsExitingDen;
             IL.MirosBirdAbstractAI.Raid += MirosBirdAbstractAI_Raid; //miros birds dont need to do this
             On.Watcher.SandGrubGraphics.DrawSprites += SandGrubGraphics_DrawSprites;
+            On.Watcher.BigSandGrubGraphics.DrawSprites += BigSandGrubGraphics_DrawSprites;
+            On.Watcher.BigSandGrubNeck.Update += BigSandGrubNeck_Update;
+            On.Watcher.BigSandGrubGraphics.UpdateSegments += BigSandGrubGraphics_UpdateSegments;
+            On.Watcher.SandGrub.Collide += SandGrub_Collide;
+            On.Watcher.SandGrub.UpdateTentacle += SandGrub_UpdateTentacle;
 
             new Hook(typeof(AbstractCreature).GetProperty("Quantify").GetGetMethod(), this.AbstractCreature_Quantify);
         }
+        private void SandGrub_UpdateTentacle(On.Watcher.SandGrub.orig_UpdateTentacle orig, Watcher.SandGrub self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal
+                //throw;
+            }
+        }
 
+        private void BigSandGrubGraphics_UpdateSegments(On.Watcher.BigSandGrubGraphics.orig_UpdateSegments orig, Watcher.BigSandGrubGraphics self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+
+        private void BigSandGrubNeck_Update(On.Watcher.BigSandGrubNeck.orig_Update orig, Watcher.BigSandGrubNeck self)
+        {
+            try
+            {
+                orig(self);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+
+        // This occurs because sandgrub is attempting to collide to an object not present on the client's end yet - and or
+        // is attempting to grab a chunk that the entity does not posses or the sandgrub doesnt posses due to ID desyncs
+        private void SandGrub_Collide(On.Watcher.SandGrub.orig_Collide orig, Watcher.SandGrub self, PhysicalObject otherObject, int myChunk, int otherChunk)
+        {
+            try
+            {
+                orig(self, otherObject, myChunk, otherChunk);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
+        private void BigSandGrubGraphics_DrawSprites(On.Watcher.BigSandGrubGraphics.orig_DrawSprites orig, Watcher.BigSandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            try
+            {
+                orig(self, sLeaser, rCam, timeStacker, camPos);
+            }
+            catch (System.NullReferenceException e)
+            {
+                // TODO: Non-fatal, occurs most likely due to unsynched plates
+                //throw;
+            }
+        }
         private void SandGrubGraphics_DrawSprites(On.Watcher.SandGrubGraphics.orig_DrawSprites orig, Watcher.SandGrubGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
             try
@@ -254,11 +324,21 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && isStoryMode(out var storyGameMode) && callback is Watcher.WarpPoint warpPoint)
             {
-                if (callback.getSourceRoom() == null)
+                var forcedWarp = storyGameMode.myLastWarp;
+                if (forcedWarp != null)
+                {
+                    Debug("Forced warp found");
+                    if (warpData != forcedWarp)
+                    {
+                        Debug("Replacing called Warp data with forced warp data");
+                        warpData = forcedWarp;
+                    }
+                }
+                /*if (callback.getSourceRoom() == null)
                 {
                     self.warpData = storyGameMode.myLastWarp;
                     storyGameMode.lastWarpIsEcho = true;
-                }
+                }*/
                 orig(self, callback, warpData, useNormalWarpLoader);
                 string sourceRoomName = warpPoint.getSourceRoom() == null ? "" : warpPoint.getSourceRoom().abstractRoom.name;
                 RainMeadow.Debug($"doing warp point from {sourceRoomName}, data={warpData.ToString()}");
@@ -267,6 +347,7 @@ namespace RainMeadow
             {
                 orig(self, callback, warpData, useNormalWarpLoader);
             }
+            Debug($"active world's name? {self.activeWorld?.name ?? "NULL"}, warpPoint's region: {warpData.RegionString}");
         }
 
         public void OverWorld_InitiateSpecialWarp_WarpPoint2(ILContext il)
@@ -393,7 +474,7 @@ namespace RainMeadow
                 { // once again, force camera
                     newRoom.game.cameras[l].WarpMoveCameraActual(newRoom, -1);
                 }
-                var isEchoWarp = newRoom.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
+                var isEchoWarp = sourceRoomName == null ||newRoom.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()); //null room = loaded from first world as a host
                 if (OnlineManager.lobby.isOwner && !isEchoWarp)
                 {
                     foreach (var player in OnlineManager.players)
@@ -410,15 +491,38 @@ namespace RainMeadow
                 orig(self, newRoom);
             }
         }
-
+        private void OverWorld_Update(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(x => x.MatchCall<OverWorld>("WarpUpdate"));
+                c.GotoPrev(MoveType.After, x => x.MatchLdfld<OverWorld>(nameof(OverWorld.readyForWarp)));
+                c.GotoNext(x => x.MatchBrfalse(out _));
+                c.Emit(OpCodes.Ldarg_0);
+                c.EmitDelegate(delegate (bool origBool, OverWorld overWorld)
+                {
+                    if (OnlineManager.lobby != null)
+                        //prevent readyForWarp to call WorldLoaded when warpWorldLoader is queued and Regions has not fully loaded, this is quick fix for now
+                        return origBool && !overWorld.warpingPreload; 
+                    return origBool;
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
             if (OnlineManager.lobby != null)
             {
+                Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
+                World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
-                WorldSession newWorldSession = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).name);
+                WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
+                bool isSameWorld = (self.activeWorld.name == newWorld.name);
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
@@ -426,7 +530,7 @@ namespace RainMeadow
                 {
                     // Regular gate switch
                     AbstractRoom oldAbsroom = self.reportBackToGate.room.abstractRoom;
-                    AbstractRoom newAbsroom = ((self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld()).GetAbstractRoom(oldAbsroom.name);
+                    AbstractRoom newAbsroom = newWorld.GetAbstractRoom(oldAbsroom.name);
                     List<AbstractWorldEntity> entitiesFromNewRoom = newAbsroom.entities; // these get ovewritten and need handling
                     List<AbstractCreature> creaturesFromNewRoom = newAbsroom.creatures;
 
@@ -444,17 +548,7 @@ namespace RainMeadow
                             if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
                             {
                                 // not-online-aware removal
-                                Debug("removing remote entity from game " + opo);
-                                opo.beingMoved = true;
-                                if (apo.realizedObject is Creature c && c.inShortcut)
-                                {
-                                    c.RemoveFromShortcuts();
-                                }
-                                entities.Remove(apo);
-                                room.abstractRoom.creatures.Remove(apo as AbstractCreature);
-                                room.RemoveObject(apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(apo.realizedObject);
-                                opo.beingMoved = false;
+                                opo.RemoveEntityFromGame(false);
                             }
                         }
                     }
@@ -471,17 +565,23 @@ namespace RainMeadow
                 }
                 else if (warpUsed)
                 {
+                    RainMeadow.Debug("getting warp point!");
+                    //somehow WorldLoaded() gets called more than once in a row and leads to this exception when spawning from echo warp. No big issue tho..
                     Watcher.WarpPoint warpPoint = self.specialWarpCallback as Watcher.WarpPoint ?? throw new InvalidProgrammerException("watcher warp point doesnt exist at time of loading");
+
+                    Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
+
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
-                    isFirstWarpWorld = (room == null) || (warpPoint.overrideData != null ? warpPoint.overrideData.rippleWarp : warpPoint.Data.rippleWarp); //do not update gate status afterwards :)
-                    if (isEchoWarp || isFirstWarpWorld)
+                    isFirstWarpWorld = room == null; //do not update gate status afterwards :)
+
+                    if (isEchoWarp || isFirstWarpWorld || warpData.rippleWarp)
                     { //echo activation is special edge case
                         if (room == null) RainMeadow.Error("warp point with a null room");
                         RainMeadow.Debug("this an echo warp");
-                        if (isStoryMode(out var storyGameMode))
+                        /*if (isStoryMode(out var storyGameMode))
                         {
                             self.warpData = storyGameMode.myLastWarp; //OVERRIDE WARP DATA VERY IMPORTANT!
-                        }
+                        }*/
                     }
                     // We delete every single entitity in the old world, every single one, even our
                     // slugcats are deleted, nothing is spared, this is because if we dont do this
@@ -498,20 +598,7 @@ namespace RainMeadow
                                 if (!oe.isMine)
                                 {
                                     // not-online-aware removal
-                                    RainMeadow.Debug("removing remote entity from game " + oe);
-                                    oe.beingMoved = true;
-                                    if (oe.apo.realizedObject is Creature c && c.inShortcut)
-                                    {
-                                        if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                                    }
-                                    entities.Remove(oe.apo);
-                                    room.abstractRoom.creatures.Remove(oe.apo as AbstractCreature);
-                                    if (oe.apo.realizedObject != null)
-                                    {
-                                        room.RemoveObject(oe.apo.realizedObject);
-                                        room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                                    }
-                                    oe.beingMoved = false;
+                                    oe.RemoveEntityFromGame(false);
                                 }
                                 else // mine leave the old online world elegantly
                                 {
@@ -522,7 +609,8 @@ namespace RainMeadow
                             }
                         }
                     }
-                    RainMeadow.Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {self.worldLoader.worldName}/{self.worldLoader.world?.name}");
+                    Debug($"destination region: {warpData.destRegion}, worldLoader is null? {self.worldLoader == null}, worldLoader's World is null? {self.worldLoader == null || self.worldLoader.world == null}, activeWorld is null? {self.activeWorld == null}");
+                    Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {(self.worldLoader == null ? newWorld.name : ($"{self.worldLoader.worldName}/{newWorld.name}"))}");
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
                     { //it will move places
                         if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
@@ -588,19 +676,28 @@ namespace RainMeadow
 
                 if (!isSameWorld)
                 { // there exists "warps" to the same world, twice, for some bloody reason
+                    //this in fact probably is required for now because rain world devs DESPISE US
                     RainMeadow.Debug("Unsubscribing from old world");
                     oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
 
-                if (OnlineManager.lobby.isOwner)
+                if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
-                    if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode && !isFirstWarpWorld)
+                    if (OnlineManager.lobby.isOwner && !isFirstWarpWorld)
                     {
                         storyGameMode.changedRegions = true;
                         storyGameMode.readyForTransition = StoryGameMode.ReadyForTransition.Crossed;
                     }
+                    if (storyGameMode.myLastWarp != null)
+                    {
+                        if (self.specialWarpPointGoal != null && self.specialWarpPointGoal != storyGameMode.myLastWarp)
+                            Debug("We loaded from a warp different of our forced warp!");
+                        storyGameMode.myLastWarp = null;
+                    }
                 }
+
+                
 
                 if (OnlineManager.lobby.gameMode is MeadowGameMode)
                 {

@@ -95,7 +95,7 @@ namespace RainMeadow
                         if (!apo.pos.NodeDefined && apo.world.game.session is StoryGameSession storyGameSession
                             && ModManager.MMF && MoreSlugcats.MMF.cfgKeyItemTracking.Value && AbstractPhysicalObject.UsesAPersistantTracker(apo))
                         {
-                            storyGameSession.AddNewPersistentTracker(apo);
+                            storyGameSession.AddNewPersistentTracker(apo, apo.world);
                             /* remix key item tracking TODO: get player that puked this up
                             if (apo.Room.NOTRACKERS)
                             {
@@ -163,7 +163,12 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject != null)
             {
                 RainMeadow.Trace($"{onlineEntity} realized target exists");
-                realizedObjectState?.ReadTo(onlineEntity);
+                if (realizedObjectState != null)
+                {
+                    StateProfiler.Instance?.Push(realizedObjectState.GetType());
+                    realizedObjectState.ReadTo(onlineEntity);
+                    StateProfiler.Instance?.Pop(realizedObjectState.GetType());
+                }
             }
         }
     }

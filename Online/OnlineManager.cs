@@ -3,6 +3,7 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -18,6 +19,7 @@ namespace RainMeadow
         public static List<ResourceSubscription> subscriptions;
         public static List<EntityFeed> feeds;
         public static Dictionary<OnlineEntity.EntityId, OnlineEntity> recentEntities;
+        public static List<FieldInfo> recentFailedComparisons = new();
         public static float lastSend;
         public static float lastReceive;
         public static OnlinePlayer mePlayer;
@@ -48,6 +50,7 @@ namespace RainMeadow
                 MatchmakingManager.instances[last].LeaveLobby();
                 LeaveLobby();
             };
+            new StateProfiler();
             RainMeadow.Debug("OnlineManager Created");
         }
 
@@ -144,6 +147,8 @@ namespace RainMeadow
                     player.Update();
                 }
 
+
+                recentFailedComparisons.Clear();
                 // Prepare outgoing messages
                 foreach (var subscription in subscriptions)
                 {
@@ -154,7 +159,6 @@ namespace RainMeadow
                 {
                     feed.Update(mePlayer.tick);
                 }
-
 
 
                 // Outgoing messages
@@ -351,28 +355,22 @@ namespace RainMeadow
         {
             if (lobby != null)
             {
+                if (rid == "@overworld") return lobby.overworld;
                 if (rid == ".") return lobby;
-
-                if (rid == "arena" && lobby.worldSessions.TryGetValue(rid, out var arenaRegionz)) return arenaRegionz;
-
-                if (rid.Contains("arena"))
+                if (lobby.overworld.isActive)
                 {
-                    string modifiedRid = rid.Replace("arena", "");
-
-                    if (lobby.worldSessions["arena"].roomSessions.TryGetValue(modifiedRid, out var roomSession))
+                    var split = rid.Split('.');
+                    if (lobby.overworld.worldSessions.TryGetValue(split[0], out var ws))
                     {
-                        return roomSession;
+                        if (split.Length >= 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
+                            return rs;
+                        return ws;
                     }
                 }
 
-                var split = rid.Split('.');
-                if (lobby.worldSessions.TryGetValue(split[0], out var ws)) {
-                    if (split.Length >= 2 && ws.roomSessions.TryGetValue(split[1], out var rs))
-                        return rs;
-                    return ws;
-                }
             }
             RainMeadow.Error("resource not found : " + rid);
+            RainMeadow.Stacktrace();
             return null;
         }
 

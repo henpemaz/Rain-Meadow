@@ -180,44 +180,6 @@ namespace RainMeadow
         {
             var button = classButtons[localIndex]; // Get the button you want to pass
         }
-        public static void OverideSlugcatClassAbilities(Player player, ArenaOnlineGameMode arena)
-        {
-            if (player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
-            {
-                if (!arena.sainot)
-                {
-                    if (!arena.countdownInitiatedHoldFire)
-                    {
-                        if (player.wantToJump > 0 && player.input[0].pckp && player.canJump <= 0 && !player.monkAscension && !player.tongue.Attached && player.bodyMode != Player.BodyModeIndex.Crawl && player.bodyMode != Player.BodyModeIndex.CorridorClimb && player.bodyMode != Player.BodyModeIndex.ClimbIntoShortCut && player.animation != Player.AnimationIndex.HangFromBeam && player.animation != Player.AnimationIndex.ClimbOnBeam && player.bodyMode != Player.BodyModeIndex.WallClimb && player.bodyMode != Player.BodyModeIndex.Swimming && player.Consious && !player.Stunned && player.animation != Player.AnimationIndex.AntlerClimb && player.animation != Player.AnimationIndex.VineGrab && player.animation != Player.AnimationIndex.ZeroGPoleGrab)
-                        {
-                            player.maxGodTime = arena.arenaSaintAscendanceTimer * 40;
-                            player.ActivateAscension();
-                        }
-                        if (player.wantToJump > 0 && player.monkAscension)
-                        {
-                            player.DeactivateAscension();
-                        }
-
-                        if (player.monkAscension == false && player.godTimer != player.maxGodTime)
-                        {
-
-                            if (player.tongue.mode == Player.Tongue.Mode.Retracted && (player.input[0].x != 0 || player.input[0].y != 0 || player.input[0].jmp))
-                            {
-                                player.godTimer += 0.8f;
-                            }
-                            else
-                            {
-                                player.godTimer -= 0.8f;
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
         public static T GetOptionFromArena<T>(string ID, T defaultIfNonExistant)
         {
             if (RainMeadow.isArenaMode(out ArenaOnlineGameMode arena))
@@ -279,7 +241,7 @@ namespace RainMeadow
                         }
                         return tb1.team == tb2.team && creature.State.alive && friend.State.alive;
                     }
-                }         
+                }
             }
 
             RainMeadow.Debug("Different teams or Player is null");
@@ -287,6 +249,56 @@ namespace RainMeadow
         }
 
         public static int GetReadiedPlayerCount(List<OnlinePlayer> players) => players.Where(player => GetArenaClientSettings(player)?.ready ?? false).Count();
+
+        public static List<IconSymbol.IconSymbolData> GetOnlinePlayerTrophies(ArenaOnlineGameMode arena, int playerNumber)
+        {
+            List<IconSymbol.IconSymbolData> trophies = new List<IconSymbol.IconSymbolData>();
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, playerNumber);
+            if (onlinePlayer == null)
+            {
+                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
+                return trophies;
+            }
+
+            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
+            {
+                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
+                return trophies;
+            }
+            for (int i = 0; i < arena.playerNumberWithTrophies[onlinePlayer.inLobbyId].Count; i++)
+            {
+                IconSymbol.IconSymbolData iconSymbolData = IconSymbol.IconSymbolData.IconSymbolDataFromString(arena.playerNumberWithTrophies[onlinePlayer.inLobbyId][i]);
+                trophies.Add(iconSymbolData);
+            }
+            return trophies;
+
+        }
+
+        public static List<string> GetPlayerTrophies(ArenaOnlineGameMode arena, ArenaSitting.ArenaPlayer sittingPlayer)
+        {
+            List<string> trophies = new List<string>();
+            OnlinePlayer? onlinePlayer = FindOnlinePlayerByFakePlayerNumber(arena, sittingPlayer.playerNumber);
+            if (onlinePlayer == null)
+            {
+                RainMeadow.Error("GetPlayerTrophies: Could not find onlineplayer");
+                return trophies;
+            }
+
+            if (!arena.playerNumberWithTrophies.ContainsKey(onlinePlayer.inLobbyId))
+            {
+                RainMeadow.Error("GetPlayerTrophies: Could not find player number in dictionary");
+                return trophies;
+            }
+
+                for (int i = 0; i < sittingPlayer.allKills.Count; i++)
+                {
+                    trophies.Add(sittingPlayer.allKills[i].ToString());
+                }
+            
+            return trophies;
+
+        }
+
     }
 
 }

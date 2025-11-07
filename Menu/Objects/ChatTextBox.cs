@@ -142,7 +142,11 @@ namespace RainMeadow
             if (!isUnloading) blockInput = true;
             menuLabel.text = lastSentMessage;
         }
-
+        public override void Update()
+        {
+            base.Update();
+            menu.allowSelectMove = false;
+        }
         public override void GrafUpdate(float timeStacker)
         {
             var msg = lastSentMessage;
