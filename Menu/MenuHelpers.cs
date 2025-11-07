@@ -21,14 +21,16 @@ namespace RainMeadow
                 //inversed, menuObject is binded on the right side
                 var bindedWith = menuObject.GetBind(left: inverted, right: !inverted);
                 menuObject.RemoveBind(left: inverted, right: !inverted);
-                bindedWith?.RemoveBind(left: !inverted, right: inverted);
+                if (bindedWith != null && bindedWith.GetBind(left: !inverted, right: inverted) == menuObject)
+                    bindedWith.RemoveBind(left: !inverted, right: inverted);
             }
             if (bottomTop)
             {
                 //inversed, menuObject is binded on the top
                 var bindedWith = menuObject.GetBind(bottom: inverted, top: !inverted);
                 menuObject.RemoveBind(bottom: inverted, top: !inverted);
-                bindedWith?.RemoveBind(bottom: !inverted, top: inverted);
+                if (bindedWith != null && bindedWith.GetBind(bottom: !inverted, top: inverted) == menuObject)
+                    bindedWith?.RemoveBind(bottom: !inverted, top: inverted);
             }
         }
         public static void RemoveBind(this MenuObject? menuObject, bool left = false, bool right = false, bool top = false, bool bottom = false)
