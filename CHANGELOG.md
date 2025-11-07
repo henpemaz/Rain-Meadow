@@ -12,6 +12,7 @@
 - Added round reset button
 - Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
 - Saved backpack toggle selction between game restarts
+- Fixed clients being unable to pick up items when host enters ripple space
 
 ## Engine
 - Added Overworld resource:
