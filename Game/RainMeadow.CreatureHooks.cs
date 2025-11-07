@@ -44,6 +44,9 @@ namespace RainMeadow
 
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
+            
+            On.Creature.Grab += Creature_Grab;
+            On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
         private void Hazer_HasSprayed(ILContext il)
@@ -80,9 +83,6 @@ namespace RainMeadow
                 return;
             }
             orig(self);
-
-            On.Creature.Grab += Creature_Grab;
-            On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
 
