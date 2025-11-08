@@ -191,7 +191,7 @@ public class RainMeadowOptions : OptionInterface
             OpTextBox chatBgOpacity;
             OnlineGameplay = new UIelement[]
           {
-            new OpLabel(10f, 550f, Translate("Online"), bigText: true),
+            new OpLabel(10f, 550f, Translate("Gameplay"), bigText: true),
             new OpLabel(10f, 530f, Translate("Note: These inputs are not used in Meadow mode"), bigText: false),
 
             new OpLabel(10, 490f, Translate("Show usernames")),
