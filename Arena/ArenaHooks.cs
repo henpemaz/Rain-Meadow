@@ -144,11 +144,11 @@ namespace RainMeadow
                     self.pauseWarningActive = false;
                 }
             }
-             else
+            else
             {
                 orig(self);
             }
-            
+
         }
 
         private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
@@ -722,16 +722,16 @@ namespace RainMeadow
             {
                 ILCursor cursor = new(context);
                 var skip = cursor.DefineLabel();
-                cursor.GotoNext(x => x.MatchLdarg(0));
-                cursor.GotoNext(x => x.MatchLdfld<SingularityBomb>(nameof(MoreSlugcats.SingularityBomb.counter)));
-                cursor.GotoNext(x => x.MatchLdcR4(40));
+                cursor.GotoNext(MoveType.After, x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<SingularityBomb>(nameof(MoreSlugcats.SingularityBomb.counter)),
+                    x => x.MatchLdcR4(40));
                 cursor.EmitDelegate<Func<float, float>>((float eggtimer) =>
                 {
                     if (RainMeadow.isArenaMode(out var _))
                     {
                         return 100f;
                     }
-                    return eggtimer; 
+                    return eggtimer;
                 });
             }
             catch (Exception except)
