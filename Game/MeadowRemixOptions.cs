@@ -233,11 +233,11 @@ public class RainMeadowOptions : OptionInterface
             new OpCheckBox(ProfanityFilter, new Vector2(10f, 90f)),
 
             new OpLabel(210, 120f, Translate("Show Ping")),
-            new OpCheckBox(ShowPing, new Vector2(240, 90f)),
+            new OpCheckBox(ShowPing, new Vector2(210, 90f)),
 
 
             new OpLabel(410, 120f, Translate("Chat Log On/Off")),
-            new OpCheckBox(ChatLogOnOff, new Vector2(440f, 90f)),
+            new OpCheckBox(ChatLogOnOff, new Vector2(410f, 90f)),
 
 
           };
