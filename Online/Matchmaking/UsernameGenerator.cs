@@ -79,7 +79,7 @@ namespace RainMeadow
                 return cache[name];
             using (SHA1 sha1  = SHA1.Create())
             {
-                var censored = GenerateRandomUsername(BitConverter.ToInt32(sha1.ComputeHash(Encoding.UTF8.GetBytes(name)), 0));
+                var censored = GenerateRandomUsername(BitConverter.ToInt32(sha1.ComputeHash(Encoding.UTF8.GetBytes(name)), 0) + (int)(Timestamp % Int32.MaxValue));
                 cache.Add(name, censored);
                 return censored;
             }
