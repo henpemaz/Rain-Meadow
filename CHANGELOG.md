@@ -1,9 +1,19 @@
-# Release 1.8.0
-
+# Release 1.9.0
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
 - Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
 
+## Story:
+- Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
+- Host is now way less likely to be puppetted by a client after warping from echo
+- Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
+- Prevent players being able to join after warping through ripple warps
+
+
+# Release 1.8.0
+## General:
+- Updated to game version 1.11.3
+- Japanese translation by MisodeN [ミソデン]. どうもありがとう
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
@@ -16,6 +26,8 @@
 - Fixed an ending 3 crash if playing local with Meadow installed
 - Prevented clients in lobby being allowed to join after warping
 - Added a remix options to gain achievements online. Default is FALSE.
+- Fixed ripple space being shared between players
+
 
 # Release 1.7.1
 ## Story:
