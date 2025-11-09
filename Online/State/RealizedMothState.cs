@@ -29,6 +29,15 @@ namespace RainMeadow
             drinkingChunk = bigMoth.drinkingChunk;
             drinkChunk = BodyChunkRef.FromBodyChunk(bigMoth.drinkChunk) ?? null;
 
+            // We won't track legs for small moths as they hardly do anything other than
+            // mildly annoy the player which we'll just let the clients handle
+            // and a bunch of them at once consume a ton of bandwidth.
+
+            if (bigMoth.Small)
+            {
+                legState = new(new List<MothLegState>());
+                return;
+            }
 
             var legs = new List<BigMoth.MothLeg>();
 
@@ -56,6 +65,8 @@ namespace RainMeadow
             {
                 bigMoth.drinkChunk = drinkChunk.ToBodyChunk();
             }
+
+            if (legState.list.Count == 0) return; // SmallMoth legs aren't tracked
 
             for (int i = 0; i < legState.list.Count; i++)
             {
