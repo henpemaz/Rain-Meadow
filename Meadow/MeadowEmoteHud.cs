@@ -485,7 +485,7 @@ namespace RainMeadow
                 }
 
                 if (package.jmp && !lastPackage.jmp) FlipPage(-1);
-                if (package.thrw && !lastPackage.thrw) FlipPage(1);
+                if (package.spec && !lastPackage.spec) FlipPage(1);
 
                 pageLabel.text = $"{currentPage + 1}/{radialPagesCount}";
             }

@@ -216,14 +216,14 @@ namespace RainMeadow
                 this.input[0].y = 0;
                 this.input[0].analogueDir = default;
                 this.input[0].jmp = false;
-                this.input[0].thrw = false;
+                this.input[0].spec = false;
                 this.input[0].pckp = false;
                 this.input[0].spec = false;
                 this.Blink(5);
             }
 
             // no input
-            if (this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].thrw && !this.input[0].pckp)
+            if (this.input[0].x == 0 && this.input[0].y == 0 && !this.input[0].jmp && !this.input[0].spec && !this.input[0].pckp)
             {
                 this.touchedNoInputCounter++;
             }
@@ -347,7 +347,7 @@ namespace RainMeadow
             //        this.readyForWin = true;
             //        this.forceSleepCounter = 0;
             //    }
-            //    else if (this.input[0].y < 0 && !this.input[0].jmp && !this.input[0].thrw && !this.input[0].pckp && this.IsTileSolid(1, 0, -1) && !this.abstractCreature.world.game.GetStorySession.saveState.malnourished && this.FoodInRoom(this.room, false) > 0 && this.FoodInRoom(this.room, false) < this.slugcatStats.foodToHibernate && (this.input[0].x == 0 || ((!this.IsTileSolid(1, -1, -1) || !this.IsTileSolid(1, 1, -1)) && this.IsTileSolid(1, this.input[0].x, 0))))
+            //    else if (this.input[0].y < 0 && !this.input[0].jmp && !this.input[0].spec && !this.input[0].pckp && this.IsTileSolid(1, 0, -1) && !this.abstractCreature.world.game.GetStorySession.saveState.malnourished && this.FoodInRoom(this.room, false) > 0 && this.FoodInRoom(this.room, false) < this.slugcatStats.foodToHibernate && (this.input[0].x == 0 || ((!this.IsTileSolid(1, -1, -1) || !this.IsTileSolid(1, 1, -1)) && this.IsTileSolid(1, this.input[0].x, 0))))
             //    {
             //        this.forceSleepCounter++;
             //    }
@@ -692,7 +692,7 @@ namespace RainMeadow
             var room = creature.room;
             var grasps = creature.grasps;
             bool holdingGrab = input[0].pckp;
-            bool still = (inputDir == Vector2.zero && !input[0].thrw && !input[0].jmp && creature.Submersion < 0.5f);
+            bool still = (inputDir == Vector2.zero && !input[0].spec && !input[0].jmp && creature.Submersion < 0.5f);
             bool eating = false;
             bool swallow = false;
 
@@ -835,7 +835,7 @@ namespace RainMeadow
 
             if (this.input[0].jmp && !this.input[1].jmp) wantToJump = 5;
             if (this.input[0].pckp && !this.input[1].pckp) wantToPickUp = 5;
-            if (this.input[0].thrw && !this.input[1].thrw) wantToThrow = 5;
+            if (this.input[0].spec && !this.input[1].spec) wantToThrow = 5;
 
             if (this.specialInput[0].direction != Vector2.zero)
             {
@@ -852,7 +852,7 @@ namespace RainMeadow
                 Call();
             }
 
-            if (input[0].thrw)
+            if (input[0].spec)
             {
                 pointCounter++;
 
@@ -867,7 +867,7 @@ namespace RainMeadow
 
             if (pointDir != Vector2.zero || pointCounter > 10)
             {
-                if (pointDir != Vector2.zero && (input[0].thrw || pointCounter > 10))
+                if (pointDir != Vector2.zero && (input[0].spec || pointCounter > 10))
                 {
                     pointing = true;
                     if (pointCounter > 10) lockInPlace = true;

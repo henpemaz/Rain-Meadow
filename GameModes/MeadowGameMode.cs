@@ -49,6 +49,10 @@ namespace RainMeadow
             return RainMeadow.Ext_ProcessID.MeadowMenu;
         }
 
+        public override bool ShouldSpawnRoomItems(RainWorldGame game, RoomSession roomSession)
+        {
+            return true;
+        }
         public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
             RainMeadow.Debug($"{oe} + {inResource}");
@@ -454,22 +458,22 @@ namespace RainMeadow
 
         public override bool ShouldSyncAPOInRoom(RoomSession rs, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type);
+            return true;
         }
 
         public override bool ShouldSyncAPOInWorld(WorldSession ws, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type);
+            return true;
         }
 
         public override bool ShouldRegisterAPO(OnlineResource resource, AbstractPhysicalObject apo)
         {
-            return relevantTypes.Contains(apo.type) && (apo.type != AbstractPhysicalObject.AbstractObjectType.Creature || RainMeadow.sSpawningAvatar);
+            return true;
         }
 
         public override bool AllowedInMode(PlacedObject item)
         {
-            return !excludedItems.Contains(item.type) && base.AllowedInMode(item);
+            return true;
         }
 
         static HashSet<PlacedObject.Type> excludedItems = new()

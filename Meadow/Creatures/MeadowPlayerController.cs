@@ -79,7 +79,7 @@ namespace RainMeadow
         {
             //int which = dir.x > 0 ? 1 : 0; // bugs above head
             int which = 0;
-            if(player.graphicsModule is PlayerGraphics playerGraphics)
+            if (player.graphicsModule is PlayerGraphics playerGraphics)
             {
                 playerGraphics.hands[which].reachingForObject = true;
                 playerGraphics.hands[which].absoluteHuntPos = player.mainBodyChunk.pos + 100f * dir;
@@ -89,7 +89,7 @@ namespace RainMeadow
         public override void ConsciousUpdate()
         {
             base.ConsciousUpdate();
-            player.pickUpCandidate = null; // prevent whiplash grab
+            //player.pickUpCandidate = null; // prevent whiplash grab
         }
 
         protected override void OnCall()
@@ -121,8 +121,8 @@ namespace RainMeadow
             public override Player.InputPackage GetInput()
             {
                 var input = mpc.input[0];
-                input.pckp = false;
-                input.thrw = false;
+                //input.pckp = false;
+                //input.thrw = false;
 
                 if (mpc.pointCounter > 10) // this sucks, cant use lockinplace
                 {
