@@ -17,7 +17,6 @@ namespace RainMeadow.UI.Components
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
         public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
-        public event Action<SettingsPage, bool>? UpdateSettingSelectables;
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
         public MSCSettingsPage? mscSettingsTab;
@@ -356,7 +355,7 @@ namespace RainMeadow.UI.Components
                 base.Update();
                 if (IsActuallyHidden) return;
                 List<SettingsButton> settingBtns = SettingBtns;
-                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count)], right: true);
+                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count - 1)], right: true);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -448,11 +447,6 @@ namespace RainMeadow.UI.Components
             public virtual void SaveInterfaceOptions()
             {
 
-            }
-            public override void BindMySelectables()
-            {
-                (owner as OnlineSlugcatAbilitiesInterface)?.UpdateSettingSelectables?.Invoke(this, IsActuallyHidden);
-                base.BindMySelectables();
             }
         }
 
