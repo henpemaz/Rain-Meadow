@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -12,6 +14,8 @@ namespace RainMeadow
         private ChunkState[] chunkStates;
         [OnlineField(group = "chunkstate")]
         private byte collisionLayer;
+        [OnlineField(group = "chunkstate")]
+        private int connections;
 
         public RealizedPhysicalObjectState() { }
         public RealizedPhysicalObjectState(OnlinePhysicalObject onlineEntity)
@@ -27,6 +31,7 @@ namespace RainMeadow
             }
             
             collisionLayer = (byte)onlineEntity.apo.realizedObject.collisionLayer;
+            connections = onlineEntity.apo.realizedObject.bodyChunkConnections.Length;
         }
         virtual public bool ShouldSyncChunks(PhysicalObject po) {
             return true;
@@ -56,6 +61,14 @@ namespace RainMeadow
                 {
                     chunkStates[i].ReadTo(po.bodyChunks[i]);
                 }
+                int minLength = Math.Min(po.bodyChunks.Length - 1, connections); 
+                for (int c = 0; c < minLength; c++)
+                {
+                    po.bodyChunkConnections[c].chunk1 = po.bodyChunks[c];
+                    po.bodyChunkConnections[c].chunk2 = po.bodyChunks[c + 1];
+
+                }
+
             }
             if (po.collisionLayer != collisionLayer)
             {
