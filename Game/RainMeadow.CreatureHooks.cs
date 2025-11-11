@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using UnityEngine;
+using System.Runtime.CompilerServices;
+using System.Linq;
+using HarmonyLib;
+using System.Threading.Tasks;
 
 namespace RainMeadow
-{
+{    
     public partial class RainMeadow
     {
         // customize creature behavior for online sync
@@ -22,7 +26,7 @@ namespace RainMeadow
             On.AbstractCreature.InDenUpdate += AbstractCreature_InDenUpdate; // Don't think
             IL.AbstractCreature.IsEnteringDen += AbstractCreature_IsEnteringDen;
 
-            On.ScavengerAbstractAI.InitGearUp += ScavengerAbstractAI_InitGearUp;
+            ScavengerHooks();
 
             IL.GarbageWorm.NewHole += GarbageWorm_NewHole;
             On.GarbageWormAI.Update += GarbageWormAI_Update;
@@ -40,6 +44,9 @@ namespace RainMeadow
 
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
+            
+            On.Creature.Grab += Creature_Grab;
+            On.Creature.SwitchGrasps += Creature_SwitchGrasps;
         }
 
         private void Hazer_HasSprayed(ILContext il)
@@ -78,6 +85,33 @@ namespace RainMeadow
             orig(self);
         }
 
+
+        private bool Creature_Grab(On.Creature.orig_Grab orig, Creature self, PhysicalObject obj, int graspUsed, int chunkGrabbed, Creature.Grasp.Shareability shareability, float dominance, bool overrideEquallyDominant, bool pacifying)
+        {
+            var ret = orig(self, obj, graspUsed, chunkGrabbed, shareability, dominance, overrideEquallyDominant, pacifying);
+            if (ret && obj.abstractPhysicalObject.GetOnlineObject() is OnlinePhysicalObject grabbingOnline && !grabbingOnline.isMine && self.IsLocal())
+            {
+                OnlineCreature? oc = self.abstractCreature.GetOnlineCreature();
+                if (oc is null)
+                {
+                    RainMeadow.Error($"grabbing entity does not exist in online space {obj.abstractPhysicalObject}");
+                    return ret;
+                }
+
+                GraspRef grasp = GraspRef.FromGrasp(self.grasps[graspUsed]);
+                RPCEvent graspRPC = grabbingOnline.owner.InvokeRPC(CreatureGrabRPC, oc.id, grasp);
+                grabbingOnline.graspLocked.Add(graspRPC);
+                graspRPC.Then((result) => grabbingOnline.graspLocked.Remove(graspRPC));
+
+                if (!grabbingOnline.isPending && grabbingOnline.isTransferable)
+                {
+                    grabbingOnline.Request();
+                } 
+            }
+            
+            return ret;
+        }
+
         private void EggBugGraphics_Update(On.EggBugGraphics.orig_Update orig, EggBugGraphics self)
         {
             if (self.bug.bodyChunks[0].pos == self.bug.bodyChunks[1].pos)
@@ -103,17 +137,6 @@ namespace RainMeadow
             orig(self);
         }
 
-        private void ScavengerAbstractAI_InitGearUp(On.ScavengerAbstractAI.orig_InitGearUp orig, ScavengerAbstractAI self)
-        {
-            if (OnlineManager.lobby != null)
-            {
-                if (self.world.GetResource() is WorldSession ws && !ws.isOwner)
-                {
-                    return;
-                }
-            }
-            orig(self);
-        }
 
         // Don't think
         private void AbstractCreature_InDenUpdate(On.AbstractCreature.orig_InDenUpdate orig, AbstractCreature self, int time)

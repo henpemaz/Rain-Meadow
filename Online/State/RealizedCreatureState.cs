@@ -1,6 +1,7 @@
 using RainMeadow.Generics;
 using RWCustom;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RainMeadow
@@ -31,16 +32,13 @@ namespace RainMeadow
             artificialIntelligenceState = GetCreatureAIState(onlineCreature);
         }
 
-        private bool ShouldSyncAI(CreatureTemplate.Type type) {
-            if (type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC) return true;
-            return false;
-        }
-
         protected virtual ArtificialIntelligenceState? GetCreatureAIState(OnlineCreature onlineCreature)
         {
-            if (onlineCreature.apo is AbstractCreature creature && creature.creatureTemplate.AI) {
-                if (ShouldSyncAI(creature.creatureTemplate.type)) {
-                    return new ArtificialIntelligenceState(onlineCreature);
+            if (onlineCreature.apo is AbstractCreature creature && creature.creatureTemplate.AI)
+            {
+                if (creature.creatureTemplate.type == MoreSlugcats.MoreSlugcatsEnums.CreatureTemplateType.SlugNPC)
+                {
+                    return new ArtificialIntelligenceState(onlineCreature.abstractCreature.abstractAI.RealAI);
                 }
             }
             return null;
@@ -69,21 +67,29 @@ namespace RainMeadow
             {
                 bool[] found = new bool[creature.grasps.Length];
                 RainMeadow.Trace($"incoming grasps for {onlineEntity}: " + grasps.list.Count);
+                bool graspUpdated = false;
                 for (int i = 0; i < grasps.list.Count; i++)
                 {
                     var grasp = grasps.list[i];
-                    var grabbed = (grasp.onlineGrabbed.FindEntity() as OnlinePhysicalObject)?.apo.realizedObject; // lookup once, use multiple times
-                    if (grabbed == null) continue;
-                    var foundat = Array.FindIndex(creature.grasps, s => grasp.EqualsGrasp(s, grabbed));
+                    var grabbed = grasp.onlineGrabbed.FindEntity() as OnlinePhysicalObject; // lookup once, use multiple times
+                    if (grabbed?.apo.realizedObject is null) continue;
+
+                    grabbed.graspLocked.RemoveAll(x => !x.to.OutgoingEvents.Contains(x));
+                    if (!grabbed.apo.realizedObject.grabbedBy.Any()) grabbed.graspLocked.Clear();
+                    if (grabbed.graspLocked.Select(x => x.to).Contains(onlineEntity.owner)) continue;
+
+                    var foundat = Array.FindIndex(creature.grasps, s => grasp.EqualsGrasp(s, grabbed.apo.realizedObject));
                     if (foundat == -1)
                     {
                         RainMeadow.Trace("incoming grasps not found: " + grasp);
-                        grasp.MakeGrasp(creature, grabbed);
+                        grasp.MakeGrasp(creature, grabbed.apo.realizedObject);
+                        graspUpdated = true;
                         found[grasp.graspUsed] = true;
                     }
                     else
                     {
                         RainMeadow.Trace("incoming grasps found: " + grasp + " at index " + foundat);
+                        graspUpdated = true;
                         found[foundat] = true;
                     }
                 }
@@ -93,8 +99,11 @@ namespace RainMeadow
                     {
                         RainMeadow.Trace("releasing grasp because not found at index " + i);
                         GraspRef.map.GetValue(creature.grasps[i], GraspRef.FromGrasp).Release(creature.grasps[i]);
+                        graspUpdated = true;
                     }
                 }
+    
+                if (graspUpdated && creature is Scavenger scav) scav.PlaceAllGrabbedObjectsInCorrectContainers();
             }
         }
     }
