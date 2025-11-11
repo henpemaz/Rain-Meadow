@@ -22,7 +22,8 @@
   2. Allows players to join a lobby without immidietly loading all regions.
   3. Allows non-host players to manage WorldSessions. (Meadow mode)
   4. Adds potential for downloading custom regions while inside the lobby.
-  
+## General
+- Added a new "Gameplay" remix tab to clear space from the General tab.
 # Release 1.8.0
 ## General:
 - Updated to game version 1.11.3
