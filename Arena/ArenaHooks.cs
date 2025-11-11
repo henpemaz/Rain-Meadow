@@ -132,7 +132,7 @@ namespace RainMeadow
         private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
-            if (isArenaMode(out var _))
+            if (ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher && isArenaMode(out var _))
                 self.InitializeLongerWatcherTail();
         }
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
