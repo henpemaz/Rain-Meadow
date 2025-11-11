@@ -273,7 +273,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             }
                             else if (A.deaths != B.deaths)
                             {
-                                return A.deaths > B.deaths;
+                                return A.deaths < B.deaths;
                             }
                             return A.score > B.score; // If both are on winning team, sort by kill value
                         }

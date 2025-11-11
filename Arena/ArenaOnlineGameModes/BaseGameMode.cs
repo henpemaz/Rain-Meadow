@@ -57,7 +57,7 @@ namespace RainMeadow
                 {
                     list[0].winner = true;
                 }
-                else if (list[0].deaths > list[1].deaths)
+                else if (list[0].deaths < list[1].deaths)
                 {
                     list[0].winner = true;
                 }
