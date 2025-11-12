@@ -18,6 +18,7 @@
 - Incressed time until singularity bomb vortex activates
 - Added additional watcher cosmetic option
 - Updated winning logic to consider number of kills and deaths in the event of a tie.
+- Added variable watcher description
 ## Engine
 - Added Overworld resource:
   1. WorldSessions will only be created for regions specific to the playercharacters timeline.
