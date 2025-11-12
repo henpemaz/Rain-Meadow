@@ -132,19 +132,19 @@ namespace RainMeadow
         private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
-            if (ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher && isArenaMode(out var _))
+            if (isArenaMode(out var _) && ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 self.InitializeLongerWatcherTail();
         }
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
-            if (isArenaMode(out var arena) && self.player != null)
+            if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
                 self.player.watcherMorph = 0.51f;
             orig(self, sLeaser, rCam, timeStacker, camPos);
         }
         private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
         {
             orig(self);
-            if (isArenaMode(out var arena))
+            if (isArenaMode(out _) && self.pGraphics.player.abstractPhysicalObject.GetOnlineObject(out var oe) && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
             {
                 self.weaverTier = 4;
                 self.haloBaseAlpha = Mathf.Clamp(1f - self.pGraphics.player.camoProgress, 0f, 1f);

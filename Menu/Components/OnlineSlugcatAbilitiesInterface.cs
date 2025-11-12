@@ -252,13 +252,16 @@ namespace RainMeadow.UI.Components
 
                 weaverWatcherCheckBox = new(RainMeadow.rainMeadowOptions.WeaverWatcher, positioner - spacing * 2)
                 {
-                    description = menu.Translate("Your watcher will have weaver cosmetics"),
-                    colorEdge = RainWorld.GoldRGB
+                    colorEdge = RainWorld.GoldRGB * 1.5f
                 };
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher will have weaver cosmetics") : menu.Translate("Your watcher will have normal cosmetics");
                 new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
                 weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
+
                 this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel);
+
+                weaverWatcherCheckBox.Change(); //update desc
             }
             public override void SaveInterfaceOptions()
             {
@@ -285,6 +288,7 @@ namespace RainMeadow.UI.Components
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void Update()
             {
@@ -304,6 +308,9 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
                 if (!watcherRippleLevelTextBox.held)
                     watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
+
+                weaverWatcherCheckBox.greyedOut = menu.manager.upcomingProcess != null;
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void GrafUpdate(float timeStacker)
             {
