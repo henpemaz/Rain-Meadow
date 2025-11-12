@@ -16,6 +16,7 @@
 - Saved backpack toggle selction between game restarts
 - Fixed clients being unable to pick up items when host enters ripple space
 - Incressed time until singularity bomb vortex activates
+- Added additional watcher cosmetic option
 ## Engine
 - Added Overworld resource:
   1. WorldSessions will only be created for regions specific to the playercharacters timeline.
