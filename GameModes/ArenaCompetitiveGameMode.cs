@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
-using static Rewired.Controller;
 
 namespace RainMeadow
 {
