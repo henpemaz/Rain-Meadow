@@ -133,7 +133,10 @@ namespace RainMeadow
         {
             orig(self, ow);
             if (isArenaMode(out var _) && ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-                self.InitializeLongerWatcherTail();
+            {
+                if (self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                    self.InitializeLongerWatcherTail();
+            }
         }
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {

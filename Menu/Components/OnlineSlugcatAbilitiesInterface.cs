@@ -254,7 +254,7 @@ namespace RainMeadow.UI.Components
                 {
                     colorEdge = RainWorld.GoldRGB * 1.5f
                 };
-                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher will have weaver cosmetics") : menu.Translate("Your watcher will have normal cosmetics");
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher will have synced weaver cosmetics") : menu.Translate("Your watcher will have synced normal cosmetics");
                 new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
                 weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
@@ -309,7 +309,6 @@ namespace RainMeadow.UI.Components
                 if (!watcherRippleLevelTextBox.held)
                     watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
 
-                weaverWatcherCheckBox.greyedOut = menu.manager.upcomingProcess != null;
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void GrafUpdate(float timeStacker)

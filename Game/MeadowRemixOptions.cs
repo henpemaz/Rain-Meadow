@@ -109,7 +109,7 @@ public class RainMeadowOptions : OptionInterface
         PainCatLizard = config.Bind("PainCatLizard", true);
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
-        WeaverWatcher = config.Bind("WeaverWatcher", true);
+        WeaverWatcher = config.Bind("WeaverWatcher", false);
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 
