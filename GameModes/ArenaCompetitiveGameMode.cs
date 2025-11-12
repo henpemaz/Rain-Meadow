@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
+using static Rewired.Controller;
 
 namespace RainMeadow
 {
@@ -53,6 +54,7 @@ namespace RainMeadow
 
         public Dictionary<string, MenuScene.SceneID> slugcatSelectMenuScenes;
         public Dictionary<string, string> slugcatSelectDescriptions, slugcatSelectDisplayNames;
+        public List<string> slugcatSelectWatcherDescriptions;
         public List<string> slugcatSelectPainCatNames = [];
         // have fun fixing this UO ;)
         public List<string> slugcatSelectPainCatNormalDescriptions, slugcatSelectPainCatJokeDescriptions, slugcatSelectPainCatQuoteDescriptions, slugcatSelectPainCatDevJokeDescriptions, slugcatSelectPainCatSmileyDescriptions, slugcatSelectPainCatUwUDescriptions, slugcatSelectPainCatWaveDescriptions, slugcatSelectPainCatDeadDescriptions;
@@ -265,6 +267,19 @@ namespace RainMeadow
                 slugcatSelectMenuScenes.Remove("Night");
                 slugcatSelectDescriptions.Remove("Night");
                 slugcatSelectDisplayNames.Remove("Night");
+
+                slugcatSelectWatcherDescriptions = 
+                [
+                    "With no attachments left, withdrawal is the only option.<LINE>Hide and strike with care before that, too, is taken away.",
+                    "My little shadow, show them your peeping eyes!",
+                    "A failed warp has brought you here.<LINE>You must now fight for your life<LINE>With no difference between friend and foe.",
+                    "Abandoned, separated from your kin, bound by your fate.<LINE>You've hidden, walked places no others have.<LINE>But now is the time to come out and fight.",
+                    "You have bore witness to unforeseen catastrophes<LINE>Watched as the world crumbles around you<LINE>You have stood in the shadows long enough.",
+                    "Existence is filled with sights and stories to behold.<LINE>Perhaps this self-contained bout is a place to experience your involvement?",
+                    "CONSIDER:<LINE>A ripple in silent waters,<LINE>an echo of fear,<LINE>a cycle of violence.",
+                    "Shattered by destiny, exiled to the unknown.<LINE>Step out of your ripple to find answers.<LINE>No matter the cost.",
+                    "Distant and marooned amongst the waves.<LINE>Will you weave with the tide or against it?",
+                ];
             }
 
             if (OnlineManager.instance.manager.rainWorld.flatIllustrations || (ModManager.MMF && (OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.MEDIUM || OnlineManager.instance.manager.rainWorld.options.quality == Options.Quality.LOW)))
