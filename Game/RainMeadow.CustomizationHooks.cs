@@ -74,8 +74,6 @@ namespace RainMeadow
             {
                 // watcher color fixes (jolly doesnt even work, but we do)
                 var c = new ILCursor(il);
-                // basegame color overrides
-                c = new ILCursor(il);
                 c.GotoNext(moveType: MoveType.After,
                     i => i.MatchStloc(0)
                     );
