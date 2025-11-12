@@ -212,8 +212,9 @@ namespace RainMeadow.UI.Components
         {
             public SimplerButton? backButton;
             public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel;
+            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel;
             public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox;
+            public OpCheckBox weaverWatcherCheckBox;
             public override string Name => "Watcher Settings";
             public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
             {
@@ -249,7 +250,18 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
 
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel);
+                weaverWatcherCheckBox = new(RainMeadow.rainMeadowOptions.WeaverWatcher, positioner - spacing * 2)
+                {
+                    colorEdge = RainWorld.GoldRGB * 1.5f
+                };
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher will have synced weaver cosmetics") : menu.Translate("Your watcher will have synced normal cosmetics");
+                new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
+                weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
+
+                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel);
+
+                weaverWatcherCheckBox.Change(); //update desc
             }
             public override void SaveInterfaceOptions()
             {
@@ -276,6 +288,7 @@ namespace RainMeadow.UI.Components
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void Update()
             {
@@ -295,6 +308,8 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
                 if (!watcherRippleLevelTextBox.held)
                     watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
+
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -302,6 +317,7 @@ namespace RainMeadow.UI.Components
                 if (IsActuallyHidden) return;
                 watcherCamoLimitLabel.label.color = watcherCamoLimitTextBox.rect.colorEdge;
                 watcherRippleLevelLabel.label.color = watcherRippleLevelTextBox.rect.colorEdge;
+                weaverWatcherLabel.label.color = weaverWatcherCheckBox.rect.colorEdge;
             }
         }
         public class SelectSettingsPage : SettingsPage
