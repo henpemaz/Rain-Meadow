@@ -318,6 +318,23 @@ namespace RainMeadow
                         self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos);
                     }
                 }
+                if ((abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+                {
+                    VoidSpawn voidSpawn = new VoidSpawn(new AbstractPhysicalObject(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()), shortCutVessel.room.realizedRoom.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(shortCutVessel.room.realizedRoom), VoidSpawn.SpawnType.RippleAmoeba);
+                    
+                    voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, shortCutVessel.room.realizedRoom);
+                    voidSpawn.sizeFac = 10f;
+                    
+                    room.abstractRoom.AddEntity(voidSpawn.abstractPhysicalObject);
+
+                    voidSpawn.abstractPhysicalObject.Realize();
+                    voidSpawn.PlaceInRoom(room);
+
+                    self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
+                    self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
+
+                }
+
 
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                 {

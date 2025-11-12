@@ -120,10 +120,115 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            new Hook(typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(), this.ChasePlayer);
+
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
+            On.Player.ctor += Player_ctor1;
+            On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
         }
+
+        private Vector2 ChasePlayer(VoidSpawn.ChasePlayer self)
+        {
+            Player player = null;
+            float num = 0f;
+            foreach (AbstractCreature player3 in self.owner.room.game.GetArenaGameSession.Players)
+            {
+                if (player3.GetOnlineObject().owner == self.owner.abstractPhysicalObject.GetOnlineObject().owner)
+                {
+                    continue;
+                }
+                Player player2 = null;
+                if (player3.realizedCreature != null)
+                {
+                    player2 = player3.realizedCreature as Player;
+                }
+
+                if (player2 != null && player2.room != null && player2.room.abstractRoom.index == self.owner.room.abstractRoom.index)
+                {
+                    float num2 = Vector2.Distance(self.owner.firstChunk.pos, player2.mainBodyChunk.pos);
+                    if (player == null || num2 < num)
+                    {
+                        player = player2;
+                        num = num2;
+                    }
+
+                    if (self.owner.variant != VoidSpawn.SpawnType.RippleAmoeba && num2 < 400f)
+                    {
+                        self.owner.behavior = new VoidSpawn.CircleSwarm(self.owner, self.owner.room);
+                    }
+                }
+            }
+
+            if (player != null)
+            {
+                if (player.standingInWarpPointProtectionTime > 0 || player.warpPointCooldown > 0)
+                {
+                    return self.owner.mainBody[0].pos + RWCustom.Custom.DirVec(player.mainBodyChunk.pos, self.owner.mainBody[0].pos) * 400f;
+                }
+
+                return player.mainBodyChunk.pos;
+            }
+
+            return new Vector2(self.owner.mainBody[0].pos.x, self.owner.mainBody[1].pos.y);
+        }
+
+        private void VoidSpawnGraphics_Update(On.VoidSpawnGraphics.orig_Update orig, VoidSpawnGraphics self)
+        {
+            if (!self.spawn.culled)
+            {
+                orig(self);
+                return;
+            }
+
+
+            var i = 0;
+            self.playersGlowVision[i, 1] = self.playersGlowVision[i, 0];
+            float num = 5f;
+            bool flag = false;
+            AbstractCreature abstractCreature = self.owner.room.game.Players[i];
+
+
+            if (self.playersGlowVision[i, 0] < num)
+            {
+                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.025f, 1f / 60f);
+            }
+            else if (flag)
+            {
+                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.025f, 1f / 60f);
+            }
+            else
+            {
+                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.1f, 1f / 3f);
+            }
+
+
+            if (!(self.spawn.behavior is Watcher.WatcherRoomSpecificScript.WORA_ElderSpawn.ElderBehavior elderBehavior) || !elderBehavior.closeIn || !(elderBehavior.orbitAngle < elderBehavior.closeInEnd))
+            {
+                return;
+            }
+
+            foreach (VoidSpawnGraphics.Antenna item in self.antennae)
+            {
+                if (item is VoidSpawnGraphics.FrontAntenna frontAntenna)
+                {
+                    frontAntenna.rigid = RWCustom.Custom.LerpAndTick(frontAntenna.rigid, 0f, 0.02f, 0.01f);
+                    if (frontAntenna.rigidSegments > 0)
+                    {
+                        frontAntenna.rigidSegments = Mathf.Min(frontAntenna.rigidSegments, (int)RWCustom.Custom.LerpMap(elderBehavior.orbitAngle, elderBehavior.closeInEnd, elderBehavior.closeInEnd - 720f, 20f, 0f));
+                    }
+                }
+            }
+        }
+
+        private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
+        {
+            orig(self, abstractCreature, world);
+            self.devMaxLevelRipple = true;
+        }
+
+
 
         private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
@@ -1566,6 +1671,7 @@ namespace RainMeadow
                             {
                                 IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
                                 num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
+
                             }
                         }
                     }
