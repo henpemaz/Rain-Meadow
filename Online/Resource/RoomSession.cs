@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEngine;
+using Watcher;
 
 namespace RainMeadow
 {
@@ -78,8 +80,38 @@ namespace RainMeadow
 
         public class RoomState : ResourceState
         {
+            [OnlineFieldHalf]
+            float FlameJetTime;
             public RoomState() : base() { }
-            public RoomState(RoomSession resource, uint ts) : base(resource, ts) { }
+            public RoomState(RoomSession resource, uint ts) : base(resource, ts)
+            {
+                if (resource.absroom.realizedRoom != null)
+                {
+                    FlameJet firstJet = resource.absroom.realizedRoom.updateList.OfType<FlameJet>().FirstOrDefault();
+                    if (firstJet != null)
+                    {
+                        FlameJetTime = firstJet.time;
+                    }
+                }
+            }
+
+            public override void ReadTo(OnlineResource resource)
+            {
+                base.ReadTo(resource);
+
+                if (resource.isActive)
+                {
+                    var rs = (RoomSession)resource;
+
+                    if (rs.absroom.realizedRoom != null)
+                    {
+                        foreach (FlameJet flameJet in rs.absroom.realizedRoom.updateList.OfType<FlameJet>())
+                        {
+                            flameJet.time = Mathf.Max(FlameJetTime, flameJet.time);
+                        }
+                    }
+                }
+            }
         }
 
         public override string ToString()

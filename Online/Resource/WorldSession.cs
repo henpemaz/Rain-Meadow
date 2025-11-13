@@ -106,11 +106,18 @@ namespace RainMeadow
             public RainCycleData rainCycleData;
             [OnlineField(nullable: true)]
             public Generics.DynamicOrderedUshorts realizedRooms;
+
+            // Used to sync RainWorldGame.clock which is used for a few APOs introduced in the Watcher as well as a few
+            // other functions in the game. Should be safe to update this way but I would keep a watch on it for a little bit.
+            [OnlineField]
+            public int clock;
             public WorldState() : base() { }
             public WorldState(WorldSession resource, uint ts) : base(resource, ts)
             {
                 if (resource.world != null)
                 {
+                    clock = resource.world.game.clock;
+
                     RainCycle rainCycle = resource.world.rainCycle;
                     if (rainCycle.brokenAntiGrav == null)
                     {
@@ -129,10 +136,17 @@ namespace RainMeadow
                 if (resource.isActive)
                 {
                     var ws = (WorldSession)resource;
+
+                    ws.world.game.clock = clock;
+
                     RainCycle cycle = ws.world.rainCycle;
                     cycle.preTimer = rainCycleData.preTimer;
                     cycle.timer = rainCycleData.timer;
                     cycle.cycleLength = rainCycleData.cycleLength;
+
+                    cycle.waterCycle.timeInStage = rainCycleData.timeInStage;
+                    cycle.waterCycle.stageDuration = rainCycleData.stageDuration;
+                    cycle.waterCycle.stage = (WaterLevelCycle.Stage)rainCycleData.stage;
 
                     if (realizedRooms != null)
                     {
