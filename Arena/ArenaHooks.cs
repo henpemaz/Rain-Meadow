@@ -125,6 +125,10 @@ namespace RainMeadow
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
+            On.PlayerGraphics.ctor += PlayerGraphics_ctor;
+            On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+            On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
+
             On.Player.ctor += Player_ctor1;
             On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
         }
@@ -181,8 +185,6 @@ namespace RainMeadow
                 orig(self);
                 return;
             }
-
-
             var i = 0;
             self.playersGlowVision[i, 1] = self.playersGlowVision[i, 0];
             float num = 5f;
@@ -220,16 +222,39 @@ namespace RainMeadow
                     }
                 }
             }
-        }
 
+
+        }
         private void Player_ctor1(On.Player.orig_ctor orig, Player self, AbstractCreature abstractCreature, World world)
         {
             orig(self, abstractCreature, world);
             self.devMaxLevelRipple = true;
         }
 
-
-
+        private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (isArenaMode(out var _) && ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                if (self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                    self.InitializeLongerWatcherTail();
+            }
+        }
+        private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                self.player.watcherMorph = 0.51f;
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+        }
+        private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
+        {
+            orig(self);
+            if (isArenaMode(out _) && self.pGraphics.player.abstractPhysicalObject.GetOnlineObject(out var oe) && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+            {
+                self.weaverTier = 4;
+                self.haloBaseAlpha = Mathf.Clamp(1f - self.pGraphics.player.camoProgress, 0f, 1f);
+            }
+        }     
         private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             if (isArenaMode(out var arena))
