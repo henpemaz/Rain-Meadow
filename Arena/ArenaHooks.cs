@@ -120,6 +120,7 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            new Hook(typeof(Player).GetProperty("activateDynamicWarpDuration").GetGetMethod(), this.SetDynamicWarpDuration);
             new Hook(typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(), this.ChasePlayer);
 
             On.Player.ActivateAscension += Player_ActivateAscension;
@@ -130,6 +131,7 @@ namespace RainMeadow
             On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
 
             //On.Player.ctor += Player_ctor1;
+            On.Player.SpawnDynamicWarpPoint += Player_SpawnDynamicWarpPoint;
             On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
             On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
             On.VoidSpawn.Update += VoidSpawn_Update;
@@ -140,10 +142,36 @@ namespace RainMeadow
 
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
         }
+        private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
+        {
+            if (isArenaMode(out var arena))
+                return 75;
+            return orig(self);
+        }
+        private void Player_SpawnDynamicWarpPoint(On.Player.orig_SpawnDynamicWarpPoint orig, Player self, string forcedDestination, Vector2? forcedDestinationPosition)
+        {
+            if (!isArenaMode(out _))
+            {
+                orig(self, forcedDestination, forcedDestinationPosition);
+                return;
+            }
+
+            if (!self.IsLocal()) return;
+            if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
+
+            var room = self.room;
+            int rippleLayer = self.abstractCreature.rippleLayer;
+            AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
+            VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba);
+            room.abstractRoom.AddEntity(apo);
+            voidSpawn.PlaceInRoom(room);
+            voidSpawn.ChangeRippleLayer(rippleLayer, true);
+
+        }
         private void Room_MaterializeRippleSpawn(On.Room.orig_MaterializeRippleSpawn orig, Room self, Vector2 spawnPos, Room.RippleSpawnSource source)
         {
             if (isArenaMode(out _))
-                return; //if not, others will see hordes of amoebas. now that's too much love
+                return; //if not, will see hordes of amoebas. now that's too much love
             orig(self, spawnPos, source);
         }
 
@@ -220,7 +248,7 @@ namespace RainMeadow
                 return;
             }
             UnityEngine.Random.State savedState = UnityEngine.Random.state;
-            UnityEngine.Random.InitState(86042);
+            UnityEngine.Random.InitState(86042); //so bodychunk count match
             orig(self);
             UnityEngine.Random.state = savedState;
 
