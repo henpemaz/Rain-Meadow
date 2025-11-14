@@ -328,16 +328,13 @@ namespace RainMeadow
                 }
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
-                    VoidSpawn voidSpawn = new VoidSpawn(new AbstractPhysicalObject(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()), shortCutVessel.room.realizedRoom.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(shortCutVessel.room.realizedRoom), VoidSpawn.SpawnType.RippleAmoeba);
+                    VoidSpawn voidSpawn = new(new AbstractPhysicalObject(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()), shortCutVessel.room.realizedRoom.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(shortCutVessel.room.realizedRoom), VoidSpawn.SpawnType.RippleAmoeba);
                     
                     voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, shortCutVessel.room.realizedRoom);
-                    voidSpawn.sizeFac = 10f;
                     
                     room.abstractRoom.AddEntity(voidSpawn.abstractPhysicalObject);
-
-                    voidSpawn.abstractPhysicalObject.Realize();
                     voidSpawn.PlaceInRoom(room);
-
+                    voidSpawn.ChangeRippleLayer(0, true);
                     self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
                     self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
 

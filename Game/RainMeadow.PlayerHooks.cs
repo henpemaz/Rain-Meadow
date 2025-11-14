@@ -96,7 +96,7 @@ public partial class RainMeadow
         On.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
-
+        IL.Player.RippleSpawnInteractions += Player_RippleSpawnInteractions;
 
         On.Player.SetMalnourished += Player_SetMalnourished;
         new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
@@ -395,6 +395,30 @@ public partial class RainMeadow
                 return player.IsLocal(out _); //dont play ripple music
             });
             c.Emit(OpCodes.Brfalse, label);
+        }
+        catch (Exception ex)
+        {
+            Error(ex);
+        }
+    }
+    private void Player_RippleSpawnInteractions(ILContext il)
+    {
+        try
+        {
+            ILCursor c = new(il);
+            c.GotoNext(MoveType.After, x => x.MatchLdcI4(1), x => x.MatchStloc(0));
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, 3);
+            c.Emit(OpCodes.Ldloca, 0);
+            c.EmitDelegate(delegate (Player self, int i, ref bool nearRippleAmoeba)
+            {
+                //dont cause ripple death effect and random death to ripple spawn messages
+                //not too sure if have to just remove death effect entirely on a OnHook
+                if (!self.IsLocal()) 
+                    nearRippleAmoeba = false;
+                else if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal())
+                    nearRippleAmoeba = false;
+            });
         }
         catch (Exception ex)
         {
