@@ -130,8 +130,10 @@ namespace RainMeadow
             On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
 
             //On.Player.ctor += Player_ctor1;
-            On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor;
+            On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
             On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
+            On.VoidSpawn.Update += VoidSpawn_Update;
+
             On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
             IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
@@ -145,22 +147,34 @@ namespace RainMeadow
             orig(self, spawnPos, source);
         }
 
-        int GetPriority(VoidSpawn voidSpawn, Player? player)
+        int GetPriority(ArenaOnlineGameMode arena, VoidSpawn voidSpawn, Player? player)
         {
             if (player == null || player.dead)
                 return 0;
             if (player.abstractCreature.rippleLayer != voidSpawn.abstractPhysicalObject.rippleLayer)
                 return 1;
-            return 2;
+            int additionalPoints = 0;
+            if (player.abstractCreature.GetOnlineObject(out var opo))
+            {
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in player.room.game.GetArenaGameSession.arenaSitting.players)
+                {
+                    if (arenaPlayer.playerNumber == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner))
+                    {
+                        additionalPoints = arenaPlayer.allKills.Count;
+                        break;
+                    }
+                }
+            }
+            return 2 + additionalPoints;
         }
         private Vector2 ChasePlayer(Func<VoidSpawn.ChasePlayer, Vector2> orig, VoidSpawn.ChasePlayer self)
         {
-            if (!isArenaMode(out _)) return orig(self);
+            if (!isArenaMode(out var arena)) return orig(self);
 
             VoidSpawn voidSpawn = self.owner;
             Player? foundPlayer = null;
             float minDistance = 0f;
-            foreach (AbstractCreature player in voidSpawn.room.game.GetArenaGameSession.Players)
+            foreach (AbstractCreature player in voidSpawn.room.game.Players)
             {
                 if (player.GetOnlineObject(out var oe) && voidSpawn.abstractPhysicalObject.GetOnlineObject(out var oe2) && oe!.owner == oe2!.owner)
                     continue;
@@ -169,13 +183,11 @@ namespace RainMeadow
 
                 if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
 
-                //no player found -> is dead -> ripple layer -> distance.
-                int foundPlayerPriority = GetPriority(voidSpawn, foundPlayer);
-                int playerPriority = GetPriority(voidSpawn, realizedPlayer);
-
+                int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
+                int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
                 float distance = Vector2.Distance(voidSpawn.firstChunk.pos, realizedPlayer.mainBodyChunk.pos);
 
-                if (foundPlayer == null || playerPriority > foundPlayerPriority || distance < minDistance)
+                if (foundPlayer == null || playerPriority > foundPlayerPriority || (playerPriority == foundPlayerPriority && distance < minDistance))
                 {
                     foundPlayer = realizedPlayer;
                     minDistance = distance;
@@ -193,10 +205,9 @@ namespace RainMeadow
             }
             return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
         }
-        private void VoidSpawn_ctor(On.VoidSpawn.orig_ctor_AbstractPhysicalObject_float_bool_SpawnType orig, VoidSpawn self, AbstractPhysicalObject apo, float voidMeltInRoom, bool daylightmode, VoidSpawn.SpawnType variant)
+        private void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(On.VoidSpawn.orig_ctor_AbstractPhysicalObject_float_bool_SpawnType orig, VoidSpawn self, AbstractPhysicalObject apo, float voidMeltInRoom, bool daylightmode, VoidSpawn.SpawnType variant)
         {
             //Default non-owners will spawn it as RippleSpawn causing visual glitches. So bruteforce it because we love amoebas!!
-            //let's make everything amoebas!
             if (isArenaMode(out _))
                 variant = VoidSpawn.SpawnType.RippleAmoeba;
             orig(self, apo, voidMeltInRoom, daylightmode, variant);
@@ -213,6 +224,12 @@ namespace RainMeadow
             orig(self);
             UnityEngine.Random.state = savedState;
 
+        }
+        private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
+        {
+            orig(self, eu);
+            if (isArenaMode(out _) && self.IsLocal())
+                self.culled = false; //keep it visible to owner
         }
         private void VoidSpawnGraphics_Update2(ILContext il)
         {
@@ -255,55 +272,11 @@ namespace RainMeadow
                 }
             }
             orig(self);
-            /*if (!self.spawn.culled)
-            {
-                orig(self);
-                return;
-            }
-            var i = 0;
-            self.playersGlowVision[i, 1] = self.playersGlowVision[i, 0];
-            float num = 5f;
-            bool flag = false;
-            AbstractCreature abstractCreature = self.owner.room.game.Players[i];
-
-
-            if (self.playersGlowVision[i, 0] < num)
-            {
-                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.025f, 1f / 60f);
-            }
-            else if (flag)
-            {
-                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.025f, 1f / 60f);
-            }
-            else
-            {
-                self.playersGlowVision[i, 0] = RWCustom.Custom.LerpAndTick(self.playersGlowVision[i, 0], num, 0.1f, 1f / 3f);
-            }
-
-
-            if (!(self.spawn.behavior is Watcher.WatcherRoomSpecificScript.WORA_ElderSpawn.ElderBehavior elderBehavior) || !elderBehavior.closeIn || !(elderBehavior.orbitAngle < elderBehavior.closeInEnd))
-            {
-                return;
-            }
-
-            foreach (VoidSpawnGraphics.Antenna item in self.antennae)
-            {
-                if (item is VoidSpawnGraphics.FrontAntenna frontAntenna)
-                {
-                    frontAntenna.rigid = RWCustom.Custom.LerpAndTick(frontAntenna.rigid, 0f, 0.02f, 0.01f);
-                    if (frontAntenna.rigidSegments > 0)
-                    {
-                        frontAntenna.rigidSegments = Mathf.Min(frontAntenna.rigidSegments, (int)RWCustom.Custom.LerpMap(elderBehavior.orbitAngle, elderBehavior.closeInEnd, elderBehavior.closeInEnd - 720f, 20f, 0f));
-                    }
-                }
-            }*/
-
-
         }
         private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
         {
             if (isArenaMode(out _) && self.owner.IsLocal())
-                return 1;
+                return 1; //keep it visible to owner
             return orig(self, A, B);
         }
 
