@@ -250,7 +250,7 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
 
-                weaverWatcherCheckBox = new(RainMeadow.rainMeadowOptions.WeaverWatcher, positioner - spacing * 2)
+                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 2)
                 {
                     colorEdge = RainWorld.GoldRGB * 1.5f
                 };
@@ -267,6 +267,7 @@ namespace RainMeadow.UI.Components
             {
                 RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value = watcherCamoLimitTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value = watcherRippleLevelTextBox.valueInt;
+                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
             }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
