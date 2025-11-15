@@ -278,8 +278,7 @@ namespace RainMeadow.UI.Components
                         signalText = BACKTOSELECT,
                     };
                     AddObjects(backButton);
-                    menu.MutualVerticalButtonBind(backButton, watcherRippleLevelTextBox.wrapper);
-                    menu.MutualVerticalButtonBind(watcherCamoLimitTextBox.wrapper, backButton); //loop
+                    menu.TrySequentialMutualBind([backButton, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
                 }
                 if (forceSelectedObject)
                     menu.selectedObject = watcherCamoLimitTextBox.wrapper;
