@@ -5,28 +5,24 @@ using UnityEngine;
 namespace RainMeadow
 {
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
-    public class RealizedRippleSpawnState : RealizedCreatureState
+    public class RealizedRippleSpawnState : RealizedPhysicalObjectState
     {
-        [OnlineField]
-        private VoidSpawn.SpawnType rippleType;
         [OnlineFieldHalf]
-        private float sizeFac;
+        private float fade;
         public RealizedRippleSpawnState() { }
-        public RealizedRippleSpawnState(OnlineCreature onlineEntity) : base(onlineEntity)
+        public RealizedRippleSpawnState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var rip = (VoidSpawn)onlineEntity.apo.realizedObject;
-            rippleType = rip.variant;
-            sizeFac = rip.sizeFac;
+            fade = rip.fade;
 
         }
 
-        public void ReadTo(OnlineCreature onlineEntity)
+        public override void ReadTo(OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
 
             var rip = (VoidSpawn)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            rip.variant = rippleType;
-            rip.sizeFac = sizeFac;
+            rip.fade = fade;
         }
     }
 

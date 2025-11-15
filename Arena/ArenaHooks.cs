@@ -132,15 +132,29 @@ namespace RainMeadow
 
             //On.Player.ctor += Player_ctor1;
             On.Player.SpawnDynamicWarpPoint += Player_SpawnDynamicWarpPoint;
+            On.Player.CamoUpdate += Player_CamoUpdate2;
             On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
             On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
             On.VoidSpawn.Update += VoidSpawn_Update;
 
             On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
             IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
+            IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
 
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
+        }
+        private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
+        {
+            orig(self);
+            if (!isArenaMode(out _)) return;
+            for (int i = self.room.voidSpawns.Count - 1; i >= 0; i--)
+            {
+                VoidSpawn voidSpawn = self.room.voidSpawns[i];
+                if (!voidSpawn.IsLocal()) continue;
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                    voidSpawn.Destroy();
+            }
         }
         private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
         {
@@ -156,16 +170,24 @@ namespace RainMeadow
                 return;
             }
 
-            if (!self.IsLocal()) return;
-            if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
+            if (!self.IsLocal() || self.rippleLevel < 5) return;
+            //if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
+
+            float requiredCharge = self.usableCamoLimit / 2;
+
+            if (self.camoCharge >= requiredCharge) return;
 
             var room = self.room;
-            int rippleLayer = self.abstractCreature.rippleLayer;
             AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
-            VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba);
+            VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
+            {
+                timeUntilFadeout = 240
+            };
             room.abstractRoom.AddEntity(apo);
             voidSpawn.PlaceInRoom(room);
-            voidSpawn.ChangeRippleLayer(rippleLayer, true);
+            voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
+
+            self.camoCharge += requiredCharge;
 
         }
         private void Room_MaterializeRippleSpawn(On.Room.orig_MaterializeRippleSpawn orig, Room self, Vector2 spawnPos, Room.RippleSpawnSource source)
@@ -253,11 +275,35 @@ namespace RainMeadow
             UnityEngine.Random.state = savedState;
 
         }
+        private void VoidSpawn_Update2(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                ILLabel label = null;
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<PhysicalObject>(nameof(PhysicalObject.abstractPhysicalObject)),
+                    x => x.MatchLdfld<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.rippleLayer)),
+                    x => x.MatchLdcI4(1),
+                    x => x.MatchBneUn(out label));
+                c.EmitDelegate(delegate ()
+                {
+                    return isArenaMode(out _);
+                });
+                c.Emit(OpCodes.Brtrue, label);
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
         {
             orig(self, eu);
             if (isArenaMode(out _) && self.IsLocal())
+            {
                 self.culled = false; //keep it visible to owner
+            }
         }
         private void VoidSpawnGraphics_Update2(ILContext il)
         {
@@ -301,10 +347,29 @@ namespace RainMeadow
             }
             orig(self);
         }
+        private void VoidSpawnGraphics_DrawSprites(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(MoveType.After, x => x.MatchStfld<VoidSpawnGraphics>(nameof(VoidSpawnGraphics.playerGlowVision)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_3);
+                c.EmitDelegate(delegate (VoidSpawnGraphics self, float timeStacker)
+                {
+                    if (isArenaMode(out _) && self.spawn.IsLocal())
+                        self.playerGlowVision = Mathf.Lerp(self.spawn.lastFade, self.spawn.fade, timeStacker);
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
         private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
         {
-            if (isArenaMode(out _) && self.owner.IsLocal())
-                return 1; //keep it visible to owner
+            if (isArenaMode(out _) && self.spawn.IsLocal())
+                return 1 * self.playerGlowVision; //keep it visible to owner
             return orig(self, A, B);
         }
 
