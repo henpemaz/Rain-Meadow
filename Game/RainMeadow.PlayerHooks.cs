@@ -92,6 +92,7 @@ public partial class RainMeadow
             orig(self);
             WatcherOverrideRippleLevel = false;
         };
+        IL.Player.WatcherUpdate += Player_WatcherUpdate;
         On.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
@@ -371,6 +372,33 @@ public partial class RainMeadow
                 int num2 = UnityEngine.Random.Range(0, maxExclusive);
                 self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
             }
+        }
+    }
+    private void Player_WatcherUpdate(ILContext il)
+    {
+        try
+        {
+            ILCursor c = new(il);
+            ILLabel label = null;
+            c.GotoNext(x => x.MatchLdsfld<ModManager>(nameof(ModManager.Watcher)), x => x.MatchBrfalse(out label));
+            c.EmitDelegate(delegate ()
+            {
+                return isArenaMode(out _);
+            });
+            c.Emit(OpCodes.Brtrue, label); //skip sharing ripple layer with Players[0] which is host in arena
+
+
+            c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(5), x => x.MatchBltUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate(delegate (Player player)
+            {
+                return player.IsLocal(out _); //dont play ripple music
+            });
+            c.Emit(OpCodes.Brfalse, label);
+        }
+        catch (Exception ex)
+        {
+            Error(ex);
         }
     }
     delegate bool orig_get_Malnourished(Player self);

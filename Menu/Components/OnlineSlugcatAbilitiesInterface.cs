@@ -17,7 +17,6 @@ namespace RainMeadow.UI.Components
     public class OnlineSlugcatAbilitiesInterface : PositionedMenuObject
     {
         public const string WATCHERSETTINGS = "WATCHERSETTINGS", MSCSETTINGS = "MSCSETTINGS", BACKTOSELECT = "BACKTOSELECTSETTINGS";
-        public event Action<SettingsPage, bool>? UpdateSettingSelectables;
         public SettingsPage? activeSettings;
         public Dictionary<string, SettingsPage> settingSignals = [];
         public MSCSettingsPage? mscSettingsTab;
@@ -213,8 +212,9 @@ namespace RainMeadow.UI.Components
         {
             public SimplerButton? backButton;
             public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel;
+            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel;
             public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox;
+            public OpCheckBox weaverWatcherCheckBox;
             public override string Name => "Watcher Settings";
             public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
             {
@@ -250,12 +250,24 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
 
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel);
+                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 2)
+                {
+                    colorEdge = RainWorld.GoldRGB * 1.5f
+                };
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher has synced weaver cosmetics") : menu.Translate("Your watcher has synced normal cosmetics");
+                new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
+                weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
+
+                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel);
+
+                weaverWatcherCheckBox.Change(); //update desc
             }
             public override void SaveInterfaceOptions()
             {
                 RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value = watcherCamoLimitTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value = watcherRippleLevelTextBox.valueInt;
+                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
             }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
@@ -266,8 +278,7 @@ namespace RainMeadow.UI.Components
                         signalText = BACKTOSELECT,
                     };
                     AddObjects(backButton);
-                    menu.MutualVerticalButtonBind(backButton, watcherRippleLevelTextBox.wrapper);
-                    menu.MutualVerticalButtonBind(watcherCamoLimitTextBox.wrapper, backButton); //loop
+                    menu.TrySequentialMutualBind([backButton, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
                 }
                 if (forceSelectedObject)
                     menu.selectedObject = watcherCamoLimitTextBox.wrapper;
@@ -277,6 +288,7 @@ namespace RainMeadow.UI.Components
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                 arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void Update()
             {
@@ -296,6 +308,8 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
                 if (!watcherRippleLevelTextBox.held)
                     watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
+
+                arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -303,6 +317,7 @@ namespace RainMeadow.UI.Components
                 if (IsActuallyHidden) return;
                 watcherCamoLimitLabel.label.color = watcherCamoLimitTextBox.rect.colorEdge;
                 watcherRippleLevelLabel.label.color = watcherRippleLevelTextBox.rect.colorEdge;
+                weaverWatcherLabel.label.color = weaverWatcherCheckBox.rect.colorEdge;
             }
         }
         public class SelectSettingsPage : SettingsPage
@@ -356,7 +371,7 @@ namespace RainMeadow.UI.Components
                 base.Update();
                 if (IsActuallyHidden) return;
                 List<SettingsButton> settingBtns = SettingBtns;
-                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count)], right: true);
+                scroller.scrollSlider.TryBind(settingBtns[Mathf.Min(Mathf.CeilToInt(scroller.DownScrollOffset), settingBtns.Count - 1)], right: true);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -449,12 +464,8 @@ namespace RainMeadow.UI.Components
             {
 
             }
-            public override void BindMySelectables()
-            {
-                (owner as OnlineSlugcatAbilitiesInterface)?.UpdateSettingSelectables?.Invoke(this, IsActuallyHidden);
-                base.BindMySelectables();
-            }
         }
 
     }
 }
+

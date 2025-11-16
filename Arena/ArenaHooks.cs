@@ -12,7 +12,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-
 namespace RainMeadow
 {
     public partial class RainMeadow
@@ -103,6 +102,7 @@ namespace RainMeadow
             On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
+            IL.MoreSlugcats.SingularityBomb.Update += SingularityBomb_Update;
             IL.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint1;
             new Hook(typeof(Player).GetProperty("rippleLevel").GetGetMethod(), this.SetRippleLevel);
             new Hook(typeof(Player).GetProperty("CanLevitate").GetGetMethod(), this.SetLevitate);
@@ -123,8 +123,36 @@ namespace RainMeadow
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
-        }
 
+            On.PlayerGraphics.ctor += PlayerGraphics_ctor;
+            On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+            On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
+
+        }
+        private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (isArenaMode(out var _) && ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                if (self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                    self.InitializeLongerWatcherTail();
+            }
+        }
+        private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                self.player.watcherMorph = 0.51f;
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+        }
+        private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
+        {
+            orig(self);
+            if (isArenaMode(out _) && self.pGraphics.player.abstractPhysicalObject.GetOnlineObject(out var oe) && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+            {
+                self.weaverTier = 4;
+                self.haloBaseAlpha = Mathf.Clamp(1f - self.pGraphics.player.camoProgress, 0f, 1f);
+            }
+        }
         private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             if (isArenaMode(out var arena))
@@ -144,11 +172,11 @@ namespace RainMeadow
                     self.pauseWarningActive = false;
                 }
             }
-             else
+            else
             {
                 orig(self);
             }
-            
+
         }
 
         private void Player_ActivateAscension(On.Player.orig_ActivateAscension orig, Player self)
@@ -713,6 +741,30 @@ namespace RainMeadow
             else
             {
                 orig(self, abstractPhysicalObject, world);
+            }
+        }
+
+        public void SingularityBomb_Update(ILContext context)
+        {
+            try
+            {
+                ILCursor cursor = new(context);
+                var skip = cursor.DefineLabel();
+                cursor.GotoNext(MoveType.After, x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<SingularityBomb>(nameof(MoreSlugcats.SingularityBomb.counter)),
+                    x => x.MatchLdcR4(40));
+                cursor.EmitDelegate<Func<float, float>>((float eggtimer) =>
+                {
+                    if (RainMeadow.isArenaMode(out var _))
+                    {
+                        return 100f;
+                    }
+                    return eggtimer;
+                });
+            }
+            catch (Exception except)
+            {
+                RainMeadow.Error(except);
             }
         }
 
