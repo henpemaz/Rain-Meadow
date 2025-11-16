@@ -161,6 +161,10 @@ namespace RainMeadow
             return currentCampaign;
         }
 
+        public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
+        {
+            return currentCampaign;
+        }
         public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame? game)
         {
             //fasttravelscreen -> null rainworldGame
