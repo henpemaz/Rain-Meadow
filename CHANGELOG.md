@@ -5,7 +5,7 @@
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
-
+- Fixed weapon phasing
 ## Arena:
 - Added beehives 
 - Synced trophies
@@ -30,8 +30,6 @@
 ## General:
 - Updated to game version 1.11.3
 - Japanese translation by MisodeN [ミソデン]. どうもありがとう
-- Fix weapon phasing
-
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
