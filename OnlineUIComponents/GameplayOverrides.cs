@@ -36,7 +36,7 @@ namespace RainMeadow
                 if (arena.countdownInitiatedHoldFire) return true;
             }
 
-            if (RainMeadow.isStoryMode(out var story))
+            if (RainMeadow.isStoryMode(out var story) && creature is Player)
             {
                 return !story.friendlyFire;
             }
