@@ -7,6 +7,7 @@
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
+- Stabilized backpacking theoigh gates & portals 
 ## Arena:
 - Added beehives 
 - Synced trophies
