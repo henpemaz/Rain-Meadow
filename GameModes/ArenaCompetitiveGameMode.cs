@@ -33,6 +33,7 @@ namespace RainMeadow
         public bool leaveForNextLevel;
         public bool leaveToRestart;
 
+        public bool voidMasterEnabled = RainMeadow.rainMeadowOptions.VoidMaster.Value;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
@@ -90,7 +91,9 @@ namespace RainMeadow
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
-
+        
+        public int voidMasterRippleLevel = RainMeadow.rainMeadowOptions.VoidMasterRippleLevel.Value;
+        public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
@@ -131,8 +134,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-
-
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },

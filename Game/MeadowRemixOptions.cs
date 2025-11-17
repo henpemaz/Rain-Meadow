@@ -31,6 +31,11 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> PainCatEgg;
     public readonly Configurable<bool> PainCatLizard;
     public readonly Configurable<bool> WeaverWatcher;
+    public readonly Configurable<bool> VoidMaster;
+    public readonly Configurable<int> VoidMasterRippleLevel;
+
+    public readonly Configurable<int> AmoebaDuration;
+
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
     public readonly Configurable<bool> WearingCape;
@@ -110,6 +115,9 @@ public class RainMeadowOptions : OptionInterface
         BlockMaul = config.Bind("BlockMaul", false);
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
+        VoidMaster = config.Bind("VoidMaster", false);
+        VoidMasterRippleLevel = config.Bind("VoidMasterRippleLevel", 9);
+        AmoebaDuration = config.Bind("AmoebaDuration", 7);
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 

@@ -75,7 +75,12 @@ namespace RainMeadow
             public bool arenaItemSteal;
             [OnlineField(group = "arenaSetup")]
             public bool allowJoiningMidRound;
-
+            [OnlineField(group = "arenaSetup")]
+            public bool voidMasterEnabled;
+            [OnlineField(group = "arenaSetup")]
+            public int voidMasterRippleLevel;
+            [OnlineField(group = "arenaSetup")]
+            public int amoebaDuration;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -155,6 +160,9 @@ namespace RainMeadow
                 piggyBack = arena.piggyBack;
 
                 bannedSlugs = new(arena.bannedSlugs);
+                voidMasterEnabled = arena.voidMasterEnabled;
+                voidMasterRippleLevel = arena.voidMasterRippleLevel;
+                amoebaDuration = arena.amoebaDuration;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -211,6 +219,9 @@ namespace RainMeadow
 
                 (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
+                (lobby.gameMode as ArenaOnlineGameMode).voidMasterRippleLevel = voidMasterRippleLevel;
+                (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled= voidMasterEnabled;
+                (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration= amoebaDuration;
 
 
             }

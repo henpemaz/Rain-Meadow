@@ -163,13 +163,20 @@ namespace RainMeadow
         }
         private void Player_SpawnDynamicWarpPoint(On.Player.orig_SpawnDynamicWarpPoint orig, Player self, string forcedDestination, Vector2? forcedDestinationPosition)
         {
-            if (!isArenaMode(out _))
+            if (!isArenaMode(out var arena))
             {
                 orig(self, forcedDestination, forcedDestinationPosition);
                 return;
             }
-
-            if (!self.IsLocal() || self.rippleLevel < 5) return;
+            if (arena.countdownInitiatedHoldFire)
+            {
+                return;
+            }
+            if (!arena.voidMasterEnabled)
+            {
+                return;
+            }
+            if (!self.IsLocal() || self.rippleLevel < arena.watcherRippleLevel) return;
             //if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
@@ -180,11 +187,15 @@ namespace RainMeadow
             AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
             VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
             {
-                timeUntilFadeout = 240
+                timeUntilFadeout = arena.amoebaDuration * 40
             };
+            voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);
             voidSpawn.PlaceInRoom(room);
             voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
+
+            self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
+            self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
 
             self.camoCharge += requiredCharge;
 
@@ -219,7 +230,6 @@ namespace RainMeadow
         private Vector2 ChasePlayer(Func<VoidSpawn.ChasePlayer, Vector2> orig, VoidSpawn.ChasePlayer self)
         {
             if (!isArenaMode(out var arena)) return orig(self);
-
             VoidSpawn voidSpawn = self.owner;
             Player? foundPlayer = null;
             float minDistance = 0f;
@@ -248,8 +258,9 @@ namespace RainMeadow
             if (foundPlayer != null)
             {
                 if (foundPlayer.standingInWarpPointProtectionTime > 0 || foundPlayer.warpPointCooldown > 0)
+                {
                     return voidSpawn.mainBody[0].pos + RWCustom.Custom.DirVec(foundPlayer.mainBodyChunk.pos, voidSpawn.mainBody[0].pos) * 400f;
-
+                }
                 return foundPlayer.mainBodyChunk.pos;
             }
             return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
@@ -299,9 +310,17 @@ namespace RainMeadow
         private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
         {
             orig(self, eu);
-            if (isArenaMode(out _) && self.IsLocal())
+            if (isArenaMode(out _))
             {
-                self.culled = false; //keep it visible to owner
+                if (self.IsLocal())
+                {
+                    self.culled = false; //keep it visible to owner
+                }
+                if (self.behavior == null)
+                {
+                    // spawn transferred, destroy
+                    self.startFadeOut = true;
+                }
             }
         }
         private void VoidSpawnGraphics_Update2(ILContext il)
@@ -310,11 +329,11 @@ namespace RainMeadow
             {
                 ILCursor c = new(il);
                 ILLabel label = null;
-                c.GotoNext(x => x.MatchLdarg(0), 
-                    x => x.MatchCall<GraphicsModule>("get_owner"), 
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchCall<GraphicsModule>("get_owner"),
                     x => x.MatchLdfld<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.room)),
-                    x => x.MatchLdfld<Room>(nameof(Room.game)), 
-                    x => x.MatchCallvirt<RainWorldGame>("get_setupValues"), 
+                    x => x.MatchLdfld<Room>(nameof(Room.game)),
+                    x => x.MatchCallvirt<RainWorldGame>("get_setupValues"),
                     x => x.MatchLdfld<RainWorldGame.SetupValues>(nameof(RainWorldGame.SetupValues.playerGlowing)), x => x.MatchBrtrue(out label));
                 c.EmitDelegate(delegate ()
                 {
@@ -395,7 +414,7 @@ namespace RainMeadow
                 self.weaverTier = 4;
                 self.haloBaseAlpha = Mathf.Clamp(1f - self.pGraphics.player.camoProgress, 0f, 1f);
             }
-        }     
+        }
         private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             if (isArenaMode(out var arena))
