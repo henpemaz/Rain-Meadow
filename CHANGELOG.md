@@ -1,4 +1,6 @@
 # Release 1.9.0
+## General:
+- Fixed weapon phasing
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
@@ -6,7 +8,7 @@
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
 - Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
-
+- Stabilized backpacking theoigh gates & portals 
 ## Arena:
 - Added beehives 
 - Synced trophies
@@ -31,8 +33,6 @@
 ## General:
 - Updated to game version 1.11.3
 - Japanese translation by MisodeN [ミソデン]. どうもありがとう
-- Fix weapon phasing
-
 ## Arena:
 - The slugcat select and slugcat coloration menus now show which subpage they're on, if there are multiple.
 - Fixes Saint's karma activation to mirror game's original behavior.
