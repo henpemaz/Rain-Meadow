@@ -1,4 +1,9 @@
 # Release 1.9.0
+
+## General:
+- Synced Scavengers animations and grasps.
+- Synced grasp stealing. Works in both Story and Arena gamemodes.
+
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
