@@ -78,8 +78,6 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool voidMasterEnabled;
             [OnlineField(group = "arenaSetup")]
-            public int voidMasterRippleLevel;
-            [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
@@ -161,7 +159,6 @@ namespace RainMeadow
 
                 bannedSlugs = new(arena.bannedSlugs);
                 voidMasterEnabled = arena.voidMasterEnabled;
-                voidMasterRippleLevel = arena.voidMasterRippleLevel;
                 amoebaDuration = arena.amoebaDuration;
             }
 
@@ -219,7 +216,6 @@ namespace RainMeadow
 
                 (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
-                (lobby.gameMode as ArenaOnlineGameMode).voidMasterRippleLevel = voidMasterRippleLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled= voidMasterEnabled;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration= amoebaDuration;
 

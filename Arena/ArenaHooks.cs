@@ -144,6 +144,9 @@ namespace RainMeadow
 
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
         }
+
+
+
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
@@ -176,7 +179,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (!self.IsLocal() || self.rippleLevel < arena.watcherRippleLevel) return;
+            if (!self.IsLocal()) return;
             //if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
@@ -193,7 +196,6 @@ namespace RainMeadow
             room.abstractRoom.AddEntity(apo);
             voidSpawn.PlaceInRoom(room);
             voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
-
             self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
             self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
 

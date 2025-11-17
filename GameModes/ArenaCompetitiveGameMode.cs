@@ -92,7 +92,6 @@ namespace RainMeadow
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
         
-        public int voidMasterRippleLevel = RainMeadow.rainMeadowOptions.VoidMasterRippleLevel.Value;
         public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
 
         public ArenaClientSettings arenaClientSettings;

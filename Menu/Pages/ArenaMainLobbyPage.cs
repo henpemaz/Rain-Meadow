@@ -11,6 +11,7 @@ using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 using RainMeadow.UI.Interfaces;
+using Menu.Remix.MixedUI.ValueTypes;
 
 
 namespace RainMeadow.UI.Pages;
