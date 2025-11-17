@@ -148,12 +148,11 @@ namespace RainMeadow
         {
             orig(self);
             if (!isArenaMode(out _)) return;
-            for (int i = self.room.voidSpawns.Count - 1; i >= 0; i--)
+            foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
-                VoidSpawn voidSpawn = self.room.voidSpawns[i];
                 if (!voidSpawn.IsLocal()) continue;
                 if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
-                    voidSpawn.Destroy();
+                    voidSpawn.startFadeOut = true;
             }
         }
         private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)

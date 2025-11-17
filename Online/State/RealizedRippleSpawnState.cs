@@ -7,14 +7,16 @@ namespace RainMeadow
     [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedRippleSpawnState : RealizedPhysicalObjectState
     {
-        [OnlineFieldHalf]
-        private float fade;
+        [OnlineField]
+        private int timer;
+        [OnlineField]
+        private bool startFadeOut;
         public RealizedRippleSpawnState() { }
         public RealizedRippleSpawnState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
             var rip = (VoidSpawn)onlineEntity.apo.realizedObject;
-            fade = rip.fade;
-
+            timer = rip.timeUntilFadeout;
+            startFadeOut = rip.startFadeOut;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -22,7 +24,8 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
 
             var rip = (VoidSpawn)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-            rip.fade = fade;
+            rip.timeUntilFadeout = timer;
+            rip.startFadeOut = startFadeOut;
         }
     }
 
