@@ -271,7 +271,7 @@ namespace RainMeadow.UI.Components
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                     arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at will") : menu.Translate("Disable amoeba summoning lobby-wide");
+                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at the cost of your camo timer") : menu.Translate("Disable amoeba summoning lobby-wide");
 
                 };
                 new PatchedUIelementWrapper(tabWrapper, voidMasterCheckbox);
@@ -543,4 +543,5 @@ namespace RainMeadow.UI.Components
 
     }
 }
+
 
