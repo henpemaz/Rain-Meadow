@@ -250,11 +250,11 @@ namespace RainMeadow.UI.Components
                 watcherRippleLevelLabel = new(menu, this, menu.Translate("Watcher Ripple Level:"), watcherRippleLevelTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 watcherRippleLevelLabel.label.alignment = FLabelAlignment.Left;
 
-                weaverWatcherCheckBox = new(RainMeadow.rainMeadowOptions.WeaverWatcher, positioner - spacing * 2)
+                weaverWatcherCheckBox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.WeaverWatcher.Value), positioner - spacing * 2)
                 {
                     colorEdge = RainWorld.GoldRGB * 1.5f
                 };
-                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool() ? menu.Translate("Your watcher will have synced weaver cosmetics") : menu.Translate("Your watcher will have synced normal cosmetics");
+                weaverWatcherCheckBox.OnChange += () => weaverWatcherCheckBox.description = weaverWatcherCheckBox.GetValueBool()? menu.Translate("Your watcher has synced weaver cosmetics") : menu.Translate("Your watcher has synced normal cosmetics");
                 new PatchedUIelementWrapper(tabWrapper, weaverWatcherCheckBox);
                 weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
@@ -271,7 +271,7 @@ namespace RainMeadow.UI.Components
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
                     arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at will") : menu.Translate("Disable amoeba summoning lobby-wide");
+                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at the cost of your camo timer") : menu.Translate("Disable amoeba summoning lobby-wide");
 
                 };
                 new PatchedUIelementWrapper(tabWrapper, voidMasterCheckbox);
@@ -318,8 +318,7 @@ namespace RainMeadow.UI.Components
                         signalText = BACKTOSELECT,
                     };
                     AddObjects(backButton);
-                    menu.MutualVerticalButtonBind(backButton, watcherRippleLevelTextBox.wrapper);
-                    menu.MutualVerticalButtonBind(watcherCamoLimitTextBox.wrapper, backButton); //loop
+                    menu.TrySequentialMutualBind([backButton, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
                 }
                 if (forceSelectedObject)
                     menu.selectedObject = watcherCamoLimitTextBox.wrapper;
@@ -523,3 +522,5 @@ namespace RainMeadow.UI.Components
 
     }
 }
+
+
