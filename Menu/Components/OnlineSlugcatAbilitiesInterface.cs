@@ -353,8 +353,7 @@ namespace RainMeadow.UI.Components
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
 
-                arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-
+                arena.voidMasterEnabled = SettingsDisabled;
 
                 amoebaLifespanTextBox.greyedOut = !arena.voidMasterEnabled;
                 amoebaLifespanTextBox.held = amoebaLifespanTextBox._KeyboardOn;
