@@ -151,11 +151,11 @@ namespace RainMeadow
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
                 if (!voidSpawn.IsLocal()) continue;
-                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer || self.camoCharge <= 0 || self.exhausted)
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
                     voidSpawn.startFadeOut = true;
             }
             if (self.room.voidSpawns.Any(x => x.IsLocal())) {
-                self.camoCharge = Mathf.Min(self.camoCharge + arena.amoebaDuration, self.usableCamoLimit);
+                self.camoCharge = Mathf.Min(self.camoCharge - 0.7f, self.usableCamoLimit);
             }
         }
         private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
@@ -193,7 +193,7 @@ namespace RainMeadow
             AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
             VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
             {
-                timeUntilFadeout = (int)self.camoLimit
+                timeUntilFadeout = arena.amoebaDuration * 40
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);

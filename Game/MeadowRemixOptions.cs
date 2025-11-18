@@ -33,7 +33,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> WeaverWatcher;
     public readonly Configurable<bool> VoidMaster;
 
-    public readonly Configurable<float> AmoebaDuration;
+    public readonly Configurable<int> AmoebaDuration;
 
     public readonly Configurable<bool> BlockMaul;
     public readonly Configurable<bool> BlockArtiStun, ArenaAllowMidJoin;
@@ -115,7 +115,7 @@ public class RainMeadowOptions : OptionInterface
         BlockArtiStun = config.Bind("BlockArtiStun", false);
         WeaverWatcher = config.Bind("WeaverWatcher", false);
         VoidMaster = config.Bind("VoidMaster", false);
-        AmoebaDuration = config.Bind("AmoebaDuration", 1.3f);
+        AmoebaDuration = config.Bind("AmoebaDuration", 7);
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 
