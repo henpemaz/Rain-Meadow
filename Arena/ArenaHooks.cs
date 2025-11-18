@@ -155,7 +155,7 @@ namespace RainMeadow
                     voidSpawn.startFadeOut = true;
             }
             if (self.room.voidSpawns.Any(x => x.IsLocal())) {
-                self.camoCharge = Mathf.Min(self.camoCharge - 0.7f, self.usableCamoLimit);
+                self.camoCharge = Mathf.Min(self.camoCharge + 0.7f, self.usableCamoLimit);
             }
         }
         private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
