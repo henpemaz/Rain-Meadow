@@ -145,8 +145,6 @@ namespace RainMeadow
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
         }
 
-
-
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
@@ -179,7 +177,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (!self.IsLocal()) return;
+            if (!self.IsLocal() || self.rippleLevel < 2) return;
             //if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
@@ -235,14 +233,24 @@ namespace RainMeadow
             VoidSpawn voidSpawn = self.owner;
             Player? foundPlayer = null;
             float minDistance = 0f;
+            Player? voidSpawningPlayer = null;
             foreach (AbstractCreature player in voidSpawn.room.game.Players)
             {
                 if (player.GetOnlineObject(out var oe) && voidSpawn.abstractPhysicalObject.GetOnlineObject(out var oe2) && oe!.owner == oe2!.owner)
+                {
+                    voidSpawningPlayer = (player.realizedCreature as Player);
                     continue;
-
+                }
                 if (player.realizedCreature is not Player realizedPlayer) continue;
 
                 if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
+                if (TeamBattleMode.isTeamBattleMode(arena, out _))
+                {
+                    if (voidSpawningPlayer != null && player.realizedCreature != null && ArenaHelpers.CheckSameTeam(voidSpawningPlayer.abstractCreature.GetOnlineObject()!.owner, oe!.owner, voidSpawningPlayer, player.realizedCreature))
+                    {
+                        continue;
+                    }
+                }
 
                 int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
                 int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
@@ -285,7 +293,6 @@ namespace RainMeadow
             UnityEngine.Random.InitState(86042); //so bodychunk count match
             orig(self);
             UnityEngine.Random.state = savedState;
-
         }
         private void VoidSpawn_Update2(ILContext il)
         {
