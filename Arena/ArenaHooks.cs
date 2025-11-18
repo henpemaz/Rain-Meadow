@@ -148,12 +148,15 @@ namespace RainMeadow
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
         {
             orig(self);
-            if (!isArenaMode(out _)) return;
+            if (!isArenaMode(out var arena)) return;
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
                 if (!voidSpawn.IsLocal()) continue;
-                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer || self.camoRechargePenalty > 0)
                     voidSpawn.startFadeOut = true;
+            }
+            if (self.room.voidSpawns.Any(x => x.IsLocal())) {
+                self.camoCharge = Mathf.Min(self.camoCharge + arena.amoebaDuration, self.usableCamoLimit);
             }
         }
         private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
@@ -178,7 +181,10 @@ namespace RainMeadow
                 return;
             }
             if (!self.IsLocal() || self.rippleLevel < 2) return;
-            //if (self.room.voidSpawns.Any(x => x.IsLocal())) return;
+            //if (self.room.voidSpawns.Any(x => x.IsLocal()))
+            //{
+
+            //}
 
             float requiredCharge = self.usableCamoLimit / 2;
 

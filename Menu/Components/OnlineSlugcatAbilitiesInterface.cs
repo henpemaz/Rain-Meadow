@@ -282,10 +282,10 @@ namespace RainMeadow.UI.Components
 
 
                 //Amoeba duration
-                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
+                amoebaLifespanTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
-                    description = menu.Translate("Amoeba lifespan duration in seconds. Default: 7")
+                    description = menu.Translate("Amoeba camo depletion rate. Default: 30%")
 
                 };
                 amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
