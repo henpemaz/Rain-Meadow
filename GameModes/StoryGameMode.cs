@@ -338,44 +338,5 @@ namespace RainMeadow
             base.GameShutDown(game);
         }
     }
-    public static class StoryModeExtensions
-    {
-        public static bool FriendlyFireSafetyCandidate(this Creature creature, Creature? friend)
-        {
-            if (creature.abstractCreature.GetOnlineCreature() is not OnlineCreature oc)
-            {
-                return false;
-            }
-
-            if (!oc.isAvatar)
-            {
-                return false;
-            }
-
-            if (RainMeadow.isArenaMode(out var arena))
-            {
-                if (creature.room.game.IsArenaSession && creature.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.spearsHitPlayers == false)
-                {
-                    return true; // you are a safety candidate
-                }
-
-                if (friend is not null)
-                {
-                    if (TeamBattleMode.isTeamBattleMode(arena, out _))
-                    {
-                        return ArenaHelpers.CheckSameTeam(oc.owner, friend.abstractCreature.GetOnlineCreature()?.owner, creature, friend);
-                    }
-                }
-
-                if (arena.countdownInitiatedHoldFire) return true;
-            }
-
-            if (RainMeadow.isStoryMode(out var story))
-            {
-                return !story.friendlyFire;
-            }
-            return false;
-        }
-    }
 
 }

@@ -7,6 +7,8 @@
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
+- Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
+  ⚠️ Developers: InputOverrides class is now GameplayOverrides
 - Stabilized backpacking theoigh gates & portals 
 ## Arena:
 - Added beehives 

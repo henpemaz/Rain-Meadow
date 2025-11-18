@@ -592,7 +592,7 @@ namespace RainMeadow
                     }
                 }
 
-                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                self.topMiddle.y = GameplayOverrides.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
                 {
@@ -657,7 +657,7 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                self.topMiddle.y = GameplayOverrides.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
                 {
