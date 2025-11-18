@@ -285,7 +285,8 @@ namespace RainMeadow.UI.Components
                 amoebaLifespanTextBox = new(new Configurable<float>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
-                    description = menu.Translate("Amoeba camo depletion rate. Default: 30%")
+                    description = menu.Translate("Amoeba camo depletion rate. Default: 1.3 (30%)"),
+                    accept = OpTextBox.Accept.Float
 
                 };
                 amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
@@ -359,7 +360,7 @@ namespace RainMeadow.UI.Components
                 amoebaLifespanTextBox.greyedOut = greyoutall;
                 amoebaLifespanTextBox.held = amoebaLifespanTextBox._KeyboardOn;
                 if (!amoebaLifespanTextBox.held)
-                    amoebaLifespanTextBox.valueInt = arena.amoebaDuration;
+                    amoebaLifespanTextBox.valueFloat = arena.amoebaDuration;
 
 
             }

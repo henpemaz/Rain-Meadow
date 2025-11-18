@@ -130,7 +130,6 @@ namespace RainMeadow
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
 
-            //On.Player.ctor += Player_ctor1;
             On.Player.SpawnDynamicWarpPoint += Player_SpawnDynamicWarpPoint;
             On.Player.CamoUpdate += Player_CamoUpdate2;
             On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
@@ -152,7 +151,7 @@ namespace RainMeadow
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
                 if (!voidSpawn.IsLocal()) continue;
-                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer || self.camoRechargePenalty > 0)
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer || self.camoCharge <= 0 || self.exhausted)
                     voidSpawn.startFadeOut = true;
             }
             if (self.room.voidSpawns.Any(x => x.IsLocal())) {
@@ -194,7 +193,7 @@ namespace RainMeadow
             AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
             VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
             {
-                timeUntilFadeout = arena.amoebaDuration * 40
+                timeUntilFadeout = (int)self.camoLimit
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);
@@ -250,11 +249,18 @@ namespace RainMeadow
                 if (player.realizedCreature is not Player realizedPlayer) continue;
 
                 if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
-                if (TeamBattleMode.isTeamBattleMode(arena, out _))
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
-                    if (voidSpawningPlayer != null && player.realizedCreature != null && ArenaHelpers.CheckSameTeam(voidSpawningPlayer.abstractCreature.GetOnlineObject()!.owner, oe!.owner, voidSpawningPlayer, player.realizedCreature))
-                    {
-                        continue;
+                    if (OnlineManager.lobby.clientSettings.TryGetValue(voidSpawningPlayer!.abstractCreature.GetOnlineObject()!.owner, out var amoebaman) && OnlineManager.lobby.clientSettings.TryGetValue(oe!.owner, out var victim)) {
+
+                        if (amoebaman.TryGetData<ArenaTeamClientSettings>(out var amoebaTeam) && victim.TryGetData<ArenaTeamClientSettings>(out var victimTeam))
+                        {
+                            if (amoebaTeam.team == victimTeam.team)
+                            {
+                                continue;
+                            }
+                        }
+
                     }
                 }
 

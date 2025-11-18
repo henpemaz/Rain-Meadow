@@ -78,7 +78,7 @@ namespace RainMeadow
             [OnlineField(group = "arenaSetup")]
             public bool voidMasterEnabled;
             [OnlineField(group = "arenaSetup")]
-            public int amoebaDuration;
+            public float amoebaDuration;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
