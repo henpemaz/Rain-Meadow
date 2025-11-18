@@ -275,14 +275,14 @@ namespace RainMeadow.UI.Components
 
                 };
                 new PatchedUIelementWrapper(tabWrapper, voidMasterCheckbox);
-                voidMasterLabel = new(menu, this, menu.Translate("Voidmaster:"), voidMasterCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                voidMasterLabel = new(menu, this, menu.Translate("Voidkeeper:"), voidMasterCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 voidMasterLabel.label.alignment = FLabelAlignment.Left;
 
                 voidMasterCheckbox.Change(); //update desc
 
 
                 //Amoeba duration
-                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 5 + new Vector2(-7.5f, 0), 40)
+                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
                 {
                     alignment = FLabelAlignment.Center,
                     description = menu.Translate("Amoeba lifespan duration in seconds. Default: 7")
@@ -294,7 +294,7 @@ namespace RainMeadow.UI.Components
                     arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
                 };
                 new PatchedUIelementWrapper(tabWrapper, amoebaLifespanTextBox);
-                amoebaDurationLabel = new(menu, this, menu.Translate("Voidmaster Amoeba Duration:"), amoebaLifespanTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                amoebaDurationLabel = new(menu, this, menu.Translate("Voidkeeper Amoeba Duration:"), amoebaLifespanTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
                 amoebaDurationLabel.label.alignment = FLabelAlignment.Left;
 
                 this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel);
@@ -353,10 +353,10 @@ namespace RainMeadow.UI.Components
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
 
+                voidMasterCheckbox.greyedOut = greyoutall;
                 arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
 
-
-                amoebaLifespanTextBox.greyedOut = !arena.voidMasterEnabled;
+                amoebaLifespanTextBox.greyedOut = greyoutall;
                 amoebaLifespanTextBox.held = amoebaLifespanTextBox._KeyboardOn;
                 if (!amoebaLifespanTextBox.held)
                     amoebaLifespanTextBox.valueInt = arena.amoebaDuration;
