@@ -246,8 +246,7 @@ namespace RainMeadow
             float minDistance = 0f;
             foreach (AbstractCreature player in voidSpawn.room.game.Players)
             {
-                if (player.GetOnlineObject(out var oe) && voidSpawn.abstractPhysicalObject.GetOnlineObject(out var oe2) && oe!.owner == oe2!.owner)
-                    continue;
+                if (player.IsLocal(out var oe)) continue;
                 if (player.realizedCreature is not Player realizedPlayer) continue;
 
                 if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
@@ -268,8 +267,6 @@ namespace RainMeadow
                     foundPlayer = realizedPlayer;
                     minDistance = distance;
                 }
-                if (voidSpawn.variant != VoidSpawn.SpawnType.RippleAmoeba && distance < 400f)
-                    voidSpawn.behavior = new VoidSpawn.CircleSwarm(voidSpawn, voidSpawn.room);
             }
 
             if (foundPlayer != null)
