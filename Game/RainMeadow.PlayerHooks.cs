@@ -416,7 +416,7 @@ public partial class RainMeadow
                 //not too sure if have to just remove death effect entirely on a OnHook
                 if (!self.IsLocal()) 
                     nearRippleAmoeba = false;
-                else if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal())
+                else if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal() && self.room.voidSpawns[i].behavior != null) //dont use death effect if amoeba was created by player
                     nearRippleAmoeba = false;
             });
         }
