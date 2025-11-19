@@ -406,19 +406,19 @@ public partial class RainMeadow
         try
         {
             ILCursor c = new(il);
-            c.GotoNext(MoveType.After, x => x.MatchLdcI4(1), x => x.MatchStloc(0));
+            ILLabel label = null;
+            c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
             c.Emit(OpCodes.Ldloc, 3);
-            c.Emit(OpCodes.Ldloca, 0);
-            c.EmitDelegate(delegate (Player self, int i, ref bool nearRippleAmoeba)
+            c.EmitDelegate(delegate (Player self, int i)
             {
-                //dont cause ripple death effect and random death to ripple spawn messages
-                //not too sure if have to just remove death effect entirely on a OnHook
-                if (!self.IsLocal()) 
-                    nearRippleAmoeba = false;
-                else if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal())
-                    nearRippleAmoeba = false;
+                if (!self.IsLocal())
+                    return false;
+                if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal() && self.room.voidSpawns[i].behavior != null)
+                    return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
+                return true;
             });
+            c.Emit(OpCodes.Brfalse, label);
         }
         catch (Exception ex)
         {
