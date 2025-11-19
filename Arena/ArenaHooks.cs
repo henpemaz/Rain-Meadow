@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -122,6 +123,7 @@ namespace RainMeadow
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
             new Hook(typeof(Player).GetProperty("activateDynamicWarpDuration").GetGetMethod(), this.SetDynamicWarpDuration);
             new Hook(typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(), this.ChasePlayer);
+            new Hook(typeof(VoidSpawnGraphics).GetProperty("rippleMode").GetGetMethod(), this.GetRippleModeForLocalPlayer);
 
             On.Player.ActivateAscension += Player_ActivateAscension;
 
@@ -140,7 +142,6 @@ namespace RainMeadow
             IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
             IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
-
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
         }
 
@@ -148,13 +149,17 @@ namespace RainMeadow
         {
             orig(self);
             if (!isArenaMode(out var arena)) return;
+            bool slowDownCharge = false;
             foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
             {
                 if (!voidSpawn.IsLocal()) continue;
+                if (voidSpawn.behavior != null) //player actually created it
+                    slowDownCharge = true;
                 if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
                     voidSpawn.startFadeOut = true;
             }
-            if (self.room.voidSpawns.Any(x => x.IsLocal())) {
+            if (slowDownCharge) 
+            {
                 self.camoCharge = Mathf.Min(self.camoCharge + 0.7f, self.usableCamoLimit);
             }
         }
@@ -235,33 +240,23 @@ namespace RainMeadow
         private Vector2 ChasePlayer(Func<VoidSpawn.ChasePlayer, Vector2> orig, VoidSpawn.ChasePlayer self)
         {
             if (!isArenaMode(out var arena)) return orig(self);
+            //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
             VoidSpawn voidSpawn = self.owner;
             Player? foundPlayer = null;
             float minDistance = 0f;
-            Player? voidSpawningPlayer = null;
             foreach (AbstractCreature player in voidSpawn.room.game.Players)
             {
                 if (player.GetOnlineObject(out var oe) && voidSpawn.abstractPhysicalObject.GetOnlineObject(out var oe2) && oe!.owner == oe2!.owner)
-                {
-                    voidSpawningPlayer = (player.realizedCreature as Player);
                     continue;
-                }
                 if (player.realizedCreature is not Player realizedPlayer) continue;
 
                 if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
+
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
-                    if (OnlineManager.lobby.clientSettings.TryGetValue(voidSpawningPlayer!.abstractCreature.GetOnlineObject()!.owner, out var amoebaman) && OnlineManager.lobby.clientSettings.TryGetValue(oe!.owner, out var victim)) {
-
-                        if (amoebaman.TryGetData<ArenaTeamClientSettings>(out var amoebaTeam) && victim.TryGetData<ArenaTeamClientSettings>(out var victimTeam))
-                        {
-                            if (amoebaTeam.team == victimTeam.team)
-                            {
-                                continue;
-                            }
-                        }
-
-                    }
+                    ArenaTeamClientSettings? playerTeam = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
+                    if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
+                        continue;
                 }
 
                 int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
@@ -331,18 +326,18 @@ namespace RainMeadow
         private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
         {
             orig(self, eu);
-            if (isArenaMode(out _))
+            if (!isArenaMode(out _)) return;
+
+            if (self.behavior == null)
             {
-                if (self.IsLocal())
-                {
-                    self.culled = false; //keep it visible to owner
-                }
-                if (self.behavior == null)
-                {
-                    // spawn transferred, destroy
-                    self.startFadeOut = true;
-                }
+                // spawn transferred, destroy
+                self.startFadeOut = true;
             }
+            else if (self.IsLocal())
+            {
+                self.culled = false; //keep it visible to creator
+            }
+
         }
         private void VoidSpawnGraphics_Update2(ILContext il)
         {
@@ -396,7 +391,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_3);
                 c.EmitDelegate(delegate (VoidSpawnGraphics self, float timeStacker)
                 {
-                    if (isArenaMode(out _) && self.spawn.IsLocal())
+                    if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null) //keep it visible to creator
                         self.playerGlowVision = Mathf.Lerp(self.spawn.lastFade, self.spawn.fade, timeStacker);
                 });
             }
@@ -407,9 +402,23 @@ namespace RainMeadow
         }
         private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
         {
-            if (isArenaMode(out _) && self.spawn.IsLocal())
-                return 1 * self.playerGlowVision; //keep it visible to owner
+            if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null)
+                return 1 * self.playerGlowVision; //keep it visible to creator
             return orig(self, A, B);
+        }
+        private bool GetRippleModeForLocalPlayer(Func<VoidSpawnGraphics,bool> orig, VoidSpawnGraphics self)
+        {
+            //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
+            if (isArenaMode(out _))
+            {
+                if (self.spawn.room != null && self.spawn.rippleSpawn)
+                {
+                    AbstractCreature? myPlayer = self.spawn.room.game.Players.Find(x => x.IsLocal());
+                    int actualActiveRippleLayer = myPlayer?.rippleLayer ?? self.spawn.room.game.ActiveRippleLayer;
+                    return self.spawn.abstractPhysicalObject.rippleLayer == actualActiveRippleLayer;
+                }
+            }
+            return orig(self);
         }
 
         private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
@@ -667,7 +676,7 @@ namespace RainMeadow
 
         private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 if (self.Player == null)
                 {
@@ -685,11 +694,22 @@ namespace RainMeadow
                     self.lastAnimTime = self.animTime;
                     self.Player.camoCharge = Mathf.Clamp(self.Player.camoCharge, 0f, self.Player.camoLimit);
 
-                    self.animSpeed = RWCustom.Custom.LerpAndTick(to: (self.Player.camoCharge == 0f) ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f), from: self.animSpeed, lerp: 0.02f, tick: 0.01f);
-                    self.animTime += self.animSpeed / 40f;
                     self.pos = new Vector2(Mathf.Max(55.01f, self.hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, self.hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
                     self.fade = self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher ? 1f : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
+                    float voidSpawnTax = 0.5f; //change it when tax changes
+                    if (arena.voidMasterEnabled && self.full > voidSpawnTax)
+                    {
+                        self.percentLimited = 1;
+                        self.animSpeed = 2f;
+                    }
+                    else
+                    {
+                        self.percentLimited = 0;
+                        float desiredAnimSpeed = self.Player.camoCharge == 0f ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f);
+                        self.animSpeed = RWCustom.Custom.LerpAndTick(self.animSpeed, desiredAnimSpeed, 0.02f, 0.01f);
+                    }
+                    self.animTime += self.animSpeed / 40f;
                 }
 
             }
