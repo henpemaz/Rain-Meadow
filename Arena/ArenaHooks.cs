@@ -1417,11 +1417,10 @@ namespace RainMeadow
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
-                On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
 
-
         }
+        
         private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
 
