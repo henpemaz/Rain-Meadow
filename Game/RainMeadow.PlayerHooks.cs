@@ -412,9 +412,14 @@ public partial class RainMeadow
             c.Emit(OpCodes.Ldloc, 3);
             c.EmitDelegate(delegate (Player self, int i)
             {
+                VoidSpawn spawn = self.room.voidSpawns[i];
                 if (!self.IsLocal())
+                {
+                    if (isArenaMode(out _))
+                        spawn.playerProximityTime = 10; //slow down when near the player
                     return false;
-                if (isArenaMode(out _) && self.room.voidSpawns[i].IsLocal() && self.room.voidSpawns[i].behavior != null)
+                }
+                if (isArenaMode(out _) && spawn.IsLocal() && spawn.behavior != null)
                     return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
                 return true;
             });
