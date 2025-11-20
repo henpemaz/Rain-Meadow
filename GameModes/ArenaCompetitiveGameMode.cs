@@ -44,6 +44,7 @@ namespace RainMeadow
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
+        public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
         public string paincatName;
         public int lizardEvent;

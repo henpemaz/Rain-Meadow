@@ -158,7 +158,7 @@ namespace RainMeadow
                 if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
                     voidSpawn.startFadeOut = true;
             }
-            if (slowDownCharge) 
+            if (slowDownCharge)
             {
                 self.camoCharge = Mathf.Min(self.camoCharge + 0.7f, self.usableCamoLimit);
             }
@@ -268,7 +268,14 @@ namespace RainMeadow
                     minDistance = distance;
                 }
             }
-
+            if (arena.amoebaControl)
+            {
+                Vector2 pointingVector = Pointing.GetOnlinePointingVector();
+                if (pointingVector != Vector2.zero)
+                {
+                    return pointingVector * 400f; // Jeremy likes to resist and that's ok
+                }
+            }
             if (foundPlayer != null)
             {
                 if (foundPlayer.standingInWarpPointProtectionTime > 0 || foundPlayer.warpPointCooldown > 0)
@@ -403,7 +410,7 @@ namespace RainMeadow
                 return 1 * self.playerGlowVision; //keep it visible to creator
             return orig(self, A, B);
         }
-        private bool GetRippleModeForLocalPlayer(Func<VoidSpawnGraphics,bool> orig, VoidSpawnGraphics self)
+        private bool GetRippleModeForLocalPlayer(Func<VoidSpawnGraphics, bool> orig, VoidSpawnGraphics self)
         {
             //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
             if (isArenaMode(out _))

@@ -79,6 +79,8 @@ namespace RainMeadow
             public bool voidMasterEnabled;
             [OnlineField(group = "arenaSetup")]
             public int amoebaDuration;
+            [OnlineField(group = "aremaSetup")]
+            public bool amoebaControl;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -160,6 +162,7 @@ namespace RainMeadow
                 bannedSlugs = new(arena.bannedSlugs);
                 voidMasterEnabled = arena.voidMasterEnabled;
                 amoebaDuration = arena.amoebaDuration;
+                amoebaControl = arena.amoebaControl;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -218,6 +221,7 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
                 (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled= voidMasterEnabled;
                 (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration= amoebaDuration;
+                (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
 
 
             }
