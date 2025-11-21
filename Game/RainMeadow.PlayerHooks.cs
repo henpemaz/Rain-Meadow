@@ -1278,12 +1278,12 @@ public partial class RainMeadow
             {
                 if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
                 else                       { extras.timeSinceShelterWakeup++;   }
-                if (self.input[0].y < 0)   { extras.manualSleepDownCounter++;   }
-                else if ( //Reset if we press anything but down, or if we release down before entering the animation.
-                    (self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec) ||
-                    (self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime)
-                )
-                { extras.manualSleepDownCounter = 0; }
+
+                bool isInvalidInputPressed = self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec;
+                bool hasReleasedDownEarly = self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime;
+                
+                if (isInvalidInputPressed || hasReleasedDownEarly) { extras.manualSleepDownCounter = 0; }
+                else if (self.input[0].y < 0)                      { extras.manualSleepDownCounter++;   }
 
                 if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
                     self.onBack == null && //Check we're not piggybacked onto someone else (hilarious but looked very wrong).

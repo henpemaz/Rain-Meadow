@@ -1,6 +1,7 @@
 # Release 1.9.0
 ## General:
 - Fixed weapon phasing
+- Fixed sleep-crawling bug
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
