@@ -2025,10 +2025,17 @@ namespace RainMeadow
                     if (ac.realizedCreature is Player p)
                     {
                         if (p.touchedNoInputCounter < 20) return false;
-                        if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
+                        // if ((p.slugOnBack != null) && p.slugOnBack.HasASlug) return false;
                     }
                 }
             }
+            
+            if (OnlineManager.lobby != null)
+            {
+                // if active cameras are not looking at the region gate that's very bad....
+                if (!self.room.game.cameras.All(x => (x?.room is null) || (x?.room == self.room))) return false;
+            }
+
             return orig(self);
         }
 

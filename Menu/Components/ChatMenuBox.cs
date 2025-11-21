@@ -23,10 +23,9 @@ namespace RainMeadow.UI.Components
             float posYOffset = chatTypingBox.size.y + 10;
             messageScroller = new(menu, this, new(chatTypingBox.pos.x, chatTypingBox.pos.y + posYOffset), new(chatTypingBox.size.x, this.size.y - chatTypingBox.size.y - chatTypingBox.pos.y - 10), true, new(-5, -posYOffset), posYOffset - 25)
             {
-                greyOutWhenNoScroll = true,
+                sliderDefaultIsDown = true,
                 buttonHeight = 20,
                 buttonSpacing = 3,
-                sliderDefaultIsDown = true,
             };
             menu.MutualHorizontalButtonBind(chatTypingBox, messageScroller.scrollSlider);
             subObjects.AddRange([roundedRect, chatTypingBox, messageScroller]);

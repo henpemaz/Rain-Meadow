@@ -8,8 +8,26 @@
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
+- Fix sand grubs softlocking the game
 
-
+## Arena:
+- Added beehives 
+- Synced trophies
+- Updated menu to better support controller navigation between UI elements in and outside tabs
+- Fixed MSC Settings' back button being greyed out
+- Added round reset button
+- Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
+- Saved backpack toggle selction between game restarts
+- Fixed clients being unable to pick up items when host enters ripple space
+- Incressed time until singularity bomb vortex activates
+## Engine
+- Added Overworld resource:
+  1. WorldSessions will only be created for regions specific to the playercharacters timeline.
+  2. Allows players to join a lobby without immidietly loading all regions.
+  3. Allows non-host players to manage WorldSessions. (Meadow mode)
+  4. Adds potential for downloading custom regions while inside the lobby.
+## General
+- Added a new "Gameplay" remix tab to clear space from the General tab.
 # Release 1.8.0
 ## General:
 - Updated to game version 1.11.3
