@@ -220,7 +220,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.DisplayName);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }

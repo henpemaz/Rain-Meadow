@@ -174,6 +174,7 @@ namespace RainMeadow
         public virtual void RecieveChatMessage(OnlinePlayer player, string message) { 
             ChatLogManager.LogMessage($"{player.id.GetPersonaName()}", $"{message}");
         }
+        public virtual void FilterMessage(ref string message) { }
         public virtual void RecieveCustomPacket(OnlinePlayer player, CustomPacket packet)
         {
             CustomManager.HandlePacket(player, packet);

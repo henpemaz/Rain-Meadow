@@ -1,4 +1,8 @@
 # Release 1.9.0
+## General:
+- Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
+- Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
+
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
@@ -33,7 +37,7 @@
 - Fixes Saint's karma activation to mirror game's original behavior.
 - Added a toggle for Watcher's ripple level
 - Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
-- Fixed Beehives not being created in online space leading to Gourmand players being able to "lag-switch".
+
 ## Story:
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
@@ -41,6 +45,7 @@
 - Prevented clients in lobby being allowed to join after warping
 - Added a remix options to gain achievements online. Default is FALSE.
 - Fixed ripple space being shared between players
+
 
 # Release 1.7.1
 ## Story:

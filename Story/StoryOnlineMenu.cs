@@ -688,6 +688,7 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
+            MatchmakingManager.currentInstance.FilterMessage(ref message);
             this.chatLog.Add((user, message));
             this.UpdateLogDisplay();
         }

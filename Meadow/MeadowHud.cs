@@ -223,7 +223,7 @@ namespace RainMeadow
                 hud.fContainers[0].AddChild(this.gradient);
                 this.gradient.alpha = 0f;
                 this.gradient.x = -1000f;
-                this.label = new FLabel(Custom.GetFont(), avatar.owner.id.name);
+                this.label = new FLabel(Custom.GetFont(), avatar.owner.id.DisplayName);
                 this.label.color = uiColor;
                 hud.fContainers[0].AddChild(this.label);
                 this.label.alpha = 0f;
