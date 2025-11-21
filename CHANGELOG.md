@@ -2,14 +2,17 @@
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
 - Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
-
+- Added Gameplay remix tab
+- Fixed weapon phasing
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
-
+- Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
+  ⚠️ Developers: InputOverrides class is now GameplayOverrides
+- Stabilized backpacking theoigh gates & portals 
 ## Arena:
 - Added beehives 
 - Synced trophies
@@ -20,14 +23,15 @@
 - Saved backpack toggle selction between game restarts
 - Fixed clients being unable to pick up items when host enters ripple space
 - Incressed time until singularity bomb vortex activates
+- Added additional watcher cosmetic option
+- Updated winning logic to consider number of kills and deaths in the event of a tie.
+- Added variable watcher description
 ## Engine
 - Added Overworld resource:
   1. WorldSessions will only be created for regions specific to the playercharacters timeline.
   2. Allows players to join a lobby without immidietly loading all regions.
   3. Allows non-host players to manage WorldSessions. (Meadow mode)
   4. Adds potential for downloading custom regions while inside the lobby.
-## General
-- Added a new "Gameplay" remix tab to clear space from the General tab.
 # Release 1.8.0
 ## General:
 - Updated to game version 1.11.3

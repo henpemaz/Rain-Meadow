@@ -551,7 +551,7 @@ namespace RainMeadow
 
                 return ret;
             }
-            else if (self.IsLocal())
+            else if (self.IsLocal() || (WeaponOnline.isTransfering && self.thrownBy != null && self.thrownBy.abstractCreature.GetOnlineCreature()?.owner == OnlineManager.mePlayer))
             {
                 RealizedPhysicalObjectState realizedstate = null!;
                 if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);

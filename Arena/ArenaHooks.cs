@@ -123,8 +123,36 @@ namespace RainMeadow
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
-        }
 
+            On.PlayerGraphics.ctor += PlayerGraphics_ctor;
+            On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
+            On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
+
+        }
+        private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
+        {
+            orig(self, ow);
+            if (isArenaMode(out var _) && ModManager.Watcher && self.player.SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
+            {
+                if (self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                    self.InitializeLongerWatcherTail();
+            }
+        }
+        private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
+        {
+            if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+                self.player.watcherMorph = 0.51f;
+            orig(self, sLeaser, rCam, timeStacker, camPos);
+        }
+        private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
+        {
+            orig(self);
+            if (isArenaMode(out _) && self.pGraphics.player.abstractPhysicalObject.GetOnlineObject(out var oe) && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+            {
+                self.weaverTier = 4;
+                self.haloBaseAlpha = Mathf.Clamp(1f - self.pGraphics.player.camoProgress, 0f, 1f);
+            }
+        }
         private void PauseMenu_SpawnExitContinueButtons2(On.Menu.PauseMenu.orig_SpawnExitContinueButtons orig, Menu.PauseMenu self)
         {
             if (isArenaMode(out var arena))
@@ -564,7 +592,7 @@ namespace RainMeadow
                     }
                 }
 
-                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                self.topMiddle.y = GameplayOverrides.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
                 {
@@ -629,7 +657,7 @@ namespace RainMeadow
             orig(self);
             if (isArenaMode(out var arena))
             {
-                self.topMiddle.y = InputOverride.MoveMenuItemFromYInput(self.topMiddle.y);
+                self.topMiddle.y = GameplayOverrides.MoveMenuItemFromYInput(self.topMiddle.y);
 
                 if (OnlineManager.players.Count > 4)
                 {
@@ -1389,11 +1417,10 @@ namespace RainMeadow
                 }
                 self.outsidePlayersCountAsDead = false; // prevent killing scugs in dens
                 arena.externalArenaGameMode.ArenaSessionCtor(arena, orig, self, game);
-                On.ProcessManager.RequestMainProcessSwitch_ProcessID += ProcessManager_RequestMainProcessSwitch_ProcessID;
             }
 
-
         }
+        
         private void OverwriteArenaPlayerMax(ILContext il) => OverwriteArenaPlayerMax(il, false);
 
 

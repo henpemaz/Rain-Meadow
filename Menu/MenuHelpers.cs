@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
 
@@ -13,6 +14,17 @@ namespace RainMeadow
 {
     public static class MenuHelpers
     {
+        public static void CallEveryDynamicBindHandler(this MenuObject obj)
+        {
+            MenuObject owner = obj;
+            while (owner != null)
+            {
+                if (owner is IDynamicBindHandler ownerHandler)
+                    ownerHandler.BindDynamicSelectable(obj);
+                owner = owner.owner;
+            }
+            (obj.menu as IDynamicBindHandler)?.BindDynamicSelectable(obj);
+        }
         public static void RemoveMutualBind(this MenuObject? menuObject, bool leftRight = false, bool bottomTop = false, bool inverted = false)
         {
             if (menuObject == null) return;
