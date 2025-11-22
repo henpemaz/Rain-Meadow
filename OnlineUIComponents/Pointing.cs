@@ -71,7 +71,7 @@ namespace RainMeadow
             return -1;
         }
 
-        private static Vector2 GetOnlinePointingVector()
+        public static Vector2 GetOnlinePointingVector()
         {
             var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
             if (controller is Joystick joystick)

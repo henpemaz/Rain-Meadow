@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -120,15 +121,310 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            new Hook(typeof(Player).GetProperty("activateDynamicWarpDuration").GetGetMethod(), this.SetDynamicWarpDuration);
+            new Hook(typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(), this.ChasePlayer);
+            new Hook(typeof(VoidSpawnGraphics).GetProperty("rippleMode").GetGetMethod(), this.GetRippleModeForLocalPlayer);
+
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
-
             On.PlayerGraphics.ctor += PlayerGraphics_ctor;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
 
+            On.Player.SpawnDynamicWarpPoint += Player_SpawnDynamicWarpPoint;
+            On.Player.CamoUpdate += Player_CamoUpdate2;
+            On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
+            On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
+            On.VoidSpawn.Update += VoidSpawn_Update;
+
+            On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
+            IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
+            IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
+            On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
+            On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
         }
+
+        private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
+        {
+            orig(self);
+            if (!isArenaMode(out var arena)) return;
+            bool slowDownCharge = false;
+            foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
+            {
+                if (!voidSpawn.IsLocal()) continue;
+                if (voidSpawn.behavior != null) //player actually created it
+                    slowDownCharge = true;
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                    voidSpawn.startFadeOut = true;
+            }
+            if (slowDownCharge)
+            {
+                self.camoCharge = Mathf.Min(self.camoCharge + 0.7f, self.usableCamoLimit);
+            }
+        }
+        private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
+        {
+            if (isArenaMode(out var arena))
+                return 75;
+            return orig(self);
+        }
+        private void Player_SpawnDynamicWarpPoint(On.Player.orig_SpawnDynamicWarpPoint orig, Player self, string forcedDestination, Vector2? forcedDestinationPosition)
+        {
+            if (!isArenaMode(out var arena))
+            {
+                orig(self, forcedDestination, forcedDestinationPosition);
+                return;
+            }
+            if (arena.countdownInitiatedHoldFire)
+            {
+                return;
+            }
+            if (!arena.voidMasterEnabled)
+            {
+                return;
+            }
+            if (!self.IsLocal() || self.rippleLevel < 2) return;
+            //if (self.room.voidSpawns.Any(x => x.IsLocal()))
+            //{
+
+            //}
+
+            float requiredCharge = self.usableCamoLimit / 2;
+
+            if (self.camoCharge >= requiredCharge) return;
+
+            var room = self.room;
+            AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
+            VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
+            {
+                timeUntilFadeout = arena.amoebaDuration * 40
+            };
+            voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
+            room.abstractRoom.AddEntity(apo);
+            voidSpawn.PlaceInRoom(room);
+            voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
+            self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
+            self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
+
+            self.camoCharge += requiredCharge;
+
+        }
+        private void Room_MaterializeRippleSpawn(On.Room.orig_MaterializeRippleSpawn orig, Room self, Vector2 spawnPos, Room.RippleSpawnSource source)
+        {
+            if (isArenaMode(out _))
+                return; //if not, will see hordes of amoebas. now that's too much love
+            orig(self, spawnPos, source);
+        }
+
+        int GetPriority(ArenaOnlineGameMode arena, VoidSpawn voidSpawn, Player? player)
+        {
+            if (player == null || player.dead)
+                return 0;
+            if (player.abstractCreature.rippleLayer != voidSpawn.abstractPhysicalObject.rippleLayer)
+                return 1;
+            int additionalPoints = 0;
+            if (player.abstractCreature.GetOnlineObject(out var opo))
+            {
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in player.room.game.GetArenaGameSession.arenaSitting.players)
+                {
+                    if (arenaPlayer.playerNumber == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner))
+                    {
+                        additionalPoints = arenaPlayer.allKills.Count;
+                        break;
+                    }
+                }
+            }
+            return 2 + additionalPoints;
+        }
+        private Vector2 ChasePlayer(Func<VoidSpawn.ChasePlayer, Vector2> orig, VoidSpawn.ChasePlayer self)
+        {
+            if (!isArenaMode(out var arena)) return orig(self);
+            //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
+            VoidSpawn voidSpawn = self.owner;
+            Player? foundPlayer = null;
+            float minDistance = 0f;
+            foreach (AbstractCreature player in voidSpawn.room.game.Players)
+            {
+                if (player.IsLocal(out var oe)) continue;
+                if (player.realizedCreature is not Player realizedPlayer) continue;
+
+                if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
+
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    ArenaTeamClientSettings? playerTeam = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
+                    if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
+                        continue;
+                }
+
+                int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
+                int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
+                float distance = Vector2.Distance(voidSpawn.firstChunk.pos, realizedPlayer.mainBodyChunk.pos);
+
+                if (foundPlayer == null || playerPriority > foundPlayerPriority || (playerPriority == foundPlayerPriority && distance < minDistance))
+                {
+                    foundPlayer = realizedPlayer;
+                    minDistance = distance;
+                }
+            }
+            if (arena.amoebaControl)
+            {
+                Vector2 pointingVector = Pointing.GetOnlinePointingVector();
+                if (pointingVector != Vector2.zero)
+                {
+                    return pointingVector * 400f; // Jeremy likes to resist and that's ok
+                }
+            }
+            if (foundPlayer != null)
+            {
+                if (foundPlayer.standingInWarpPointProtectionTime > 0 || foundPlayer.warpPointCooldown > 0)
+                {
+                    return voidSpawn.mainBody[0].pos + RWCustom.Custom.DirVec(foundPlayer.mainBodyChunk.pos, voidSpawn.mainBody[0].pos) * 400f;
+                }
+                return foundPlayer.mainBodyChunk.pos;
+            }
+            return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
+        }
+        private void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(On.VoidSpawn.orig_ctor_AbstractPhysicalObject_float_bool_SpawnType orig, VoidSpawn self, AbstractPhysicalObject apo, float voidMeltInRoom, bool daylightmode, VoidSpawn.SpawnType variant)
+        {
+            //Default non-owners will spawn it as RippleSpawn causing visual glitches. So bruteforce it because we love amoebas!!
+            if (isArenaMode(out _))
+                variant = VoidSpawn.SpawnType.RippleAmoeba;
+            orig(self, apo, voidMeltInRoom, daylightmode, variant);
+        }
+        private void VoidSpawn_GenerateBody(On.VoidSpawn.orig_GenerateBody orig, VoidSpawn self)
+        {
+            if (!isArenaMode(out _))
+            {
+                orig(self);
+                return;
+            }
+            UnityEngine.Random.State savedState = UnityEngine.Random.state;
+            UnityEngine.Random.InitState(86042); //so bodychunk count match
+            orig(self);
+            UnityEngine.Random.state = savedState;
+        }
+        private void VoidSpawn_Update2(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                ILLabel label = null;
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<PhysicalObject>(nameof(PhysicalObject.abstractPhysicalObject)),
+                    x => x.MatchLdfld<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.rippleLayer)),
+                    x => x.MatchLdcI4(1),
+                    x => x.MatchBneUn(out label));
+                c.EmitDelegate(delegate ()
+                {
+                    return isArenaMode(out _);
+                });
+                c.Emit(OpCodes.Brtrue, label);
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
+        {
+            orig(self, eu);
+            if (!isArenaMode(out _)) return;
+
+            if (self.behavior == null)
+            {
+                // spawn transferred, destroy
+                self.startFadeOut = true;
+            }
+            else if (self.IsLocal())
+            {
+                self.culled = false; //keep it visible to creator
+            }
+
+        }
+        private void VoidSpawnGraphics_Update2(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                ILLabel label = null;
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchCall<GraphicsModule>("get_owner"),
+                    x => x.MatchLdfld<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.room)),
+                    x => x.MatchLdfld<Room>(nameof(Room.game)),
+                    x => x.MatchCallvirt<RainWorldGame>("get_setupValues"),
+                    x => x.MatchLdfld<RainWorldGame.SetupValues>(nameof(RainWorldGame.SetupValues.playerGlowing)), x => x.MatchBrtrue(out label));
+                c.EmitDelegate(delegate ()
+                {
+                    return isArenaMode(out _);
+                });
+                c.Emit(OpCodes.Brtrue, label);
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private void VoidSpawnGraphics_Update(On.VoidSpawnGraphics.orig_Update orig, VoidSpawnGraphics self)
+        {
+            if (isArenaMode(out _))
+            {
+                if (self.owner.room.game.Players.Count != self.playersGlowVision.GetLength(0))
+                {
+                    float[,] oldPlayersGlowVision = self.playersGlowVision;
+                    int secondLength = oldPlayersGlowVision.GetLength(1);
+                    self.playersGlowVision = new float[self.owner.room.game.Players.Count, secondLength];
+                    int minLength = Mathf.Min(oldPlayersGlowVision.GetLength(0), self.playersGlowVision.GetLength(0));
+                    for (int i = 0; i < minLength; i++)
+                    {
+                        for (int j = 0; j < secondLength; j++)
+                            self.playersGlowVision[i, j] = oldPlayersGlowVision[i, j];
+                    }
+                }
+            }
+            orig(self);
+        }
+        private void VoidSpawnGraphics_DrawSprites(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(MoveType.After, x => x.MatchStfld<VoidSpawnGraphics>(nameof(VoidSpawnGraphics.playerGlowVision)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_3);
+                c.EmitDelegate(delegate (VoidSpawnGraphics self, float timeStacker)
+                {
+                    if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null) //keep it visible to creator
+                        self.playerGlowVision = Mathf.Lerp(self.spawn.lastFade, self.spawn.fade, timeStacker);
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
+        {
+            if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null)
+                return 1 * self.playerGlowVision; //keep it visible to creator
+            return orig(self, A, B);
+        }
+        private bool GetRippleModeForLocalPlayer(Func<VoidSpawnGraphics, bool> orig, VoidSpawnGraphics self)
+        {
+            //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
+            if (isArenaMode(out _))
+            {
+                if (self.spawn.room != null && self.spawn.rippleSpawn)
+                {
+                    AbstractCreature? myPlayer = self.spawn.room.game.Players.Find(x => x.IsLocal());
+                    int actualActiveRippleLayer = myPlayer?.rippleLayer ?? self.spawn.room.game.ActiveRippleLayer;
+                    return self.spawn.abstractPhysicalObject.rippleLayer == actualActiveRippleLayer;
+                }
+            }
+            return orig(self);
+        }
+
         private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
@@ -384,7 +680,7 @@ namespace RainMeadow
 
         private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 if (self.Player == null)
                 {
@@ -402,11 +698,22 @@ namespace RainMeadow
                     self.lastAnimTime = self.animTime;
                     self.Player.camoCharge = Mathf.Clamp(self.Player.camoCharge, 0f, self.Player.camoLimit);
 
-                    self.animSpeed = RWCustom.Custom.LerpAndTick(to: (self.Player.camoCharge == 0f) ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f), from: self.animSpeed, lerp: 0.02f, tick: 0.01f);
-                    self.animTime += self.animSpeed / 40f;
                     self.pos = new Vector2(Mathf.Max(55.01f, self.hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, self.hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
                     self.fade = self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher ? 1f : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
+                    float voidSpawnTax = 0.5f; //change it when tax changes
+                    if (arena.voidMasterEnabled && self.full > voidSpawnTax)
+                    {
+                        self.percentLimited = 1;
+                        self.animSpeed = 2f;
+                    }
+                    else
+                    {
+                        self.percentLimited = 0;
+                        float desiredAnimSpeed = self.Player.camoCharge == 0f ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f);
+                        self.animSpeed = RWCustom.Custom.LerpAndTick(self.animSpeed, desiredAnimSpeed, 0.02f, 0.01f);
+                    }
+                    self.animTime += self.animSpeed / 40f;
                 }
 
             }
@@ -1593,6 +1900,7 @@ namespace RainMeadow
                             {
                                 IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
                                 num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
+
                             }
                         }
                     }
