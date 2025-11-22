@@ -12,7 +12,7 @@ namespace RainMeadow
 {
     public class StoryMenuPlayerButton : ButtonScroller.ScrollerButton
     {
-        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner, OnlinePlayer oP, bool canKick, Vector2 size = default) : base(menu, owner, oP.id.name, Vector2.zero, size == default ? new(110, 30) : size)
+        public StoryMenuPlayerButton(Menu.Menu menu, MenuObject owner, OnlinePlayer oP, bool canKick, Vector2 size = default) : base(menu, owner, oP.id.DisplayName, Vector2.zero, size == default ? new(110, 30) : size)
         {
             OnClick += (_) => 
             { 
