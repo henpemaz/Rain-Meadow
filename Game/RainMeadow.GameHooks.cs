@@ -62,6 +62,27 @@ namespace RainMeadow
             IL.Menu.SleepAndDeathScreen.GetDataFromGame += SleepAndDeathScreen_FixNullKarmaLadder;
 
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
+
+            On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+        }
+
+        private void GlobalRain_InitDeathRain(On.GlobalRain.orig_InitDeathRain orig, GlobalRain self)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self);
+                return;
+            }
+            if (self.deathRain != null) return; // Avoid recreating DeathRain if we already have one
+            orig(self);
+            if (OnlineManager.lobby != null && OnlineManager.lobby.owner.isMe)
+            {
+                foreach(var player in OnlineManager.players)
+                {
+                    if (player.isMe) continue;
+                    player.InvokeRPC(RPCs.DeathRain, self.deathRain.deathRainMode, self.deathRain.timeInThisMode, self.deathRain.calmBeforeStormSunlight);
+                }
+            }
         }
         
         private void Overworld_ctor(ILContext context)
