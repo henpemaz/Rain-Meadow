@@ -18,7 +18,7 @@ namespace RainMeadow
             var stowawayState = (StowawayBugState)abstractCreature.state;
 
             HomePos = stowawayState.HomePos;
-            AimPos = stowawayState.HomePos;
+            AimPos = stowawayState.aimPos;
         }
 
         public override void ReadTo(AbstractCreature abstractCreature)

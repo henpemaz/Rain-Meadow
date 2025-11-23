@@ -5,6 +5,7 @@ namespace RainMeadow
 {
     public class RealizedStowawayState : RealizedCreatureState
     {
+        // Todo figure out whats needed and what isn't
         [OnlineField]
         bool mawOpen;
         [OnlineFieldHalf]
