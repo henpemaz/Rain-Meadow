@@ -1,4 +1,6 @@
 ﻿using MoreSlugcats;
+using System;
+using System.Linq;
 using UnityEngine;
 
 namespace RainMeadow
@@ -6,6 +8,10 @@ namespace RainMeadow
     public class RealizedStowawayState : RealizedCreatureState
     {
         // Todo figure out whats needed and what isn't
+        // TODO sync tentacle firing correctly so it fires at the same time for everyone
+        [OnlineField]
+        Generics.DynamicOrderedStates<StowawayTentacleState> heads;
+
         [OnlineField]
         bool mawOpen;
         [OnlineFieldHalf]
@@ -14,8 +20,6 @@ namespace RainMeadow
         Vector2 placedDirection;
         [OnlineFieldHalf]
         Vector2 currentDirection;
-        [OnlineFieldHalf]
-        Vector2 goalDirection;
         [OnlineFieldHalf]
         float sleepScale;
         [OnlineField(group = "counters")]
@@ -34,12 +38,13 @@ namespace RainMeadow
 
             placedDirection = stowaway.placedDirection;
             currentDirection = stowaway.currentDirection;
-            goalDirection = stowaway.goalDirection;
 
             sleepScale = stowaway.sleepScale;
 
             spitCooldown = stowaway.spitCooldown;
             huntDelay = stowaway.huntDelay;
+
+            heads = new(stowaway.heads.Select((t, i) => new StowawayTentacleState(t, i)).ToList());
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -53,12 +58,55 @@ namespace RainMeadow
 
             stowaway.placedDirection = placedDirection;
             stowaway.currentDirection = currentDirection;
-            stowaway.goalDirection = goalDirection;
 
             stowaway.sleepScale = sleepScale;
 
             stowaway.spitCooldown = spitCooldown;
             stowaway.huntDelay = huntDelay;
+
+            for(int i = 0; i < stowaway.heads.Length; i++)
+            {
+                heads.list[i].ReadTo(stowaway.heads[i], i);
+            }
+        }
+
+        //public override bool ShouldPosBeLenient(PhysicalObject po)
+        //{
+        //    return true;
+        //}
+    }
+
+    public class StowawayTentacleState : OnlineState
+    {
+        [OnlineField]
+        bool fired;
+        [OnlineFieldHalf(group = "counters")]
+        float cooldown;
+        [OnlineFieldHalf]
+        Vector2 pos;
+        [OnlineFieldHalf(nullable = true)]
+        Vector2? floatGrabDest;
+        public StowawayTentacleState() { }
+
+        public StowawayTentacleState(Tentacle tentacle, int index)
+        {
+            StowawayBug owner = (StowawayBug)tentacle.owner;
+
+            fired = owner.headFired[index];
+            cooldown = owner.headCooldown[index];
+            pos = tentacle.Tip.pos;
+            floatGrabDest = tentacle.floatGrabDest;
+        }
+
+        public void ReadTo(Tentacle tentacle, int index)
+        {
+            StowawayBug owner = (StowawayBug)tentacle.owner;
+
+            owner.headFired[index] = fired;
+            owner.headCooldown[index] = cooldown;
+
+            tentacle.Tip.pos = pos;
+            tentacle.floatGrabDest = floatGrabDest;
         }
     }
 }
