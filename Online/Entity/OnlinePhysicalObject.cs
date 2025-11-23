@@ -426,9 +426,12 @@ namespace RainMeadow
 
                 if (po is Creature creature)
                 {
-                    foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                    if (creature.grasps != null)
                     {
-                        grabbing.Release();
+                        foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                        {
+                            grabbing.Release();
+                        }
                     }
                 }
 
