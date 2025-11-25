@@ -167,6 +167,8 @@ namespace RainMeadow
                     return new OnlineSporePlant(asp, entityId, owner, isTransferable);
                 case PebblesPearl.AbstractPebblesPearl app:
                     return new OnlinePebblesPearl(app, entityId, owner, isTransferable);
+                case Pomegranate.AbstractPomegranate ap:
+                    return new OnlinePomegranate(ap, entityId, owner, isTransferable);
                 default:
                     return new OnlineConsumable(acm, entityId, owner, isTransferable);
                 case null:

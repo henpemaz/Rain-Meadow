@@ -1,3 +1,5 @@
+using Watcher;
+
 namespace RainMeadow
 {
     public class AbstractCreatureState : AbstractPhysicalObjectState
@@ -6,6 +8,8 @@ namespace RainMeadow
         public CreatureStateState creatureStateState;
         [OnlineField(group = "realized")]
         public WorldCoordinate destination;
+        [OnlineFieldHalf(group = "realized")]
+        public float Hypothermia;
 
         public AbstractCreatureState() : base() { }
         public AbstractCreatureState(OnlineCreature onlineEntity, OnlineResource inResource, uint ts) : base(onlineEntity, inResource, ts)
@@ -15,6 +19,7 @@ namespace RainMeadow
             {
                 destination = absAi.destination;
             }
+            Hypothermia = onlineEntity.creature.Hypothermia;
         }
 
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
@@ -39,6 +44,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
 
@@ -54,6 +60,7 @@ namespace RainMeadow
                     absAi.SetDestinationNoPathing(destination, migrate: true);
                 }
             }
+            abstractCreature.Hypothermia = Hypothermia;
         }
     }
 }
