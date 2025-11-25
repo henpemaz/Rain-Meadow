@@ -16,7 +16,7 @@
 - Fix sand grubs softlocking the game
 - Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
   ⚠️ Developers: InputOverrides class is now GameplayOverrides
-- Stabilized backpacking theoigh gates & portals 
+- Stabilized backpacking through gates & portals 
 ## Arena:
 - Added beehives 
 - Synced trophies
