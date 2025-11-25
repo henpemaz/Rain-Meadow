@@ -1,5 +1,7 @@
 # Release 1.9.0
 ## General:
+- Synced Scavengers animations and grasps.
+- Synced grasp stealing. Works in both Story and Arena gamemodes.
 - Fixed weapon phasing
 - Fixed sleep-crawling bug
 ## Story:
