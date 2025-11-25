@@ -3,7 +3,10 @@
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
 - Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
 - Added Gameplay remix tab
+- Synced Scavengers animations and grasps.
+- Synced grasp stealing. Works in both Story and Arena gamemodes.
 - Fixed weapon phasing
+- Fixed sleep-crawling bug
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
