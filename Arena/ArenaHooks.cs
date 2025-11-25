@@ -270,7 +270,7 @@ namespace RainMeadow
                     minDistance = distance;
                 }
             }
-            if (arena.amoebaControl)
+            if (arena.amoebaControl && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
             {
                 Vector2 pointingVector = Pointing.GetOnlinePointingVector();
                 if (pointingVector != Vector2.zero)
