@@ -44,6 +44,7 @@ namespace RainMeadow
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is VoidSpawn) return new RealizedRippleSpawnState(onlineObject);
             if (onlineObject.apo.realizedObject is Oracle oracle)
             {
                 if (oracle.oracleBehavior is SLOracleBehavior)

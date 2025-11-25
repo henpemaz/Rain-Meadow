@@ -96,7 +96,7 @@ public partial class RainMeadow
         On.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
-
+        IL.Player.RippleSpawnInteractions += Player_RippleSpawnInteractions;
 
         On.Player.SetMalnourished += Player_SetMalnourished;
         new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
@@ -393,6 +393,35 @@ public partial class RainMeadow
             c.EmitDelegate(delegate (Player player)
             {
                 return player.IsLocal(out _); //dont play ripple music
+            });
+            c.Emit(OpCodes.Brfalse, label);
+        }
+        catch (Exception ex)
+        {
+            Error(ex);
+        }
+    }
+    private void Player_RippleSpawnInteractions(ILContext il)
+    {
+        try
+        {
+            ILCursor c = new(il);
+            ILLabel label = null;
+            c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, 3);
+            c.EmitDelegate(delegate (Player self, int i)
+            {
+                VoidSpawn spawn = self.room.voidSpawns[i];
+                if (!self.IsLocal())
+                {
+                    if (isArenaMode(out _))
+                        spawn.playerProximityTime = 10; //slow down when near the player
+                    return false;
+                }
+                if (isArenaMode(out _) && spawn.IsLocal() && spawn.behavior != null)
+                    return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
+                return true;
             });
             c.Emit(OpCodes.Brfalse, label);
         }
