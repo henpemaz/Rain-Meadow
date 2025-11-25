@@ -163,7 +163,15 @@ namespace RainMeadow
 
             public virtual Expression SerializerCallMethod(FieldInfo f, Expression serializerRef, Expression fieldRef)
             {
-                return Expression.Call(serializerRef, Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic, longList), fieldRef);
+                var method = Serializer.GetSerializationMethod(f.FieldType, nullable, polymorphic, longList);
+                if (method.DeclaringType is null)
+                {
+                    return Expression.Call(method, serializerRef, fieldRef);
+                }
+                else
+                {
+                    return Expression.Call(serializerRef, method, fieldRef);
+                }
             }
 
             public virtual Expression ComparisonMethod(FieldInfo f, MemberExpression currentField, MemberExpression baselineField)

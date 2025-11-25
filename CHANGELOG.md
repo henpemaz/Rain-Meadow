@@ -1,18 +1,34 @@
 # Release 1.9.0
+## General:
+- Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
+- Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
+- Added Gameplay remix tab
+- Synced Scavengers animations and grasps.
+- Synced grasp stealing. Works in both Story and Arena gamemodes.
+- Fixed weapon phasing
+- Fixed sleep-crawling bug
 ## Story:
 - Allow echo warps to be two-way to prevent 3rd ending to be potentially softlocked
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
 - Fix sand grubs softlocking the game
-
+- Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
+  ⚠️ Developers: InputOverrides class is now GameplayOverrides
+- Stabilized backpacking theoigh gates & portals 
 ## Arena:
+- Added beehives 
+- Synced trophies
 - Updated menu to better support controller navigation between UI elements in and outside tabs
 - Fixed MSC Settings' back button being greyed out
 - Added round reset button
 - Added custom map settings for MSC multi-screen arenas to add objects. See levels/ folder for more details. Suffix settings file with "_meadowsettings" to import them for use in Meadow Arena
 - Saved backpack toggle selction between game restarts
-
+- Fixed clients being unable to pick up items when host enters ripple space
+- Incressed time until singularity bomb vortex activates
+- Added additional watcher cosmetic option
+- Updated winning logic to consider number of kills and deaths in the event of a tie.
+- Added variable watcher description
 ## Engine
 - Added Overworld resource:
   1. WorldSessions will only be created for regions specific to the playercharacters timeline.
@@ -39,7 +55,7 @@
 - Fixes Saint's karma activation to mirror game's original behavior.
 - Added a toggle for Watcher's ripple level
 - Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
-- Fixed Beehives not being created in online space leading to Gourmand players being able to "lag-switch".
+
 ## Story:
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
@@ -47,6 +63,7 @@
 - Prevented clients in lobby being allowed to join after warping
 - Added a remix options to gain achievements online. Default is FALSE.
 - Fixed ripple space being shared between players
+
 
 # Release 1.7.1
 ## Story:

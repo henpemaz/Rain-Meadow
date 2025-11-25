@@ -92,6 +92,7 @@ public partial class RainMeadow
             orig(self);
             WatcherOverrideRippleLevel = false;
         };
+        IL.Player.WatcherUpdate += Player_WatcherUpdate;
         On.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
@@ -371,6 +372,33 @@ public partial class RainMeadow
                 int num2 = UnityEngine.Random.Range(0, maxExclusive);
                 self.room.MaterializeRippleSpawn(self.lastPositions[num2], Room.RippleSpawnSource.PlayerTrail);
             }
+        }
+    }
+    private void Player_WatcherUpdate(ILContext il)
+    {
+        try
+        {
+            ILCursor c = new(il);
+            ILLabel label = null;
+            c.GotoNext(x => x.MatchLdsfld<ModManager>(nameof(ModManager.Watcher)), x => x.MatchBrfalse(out label));
+            c.EmitDelegate(delegate ()
+            {
+                return isArenaMode(out _);
+            });
+            c.Emit(OpCodes.Brtrue, label); //skip sharing ripple layer with Players[0] which is host in arena
+
+
+            c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(5), x => x.MatchBltUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate(delegate (Player player)
+            {
+                return player.IsLocal(out _); //dont play ripple music
+            });
+            c.Emit(OpCodes.Brfalse, label);
+        }
+        catch (Exception ex)
+        {
+            Error(ex);
         }
     }
     delegate bool orig_get_Malnourished(Player self);
@@ -1042,14 +1070,14 @@ public partial class RainMeadow
             if (self.controller is null && self.room.world.game.cameras[0]?.hud is HUD.HUD hud
                 && (hud.textPrompt?.pausedMode is true || hud.parts.OfType<ChatHud>().Any(x => x.chatInputActive) || (hud.parts.OfType<SpectatorHud>().Any(x => x.isActive) && RainMeadow.rainMeadowOptions.StopMovementWhileSpectateOverlayActive.Value)))
             {
-                InputOverride.StopPlayerMovement(self);
+                GameplayOverrides.StopPlayerMovement(self);
             }
 
             if (isArenaMode(out var arena))
             {
                 if (arena.countdownInitiatedHoldFire)
                 {
-                    InputOverride.HoldFire(self);
+                    GameplayOverrides.HoldFire(self);
                 }
             }
 
@@ -1250,12 +1278,12 @@ public partial class RainMeadow
             {
                 if (self.sleepCounter > 0) { extras.timeSinceShelterWakeup = 0; }
                 else                       { extras.timeSinceShelterWakeup++;   }
-                if (self.input[0].y < 0)   { extras.manualSleepDownCounter++;   }
-                else if ( //Reset if we press anything but down, or if we release down before entering the animation.
-                    (self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec) ||
-                    (self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime)
-                )
-                { extras.manualSleepDownCounter = 0; }
+
+                bool isInvalidInputPressed = self.input[0].y > 0 || self.input[0].x != 0 || self.input[0].jmp || self.input[0].thrw || self.input[0].pckp || self.input[0].spec;
+                bool hasReleasedDownEarly = self.input[0].y == 0 && extras.manualSleepDownCounter < manualSleepRequiredTime;
+                
+                if (isInvalidInputPressed || hasReleasedDownEarly) { extras.manualSleepDownCounter = 0; }
+                else if (self.input[0].y < 0)                      { extras.manualSleepDownCounter++;   }
 
                 if ((extras.timeSinceShelterWakeup > afkSleepRequiredTime || extras.timeSinceShelterWakeup > manualSleepRequiredTime) && //touchedNoInputCounter and stillInStartShelter are liars. STOP FALLING ASLEEP WHEN WAKING UP.
                     self.onBack == null && //Check we're not piggybacked onto someone else (hilarious but looked very wrong).

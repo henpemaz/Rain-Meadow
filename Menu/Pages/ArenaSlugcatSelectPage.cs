@@ -6,6 +6,7 @@ using MoreSlugcats;
 using RainMeadow.UI.Components;
 using RWCustom;
 using UnityEngine;
+using Watcher;
 using static RainMeadow.UI.Components.TabContainer;
 
 namespace RainMeadow.UI.Pages;
@@ -22,7 +23,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
     public FSprite[] descriptionGradients;
     public Vector2[] descriptionGradientsPos;
     public bool readyWarning, lastBanSlugInput, banSlugInput, lastSainot;
-    public int selectedSlugcatIndex = 0, painCatIndex, warningCounter = -1, currentSlugcatSelectPage = 0;
+    public int selectedSlugcatIndex = 0, painCatIndex, lastWatcherRippleLevel, warningCounter = -1, currentSlugcatSelectPage = 0;
     public string painCatName, painCatDescription;
     public string defaultReadyWarningText = "You have been unreadied. Switch back to re-ready yourself automatically";
 
@@ -37,8 +38,12 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         this.painCatIndex = painCatIndex;
 
         backButton = new SimplerButton(menu, this, menu.Translate("Back To Lobby"), new Vector2(200f, 50f), new Vector2(110f, 30f), menu.Translate("Go back to main lobby"));
-        backButton.OnClick += _ => ArenaMenu?.MovePage(new Vector2(1500f, 0f), 0);
-        backButton.OnClick += _ => ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton; //Ideally this'd be the portrait button that you came from, but actually navigating there is a super evil hardcode.
+        backButton.OnClick += _ =>
+        {
+            if (ArenaMenu == null) return;
+            ArenaMenu.MovePage(new Vector2(1500f, 0f), 0);
+            ArenaMenu.selectedObject = ArenaMenu.arenaMainLobbyPage.readyButton; //Ideally this'd be the portrait button that you came from, but actually navigating there is a super evil hardcode.
+        };
 
         CreateArrowButtons();
 
@@ -67,9 +72,9 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         readyWarningLabel = new MenuLabel(menu, this, menu.LongTranslate(defaultReadyWarningText), new Vector2(680f, 620f), Vector2.zero, true);
 
-        slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, OnlineManager.lobby.isOwner ? 280f : 310), default, true);
+        slugcatNameLabel = new MenuLabel(menu, this, "", new Vector2(680f, 310), default, true);
         slugcatNameLabel.label.shader = menu.manager.rainWorld.Shaders["MenuText"];
-        descriptionLabel = new MenuLabel(menu, this, "", new Vector2(680f, OnlineManager.lobby.isOwner ? 180 : 210f), default, true);
+        descriptionLabel = new MenuLabel(menu, this, "", new Vector2(680f, 210f), default, true);
         descriptionLabel.label.color = new Color(0.8f, 0.8f, 0.8f);
 
         descriptionGradients = new FSprite[4];
@@ -84,7 +89,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 anchorX = 0.6f,
                 anchorY = 0f,
             };
-            descriptionGradientsPos[i] = new Vector2(680f, i > 1 ? (OnlineManager.lobby.isOwner ? 240f : 280f) : 125f);
+            descriptionGradientsPos[i] = new Vector2(680f, i > 1 ? 280f : 125f);
             Container.AddChild(descriptionGradients[i]);
         }
 
@@ -220,13 +225,16 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
         ArenaMenu?.SwitchSelectedSlugcat(nonNullSlugcat);
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
         {
-            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.name);
+            descriptionLabel.text = menu.LongTranslate(painCatDescription).Replace("<USERNAME>", OnlineManager.mePlayer.id.DisplayName);
             slugcatNameLabel.text = menu.Translate(painCatName.ToUpper());
             return;
         }
 
         descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions.TryGetValue(nonNullSlugcat.value, out string desc) ? desc : Arena.slugcatSelectDescriptions[SlugcatStats.Name.White.value]);
         slugcatNameLabel.text = menu.Translate(Arena.slugcatSelectDisplayNames.TryGetValue(nonNullSlugcat.value, out string name) ? name : $"THE {SlugcatStats.getSlugcatName(slugcat).ToUpper()}");
+
+        if (nonNullSlugcat == WatcherEnums.SlugcatStatsName.Watcher)
+            descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectWatcherDescriptions[Arena.watcherRippleLevel - 1]);
 
         if (nonNullSlugcat == MoreSlugcatsEnums.SlugcatStatsName.Saint)
         {
@@ -319,13 +327,19 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
                 SwitchSelectedSlugcat(ArenaHelpers.selectableSlugcats[newSlugIndex]);
                 ArenaMenu?.ChangeScene();
             }
-            if (ArenaHelpers.selectableSlugcats[selectedSlugcatIndex] == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
+
+
+            SlugcatStats.Name currentSlug = ArenaHelpers.selectableSlugcats[selectedSlugcatIndex];
+            if (currentSlug == WatcherEnums.SlugcatStatsName.Watcher && Arena.watcherRippleLevel != lastWatcherRippleLevel)
+                descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectWatcherDescriptions[Arena.watcherRippleLevel - 1]);
+            if (currentSlug == MoreSlugcatsEnums.SlugcatStatsName.Saint && Arena.sainot != lastSainot)
             {
                 descriptionLabel.text = menu.LongTranslate(Arena.slugcatSelectDescriptions[Arena.sainot ? "Sainot" : "Saint"]);
                 if (UnityEngine.Random.Range(0, 1000) == 0) descriptionLabel.text = menu.Translate("You could have saved them.");
             }
-            lastSainot = Arena.sainot;
 
+            lastSainot = Arena!.sainot;
+            lastWatcherRippleLevel = Arena.watcherRippleLevel;
         }
     }
     public override void GrafUpdate(float timeStacker)

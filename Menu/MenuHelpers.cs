@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Interfaces;
 using RWCustom;
 using UnityEngine;
 
@@ -13,6 +14,17 @@ namespace RainMeadow
 {
     public static class MenuHelpers
     {
+        public static void CallEveryDynamicBindHandler(this MenuObject obj)
+        {
+            MenuObject owner = obj;
+            while (owner != null)
+            {
+                if (owner is IDynamicBindHandler ownerHandler)
+                    ownerHandler.BindDynamicSelectable(obj);
+                owner = owner.owner;
+            }
+            (obj.menu as IDynamicBindHandler)?.BindDynamicSelectable(obj);
+        }
         public static void RemoveMutualBind(this MenuObject? menuObject, bool leftRight = false, bool bottomTop = false, bool inverted = false)
         {
             if (menuObject == null) return;
@@ -21,14 +33,16 @@ namespace RainMeadow
                 //inversed, menuObject is binded on the right side
                 var bindedWith = menuObject.GetBind(left: inverted, right: !inverted);
                 menuObject.RemoveBind(left: inverted, right: !inverted);
-                bindedWith?.RemoveBind(left: !inverted, right: inverted);
+                if (bindedWith != null && bindedWith.GetBind(left: !inverted, right: inverted) == menuObject)
+                    bindedWith.RemoveBind(left: !inverted, right: inverted);
             }
             if (bottomTop)
             {
                 //inversed, menuObject is binded on the top
                 var bindedWith = menuObject.GetBind(bottom: inverted, top: !inverted);
                 menuObject.RemoveBind(bottom: inverted, top: !inverted);
-                bindedWith?.RemoveBind(bottom: !inverted, top: inverted);
+                if (bindedWith != null && bindedWith.GetBind(bottom: !inverted, top: inverted) == menuObject)
+                    bindedWith?.RemoveBind(bottom: !inverted, top: inverted);
             }
         }
         public static void RemoveBind(this MenuObject? menuObject, bool left = false, bool right = false, bool top = false, bool bottom = false)

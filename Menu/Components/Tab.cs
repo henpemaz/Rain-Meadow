@@ -152,7 +152,7 @@ public class TabContainer : RectangularMenuObject
             if (PagesOn)
                 AddPageButtons();
             else RemovePageButtons();
-            container.UpdateTabButtonSelectables(this, oldTabButtons);
+            this.CallEveryDynamicBindHandler();
 
         }
         public void ClearVisibleTabButtons()
@@ -237,18 +237,18 @@ public class TabContainer : RectangularMenuObject
         {
             myContainer.isVisible = true;
             IsOwnHidden = false;
+            BindMySelectables();
             for (int i = 0; i < subObjects.Count; i++)
                 ShowObject(subObjects[i]);
-            BindMySelectables();
         }
         public void Hide()
         {
             myContainer.isVisible = false;
             IsOwnHidden = true;
             RecursiveRemoveSelectables(this);
+            BindMySelectables();
             for (int i = 0; i < subObjects.Count; i++)
                 HideObject(subObjects[i]);
-            BindMySelectables();
         }
         public void ShowObject(MenuObject? obj)
         {
@@ -325,9 +325,9 @@ public class TabContainer : RectangularMenuObject
         /// </summary>
         public void BindAllSelectables()
         {
+            BindMySelectables();
             for (int i = 0; i < subObjects.Count; i++)
                 BindObjectSelectables(subObjects[i]);
-            BindMySelectables();
         }
         public void BindObjectSelectables(MenuObject? obj)
         {
@@ -346,15 +346,12 @@ public class TabContainer : RectangularMenuObject
         public virtual void BindMySelectables()
         {
             BindSelectables?.Invoke(IsActuallyHidden);
+            this.CallEveryDynamicBindHandler();
         }
     }
 
     public Tab? activeTab;
     public TabButtonsContainer tabButtonContainer;
-    /// <summary>
-    /// Used to bind outside selectables to the new tab buttons. And unbind outside selectables from previous tab buttons
-    /// </summary>
-    public event Action<TabButtonsContainer, TabButton[]>? OnTabButtonsCreated;
     public RoundedRect background;
     public MenuTabWrapper tabWrapper;
 
@@ -368,11 +365,6 @@ public class TabContainer : RectangularMenuObject
         tabWrapper = new(menu, this);
         tabButtonContainer = new(menu, this);
         subObjects.AddRange([background, tabWrapper, tabButtonContainer]);
-    }
-    public void UpdateTabButtonSelectables(TabButtonsContainer tabBtnContainer, TabButton[] oldTabButtons)
-    {
-        OnTabButtonsCreated?.Invoke(tabBtnContainer, oldTabButtons);
-
     }
     /// <summary>
     /// Objects will not be called for Update/GrafUpdate if they are hidden.

@@ -10,11 +10,12 @@ using System.Linq;
 using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
+using RainMeadow.UI.Interfaces;
 
 
 namespace RainMeadow.UI.Pages;
 
-public class ArenaMainLobbyPage : PositionedMenuObject
+public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 {
     public SimplerButton readyButton;
     public SimplerButton? startButton;
@@ -82,10 +83,8 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         arenaInfoButton.OnClick += _ => OpenInfoDialog();
 
         tabContainer = new TabContainer(menu, this, new Vector2(470f, 125f), new Vector2(450, 475));
-        tabContainer.OnTabButtonsCreated += OnTabButtonsCreated;
         playListTab = new(menu, tabContainer);
         playListTab.AddObjects(levelSelector = new ArenaLevelSelector(menu, playListTab, new Vector2(65f, 7.5f)));
-        playListTab.BindSelectables += BindPlaylistTabSelectables;
         tabContainer.AddTab(playListTab, menu.Translate("Arena Playlist"));
 
         matchSettingsTab = new(menu, tabContainer);
@@ -100,7 +99,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
             slugabilitiesTab = new(menu, tabContainer);
             slugcatAbilitiesInterface = new OnlineSlugcatAbilitiesInterface(menu, slugabilitiesTab, new(0,0), menu.Translate(painCatName));
             slugcatAbilitiesInterface.CallForSync();
-            slugcatAbilitiesInterface.UpdateSettingSelectables += BindSlugcatAbilitiesSelectables;
             slugabilitiesTab.AddObjects(slugcatAbilitiesInterface); //the tab will be hidden at the start anyways so no need to call selectables update
             tabContainer.AddTab(slugabilitiesTab, menu.Translate("Slugcat Abilities"));
         }
@@ -108,7 +106,6 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         this.SafeAddSubobjects(readyButton, tabContainer, activeGameModeLabel, readyPlayerCounterLabel, playlistProgressLabel, chatMenuBox, arenaInfoButton, arenaGameStatsButton);
 
         menu.MutualVerticalButtonBind(chatMenuBox.chatTypingBox, arenaInfoButton);
-        menu.MutualHorizontalButtonBind(playerDisplayer.scrollUpButton, arenaInfoButton); //loop
     }
     public bool ShouldOpenSlugcatAbilitiesTab() => ModManager.MSC || ModManager.Watcher;
     public void BuildPlayerDisplay()
@@ -161,8 +158,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject
         dialog = new ColorMultipleSlugcatsDialog(menu.manager, () => { menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed); }, ArenaHelpers.allSlugcats, slugcat);
         menu.manager.ShowDialog(dialog);
     }
-    public void OnTabButtonsCreated(TabButtonsContainer tabBtnContainer, TabButton[] oldTabButtons)
+    public void OnTabButtonsCreated()
     {
+        TabButtonsContainer tabBtnContainer = tabContainer.tabButtonContainer;
         var tabButtons = tabBtnContainer.activeTabButtons;
         for (int i = 0; i < tabBtnContainer.activeTabButtons.Count; i++)
         {
@@ -170,32 +168,19 @@ public class ArenaMainLobbyPage : PositionedMenuObject
                 menu.MutualHorizontalButtonBind(chatMenuBox.messageScroller.scrollSlider, tabButtons[i].wrapper);
             else tabBtnContainer.activeTabButtons[i].wrapper.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
         }
-        menu.TryMutualBind(arenaInfoButton, tabBtnContainer.topArrowButton, leftRight: true);
-        menu.TryMutualBind(tabBtnContainer.topArrowButton, playerDisplayer.scrollUpButton, leftRight: true);
+        menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
         tabBtnContainer.bottomArrowButton.TryBind(chatMenuBox.messageScroller.scrollSlider, left: true);
-    }
-    public void BindPlaylistTabSelectables(bool isHidden)
+    } 
+    public void BindPlaylistTabSelectables()
     {
-        if (isHidden)
+        if (playListTab.IsActuallyHidden)
         {
-            menu.MutualHorizontalButtonBind(arenaInfoButton, playerDisplayer.scrollUpButton);
-            if (tabContainer.tabButtonContainer.topArrowButton != null)
-            {
-                menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton);
-                menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
-            }
+            menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
             playerDisplayer.scrollDownButton.RemoveMutualBind(leftRight: true, inverted: true);
             return;
         }
         List<TabButton> tabButtons = tabContainer.tabButtonContainer.activeTabButtons;
-        if (tabContainer.tabButtonContainer.topArrowButton != null)
-        {
-            menu.MutualHorizontalButtonBind(arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton);
-            menu.MutualHorizontalButtonBind(tabContainer.tabButtonContainer.topArrowButton, levelSelector.allLevelsPlaylist.scrollUpButton);
-        }
-        else 
-            menu.MutualHorizontalButtonBind(arenaInfoButton, levelSelector.allLevelsPlaylist.scrollUpButton);
-        menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton);
+        menu.TrySequentialMutualBind([arenaInfoButton, tabContainer.tabButtonContainer.topArrowButton, levelSelector.allLevelsPlaylist.scrollUpButton, levelSelector.selectedLevelsPlaylist.scrollUpButton, playerDisplayer.scrollUpButton], true, loopLastIndex: true);
         menu.MutualHorizontalButtonBind(levelSelector.selectedLevelsPlaylist.scrollDownButton, playerDisplayer.scrollDownButton);
 
         TabButton? tabBtnToBind = tabButtons.Find(x => x.myTab == playListTab) ?? tabButtons[0];
@@ -388,5 +373,15 @@ public class ArenaMainLobbyPage : PositionedMenuObject
 
         chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
         chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
+    }
+    public void BindDynamicSelectable(MenuObject objRequested)
+    {
+        if (objRequested == tabContainer.tabButtonContainer)
+            OnTabButtonsCreated();
+        if (objRequested == playListTab)
+            BindPlaylistTabSelectables();
+        else if (objRequested is SettingsPage settingsPage && slugcatAbilitiesInterface != null)
+            BindSlugcatAbilitiesSelectables(settingsPage, settingsPage.IsActuallyHidden);
+
     }
 }

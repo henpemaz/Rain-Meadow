@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
+using System;
 using RWCustom;
 using System.Collections.Generic;
 using UnityEngine;
@@ -1379,11 +1380,10 @@ namespace RainMeadow
                         }
                         data.Add(key, new List<string>(value));
                     }
-
                 }
             }
         }
-        public void Serialize(ref Dictionary<int, int> data)
+         public void Serialize(ref Dictionary<int, int> data)
         {
 #if TRACING
             long wasPos = this.Position;
@@ -1588,6 +1588,7 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
         public void Serialize(ref Counter counter)
         {
 #if TRACING
@@ -1614,5 +1615,6 @@ namespace RainMeadow
             if (IsWriting) RainMeadow.Trace(this.Position - wasPos);
 #endif
         }
+
     }
 }

@@ -35,7 +35,7 @@ namespace RainMeadow
                     }).ToList())
             { colorEdge = MenuColorEffect.rgbWhite };
             new UIelementWrapper(menu.tabWrapper, slugcatSelector);
-            this.nicknameBox = new OpTextBox(new Configurable<string>(customization.nickname), pos + new Vector2(140, 32), 160);
+            this.nicknameBox = new OpTextBox(new Configurable<string>(UsernameGenerator.StreamerModeName(customization.nickname)), pos + new Vector2(140, 32), 160);
             new UIelementWrapper(menu.tabWrapper, nicknameBox);
 
             bodyColorSelector.OnValueChangedEvent += ColorSelector_OnValueChangedEvent;
