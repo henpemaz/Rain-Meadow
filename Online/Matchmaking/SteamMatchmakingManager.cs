@@ -51,10 +51,11 @@ namespace RainMeadow
             }
 
             public override string GetPersonaName() {
-                return SteamFriends.GetFriendPersonaName(steamID);
+                return UsernameGenerator.StreamerModeName(SteamFriends.GetFriendPersonaName(steamID));
             }
 
             public override bool canOpenProfileLink { get => true; }
+            public override string DisplayName { get => UsernameGenerator.StreamerModeName(name); }
             public override void OpenProfileLink() {
                 string url = $"https://steamcommunity.com/profiles/{steamID}";
                 SteamFriends.ActivateGameOverlayToWebPage(url);
@@ -65,6 +66,8 @@ namespace RainMeadow
         {
             return new SteamPlayerId();
         }
+
+        public bool filteringAvailable;
 
 #pragma warning disable IDE0052 // Remove unread private members
         private CallResult<LobbyMatchList_t> m_RequestLobbyListCall;
@@ -92,6 +95,8 @@ namespace RainMeadow
             m_SessionRequest = Callback<SteamNetworkingMessagesSessionRequest_t>.Create(SessionRequest);
             m_GameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(GameLobbyJoinRequested);
             m_LobbyChatMsgCall = Callback<LobbyChatMsg_t>.Create(LobbyChatMessageReceived);
+
+            filteringAvailable = SteamUtils.InitFilterText();
 
             me = SteamUser.GetSteamID();
         }
@@ -454,6 +459,19 @@ namespace RainMeadow
             }
             lobbyID = default;
             SteamFriends.ClearRichPresence();
+        }
+
+        /// <summary>
+        /// Filters a message using Steam if ProfanityFilter is enabled in Remix options.
+        /// </summary>
+        /// <param name="message"></param>
+        public override void FilterMessage(ref string message)
+        {
+            if (!filteringAvailable || !RainMeadow.rainMeadowOptions.ProfanityFilter.Value || OnlineManager.lobby == null) return;
+            if (SteamUtils.FilterText(ETextFilteringContext.k_ETextFilteringContextChat, CSteamID.Nil, message, out string pchOutFilteredText, (uint)(message.Length * 2 + 1)) > 0)
+            {
+                message = pchOutFilteredText;
+            }
         }
 
         public override OnlinePlayer GetPlayer(MeadowPlayerId id)
