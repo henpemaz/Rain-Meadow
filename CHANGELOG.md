@@ -12,6 +12,7 @@
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
+- Added more stability for clients warping
 - Fix sand grubs softlocking the game
 - Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
   ⚠️ Developers: InputOverrides class is now GameplayOverrides
