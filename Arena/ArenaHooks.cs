@@ -202,9 +202,11 @@ namespace RainMeadow
             };
             voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
             room.abstractRoom.AddEntity(apo);
+            voidSpawn.abstractPhysicalObject.Realize();
+            voidSpawn.abstractPhysicalObject.realizedObject.PlaceInRoom(room);
             voidSpawn.PlaceInRoom(room);
             voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
-            self.room.world.GetResource().ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
+            self.room.world.GetResource()?.ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
             self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
 
             self.camoCharge += requiredCharge;
@@ -244,7 +246,7 @@ namespace RainMeadow
             VoidSpawn voidSpawn = self.owner;
             Player? foundPlayer = null;
             float minDistance = 0f;
-            foreach (AbstractCreature player in voidSpawn.room.game.Players)
+            foreach (AbstractCreature player in voidSpawn.room.game.GetArenaGameSession.Players)
             {
                 if (player.IsLocal(out var oe)) continue;
                 if (player.realizedCreature is not Player realizedPlayer) continue;
@@ -331,16 +333,7 @@ namespace RainMeadow
         {
             orig(self, eu);
             if (!isArenaMode(out _)) return;
-
-            if (self.behavior == null)
-            {
-                // spawn transferred, destroy
-                self.startFadeOut = true;
-            }
-            else if (self.IsLocal())
-            {
-                self.culled = false; //keep it visible to creator
-            }
+            self.culled = false;
 
         }
         private void VoidSpawnGraphics_Update2(ILContext il)
@@ -395,7 +388,7 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldarg_3);
                 c.EmitDelegate(delegate (VoidSpawnGraphics self, float timeStacker)
                 {
-                    if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null) //keep it visible to creator
+                    if (isArenaMode(out _)) //keep it visible to creator
                         self.playerGlowVision = Mathf.Lerp(self.spawn.lastFade, self.spawn.fade, timeStacker);
                 });
             }
@@ -406,7 +399,7 @@ namespace RainMeadow
         }
         private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
         {
-            if (isArenaMode(out _) && self.spawn.IsLocal() && self.spawn.behavior != null)
+            if (isArenaMode(out _))
                 return 1 * self.playerGlowVision; //keep it visible to creator
             return orig(self, A, B);
         }
