@@ -328,7 +328,14 @@ public static class DeathMessage
                 }
                 if (player.rainDeath > 1f)
                 {
-                    EnvironmentalRPC(player, DeathType.Rain);
+                    if (player.room.roomRain.dangerType == WatcherEnums.WatcherDangerType.Sandstorm)
+                    {
+                        EnvironmentalRPC(player, DeathType.Sandstorm);
+                    }
+                    else
+                    {
+                        EnvironmentalRPC(player, DeathType.Rain);
+                    }
                     return;
                 }
                 if (player.injectedPoison / player.Template.instantDeathDamageLimit >= 1f)
