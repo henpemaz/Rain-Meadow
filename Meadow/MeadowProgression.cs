@@ -610,7 +610,7 @@ namespace RainMeadow
             public static Skin Centipede_Medium = new("Centipede_Medium", true, new()
             {
                 character = Character.Centipede,
-                displayName = "Small",
+                displayName = "Medium",
                 creatureType = CreatureTemplate.Type.Centipede,
                 randomSeed = 9864,
                 baseColor = new Color(1f, 0.6f, 0f),
@@ -620,7 +620,7 @@ namespace RainMeadow
             public static Skin Centipede_CentiWing = new("Centipede_Wing", true, new()
             {
                 character = Character.Centipede,
-                displayName = "Small",
+                displayName = "Winged",
                 creatureType = CreatureTemplate.Type.Centiwing,
                 randomSeed = 9854,
                 baseColor = new Color(0.05490196f, 0.69803923f, 0.23529412f),
@@ -629,7 +629,7 @@ namespace RainMeadow
             public static Skin Centipede_Red = new("Centipede_Red", true, new()
             {
                 character = Character.Centipede,
-                displayName = "Small",
+                displayName = "Red",
                 creatureType = CreatureTemplate.Type.RedCentipede,
                 randomSeed = 9234,
                 baseColor = new Color(46f / 51f, 0.05490196f, 0.05490196f),
