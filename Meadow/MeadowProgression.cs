@@ -136,6 +136,17 @@ namespace RainMeadow
                 selectSpriteIndexes = new[] { 2 },
                 startingCoords = new WorldCoordinate("SH_A21", 32, 26, -1),
             });
+
+            public static Character Centipede = new Character("Centipede", true, new()
+            {
+                displayName = "LANTERN MOUSE",
+                emotePrefix = "sc_",
+                emoteAtlas = "emotes_slugcat",
+                emoteColor = Extensions.ColorFromHex(0x79635f),
+                voiceId = RainMeadow.Ext_SoundID.RM_Scav_Call,
+                selectSpriteIndexes = new[] { 2 },
+                startingCoords = new WorldCoordinate("SU_C04", 7, 28, -1),
+            });
         }
 
         public static Dictionary<Skin, SkinData> skinData = new();
@@ -584,6 +595,44 @@ namespace RainMeadow
                 creatureType = CreatureTemplate.Type.LanternMouse,
                 randomSeed = 9834,
                 baseColor = Extensions.ColorFromHex(0x272020),
+            });
+
+            
+            public static Skin Centipede_Small = new("Centipede_Small", true, new()
+            {
+                character = Character.Centipede,
+                displayName = "Small",
+                creatureType = CreatureTemplate.Type.SmallCentipede,
+                randomSeed = 3834,
+                baseColor = new Color(1f, 0.6f, 0f),
+            });
+
+            public static Skin Centipede_Medium = new("Centipede_Medium", true, new()
+            {
+                character = Character.Centipede,
+                displayName = "Small",
+                creatureType = CreatureTemplate.Type.Centipede,
+                randomSeed = 9864,
+                baseColor = new Color(1f, 0.6f, 0f),
+            });
+
+
+            public static Skin Centipede_CentiWing = new("Centipede_Wing", true, new()
+            {
+                character = Character.Centipede,
+                displayName = "Small",
+                creatureType = CreatureTemplate.Type.Centiwing,
+                randomSeed = 9854,
+                baseColor = new Color(0.05490196f, 0.69803923f, 0.23529412f),
+            });
+
+            public static Skin Centipede_Red = new("Centipede_Red", true, new()
+            {
+                character = Character.Centipede,
+                displayName = "Small",
+                creatureType = CreatureTemplate.Type.RedCentipede,
+                randomSeed = 9234,
+                baseColor = new Color(46f / 51f, 0.05490196f, 0.05490196f),
             });
         }
 
