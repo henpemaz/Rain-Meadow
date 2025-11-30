@@ -273,9 +273,16 @@ namespace RainMeadow
             if (arena.amoebaControl && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
             {
                 Vector2 pointingVector = Pointing.GetOnlinePointingVector();
-                if (pointingVector != Vector2.zero)
+                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+                if (controller is Rewired.Joystick)
                 {
-                    return pointingVector * 400f; // Jeremy likes to resist and that's ok
+            
+                    Vector2 lastPosition = self.owner.abstractPhysicalObject.realizedObject.bodyChunks[0].pos;
+                    Vector2 nextPosition = lastPosition  + pointingVector * 400;            
+                    return nextPosition;
+                
+                } else {
+                    return pointingVector;
                 }
             }
             if (foundPlayer != null)
