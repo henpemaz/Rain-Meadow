@@ -32,6 +32,26 @@ namespace RainMeadow.UI.Components
                 SwitchTab(selectSettings);
             }
         }
+        public static void ShowSyncInRemixCheckbox(OpCheckBox config, bool greyout, bool tosync)
+        {
+            config.greyedOut = greyout;
+            if (!config.held)
+                config.SetValueBool(tosync);
+        }
+        public static void ShowSyncInTextbox(OpTextBox textbox, bool greyout, object obj)
+        {
+
+            textbox.greyedOut = greyout;
+            textbox.held = textbox._KeyboardOn;
+
+            if (textbox.held) return;
+
+            if (textbox.accept == OpTextBox.Accept.Int)
+                textbox.valueInt = (int)obj;
+            else if (textbox.accept == OpTextBox.Accept.Float)
+                textbox.valueFloat = (float)obj;
+            else textbox.value = (string)obj;
+        }
         public void SaveAllInterfaceOptions()
         {
             foreach (SettingsPage settings in settingSignals.Values)
@@ -169,12 +189,7 @@ namespace RainMeadow.UI.Components
                         btn.buttonBehav.greyedOut = greyoutAll;
                 }
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
-                {
-                    saintAscendDurationTimerTextBox.greyedOut = greyoutAll;
-                    saintAscendDurationTimerTextBox.held = saintAscendDurationTimerTextBox._KeyboardOn;
-                    if (!saintAscendDurationTimerTextBox.held)
-                        saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
-                }
+                    ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -263,7 +278,7 @@ namespace RainMeadow.UI.Components
 
 
                 // Voidmaster
-                voidMasterCheckbox = new(RainMeadow.rainMeadowOptions.VoidMaster, positioner - spacing * 3)
+                voidMasterCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.VoidMaster.Value), positioner - spacing * 3)
                 {
                     colorEdge = RainWorld.RippleColor * 1.5f
                 };
@@ -300,7 +315,7 @@ namespace RainMeadow.UI.Components
 
                 amoebaLifespanTextBox.Change();
 
-                amoebaControlCheckbox = new(RainMeadow.rainMeadowOptions.AmoebaControl, positioner - spacing * 5);
+                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 5);
                 amoebaControlCheckbox.OnChange += () =>
                 {
                     if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
@@ -359,28 +374,16 @@ namespace RainMeadow.UI.Components
                 bool greyoutall = SettingsDisabled;
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
 
-                watcherCamoLimitTextBox.greyedOut = greyoutall;
-                watcherCamoLimitTextBox.held = watcherCamoLimitTextBox._KeyboardOn;
-                if (!watcherCamoLimitTextBox.held)
-                    watcherCamoLimitTextBox.valueInt = arena.watcherCamoTimer;
-
-                watcherRippleLevelTextBox.greyedOut = greyoutall;
-                watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
-                if (!watcherRippleLevelTextBox.held)
-                    watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
+                ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
+                ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
 
-                voidMasterCheckbox.greyedOut = greyoutall;
-                arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
-                amoebaControlCheckbox.greyedOut = !voidMasterCheckbox.GetValueBool() || greyoutall;
-                arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
-                amoebaLifespanTextBox.greyedOut = !voidMasterCheckbox.GetValueBool() || greyoutall;
-                amoebaLifespanTextBox.held = amoebaLifespanTextBox._KeyboardOn;
-                if (!amoebaLifespanTextBox.held)
-                    amoebaLifespanTextBox.valueFloat = arena.amoebaDuration;
+                ShowSyncInRemixCheckbox(voidMasterCheckbox, greyoutall, arena.voidMasterEnabled);
 
-
+                bool lockvoidmastersettings = !voidMasterCheckbox.GetValueBool() || greyoutall;
+                ShowSyncInRemixCheckbox(amoebaControlCheckbox, lockvoidmastersettings, arena.amoebaControl);
+                ShowSyncInTextbox(amoebaLifespanTextBox, lockvoidmastersettings, arena.amoebaDuration);
             }
             public override void GrafUpdate(float timeStacker)
             {
