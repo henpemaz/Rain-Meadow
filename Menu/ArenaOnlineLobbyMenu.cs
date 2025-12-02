@@ -370,7 +370,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "WEAPONCOLLISIONFIX")
                 return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
             if (idString == "PIGGY")
-                return check ? Translate("Players can piggyback each other") : Translate("Players cannot piggyback each other");
+                return check ? Translate("Players can piggyback and grab each other") : Translate("Players cannot piggyback each other");
         }
         if (selectedObject is SimpleButton simpleBtn)
         {
