@@ -2057,6 +2057,9 @@ public partial class RainMeadow
                     }
                     if (obj is Player pl)
                     {
+                        if (!arena.piggyBack) { // no grabbing period
+                            return false;
+                        }
                         if (pl.Stunned || pl.dead)
                         {
                             return orig(self, obj);
