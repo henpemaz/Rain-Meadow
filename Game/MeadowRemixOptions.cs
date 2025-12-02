@@ -76,27 +76,45 @@ public class RainMeadowOptions : OptionInterface
 
     public enum IntroRollMusic
     {
+        FourOhThreeRings,
+        SevenOneOneZeroFour,
+    
         Afio,
         Cascen,
         Cloudlayer,
         DustAshWrong,
         Establish,
+        EyesVain,
+        GrayOrange,
         Eyto,
         Folkada,
         Grasp,
+        HoneydewChains,
+        IcyParchment,
+        IreLining,
         Indufor,
+        LiveMore,
         MTC,
         Me,
         my,
-        
+        NevertopSide,
+        NewAndNew,
         Ones,
 
+        PedalPetal,
         Porls,
+        PurplePuff,
         Significance,
+        SlightlyIll,
+        SmoothedAsh,
         slow,
         Soup,
         StepsSteps,
+        SwanOde,
+        TheCrewmate,
+        TripTrapX,
         Trists,
+        VoidGenesis,
         Woodback,
         None
     }
