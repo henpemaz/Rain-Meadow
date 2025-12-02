@@ -317,9 +317,6 @@ public class RainMeadowOptions : OptionInterface
                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
               new OpLabel(10, 310, Translate("IntroRoll Music")),
-
-            
-
               music = new OpComboBox2(PickedIntroMusic, new Vector2(10, 280f), 160f,  MeadowMusicRemix.ConvertSongs()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
             };

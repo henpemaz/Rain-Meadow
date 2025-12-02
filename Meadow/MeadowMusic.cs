@@ -22,14 +22,11 @@ namespace RainMeadow
         List<ListItem> songNameListItems = GetSongsFromPath()
         .Select(songName => new ListItem 
         { 
-            // Create the required list item object
             displayName = songName,
             name = songName, 
         })
-        // Now, apply the original translation and return logic
         .Select(li => 
         { 
-            // Call your translation function on the display name
             return li; 
         })
         .ToList();
@@ -46,22 +43,14 @@ namespace RainMeadow
     {
         string fileName = rawDirData[j];
         
-        // Check if the file name ends with the ".ogg" suffix (case-insensitive check is often safer)
         if (fileName.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
         {
-            // Extract the filename without the path components (if present)
             string[] nameParts = fileName.Split(Path.DirectorySeparatorChar);
             string cleanFileNameWithExtension = nameParts[nameParts.Length - 1]; 
             
-            // --- NEW LOGIC: Strip the .ogg extension ---
-            // Find the index where the extension starts
             int extensionIndex = cleanFileNameWithExtension.LastIndexOf('.');
             
-            // Use Substring to get everything up to that index
             string cleanFileName = cleanFileNameWithExtension.Substring(0, extensionIndex); 
-            // ------------------------------------------
-
-            // Add the filename without the extension to the results list
             allOggFiles.Add(cleanFileName);
         }
     }
