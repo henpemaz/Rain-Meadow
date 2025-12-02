@@ -44,7 +44,7 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Piggyback:"), "PIGGY");
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Carrying:"), "PIGGY");
 
             allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
 
