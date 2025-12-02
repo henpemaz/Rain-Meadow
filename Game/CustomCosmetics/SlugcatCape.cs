@@ -130,6 +130,11 @@ namespace RainMeadow
                                 {
                                     rgbColor = RainWorld.SaturatedGold;
                                 }
+
+                                if (color == "rainbow")
+                                {
+                                
+                                }
                             }
 
 
@@ -344,7 +349,7 @@ namespace RainMeadow
                 {
                     float num3 = (float)l / (float)SlugcatCape.size * 2f - 1f;
                     ref SimpleSegment ptr = ref this.segments[l, k];
-                    ptr.vel.y = ptr.vel.y - 0.4f * room.gravity;
+                    ptr.vel.y = ptr.vel.y - 0.4f * playerGFX.player.EffectiveRoomGravity;
                     float num4 = 1f - 2f * num2;
 
                     if (room.waterObject is not null)

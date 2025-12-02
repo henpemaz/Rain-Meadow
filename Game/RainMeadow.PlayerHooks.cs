@@ -1208,12 +1208,20 @@ public partial class RainMeadow
         public bool afkSleep;
         public int manualSleepDownCounter;
         public int timeSinceShelterWakeup;
+
+
+        public bool groundedSincelastFlight;
+        public int capeFlyCounter;
     }
     public int afkSleepRequiredTime = 1200;
     public int manualSleepRequiredTime = 200;
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
+
+
+
+
         if (OnlineManager.lobby != null && self.objectInStomach != null)
             self.objectInStomach.pos = self.abstractCreature.pos;
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
@@ -1348,6 +1356,64 @@ public partial class RainMeadow
             { //For reasons beyond my comprehension, PlayerBlink() has a weird, possibly unintended "else" that makes specifically Spearmaster *not* close their eyes during sleepCurlUp.
                 self.Blink(2); //Vanilla only avoids this issue because sleepCounter also closes eyes directly using Blink(). We're not using sleepCounter, so Spearmaster needs this insomnia cure.
             }
+        }
+
+        if (OnlineManager.lobby != null && !(ModManager.MSC && 
+            self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && 
+            (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))))
+        {
+
+            if (self.abstractCreature.GetOnlineCreature() is OnlineCreature oc)
+            {
+                if (oc.GetData<SlugcatCustomization>().wearingCape && CapeManager.HasCape(oc.owner.id).HasValue && !self.isNPC)
+                {
+                    var extras = playerExtras.GetOrCreateValue(self);
+                    if (!self.Consious)
+                    {
+                        extras.capeFlyCounter = 0;
+                        extras.groundedSincelastFlight = true;
+                    }
+
+                    IntVector2 zero = new IntVector2(0, 0);
+                    if ((self.canWallJump > 0) || (self.lowerBodyFramesOnGround > 0))
+                    {
+                        extras.capeFlyCounter = 0;
+                        extras.groundedSincelastFlight = true;
+                    }
+                    else
+                    {
+                        if (self.input[0].pckp && self.input[0].jmp && !self.input[1].jmp && extras.groundedSincelastFlight)
+                        {
+                            extras.capeFlyCounter = 100;
+                            extras.groundedSincelastFlight = true;
+                        }
+                    }
+
+                    if (extras.capeFlyCounter > 0)
+                    {
+                        extras.capeFlyCounter--;
+                        IntVector2 flyDir = new IntVector2(self.input[0].x, self.input[0].y);
+                        if (flyDir.x == 0 && flyDir.y == 0)
+                        {
+                            extras.capeFlyCounter = 0;
+                        }
+                        else
+                        {
+                            self.bodyMode = Player.BodyModeIndex.Default;
+                            self.mainBodyChunk.vel *= 0.8f;
+                            self.mainBodyChunk.vel += flyDir.ToVector2().normalized*2f;
+                            self.airInLungs = 1f;
+                            self.standing = false;
+                            self.WeightedPush(0, 1, Custom.DirVec(self.bodyChunks[0].pos, self.bodyChunks[1].pos), 1.0f);
+                            foreach (BodyChunk chunk in self.bodyChunks) chunk.vel.y += self.gravity * Mathf.Pow(((float)Mathf.Min(20, extras.capeFlyCounter))/20.0f, 1.4f);
+                        }
+                        
+                    }
+                }
+            }
+          
         }
     }
 
