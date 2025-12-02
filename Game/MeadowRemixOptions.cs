@@ -46,6 +46,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StoryItemSteal;
     public readonly Configurable<bool> ArenaItemSteal;
     public readonly Configurable<bool> WeaponCollisionFix;
+
+    public readonly Configurable<bool> enableBombsAndBees;
+
     public readonly Configurable<bool> EnablePiggyBack;
     public readonly Configurable<StreamMode> StreamerMode;
     public readonly Configurable<int> ArenaWatcherRippleLevel;
@@ -150,6 +153,7 @@ public class RainMeadowOptions : OptionInterface
         SlugpupHellBackground = config.Bind("SlugpupHellBackground", false);
 
         WeaponCollisionFix = config.Bind("WeaponCollisionFix", true);
+        enableBombsAndBees = config.Bind("enableBombsAndBees", false);
 
         ShowPing = config.Bind("ShowPing", false);
         ShowPingLocation = config.Bind("ShowPingLocation", 0);

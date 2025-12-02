@@ -109,6 +109,8 @@ namespace RainMeadow
             [OnlineField]
             public bool weaponCollisionFix;
             [OnlineField]
+            public bool enableBombsAndBees;
+            [OnlineField]
             public bool playersEqualToOnlineSitting;
             [OnlineField]
             public bool piggyBack;
@@ -154,6 +156,7 @@ namespace RainMeadow
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
+                enableBombsAndBees = arena.enableBombsAndBees;
                 leaveForNextLevel = arena.leaveForNextLevel;
                 hasPermissionToRejoin = arena.hasPermissionToRejoin;
                 playersEqualToOnlineSitting = arena.playersEqualToOnlineSitting;
@@ -212,6 +215,8 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).itemSteal = arenaItemSteal;
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
+
+                (lobby.gameMode as ArenaOnlineGameMode).enableBombsAndBees = enableBombsAndBees;
 
                 (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).hasPermissionToRejoin = hasPermissionToRejoin;

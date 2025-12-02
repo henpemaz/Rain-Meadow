@@ -5,6 +5,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -43,6 +44,8 @@ namespace RainMeadow
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
+        public bool enableBombsAndBees = RainMeadow.rainMeadowOptions.enableBombsAndBees.Value;
+
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
         public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
@@ -787,6 +790,9 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb || apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBombsAndBees;
+            }
             return true;
         }
 
@@ -796,6 +802,9 @@ namespace RainMeadow
             {
                 return false;
             }
+                if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb || apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBombsAndBees;
+            }
             return true;
         }
 
@@ -804,6 +813,9 @@ namespace RainMeadow
             if (blockList.Contains(apo.type))
             {
                 return false;
+            }
+                if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb || apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBombsAndBees;
             }
             return true;
         }
