@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
 namespace RainMeadow;
 
 public class RainMeadowOptions : OptionInterface
@@ -72,52 +71,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableAchievementsOnline;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
-    public readonly Configurable<IntroRollMusic> PickedIntroMusic;
-
-    public enum IntroRollMusic
-    {
-        FourOhThreeRings,
-        SevenOneOneZeroFour,
-    
-        Afio,
-        Cascen,
-        Cloudlayer,
-        DustAshWrong,
-        Establish,
-        EyesVain,
-        GrayOrange,
-        Eyto,
-        Folkada,
-        Grasp,
-        HoneydewChains,
-        IcyParchment,
-        IreLining,
-        Indufor,
-        LiveMore,
-        MTC,
-        Me,
-        my,
-        NevertopSide,
-        NewAndNew,
-        Ones,
-
-        PedalPetal,
-        Porls,
-        PurplePuff,
-        Significance,
-        SlightlyIll,
-        SmoothedAsh,
-        slow,
-        Soup,
-        StepsSteps,
-        SwanOde,
-        TheCrewmate,
-        TripTrapX,
-        Trists,
-        VoidGenesis,
-        Woodback,
-        None
-    }
+    public readonly Configurable<string> PickedIntroMusic;
 
     public enum IntroRoll
     {
@@ -208,7 +162,7 @@ public class RainMeadowOptions : OptionInterface
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
-        PickedIntroMusic = config.Bind("PickedIntroMusic", IntroRollMusic.None);
+        PickedIntroMusic = config.Bind("PickedIntroMusic", "Woodback"); // Happy One Year, Meadow
 
         LanUserName = config.Bind("LanUserName", "");
         UdpTimeout = config.Bind("UdpTimeout", 3000);
@@ -363,7 +317,10 @@ public class RainMeadowOptions : OptionInterface
                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
               new OpLabel(10, 310, Translate("IntroRoll Music")),
-              music = new OpComboBox2(PickedIntroMusic, new Vector2(10, 280f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRollMusic)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+
+            
+
+              music = new OpComboBox2(PickedIntroMusic, new Vector2(10, 280f), 160f,  MeadowMusicRemix.ConvertSongs()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
             };
             if (!RainMeadow.IsDev(OnlineManager.mePlayer.id))

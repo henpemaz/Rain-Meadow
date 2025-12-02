@@ -12,6 +12,8 @@ using System.Linq;
 using System.Management.Instrumentation;
 using UnityEngine;
 using static RainMeadow.RainMeadowModManager;
+using System.IO;
+
 
 namespace RainMeadow
 {
@@ -206,61 +208,12 @@ namespace RainMeadow
             
             MatchmakingManager.currentInstance.RequestLobbyList();
         if (manager.musicPlayer != null) {
-
-            if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value != RainMeadowOptions.IntroRollMusic.None) {
-
-                  manager.musicPlayer.MenuRequestsSong(InterpretMusicEnums(RainMeadow.rainMeadowOptions.PickedIntroMusic.Value), 1, 0);
+            if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value != "None") {
+                  manager.musicPlayer.MenuRequestsSong(RainMeadow.rainMeadowOptions.PickedIntroMusic.Value, 1, 0);
                 }
             }
         
         }
-
-private static string InterpretMusicEnums(RainMeadowOptions.IntroRollMusic song) {
-    switch (song) {
-        case RainMeadowOptions.IntroRollMusic.FourOhThreeRings:
-            return "403rings";
-        case RainMeadowOptions.IntroRollMusic.SevenOneOneZeroFour:
-            return "71104";
-        case RainMeadowOptions.IntroRollMusic.DustAshWrong:
-            return "Dust Ash Wrong";
-        case RainMeadowOptions.IntroRollMusic.EyesVain:
-            return "Eyes' Vain";
-        case RainMeadowOptions.IntroRollMusic.GrayOrange:
-            return "Gray Orange";
-        case RainMeadowOptions.IntroRollMusic.HoneydewChains:
-            return "Honeydew Chains"; 
-        case RainMeadowOptions.IntroRollMusic.IcyParchment:
-            return "Icy Parchment";
-        case RainMeadowOptions.IntroRollMusic.IreLining:
-            return "Ire lining";
-        case RainMeadowOptions.IntroRollMusic.LiveMore:
-            return "Live more";
-        case RainMeadowOptions.IntroRollMusic.NevertopSide:
-            return "Nevertop Side";
-        case RainMeadowOptions.IntroRollMusic.NewAndNew:
-            return "New And new";
-        case RainMeadowOptions.IntroRollMusic.PedalPetal:
-            return "Pedal Petal";
-        case RainMeadowOptions.IntroRollMusic.PurplePuff:
-            return "Purple Puff";
-        case RainMeadowOptions.IntroRollMusic.SlightlyIll:
-            return "Slightly Ill";
-        case RainMeadowOptions.IntroRollMusic.SmoothedAsh:
-            return "Smoothed Ash";
-        case RainMeadowOptions.IntroRollMusic.StepsSteps:
-            return "Steps Steps";
-        case RainMeadowOptions.IntroRollMusic.SwanOde:
-            return "Swan ode";
-        case RainMeadowOptions.IntroRollMusic.TheCrewmate:
-            return "The Crewmate";
-        case RainMeadowOptions.IntroRollMusic.TripTrapX:
-            return "Triptrap X";
-        case RainMeadowOptions.IntroRollMusic.VoidGenesis:
-            return "Void Genesis";
-        default:
-            return song.ToString(); 
-    }
-}
         public override void Update()
         {
             base.Update();
