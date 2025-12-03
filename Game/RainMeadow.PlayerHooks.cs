@@ -781,6 +781,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            if (isArenaMode(out var arena) && !arena.piggyBack) return false;
             return true;
         }
 
