@@ -372,7 +372,14 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (idString == "ENABLEBOMBSANDBEES")
                 return check ? Translate("Bee hives and scavenger bombs follow vanilla spawn behavior") : Translate("bee hives and scavenger bombs are disabled");
             if (idString == "PIGGY")
-                return check ? Translate("Players can carry each other") : Translate("Players cannot carry each other");
+                return check ? Translate("Players can piggyback each other") : Translate("Players cannot piggyback each other");
+                            if (idString == "CORPSEGRAB")
+                return check ? Translate("Players can grab dead players") : Translate("Players cannot grab dead players");
+                            if (idString == "ENABLEBOMBS")
+                return check ? Translate("Scavenger bombs follow vanilla spawn behavior") : Translate("No scavenger bombs spawn");
+                            if (idString == "ENABLEBEES")
+                return check ? Translate("Bee hives follow vanilla spawn behavior") : Translate("No beehives spawn");
+
         }
         if (selectedObject is SimpleButton simpleBtn)
         {

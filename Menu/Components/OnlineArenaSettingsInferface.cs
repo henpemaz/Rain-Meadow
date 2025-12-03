@@ -63,10 +63,10 @@ namespace RainMeadow.UI.Components
             weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
             enableCorpseGrab =  new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.pos.y), 100, menu.Translate("Corpse grab"), "CORPSEGRAB");
             enableBees = new(menu, this, this, new(settingsWidth - 24, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bees:"), "ENABLEBEES");
-            enableBombs = new(menu, this, this, new(countdownTimerLabel.pos.x, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bombs:"), "ENABLEBOMBS");
+            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bombs:"), "ENABLEBOMBS");
 
-            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, enableBees.pos.y - 38), new Vector2(0, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, enableBees.pos.y - 38), 175, gameModes) { description = menu.Translate("The game mode for this match") };
+            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, enableBees.pos.y - 45), new Vector2(0, 20), false);
+            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, enableBees.pos.y - 45), 175, gameModes) { description = menu.Translate("The game mode for this match") };
             arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
