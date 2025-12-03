@@ -3,6 +3,9 @@
 - Fixes Amoeba controls not listening to your pointed direction
 - Piggyback toggle now also controls your ability to pick up dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
+
+## General
+- Fixes infinite tinnitus
 # Release 1.9.0
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
