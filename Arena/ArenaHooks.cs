@@ -865,9 +865,9 @@ namespace RainMeadow
                         if (OnlineManager.lobby != null)
                         {
                             var onlineCreature = self.abstractPhysicalObject.GetOnlineObject();
-                            if (onlineCreature != null && !onlineCreature.isMine)
+                            if (onlineCreature != null && !onlineCreature.isMine && source.owner.isLocal())
                             {
-                                (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                                (onlineCreature as OnlineCreature)?.RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
                             }
                         }
                         self.Violence(source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
