@@ -818,6 +818,9 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null && (self.input[0].y <= 0))
             {
+                if (isArenaMode(out var arena) && !arena.piggyBack) {
+                   return false;
+                }
                 foreach (var grasp in self.grasps)
                 {
                     if (grasp?.grabbed is Player pl && pl.Stunned)
