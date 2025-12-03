@@ -65,16 +65,16 @@ namespace RainMeadow.UI.Components
             };
             enableCorpseGrab =  new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.pos.y), 100, menu.Translate("Corpse grab"), "CORPSEGRAB");
 
-            stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, countdownTimerTextBox.pos.y - 38), 150f, menu.Translate("Item Stealing:"), "ITEMSTEAL");
-            allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Mid-Game Join:"), "MIDGAMEJOIN");
+            stealItemCheckBox = new (menu, this, this, new Vector2(55f, countdownTimerTextBox.pos.y - 38), 150f, menu.Translate("Item Stealing"), "ITEMSTEAL");
+            allowMidGameJoinCheckbox = new (menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 100, menu.Translate("Join In Progress"), "MIDGAMEJOIN");
 
             
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Piggybacking:"), "PIGGY");
-            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Piggybacking"), "PIGGY");
+            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox"), "WEAPONCOLLISIONFIX");
             
             
-            enableBees = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38), 100, menu.Translate("Bees:"), "ENABLEBEES");
-            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, enableBees.pos.y), 100, menu.Translate("Bombs:"), "ENABLEBOMBS");
+            enableBees = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38), 100, menu.Translate("Bees"), "ENABLEBEES");
+            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, enableBees.pos.y), 150f, menu.Translate("Bombs"), "ENABLEBOMBS");
 
             countdownWrapper = new(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
