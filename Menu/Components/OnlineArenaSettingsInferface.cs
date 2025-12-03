@@ -43,12 +43,16 @@ namespace RainMeadow.UI.Components
             rainTimerArray = new(menu, this, this, new(0, 305), menu.Translate("Rain Timer:"), "SESSIONLENGTH", InGameTranslator.LanguageID.UsesLargeFont(menu.CurrLang) ? 100f : 95f, settingsWidth, 6, false, menu.CurrLang == InGameTranslator.LanguageID.French || menu.CurrLang == InGameTranslator.LanguageID.Spanish || menu.CurrLang == InGameTranslator.LanguageID.Portuguese);
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
-            stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Piggybacking:"), "PIGGY");
+            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(-95, 180f), new Vector2(0, 20), false);
+            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, 180f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
+            arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
+            arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
+            {
+                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                arena.currentGameMode = value;
+            };
 
-            allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
-
-            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(-95, stealItemCheckBox.pos.y - 68), new Vector2(0, 20), false);
+            countdownTimerLabel = new(menu, this, menu.Translate("Countdown Timer:"), new Vector2(arenaGameModeLabel.pos.x, arenaGameModeLabel.pos.y - 45), new Vector2(0, 20), false);
             countdownTimerTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value), new(55, countdownTimerLabel.pos.y - 6), 50)
             {
                 alignment = FLabelAlignment.Center,
@@ -59,20 +63,18 @@ namespace RainMeadow.UI.Components
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
                     arena.setupTime = countdownTimerTextBox.valueInt;
             };
-
-            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
             enableCorpseGrab =  new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.pos.y), 100, menu.Translate("Corpse grab"), "CORPSEGRAB");
-            enableBees = new(menu, this, this, new(settingsWidth - 24, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bees:"), "ENABLEBEES");
-            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bombs:"), "ENABLEBOMBS");
 
-            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, enableBees.pos.y - 45), new Vector2(0, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, enableBees.pos.y - 45), 175, gameModes) { description = menu.Translate("The game mode for this match") };
-            arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
-            arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
-            {
-                if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
-                arena.currentGameMode = value;
-            };
+            stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, countdownTimerTextBox.pos.y - 38), 150f, menu.Translate("Item Stealing:"), "ITEMSTEAL");
+            allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Mid-Game Join:"), "MIDGAMEJOIN");
+
+            
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Piggybacking:"), "PIGGY");
+            weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+            
+            
+            enableBees = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y - 38), 100, menu.Translate("Bees:"), "ENABLEBEES");
+            enableBombs = new(menu, this, this, new(stealItemCheckBox.pos.x, enableBees.pos.y), 100, menu.Translate("Bombs:"), "ENABLEBOMBS");
 
             countdownWrapper = new(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
