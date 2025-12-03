@@ -197,6 +197,9 @@ namespace RainMeadow
             {
                 if (self.player != null && self.player.IsLocal() && self.player.dead && self.deafLoop != null)
                 {
+                    if (self.deafLoop.emitter != null) {
+                        self.deafLoop.emitter.slatedForDeletetion = true;
+                    }
                     self.deafLoop = null;
                 }
             }
