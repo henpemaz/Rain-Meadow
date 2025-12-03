@@ -253,6 +253,9 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
         RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
         RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
+        RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value = arenaSettingsInterface.enableCorpseGrab.Checked;
+        RainMeadow.rainMeadowOptions.EnableBombs.Value = arenaSettingsInterface.enableBombs.Checked;
+        RainMeadow.rainMeadowOptions.EnableBees.Value = arenaSettingsInterface.enableBees.Checked;
 
         slugcatAbilitiesInterface?.SaveAllInterfaceOptions();
     }

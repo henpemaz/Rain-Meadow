@@ -44,7 +44,7 @@ namespace RainMeadow.UI.Components
             wildlifeArray = new(menu, this, this, new(0, 255), menu.Translate("Wildlife:"), "WILDLIFE", 95, settingsWidth, 4, false, false);
 
             stealItemCheckBox = new CheckBox(menu, this, this, new Vector2(55f, 180f), 150f, menu.Translate("Allow Item Stealing:"), "ITEMSTEAL");
-            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Carrying:"), "PIGGY");
+            piggyBackCheckbox = new(menu, this, this, new(stealItemCheckBox.pos.x, stealItemCheckBox.pos.y - 38), 150f, menu.Translate("Allow Piggybacking:"), "PIGGY");
 
             allowMidGameJoinCheckbox = new CheckBox(menu, this, this, new(settingsWidth - 24, stealItemCheckBox.pos.y), 150, menu.Translate("Allow Mid-Game Join:"), "MIDGAMEJOIN");
 
@@ -61,10 +61,12 @@ namespace RainMeadow.UI.Components
             };
 
             weaponCollisionCheckBox = new(menu, this, this, new(settingsWidth - 24, piggyBackCheckbox.pos.y), 100, menu.Translate("Better Hitbox:"), "WEAPONCOLLISIONFIX");
+            enableCorpseGrab =  new(menu, this, this, new(settingsWidth - 24, countdownTimerTextBox.pos.y), 100, menu.Translate("Corpse grab"), "CORPSEGRAB");
+            enableBees = new(menu, this, this, new(settingsWidth - 24, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bees:"), "ENABLEBEES");
+            enableBombs = new(menu, this, this, new(countdownTimerLabel.pos.x, countdownTimerLabel.pos.y - 38), 100, menu.Translate("Allow Bombs:"), "ENABLEBOMBS");
 
-
-            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, countdownTimerTextBox.pos.y - 35), new Vector2(0, 20), false);
-            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, arenaGameModeLabel.pos.y - 6.5f), 175, gameModes) { description = menu.Translate("The game mode for this match") };
+            arenaGameModeLabel = new(menu, this, menu.Translate("Arena Game Mode:"), new Vector2(countdownTimerLabel.pos.x, enableBees.pos.y - 38), new Vector2(0, 20), false);
+            arenaGameModeComboBox = new OpComboBox2(new Configurable<string>(currentGameMode), new Vector2(55, enableBees.pos.y - 38), 175, gameModes) { description = menu.Translate("The game mode for this match") };
             arenaGameModeComboBox.greyedOut = !OnlineManager.lobby.isOwner;
             arenaGameModeComboBox.OnValueChanged += (config, value, lastValue) =>
             {
@@ -75,7 +77,7 @@ namespace RainMeadow.UI.Components
             countdownWrapper = new(tabWrapper, countdownTimerTextBox);
             gameModeWrapper = new(tabWrapper, arenaGameModeComboBox);
 
-            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox);
+            this.SafeAddSubobjects(tabWrapper, spearsHitCheckbox, evilAICheckBox, roomRepeatArray, rainTimerArray, wildlifeArray, countdownTimerLabel, arenaGameModeLabel, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox, enableBombs, enableBees, enableCorpseGrab);
 
         }
         public override void RemoveSprites()
@@ -130,6 +132,9 @@ namespace RainMeadow.UI.Components
                 if (id == "MIDGAMEJOIN") return arena.allowJoiningMidRound;
                 if (id == "WEAPONCOLLISIONFIX") return arena.weaponCollisionFix;
                 if (id == "PIGGY") return arena.piggyBack;
+                if (id == "ENABLEBOMBS") return arena.enableBombs;
+                if (id == "ENABLEBEES") return arena.enableBees;
+                if (id == "CORPSEGRAB") return arena.enableCorpseGrab;
 
             }
             return false;
@@ -156,9 +161,24 @@ namespace RainMeadow.UI.Components
                     arena.weaponCollisionFix = c;
                     return;
                 }
+                if (id == "ENABLEBOMBS")
+                {
+                    arena.enableBombs = c;
+                    return;
+                }
+                if (id == "ENABLEBEES")
+                {
+                    arena.enableBees = c;
+                    return;
+                }
                 if (id == "PIGGY")
                 {
                     arena.piggyBack = c;
+                    return;
+                }
+                if (id == "CORPSEGRAB")
+                {
+                    arena.enableCorpseGrab = c;
                     return;
                 }
             }
@@ -205,7 +225,7 @@ namespace RainMeadow.UI.Components
         public FSprite[] divSprites;
         public OpTextBox countdownTimerTextBox;
         public OpComboBox arenaGameModeComboBox;
-        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox;
+        public CheckBox spearsHitCheckbox, evilAICheckBox, stealItemCheckBox, allowMidGameJoinCheckbox, weaponCollisionCheckBox, piggyBackCheckbox, enableBombs, enableBees, enableCorpseGrab;
         public ProperlyAlignedMenuLabel countdownTimerLabel, arenaGameModeLabel;
 
         public MultipleChoiceArray roomRepeatArray, rainTimerArray, wildlifeArray;

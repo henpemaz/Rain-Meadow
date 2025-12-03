@@ -369,6 +369,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
             if (idString == "WEAPONCOLLISIONFIX")
                 return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
+            if (idString == "ENABLEBOMBSANDBEES")
+                return check ? Translate("Bee hives and scavenger bombs follow vanilla spawn behavior") : Translate("bee hives and scavenger bombs are disabled");
             if (idString == "PIGGY")
                 return check ? Translate("Players can carry each other") : Translate("Players cannot carry each other");
         }

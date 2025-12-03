@@ -2058,7 +2058,7 @@ public partial class RainMeadow
                     if (obj is Player pl)
                     {
                         if (pl.dead || pl.Stunned) {
-                            if (pl.dead & !arena.piggyBack)// no grabbing period
+                            if (pl.dead && !arena.enableCorpseGrab)// no grabbing period
                             {
                                 return false;                  
                             };
