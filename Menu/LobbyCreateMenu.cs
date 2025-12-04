@@ -17,6 +17,10 @@ public class LobbyCreateMenu : SmartMenu
     private OpComboBox2 visibilityDropDown;
     private OpTextBox lobbyLimitNumberTextBox;
     private int maxPlayerCount;
+    private OpCheckBox? lobbyPinnedCheckBox;
+    private Configurable<bool> pinned;
+    private OpCheckBox? lobbyAnniversaryGags;
+    private Configurable<bool> anniversaryGags;
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
@@ -91,6 +95,34 @@ public class LobbyCreateMenu : SmartMenu
         };
         new UIelementWrapper(this.tabWrapper, lobbyLimitNumberTextBox);
         where.y += 5;
+        where.x += 80;
+
+        if (MatchmakingManager.currentInstance.IsTrustedCommunity(OnlineManager.mePlayer.id))
+        {
+            where.x -= 160;
+            where.y -= 45;
+            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Pinned:"), where, new Vector2(400, 20f), false));
+            where.x += 80;
+            where.y -= 5;
+            lobbyPinnedCheckBox = new OpCheckBox(pinned = new Configurable<bool>(false), where);
+            new UIelementWrapper(this.tabWrapper, lobbyPinnedCheckBox);
+            where.y += 5;
+            where.x += 80;
+        }
+
+        if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
+        {
+            where.x -= 200;
+            where.y -= 45;
+            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Anniversary Gags:"), where, new Vector2(400, 20f), false));
+            where.x += 120;
+            where.y -= 5;
+            lobbyAnniversaryGags = new OpCheckBox(anniversaryGags = new Configurable<bool>(false), where);
+            new UIelementWrapper(this.tabWrapper, lobbyAnniversaryGags);
+            where.y += 5;
+            where.x += 80;
+        }
+
 
         // display version
         MenuLabel versionLabel = new MenuLabel(this, pages[0], $"{Utils.Translate("Rain Meadow Version:")} {RainMeadow.MeadowVersionStr}", new Vector2((1336f - manager.rainWorld.screenSize.x) / 2f + 20f, manager.rainWorld.screenSize.y - 768f), new Vector2(200f, 20f), false, null);
@@ -101,7 +133,26 @@ public class LobbyCreateMenu : SmartMenu
 
         UpdateModeDescription();
         CreateElementBindings();
+
+
+        MatchmakingManager.OnLobbyJoined += OnLobbyJoined;
     }
+
+    public void OnLobbyJoined(bool ok, string error = "")
+    {
+        if (!ok)
+        {
+            ShowErrorDialog(error);
+        }
+        else
+        {
+            if (anniversaryGags.Value)
+            {
+                OnlineManager.lobby.configurableBools.Add("MEADOW_ANNIVERSARY", true);
+            }
+        }
+    }
+
     public override void Init()
     {
         base.Init();

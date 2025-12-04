@@ -328,7 +328,7 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 310, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 280f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
             };
-            if (!RainMeadow.IsDev(OnlineManager.mePlayer.id))
+            if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
                 GeneralUIArrPlayerOptions.Skip(GeneralUIArrPlayerOptions.IndexOf(devOptions)).Take(3).Do(e => e.Hidden = true);
             }
