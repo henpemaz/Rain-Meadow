@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Menu.Remix.MixedUI.ValueTypes;
 
 namespace RainMeadow;
 
@@ -18,9 +19,7 @@ public class LobbyCreateMenu : SmartMenu
     private OpTextBox lobbyLimitNumberTextBox;
     private int maxPlayerCount;
     private OpCheckBox? lobbyPinnedCheckBox;
-    private Configurable<bool> pinned;
     private OpCheckBox? lobbyAnniversaryGags;
-    private Configurable<bool> anniversaryGags;
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
@@ -104,7 +103,7 @@ public class LobbyCreateMenu : SmartMenu
             mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Pinned:"), where, new Vector2(400, 20f), false));
             where.x += 80;
             where.y -= 5;
-            lobbyPinnedCheckBox = new OpCheckBox(pinned = new Configurable<bool>(false), where);
+            lobbyPinnedCheckBox = new OpCheckBox(new Configurable<bool>(false), where);
             new UIelementWrapper(this.tabWrapper, lobbyPinnedCheckBox);
             where.y += 5;
             where.x += 80;
@@ -117,7 +116,7 @@ public class LobbyCreateMenu : SmartMenu
             mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Anniversary Gags:"), where, new Vector2(400, 20f), false));
             where.x += 120;
             where.y -= 5;
-            lobbyAnniversaryGags = new OpCheckBox(anniversaryGags = new Configurable<bool>(false), where);
+            lobbyAnniversaryGags = new OpCheckBox(new Configurable<bool>(false), where);
             new UIelementWrapper(this.tabWrapper, lobbyAnniversaryGags);
             where.y += 5;
             where.x += 80;
@@ -146,11 +145,13 @@ public class LobbyCreateMenu : SmartMenu
         }
         else
         {
-            if (anniversaryGags.Value)
+            if (this.lobbyAnniversaryGags?.GetValueBool() ?? false)
             {
                 OnlineManager.lobby.configurableBools.Add("MEADOW_ANNIVERSARY", true);
             }
         }
+
+        MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
     }
 
     public override void Init()
@@ -197,7 +198,7 @@ public class LobbyCreateMenu : SmartMenu
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
         string? password = passwordInputBox.value.IsNullOrWhiteSpace() ? null : passwordInputBox.value;
-        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount);
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
     }
 
     private void ShowLoadingDialog(string text)
@@ -231,5 +232,11 @@ public class LobbyCreateMenu : SmartMenu
     {
         base.Singal(sender, message);
         if (message == "HIDE_DIALOG") HideDialog();
+    }
+
+    public override void ShutDownProcess()
+    {
+        base.ShutDownProcess();
+        MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
     }
 }

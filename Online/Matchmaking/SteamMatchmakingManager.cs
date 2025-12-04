@@ -17,7 +17,10 @@ namespace RainMeadow
 
             if (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].IsTrustedCommunity(new SteamMatchmakingManager.SteamPlayerId(SteamMatchmaking.GetLobbyOwner(iD))))
             {
-                bool.TryParse(SteamMatchmaking.GetLobbyData(iD, MatchmakingManager.PINNED_KEY), out pinned);
+                if (bool.TryParse(SteamMatchmaking.GetLobbyData(iD, MatchmakingManager.PINNED_KEY), out pinned))
+                {
+                    RainMeadow.Debug("Successfully read pinned lobby data");
+                }
             }
 
         }
@@ -276,7 +279,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
-                    SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned.ToString());
+                    SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned? "true" : "false");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());

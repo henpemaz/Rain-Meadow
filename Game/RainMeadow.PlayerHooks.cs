@@ -1210,7 +1210,7 @@ public partial class RainMeadow
         public int timeSinceShelterWakeup;
 
 
-        public bool groundedSincelastFlight;
+        public bool flightlocked;
         public int capeFlyCounter;
     }
     public int afkSleepRequiredTime = 1200;
@@ -1366,28 +1366,28 @@ public partial class RainMeadow
                 OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
         {
 
-            if (self.abstractCreature.GetOnlineCreature() is OnlineCreature oc)
+            if (self.IsLocal())
             {
-                if (oc.GetData<SlugcatCustomization>().wearingCape && CapeManager.HasCape(oc.owner.id).HasValue && !self.isNPC)
+                if (CapeManager.HasCape(OnlineManager.mePlayer.id).HasValue && !self.isNPC)
                 {
                     var extras = playerExtras.GetOrCreateValue(self);
                     if (!self.Consious)
                     {
                         extras.capeFlyCounter = 0;
-                        extras.groundedSincelastFlight = false;
+                        extras.flightlocked = true;
                     }
 
                     IntVector2 zero = new IntVector2(0, 0);
-                    if ((self.lowerBodyFramesOnGround > 0) || (self.canJump > 0) || (self.canCorridorJump > 0))
+                    if (self.canJump > 0 || self.canWallJump > 0 || self.canCorridorJump > 0)
                     {
-                        extras.groundedSincelastFlight = true;
+                        extras.flightlocked = false;
                     }
                     else
                     {
-                        if (self.input[0].pckp && self.input[0].jmp && !self.input[1].jmp && extras.groundedSincelastFlight)
+                        if (self.input[0].pckp && self.input[0].jmp && !self.input[1].jmp && !extras.flightlocked)
                         {
                             extras.capeFlyCounter = 100;
-                            extras.groundedSincelastFlight = false;
+                            extras.flightlocked = true;
                         }
                     }
 
