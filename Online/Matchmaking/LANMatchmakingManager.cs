@@ -190,7 +190,7 @@ namespace RainMeadow {
         }
 
         public int maxplayercount = 0;
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount) {
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false) {
             maxplayercount = maxPlayerCount ?? 0;
             OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer, password);
             MatchmakingManager.OnLobbyJoinedEvent(true, "");

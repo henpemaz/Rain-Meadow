@@ -100,6 +100,26 @@
 				"h": 20
 			}
 		}
+		"Meadow_Menu_Pin.png": {
+			"frame": {
+				"x": 4,
+				"y": 23,
+				"w": 20,
+				"h": 20
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 20,
+				"h": 20
+			},
+			"sourceSize": {
+				"w": 20,
+				"h": 20
+			}
+		}
 	},
 	"meta": {
 		"app": "http://www.codeandweb.com/texturepacker",

@@ -3,6 +3,8 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace RainMeadow
 {
@@ -11,6 +13,13 @@ namespace RainMeadow
         public SteamLobbyInfo(CSteamID id, string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "") : 
             base(name, mode, playerCount, hasPassword, maxPlayerCount, highImpactMods, bannedMods) {
             iD = id;
+
+
+            if (MatchmakingManager.instances[MatchmakingManager.MatchMakingDomain.Steam].IsTrustedCommunity(new SteamMatchmakingManager.SteamPlayerId(SteamMatchmaking.GetLobbyOwner(iD))))
+            {
+                bool.TryParse(SteamMatchmaking.GetLobbyData(iD, MatchmakingManager.PINNED_KEY), out pinned);
+            }
+
         }
         public override string GetLobbyJoinCode(string? password = null)
         {
@@ -144,9 +153,68 @@ namespace RainMeadow
             }
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount)
+        private static HashSet<string> devSteamIdHashes = new HashSet<string>()
+        {
+            "AOOTy8PrB9DWbAxExg9BbhiLBbRqAgmsRLoAHnIGXOU=",
+            "dlWUAGjYBtAdypcmLwbDnZ73akq624OiSNIQ//ecsms=",
+            "ApNKog4MYwp7nfkyC6lIPtD+/sBJfBArnSPiy6yo7VU=",
+            "YIczH+KncjxdHf3MrnhumDUJ1QVAyBsy9ME6k0bZyPc=",
+            "P5S1c63jYWl3Ce73H0k99BeIMSAmxa/BbvkEiyTs9mM=",
+            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg=",
+            "ATe23LFNxITCICTkw+2Bs67cNZ5N/nRBMfziGhIn11s=",
+            "oz6hibRdEiJow7IWhn+T7Ij+agHeNqmxyHO34YMOla4=",
+            "E5mtN6Hh2vyAuOgBZ5iiTH36j2pAJ8urOgEZKZsciSo=",
+            "TA9uZQ7Z7MkVUm7D32EB0gpuQBrhE9cAZWB2UXBuqtg=",
+            "tXLLHFXRXKzi285CSDIko+gmRrLChLb3k3K1pV0GUq4=",
+            "AkQKwH5S6zj//MRsnrjaTp2HGe7Ln9ZB057MP5xLk2M=",
+            "tMoAaCdZejjuWCF0MsXcOUr+D4eok0b2c46B8PTM0kg=",
+            "095dLJgw4Nc1zbdUIdxL7d7nmyKxcj7hekNx8EQlXGY=",
+            "GpdPaLhUEEkwjCbkSLjXN7lZy0iXa5YlFErMi9V+hXI=",
+            "PwcZS6t8kETyBdrPiR2ple35lpLMfEw6TP/VyHVD4z4=",
+            "wZ2+Phw6EOBLv9bZKdSGV+3lWhNxiT2KHwCluqhLdzo=",
+            "Hr8BfOHHTBRGgSmQoj4qQdlHqaY6d4DHFbF7wCNFI1U=",
+            "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
+            "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=",
+            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ=",
+            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg="
+        };
+
+        public override bool IsDev(MeadowPlayerId player)
+        {
+            if (player is SteamPlayerId steamid)
+            {
+                ulong steamID = steamid.oid.GetSteamID64();
+                SHA256 Sha = SHA256.Create();
+                var steamIDHash = Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
+
+                if (devSteamIdHashes.Contains(steamIDHash))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public override bool IsTrustedCommunity(MeadowPlayerId player)
+        {
+            if (player is SteamPlayerId steamid)
+            {
+                ulong steamID = steamid.oid.GetSteamID64();
+                SHA256 Sha = SHA256.Create();
+                var steamIDHash = Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
+
+                if (devSteamIdHashes.Contains(steamIDHash))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false)
         {
             creatingWithMode = gameMode;
+            creatingPinned = pinned;
             lobbyPassword = password;
             MAX_LOBBY = (int)maxPlayerCount;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
@@ -191,6 +259,7 @@ namespace RainMeadow
         }
 
         private static string creatingWithMode;
+        private static bool creatingPinned;
         private static string? lobbyPassword;
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
@@ -207,6 +276,7 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetRequiredMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
+                    SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned.ToString());
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
                     OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());

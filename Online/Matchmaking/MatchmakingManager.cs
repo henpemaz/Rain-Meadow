@@ -46,6 +46,7 @@ namespace RainMeadow
         public static string MODE_KEY = "mode";
         public static string MODS_KEY = "mods";
         public static string BANNED_MODS_KEY = "banned_mods";
+        public static string PINNED_KEY = "pinned";
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
 
@@ -88,7 +89,7 @@ namespace RainMeadow
         public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);
@@ -211,5 +212,8 @@ namespace RainMeadow
 
         public abstract string GetLobbyID();
         public abstract void OpenInvitationOverlay();
+
+        public virtual bool IsDev(MeadowPlayerId player) => false;
+        public virtual bool IsTrustedCommunity(MeadowPlayerId player) => false;
     }
 }

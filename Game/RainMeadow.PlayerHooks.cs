@@ -1355,7 +1355,8 @@ public partial class RainMeadow
             self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && 
             (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
                 self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
-                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))))
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
+                OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
         {
 
             if (self.abstractCreature.GetOnlineCreature() is OnlineCreature oc)
@@ -1366,13 +1367,12 @@ public partial class RainMeadow
                     if (!self.Consious)
                     {
                         extras.capeFlyCounter = 0;
-                        extras.groundedSincelastFlight = true;
+                        extras.groundedSincelastFlight = false;
                     }
 
                     IntVector2 zero = new IntVector2(0, 0);
-                    if ((self.canWallJump > 0) || (self.lowerBodyFramesOnGround > 0))
+                    if ((self.lowerBodyFramesOnGround > 0) || (self.canJump > 0) || (self.canCorridorJump > 0))
                     {
-                        extras.capeFlyCounter = 0;
                         extras.groundedSincelastFlight = true;
                     }
                     else
@@ -1380,7 +1380,7 @@ public partial class RainMeadow
                         if (self.input[0].pckp && self.input[0].jmp && !self.input[1].jmp && extras.groundedSincelastFlight)
                         {
                             extras.capeFlyCounter = 100;
-                            extras.groundedSincelastFlight = true;
+                            extras.groundedSincelastFlight = false;
                         }
                     }
 
@@ -1388,13 +1388,22 @@ public partial class RainMeadow
                     {
                         extras.capeFlyCounter--;
                         IntVector2 flyDir = new IntVector2(self.input[0].x, self.input[0].y);
-                        if (flyDir.x == 0 && flyDir.y == 0)
+                        Player.BodyModeIndex[] bannedBodyModes = [
+                            Player.BodyModeIndex.CorridorClimb,
+                            Player.BodyModeIndex.ClimbingOnBeam,
+                            Player.BodyModeIndex.WallClimb,
+                            Player.BodyModeIndex.Swimming,
+                            Player.BodyModeIndex.ClimbIntoShortCut
+                        ];
+
+                        
+                        if ((flyDir.x == 0 && flyDir.y == 0) || bannedBodyModes.Contains(self.bodyMode))
                         {
                             extras.capeFlyCounter = 0;
                         }
                         else
                         {
-                            self.bodyMode = Player.BodyModeIndex.Default;
+                            self.animation = Player.AnimationIndex.None;
                             self.mainBodyChunk.vel *= 0.8f;
                             self.mainBodyChunk.vel += flyDir.ToVector2().normalized*2f;
                             self.airInLungs = 1f;
