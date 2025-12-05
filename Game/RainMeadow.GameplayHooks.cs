@@ -192,17 +192,17 @@ namespace RainMeadow
 
         private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
         {
-            orig(self, eu);
             if (OnlineManager.lobby != null)
             {
-                if (self.player != null && self.player.IsLocal() && self.player.dead && self.deafLoop != null)
-                {
-                    if (self.deafLoop.emitter != null) {
-                        self.deafLoop.emitter.slatedForDeletetion = true;
-                    }
-                    self.deafLoop = null;
+                if (!self.player.IsLocal()) {
+                    self.slatedForDeletetion = true
+                    return;
+                }
+                if (self.player.abstractCreature.state.dead || self.player.State.dead || self.player == null) {
+                    self.slatedForDeletetion = true;
                 }
             }
+            orig(self, eu);
 
         }
 
