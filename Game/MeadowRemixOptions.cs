@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
 namespace RainMeadow;
 
 public class RainMeadowOptions : OptionInterface
@@ -77,6 +76,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> EnableAchievementsOnline;
 
     public readonly Configurable<IntroRoll> PickedIntroRoll;
+    public readonly Configurable<string> PickedIntroMusic;
 
     public enum IntroRoll
     {
@@ -170,6 +170,8 @@ public class RainMeadowOptions : OptionInterface
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
+        PickedIntroMusic = config.Bind("PickedIntroMusic", "Woodback"); // Happy One Year, Meadow
+
         LanUserName = config.Bind("LanUserName", "");
         UdpTimeout = config.Bind("UdpTimeout", 3000);
         UdpHeartbeat = config.Bind("UdpHeartbeat", 500);
@@ -291,6 +293,7 @@ public class RainMeadowOptions : OptionInterface
             meadowTab.AddItems(OnlineMeadowSettings);
 
             OpComboBox2 introroll;
+            OpComboBox2 music;
             OpLabel downpourWarning;
             OpLabel watcherWarning;
 
@@ -316,10 +319,13 @@ public class RainMeadowOptions : OptionInterface
                 new OpLabel(10, 420, Translate("Playtesting Gift")),
                 new OpCheckBox(WearingCape, new Vector2(10, 390f)),
 
-                new OpLabel(10, 370, Translate("Introroll")),
+            new OpLabel(10, 370, Translate("Introroll")),
                introroll = new OpComboBox2(PickedIntroRoll, new Vector2(10, 340f), 160f, OpResourceSelector.GetEnumNames(null, typeof(IntroRoll)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
                downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
+
+              new OpLabel(10, 310, Translate("IntroRoll Music")),
+              music = new OpComboBox2(PickedIntroMusic, new Vector2(10, 280f), 160f,  MeadowMusicRemix.ConvertSongs()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
             };
             if (!RainMeadow.IsDev(OnlineManager.mePlayer.id))
