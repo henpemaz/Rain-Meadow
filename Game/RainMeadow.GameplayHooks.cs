@@ -195,7 +195,7 @@ namespace RainMeadow
             if (OnlineManager.lobby != null)
             {
                 if (!self.player.IsLocal()) {
-                    self.slatedForDeletetion = true
+                    self.slatedForDeletetion = true;
                     return;
                 }
                 if (self.player.abstractCreature.state.dead || self.player.State.dead || self.player == null) {
