@@ -64,6 +64,54 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+            On.RainWorldGame.GetNewID += RainWorldGame_GetNewID;
+            On.RainWorldGame.GetNewID_int += RainWorldGame_GetNewID_int;
+        }
+
+        public int RequestNewID(RainWorldGame game)
+        {
+            if (OnlineManager.lobby?.overworld is OverworldSession overworldSession)
+            {
+                if (!overworldSession.isActive)
+                {
+                    RainMeadow.Error("new entity id request when overworldsession wasn't active");
+                }
+                else
+                {
+                    
+                    if (!overworldSession.entityIDReservations.Any())
+                    {
+                        overworldSession.ReserveEntityIDs();
+                    }
+
+
+                    OverworldSession.IDReservation reservation = overworldSession.entityIDReservations.First();
+                    reservation.id += 1;
+                    if (reservation.id == reservation.end) 
+                    {
+                        overworldSession.entityIDReservations.Remove(reservation);
+                    }
+
+                    overworldSession.ReserveEntityIDsIfNecessary();
+                    game.nextIssuedId = reservation.id - 1;
+                    return reservation.id - 1;
+                }
+            }
+
+            game.nextIssuedId++;
+            return game.nextIssuedId;
+        }
+
+        private EntityID RainWorldGame_GetNewID(On.RainWorldGame.orig_GetNewID orig, RainWorldGame self)
+        {
+            if (OnlineManager.lobby != null) return new EntityID(-1, RequestNewID(self));
+            return orig(self);
+        }
+
+        private EntityID RainWorldGame_GetNewID_int(On.RainWorldGame.orig_GetNewID_int orig, RainWorldGame self, int spawner)
+        {
+            if (OnlineManager.lobby != null) return new EntityID(spawner, RequestNewID(self));
+            return orig(self, spawner);
         }
 
         private void GlobalRain_InitDeathRain(On.GlobalRain.orig_InitDeathRain orig, GlobalRain self)
@@ -97,7 +145,16 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null)
                     {
-                        if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
+                        if (OnlineManager.lobby.overworld.isActive) 
+                        {
+                            OnlineManager.lobby.overworld.NotNeeded();
+                            while (OnlineManager.lobby.overworld.isAvailable)
+                            {
+                                OnlineManager.ForceLoadUpdate();
+                            }        
+
+                            OnlineManager.lobby.overworld.Deactivate();
+                        }
                         
                         OnlineManager.lobby.overworld.BindOverworld(self);
                         OnlineManager.lobby.overworld.Needed();
@@ -529,7 +586,6 @@ namespace RainMeadow
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 
 
-                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
                 OnlineManager.lobby.overworld.NotNeeded();
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
@@ -538,6 +594,8 @@ namespace RainMeadow
                         OnlineManager.ForceLoadUpdate();
                     }
                 }
+
+                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
             }
         }
 
