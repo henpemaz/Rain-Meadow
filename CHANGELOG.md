@@ -1,7 +1,7 @@
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
-- Piggyback toggle now also controls your ability to pick up dead / stunned slugcats
+- Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
 
 ## Story:
