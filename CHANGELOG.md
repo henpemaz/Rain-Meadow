@@ -4,6 +4,8 @@
 - Piggyback toggle now also controls your ability to pick up dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
 
+## Story:
+- Fixed an issue where custom karma gates wouldn't open 
 ## General
 - Fixes infinite tinnitus
 # Release 1.9.0
