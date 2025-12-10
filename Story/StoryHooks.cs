@@ -1996,7 +1996,7 @@ namespace RainMeadow
                     }
                     return false;
                 });
-                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
                 c.MarkLabel(skip);
             }
