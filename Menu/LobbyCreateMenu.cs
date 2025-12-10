@@ -1,13 +1,14 @@
 // HACK
+using BepInEx;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components;
+using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RWCustom;
 using UnityEngine;
-using BepInEx;
 
 namespace RainMeadow;
 
@@ -19,7 +20,7 @@ public class LobbyCreateMenu : SmartMenu
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
-    private OpTextBox passwordInputBox;
+    private OpTypeBox passwordInputBox;
     private MenuDialogBox? popupDialog;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
@@ -63,7 +64,7 @@ public class LobbyCreateMenu : SmartMenu
             new ProperlyAlignedMenuLabel(this, mainPage, Translate("Password:"), where, new Vector2(200, 20f), false)
         );
         where.x += 160;
-        passwordInputBox = new OpTextBox(new Configurable<string>(""), where, 160f)
+        passwordInputBox = new OpTypeBox(new Configurable<string>(""), where, 160f)
         {
             accept = OpTextBox.Accept.StringASCII,
             allowSpace = true,
