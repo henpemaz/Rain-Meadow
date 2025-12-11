@@ -5,9 +5,10 @@
 - Add scavenger bomb, bee hive, & corpse grab toggles
 
 ## Story:
-- Fixed an issue where custom karma gates wouldn't open 
+- Fixed an issue where custom karma gates wouldn't open
 ## General
 - Fixes infinite tinnitus
+- Adds copy/paste functionality to password & IP text boxes
 # Release 1.9.0
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
