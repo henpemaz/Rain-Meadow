@@ -1,6 +1,5 @@
 ﻿// HACK thrown together in a panic
 
-using Music;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
@@ -9,10 +8,8 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Instrumentation;
 using UnityEngine;
 using static RainMeadow.RainMeadowModManager;
-using System.IO;
 
 
 namespace RainMeadow
@@ -207,18 +204,13 @@ namespace RainMeadow
             }   
             
             MatchmakingManager.currentInstance.RequestLobbyList();
-        if (manager.musicPlayer != null) {
-            if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value != MeadowMusicRemix.MeadowLobbyNoSongOverride) {
-                if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value == MeadowMusicRemix.MeadowLobbyDefaultSongKey)
+            if (manager.musicPlayer != null)
+            {
+                if (RainMeadow.rainMeadowOptions.GetLobbyMusic(out var song) && !string.IsNullOrEmpty(song))
                 {
-                    manager.musicPlayer.MenuRequestsSong(MeadowMusicRemix.MeadowLobbyDefaultSongValue, 1, 0);
-                } 
-                else {
-                  manager.musicPlayer.MenuRequestsSong(RainMeadow.rainMeadowOptions.PickedIntroMusic.Value, 1, 0);
-                    }
+                    manager.musicPlayer.MenuRequestsSong(song, 1, 0);
                 }
             }
-        
         }
         public override void Update()
         {

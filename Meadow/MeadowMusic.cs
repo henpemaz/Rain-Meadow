@@ -7,65 +7,10 @@ using System;
 using UnityEngine;
 using System.Threading.Tasks;
 using AssetBundles;
-using Menu.Remix.MixedUI;
 #pragma warning disable CS4014 // "Because this call is not awaited, execution of the current method continues before the call is completed" whatever boomer i want that
 
 namespace RainMeadow
 {
-    public static class MeadowMusicRemix {
-
-    public static string MeadowLobbyDefaultSongKey = "_Default";
-    public static string MeadowLobbyDefaultSongValue = "Woodback";
-    public static string MeadowLobbyNoSongOverride = "_None";
-    public static List<ListItem> ConvertSongs() 
-    {
-        ListItem noneOption = new ListItem {
-            displayName = MeadowLobbyNoSongOverride,
-            name = MeadowLobbyNoSongOverride
-        };
-            ListItem defaultOption = new ListItem {
-            displayName = MeadowLobbyDefaultSongKey,
-            name = MeadowLobbyDefaultSongKey
-        };
-        List<ListItem> songNameListItems = GetSongsFromPath()
-        .Select(songName => new ListItem 
-        { 
-            displayName = songName,
-            name = songName, 
-        })
-        .Select(li => 
-        { 
-            return li; 
-        })
-        .ToList();
-        songNameListItems.Add(noneOption);
-        songNameListItems.Add(defaultOption);
-        return songNameListItems;
-    }
-    
-    public static List<string> GetSongsFromPath()
-{
-    string[] rawDirData = AssetManager.ListDirectory("Music/Songs");
-    List<string> allOggFiles = new List<string>();
-
-    for (int j = 0; j < rawDirData.Length; j++)
-    {
-        string fileName = rawDirData[j];
-        
-        if (fileName.EndsWith(".ogg", StringComparison.OrdinalIgnoreCase))
-        {
-            string[] nameParts = fileName.Split(Path.DirectorySeparatorChar);
-            string cleanFileNameWithExtension = nameParts[nameParts.Length - 1]; 
-            
-            int extensionIndex = cleanFileNameWithExtension.LastIndexOf('.');
-            
-            string cleanFileName = cleanFileNameWithExtension.Substring(0, extensionIndex); 
-            allOggFiles.Add(cleanFileName);
-        }
-    }
-    return allOggFiles;
-}
-    }
     public partial class MeadowMusic
     {
         public static float defaultMusicVolume = 0.3f; //0.3f; //0.27, going to change vol of songs // maybe this could be a slider somewhere
