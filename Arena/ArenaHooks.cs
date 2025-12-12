@@ -531,9 +531,51 @@ namespace RainMeadow
         {
             if (isArenaMode(out var arena))
             {
+
+                        List<ArenaSitting.ArenaPlayer> list = new List<ArenaSitting.ArenaPlayer>();
+                        for (int i = 0; i < self.players.Count; i++)
+                        {
+                            ArenaSitting.ArenaPlayer arenaPlayer = self.players[i];
+                            arenaPlayer.Reset();
+                            arenaPlayer.SortAllKills();
+                            bool flag = false;
+                            for (int j = 0; j < list.Count; j++)
+                            {
+                                if (self.PlayerSittingResultSort(arenaPlayer, list[j]))
+                                {
+                                    list.Insert(j, arenaPlayer);
+                                    flag = true;
+                                    break;
+                                }
+                            }
+
+                            if (!flag)
+                            {
+                                list.Add(arenaPlayer);
+                            }
+                        }
+
+                        if (list.Count > 1) {
+                        if (list[0].wins > list[1].wins)
+                            {
+                            list[0].winner = true;
+                            } 
+                            else if (list[0].allKills.Count > list[1].allKills.Count)
+                            {
+                                list[0].winner = true;
+                            }
+                            else if (list[0].deaths < list[1].deaths)
+                            {
+                                list[0].winner = true;
+                            }
+                            else if (list[0].score > list[1].score)
+                            {
+                                list[0].winner = true;
+                            }
+                        }
+
                 if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
                 {
-                    ArenaSitting.ArenaPlayer winningPlayer = null;
                     int winDetermination = 0;
                     foreach (var player in self.players)
                     {
@@ -553,13 +595,12 @@ namespace RainMeadow
                         }
                     }
                 }
-                var list = orig(self);
-                foreach (var e in list)
-                {
-                    RainMeadow.Debug($"{e.playerNumber} - {e.wins} - {e.winner}");
-                }
+                return list;
+
+            } 
+            else  {
+                return orig(self);
             }
-            return orig(self);
 
         }
 
