@@ -13,11 +13,19 @@ using Menu.Remix.MixedUI;
 namespace RainMeadow
 {
     public static class MeadowMusicRemix {
+
+    public static string MeadowLobbyDefaultSongKey = "_Default";
+    public static string MeadowLobbyDefaultSongValue = "Woodback";
+    public static string MeadowLobbyNoSongOverride = "_None";
     public static List<ListItem> ConvertSongs() 
     {
         ListItem noneOption = new ListItem {
-            displayName = "None",
-            name = "None"
+            displayName = MeadowLobbyNoSongOverride,
+            name = MeadowLobbyNoSongOverride
+        };
+            ListItem defaultOption = new ListItem {
+            displayName = MeadowLobbyDefaultSongKey,
+            name = MeadowLobbyDefaultSongKey
         };
         List<ListItem> songNameListItems = GetSongsFromPath()
         .Select(songName => new ListItem 
@@ -31,6 +39,7 @@ namespace RainMeadow
         })
         .ToList();
         songNameListItems.Add(noneOption);
+        songNameListItems.Add(defaultOption);
         return songNameListItems;
     }
     

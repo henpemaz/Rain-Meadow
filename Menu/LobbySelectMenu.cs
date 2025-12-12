@@ -208,8 +208,14 @@ namespace RainMeadow
             
             MatchmakingManager.currentInstance.RequestLobbyList();
         if (manager.musicPlayer != null) {
-            if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value != "None") {
+            if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value != MeadowMusicRemix.MeadowLobbyNoSongOverride) {
+                if (RainMeadow.rainMeadowOptions.PickedIntroMusic.Value == MeadowMusicRemix.MeadowLobbyDefaultSongKey)
+                {
+                    manager.musicPlayer.MenuRequestsSong(MeadowMusicRemix.MeadowLobbyDefaultSongValue, 1, 0);
+                } 
+                else {
                   manager.musicPlayer.MenuRequestsSong(RainMeadow.rainMeadowOptions.PickedIntroMusic.Value, 1, 0);
+                    }
                 }
             }
         

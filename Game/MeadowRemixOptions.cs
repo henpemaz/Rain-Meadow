@@ -162,7 +162,7 @@ public class RainMeadowOptions : OptionInterface
 
 
         PickedIntroRoll = config.Bind("PickedIntroRoll", IntroRoll.Meadow);
-        PickedIntroMusic = config.Bind("PickedIntroMusic", "Woodback"); // Happy One Year, Meadow
+        PickedIntroMusic = config.Bind("MeadowLobbyMusic", MeadowMusicRemix.MeadowLobbyDefaultSongValue); // Happy One Year, Meadow
 
         LanUserName = config.Bind("LanUserName", "");
         UdpTimeout = config.Bind("UdpTimeout", 3000);
@@ -316,7 +316,7 @@ public class RainMeadowOptions : OptionInterface
                downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
-              new OpLabel(10, 310, Translate("IntroRoll Music")),
+              new OpLabel(10, 310, Translate("Lobby Music")),
               music = new OpComboBox2(PickedIntroMusic, new Vector2(10, 280f), 160f,  MeadowMusicRemix.ConvertSongs()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
 
             };
