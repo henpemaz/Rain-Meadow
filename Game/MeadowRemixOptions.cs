@@ -507,22 +507,26 @@ public class RainMeadowOptions : OptionInterface
 
     private static List<ListItem> SongsItemList()
     {
+        int i = -1;
         return
         [
             new ListItem
             {
                 displayName = Translate("Default"),
-                name = "default"
+                name = "default",
+                value = i++
             },
             new ListItem
             {
                 displayName = Translate("None"),
-                name = "none"
+                name = "none",
+                value = i++
             },
             .. GetSongNames().Select(songName => new ListItem
             {
                 displayName = songName,
                 name = songName,
+                value = i++
             }),
         ];
     }
