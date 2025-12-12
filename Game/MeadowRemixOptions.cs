@@ -10,6 +10,8 @@ namespace RainMeadow;
 
 public class RainMeadowOptions : OptionInterface
 {
+    public readonly Configurable<int> SteamSubscriberAgreementAcknowledged;
+
     public readonly Configurable<KeyCode> FriendsListKey;
     public readonly Configurable<bool> ShowFriends;
     public readonly Configurable<bool> SlugcatCustomToggle;
@@ -107,6 +109,8 @@ public class RainMeadowOptions : OptionInterface
 
     public RainMeadowOptions(global::RainMeadow.RainMeadow instance)
     {
+        SteamSubscriberAgreementAcknowledged = config.Bind("SteamSubscriberAgreementAcknowledged", 0);
+
         FriendsListKey = config.Bind("OpenMenuKey", KeyCode.J);
         ShowFriends = config.Bind("ShowFriends", false);
         SlugcatCustomToggle = config.Bind("SlugToggle", false);
@@ -124,7 +128,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
 
-        ProfanityFilter = config.Bind("ProfanityFilter", false);
+        ProfanityFilter = config.Bind("ProfanityFilter", true);
 
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
