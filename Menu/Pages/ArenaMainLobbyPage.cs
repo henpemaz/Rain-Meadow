@@ -247,17 +247,20 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         if (settingsPage == slugcatAbilitiesInterface.watcherSettingsTab)
             BindWatcherSettingsPage(isHidden);
     }
-    public void SaveInterfaceOptions()
+    public void SaveInterfaceOptions(bool saveOwnerOptions)
     {
-        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
-        RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
-        RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
-        RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
-        RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value = arenaSettingsInterface.enableCorpseGrab.Checked;
-        RainMeadow.rainMeadowOptions.EnableBombs.Value = arenaSettingsInterface.enableBombs.Checked;
-        RainMeadow.rainMeadowOptions.EnableBees.Value = arenaSettingsInterface.enableBees.Checked;
+        if (saveOwnerOptions)
+        {
+            RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
+            RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
+            RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
+            RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value = arenaSettingsInterface.enableCorpseGrab.Checked;
+            RainMeadow.rainMeadowOptions.EnableBombs.Value = arenaSettingsInterface.enableBombs.Checked;
+            RainMeadow.rainMeadowOptions.EnableBees.Value = arenaSettingsInterface.enableBees.Checked;
+        }
 
-        slugcatAbilitiesInterface?.SaveAllInterfaceOptions();
+        slugcatAbilitiesInterface?.SaveAllInterfaceOptions(saveOwnerOptions);
     }
     public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
     {

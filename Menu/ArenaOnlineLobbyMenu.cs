@@ -261,13 +261,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out _)) Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
-        if (OnlineManager.lobby?.isOwner == true)
-        {
+
+        bool owner = OnlineManager.lobby?.isOwner == true;
+        if (owner) 
             GetArenaSetup.SaveToFile();
-            arenaMainLobbyPage.SaveInterfaceOptions();
-            RainMeadow.rainMeadowOptions._SaveConfigFile();
-        }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
+
+        arenaMainLobbyPage.SaveInterfaceOptions(owner);
+        RainMeadow.rainMeadowOptions._SaveConfigFile();
+
         base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
