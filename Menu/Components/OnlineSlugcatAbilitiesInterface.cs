@@ -52,10 +52,14 @@ namespace RainMeadow.UI.Components
                 textbox.valueFloat = (float)obj;
             else textbox.value = (string)obj;
         }
-        public void SaveAllInterfaceOptions()
+        public void SaveAllInterfaceOptions(bool isOwner)
         {
             foreach (SettingsPage settings in settingSignals.Values)
-                settings.SaveInterfaceOptions();
+            {
+                if (isOwner)
+                    settings.SaveInterfaceOptions();
+                else settings.SaveInterfaceClientOptions();
+            }
         }
         public void CallForSync() //call this after ctor if needed for sync at start
         {
@@ -341,6 +345,10 @@ namespace RainMeadow.UI.Components
                 RainMeadow.rainMeadowOptions.AmoebaControl.Value = amoebaControlCheckbox.GetValueBool();
 
             }
+            public override void SaveInterfaceClientOptions()
+            {
+                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
+            }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
             {
                 if (backButton == null)
@@ -538,6 +546,10 @@ namespace RainMeadow.UI.Components
 
             }
             public virtual void SaveInterfaceOptions()
+            {
+
+            }
+            public virtual void SaveInterfaceClientOptions()
             {
 
             }

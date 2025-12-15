@@ -3,6 +3,7 @@
 - Fixes Amoeba controls not listening to your pointed direction
 - Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
+- Fixed watcher cosmetic option not saving for clients
 
 ## Story:
 - Fixed an issue where custom karma gates wouldn't open
