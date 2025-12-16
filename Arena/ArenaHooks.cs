@@ -143,6 +143,14 @@ namespace RainMeadow
             IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
+            new Hook(typeof(Player).GetProperty("maxGodTimer").GetGetMethod(), this.SetGodTimer);
+        }
+
+        private int SetGodTimer(Func<Player, int> orig, Player self) {
+        if (isArenaMode(out var arena)) {
+           return arena.saintAscendancdTimer * 40;
+          }
+          return orig(self);
         }
 
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
@@ -1328,18 +1336,6 @@ namespace RainMeadow
             }
         }
 
-        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
-        {
-
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
-                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-
-        }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
         {
