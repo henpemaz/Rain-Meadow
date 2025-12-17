@@ -143,6 +143,18 @@ namespace RainMeadow
             IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
+            On.Player.ctor += Player_ctor2;
+        }
+
+        private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
+        
+        {
+            orig(self, creature, world);
+            if (isArenaMode(out var arena))
+            {
+                self.godTimer = arena.arenaSaintAscendanceTimer * 40;
+                self.maxGodTime = arena.arenaSaintAscendanceTimer * 40; 
+            }
         }
 
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
