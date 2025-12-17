@@ -99,8 +99,6 @@ namespace RainMeadow
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
 
-
-            On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.MoreSlugcats.SingularityBomb.Update += SingularityBomb_Update;
@@ -1338,19 +1336,6 @@ namespace RainMeadow
             {
                 return orig(self, addToAliveTime, dontCountSandboxLosers);
             }
-        }
-
-        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
-        {
-
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
-                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
