@@ -196,6 +196,12 @@ public partial class RainMeadow
         {
             return false;
         }
+
+        if (isArenaMode(out var arena) && arena.voidMasterEnabled)
+        {
+            return true;
+        }
+
         return orig(self);
     }
     private void Player_ToggleCamo(On.Player.orig_ToggleCamo orig, Player self)
@@ -409,7 +415,7 @@ public partial class RainMeadow
             ILLabel label = null;
             c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
             c.Emit(OpCodes.Ldarg_0);
-            c.Emit(OpCodes.Ldloc, 3);
+            c.Emit(OpCodes.Ldloc, 4);
             c.EmitDelegate(delegate (Player self, int i)
             {
                 VoidSpawn spawn = self.room.voidSpawns[i];
