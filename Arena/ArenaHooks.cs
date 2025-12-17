@@ -184,11 +184,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (!self.IsLocal() || self.rippleLevel < 2) return;
-            //if (self.room.voidSpawns.Any(x => x.IsLocal()))
-            //{
-
-            //}
+            if (!self.IsLocal()) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
 
