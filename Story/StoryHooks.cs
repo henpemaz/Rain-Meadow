@@ -1994,6 +1994,8 @@ namespace RainMeadow
                         story.storyClientData.readyForTransition = true;
                         return true;
                     }
+					if (OnlineManager.lobby.gameMode != null) return true; // meadow mode breaks if we don't return true
+
                     return false;
                 });
                 c.Emit(OpCodes.Brtrue, skip);
