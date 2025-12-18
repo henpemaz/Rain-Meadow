@@ -1980,7 +1980,7 @@ namespace RainMeadow
                         return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
                        
                     }
-                    return true;
+                    return false;
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.GotoNext(moveType: MoveType.AfterLabel,
@@ -1993,8 +1993,10 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
+                        
                     }
                     return true;
+                    
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
