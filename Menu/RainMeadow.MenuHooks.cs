@@ -15,6 +15,8 @@ using RainMeadow.UI;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI.Components;
 using System.Collections.Generic;
+using UnityEngine.UIElements;
+using HarmonyLib;
 
 namespace RainMeadow
 {
@@ -52,7 +54,18 @@ namespace RainMeadow
             On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexUnlocked += BackgroundOptionsMenu_IndexUnlocked;
+            On.MoreSlugcats.BackgroundOptionsMenu.PopulateButtons += BackgroundOptionsMenu_PopulateButtons;
+      
             new Hook(typeof(MoreSlugcats.BackgroundOptionsMenu).GetProperty(nameof(MoreSlugcats.BackgroundOptionsMenu.NonRegionButtons)).GetGetMethod(), BackgroundOptionsMenu_NonRegionButtons);
+        }
+
+        public void BackgroundOptionsMenu_PopulateButtons(On.MoreSlugcats.BackgroundOptionsMenu.orig_PopulateButtons orig, MoreSlugcats.BackgroundOptionsMenu self)
+        {
+         orig(self);
+         var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption].pos, crispPixels: true, anchorCenter: false);
+         self.backgroundIllustrations.AddItem(anniv);
+         self.pages[0].subObjects.Add(anniv);
+         
         }
 
         public int BackgroundOptionsMenu_NonRegionButtons(Func<MoreSlugcats.BackgroundOptionsMenu, int> orig, MoreSlugcats.BackgroundOptionsMenu self)
