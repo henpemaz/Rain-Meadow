@@ -1976,10 +1976,11 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening) return true;
                         story.storyClientData.readyForTransition = false;
+                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
+                       
                     }
-                    return false;
+                    return true;
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.GotoNext(moveType: MoveType.AfterLabel,
@@ -1992,11 +1993,8 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-                        return true;
                     }
-					if (OnlineManager.lobby.gameMode != null) return true; // meadow mode breaks if we don't return true
-
-                    return false;
+                    return true;
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
