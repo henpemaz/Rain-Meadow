@@ -14,6 +14,7 @@ using UnityEngine;
 using RainMeadow.UI;
 using MonoMod.RuntimeDetour;
 using RainMeadow.UI.Components;
+using System.Collections.Generic;
 
 namespace RainMeadow
 {
@@ -47,7 +48,49 @@ namespace RainMeadow
             new Hook(typeof(ButtonTemplate).GetProperty("CurrentlySelectableNonMouse", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, On_ButtonTemplate_Selectable);
             new Hook(typeof(MenuObject).GetProperty("Container", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetMethod, MenuObject_Container);
             On.Menu.SlugcatSelectMenu.GetSaveGameData += SlugcatSelectMenu_GetSaveGameData;
+
+            On.MoreSlugcats.BackgroundOptionsMenu.OptionToIndex += BackgroundOptionsMenu_OptionToIndex;
+            On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
+            On.MoreSlugcats.BackgroundOptionsMenu.IndexUnlocked += BackgroundOptionsMenu_IndexUnlocked;
+            new Hook(typeof(MoreSlugcats.BackgroundOptionsMenu).GetProperty(nameof(MoreSlugcats.BackgroundOptionsMenu.NonRegionButtons)).GetGetMethod(), BackgroundOptionsMenu_NonRegionButtons);
         }
+
+        public int BackgroundOptionsMenu_NonRegionButtons(Func<MoreSlugcats.BackgroundOptionsMenu, int> orig, MoreSlugcats.BackgroundOptionsMenu self)
+        {
+            int buttons = orig(self);
+            meadowAnniversaryBackgroundOption = buttons;
+            return buttons + 1; 
+        }
+
+        public static int meadowAnniversaryBackgroundOption = -1;
+        int BackgroundOptionsMenu_OptionToIndex(On.MoreSlugcats.BackgroundOptionsMenu.orig_OptionToIndex orig, MoreSlugcats.BackgroundOptionsMenu self, MenuScene.SceneID option)
+        {
+            if (option == Ext_SceneID.Meadow_Anniversary)
+            {
+                return meadowAnniversaryBackgroundOption;
+            }
+            return orig(self, option);
+        }
+
+        MenuScene.SceneID BackgroundOptionsMenu_IndexToOption(On.MoreSlugcats.BackgroundOptionsMenu.orig_IndexToOption orig, MoreSlugcats.BackgroundOptionsMenu self, int ind)
+        {
+            if (ind == meadowAnniversaryBackgroundOption)
+            {
+                return Ext_SceneID.Meadow_Anniversary;
+            }
+            return orig(self, ind);
+        }
+        
+        bool BackgroundOptionsMenu_IndexUnlocked(On.MoreSlugcats.BackgroundOptionsMenu.orig_IndexUnlocked orig, MoreSlugcats.BackgroundOptionsMenu self, int ind, List<string> regions)
+        {
+            if (ind == meadowAnniversaryBackgroundOption)
+            {
+                return DateTime.Now.Month ==12;
+            }
+
+            return orig(self, ind, regions);
+        }
+
         void IL_Menu_Update(ILContext il)
         {
             try
@@ -182,6 +225,26 @@ namespace RainMeadow
             {
                 return;
             }
+
+            if (self.sceneID == RainMeadow.Ext_SceneID.Meadow_Anniversary)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - anniversary";
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "1 anni bg", new Vector2(0f, 0f), 4.0f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "2 anni sun", new Vector2(0f, 0f), 4.0f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "3 anni bg balloon", new Vector2(0f, 0f), 3.8f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "4 anni balloon", new Vector2(0f, 0f), 2.9f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "5 anni fg balloon", new Vector2(0f, 0f), 2.5f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "6 anni squidfriends", new Vector2(0f, 0f), 2.4f, MenuDepthIllustration.MenuShader.Normal));
+                self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "7 anni noot", new Vector2(0f, 0f), 2.3f, MenuDepthIllustration.MenuShader.Normal));
+                (self as InteractiveMenuScene).idleDepths.Add(3.5f);
+                (self as InteractiveMenuScene).idleDepths.Add(3.5f);
+                (self as InteractiveMenuScene).idleDepths.Add(2.2f);
+                (self as InteractiveMenuScene).idleDepths.Add(2.0f);
+                (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                (self as InteractiveMenuScene).idleDepths.Add(1.2f);
+                (self as InteractiveMenuScene).idleDepths.Add(1.0f);
+            }
+
             if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada)
             {
                 self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - squidcicada";
