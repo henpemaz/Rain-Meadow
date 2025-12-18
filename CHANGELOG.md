@@ -4,7 +4,7 @@
 - Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
 - Fixed watcher cosmetic option not saving for clients
-
+- Fixed Saint's ascendance timer not updating its default value  
 ## Story:
 - Fixed an issue where custom karma gates wouldn't open
 ## General
