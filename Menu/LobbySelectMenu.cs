@@ -60,6 +60,7 @@ namespace RainMeadow
             createButton = new SimplerButton(this, mainPage, Translate("CREATE!"), new Vector2(1056f, 50f), new Vector2(110f, 30f));
             createButton.OnClick += (_) =>
             {
+                if (!MatchmakingManager.currentInstance.LegalAcknowledged()) return;
                 manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbyCreateMenu);
                 PlaySound(SoundID.MENU_Switch_Page_In);
             };
@@ -215,6 +216,11 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+
+            if (popupDialog is null && !MatchmakingManager.currentInstance.LegalAcknowledged())
+            {
+                MatchmakingManager.currentInstance.ShowLegal(this, mainPage, ref popupDialog);
+            }
 
             // bool popupVisible = popupDialog != null;
 

@@ -1,8 +1,11 @@
-﻿using RWCustom;
+﻿using Kittehface.Build;
+using Menu;
+using RWCustom;
 using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -17,6 +20,51 @@ namespace RainMeadow
             if (password != null)
                 return $"+connect_lobby {iD.m_SteamID} +lobby_password {password}";
             return $"+connect_lobby {iD.m_SteamID}";
+        }
+    }
+
+    public class SteamLegalDialog : MenuDialogBox
+    {
+        public static readonly int VERSION = 1;
+
+        public static readonly string LEGAL =
+            "Disclaimer" +
+            "<LINE>" +
+            "<LINE>" +
+            "Your use of Rain Meadow's Steam online features and all related online interactions are governed by the Steam Subscriber Agreement.<LINE>" +
+            "<LINE>" +
+            "Rain Meadow and it's creators are not affiliated with, endorsed by or sponsored by VideoCult, Akupara Games LLC or Adult Swim Games";
+
+        SimpleButton ackButton;
+        SimpleButton viewButton;
+
+        public SteamLegalDialog(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size)
+            : base(menu, owner, Utils.Translate(LEGAL), pos, size, false)
+        {
+            ackButton = new SimpleButton(menu, this, menu.Translate("Acknowledge"), "Acknowledge",
+            new Vector2((size.x * 0.5f) - 55f - 110f, Mathf.Max(size.y * 0.04f, 7f)), new Vector2(110f, 30f));
+            viewButton = new SimpleButton(menu, this, menu.Translate("View"), "View", new Vector2((size.x * 0.5f) - 55f + 110f, Mathf.Max(size.y * 0.04f, 7f)), new Vector2(110f, 30f));
+            subObjects.Add(ackButton);
+            subObjects.Add(viewButton);
+        }
+
+        public override void Singal(MenuObject sender, string message)
+        {
+            base.Singal(sender, message);
+            switch (message)
+            {
+                case "Acknowledge":
+                    RainMeadow.rainMeadowOptions.SteamSubscriberAgreementAcknowledged.Value = VERSION;
+                    MachineConnector.SaveConfig(RainMeadow.rainMeadowOptions);
+                    if (menu is LobbySelectMenu lobbySelectMenu)
+                    {
+                        lobbySelectMenu.HideDialog();
+                    }
+                    break;
+                case "View":
+                    SteamFriends.ActivateGameOverlayToWebPage("https://store.steampowered.com/subscriber_agreement/");
+                    break;
+            }
         }
     }
 
@@ -113,6 +161,19 @@ namespace RainMeadow
             m_RequestLobbyListCall.Set(SteamMatchmaking.RequestLobbyList());
         }
 
+        public override bool LegalAcknowledged()
+        {
+            return RainMeadow.rainMeadowOptions.SteamSubscriberAgreementAcknowledged.Value == SteamLegalDialog.VERSION;
+        }
+
+        public override void ShowLegal(Menu.Menu menu, Page page, ref MenuDialogBox dialog)
+        {
+            base.ShowLegal(menu, page, ref dialog);
+
+            dialog = new SteamLegalDialog(menu, page, new Vector2(menu.manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - menu.manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            page.subObjects.Add(dialog);
+        }
+
         private void LobbyListReceived(LobbyMatchList_t pCallback, bool bIOFailure)
         {
             try
@@ -161,6 +222,8 @@ namespace RainMeadow
 
         public override void RequestJoinLobby(LobbyInfo lobby, string? password)
         {
+            // Users must acknowledge the Steam Subscriber Agreement before they can join steam lobbies
+            if (!LegalAcknowledged()) return;
             lobbyPassword = password;
             m_JoinLobbyCall.Set(SteamMatchmaking.JoinLobby((lobby as SteamLobbyInfo).iD));
         }

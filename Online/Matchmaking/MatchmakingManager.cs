@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Menu;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -92,6 +93,10 @@ namespace RainMeadow
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);
+
+        public virtual void ShowLegal(Menu.Menu menu, Page page, ref MenuDialogBox dialog) {}
+
+        public virtual bool LegalAcknowledged() { return true; }
 
         public abstract void JoinLobbyUsingArgs(params string?[] args);
         public static void JoinLobbyUsingCode(string code) {
