@@ -98,7 +98,7 @@ namespace RainMeadow
         {
             if (ind == meadowAnniversaryBackgroundOption)
             {
-                return DateTime.Now.Month ==12;
+                return true;
             }
 
             return orig(self, ind, regions);
