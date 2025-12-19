@@ -6,6 +6,7 @@ using Menu.Remix.MixedUI;
 using UnityEngine;
 using System.Linq;
 using RainMeadow.UI.Components.Patched;
+using RainMeadow.Properties;
 
 namespace RainMeadow.UI.Components
 {
@@ -115,6 +116,12 @@ namespace RainMeadow.UI.Components
             }
             countdownTimerTextBox.greyedOut = SettingsDisabled;
             arenaGameModeComboBox.greyedOut = SettingsDisabled;
+            enableBees.buttonBehav.greyedOut = SettingsDisabled;
+            enableBombs.buttonBehav.greyedOut = SettingsDisabled;
+            enableCorpseGrab.buttonBehav.greyedOut = SettingsDisabled;
+            piggyBackCheckbox.buttonBehav.greyedOut = SettingsDisabled;
+            
+            
             if (RainMeadow.isArenaMode(out ArenaMode arena))
             {
                 if (!countdownTimerTextBox.held && countdownTimerTextBox.valueInt != arena.setupTime) countdownTimerTextBox.valueInt = arena.setupTime;
