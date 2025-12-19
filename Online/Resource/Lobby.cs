@@ -266,6 +266,11 @@ namespace RainMeadow
                     {
                         OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
                     }
+
+                    lobby.configurableBools = onlineBoolRemixSettings.ToDictionary();
+                    lobby.configurableFloats = onlineFloatRemixSettings.ToDictionary();
+                    lobby.configurableInts = onlineIntRemixSettings.ToDictionary();
+
                     lobby.modsChecked = true;
                 }
 

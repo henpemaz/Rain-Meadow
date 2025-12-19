@@ -253,48 +253,5 @@ namespace RainMeadow
                 //throw;
             }
         }
-
-
-        private static HashSet<string> devSteamIdHashes = new HashSet<string>()
-        {
-            "AOOTy8PrB9DWbAxExg9BbhiLBbRqAgmsRLoAHnIGXOU=",
-            "dlWUAGjYBtAdypcmLwbDnZ73akq624OiSNIQ//ecsms=",
-            "ApNKog4MYwp7nfkyC6lIPtD+/sBJfBArnSPiy6yo7VU=",
-            "YIczH+KncjxdHf3MrnhumDUJ1QVAyBsy9ME6k0bZyPc=",
-            "P5S1c63jYWl3Ce73H0k99BeIMSAmxa/BbvkEiyTs9mM=",
-            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg=",
-            "ATe23LFNxITCICTkw+2Bs67cNZ5N/nRBMfziGhIn11s=",
-            "oz6hibRdEiJow7IWhn+T7Ij+agHeNqmxyHO34YMOla4=",
-            "E5mtN6Hh2vyAuOgBZ5iiTH36j2pAJ8urOgEZKZsciSo=",
-            "TA9uZQ7Z7MkVUm7D32EB0gpuQBrhE9cAZWB2UXBuqtg=",
-            "tXLLHFXRXKzi285CSDIko+gmRrLChLb3k3K1pV0GUq4=",
-            "AkQKwH5S6zj//MRsnrjaTp2HGe7Ln9ZB057MP5xLk2M=",
-            "tMoAaCdZejjuWCF0MsXcOUr+D4eok0b2c46B8PTM0kg=",
-            "095dLJgw4Nc1zbdUIdxL7d7nmyKxcj7hekNx8EQlXGY=",
-            "GpdPaLhUEEkwjCbkSLjXN7lZy0iXa5YlFErMi9V+hXI=",
-            "PwcZS6t8kETyBdrPiR2ple35lpLMfEw6TP/VyHVD4z4=",
-            "wZ2+Phw6EOBLv9bZKdSGV+3lWhNxiT2KHwCluqhLdzo=",
-            "Hr8BfOHHTBRGgSmQoj4qQdlHqaY6d4DHFbF7wCNFI1U=",
-            "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
-            "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=",
-            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ=",
-            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg="
-        };
-
-        public static bool IsDev(MeadowPlayerId player)
-        {
-            if (player is SteamMatchmakingManager.SteamPlayerId steamid)
-            {
-                ulong steamID = steamid.oid.GetSteamID64();
-                SHA256 Sha = SHA256.Create();
-                var steamIDHash = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
-
-                if (devSteamIdHashes.Contains(steamIDHash))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 }
