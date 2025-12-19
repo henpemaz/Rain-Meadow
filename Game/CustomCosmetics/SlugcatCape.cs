@@ -112,7 +112,7 @@ namespace RainMeadow
                             string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
 
                             // Check if the color is a list of floats (RGB)
-                            Color rgbColor = Color.red;
+                           Color rgbColor = Color.red;
                             if (color.Contains(","))
                             {
                                 string[] rgbParts = color.Split(',');
@@ -124,18 +124,12 @@ namespace RainMeadow
                                     rgbColor = new Color(r, g, b);
                                 }
                             }
-                            else
-                            {
+                            else                         
                                 if (color == "sgold")
                                 {
                                     rgbColor = RainWorld.SaturatedGold;
                                 }
-
-                                if (color == "rainbow")
-                                {
-                                
-                                }
-                            }
+                            
 
 
                             // Add the parsed entry to the list
@@ -223,6 +217,10 @@ namespace RainMeadow
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
+            if (playerGFX.player.abstractCreature.GetOnlineCreature()  is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingAnniversaryCape) {
+            float hue = (Time.time * 0.1f) % 1f; 
+            cloakColor = Color.HSVToRGB(hue, 1f, 1f);
+            }
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
             int num = 0;
             for (int i = 0; i <= SlugcatCape.size; i++)
@@ -322,7 +320,6 @@ namespace RainMeadow
             float num = SlugcatCape.targetLength / (float)SlugcatCape.size;
             BodyChunk mainBodyChunk = playerGFX.player.mainBodyChunk;
             Vector2 normalized = GetBodyNormalized();
-
             Room room = playerGFX.player.room;
             for (int i = 0; i <= SlugcatCape.size; i++)
             {
