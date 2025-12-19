@@ -60,7 +60,7 @@ Lobby Password|Пароль лобби.
 Player max:|Игроки:
 Maximum number of players that can be in the lobby (up to 32)|Максимальное количество игроков, которые могут находиться в лобби (до 32).
 Creating lobby...|Создание лобби...
-Anniversary Gags:|Юбилейные приколы:
+Anniversary Gags:|Юбилейн. приколы:
 
 ///Создатели
 Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|Rain Meadow — это уникальный многопользовательский движок для уникальной игры. Ничто другое не подошло бы. — Henpemaz
@@ -108,6 +108,7 @@ Chat Talk Button|Написать в чате
 Chat Log On/Off|Окно чата вкл/выкл
 Show Ping|Показать пинг
 Playtesting Gift|Подарок за тест
+Anniversary Gift|Подарок на годовщину
 Pointing Key|Клавиша указания лапой
 Introroll|Вступительный ролик
 Vanilla|Стандартный
@@ -654,3 +655,4 @@ This player does not have a profile.|У этого игрока нет проф�
 Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam в данный момент недоступен.<LINE>Некоторые функции Rain Meadow были отключены.
 Meadow failed to start|Meadow не смог запуститься.
 Rain Meadow: Please use an external mod to access Inv's campaign.|Rain Meadow: просьба использовать отдельный мод для доступа к кампании Inv.
+
