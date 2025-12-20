@@ -1308,6 +1308,12 @@ namespace RainMeadow
                 self.AddPart(new SpectatorHud(self, cam));
                 self.AddPart(new Pointing(self));
 
+                if (OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+                {
+                    self.AddPart(new MeadowCoinHUD(self, cam, gameMode));
+                }
+                
+
                 if (MatchmakingManager.currentInstance.canSendChatMessages)
                     self.AddPart(new ChatHud(self, cam));
             }

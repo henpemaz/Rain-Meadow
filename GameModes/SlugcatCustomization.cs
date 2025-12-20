@@ -10,7 +10,6 @@ namespace RainMeadow
         // Error colors, suggests something's gone wrong in StartGame (which should handle setting to either custom or default depending on the checkbox)
         public List<Color> currentColors { get; set; } = [Color.magenta, Color.white];
         public bool wearingCape { get; set; } = RainMeadow.rainMeadowOptions.WearingCape.Value;
-        public bool wearingAnniversaryCape { get; set; } = RainMeadow.rainMeadowOptions.AnniversaryCape.Value;
         public Color bodyColor { get => currentColors[0]; set => currentColors[0] = value; }
         public Color eyeColor { get => currentColors[1]; set => currentColors[1] = value; }
         public bool fakePup { get; set; }
@@ -64,10 +63,6 @@ namespace RainMeadow
             [OnlineField]
             public bool wearingCape;
 
-
-            [OnlineField]
-            public bool wearingAnniversaryCape;
-
             [OnlineField]
             public int playerIndex;
 
@@ -81,7 +76,6 @@ namespace RainMeadow
                 playingAs = slugcatCustomization.playingAs;
                 nickname = slugcatCustomization.nickname;
                 wearingCape = slugcatCustomization.wearingCape;
-                wearingAnniversaryCape = slugcatCustomization.wearingAnniversaryCape;
                 playerIndex = slugcatCustomization.playerIndex;
                 fakePup = slugcatCustomization.fakePup;
             }
@@ -94,7 +88,6 @@ namespace RainMeadow
                 slugcatCustomization.playingAs = playingAs;
                 slugcatCustomization.nickname = nickname;
                 slugcatCustomization.wearingCape = wearingCape;
-                slugcatCustomization.wearingAnniversaryCape = wearingAnniversaryCape;
                 slugcatCustomization.playerIndex =  playerIndex;
                 slugcatCustomization.fakePup = fakePup;
             }

@@ -112,7 +112,7 @@ namespace RainMeadow
                             string color = colorPart.Trim('(', ')'); // Remove parentheses around the color
 
                             // Check if the color is a list of floats (RGB)
-                           Color rgbColor = Color.red;
+                            CapeColor capeColor = (CapeColor)Color.red;
                             if (color.Contains(","))
                             {
                                 string[] rgbParts = color.Split(',');
@@ -121,19 +121,25 @@ namespace RainMeadow
                                     float.TryParse(rgbParts[1].Trim(), out float g) &&
                                     float.TryParse(rgbParts[2].Trim(), out float b))
                                 {
-                                    rgbColor = new Color(r, g, b);
+                                    capeColor = (CapeColor)new Color(r, g, b);
                                 }
                             }
-                            else                         
+                            else
+                            {              
                                 if (color == "sgold")
                                 {
-                                    rgbColor = RainWorld.SaturatedGold;
+                                    capeColor = (CapeColor)RainWorld.SaturatedGold;
                                 }
-                            
+
+                                if (color == "rainbow")
+                                {
+                                    capeColor = new CapeColor { color = Color.white, rainbow = true };
+                                }
+                            }
 
 
                             // Add the parsed entry to the list
-                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, rgbColor);
+                            if (!entries.ContainsKey(HashedsteamId64)) entries.Add(HashedsteamId64, capeColor);
                         }
                     }
                 }
@@ -145,20 +151,43 @@ namespace RainMeadow
 
         }
 
+        public struct CapeColor
+        {
+            public bool rainbow;
+            public Color color;
 
-        private static Dictionary<string, Color> entries = new();
+            public static explicit operator CapeColor(Color s)
+            {
+                return new CapeColor { color = s };
+            }
+        }
+
+
+        private static Dictionary<string, CapeColor> entries = new();
         private static ConditionalWeakTable<MeadowPlayerId, object> cape_cache = new();
 
-        static public Color? HasCape(MeadowPlayerId player)
+        static public CapeColor? HasCape(MeadowPlayerId player)
         {
-            if (cape_cache.TryGetValue(player, out var entry) && entry is not null) return (Color)entry;
+
+            if (OnlineManager.lobby != null && OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+            {
+                OnlinePlayer p = OnlineManager.lobby.PlayerFromMeadowID(player);
+                if (OnlineManager.lobby.clientSettings[p].TryGetData<MeadowStoreCape>(out var storecape))
+                {
+                    if (storecape.cape == "silver") return (CapeColor)new Color(0.75f, 0.75f, 0.75f);
+                    if (storecape.cape == "gold") return (CapeColor)RainWorld.SaturatedGold;
+                    if (storecape.cape == "rainbow") return new CapeColor { color = Color.white, rainbow = true };
+                }
+            }
+
+            if (cape_cache.TryGetValue(player, out var entry) && entry is not null) return (CapeColor)entry;
             if (player is SteamMatchmakingManager.SteamPlayerId steamid)
             {
                 ulong steamID = steamid.oid.GetSteamID64();
                 SHA256 Sha = SHA256.Create();
                 var hashed_cape_str = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
 
-                if (entries.TryGetValue(hashed_cape_str, out Color found_entry))
+                if (entries.TryGetValue(hashed_cape_str, out CapeColor found_entry))
                 {
                     cape_cache.Add(player, found_entry);
                     return found_entry;
@@ -167,9 +196,10 @@ namespace RainMeadow
 
             if (player is LANMatchmakingManager.LANPlayerId lanPlayer)
             {
-                if (lanPlayer.name == "goldcape") return RainWorld.SaturatedGold;
-                if (lanPlayer.name == "redcape") return Color.red;
-                if (lanPlayer.name == "bluecape") return Color.blue;
+                if (lanPlayer.name == "goldcape") return (CapeColor)RainWorld.SaturatedGold;
+                if (lanPlayer.name == "redcape") return (CapeColor)Color.red;
+                if (lanPlayer.name == "bluecape") return (CapeColor)Color.blue;
+                if (lanPlayer.name == "rainbow") return new CapeColor { color = Color.white, rainbow = true };
             }
 
 
@@ -182,20 +212,34 @@ namespace RainMeadow
     {
         public static ConditionalWeakTable<PlayerGraphics, SlugcatCape> cloaked_slugcats = new();
         public PlayerGraphics playerGFX { get; private set; }
-        public Color cloakColor;
+        public CapeManager.CapeColor cloakColor;
         private SimpleSegment[,] segments;
         private const int size = 5;
         private const float targetLength = 50f;
         public const int totalSprites = 1;
         public int firstSpriteIndex;
 
-        public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, Color cloakColor)
+        public SlugcatCape(PlayerGraphics gfx, int firstSpriteIndex, CapeManager.CapeColor cloakColor)
         {
             cloaked_slugcats.Add(gfx, this);
             this.segments = new SimpleSegment[size + 1, size + 1];
             this.firstSpriteIndex = firstSpriteIndex;
             this.cloakColor = cloakColor;
             this.playerGFX = gfx;
+        }
+
+        public static void RefreshCape(Player p)
+        {
+            if (p.room != null && p.graphicsModule != null)
+            {
+                IDrawable graphicsModule = p.graphicsModule;
+                p.DisposeGraphicsModule();
+                p.InitiateGraphicsModule();
+                for (int i = 0; i < p.room.game.cameras.Length; i++)
+				{
+					p.room.game.cameras[i].ReplaceDrawable(graphicsModule, p.graphicsModule);
+				}
+            }
         }
 
         public void Reset()
@@ -217,10 +261,6 @@ namespace RainMeadow
 
         public void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
         {
-            if (playerGFX.player.abstractCreature.GetOnlineCreature()  is OnlineCreature critter && critter.TryGetData<SlugcatCustomization>(out var customization) && customization.wearingAnniversaryCape) {
-            float hue = (Time.time * 0.1f) % 1f; 
-            cloakColor = Color.HSVToRGB(hue, 1f, 1f);
-            }
             TriangleMesh triangleMesh = (sLeaser.sprites[this.firstSpriteIndex] as TriangleMesh)!;
             int num = 0;
             for (int i = 0; i <= SlugcatCape.size; i++)
@@ -231,16 +271,22 @@ namespace RainMeadow
                 }
             }
             num = 0;
+            Color color = this.cloakColor.color;
+            if (this.cloakColor.rainbow)
+            {
+                color = Color.HSVToRGB(Mathf.Repeat(Time.time*0.5f, 1f), 1.0f, 1.0f);
+            }
+            color.a = 1.0f;
+            
             for (int k = 0; k <= SlugcatCape.size; k++)
             {
                 for (int l = 0; l <= SlugcatCape.size; l++)
                 {
-                    Color color = this.cloakColor;
                     Vector2 p = triangleMesh.vertices[l + Mathf.Max(k - 1, 0) * (SlugcatCape.size + 1)];
                     Vector2 p2 = triangleMesh.vertices[l + Mathf.Min(k + 1, SlugcatCape.size) * (SlugcatCape.size + 1)];
                     Vector2 vector = Custom.DirVec(p, p2) * 5f;
-                    color.a = 1.0f;
-                    triangleMesh.verticeColors[num++] = this.cloakColor;
+                    
+                    triangleMesh.verticeColors[num++] = color;
                 }
             }
         }

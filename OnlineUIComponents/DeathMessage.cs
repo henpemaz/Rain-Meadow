@@ -159,6 +159,16 @@ public static class DeathMessage
         try
         {
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+
+            if (killer.isMine)
+            {
+                if (game.cameras[0].hud.parts.OfType<MeadowCoinHUD>().FirstOrDefault() is MeadowCoinHUD coinHUD)
+                {
+                    coinHUD.AddCoins(10, "Kill!");
+                }
+            }
+            
+
             if (target == null || killer == null || !ShouldShowDeath(target))
             {
                 return;
@@ -229,7 +239,18 @@ public static class DeathMessage
         */
         try
         {
+            
             if (RWCustom.Custom.rainWorld.processManager.currentMainLoop is not RainWorldGame game) return;
+
+
+            if (killer.isMine)
+            {
+                if (game.cameras[0].hud.parts.OfType<MeadowCoinHUD>().FirstOrDefault() is MeadowCoinHUD coinHUD)
+                {
+                    coinHUD.AddCoins(10, "Kill!");
+                }
+            }
+            
             var k = killer.owner.id.DisplayName;
             var t = (target.apo as AbstractCreature).creatureTemplate.name;
             var realized = (target.apo as AbstractCreature).realizedCreature;

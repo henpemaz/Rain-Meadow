@@ -29,6 +29,7 @@ namespace RainMeadow
         {
             instance = this;
             rainMeadowOptions = new RainMeadowOptions(this);
+            MeadowCoinHUD.InitConfigurables();
 
             if (AdvancedProfilingEnabled())
             {

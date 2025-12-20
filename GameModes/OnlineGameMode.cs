@@ -272,6 +272,11 @@ namespace RainMeadow
                 AddClientData();
                 clientSettings.EnterResource(lobby);
                 OnlineManager.instance.manager.RequestMainProcessSwitch(MenuProcessId());
+
+                if (OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+                {
+                    clientSettings.AddData(new MeadowStoreCape());
+                }
             }
         }
 
@@ -312,6 +317,11 @@ namespace RainMeadow
         public virtual void LobbyTick(uint tick)
         {
             clientSettings.avatars = avatars.Select(a => a.id).ToList();
+            
+            if (clientSettings.TryGetData<MeadowStoreCape>(out var data))
+            {
+                data.cape = MeadowCoinHUD.storeCapeEquiped.Value;
+            } 
         }
 
         public abstract void Customize(Creature creature, OnlineCreature oc);

@@ -109,7 +109,7 @@ public class LobbyCreateMenu : SmartMenu
             where.x += 80;
         }
 
-        if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
+        if (DateTime.Now.Month == 12)
         {
             where.x -= 200;
             where.y -= 45;

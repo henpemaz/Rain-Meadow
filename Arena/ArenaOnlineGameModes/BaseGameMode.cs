@@ -140,6 +140,12 @@ namespace RainMeadow
             self.AddPart(new Pointing(self));
             self.AddPart(new ArenaSpawnLocationIndicator(self, session.game.cameras[0]));
             self.AddPart(new Watcher.CamoMeter(self, null, self.fContainers[1]));
+
+            if (OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+            {
+                self.AddPart(new MeadowCoinHUD(self, session.game.cameras[0], arena));
+            }
+            
             if (ModManager.Watcher && OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].GetData<ArenaClientSettings>().playingAs == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
             {
                 RainMeadow.Debug("Adding Watcher Camo Meter");
