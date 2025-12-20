@@ -11,6 +11,9 @@
 - Fixes infinite tinnitus
 - Adds copy/paste functionality to password & IP text boxes
 - Fixed Gourmand's damage collision to not linearly increase by player count
+- Refined Russian translation
+- Added custom backgrounds for the anniversary! Check them out under Options->Backgrounds
+
 # Release 1.9.0
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
