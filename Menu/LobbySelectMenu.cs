@@ -254,9 +254,9 @@ namespace RainMeadow
             // Statistics
             if (!firstOpen)
             {
-                if (RainMeadow.NewVersionAvailable != "")
+                if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
                 {
-
+                    ShowUpdateDialog(RainMeadow.NewVersionAvailable);
                 }
                 firstOpen = true;
             }
@@ -478,9 +478,10 @@ namespace RainMeadow
         {
             if (popupDialog != null) HideDialog();
 
-            string text = Translate("New Version Availible") + Environment.NewLine + Environment.NewLine +
-                Translate("A new update for Rain Meadow is availible for download.") + Environment.NewLine + Environment.NewLine +
-                Translate("If you're using Steam restart your game and if that doesn't work unsubscribe and resubscribe to force an update. This will not affect your saves at all.") + Environment.NewLine +
+            string text = Translate("New Version Available") + Environment.NewLine + Environment.NewLine +
+                Translate("A new update for Rain Meadow is available for download.") + Environment.NewLine + 
+                Translate("Please update to the latest version to ensure online functionality works as intended.") + Environment.NewLine + Environment.NewLine +
+                Translate("If you're using Steam restart your game and if that doesn't work unsubscribe and resubscribe to force an update. This will not affect your saves at all.") + Environment.NewLine + Environment.NewLine +
                 Translate("Otherwise visit our GitHub releases page to download the latest release.") + Environment.NewLine + Environment.NewLine +
                 $"Current: {RainMeadow.MeadowVersionStr}" + Environment.NewLine + $"Latest: {RainMeadow.NewVersionAvailable}";
 
