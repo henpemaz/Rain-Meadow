@@ -1,16 +1,17 @@
+using HarmonyLib;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using RainMeadow.UI;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using RainMeadow.UI;
-using MonoMod.RuntimeDetour;
-using System.Collections.Generic;
-using HarmonyLib;
 
 namespace RainMeadow
 {
@@ -49,32 +50,46 @@ namespace RainMeadow
             On.MoreSlugcats.BackgroundOptionsMenu.IndexToOption += BackgroundOptionsMenu_IndexToOption;
             On.MoreSlugcats.BackgroundOptionsMenu.IndexUnlocked += BackgroundOptionsMenu_IndexUnlocked;
             On.MoreSlugcats.BackgroundOptionsMenu.PopulateButtons += BackgroundOptionsMenu_PopulateButtons;
-      
+
             new Hook(typeof(MoreSlugcats.BackgroundOptionsMenu).GetProperty(nameof(MoreSlugcats.BackgroundOptionsMenu.NonRegionButtons)).GetGetMethod(), BackgroundOptionsMenu_NonRegionButtons);
         }
 
         public void BackgroundOptionsMenu_PopulateButtons(On.MoreSlugcats.BackgroundOptionsMenu.orig_PopulateButtons orig, MoreSlugcats.BackgroundOptionsMenu self)
         {
-         orig(self);
-         var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption].pos, crispPixels: true, anchorCenter: false);
-         self.backgroundIllustrations.AddItem(anniv);
-         self.pages[0].subObjects.Add(anniv);
-         
+            orig(self);
+            int offset = self.ButtonsPerPage * self.pageNum, maxOffset = offset + self.ButtonsOnPage(self.pageNum);
+            if (meadowAnniversaryBackgroundOption >= offset && meadowAnniversaryBackgroundOption < maxOffset)
+            {
+                var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption - offset].pos, crispPixels: true, anchorCenter: false);
+                self.backgroundIllustrations.AddItem(anniv);
+                self.pages[0].subObjects.Add(anniv);
+            }
+            if (meadowSeeBgOption >= offset && meadowSeeBgOption < maxOffset)
+            {
+                var medsee = new MenuIllustration(self, self.pages[0], string.Empty, "meadowsee_small", self.backgroundIllustrations[meadowSeeBgOption - offset].pos, crispPixels: true, anchorCenter: false);
+                self.backgroundIllustrations.AddItem(medsee);
+                self.pages[0].subObjects.Add(medsee);
+            }
         }
 
         public int BackgroundOptionsMenu_NonRegionButtons(Func<MoreSlugcats.BackgroundOptionsMenu, int> orig, MoreSlugcats.BackgroundOptionsMenu self)
         {
             int buttons = orig(self);
             meadowAnniversaryBackgroundOption = buttons;
-            return buttons + 1; 
+            meadowSeeBgOption = buttons + 1;
+            return buttons + 2; 
         }
 
-        public static int meadowAnniversaryBackgroundOption = -1;
+        public static int meadowAnniversaryBackgroundOption = -1, meadowSeeBgOption = -1;
         int BackgroundOptionsMenu_OptionToIndex(On.MoreSlugcats.BackgroundOptionsMenu.orig_OptionToIndex orig, MoreSlugcats.BackgroundOptionsMenu self, MenuScene.SceneID option)
         {
             if (option == Ext_SceneID.Meadow_Anniversary)
             {
                 return meadowAnniversaryBackgroundOption;
+            }
+            if (option == Ext_SceneID.Meadow_See)
+            {
+                return meadowSeeBgOption;
             }
             return orig(self, option);
         }
@@ -85,12 +100,14 @@ namespace RainMeadow
             {
                 return Ext_SceneID.Meadow_Anniversary;
             }
+            if (ind == meadowSeeBgOption)
+                return Ext_SceneID.Meadow_See;
             return orig(self, ind);
         }
         
         bool BackgroundOptionsMenu_IndexUnlocked(On.MoreSlugcats.BackgroundOptionsMenu.orig_IndexUnlocked orig, MoreSlugcats.BackgroundOptionsMenu self, int ind, List<string> regions)
         {
-            if (ind == meadowAnniversaryBackgroundOption)
+            if (ind == meadowAnniversaryBackgroundOption || ind == meadowSeeBgOption)
             {
                 return true;
             }
@@ -251,7 +268,34 @@ namespace RainMeadow
                 (self as InteractiveMenuScene).idleDepths.Add(1.2f);
                 (self as InteractiveMenuScene).idleDepths.Add(1.0f);
             }
-
+            if (self.sceneID == RainMeadow.Ext_SceneID.Meadow_See)
+            {
+                self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - meadowsee";
+                if (self.flatMode)
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "meadowsee_flat", new(683f, 384f), false, true));
+                else
+                {
+                    self.AddIllustration(new MenuIllustration(self.menu, self, self.sceneFolder, "meadowsee_sky", new Vector2(0, 0), false, false));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_skybuilding", new Vector2(0, 0), 9f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_skybuilding2", new Vector2(0, 0), 8f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_waterfalls", new Vector2(0, 0), 7f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_fog", new Vector2(0f, 0f), 6f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_vines", new Vector2(0f, 0f), 4.4f, MenuDepthIllustration.MenuShader.LightEdges));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_pipe", new Vector2(0f, 0f), 4f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_floor", new Vector2(0f, 0f), 3f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_slugcat", new Vector2(0f, 0f), 1f, MenuDepthIllustration.MenuShader.Normal));
+                    self.AddIllustration(new MenuDepthIllustration(self.menu, self, self.sceneFolder, "meadowsee_vines2", new Vector2(0f, 0f), 0.8f, MenuDepthIllustration.MenuShader.Normal));
+                    (self as InteractiveMenuScene).idleDepths.Add(4.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(3.7f);
+                    (self as InteractiveMenuScene).idleDepths.Add(3.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.7f);
+                    (self as InteractiveMenuScene).idleDepths.Add(2.4f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.5f);
+                    (self as InteractiveMenuScene).idleDepths.Add(1.2f);
+                    (self as InteractiveMenuScene).idleDepths.Add(0.9f);
+                    (self as InteractiveMenuScene).idleDepths.Add(0.4f);
+                }
+            }
             if (self.sceneID == RainMeadow.Ext_SceneID.Slugcat_MeadowSquidcicada)
             {
                 self.sceneFolder = "Scenes" + Path.DirectorySeparatorChar.ToString() + "meadow - squidcicada";
