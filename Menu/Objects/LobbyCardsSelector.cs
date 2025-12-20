@@ -54,6 +54,7 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             this.RemoveSubObject(menuLabel);
             this.menuLabel = new ProperlyAlignedMenuLabel(menu, this, lobbyInfo.name, new Vector2(5f, 30f), new(10f, 50f), true);
             subObjects.Add(menuLabel);
+            if (lobbyInfo.pinned) subObjects.Add(new MenuSprite(menu, this, new FSprite("Meadow_Menu_Pin"), new(286, 44)));
 
             if (lobbyInfo.hasPassword) subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, Utils.Translate("Private"), new(256, 20), new(10, 50), false));
             subObjects.Add(new ProperlyAlignedMenuLabel(menu, this, $"{lobbyInfo.maxPlayerCount} {Utils.Translate("max")}", new(256, 5), new(10, 50), false));
@@ -75,8 +76,8 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
 
             for (int i = 0; i < subObjects.Count; i++)
             {
-                if (subObjects[i] is not MenuLabel label) continue;
-                label.label.alpha = fade;
+                if (subObjects[i] is MenuLabel label) label.label.alpha = fade;
+                if (subObjects[i] is MenuSprite sprite) sprite.sprite.alpha = fade;
             }
 
             for (int i = 0; i < roundedRect.sprites.Length; i++)
@@ -346,6 +347,8 @@ public class LobbyCardsList : RectangularMenuObject, Slider.ISliderOwner
             "EmptiestLobby" => filteredLobbies.OrderBy(lobby => lobby.playerCount).ToList(),
             _ => filteredLobbies.OrderBy(lobby => lobby.name).ToList()
         };
+        filteredLobbies = filteredLobbies.OrderBy(lobby => !lobby.pinned).ToList();
+
 
         foreach (var card in lobbyCards)
         {

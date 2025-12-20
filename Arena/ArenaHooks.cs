@@ -99,8 +99,6 @@ namespace RainMeadow
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
 
-
-            On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.MoreSlugcats.SingularityBomb.Update += SingularityBomb_Update;
@@ -143,6 +141,18 @@ namespace RainMeadow
             IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
+            On.Player.ctor += Player_ctor2;
+        }
+
+        private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
+        
+        {
+            orig(self, creature, world);
+            if (isArenaMode(out var arena))
+            {
+                self.godTimer = arena.arenaSaintAscendanceTimer * 40;
+                self.maxGodTime = arena.arenaSaintAscendanceTimer * 40; 
+            }
         }
 
         private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
@@ -184,11 +194,7 @@ namespace RainMeadow
             {
                 return;
             }
-            if (!self.IsLocal() || self.rippleLevel < 2) return;
-            //if (self.room.voidSpawns.Any(x => x.IsLocal()))
-            //{
-
-            //}
+            if (!self.IsLocal()) return;
 
             float requiredCharge = self.usableCamoLimit / 2;
 
@@ -1326,19 +1332,6 @@ namespace RainMeadow
             {
                 return orig(self, addToAliveTime, dontCountSandboxLosers);
             }
-        }
-
-        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
-        {
-
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
-                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)

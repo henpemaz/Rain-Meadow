@@ -4,12 +4,16 @@
 - Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
 - Add scavenger bomb, bee hive, & corpse grab toggles
 - Fixed watcher cosmetic option not saving for clients
-
+- Fixed Saint's ascendance timer not updating its default value  
 ## Story:
 - Fixed an issue where custom karma gates wouldn't open
 ## General
 - Fixes infinite tinnitus
 - Adds copy/paste functionality to password & IP text boxes
+- Fixed Gourmand's damage collision to not linearly increase by player count
+- Refined Russian translation
+- Added custom backgrounds for the anniversary! Check them out under Options->Backgrounds
+
 # Release 1.9.0
 ## General:
 - Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)

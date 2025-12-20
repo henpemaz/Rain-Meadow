@@ -1976,8 +1976,9 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening) return true;
                         story.storyClientData.readyForTransition = false;
+                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
+                       
                     }
                     return false;
                 });
@@ -1992,9 +1993,10 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-                        return true;
+                        
                     }
-                    return false;
+                    return true;
+                    
                 });
                 c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
