@@ -1,16 +1,17 @@
+using HarmonyLib;
 using Menu;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using RainMeadow.UI;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using RainMeadow.UI;
-using MonoMod.RuntimeDetour;
-using System.Collections.Generic;
-using HarmonyLib;
 
 namespace RainMeadow
 {
@@ -56,12 +57,19 @@ namespace RainMeadow
         public void BackgroundOptionsMenu_PopulateButtons(On.MoreSlugcats.BackgroundOptionsMenu.orig_PopulateButtons orig, MoreSlugcats.BackgroundOptionsMenu self)
         {
             orig(self);
-            var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption].pos, crispPixels: true, anchorCenter: false);
-            self.backgroundIllustrations.AddItem(anniv);
-            self.pages[0].subObjects.Add(anniv);
-            var medsee = new MenuIllustration(self, self.pages[0], string.Empty, "meadowsee_small", self.backgroundIllustrations[meadowSeeBgOption].pos, crispPixels: true, anchorCenter: false);
-            self.backgroundIllustrations.AddItem(medsee);
-            self.pages[0].subObjects.Add(medsee);
+            int offset = self.ButtonsPerPage * self.pageNum, maxOffset = offset + self.ButtonsOnPage(self.pageNum);
+            if (meadowAnniversaryBackgroundOption >= offset && meadowAnniversaryBackgroundOption < maxOffset)
+            {
+                var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption - offset].pos, crispPixels: true, anchorCenter: false);
+                self.backgroundIllustrations.AddItem(anniv);
+                self.pages[0].subObjects.Add(anniv);
+            }
+            if (meadowSeeBgOption >= offset && meadowSeeBgOption < maxOffset)
+            {
+                var medsee = new MenuIllustration(self, self.pages[0], string.Empty, "meadowsee_small", self.backgroundIllustrations[meadowSeeBgOption - offset].pos, crispPixels: true, anchorCenter: false);
+                self.backgroundIllustrations.AddItem(medsee);
+                self.pages[0].subObjects.Add(medsee);
+            }
         }
 
         public int BackgroundOptionsMenu_NonRegionButtons(Func<MoreSlugcats.BackgroundOptionsMenu, int> orig, MoreSlugcats.BackgroundOptionsMenu self)
