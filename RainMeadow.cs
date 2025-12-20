@@ -1,22 +1,14 @@
 ﻿using BepInEx;
-using Menu;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RainMeadow.Game;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Permissions;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using static Expedition.ExpeditionProgression;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -26,7 +18,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.9.0";
+        public const string MeadowVersionStr = "0.1.10.0";
         public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
