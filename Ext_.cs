@@ -35,7 +35,7 @@ namespace RainMeadow
             internal static MenuScene.SceneID Slugcat_MeadowMouse = new("Slugcat_MeadowMouse", true);
 
 
-
+            internal static MenuScene.SceneID Meadow_See = new("Meadow_See", true);
             internal static MenuScene.SceneID Meadow_Anniversary = new("Meadow_Anniversary", true);
         }
 
