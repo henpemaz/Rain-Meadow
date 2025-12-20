@@ -16,6 +16,8 @@ namespace RainMeadow
 {
     public class LobbySelectMenu : SmartMenu
     {
+        private static bool firstOpen;
+
         private SimplerButton createButton;
         private SimplerButton creditsButton;
         private SimplerButton directConnectButton;
@@ -250,6 +252,15 @@ namespace RainMeadow
             // if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
 
             // Statistics
+            if (!firstOpen)
+            {
+                if (RainMeadow.NewVersionAvailable != "")
+                {
+
+                }
+                firstOpen = true;
+            }
+
             if (statisticsLabel != null)
             {
                 statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
@@ -459,6 +470,21 @@ namespace RainMeadow
             error = Translate(error);
 
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
+            GreyOutLobbyCards(true);
+        }
+
+        public void ShowUpdateDialog(string latest)
+        {
+            if (popupDialog != null) HideDialog();
+
+            string text = Translate("New Version Availible") + Environment.NewLine + Environment.NewLine +
+                Translate("A new update for Rain Meadow is availible for download.") + Environment.NewLine + Environment.NewLine +
+                Translate("If you're using Steam restart your game and if that doesn't work unsubscribe and resubscribe to force an update. This will not affect your saves at all.") + Environment.NewLine +
+                Translate("Otherwise visit our GitHub releases page to download the latest release.") + Environment.NewLine + Environment.NewLine +
+                $"Current: {RainMeadow.MeadowVersionStr}" + Environment.NewLine + $"Latest: {RainMeadow.NewVersionAvailable}";
+
+            popupDialog = new DialogBoxNotify(this, mainPage, text, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
             GreyOutLobbyCards(true);
         }

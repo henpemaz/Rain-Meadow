@@ -1,14 +1,21 @@
 ﻿using BepInEx;
 using Menu;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RainMeadow.Game;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Permissions;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
+using static Expedition.ExpeditionProgression;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -19,6 +26,8 @@ namespace RainMeadow
     public partial class RainMeadow : BaseUnityPlugin
     {
         public const string MeadowVersionStr = "0.1.9.0";
+        public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
+        public static string NewVersionAvailable = "";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -48,6 +57,8 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
 
             DeathContextualizer.CreateBindings();
+
+            StartCoroutine(CheckForUpdates());
         }
 
         private bool AdvancedProfilingEnabled()
@@ -252,6 +263,54 @@ namespace RainMeadow
                 fullyInit = false;
                 //throw;
             }
+        }
+
+        IEnumerator CheckForUpdates()
+        {
+            JObject json = null;
+            using (UnityWebRequest request = UnityWebRequest.Get(ReleaseUrl))
+            {
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    json = JObject.Parse(request.downloadHandler.text);
+                } 
+                else
+                {
+                    Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
+                    yield break;
+                }
+            }
+            if (json is null)
+            {
+                Logger.LogError($"A web request error occured whilst checking for updates: JSON returned no body.");
+                yield break;
+            }
+            if (json.TryGetValue("tag_name", out var token))
+            {
+                string latestVersion = token.ToString();
+                RainMeadow.Debug($"Current Version - {MeadowVersionStr}, Latest Version - {latestVersion}");
+                if (IsNewerVersion(latestVersion, MeadowVersionStr))
+                {
+                    NewVersionAvailable = latestVersion;
+                    Logger.LogMessage($"NEW RAIN MEADOW VERSION FOUND.");
+                }
+            }
+        }
+
+        public static bool IsNewerVersion(string newVersion, string currentVersion)
+        {
+            if (!Version.TryParse(newVersion, out var nV) || !Version.TryParse(currentVersion, out var cV))
+            {
+                RainMeadow.Error($"Malformed version string when checking for updates: Current - {newVersion}, Latest - {currentVersion}");
+                return false;
+            }
+            
+            var result = nV.CompareTo(currentVersion);
+
+            if (result > 0) return true; // newVersion is greater than currentVersion.
+            return false;
         }
 
 
