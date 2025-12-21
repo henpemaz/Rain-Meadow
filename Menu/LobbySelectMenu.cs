@@ -16,7 +16,7 @@ namespace RainMeadow
 {
     public class LobbySelectMenu : SmartMenu
     {
-        private static bool firstOpen;
+        public static bool firstOpen;
 
         private SimplerButton createButton;
         private SimplerButton creditsButton;
@@ -256,7 +256,7 @@ namespace RainMeadow
             {
                 if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
                 {
-                    ShowUpdateDialog(RainMeadow.NewVersionAvailable);
+                    ShowUpdateDialog();
                 }
                 firstOpen = true;
             }
@@ -474,18 +474,11 @@ namespace RainMeadow
             GreyOutLobbyCards(true);
         }
 
-        public void ShowUpdateDialog(string latest)
+        public void ShowUpdateDialog()
         {
             if (popupDialog != null) HideDialog();
 
-            string text = Translate("New Version Available") + Environment.NewLine + Environment.NewLine +
-                Translate("A new update for Rain Meadow is available for download.") + Environment.NewLine + 
-                Translate("Please update to the latest version to ensure online functionality works as intended.") + Environment.NewLine + Environment.NewLine +
-                Translate("If you're using Steam restart your game and if that doesn't work unsubscribe and resubscribe to force an update. This will not affect your saves at all.") + Environment.NewLine + Environment.NewLine +
-                Translate("Otherwise visit our GitHub releases page to download the latest release.") + Environment.NewLine + Environment.NewLine +
-                $"Current: {RainMeadow.MeadowVersionStr}" + Environment.NewLine + $"Latest: {RainMeadow.NewVersionAvailable}";
-
-            popupDialog = new DialogBoxNotify(this, mainPage, text, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            popupDialog = new UpdateDialog(this, mainPage, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
             GreyOutLobbyCards(true);
         }
