@@ -18,7 +18,7 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.9.0";
+        public const string MeadowVersionStr = "0.1.10.0";
         public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
         public static string NewVersionAvailable = "";
         public static RainMeadow instance;
@@ -290,8 +290,17 @@ namespace RainMeadow
                 RainMeadow.Debug($"Current Version - {MeadowVersionStr}, Latest Version - {latestVersion}");
                 if (IsNewerVersion(latestVersion, MeadowVersionStr))
                 {
-                    NewVersionAvailable = latestVersion;
                     RainMeadow.Debug($"NEW RAIN MEADOW VERSION FOUND.");
+                    // One day grace window before users are prompted to update.
+                    if (json.TryGetValue("published_at", out var published)
+                        && DateTime.TryParse(published.ToString(), out var publishedDate)
+                        && publishedDate.AddDays(1) > DateTime.Now)
+                    {
+                        RainMeadow.Debug($"Update popup grace period active until: {publishedDate.AddDays(1).ToLongDateString()}");
+                        yield break;
+                    }
+                    NewVersionAvailable = latestVersion;
+                    
                 }
             }
         }
