@@ -8,7 +8,7 @@ using System.Linq;
 using UnityEngine;
 namespace RainMeadow;
 
-public class RainMeadowOptions : OptionInterface
+public partial class RainMeadowOptions : OptionInterface
 {
     public readonly Configurable<KeyCode> FriendsListKey;
     public readonly Configurable<bool> ShowFriends;
@@ -188,7 +188,9 @@ public class RainMeadowOptions : OptionInterface
 
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
-
+        
+        InitializeDrownOptions(config);
+        
     }
 
     public override void Initialize()

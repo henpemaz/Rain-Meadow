@@ -99,6 +99,61 @@ namespace RainMeadow
             }
         }
 
+        public virtual bool ShouldSessionEnd(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ShouldSessionEnd orig, ArenaGameSession self)
+        {
+            return orig(self);
+        }
+
+        public virtual int PlayersStillActive(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
+        {
+                int num = 0;
+                for (int i = 0; i < self.Players.Count; i++)
+                {
+                    bool flag = true;
+                    if (!self.Players[i].state.alive)
+                    {
+                        flag = false;
+                    }
+
+                    if (flag && self.exitManager != null && self.exitManager.IsPlayerInDen(self.Players[i]))
+                    {
+                        flag = false;
+                    }
+
+                    if (flag && self.Players[i].realizedCreature != null && (self.Players[i].realizedCreature as Player).dangerGrasp != null)
+                    {
+                        flag = false;
+                    }
+
+                    if (flag)
+                    {
+                        for (int j = 0; j < self.arenaSitting.players.Count; j++)
+                        {
+
+                            if (self.Players[i].Room == self.game.world.offScreenDen && self.arenaSitting.players[j].hasEnteredGameArea)
+                            {
+                                flag = false;
+                            }
+
+                            if (dontCountSandboxLosers && self.arenaSitting.players[j].sandboxWin < 0)
+                            {
+                                flag = false;
+                            }
+
+                            break;
+
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        num++;
+                    }
+                }
+                return num;
+        }
+
+
         public virtual string TimerText()
         {
             return "";
