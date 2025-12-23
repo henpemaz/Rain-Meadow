@@ -16,9 +16,18 @@ namespace RainMeadow
             this.overWorld = overWorld;
         }
 
+        public override void Tick(uint tick)
+        {
+            base.Tick(tick);
+            if (isAvailable && isActive)
+            {
+                UpdateGameNextID();
+            }
+        }
+
         protected override void AvailableImpl()
         {
-
+            UpdateGameNextID();
         }
 
         public void EstablishWorld(string ID, ushort shortID)
@@ -32,6 +41,7 @@ namespace RainMeadow
         {
             if (overWorld is null) throw new InvalidProgrammerException("overWorld is null");
             OnlineManager.lobby.gameMode.EstablishWorlds(this);
+            ReserveEntityIDs();
         }
 
         protected override void DeactivateImpl()
@@ -66,8 +76,21 @@ namespace RainMeadow
 
         public class OverworldState : ResourceWithSubresourcesState
         {
+            [OnlineField]
+            public int latestReservation;
+
             public OverworldState() : base() { }
-            public OverworldState(OverworldSession resource, uint ts) : base(resource, ts) { }
+            public OverworldState(OverworldSession resource, uint ts) : base(resource, ts)
+            {
+                latestReservation = resource.latestReservation;
+            }
+
+            public override void ReadTo(OnlineResource resource)
+            {
+                base.ReadTo(resource);
+                OverworldSession session = (OverworldSession)resource;
+                session.latestReservation = latestReservation;
+            }
         }
     }
 }
