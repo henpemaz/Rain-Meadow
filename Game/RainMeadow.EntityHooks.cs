@@ -520,9 +520,11 @@ namespace RainMeadow
             {
                 Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
                 World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
-                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
-                WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == newWorld.name);
+                
+                
+                WorldSession oldWorldSession = OnlineManager.lobby.gameMode.LinkWorld(self.activeWorld) ?? throw new KeyNotFoundException();
+                WorldSession newWorldSession = OnlineManager.lobby.gameMode.LinkWorld(newWorld) ?? throw new KeyNotFoundException();
+                bool isSameWorld = oldWorldSession == newWorldSession;
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
@@ -678,7 +680,7 @@ namespace RainMeadow
                 { // there exists "warps" to the same world, twice, for some bloody reason
                     //this in fact probably is required for now because rain world devs DESPISE US
                     RainMeadow.Debug("Unsubscribing from old world");
-                    oldWorldSession.Deactivate();
+                    oldWorldSession.discard = true;
                     oldWorldSession.NotNeeded(); // done? let go
                 }
 

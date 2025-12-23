@@ -442,34 +442,7 @@ namespace RainMeadow
                 {
                     if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                     {
-                        oe.apo.LoseAllStuckObjects();
-                        if (!oe.isMine)
-                        {
-                            // not-online-aware removal
-                            RainMeadow.Debug("removing remote entity from game " + oe);
-                            oe.beingMoved = true;
-
-                            if (oe.apo.realizedObject is Creature c && c.inShortcut)
-                            {
-                                if (c.RemoveFromShortcuts()) c.inShortcut = false;
-                            }
-
-                            entities.Remove(oe.apo);
-
-                            absRoom.creatures.Remove(oe.apo as AbstractCreature);
-                            if (oe.apo.realizedObject != null)
-                            {
-                                room.RemoveObject(oe.apo.realizedObject);
-                                room.CleanOutObjectNotInThisRoom(oe.apo.realizedObject);
-                            }
-                            oe.beingMoved = false;
-                        }
-                        else // mine leave the old online world elegantly
-                        {
-                            RainMeadow.Debug("removing my entity from online " + oe);
-                            oe.ExitResource(roomSession);
-                            oe.ExitResource(roomSession.worldSession);
-                        }
+                        oe.RemoveEntityFromGame();
                     }
                 }
             }
