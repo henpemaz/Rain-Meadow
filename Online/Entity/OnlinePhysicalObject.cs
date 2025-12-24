@@ -476,6 +476,8 @@ namespace RainMeadow
             }
             apo.LoseAllStuckObjects();
             RemoveEntityFromRoom(onlineaware);
+            roomSession.worldSession.EntityLeftResource(apo.GetOnlineObject()!);
+            roomSession.EntityLeftResource(apo.GetOnlineObject()!);
         }
 
         protected override void LeaveImpl(OnlineResource inResource)
