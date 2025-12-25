@@ -2388,59 +2388,7 @@ namespace RainMeadow
                     arena.currentLobbyOwner = OnlineManager.lobby.owner;
 
                 }
-
-                if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
-                {
-                    RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
-
-                    var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
-
-                    self.Players.RemoveAll(p => extraPlayers.Contains(p));
-
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))//&& ac.state.alive
-                        {
-                            self.Players.Add(ac);
-                        }
-                    }
-                }
                 arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
-                }
-
-                if (!self.sessionEnded)
-                {
-                    foreach (var s in self.arenaSitting.players)
-                    {
-                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
-                        {
-                            for (int i = 0; i < self.Players.Count; i++)
-                            {
-                                if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
-                                {
-                                    if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
-                                    {
-                                        s.timeAlive++;
-                                    }
-                                }
-                                else
-                                {
-                                    if (self.Players[i].state.alive) // alive and without an owner? Die
-                                    {
-                                        self.Players[i].Die();
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                }
-
             }
         }
 

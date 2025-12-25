@@ -430,7 +430,56 @@ namespace RainMeadow
 
         public virtual void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
         {
+                if (session.Players.Count != arena.arenaSittingOnlineOrder.Count)
+                {
+                    RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {session.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
 
+                    var extraPlayers = session.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
+
+                    session.Players.RemoveAll(p => extraPlayers.Contains(p));
+
+                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+                    {
+                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !session.Players.Contains(ac))//&& ac.state.alive
+                        {
+                            session.Players.Add(ac);
+                        }
+                    }
+                }
+                 if (OnlineManager.lobby.isOwner)
+                {
+                    arena.playersEqualToOnlineSitting = session.Players.Count == arena.arenaSittingOnlineOrder.Count;
+                }
+
+                if (!session.sessionEnded)
+                {
+                    foreach (var s in session.arenaSitting.players)
+                    {
+                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
+                        {
+                            for (int i = 0; i < session.Players.Count; i++)
+                            {
+                                if (OnlinePhysicalObject.map.TryGetValue(session.Players[i], out var onlineC))
+                                {
+                                    if (onlineC.owner == os && session.Players[i].realizedCreature != null && !session.Players[i].realizedCreature.State.dead)
+                                    {
+                                        s.timeAlive++;
+                                    }
+                                }
+                                else
+                                {
+                                    if (session.Players[i].state.alive) // alive and without an owner? Die
+                                    {
+                                        session.Players[i].Die();
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                }
         }
 
         public virtual bool PlayerSessionResultSort(ArenaOnlineGameMode arena, On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)

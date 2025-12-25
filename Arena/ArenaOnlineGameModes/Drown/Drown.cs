@@ -23,6 +23,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
         public static string Boomerang = "Boomerang";
         public static string Respawn = "Respawn";
         public static string OpenDens = "Open Dens";
+        public AbstractCreature? meCreature;
 
 
         public static ArenaSetup.GameTypeID Drown = new ArenaSetup.GameTypeID("Drown", register: true);
@@ -90,104 +91,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
             return false;
         }
 
-        public override bool ShouldSessionEnd(ArenaMode arena, On.ArenaGameSession.orig_ShouldSessionEnd orig, ArenaGameSession self)
-        {   
-            bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
-            int count = 0;
-            if (DrownMode.isDrownMode(arena, out var drown)) {
-            if (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count == 0) {
-            foreach (var p in arena.arenaSittingOnlineOrder)
-            {
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                if (pl != null)
-                {
-                    OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
-                    if (cs != null)
-                    {
-
-                        cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                        if (clientSettings != null)
-                        {
-
-                            if ((teamWork ? clientSettings.teamScore : clientSettings.score) < drown.respCost && !drown.openedDen)
-                            {
-                               count++;
-                            }
-                        }
-                        }
-                    }
-                }
-                if (count == self.arenaSitting.players.Count) // everyone's dead with no money
-                {
-                    return true;
-                }
-            }
-          }
-         return self.thisFrameActivePlayers == 0;
-    }
-
-        public override int PlayersStillActive(ArenaMode arena, On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
-        {
-            if (!DrownMode.isDrownMode(arena, out var drown))
-            {
-                return orig(self, addToAliveTime, dontCountSandboxLosers);
-            }
-
-            bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
-            foreach (var p in arena.arenaSittingOnlineOrder)
-            {
-                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
-                if (pl != null)
-                {
-                    OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
-                    if (cs != null)
-                    {
-
-                        cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                        if (clientSettings != null)
-                        {
-
-                            if ((teamWork ? clientSettings.teamScore : clientSettings.score) >= drown.respCost && !drown.openedDen) // We can still respawn
-                            {
-                                return self.arenaSitting.players.Count;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (teamWork && !drown.openedDen && (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count > 0))
-            {
-                return self.arenaSitting.players.Count;
-            }
-
-             return orig(self, addToAliveTime, dontCountSandboxLosers);
-        }
-
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
-        {
-            base.ArenaSessionCtor(arena, orig, self, game);
-            openedDen = false;
-            currentWave = 1;
-            lastCleanupWave = 0;
-
-            foreach (var player in self.arenaSitting.players)
-            {
-                player.score = 5;
-                OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
-                if (cs != null)
-                {
-
-                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
-                    if (clientSettings != null)
-                    {
-                        clientSettings.iOpenedDen = false;
-                        clientSettings.score = 5;
-                    }
-                }
-            }
-
-        }
         public override void Killing(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_Killing orig, ArenaGameSession self, Player player, Creature killedCrit, int playerIndex)
         {
             base.Killing(arena, orig, self, player, killedCrit, playerIndex);
@@ -377,6 +280,78 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
             myTab = null;
         }
 
+        public override int PlayersStillActive(ArenaMode arena, On.ArenaGameSession.orig_PlayersStillActive orig, ArenaGameSession self, bool addToAliveTime, bool dontCountSandboxLosers)
+        {
+            if (!DrownMode.isDrownMode(arena, out var drown))
+            {
+                return orig(self, addToAliveTime, dontCountSandboxLosers);
+            }
+
+            bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+            foreach (var p in arena.arenaSittingOnlineOrder)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                if (pl != null)
+                {
+                    OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
+                    if (cs != null)
+                    {
+
+                        cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
+                        if (clientSettings != null)
+                        {
+
+                            if ((teamWork ? clientSettings.teamScore : clientSettings.score) >= drown.respCost && !drown.openedDen) // We can still respawn
+                            {
+                                return  arena.arenaSittingOnlineOrder.Count;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!drown.openedDen && (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count > 0))
+            {
+                return arena.arenaSittingOnlineOrder.Count;
+            }
+             return orig(self, addToAliveTime, dontCountSandboxLosers);
+        }
+
+        public override bool ShouldSessionEnd(ArenaMode arena, On.ArenaGameSession.orig_ShouldSessionEnd orig, ArenaGameSession self)
+        {   
+            bool teamWork = !self.GameTypeSetup.spearsHitPlayers;
+            int count = 0;
+            if (DrownMode.isDrownMode(arena, out var drown)) {
+            if (self.Players.FindAll(x => x.realizedCreature != null && x.realizedCreature.State.alive).Count == 0) {
+            foreach (var p in arena.arenaSittingOnlineOrder)
+            {
+                OnlinePlayer? pl = ArenaHelpers.FindOnlinePlayerByLobbyId(p);
+                if (pl != null)
+                {
+                    OnlineManager.lobby.clientSettings.TryGetValue(pl, out var cs);
+                    if (cs != null)
+                    {
+
+                        cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
+                        if (clientSettings != null)
+                        {
+
+                            if ((teamWork ? clientSettings.teamScore : clientSettings.score) < drown.respCost && !drown.openedDen)
+                            {
+                               count++;
+                            }
+                        }
+                        }
+                    }
+                }
+                if (count == self.arenaSitting.players.Count) // everyone's dead with no money
+                {
+                    return true;
+                }
+            }
+          }
+         return self.thisFrameActivePlayers == 0;
+    }
         public override void ArenaSessionEnded(ArenaMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
         {
             if (isDrownMode(arena, out var drown))
@@ -434,15 +409,41 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
             }
         }
 
+        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        {
+            base.ArenaSessionCtor(arena, orig, self, game);
+            openedDen = false;
+            currentWave = 1;
+            lastCleanupWave = 0;
+
+            foreach (var player in self.arenaSitting.players)
+            {
+                player.score = 5;
+                OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs);
+                if (cs != null)
+                {
+
+                    cs.TryGetData<ArenaDrownClientSettings>(out var clientSettings);
+                    if (clientSettings != null)
+                    {
+                        clientSettings.iOpenedDen = false;
+                        clientSettings.score = 5;
+                    }
+                }
+            }
+
+        }
         public override void ArenaSessionUpdate(ArenaOnlineGameMode arena, ArenaGameSession session)
         {
-            if (isDrownMode(arena, out var drown))
-            {
                 if (!session.sessionEnded)
                 {
                     for (int i = 0; i < session.Players.Count; i++)
                     {
                         var onlinePlayer = OnlinePhysicalObject.map.TryGetValue(session.Players[i], out var onlineP);
+                        if (session.Players[i].IsLocal() && meCreature == null)
+                        {
+                            meCreature = session.Players[i];
+                        }
                         if (onlinePlayer)
                         {
                             if (session.Players[i].state.alive)
@@ -459,7 +460,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
                                     }
                                 }
 
-                                if (drown.openedDen && !openedDen && session.Players[i] != null && session.Players[i].realizedCreature != null && session.Players[i].realizedCreature.State.alive && session.GameTypeSetup.spearsHitPlayers)
+                                if (this.openedDen && !openedDen && session.Players[i] != null && session.Players[i].realizedCreature != null && session.Players[i].realizedCreature.State.alive && session.GameTypeSetup.spearsHitPlayers)
                                 {
                                     session.game.cameras[0].hud.PlaySound(SoundID.UI_Slugcat_Die);
                                     session.Players[i].realizedCreature.Die();
@@ -493,7 +494,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
                         });
 
 
-                        arena.arenaSittingOnlineOrder.ForEach(x =>
+                    arena.arenaSittingOnlineOrder.ForEach(x =>
                       {
 
                           OnlinePlayer? p = ArenaHelpers.FindOnlinePlayerByLobbyId(x);
@@ -513,6 +514,31 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
 
                       });
                     }
+
+                foreach (var s in session.arenaSitting.players)
+                {
+                    var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
+                    {
+                        for (int i = 0; i < session.Players.Count; i++)
+                        {
+                            if (OnlinePhysicalObject.map.TryGetValue(session.Players[i], out var onlineC))
+                            {
+                                if (onlineC.owner == os && session.Players[i].realizedCreature != null && !session.Players[i].realizedCreature.State.dead)
+                                {
+                                    s.timeAlive++;
+                                }
+                            }
+                            else
+                            {
+                                if (session.Players[i].state.alive) // alive and without an owner? Die
+                                {
+                                    session.Players[i].Die();
+                                }
+                            }
+                        }
+                    }
+
+                }
 
                 }
 
@@ -542,9 +568,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
                         CreatureCleanup(arena, session);
                     }
                     waveNeedsUpdate = false;
+            }
+            foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
+            {
+                if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
+                if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !session.Players.Contains(ac))
+                {
+                    session.Players.Add(ac);
                 }
             }
-            base.ArenaSessionUpdate(arena, session);
 
         }
 
@@ -557,7 +589,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
                 var entities = session.room.abstractRoom.entities;
                 for (int i = entities.Count - 1; i >= 0; i--)
                 {
-                    if (entities[i] is AbstractPhysicalObject apo && apo is AbstractCreature ac && ac.state.dead && ac.realizedCreature.grabbedBy.Count <= 0 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                    if (entities[i] is AbstractPhysicalObject apo && apo is AbstractCreature ac && ac != meCreature &&  ac.state.dead && ac.realizedCreature.grabbedBy.Count <= 0 && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                     {
                         for (int num = ac.stuckObjects.Count - 1; num >= 0; num--)
                         {
