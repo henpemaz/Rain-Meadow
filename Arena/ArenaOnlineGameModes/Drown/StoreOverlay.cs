@@ -279,6 +279,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.Drown
         private static void RevivePlayer(ArenaGameSession session, ArenaOnlineGameMode arena, DrownMode drown)
         {
         
+            drown.meCreature = null;
             List<int> exitList = new List<int>();
             for (int i = 0; i < session.room.world.GetAbstractRoom(0).exits; i++)
             {
