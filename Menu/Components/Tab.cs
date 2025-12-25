@@ -76,13 +76,16 @@ public class TabContainer : RectangularMenuObject
         {
             base.Update();
             if (topArrowButton != null)
-            {
+            {   float hue = (Time.time * 0.1f) % 1f; 
+                topArrowButton.rectColor = Color.HSVToRGB(hue, 1f, 1f).ToHSL();
                 topArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset > 0);
                 TabButton? topTabBtn = activeTabButtons.First();
                 topArrowButton.pos.y = topTabBtn != null ? topTabBtn.pos.y + topTabBtn.size.y + 10 : container.size.y;
             }
             if (bottomArrowButton != null)
             {
+                float hue = (Time.time * 0.1f) % 1f; 
+                bottomArrowButton.rectColor = Color.HSVToRGB(hue, 1f, 1f).ToHSL();
                 bottomArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset < MaxOffset);
                 TabButton? bottomTabBtn = activeTabButtons.Last();
                 bottomArrowButton.pos.y = (bottomTabBtn != null ? bottomTabBtn.pos.y : 0) - 34;
@@ -171,12 +174,14 @@ public class TabContainer : RectangularMenuObject
             if (topArrowButton == null)
             {
                 topArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveUp", new(-5, container.size.y));
+                topArrowButton.rectColor = RainWorld.GoldHSL;
                 topArrowButton.OnClick += _ => GoPrevPage();
                 subObjects.Add(topArrowButton);
             }
             if (bottomArrowButton == null)
             {
                 bottomArrowButton = new(menu, this, "Menu_Symbol_Arrow", "TabButtons_MoveDown", new(-5, -24));
+                bottomArrowButton.rectColor = RainWorld.GoldHSL;
                 bottomArrowButton.symbolSprite.rotation = 180f;
                 bottomArrowButton.OnClick += _ => GoNextPage();
                 subObjects.Add(bottomArrowButton);
