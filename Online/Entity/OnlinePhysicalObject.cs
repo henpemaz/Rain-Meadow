@@ -418,6 +418,7 @@ namespace RainMeadow
                 apo.Room?.entities?.Remove(apo);
                 apo.Room?.entitiesInDens?.Remove(apo);
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
+                if (currentlyJoinedResource is RoomSession rs) rs.EntityLeftResource(this);
             }
             roomSession.EntityLeftResource(apo.GetOnlineObject()!);
         }
