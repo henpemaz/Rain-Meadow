@@ -420,7 +420,6 @@ namespace RainMeadow
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
                 if (currentlyJoinedResource is RoomSession rs) rs.EntityLeftResource(this);
             }
-            roomSession.EntityLeftResource(apo.GetOnlineObject()!);
         }
         
         public void RemoveEntityFromGame(bool onlineaware = true)
