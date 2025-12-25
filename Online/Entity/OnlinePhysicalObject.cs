@@ -477,8 +477,11 @@ namespace RainMeadow
                 }
             }
             apo.LoseAllStuckObjects();
-            roomSession.worldSession.EntityLeftResource(apo.GetOnlineObject()!);
             RemoveEntityFromRoom(onlineaware);
+            if (!onlineaware)
+            {
+                if (primaryResource is WorldSession ws) ws.EntityLeftResource(this);
+            }
         }
 
         protected override void LeaveImpl(OnlineResource inResource)
