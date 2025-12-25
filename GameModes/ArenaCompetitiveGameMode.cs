@@ -442,7 +442,17 @@ namespace RainMeadow
                 {
                     if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
                     {
-                        oe.RemoveEntityFromGame();
+                        if (!oe.isMine)
+                        {
+                            // not-online-aware removal
+                            oe.RemoveEntityFromGame(false);
+                        }
+                        else // mine leave the old online world elegantly
+                        {
+                            RainMeadow.Debug("removing my entity from online " + oe);
+                            oe.ExitResource(roomSession);
+                            oe.ExitResource(roomSession.worldSession);
+                        }
                     }
                 }
             }
