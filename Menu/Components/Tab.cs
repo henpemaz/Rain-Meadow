@@ -76,13 +76,16 @@ public class TabContainer : RectangularMenuObject
         {
             base.Update();
             if (topArrowButton != null)
-            {
+            {   float hue = (Time.time * 0.1f) % 1f; 
+                topArrowButton.rectColor = Color.HSVToRGB(hue, 1f, 1f).ToHSL();
                 topArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset > 0);
                 TabButton? topTabBtn = activeTabButtons.First();
                 topArrowButton.pos.y = topTabBtn != null ? topTabBtn.pos.y + topTabBtn.size.y + 10 : container.size.y;
             }
             if (bottomArrowButton != null)
             {
+                float hue = (Time.time * 0.1f) % 1f; 
+                bottomArrowButton.rectColor = Color.HSVToRGB(hue, 1f, 1f).ToHSL();
                 bottomArrowButton.GetButtonBehavior.greyedOut = !(CurrentOffset < MaxOffset);
                 TabButton? bottomTabBtn = activeTabButtons.Last();
                 bottomArrowButton.pos.y = (bottomTabBtn != null ? bottomTabBtn.pos.y : 0) - 34;
