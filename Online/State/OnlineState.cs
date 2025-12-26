@@ -112,6 +112,16 @@ namespace RainMeadow
             if (baseline == null) throw new ArgumentNullException();
             if (baseline.isDelta) throw new InvalidProgrammerException("baseline is delta");
             if (isDelta) throw new InvalidProgrammerException("self is delta");
+
+            if (baseline.handler != this.handler)
+            {
+                // full delta for change in type
+                var result = this.Clone();
+                result.isDelta = true;
+                for (int i = 0; i < result.valueFlags.Length; i++) result.valueFlags[i] = true;
+                return result;
+            }
+
             try
             {
                 var result = handler.delta(this, baseline);
@@ -131,6 +141,15 @@ namespace RainMeadow
             if (incoming == null) throw new ArgumentNullException();
             if (!incoming.isDelta) throw new InvalidProgrammerException("incoming not delta");
             if (isDelta) throw new InvalidProgrammerException("self is delta");
+            
+            if (incoming.valueFlags.All(x => x))
+            {
+                var result = incoming.Clone();
+                result.isDelta = false;
+                result.valueFlags = new bool[handler.ngroups];
+                return result;
+            }
+
             try
             {
                 var result = handler.applydelta(this, incoming);
