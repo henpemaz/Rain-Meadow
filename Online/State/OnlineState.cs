@@ -113,12 +113,17 @@ namespace RainMeadow
             if (baseline.isDelta) throw new InvalidProgrammerException("baseline is delta");
             if (isDelta) throw new InvalidProgrammerException("self is delta");
 
-            if (baseline.handler != this.handler)
+            if (baseline.handler.type != this.handler.type)
             {
-                // full delta for change in type
-                var result = this.Clone();
+                OnlineState result = this.Clone();
                 result.isDelta = true;
-                for (int i = 0; i < result.valueFlags.Length; i++) result.valueFlags[i] = true;
+                if (result.handler.deltaSupport == StateHandler.DeltaSupport.Full && result is RootDeltaState rds)
+                {
+                    if (baseline is not RootDeltaState bds) throw new InvalidProgrammerException("polymorphic state changed delta supports");
+                    rds.baseline = bds.tick;
+                }
+
+                result.valueFlags = Enumerable.Repeat(true, result.valueFlags.Length).ToArray();
                 return result;
             }
 
@@ -141,12 +146,12 @@ namespace RainMeadow
             if (incoming == null) throw new ArgumentNullException();
             if (!incoming.isDelta) throw new InvalidProgrammerException("incoming not delta");
             if (isDelta) throw new InvalidProgrammerException("self is delta");
-            
-            if (incoming.valueFlags.All(x => x))
+
+            if (incoming.handler.type != this.handler.type)
             {
-                var result = incoming.Clone();
+                OnlineState result = incoming.Clone();
                 result.isDelta = false;
-                result.valueFlags = new bool[handler.ngroups];
+                Array.Clear(result.valueFlags, 0, result.valueFlags.Length);
                 return result;
             }
 
