@@ -61,13 +61,13 @@ namespace RainMeadow
             if (meadowAnniversaryBackgroundOption >= offset && meadowAnniversaryBackgroundOption < maxOffset)
             {
                 var anniv = new MenuIllustration(self, self.pages[0], string.Empty, "anniv_small", self.backgroundIllustrations[meadowAnniversaryBackgroundOption - offset].pos, crispPixels: true, anchorCenter: false);
-                self.backgroundIllustrations.AddItem(anniv);
+                self.backgroundIllustrations = [..self.backgroundIllustrations.AddItem(anniv)];
                 self.pages[0].subObjects.Add(anniv);
             }
             if (meadowSeeBgOption >= offset && meadowSeeBgOption < maxOffset)
             {
                 var medsee = new MenuIllustration(self, self.pages[0], string.Empty, "meadowsee_small", self.backgroundIllustrations[meadowSeeBgOption - offset].pos, crispPixels: true, anchorCenter: false);
-                self.backgroundIllustrations.AddItem(medsee);
+                self.backgroundIllustrations = [..self.backgroundIllustrations.AddItem(medsee)];
                 self.pages[0].subObjects.Add(medsee);
             }
         }
