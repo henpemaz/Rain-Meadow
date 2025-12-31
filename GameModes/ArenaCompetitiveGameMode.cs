@@ -780,7 +780,7 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
-        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+        public static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee
