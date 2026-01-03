@@ -17,6 +17,10 @@ namespace RainMeadow
         private FSprite[] chatBg;
         private float bgSideOffset = 20;
         private const int maxVisibleMessages = 13;
+        private Rect chatRect;
+
+        public float opacity = 1.0f;
+        private float lastOpacity = 1.0f;
 
         public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
@@ -46,7 +50,16 @@ namespace RainMeadow
             pages[0].subObjects.Add(scroller);
             UpdateLogDisplay();
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
+
+            chatRect = new Rect(scroller.pos.x, scroller.pos.y, scroller.size.x, scroller.size.y).CloneWithExpansion(20);
         }
+
+        public override void Update()
+        {
+            base.Update();
+            OpacityUpdate();
+        }
+
         public override void GrafUpdate(float timeStacker)
         {
             /// Obtains the first visible button index on the scroller
@@ -58,6 +71,9 @@ namespace RainMeadow
                 return 0;
             }
             base.GrafUpdate(timeStacker);
+
+            var tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
+
             // Make everything "invisible" by default (just 0-sized)
             for (int i = 0; i < chatBg.Length; ++i)
             {
@@ -65,19 +81,76 @@ namespace RainMeadow
                 chatBg[i].scaleY = 0;
             }
             int firstIndex = GetFirstIndex();
+            float longestMessage = 0;
             for (int i = 0; i < chatBg.Length; ++i)
             {
                 int j = firstIndex + i;
                 if (j >= 0 && j < scroller.buttons.Count)
                 {
+                    // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
+                    // messages fading out work as intended.
+                    if (scroller.buttons[j] is AlignedMenuLabel label)
+                    {
+                        label.label.alpha = tOpacity;
+                        foreach(var subObj in label.subObjects)
+                        {
+                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
+                        }
+                    }
+
                     chatBg[i].x = scroller.pos.x + scroller.buttons[j].Pos.x - 4f;
                     chatBg[i].y = scroller.pos.y + scroller.buttons[j].Pos.y;
                     chatBg[i].scaleX = msgExtents[j] + 8f;
                     chatBg[i].scaleY = scroller.ButtonHeightAndSpacing + 1f;
-                    chatBg[i].alpha = scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value);
+                    chatBg[i].alpha = tOpacity * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
                 }
             }
         }
+
+        public void OpacityUpdate()
+        {
+            // If the chat input is open or we aren't in game we won't check for players.
+            if (chatHud.chatInputActive || chatHud.camera is null)
+            {
+                lastOpacity = 1.0f;
+                opacity = 1.0f;
+                return;
+            }
+
+            lastOpacity = opacity;
+            if (msgExtents.Count > 0)
+            {
+                // TODO only check messages currently visible
+                chatRect.width = msgExtents.Max() + 20;
+                chatRect.yMax = msgExtents.Count >= maxVisibleMessages ? scroller.size.y : msgExtents.Count * 20;
+            }
+
+            bool avatarBehind = false;
+
+            foreach(var avatar in OnlineManager.lobby.playerAvatars)
+            {
+                var entity = avatar.Value.FindEntity(true);
+                if (entity is OnlineCreature oc && oc.abstractCreature != null && oc.abstractCreature.realizedCreature != null && !oc.abstractCreature.realizedCreature.dead)
+                {
+                    if (chatRect.Contains(oc.abstractCreature.realizedCreature.mainBodyChunk.pos - chatHud.camera.pos))
+                    {
+                        // A player avatar is currently being obscured by chat.
+                        avatarBehind = true;
+                        break;
+                    }
+                }
+            }
+
+            if (avatarBehind)
+            {
+                opacity = Mathf.Max(0.35f, opacity - 0.05f);
+            }
+            else
+            {
+                opacity = Mathf.Min(1.0f, opacity + 0.05f);
+            }
+        }
+
         public void UpdateLogDisplay()
         {
             if (chatHud.chatLog.Count > myChatLog.Length)
