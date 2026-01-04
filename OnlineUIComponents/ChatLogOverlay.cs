@@ -21,6 +21,9 @@ namespace RainMeadow
 
         public float opacity = 1.0f;
         private float lastOpacity = 1.0f;
+        public int inactivityTimer;
+
+        private FSprite debug;
 
         public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
@@ -51,13 +54,22 @@ namespace RainMeadow
             UpdateLogDisplay();
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
 
-            chatRect = new Rect(scroller.pos.x, scroller.pos.y, scroller.size.x, scroller.size.y).CloneWithExpansion(20);
+            chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
+            debug = new("pixel")
+            {
+                anchorX = 0,
+                anchorY = 0,
+                color = Color.red,
+                alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
+            };
+            pages[0].Container.AddChild(debug);
         }
 
         public override void Update()
         {
             base.Update();
             OpacityUpdate();
+            inactivityTimer++;
         }
 
         public override void GrafUpdate(float timeStacker)
@@ -71,6 +83,14 @@ namespace RainMeadow
                 return 0;
             }
             base.GrafUpdate(timeStacker);
+
+            if (debug != null)
+            {
+                debug.x = chatRect.x;
+                debug.y = chatRect.y;
+                debug.width = chatRect.width;
+                debug.height = chatRect.height;
+            }
 
             var tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
 
@@ -114,6 +134,7 @@ namespace RainMeadow
             {
                 lastOpacity = 1.0f;
                 opacity = 1.0f;
+                inactivityTimer = 0;
                 return;
             }
 
@@ -122,26 +143,32 @@ namespace RainMeadow
             {
                 // TODO only check messages currently visible
                 chatRect.width = msgExtents.Max() + 20;
-                chatRect.yMax = msgExtents.Count >= maxVisibleMessages ? scroller.size.y : msgExtents.Count * 20;
             }
 
-            bool avatarBehind = false;
+            bool fade = false;
 
-            foreach(var avatar in OnlineManager.lobby.playerAvatars)
+            if (inactivityTimer > 1200)
             {
-                var entity = avatar.Value.FindEntity(true);
-                if (entity is OnlineCreature oc && oc.abstractCreature != null && oc.abstractCreature.realizedCreature != null && !oc.abstractCreature.realizedCreature.dead)
+                fade = true;
+            }
+            else
+            {
+                foreach (var avatar in OnlineManager.lobby.playerAvatars)
                 {
-                    if (chatRect.Contains(oc.abstractCreature.realizedCreature.mainBodyChunk.pos - chatHud.camera.pos))
+                    var entity = avatar.Value.FindEntity(true);
+                    if (entity is OnlineCreature oc && oc.abstractCreature != null && oc.abstractCreature.realizedCreature != null && !oc.abstractCreature.realizedCreature.dead)
                     {
-                        // A player avatar is currently being obscured by chat.
-                        avatarBehind = true;
-                        break;
+                        if (chatRect.Contains(oc.abstractCreature.realizedCreature.mainBodyChunk.pos - chatHud.camera.pos))
+                        {
+                            // A player avatar is currently being obscured by chat.
+                            fade = true;
+                            break;
+                        }
                     }
                 }
             }
 
-            if (avatarBehind)
+            if (fade)
             {
                 opacity = Mathf.Max(0.35f, opacity - 0.05f);
             }
@@ -198,7 +225,7 @@ namespace RainMeadow
                     }
                 }
                 myChatLog = [.. chatHud.chatLog];
-
+                inactivityTimer = 0;
             }
         }
     }
