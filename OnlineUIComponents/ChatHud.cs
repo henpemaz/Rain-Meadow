@@ -9,7 +9,7 @@ namespace RainMeadow
     public class ChatHud : HudPart, IChatSubscriber
     {
         private TextPrompt textPrompt;
-        private RoomCamera camera;
+        public RoomCamera camera;
         private RainWorldGame game;
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
