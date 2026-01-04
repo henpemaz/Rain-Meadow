@@ -2,10 +2,10 @@
 using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.Arena.ArenaOnlineGameModes.Drown;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -103,6 +103,7 @@ namespace RainMeadow
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
 
+        public ArenaDrownClientSettings arenaDrownClientSettings;
         public SlugcatCustomization avatarSettings;
 
         public bool shufflePlayList;
@@ -118,6 +119,7 @@ namespace RainMeadow
             avatarSettings = new SlugcatCustomization() { nickname = OnlineManager.mePlayer.id.name };
             arenaClientSettings = new ArenaClientSettings();
             arenaTeamClientSettings = new ArenaTeamClientSettings();
+            arenaDrownClientSettings = new ArenaDrownClientSettings();
 
             playerResultColors = new Dictionary<string, int>();
             registeredGameModes = new Dictionary<string, ExternalArenaGameMode>();
@@ -317,6 +319,7 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+            this.AddExternalGameModes(DrownMode.Drown, new DrownMode());
 
         }
 
@@ -914,6 +917,7 @@ namespace RainMeadow
             {
                 lobby.AddData(new ArenaLobbyData());
                 lobby.AddData(new TeamBattleLobbyData());
+                lobby.AddData(new DrownData());
             }
         }
 
@@ -921,6 +925,7 @@ namespace RainMeadow
         {
             clientSettings.AddData(arenaClientSettings);
             clientSettings.AddData(arenaTeamClientSettings);
+            clientSettings.AddData(arenaDrownClientSettings);
 
         }
 
