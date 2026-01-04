@@ -29,6 +29,13 @@ namespace RainMeadow
         public static string lastSentMessage = "";
 
         public static event Action? OnShutDownRequest;
+
+        public static string Clipboard
+        {
+            get => GUIUtility.systemCopyBuffer;
+            set => GUIUtility.systemCopyBuffer = value;
+        }
+
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
             lastSentMessage = "";
@@ -230,7 +237,7 @@ namespace RainMeadow
                         SetCursorSprite(false);
                     }
 
-                    else if (Input.GetKey(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+                    else if (Input.GetKey(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
                     {
                         if (cursorPos == len)
                         {
@@ -238,6 +245,20 @@ namespace RainMeadow
                         }
                         cursorPos = 0;
                         selectionPos = msg.Length;
+                    }
+
+                    // CTRL + C / Command + C
+                    else if (Input.GetKey(KeyCode.C) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
+                    {
+                        CopySelection();
+                    }
+                    // CTRL + V / Command + V
+                    else if (Input.GetKey(KeyCode.V) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
+                    {
+                        lastSentMessage = Paste(msg);
+                        menuLabel.text = lastSentMessage;
+                        cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
+                        selectionPos = -1;
                     }
 
                     else if (Input.GetKey(KeyCode.LeftArrow))
@@ -341,6 +362,40 @@ namespace RainMeadow
             menuLabel.text = lastSentMessage;
             if (selectionPos < cursorPos) cursorPos = selectionPos;
             selectionPos = -1;
+        }
+
+        private void CopySelection()
+        {
+            if (selectionPos == -1) return;
+            Clipboard = lastSentMessage.Substring(Mathf.Max(0, Mathf.Min(cursorPos, selectionPos)), Mathf.Abs(selectionPos - cursorPos));
+        }
+
+        private string Paste(string msg)
+        {
+            var paste = Clipboard;
+            if (string.IsNullOrEmpty(paste)) return msg;
+
+            int newLength = paste.Length + msg.Length;
+            if (newLength < textLimit)
+            {
+                msg.Insert(Mathf.Min(cursorPos, msg.Length - 1), paste);
+            }
+            else
+            {
+                while(paste.Length + msg.Length < textLimit)
+                {
+                    if (paste.Length > 0)
+                    {
+                        paste.Remove(paste.Length - 1);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                msg.Insert(Mathf.Min(cursorPos, msg.Length - 1), paste);
+            }
+            return msg;
         }
 
         private void SetCursorSprite(bool inMiddle)
