@@ -55,14 +55,14 @@ namespace RainMeadow
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
 
             chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
-            debug = new("pixel")
-            {
-                anchorX = 0,
-                anchorY = 0,
-                color = Color.red,
-                alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
-            };
-            pages[0].Container.AddChild(debug);
+            //debug = new("pixel")
+            //{
+            //    anchorX = 0,
+            //    anchorY = 0,
+            //    color = Color.red,
+            //    alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
+            //};
+            //pages[0].Container.AddChild(debug);
         }
 
         public override void Update()
