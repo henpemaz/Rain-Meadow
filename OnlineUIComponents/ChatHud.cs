@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HUD;
 using Rewired;
@@ -57,6 +58,10 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
+            if (!string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                camera.virtualMicrophone.PlaySound(PlopMachine.HiHat, 0, 0.4f, 1f);
+            }
             chatLog.Add((user, message));
             if (chatLogOverlay != null)
             {
@@ -102,15 +107,18 @@ namespace RainMeadow
             {
                 if (chatLogOverlay != null)
                 {
-                    if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
+                    if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
                     {
-                        chatLogOverlay.scroller.AddScroll(-1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                    }
-                    else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollDown)
-                    {
-                        chatLogOverlay.scroller.AddScroll(1);
-                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+                        if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
+                        {
+                            chatLogOverlay.scroller.AddScroll(-1);
+                            chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+                        }
+                        else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollDown)
+                        {
+                            chatLogOverlay.scroller.AddScroll(1);
+                            chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+                        }
                     }
                 }
             }

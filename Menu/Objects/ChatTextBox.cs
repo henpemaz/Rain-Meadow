@@ -364,23 +364,26 @@ namespace RainMeadow
                 }
                 blockInput = true;
             }
-            if (Input.GetKey(KeyCode.UpArrow) 
-             || Input.GetKey(KeyCode.DownArrow))
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)) 
+                && (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow)))
             {
                 blockInput = false;
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    if (arrowHeld == 0)
-                        GetMessageHistory(-1);
+                    if (arrowHeld == 0) GetMessageHistory(-1);
                     arrowHeld += Time.deltaTime;
                 }
                 else if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    if (arrowHeld == 0)
-                        GetMessageHistory(1);
+                    if (arrowHeld == 0) GetMessageHistory(1);
                     arrowHeld += Time.deltaTime;
                 }
                 blockInput = true;
+            }
+            else if (!Input.GetKey(KeyCode.RightArrow) && !Input.GetKey(KeyCode.LeftArrow))
+            {
+                arrowHeld = 0f;
+                arrowRepeater = 0f;
             }
             base.GrafUpdate(timeStacker);
         }

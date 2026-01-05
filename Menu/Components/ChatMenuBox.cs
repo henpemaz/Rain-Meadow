@@ -76,6 +76,10 @@ namespace RainMeadow.UI.Components
         {
             if (!(OnlineManager.lobby?.gameMode?.mutedPlayers.Contains(user) == false)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
+            if (!string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                menu.manager.menuMic.PlaySound(PlopMachine.HiHat, 0, 0.4f, 1f);
+            }
             bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
             if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
