@@ -365,7 +365,7 @@ namespace RainMeadow
                 blockInput = true;
             }
             if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)) 
-                && (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow)))
+                && ((Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))))
             {
                 blockInput = false;
                 if (Input.GetKey(KeyCode.UpArrow))

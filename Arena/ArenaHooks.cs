@@ -1017,22 +1017,21 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && isArenaMode(out var _))
+                    if (self.IsLocal() && isArenaMode(out var arena))
                     {
                         if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
                         {
-                            if (!opo.isMine)
+                            if (opo.isMine) return;
+                            var saint = self.abstractCreature.GetOnlineCreature();
+                            if (saint != null)
                             {
-                                var saint = self.abstractCreature.GetOnlineCreature();
-                                if (saint != null)
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
-                                }
-                                else
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
-                                }
-
+                                // Don't ascend friends!
+                                if (po is Creature c && self.FriendlyFireSafetyCandidate(c)) return;
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
+                            }
+                            else
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
                             }
                         }
                     }
