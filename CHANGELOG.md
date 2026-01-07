@@ -1,3 +1,12 @@
+# Release 1.10.1
+## Arena
+- Added flash to tab arrow to assist users in locating game mode tab settings
+- Publicized arena.blockList for developers
+
+
+## General
+- Added Chinese translation (thanks @havenoideawhatismyname!)
+- Fixed custom background thumbnails not disappearing when scrolling background pages
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
