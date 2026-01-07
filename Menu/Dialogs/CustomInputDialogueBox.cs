@@ -1,6 +1,7 @@
 ﻿using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -9,7 +10,7 @@ namespace RainMeadow
         protected MenuTabWrapper tabWrapper;
         public SymbolButton cancelButton;
         public SimpleButton continueButton;
-        public OpTextBox textBox;
+        public OpTypeBox textBox;
         public UIelementWrapper textBoxWrapper;
 
         public CustomInputDialogueBox(Menu.Menu menu, MenuObject owner, string text, string signalText, Vector2 pos, Vector2 size, bool forceWrapping = false)
@@ -19,7 +20,7 @@ namespace RainMeadow
             subObjects.Add(tabWrapper);
 
             Vector2 center = size / 2f;
-            textBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
+            textBox = new OpTypeBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
             textBox.accept = OpTextBox.Accept.StringASCII;
             textBox.allowSpace = true;
             textBoxWrapper = new UIelementWrapper(this.tabWrapper, textBox);

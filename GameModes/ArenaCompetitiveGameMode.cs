@@ -5,6 +5,7 @@ using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -33,6 +34,7 @@ namespace RainMeadow
         public bool leaveForNextLevel;
         public bool leaveToRestart;
 
+        public bool voidMasterEnabled = RainMeadow.rainMeadowOptions.VoidMaster.Value;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
@@ -42,7 +44,12 @@ namespace RainMeadow
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
+        public bool enableBombs = RainMeadow.rainMeadowOptions.EnableBombs.Value;
+        public bool enableBees = RainMeadow.rainMeadowOptions.EnableBees.Value;
+        public bool enableCorpseGrab = RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value;
+
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
+        public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -90,7 +97,8 @@ namespace RainMeadow
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
-
+        
+        public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
@@ -131,8 +139,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-
-
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },
@@ -774,7 +780,7 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
-        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+        public static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee
@@ -786,6 +792,12 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
+            }
             return true;
         }
 
@@ -795,6 +807,12 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
+            }
             return true;
         }
 
@@ -803,6 +821,12 @@ namespace RainMeadow
             if (blockList.Contains(apo.type))
             {
                 return false;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
             }
             return true;
         }

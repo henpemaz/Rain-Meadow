@@ -11,6 +11,7 @@ using System.Linq;
 using UnityEngine;
 using static RainMeadow.RainMeadowModManager;
 
+
 namespace RainMeadow
 {
     public class LobbySelectMenu : SmartMenu
@@ -203,10 +204,14 @@ namespace RainMeadow
             }   
             
             MatchmakingManager.currentInstance.RequestLobbyList();
-
-            manager.musicPlayer?.MenuRequestsSong("Establish", 1, 0);
+            if (manager.musicPlayer != null)
+            {
+                if (RainMeadow.rainMeadowOptions.GetLobbyMusic(out var song) && !string.IsNullOrEmpty(song))
+                {
+                    manager.musicPlayer.MenuRequestsSong(song, 1, 0);
+                }
+            }
         }
-
         public override void Update()
         {
             base.Update();

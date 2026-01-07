@@ -44,6 +44,7 @@ namespace RainMeadow
         protected virtual RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
             if (onlineObject.apo.realizedObject == null) throw new InvalidOperationException("not realized");
+            if (onlineObject.apo.realizedObject is VoidSpawn) return new RealizedRippleSpawnState(onlineObject);
             if (onlineObject.apo.realizedObject is Oracle oracle)
             {
                 if (oracle.oracleBehavior is SLOracleBehavior)
@@ -61,6 +62,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
             if (onlineObject.apo.realizedObject is Hazer) return new RealizedHazerState(onlineObject);
+            // TODO Fix crash in future BoxWorm/FireSprite
+            // if (onlineObject.apo.realizedObject is Watcher.BoxWorm.Larva) return new RealizedFireSpriteLarva(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
 

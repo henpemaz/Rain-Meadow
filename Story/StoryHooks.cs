@@ -126,6 +126,7 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
+            On.Watcher.WarpPoint.WarpPrecast += Watcher_WarpPoint_WarpPrecast;
             //On.Watcher.WarpPoint.PerformWarp += WarpPoint_PerformWarp;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
@@ -196,13 +197,8 @@ namespace RainMeadow
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                    var data = self.overrideData ?? self.Data;
                     var isTransportable = self.transportable; //prevent blocking joining after exiting an echowarp
-                    var isEcho = self.room == null || self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()) == true;
-                    // Can't warp to warp points with null rooms (echo warps)
-                    // remember that echo warps are one way only, so we will NOT gate thru them
-                    // so please do not pretend it's a gate, and no requirements can be met, thanks :)
-                    // and ensure theyre in the same room as the warp point itself :)
+                    var isEcho = self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
                     if (!isEcho)
                     {
                         if (rooms.Distinct().Count() == 1 && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom && isTransportable)
@@ -226,7 +222,17 @@ namespace RainMeadow
             }
             orig(self, eu); // either host or singleplayer
         }
-
+        public void Watcher_WarpPoint_WarpPrecast(On.Watcher.WarpPoint.orig_WarpPrecast orig, Watcher.WarpPoint self)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                //see SpinningTop_SpawnWarpPoint
+                bool isEnteringEchoWarp = self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
+                if (!isEnteringEchoWarp)
+                    return; //To prevent race conditions in LoadRegion coroutines when host calls NormalExecuteWatcherRiftWarp
+            }
+            orig(self);
+        }
         public void Watcher_Barnacle_LoseShell(ILContext il)
         {
             try
@@ -281,7 +287,7 @@ namespace RainMeadow
                 placedObject.pos = warpPoint.pos;
                 warpPoint.WarpPrecast(); // force cast NOW
                 if (OnlineManager.lobby.isOwner)
-                    StoryRPCs.SaveEchoWarp(self.room.game, warpPoint);
+                    StoryHelpers.SaveEchoWarp(self.room.game, warpPoint);
                 else
                 {
                     Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
@@ -1970,8 +1976,9 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening) return true;
                         story.storyClientData.readyForTransition = false;
+                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
+                       
                     }
                     return false;
                 });
@@ -1986,11 +1993,12 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-                        return true;
+                        
                     }
-                    return false;
+                    return true;
+                    
                 });
-                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
                 c.MarkLabel(skip);
             }

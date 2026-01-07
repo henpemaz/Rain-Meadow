@@ -327,6 +327,7 @@ namespace RainMeadow
                     }
                 }
 
+
                 if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
                 {
                     if (!arena.sainot) // ascendance saint

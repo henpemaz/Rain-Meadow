@@ -13,7 +13,7 @@ namespace RainMeadow
         internal bool IsNightSkySkin(OnlineEntity onlineEntity)
         {
             if (!nightSkySkin) return false;
-            return RainMeadow.IsDev(onlineEntity.owner.id);
+            return MatchmakingManager.currentInstance.IsDev(onlineEntity.owner.id);
         }
 
         public abstract class AvatarDataState : EntityDataState

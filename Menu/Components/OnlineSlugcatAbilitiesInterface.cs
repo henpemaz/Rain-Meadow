@@ -32,10 +32,34 @@ namespace RainMeadow.UI.Components
                 SwitchTab(selectSettings);
             }
         }
-        public void SaveAllInterfaceOptions()
+        public static void ShowSyncInRemixCheckbox(OpCheckBox config, bool greyout, bool tosync)
+        {
+            config.greyedOut = greyout;
+            if (!config.held)
+                config.SetValueBool(tosync);
+        }
+        public static void ShowSyncInTextbox(OpTextBox textbox, bool greyout, object obj)
+        {
+
+            textbox.greyedOut = greyout;
+            textbox.held = textbox._KeyboardOn;
+
+            if (textbox.held) return;
+
+            if (textbox.accept == OpTextBox.Accept.Int)
+                textbox.valueInt = (int)obj;
+            else if (textbox.accept == OpTextBox.Accept.Float)
+                textbox.valueFloat = (float)obj;
+            else textbox.value = (string)obj;
+        }
+        public void SaveAllInterfaceOptions(bool isOwner)
         {
             foreach (SettingsPage settings in settingSignals.Values)
-                settings.SaveInterfaceOptions();
+            {
+                if (isOwner)
+                    settings.SaveInterfaceOptions();
+                else settings.SaveInterfaceClientOptions();
+            }
         }
         public void CallForSync() //call this after ctor if needed for sync at start
         {
@@ -169,12 +193,7 @@ namespace RainMeadow.UI.Components
                         btn.buttonBehav.greyedOut = greyoutAll;
                 }
                 if (RainMeadow.isArenaMode(out ArenaMode arena))
-                {
-                    saintAscendDurationTimerTextBox.greyedOut = greyoutAll;
-                    saintAscendDurationTimerTextBox.held = saintAscendDurationTimerTextBox._KeyboardOn;
-                    if (!saintAscendDurationTimerTextBox.held) 
-                        saintAscendDurationTimerTextBox.valueInt = arena.arenaSaintAscendanceTimer;
-                }
+                    ShowSyncInTextbox(saintAscendDurationTimerTextBox, greyoutAll, arena.arenaSaintAscendanceTimer);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -212,9 +231,9 @@ namespace RainMeadow.UI.Components
         {
             public SimplerButton? backButton;
             public MenuTabWrapper tabWrapper;
-            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel;
-            public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox;
-            public OpCheckBox weaverWatcherCheckBox;
+            public MenuLabel watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel;
+            public OpTextBox watcherCamoLimitTextBox, watcherRippleLevelTextBox, amoebaLifespanTextBox;
+            public OpCheckBox weaverWatcherCheckBox, voidMasterCheckbox, amoebaControlCheckbox;
             public override string Name => "Watcher Settings";
             public WatcherSettingsPage(Menu.Menu menu, MenuObject owner, Vector2 spacing, float textSpacing = 300) : base(menu, owner)
             {
@@ -259,14 +278,75 @@ namespace RainMeadow.UI.Components
                 weaverWatcherLabel = new(menu, this, menu.Translate("Weaver Watcher:"), weaverWatcherCheckBox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
                 weaverWatcherLabel.label.alignment = FLabelAlignment.Left;
 
-                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel);
-
                 weaverWatcherCheckBox.Change(); //update desc
+
+
+                // Voidmaster
+                voidMasterCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.VoidMaster.Value), positioner - spacing * 3)
+                {
+                    colorEdge = RainWorld.RippleColor * 1.5f
+                };
+                voidMasterCheckbox.OnChange += () =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
+                    voidMasterCheckbox.description = voidMasterCheckbox.GetValueBool() ? menu.Translate("Summon amoebas at the cost of your camo timer") : menu.Translate("Amoeba summoning is disabled lobby-wide");
+
+                };
+                new PatchedUIelementWrapper(tabWrapper, voidMasterCheckbox);
+                voidMasterLabel = new(menu, this, menu.Translate("Voidkeeper:"), voidMasterCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                voidMasterLabel.label.alignment = FLabelAlignment.Left;
+
+                voidMasterCheckbox.Change(); //update desc
+
+
+                //Amoeba duration
+                amoebaLifespanTextBox = new(new Configurable<int>(RainMeadow.rainMeadowOptions.AmoebaDuration.Value), positioner - spacing * 4 + new Vector2(-7.5f, 0), 40)
+                {
+                    alignment = FLabelAlignment.Center,
+                    description = menu.Translate("Amoeba duration time in seconds")
+
+                };
+                amoebaLifespanTextBox.OnValueUpdate += (UIconfig config, string value, string lastValue) =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
+                };
+                new PatchedUIelementWrapper(tabWrapper, amoebaLifespanTextBox);
+                amoebaDurationLabel = new(menu, this, menu.Translate("Voidkeeper Amoeba Duration:"), amoebaLifespanTextBox.pos + new Vector2(-textSpacing * 1.5f + 7.5f, 3), new(textSpacing, 20), false);
+                amoebaDurationLabel.label.alignment = FLabelAlignment.Left;
+
+
+                amoebaLifespanTextBox.Change();
+
+                amoebaControlCheckbox = new(new Configurable<bool>(RainMeadow.rainMeadowOptions.AmoebaControl.Value), positioner - spacing * 5);
+                amoebaControlCheckbox.OnChange += () =>
+                {
+                    if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
+                    arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
+                    amoebaControlCheckbox.description = amoebaControlCheckbox.GetValueBool() ? menu.Translate("Amoeba's direction is influenced by pointing") : menu.Translate("Amoebas chase targets at-will");
+
+                };
+                new PatchedUIelementWrapper(tabWrapper, amoebaControlCheckbox);
+                amoebaControlLabel = new(menu, this, menu.Translate("Void's Vengeance:"), amoebaControlCheckbox.pos + new Vector2(-textSpacing * 1.5f, 3), new(textSpacing, 20), false);
+                amoebaControlLabel.label.alignment = FLabelAlignment.Left;
+
+                amoebaControlCheckbox.Change();
+                this.SafeAddSubobjects(tabWrapper, watcherCamoLimitLabel, watcherRippleLevelLabel, weaverWatcherLabel, voidMasterLabel, amoebaDurationLabel, amoebaControlLabel);
+
             }
             public override void SaveInterfaceOptions()
             {
                 RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value = watcherCamoLimitTextBox.valueInt;
                 RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value = watcherRippleLevelTextBox.valueInt;
+                RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
+                RainMeadow.rainMeadowOptions.VoidMaster.Value = voidMasterCheckbox.GetValueBool();
+                RainMeadow.rainMeadowOptions.AmoebaDuration.Value = amoebaLifespanTextBox.valueInt;
+                RainMeadow.rainMeadowOptions.AmoebaControl.Value = amoebaControlCheckbox.GetValueBool();
+
+            }
+            public override void SaveInterfaceClientOptions()
+            {
                 RainMeadow.rainMeadowOptions.WeaverWatcher.Value = weaverWatcherCheckBox.GetValueBool();
             }
             public override void SelectAndCreateBackButtons(SettingsPage? previousSettingPage, bool forceSelectedObject)
@@ -278,7 +358,7 @@ namespace RainMeadow.UI.Components
                         signalText = BACKTOSELECT,
                     };
                     AddObjects(backButton);
-                    menu.TrySequentialMutualBind([backButton, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
+                    menu.TrySequentialMutualBind([backButton, amoebaControlCheckbox.wrapper, amoebaLifespanTextBox.wrapper, voidMasterCheckbox.wrapper, weaverWatcherCheckBox.wrapper, watcherRippleLevelTextBox.wrapper, watcherCamoLimitTextBox.wrapper], bottomTop: true, loopLastIndex: true);
                 }
                 if (forceSelectedObject)
                     menu.selectedObject = watcherCamoLimitTextBox.wrapper;
@@ -289,6 +369,9 @@ namespace RainMeadow.UI.Components
                 arena.watcherCamoTimer = watcherCamoLimitTextBox.valueInt;
                 arena.watcherRippleLevel = watcherRippleLevelTextBox.valueInt;
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
+                arena.voidMasterEnabled = voidMasterCheckbox.GetValueBool();
+                arena.amoebaDuration = amoebaLifespanTextBox.valueInt;
+                arena.amoebaControl = amoebaControlCheckbox.GetValueBool();
             }
             public override void Update()
             {
@@ -299,17 +382,16 @@ namespace RainMeadow.UI.Components
                 bool greyoutall = SettingsDisabled;
                 if (!RainMeadow.isArenaMode(out ArenaMode arena)) return;
 
-                watcherCamoLimitTextBox.greyedOut = greyoutall;
-                watcherCamoLimitTextBox.held = watcherCamoLimitTextBox._KeyboardOn;
-                if (!watcherCamoLimitTextBox.held)
-                    watcherCamoLimitTextBox.valueInt = arena.watcherCamoTimer;
-
-                watcherRippleLevelTextBox.greyedOut = greyoutall;
-                watcherRippleLevelTextBox.held = watcherRippleLevelTextBox._KeyboardOn;
-                if (!watcherRippleLevelTextBox.held)
-                    watcherRippleLevelTextBox.valueInt = arena.watcherRippleLevel;
+                ShowSyncInTextbox(watcherCamoLimitTextBox, greyoutall, arena.watcherCamoTimer);
+                ShowSyncInTextbox(watcherRippleLevelTextBox, greyoutall, arena.watcherRippleLevel);
 
                 arena.arenaClientSettings.weaverTail = weaverWatcherCheckBox.GetValueBool();
+
+                ShowSyncInRemixCheckbox(voidMasterCheckbox, greyoutall, arena.voidMasterEnabled);
+
+                bool lockvoidmastersettings = !voidMasterCheckbox.GetValueBool() || greyoutall;
+                ShowSyncInRemixCheckbox(amoebaControlCheckbox, lockvoidmastersettings, arena.amoebaControl);
+                ShowSyncInTextbox(amoebaLifespanTextBox, lockvoidmastersettings, arena.amoebaDuration);
             }
             public override void GrafUpdate(float timeStacker)
             {
@@ -318,6 +400,9 @@ namespace RainMeadow.UI.Components
                 watcherCamoLimitLabel.label.color = watcherCamoLimitTextBox.rect.colorEdge;
                 watcherRippleLevelLabel.label.color = watcherRippleLevelTextBox.rect.colorEdge;
                 weaverWatcherLabel.label.color = weaverWatcherCheckBox.rect.colorEdge;
+                voidMasterLabel.label.color = voidMasterCheckbox.rect.colorEdge;
+                amoebaDurationLabel.label.color = amoebaLifespanTextBox.rect.colorEdge;
+                amoebaControlLabel.label.color = amoebaControlCheckbox.rect.colorEdge;
             }
         }
         public class SelectSettingsPage : SettingsPage
@@ -409,15 +494,15 @@ namespace RainMeadow.UI.Components
                 public void CreateTopDivider()
                 {
                     if (topDivSprite != null) return;
-                    
-                        topDivSprite = new("pixel")
-                        {
-                            anchorX = 0,
-                            scaleY = 2,
-                            color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey),
-                        };
-                        Container.AddChild(topDivSprite);
-                    
+
+                    topDivSprite = new("pixel")
+                    {
+                        anchorX = 0,
+                        scaleY = 2,
+                        color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.VeryDarkGrey),
+                    };
+                    Container.AddChild(topDivSprite);
+
                 }
                 public override void RemoveSprites()
                 {
@@ -464,8 +549,13 @@ namespace RainMeadow.UI.Components
             {
 
             }
+            public virtual void SaveInterfaceClientOptions()
+            {
+
+            }
         }
 
     }
 }
+
 

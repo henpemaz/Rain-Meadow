@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Menu;
 using Menu.Remix;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components;
 using UnityEngine;
 namespace RainMeadow
 {
@@ -13,10 +14,10 @@ namespace RainMeadow
         protected MenuTabWrapper tabWrapper;
         public SymbolButton cancelButton;
         public SimpleButton continueButton;
-        public OpTextBox IPBox;
+        public OpTypeBox IPBox;
 
         public CheckBox passwordCheckBox;
-        public OpTextBox passwordBox;
+        public OpTypeBox passwordBox;
         public UIelementWrapper textBoxWrapper;
         public UIelementWrapper passwordBoxWrapper;
         public UIelementWrapper passwordLabelWrapper;
@@ -44,7 +45,7 @@ namespace RainMeadow
             subObjects.Add(tabWrapper);
 
             Vector2 center = size / 2f;
-            IPBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
+            IPBox = new OpTypeBox(new Configurable<string>(""), center + new Vector2(-80f, -15f), 160f);
             IPBox.accept = OpTextBox.Accept.StringASCII;
             IPBox.allowSpace = true;
             IPBox.maxLength = 100;
@@ -57,7 +58,7 @@ namespace RainMeadow
 
 
             passwordLabelWrapper = new UIelementWrapper(this.tabWrapper, new OpLabel(center + new Vector2(-80f, -40f), new Vector2(100f, 20f), menu.Translate("Password:")));
-            passwordBox = new OpTextBox(new Configurable<string>(""), center + new Vector2(-80f, -60f), 160f);
+            passwordBox = new OpTypeBox(new Configurable<string>(""), center + new Vector2(-80f, -60f), 160f);
             passwordBox.greyedOut = true;
             passwordBox.accept = OpTextBox.Accept.StringASCII;
             passwordBox.allowSpace = true;
