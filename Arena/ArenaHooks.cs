@@ -142,6 +142,32 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
+            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
+        }
+
+        
+        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObject)
+        {
+            if (!isArenaMode(out var arena))
+            {
+                orig(self, room, placedObject);
+                return;
+            }
+            if ((placedObject.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
+            {
+                if (!arena.enableBees)
+                {
+                    return;
+                }
+            }
+            if ((placedObject.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
+            {
+                if (!arena.enableBombs)
+                {
+                    return;
+                }
+            }
+            orig(self, room, placedObject);
         }
 
         private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
