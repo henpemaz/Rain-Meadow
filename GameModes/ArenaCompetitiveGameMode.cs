@@ -857,6 +857,11 @@ namespace RainMeadow
             if (item.type == PlacedObject.Type.StuckDaddy)
             {
                 return OnlineManager.lobby.isOwner;
+            }   
+
+            if (item.type == PlacedObject.Type.SporePlant)
+            {
+                return this.enableBees;
             }
 
             return true;
