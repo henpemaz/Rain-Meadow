@@ -142,29 +142,6 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
-            On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
-        }
-
-    
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
-        {
-            if (!isArenaMode(out var arena))
-            {
-                orig(self, room, placedObj);
-                return;
-            }
-            if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant && !arena.enableBees)
-            {
-                RainMeadow.Debug("Blocked Spore Spawn");
-                return;
-            }
-                if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb && !arena.enableBombs)
-            {
-                RainMeadow.Debug("Blocked Scav Bomb");
-                return;
-            }
-
-            orig(self, room, placedObj);
         }
 
         private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
@@ -2483,4 +2460,5 @@ namespace RainMeadow
         }
     }
 }
+
 
