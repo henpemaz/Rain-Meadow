@@ -1,11 +1,9 @@
-﻿using HarmonyLib;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using UnityEngine;
 using static RainMeadow.ArenaPrepTimer;
@@ -857,6 +855,15 @@ namespace RainMeadow
             if (item.type == PlacedObject.Type.StuckDaddy)
             {
                 return OnlineManager.lobby.isOwner;
+            }   
+
+            if (item.type == PlacedObject.Type.SporePlant || (item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
+            {
+                return this.enableBees;
+            }
+            if ((item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
+            {
+                return this.enableBombs;
             }
 
             return true;
