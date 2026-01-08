@@ -2,7 +2,7 @@
 ## Arena
 - Added flash to tab arrow to assist users in locating game mode tab settings
 - Publicized arena.blockList for developers
-
+- Fixed bees/bombs spawning client-side
 
 ## General
 - Added Chinese translation (thanks @havenoideawhatismyname!)
