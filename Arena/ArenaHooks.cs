@@ -145,29 +145,26 @@ namespace RainMeadow
             On.ArenaGameSession.SpawnItem += ArenaGameSession_SpawnItem;
         }
 
-        
-        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObject)
+    
+        private void ArenaGameSession_SpawnItem(On.ArenaGameSession.orig_SpawnItem orig, ArenaGameSession self, Room room, PlacedObject placedObj)
         {
             if (!isArenaMode(out var arena))
             {
-                orig(self, room, placedObject);
+                orig(self, room, placedObj);
                 return;
             }
-            if ((placedObject.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
+            if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant && !arena.enableBees)
             {
-                if (!arena.enableBees)
-                {
-                    return;
-                }
+                RainMeadow.Debug("Blocked Spore Spawn");
+                return;
             }
-            if ((placedObject.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
+                if ((placedObj.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb && !arena.enableBombs)
             {
-                if (!arena.enableBombs)
-                {
-                    return;
-                }
+                RainMeadow.Debug("Blocked Scav Bomb");
+                return;
             }
-            orig(self, room, placedObject);
+
+            orig(self, room, placedObj);
         }
 
         private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)

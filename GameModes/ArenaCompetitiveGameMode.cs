@@ -858,6 +858,10 @@ namespace RainMeadow
             {
                 return OnlineManager.lobby.isOwner;
             }
+            if (item.type == PlacedObject.Type.SporePlant)
+            {
+                return this.enableBees;
+            }
 
             return true;
         }
