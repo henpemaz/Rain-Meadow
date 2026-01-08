@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
@@ -859,9 +859,13 @@ namespace RainMeadow
                 return OnlineManager.lobby.isOwner;
             }   
 
-            if (item.type == PlacedObject.Type.SporePlant)
+            if (item.type == PlacedObject.Type.SporePlant || (item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
             {
                 return this.enableBees;
+            }
+            if ((item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
+            {
+                return this.enableBombs;
             }
 
             return true;
