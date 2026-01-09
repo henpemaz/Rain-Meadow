@@ -125,7 +125,7 @@ public class RainMeadowOptions : OptionInterface
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
 
-        ProfanityFilter = config.Bind("ProfanityFilter", false);
+        ProfanityFilter = config.Bind("ProfanityFilter", true);
 
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
