@@ -1,4 +1,4 @@
-using Menu;
+﻿using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
@@ -857,11 +857,11 @@ namespace RainMeadow
                 return OnlineManager.lobby.isOwner;
             }   
 
-            if (item.type == PlacedObject.Type.SporePlant || (item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.SporePlant)
+            if (item.type == PlacedObject.Type.SporePlant || (item.data is PlacedObject.MultiplayerItemData spore) && spore.type == PlacedObject.MultiplayerItemData.Type.SporePlant)
             {
                 return this.enableBees;
             }
-            if ((item.data as PlacedObject.MultiplayerItemData).type == PlacedObject.MultiplayerItemData.Type.Bomb)
+            if ((item.data is PlacedObject.MultiplayerItemData bomb) && bomb.type == PlacedObject.MultiplayerItemData.Type.Bomb)
             {
                 return this.enableBombs;
             }
