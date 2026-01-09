@@ -418,6 +418,7 @@ namespace RainMeadow
                 apo.Room?.entities?.Remove(apo);
                 apo.Room?.entitiesInDens?.Remove(apo);
                 if (apo is AbstractCreature) apo.Room?.creatures?.Remove((AbstractCreature)apo);
+                if (currentlyJoinedResource is RoomSession rs) rs.EntityLeftResource(this);
             }
         }
         
@@ -476,6 +477,10 @@ namespace RainMeadow
             }
             apo.LoseAllStuckObjects();
             RemoveEntityFromRoom(onlineaware);
+            if (!onlineaware)
+            {
+                if (primaryResource is WorldSession ws) ws.EntityLeftResource(this);
+            }
         }
 
         protected override void LeaveImpl(OnlineResource inResource)
