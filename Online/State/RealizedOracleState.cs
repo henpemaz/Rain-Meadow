@@ -26,7 +26,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
 
             var oracle = (Oracle)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-
+            if (oracle == null) return;            
             oracle.oracleBehavior.lookPoint = this.lookPoint;
 
             oracle.mySwarmers = this.mySwarmers.list
