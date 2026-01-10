@@ -1,3 +1,4 @@
+using MoreSlugcats;
 using Watcher;
 
 namespace RainMeadow
@@ -24,6 +25,7 @@ namespace RainMeadow
 
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
         {
+            if ((onlineCreature.apo as AbstractCreature).state is StowawayBugState) return new StowawayStateState(onlineCreature); // Order matters
             if ((onlineCreature.apo as AbstractCreature).state is HealthState) return new CreatureHealthStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is MoreSlugcats.PlayerNPCState) return new PlayerNPCStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is PlayerState) return new PlayerStateState(onlineCreature);
@@ -36,6 +38,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Overseer) return new RealizedOverseerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Fly) return new RealizedFlyState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is TubeWorm) return new RealizedTubeWormState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is SandGrub) return new RealizedSandGrubState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is GarbageWorm) return new RealizedGarbageWormState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DaddyLongLegs) return new RealizedDaddyLongLegsState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Deer) return new RealizedDeerState((OnlineCreature)onlineObject);
@@ -44,6 +47,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is StowawayBug) return new RealizedStowawayState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
