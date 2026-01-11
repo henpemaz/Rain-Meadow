@@ -323,7 +323,7 @@ namespace RainMeadow
                 self.creatures.Remove((AbstractCreature)ent);
             }
 
-            if (self.entitiesInDens.IndexOf(ent) == -1 && RoomSession.map.TryGetValue(self, out var rs) && rs.owner != null ? rs.isOwner : OnlineManager.lobby.isOwner) // Stop duplicates
+            if (self.entitiesInDens.IndexOf(ent) == -1 && RoomSession.map.TryGetValue(self, out var rs) ?  rs.owner != null ? rs.isOwner : OnlineManager.lobby.isOwner) // Stop duplicates
             {
                 self.entitiesInDens.Add(ent);
             }
