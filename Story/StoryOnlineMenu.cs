@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace RainMeadow
 {
@@ -36,6 +37,7 @@ namespace RainMeadow
         private bool isChatToggled = false;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
+        public DialogBoxNotify dialogBoxNotify;
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -269,8 +271,29 @@ namespace RainMeadow
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
 
+        public override void Singal(MenuObject sender, string message)
+        {
+            base.Singal(sender, message);
+            if (message == "HIDE_DIALOG")
+            {
+                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
+            }
+        }
         public override void Update()
         {
+            if (dialogBoxNotify != null)
+            {
+                base.Update();
+                return;
+            }
+            if (OnlineManager.lobby != null && dialogBoxNotify == null)
+            {
+                string err = "Story lobby is null! Exiting...";
+                RainMeadow.Error(err);
+                dialogBoxNotify = new DialogBoxNotify(this, this.pages[0], err, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+                this.pages[0].subObjects.Add(dialogBoxNotify);
+                return;
+            }
             var jollyallowed = false;
             if (ModManager.JollyCoop)
             {
