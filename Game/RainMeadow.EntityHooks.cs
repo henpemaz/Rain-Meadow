@@ -307,9 +307,27 @@ namespace RainMeadow
         // maybe leaving room, maybe entering world
         private void AbstractRoom_MoveEntityToDen(On.AbstractRoom.orig_MoveEntityToDen orig, AbstractRoom self, AbstractWorldEntity ent)
         {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, ent);
+                return;
+            }
+
             var apo = ent as AbstractPhysicalObject;
             if (OnlineManager.lobby != null && apo is not null && !apo.CanMove()) return;
-            orig(self, ent);
+            
+            ent.IsEnteringDen(ent.pos);
+            self.entities.Remove(ent);
+            if (ent is AbstractCreature)
+            {
+                self.creatures.Remove((AbstractCreature)ent);
+            }
+
+            if (self.entitiesInDens.IndexOf(ent) == -1 && OnlineManager.lobby.isOwner) // Stop duplicates
+            {
+                self.entitiesInDens.Add(ent);
+            }
+
             if (OnlineManager.lobby != null && apo is not null)
             {
                 self.world.GetResource().ApoEnteringWorld(apo);
