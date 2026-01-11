@@ -286,7 +286,7 @@ namespace RainMeadow
                 base.Update();
                 return;
             }
-            if (OnlineManager.lobby != null && dialogBoxNotify == null)
+            if (OnlineManager.lobby == null && dialogBoxNotify == null)
             {
                 string err = "Story lobby is null! Exiting...";
                 RainMeadow.Error(err);
