@@ -9,7 +9,8 @@
 - Fixed custom background thumbnails not disappearing when scrolling background pages
 
 ## Story
-- Fixes creature duplication occurring the next cycle  after a creature dens another creature.
+- Fixes creature duplication occurring the next cycle  after a creature enters a den
+
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
