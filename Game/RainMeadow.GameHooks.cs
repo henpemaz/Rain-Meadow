@@ -36,6 +36,7 @@ namespace RainMeadow
             IL.Room.LoadFromDataString += Room_LoadFromDataString;
             IL.Room.Loaded += Room_Loaded;
             On.Room.Loaded += Room_LoadedCheck;
+            On.FliesRoomAI.MoveFlyToHive +=  MoveFlyToHive;
             On.Room.PlaceQuantifiedCreaturesInRoom += Room_PlaceQuantifiedCreaturesInRoom;
 
             On.RoomSettings.ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame += RoomSettings_ctor_Room_string_Region_bool_bool_Timeline_RainWorldGame;
@@ -66,8 +67,29 @@ namespace RainMeadow
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
         }
 
+        private void MoveFlyToHive(On.FliesRoomAI.orig_MoveFlyToHive orig, FliesRoomAI self, Fly fly)
+        {
+            if (OnlineManager.lobby == null)
+            {
+                orig(self, fly);
+                return;
+            }
+
+            self.flies.Remove(fly);
+            bool isOwner = OnlineManager.lobby.isOwner;
+            if (RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && rs.owner != null)
+            {
+                isOwner = rs.isOwner;
+            }
+            if (isOwner) { 
+            self.inHive.Add(fly); // only the owner of the room or lobby gets to manage this. Stop the massive batfly migrations!
+            }
+            fly.RemoveFromRoom();
+        }
+
         private void GlobalRain_InitDeathRain(On.GlobalRain.orig_InitDeathRain orig, GlobalRain self)
         {
+            
             if (OnlineManager.lobby == null)
             {
                 orig(self);
