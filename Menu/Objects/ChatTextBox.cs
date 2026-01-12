@@ -39,6 +39,8 @@ namespace RainMeadow
             set => GUIUtility.systemCopyBuffer = value;
         }
 
+        public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) ||  Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
+
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
         {
             lastSentMessage = "";
@@ -166,217 +168,231 @@ namespace RainMeadow
         {
             var msg = lastSentMessage;
             var len = msg.Length;
-            if (len > 0)
+            var hasText = len > 0;
+            blockInput = false;
+            // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
+            if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
             {
-                blockInput = false;
-                // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
-                if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
-                {
-                    // no alt + backspace, because alt can be finnicky
-                    // activates on either the first frame the key is held, or for every (DASRepeatRate)th of a second after (DASDelay) seconds of being held
-                    if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
-                    {
-                        if (selectionPos != -1)
-                        {
-                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                            DeleteSelection();
-                            if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
-                        }
-                        else if (cursorPos > 0)
-                        {
-                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                            int space = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
-                            lastSentMessage = msg.Remove(space, cursorPos - space);
-                            menuLabel.text = lastSentMessage;
-                            cursorPos = space;
-                        }
-                        backspaceRepeater %= DASRepeatRate; //Modulus instead of subtract so the repeater can't scale out of control if DeltaTime > DASRepeatRate.
-                    }
-                    backspaceHeld += Time.deltaTime;
-                    backspaceRepeater += Time.deltaTime;
-                }
-
-                else if (Input.GetKey(KeyCode.Delete))
+                // no alt + backspace, because alt can be finnicky
+                // activates on either the first frame the key is held, or for every (DASRepeatRate)th of a second after (DASDelay) seconds of being held
+                if (AnyCtrl && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
                 {
                     if (selectionPos != -1)
                     {
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         DeleteSelection();
+                        if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
                     }
-                    else if ((backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)) && cursorPos < msg.Length)
+                    else if (cursorPos > 0)
                     {
-                        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                        {
-                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                            int space = msg.Substring(cursorPos, len - cursorPos).IndexOf(' ');
-                            lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = len - cursorPos) : space + 1);
-                            menuLabel.text = lastSentMessage;
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        int space = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
+                        lastSentMessage = msg.Remove(space, cursorPos - space);
+                        menuLabel.text = lastSentMessage;
+                        cursorPos = space;
+                    }
+                    backspaceRepeater %= DASRepeatRate; //Modulus instead of subtract so the repeater can't scale out of control if DeltaTime > DASRepeatRate.
+                }
+                backspaceHeld += Time.deltaTime;
+                backspaceRepeater += Time.deltaTime;
+            }
 
+            else if (Input.GetKey(KeyCode.Delete))
+            {
+                if (selectionPos != -1)
+                {
+                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    DeleteSelection();
+                }
+                else if ((backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)) && cursorPos < msg.Length)
+                {
+                    if (AnyCtrl)
+                    {
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        int space = msg.Substring(cursorPos, Mathf.Max(len - cursorPos, 0)).IndexOf(' ');
+                        lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = Mathf.Max(len - cursorPos, 0)) : space + 1);
+                        menuLabel.text = lastSentMessage;
+
+                    }
+                    else
+                    {
+                        menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                        lastSentMessage = msg.Remove(cursorPos, 1);
+                        menuLabel.text = lastSentMessage;
+                    }
+                    backspaceRepeater %= DASRepeatRate;
+                }
+                if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
+                backspaceHeld += Time.deltaTime;
+                backspaceRepeater += Time.deltaTime;
+            }
+
+            else
+            {
+                backspaceHeld = 0f;
+                backspaceRepeater = 0f;
+                if (Input.GetKey(KeyCode.Home))
+                {
+                    bool changeSprite = cursorPos == len;
+                    cursorPos = 0;
+                    selectionPos = -1;
+                    if (changeSprite) SetCursorSprite(true);
+                }
+
+                else if (Input.GetKey(KeyCode.End) && cursorPos < len)
+                {
+                    cursorPos = len;
+                    selectionPos = -1;
+                    SetCursorSprite(false);
+                }
+
+                else if (Input.GetKey(KeyCode.A) && (AnyCtrl))
+                {
+                    if (cursorPos == len)
+                    {
+                        SetCursorSprite(true);
+                    }
+                    cursorPos = 0;
+                    selectionPos = msg.Length;
+                }
+
+                // CTRL + C / Command + C
+                else if (Input.GetKey(KeyCode.C) && (AnyCtrl))
+                {
+                    CopySelection();
+                }
+                // CTRL + V / Command + V
+                else if (Input.GetKey(KeyCode.V) && (AnyCtrl))
+                {
+                    lastSentMessage = Paste(msg);
+                    menuLabel.text = lastSentMessage;
+                    cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
+                    selectionPos = -1;
+                }
+                else if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    // cursor position is used as the anchor for selection
+                    if ((cursorPos > 0 || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
+                    {
+                        var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                        var selectionActive = selectionPos != -1;
+                        if (selectionActive && !shiftHeld)
+                        {
+                            var changeSprite = cursorPos == len;
+                            if (selectionPos < cursorPos) cursorPos = selectionPos;
+                            selectionPos = -1;
+                            if (changeSprite) SetCursorSprite(true);
                         }
                         else
                         {
-                            menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
-                            lastSentMessage = msg.Remove(cursorPos, 1);
-                            menuLabel.text = lastSentMessage;
-                        }
-                        backspaceRepeater %= DASRepeatRate;
-                    }
-                    if (cursorPos == lastSentMessage.Length) SetCursorSprite(false);
-                    backspaceHeld += Time.deltaTime;
-                    backspaceRepeater += Time.deltaTime;
-                }
-
-                else
-                {
-                    backspaceHeld = 0f;
-                    backspaceRepeater = 0f;
-                    if (Input.GetKey(KeyCode.Home))
-                    {
-                        bool changeSprite = cursorPos == len;
-                        cursorPos = 0;
-                        selectionPos = -1;
-                        if (changeSprite) SetCursorSprite(true);
-                    }
-
-                    else if (Input.GetKey(KeyCode.End) && cursorPos < len)
-                    {
-                        cursorPos = len;
-                        selectionPos = -1;
-                        SetCursorSprite(false);
-                    }
-
-                    else if (Input.GetKey(KeyCode.A) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
-                    {
-                        if (cursorPos == len)
-                        {
-                            SetCursorSprite(true);
-                        }
-                        cursorPos = 0;
-                        selectionPos = msg.Length;
-                    }
-
-                    // CTRL + C / Command + C
-                    else if (Input.GetKey(KeyCode.C) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
-                    {
-                        CopySelection();
-                    }
-                    // CTRL + V / Command + V
-                    else if (Input.GetKey(KeyCode.V) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
-                    {
-                        lastSentMessage = Paste(msg);
-                        menuLabel.text = lastSentMessage;
-                        cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
-                        selectionPos = -1;
-                    }
-                    else if (Input.GetKey(KeyCode.LeftArrow))
-                    {
-                        // cursor position is used as the anchor for selection
-                        if ((cursorPos > 0 || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
-                        {
-                            var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                            var selectionActive = selectionPos != -1;
-                            if (selectionActive && !shiftHeld)
+                            var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
+                            if (AnyCtrl && newPos > 0)
                             {
-                                var changeSprite = cursorPos == len;
-                                if (selectionPos < cursorPos) cursorPos = selectionPos;
-                                selectionPos = -1;
-                                if (changeSprite) SetCursorSprite(true);
+                                newPos = msg.Substring(0, newPos - 1).LastIndexOf(' ') + 1;
+                                if (newPos < 0 || newPos > len) newPos = 0;
+                            }
+                            else newPos = Math.Max(0, newPos - 1);
+                            if (shiftHeld)
+                            {
+                                // stops the selection if it's on the same index as the anchor
+                                selectionPos = (newPos == cursorPos) ? -1 : newPos;
                             }
                             else
                             {
+                                cursorPos = newPos;
+                                if (cursorPos < len) SetCursorSprite(true);
+                            }
+                        }
+                        arrowRepeater %= DASRepeatRate;
+                    }
+                    arrowHeld += Time.deltaTime;
+                    arrowRepeater += Time.deltaTime;
+                }
+
+                else if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    if ((cursorPos < len || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
+                    {
+                        var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+                        var selectionActive = selectionPos != -1;
+                        if (selectionActive && !shiftHeld)
+                        {
+                            if (selectionPos > cursorPos) cursorPos = selectionPos;
+                            selectionPos = -1;
+                            if (cursorPos == len)
+                            {
+                                SetCursorSprite(false);
+                            }
+                        }
+                        else
+                        {
+                            // starts from the end of the selection if a selection exists
+                            if (!selectionActive || selectionPos < msg.Length)
+                            {
                                 var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
-                                if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && newPos > 0)
+                                if (AnyCtrl)
                                 {
-                                    newPos = msg.Substring(0, newPos - 1).LastIndexOf(' ') + 1;
-                                    if (newPos < 0 || newPos > len) newPos = 0;
+                                    int space = msg.Substring(newPos, len - newPos - 1).IndexOf(' ');
+                                    if (space < 0 || space >= len) newPos = len;
+                                    else newPos = space + newPos + 1;
                                 }
-                                else newPos = Math.Max(0, newPos - 1);
+                                else newPos++;
                                 if (shiftHeld)
                                 {
-                                    // stops the selection if it's on the same index as the anchor
                                     selectionPos = (newPos == cursorPos) ? -1 : newPos;
                                 }
                                 else
                                 {
                                     cursorPos = newPos;
-                                    if (cursorPos < len) SetCursorSprite(true);
+                                    if (newPos == len) SetCursorSprite(false);
                                 }
                             }
-                            arrowRepeater %= DASRepeatRate;
                         }
-                        arrowHeld += Time.deltaTime;
-                        arrowRepeater += Time.deltaTime;
+                        arrowRepeater %= DASRepeatRate;
                     }
-
-                    else if (Input.GetKey(KeyCode.RightArrow))
-                    {
-                        if ((cursorPos < len || selectionPos != -1) && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
-                        {
-                            var shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-                            var selectionActive = selectionPos != -1;
-                            if (selectionActive && !shiftHeld)
-                            {
-                                if (selectionPos > cursorPos) cursorPos = selectionPos;
-                                selectionPos = -1;
-                                if (cursorPos == len)
-                                {
-                                    SetCursorSprite(false);
-                                }
-                            }
-                            else
-                            {
-                                // starts from the end of the selection if a selection exists
-                                if (!selectionActive || selectionPos < msg.Length)
-                                {
-                                    var newPos = (shiftHeld && selectionActive) ? selectionPos : cursorPos;
-                                    if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                                    {
-                                        int space = msg.Substring(newPos, len - newPos - 1).IndexOf(' ');
-                                        if (space < 0 || space >= len) newPos = len;
-                                        else newPos = space + newPos + 1;
-                                    }
-                                    else newPos++;
-                                    if (shiftHeld)
-                                    {
-                                        selectionPos = (newPos == cursorPos) ? -1 : newPos;
-                                    }
-                                    else
-                                    {
-                                        cursorPos = newPos;
-                                        if (newPos == len) SetCursorSprite(false);
-                                    }
-                                }
-                            }
-                            arrowRepeater %= DASRepeatRate;
-                        }
-                        arrowHeld += Time.deltaTime;
-                        arrowRepeater += Time.deltaTime;
-                    }
-                    else if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
-                    {
-                        // Prevent arrowHeld & arrowRepeater from being reset.
-                    }
-                    else
-                    {
-                        arrowHeld = 0f;
-                        arrowRepeater = 0f;
-                    }
+                    arrowHeld += Time.deltaTime;
+                    arrowRepeater += Time.deltaTime;
                 }
-                blockInput = true;
+                else if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))
+                {
+                    if (AnyCtrl && (arrowHeld == 0 || (arrowHeld >= DASDelay && arrowRepeater >= DASRepeatRate)))
+                    {
+                        if (Input.GetKey(KeyCode.UpArrow))
+                        {
+                            GetMessageHistory(-1);
+                        }
+                        else if (Input.GetKey(KeyCode.DownArrow))
+                        {
+                            GetMessageHistory(1);
+                        }
+                        arrowRepeater %= DASRepeatRate;
+                    }
+                    arrowHeld += Time.deltaTime;
+                    arrowRepeater += Time.deltaTime;
+                    // Prevent arrowHeld & arrowRepeater from being reset.
+                }
+                else
+                {
+                    arrowHeld = 0f;
+                    arrowRepeater = 0f;
+                }
             }
-            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)) 
-                && ((Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow))))
+            blockInput = true;
+            /*
+            if (AnyCtrl && (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow)))
             {
                 blockInput = false;
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
                     if (arrowHeld == 0) GetMessageHistory(-1);
                     arrowHeld += Time.deltaTime;
+                    arrowRepeater += Time.deltaTime;
                 }
                 else if (Input.GetKey(KeyCode.DownArrow))
                 {
                     if (arrowHeld == 0) GetMessageHistory(1);
                     arrowHeld += Time.deltaTime;
+                    arrowRepeater += Time.deltaTime;
                 }
                 blockInput = true;
             }
@@ -385,6 +401,7 @@ namespace RainMeadow
                 arrowHeld = 0f;
                 arrowRepeater = 0f;
             }
+            */
             base.GrafUpdate(timeStacker);
         }
 
@@ -434,10 +451,7 @@ namespace RainMeadow
         {
             int last = messageHistory.Count;
             int index = Mathf.Clamp(historyCursor + dir, 0, last);
-            if (index == historyCursor)
-            {
-                return;
-            }
+            if (index == historyCursor) return;
             if (index == last)
             {
                 historyCursor = last;
