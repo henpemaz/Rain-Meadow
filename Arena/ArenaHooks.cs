@@ -1008,8 +1008,23 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 ILLabel skip = il.DefineLabel();
+
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdloc(18), // physicalObject
+                    i => i.MatchLdarg(0),
+                    i => i.MatchBeq(out skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, 18);
+                c.EmitDelegate((Player self, PhysicalObject po) =>
+                {
+                    // Don't ascend our friends!
+                    return po is Creature creature && self.FriendlyFireSafetyCandidate(creature);
+                });
+                c.Emit(OpCodes.Brtrue_S, skip);
+
                 c.GotoNext(
-                     i => i.MatchLdloc(18),
+                     i => i.MatchLdloc(18), //physicalObject
                      i => i.MatchIsinst<Creature>(),
                      i => i.MatchCallvirt<Creature>("Die")
                      );
@@ -1025,8 +1040,6 @@ namespace RainMeadow
                             var saint = self.abstractCreature.GetOnlineCreature();
                             if (saint != null)
                             {
-                                // Don't ascend friends!
-                                if (po is Creature c && self.FriendlyFireSafetyCandidate(c)) return;
                                 opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
                             }
                             else
