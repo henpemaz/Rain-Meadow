@@ -522,7 +522,7 @@ namespace RainMeadow
                 World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == newWorld.name);
+                bool isSameWorld = oldWorldSession == newWorldSession;
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
