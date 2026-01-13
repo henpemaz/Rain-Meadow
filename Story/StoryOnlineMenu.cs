@@ -265,15 +265,6 @@ namespace RainMeadow
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
-
-        public override void Singal(MenuObject sender, string message)
-        {
-            base.Singal(sender, message);
-            if (message == "HIDE_DIALOG")
-            {
-                manager.RequestMainProcessSwitch(RainMeadow.Ext_ProcessID.LobbySelectMenu);
-            }
-        }
         public override void Update()
         {
             if (nullLobbyError != null)
