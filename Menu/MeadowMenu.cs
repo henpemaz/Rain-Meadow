@@ -33,6 +33,7 @@ namespace RainMeadow
         TokenMenuDisplayer skinProgressIcon;
         private SubtleSlider2 tintSlider;
         private MenuLabel tintLabel;
+        public NullLobbyError nullLobbyError;
 
         public override MenuScene.SceneID GetScene => null;
         public MeadowMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.MeadowMenu)
@@ -204,7 +205,16 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
-
+            if (nullLobbyError != null)
+            {
+                return;
+            }
+            if (OnlineManager.lobby == null && nullLobbyError == null)
+            {
+                nullLobbyError = new NullLobbyError(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Meadow lobby is null! Exiting...", false);
+                this.pages[0].subObjects.Add(nullLobbyError);
+                return;
+            }
             if (this.rainEffect != null)
             {
                 this.rainEffect.rainFade = Mathf.Min(0.3f, this.rainEffect.rainFade + 0.006f);

@@ -1,11 +1,7 @@
-using HarmonyLib;
 using Menu;
 using Menu.Remix.MixedUI;
-using Steamworks;
 using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Globalization;
 using System.Linq;
 using RWCustom;
 using UnityEngine;
@@ -36,6 +32,7 @@ namespace RainMeadow
         private bool isChatToggled = false;
         private ChatTextBox chatTextBox;
         private Vector2 chatTextBoxPos;
+        public NullLobbyError nullLobbyError;
         public SlugcatStats.Name[] SelectableSlugcats
         {
             get
@@ -268,9 +265,19 @@ namespace RainMeadow
             manager.rainWorld.progression.ClearOutSaveStateFromMemory();
             manager.RequestMainProcessSwitch(ProcessManager.ProcessID.Game);
         }
-
         public override void Update()
         {
+            if (nullLobbyError != null)
+            {
+                base.Update();
+                return;
+            }
+            if (OnlineManager.lobby == null && nullLobbyError == null)
+            {
+                nullLobbyError = new NullLobbyError(this, this.pages[0], new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Story lobby is null! Exiting...", false);
+                this.pages[0].subObjects.Add(nullLobbyError);
+                return;
+            }
             var jollyallowed = false;
             if (ModManager.JollyCoop)
             {
