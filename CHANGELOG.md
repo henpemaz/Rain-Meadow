@@ -7,9 +7,8 @@
 ## General
 - Added Chinese translation (thanks @havenoideawhatismyname!)
 - Fixed custom background thumbnails not disappearing when scrolling background pages
+- Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
 
-## Story
-- Gracefully handle when the story menu is loaded but the online lobby hasn't 
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
