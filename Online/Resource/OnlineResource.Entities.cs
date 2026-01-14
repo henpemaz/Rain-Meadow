@@ -268,11 +268,16 @@ namespace RainMeadow
 
         public void OnEntityLeaveResolve(GenericResult entityLeaveResult)
         {
-            var oe = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
+            var id = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity.EntityId;
+            var oe = id.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe == null || entityLeaveResult is GenericResult.Fail)
             {
-                // owner has no idea what you're talking about, forget about it.
+                if (oe != null)
+                {
+                    // owner has no idea what you're talking about, forget about it so they stop asking for the feed.
+                    OnlineManager.RemoveFeed(this, oe);
+                }
                 return;
 
             }   
