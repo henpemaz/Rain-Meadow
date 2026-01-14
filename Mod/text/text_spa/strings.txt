@@ -160,7 +160,7 @@ Unknonw Region|Región desconocida
 Invite Friends|Invitar amigos
 Friendly Fire|Fuego amigo
 Require Campaign Slugcat|Gato-babosa de la campaña
-Match save|Igualar guar.
+Sync Save|Igualar guar.
 PLAYERS|JUGADORES
 Press again to ban player!|¡Pulsa otra vez para banear al jugador!
 Wait for others to shelter or rescue you, press |Espera a que los demás se refugien o te rescaten, pulsa 

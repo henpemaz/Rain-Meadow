@@ -190,7 +190,7 @@ Slugpup|Слизнекотёнок
 Invite Friends|Пригласить друзей
 Friendly Fire|Друж. огонь
 Require Campaign Slugcat|Отключить выбор Кота
-Match save|Скоп. сохр.
+Sync Save|Скоп. сохр.
 PLAYERS|ИГРОКИ
 Press again to ban player!|Нажми ещё раз, чтобы забанить игрока!
 Wait for others to shelter or rescue you, press |Жди, пока другие не переживут цикл или спасут тебя, нажми «
