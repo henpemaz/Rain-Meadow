@@ -9,6 +9,9 @@
 - Fixed custom background thumbnails not disappearing when scrolling background pages
 - Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
 
+## Story
+- Updated "Match Save" to "Sync Save" for clarity
+
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction

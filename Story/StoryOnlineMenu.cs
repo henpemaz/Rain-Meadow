@@ -579,7 +579,7 @@ namespace RainMeadow
                     slugcatPages.Insert(pageindex - 1, page);
                 }
                 restartCheckbox.IDString = "CLIENTSAVERESET";
-                restartCheckbox.label.text = "Match save";
+                restartCheckbox.label.text = "Sync Save";
 
             }
 
@@ -660,9 +660,9 @@ namespace RainMeadow
 
         private void SetupClientOptions()
         {
-            //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Match save"), "CLIENTSAVERESET", false);
-            restartCheckbox.displayText = "Match save";
-            restartCheckbox.label.text = "Match save";
+            //restartCheckbox = new CheckBox(this, pages[0], this, restartCheckboxPos, 70f, Translate("Sync Save"), "CLIENTSAVERESET", false);
+            restartCheckbox.displayText = "Sync Save";
+            restartCheckbox.label.text = "Sync Save";
             restartCheckbox.IDString = "CLIENTSAVERESET";
             //pages[0].subObjects.Add(clientWantsToOverwriteSave);
         }

@@ -164,7 +164,7 @@ Invite Friends|フレンドを招待
 /// ↓If translated, this text is coverd by check box but there is no word to explaing this text... :( If return key is enable...
 Friendly Fire|フレンドリーファイヤー
 Require Campaign Slugcat|キャンペーンに遵守
-Match save|マッチ保存
+Sync Save|マッチ保存
 Restart game|ゲームをやり直す
 PLAYERS|プレイヤー
 Press again to ban player!|BANするプレイヤーをもう一度選択してください!

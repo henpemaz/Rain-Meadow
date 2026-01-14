@@ -162,7 +162,7 @@ Unknonw Region|未知区域
 Invite Friends|邀请好友
 Friendly Fire|友伤
 Require Campaign Slugcat|需要游戏中蛞蝓猫
-Match save|存档匹配
+Sync Save|存档匹配
 PLAYERS|玩家
 Press again to ban player!|再次点击可封禁玩家！
 Wait for others to shelter or rescue you, press |等待他人进入避难所或自杀，按下
