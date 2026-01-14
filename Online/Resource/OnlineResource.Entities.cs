@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml.Serialization.Configuration;
 
 namespace RainMeadow
 {
@@ -227,7 +228,7 @@ namespace RainMeadow
             if (isOwner) // leave right away
             {
                 EntityLeftResource(oe);
-            }
+            } 
             else if (owner != null && !owner.hasLeft) // request to leave
             {
                 RequestEntityLeave(oe);
@@ -238,13 +239,21 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.isPending) throw new InvalidOperationException("can't leave if pending");
-            oe.pendingRequest = owner.InvokeRPC(this.OnEntityLeaveRequest, oe).Then(this.OnEntityLeaveResolve);
+            oe.pendingRequest = owner.InvokeRPC(this.OnEntityLeaveRequest, oe.id).Then(this.OnEntityLeaveResolve);
         }
 
         [RPCMethod]
-        public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity oe)
+        public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity.EntityId entityID)
         {
+            var oe = entityID.FindEntity();
+            if (oe == null)
+            {              
+                RainMeadow.Error($"online entity from {rpcEvent.from} is null!");
+                rpcEvent.from.QueueEvent(new GenericResult.Fail(rpcEvent));
+                return;
+            }
             RainMeadow.Debug($"{oe} : {this}");
+            
             if (oe != null && oe.owner == rpcEvent.from && isOwner && isActive && !isReleasing)
             {
                 EntityLeftResource(oe);
@@ -274,6 +283,11 @@ namespace RainMeadow
             else if (entityLeaveResult is GenericResult.Error) // retry
             {
                 if (oe.isMine) oe.JoinOrLeavePending();
+            }
+            else if (entityLeaveResult is GenericResult.Fail)
+            {
+                // owner has no idea what you're talking about, forget about it.
+
             }
         }
 
