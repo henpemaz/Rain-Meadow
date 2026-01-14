@@ -239,6 +239,7 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.isPending) throw new InvalidOperationException("can't leave if pending");
             oe.pendingRequest = owner.InvokeRPC(this.OnEntityLeaveRequest, oe.id).Then(this.OnEntityLeaveResolve);
+            
         }
 
         [RPCMethod]
@@ -269,9 +270,14 @@ namespace RainMeadow
         {
             var oe = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
             RainMeadow.Debug($"{oe} : {this}");
+            if (oe == null || entityLeaveResult is GenericResult.Fail)
+            {
+                // owner has no idea what you're talking about, forget about it.
+                return;
+
+            }   
             if (oe.pendingRequest == entityLeaveResult.referencedEvent) oe.pendingRequest = null;
             else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityLeaveResult.referencedEvent}");
-
             if (entityLeaveResult is GenericResult.Ok) // success
             {
                 if (isActive)
@@ -283,11 +289,7 @@ namespace RainMeadow
             {
                 if (oe.isMine) oe.JoinOrLeavePending();
             }
-            else if (entityLeaveResult is GenericResult.Fail)
-            {
-                // owner has no idea what you're talking about, forget about it.
-
-            }
+            
         }
 
         public void EntityLeftResource(OnlineEntity oe)
