@@ -27,9 +27,14 @@ namespace RainMeadow
         public static int cursorPos = 0;
         public static int selectionPos = -1;
         public static int historyCursor = -1;
+        public static int autoComplete = 0;
         public static string lastSentMessage = "";
         public static string lastTyped = "";
+
         public static List<string> messageHistory = new();
+        public static List<string> completions = new();
+
+        public static bool completed = false;
 
         public static event Action? OnShutDownRequest;
 
@@ -133,6 +138,7 @@ namespace RainMeadow
                 OnShutDownRequest.Invoke();
                 typingHandler.Unassign(this);
                 lastSentMessage = "";
+                completed = false;
                 return;
             }
             else if (!isUnloading)
@@ -470,6 +476,39 @@ namespace RainMeadow
             menuLabel.text = lastSentMessage;
             cursorPos = lastSentMessage.Length;
             selectionPos = -1;
+        }
+
+        private void AutoComplete()
+        {
+            autoComplete++;
+            if (completed)
+            {
+                if (autoComplete >= completions.Count) autoComplete = 0;
+            }
+            else
+            {
+                completions.Clear();
+                autoComplete = 0;
+                UpdateCompletions();
+                if (completions.Count > 0)
+                {
+                    completed = true;
+                }
+            }
+        }
+
+        private void UpdateCompletions()
+        {
+            completed = false;
+            completions.Clear();
+            foreach(var player in OnlineManager.players) 
+                completions.Add(player.id.GetPersonaName());
+            autoComplete = 0;
+            if (completions.Count > 0)
+            {
+                completed = true;
+                AutoComplete();
+            }
         }
 
         private void SetCursorSprite(bool inMiddle)

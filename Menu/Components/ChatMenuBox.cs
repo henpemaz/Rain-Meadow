@@ -42,13 +42,13 @@ namespace RainMeadow.UI.Components
             }
             if (withUser)
             {
-                AlignedMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
+                UsernameMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 userLabel.label.alignment = FLabelAlignment.Left;
                 userLabel.label.color = ChatLogManager.GetDisplayPlayerColor(user!, MenuColorEffect.rgbMediumGrey);
 
 
-                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, $": {stg}", new(LabelTest.GetWidth(user) + 2, 0), userLabel.size, false)
+                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, $": {stg}", new(LabelTest.GetWidth(user) + 2 + (userLabel.Host ? 16 : 0), 0), userLabel.size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 messageWithUserLabel.label.alignment = FLabelAlignment.Left;
                 userLabel.subObjects.Add(messageWithUserLabel);
