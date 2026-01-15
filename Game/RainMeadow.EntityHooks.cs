@@ -680,7 +680,7 @@ namespace RainMeadow
                 { // there exists "warps" to the same world, twice, for some bloody reason
                     //this in fact probably is required for now because rain world devs DESPISE US
                     RainMeadow.Debug("Unsubscribing from old world");
-                    oldWorldSession.discard = true;
+                    oldWorldSession.Deactivate();
                     oldWorldSession.NotNeeded(); // done? let go
                 }
 
