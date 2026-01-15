@@ -273,9 +273,10 @@ namespace RainMeadow
             RainMeadow.Debug($"{oe} : {this}");
             if (oe == null || entityLeaveResult is GenericResult.Fail)
             {
-                if (oe != null)
+                if (entityLeaveResult is GenericResult.Fail) // oe is not null
                 {
                     // owner has no idea what you're talking about, forget about it so they stop asking for the feed.
+                    RainMeadow.Debug($"Removing {oe} from feed");
                     OnlineManager.RemoveFeed(this, oe);
                 }
                 return;
