@@ -55,7 +55,7 @@ namespace RainMeadow.UI.Components
                     y = pos.y,
                     scaleX = 0.5f,
                     scaleY = 0.5f,
-                    anchorX = 0,
+                    anchorX = 0.25f,
                 };
                 Container.AddChild(hostIcon);
             }
@@ -65,7 +65,7 @@ namespace RainMeadow.UI.Components
         {
             base.GrafUpdate(timeStacker);
             if (hostIcon == null) return;
-            label.x += 16;
+            label.x += 14;
             hostIcon.x = DrawX(timeStacker) + (labelPosAlignment == FLabelAlignment.Left ? 0 : labelPosAlignment == FLabelAlignment.Right ? size.x : size.x / 2);
             hostIcon.y = DrawY(timeStacker) + (verticalLabelPosAlignment == OpLabel.LabelVAlignment.Bottom ? 0 : verticalLabelPosAlignment == OpLabel.LabelVAlignment.Top ? size.y : size.y / 2);
             hostIcon.alpha = label.alpha;

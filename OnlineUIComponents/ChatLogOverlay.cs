@@ -208,12 +208,12 @@ namespace RainMeadow
                             usernameLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.label.color = ChatLogManager.GetDisplayPlayerColor(username!);
 
-                            AlignedMenuLabel messagewithUserLabel = new(this, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2 + (usernameLabel.Host ? 16 : 0), 0), new Vector2(0, 20), false)
+                            AlignedMenuLabel messagewithUserLabel = new(this, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2 + (usernameLabel.Host ? 14 : 0), 0), new Vector2(0, 20), false)
                             { labelPosAlignment = FLabelAlignment.Left };
                             messagewithUserLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.subObjects.Add(messagewithUserLabel);
                             scroller.AddScrollObjects(usernameLabel);
-                            msgExtents.Add(LabelTest.GetWidth($"{username}: {s}") + 4f + (usernameLabel.Host ? 16f : 0));
+                            msgExtents.Add(LabelTest.GetWidth($"{username}: {s}") + 4f + (usernameLabel.Host ? 14f : 0));
                         }
                         else
                         {
