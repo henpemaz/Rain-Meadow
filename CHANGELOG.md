@@ -10,6 +10,8 @@
 
 ## Story
 - Fixes creature duplication occurring the next cycle  after a creature enters a den
+- Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
+- Updated "Match Save" to "Sync Save" for clarity
 
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
