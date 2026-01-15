@@ -5,6 +5,16 @@ namespace RainMeadow
 {
     public static class RPCs
     {
+
+        [RPCMethod]
+        public static void RequestRemoveFromFeed(OnlineResource resource, OnlineEntity.EntityId id)
+        {
+            var oe = id.FindEntity();
+            if (oe != null)
+            {
+                OnlineManager.RemoveFeed(resource, oe);
+            }
+        }
         [RPCMethod]
         public static void DeathRain(RPCEvent rpc, GlobalRain.DeathRain.DeathRainMode deathRainMode, 
             float timeInThisMode, float calmBeforeStornSunlight)
