@@ -246,13 +246,13 @@ namespace RainMeadow
         public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity.EntityId entityID)
         {
             var oe = entityID.FindEntity();
+            RainMeadow.Debug($"{oe} : {this}");
             if (oe == null)
             {              
                 RainMeadow.Error($"online entity from {rpcEvent.from} is null!");
                 rpcEvent.from.QueueEvent(new GenericResult.Fail(rpcEvent));
                 return;
             }
-            RainMeadow.Debug($"{oe} : {this}");
             
             if (oe != null && oe.owner == rpcEvent.from && isOwner && isActive && !isReleasing)
             {
@@ -268,12 +268,12 @@ namespace RainMeadow
 
         public void OnEntityLeaveResolve(GenericResult entityLeaveResult)
         {
-            var id = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity.EntityId;
-            var oe = id.FindEntity();
+            var entityId = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity.EntityId;
+            var oe = entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
             if (oe == null || entityLeaveResult is GenericResult.Fail)
             {
-                if (entityLeaveResult is GenericResult.Fail) // oe is not null
+                if (entityLeaveResult is GenericResult.Fail && oe != null)
                 {
                     // owner has no idea what you're talking about, forget about it so they stop asking for the feed.
                     RainMeadow.Debug($"Removing {oe} from feed");
