@@ -176,7 +176,7 @@ namespace RainMeadow.UI.Components
                 lines.Add(connector);
 
             }
-            if (profileIdentifier == OnlineManager.lobby!.owner)
+            if (OnlineManager.lobby != null && profileIdentifier == OnlineManager.lobby.owner)
             {
                 if (!RainMeadow.isArenaMode(out var arena))
                 {
