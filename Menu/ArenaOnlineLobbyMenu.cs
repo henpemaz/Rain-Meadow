@@ -404,6 +404,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate("Kick player from lobby");
             if (id == "COLOR_SLUGCAT")
                 return Translate("Customize your colors");
+            if (id == "HOST_INFO")
+                return Translate("This user is the lobby host");
         }
         if (selectedObject is SelectOneButton selectOneButton)
         {
