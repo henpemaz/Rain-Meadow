@@ -1040,6 +1040,8 @@ namespace RainMeadow
                             var saint = self.abstractCreature.GetOnlineCreature();
                             if (saint != null)
                             {
+                                // Don't ascend our friends!
+                                if (po is Creature c && self.FriendlyFireSafetyCandidate(c)) return;
                                 opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
                             }
                             else

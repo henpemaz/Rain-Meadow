@@ -107,7 +107,7 @@ namespace RainMeadow
             {
                 if (chatLogOverlay != null)
                 {
-                    if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple)))
+                    if (!ChatTextBox.AnyCtrl)
                     {
                         if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
                         {
