@@ -23,7 +23,7 @@ namespace RainMeadow
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
-        public static int textLimit = 75;
+        public static int textLimit = 100;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
         public static int historyCursor = -1;
