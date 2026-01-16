@@ -37,17 +37,37 @@ namespace RainMeadow
         public static bool completed = false;
 
         public static event Action? OnShutDownRequest;
+        public event Action? OnTextSubmit;
 
+        public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(lastSentMessage) / Mathf.Max(lastSentMessage.Length, 1), 1));
+        public int? visibleTextLimit;
         public static string Clipboard
         {
             get => GUIUtility.systemCopyBuffer;
             set => GUIUtility.systemCopyBuffer = value;
         }
+        // Multiview Support
+        public bool focused, forceMenuMouseMode, lastFreezeMenuFunctions, lastMenuMouseMode, previouslySubmittedText;
+
+        public bool Focused
+        {
+            get => focused;
+            set
+            {
+                focused = value;
+                forceMenuMouseMode = value ? menu.manager.menuesMouseMode : forceMenuMouseMode;
+            }
+        }
+        public bool IgnoreSelect => (focused && !menu.manager.menuesMouseMode);
+        public bool TypingOnOtherObjects => CanBeTypedExt._handler?._focused != null;
+        public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
+        //
 
         public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) ||  Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
 
-        public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size) : base(menu, owner, displayText, pos, size)
+        public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, bool multiView = false) : base(menu, owner, displayText, pos, size)
         {
+            MultiView = multiView;
             lastSentMessage = "";
             cursorPos = 0;
             selectionPos = -1;
@@ -62,6 +82,43 @@ namespace RainMeadow
             {
                 cs.isInteracting = true;
             }
+        }
+
+        public override void Clicked()
+        {
+            base.Clicked();
+            if (!MultiView) return;
+            if (previouslySubmittedText)
+            {
+                previouslySubmittedText = false;
+                if (!menu.manager.menuesMouseMode) return;
+            }
+            if (IgnoreSelect) return;
+            if (!buttonBehav.clicked) return;
+            SetFocused(!Focused);
+        }
+        public void CheckToUnfocus()
+        {
+            if ((menu.pressButton && menu.manager.menuesMouseMode && !buttonBehav.clicked) || buttonBehav.greyedOut)
+            {
+                SetFocused(false, menu.selectedObject == null || buttonBehav.greyedOut ? null : SoundID.None);
+                return;
+            }
+            if (TypingOnOtherObjects)
+                SetFocused(false, SoundID.None);
+        }
+        public void HandleDeselect()
+        {
+            SetFocused(false);
+            blockInput = false;
+            previouslySubmittedText = !menu.manager.menuesMouseMode;
+        }
+        public void SetFocused(bool focused, SoundID? overrideSoundID = null)
+        {
+            if (!MultiView) return;
+            if (Focused != focused)
+                menu.PlaySound(overrideSoundID ?? (focused ? SoundID.MENU_Button_Standard_Button_Pressed : SoundID.MENU_Checkbox_Uncheck));
+            Focused = focused;
         }
 
         public void DelayedUnload(float delay)
@@ -88,6 +145,23 @@ namespace RainMeadow
         private void CaptureInputs(char input)
         {
             // the "Delete" character, which is emitted by most - but not all - operating systems when ctrl and backspace are used together
+            if (MultiView)
+            {
+                if (DontGetInputs) return;
+                blockInput = false;
+                if (!Focused)
+                {
+                    Player.InputPackage currentInput = RWInput.PlayerUIInput(-1); //race conditions when update isnt called on time
+                    bool shouldActuallyGetInput = menu.selectedObject == null || (!menu.pressButton && !menu.holdButton && !menu.lastHoldButton && !menu.modeSwitch && !currentInput.jmp);
+                    if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.ChatButtonKey.Value) && shouldActuallyGetInput && !TypingOnOtherObjects)
+                    {
+                        SetFocused(true);
+                        forceMenuMouseMode = forceMenuMouseMode || lastMenuMouseMode;
+                        if (!forceMenuMouseMode) menu.selectedObject = this;
+                    }
+                    return;
+                }
+            }
             if (input == '\u007F') return;
             string msg = lastSentMessage;
             blockInput = false;
@@ -128,9 +202,15 @@ namespace RainMeadow
                     {
                         player.InvokeRPC(RPCs.UpdateUsernameTemporarily, msg);
                     }
+                    if (MultiView)
+                    {
+                        HandleTextSubmit();
+                        return;
+                    }
                 }
                 else
                 {
+                    if (MultiView) HandleDeselect();
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                     RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
@@ -163,19 +243,52 @@ namespace RainMeadow
                 }
             }
             if (!isUnloading) blockInput = true;
-            menuLabel.text = lastSentMessage;
+            UpdateLabel(lastSentMessage);
         }
         public override void Update()
         {
             base.Update();
-            menu.allowSelectMove = false;
+            if (MultiView)
+            {
+                CheckToUnfocus();
+                menu.allowSelectMove = !Focused;
+                roundedRect.addSize = new Vector2(5f, 3f) * (buttonBehav.sizeBump + 0.5f * Mathf.Sin(buttonBehav.extraSizeBump * 3.14f)) * (buttonBehav.clicked && !IgnoreSelect ? 0 : 1);
+                forceMenuMouseMode = (menu.holdButton || menu.pressButton || menu.modeSwitch || Focused) && forceMenuMouseMode;
+                menu.manager.menuesMouseMode = forceMenuMouseMode || menu.manager.menuesMouseMode;
+                lastMenuMouseMode = menu.manager.menuesMouseMode;
+                lastFreezeMenuFunctions = menu.FreezeMenuFunctions;
+            }
+            else
+            {
+                menu.allowSelectMove = false;
+            }
+            maxVisibleLength = VisibleTextLimit;
         }
+
+        public void UpdateLabel(string text)
+        {
+            int firstLetterViewed = cursorPos > maxVisibleLength ? cursorPos - maxVisibleLength : 0,
+                lastLetterViewed = Mathf.Max(0, cursorPos > maxVisibleLength ? maxVisibleLength : Mathf.Min(maxVisibleLength, text.Length));
+
+            menuLabel.text = text.Substring(firstLetterViewed, lastLetterViewed);
+        }
+
         public override void GrafUpdate(float timeStacker)
         {
+            if (MultiView)
+            {
+                ShouldCapture(Focused);
+            }
             var msg = lastSentMessage;
             var len = msg.Length;
             var hasText = len > 0;
             blockInput = false;
+            if (MultiView && !Focused)
+            {
+                blockInput = true;
+                base.GrafUpdate(timeStacker);
+                return;
+            }
             // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
             if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
             {
@@ -194,7 +307,7 @@ namespace RainMeadow
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         int space = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
                         lastSentMessage = msg.Remove(space, cursorPos - space);
-                        menuLabel.text = lastSentMessage;
+                        UpdateLabel(lastSentMessage);
                         cursorPos = space;
                     }
                     backspaceRepeater %= DASRepeatRate; //Modulus instead of subtract so the repeater can't scale out of control if DeltaTime > DASRepeatRate.
@@ -217,14 +330,14 @@ namespace RainMeadow
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         int space = msg.Substring(cursorPos, Mathf.Max(len - cursorPos, 0)).IndexOf(' ');
                         lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = Mathf.Max(len - cursorPos, 0)) : space + 1);
-                        menuLabel.text = lastSentMessage;
+                        UpdateLabel(lastSentMessage);
 
                     }
                     else
                     {
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         lastSentMessage = msg.Remove(cursorPos, 1);
-                        menuLabel.text = lastSentMessage;
+                        UpdateLabel(lastSentMessage);
                     }
                     backspaceRepeater %= DASRepeatRate;
                 }
@@ -271,7 +384,7 @@ namespace RainMeadow
                 else if (Input.GetKey(KeyCode.V) && (AnyCtrl))
                 {
                     lastSentMessage = Paste(msg);
-                    menuLabel.text = lastSentMessage;
+                    UpdateLabel(lastSentMessage);
                     cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
                     selectionPos = -1;
                 }
@@ -384,39 +497,27 @@ namespace RainMeadow
                 }
             }
             blockInput = true;
-            /*
-            if (AnyCtrl && (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow)))
-            {
-                blockInput = false;
-                if (Input.GetKey(KeyCode.UpArrow))
-                {
-                    if (arrowHeld == 0) GetMessageHistory(-1);
-                    arrowHeld += Time.deltaTime;
-                    arrowRepeater += Time.deltaTime;
-                }
-                else if (Input.GetKey(KeyCode.DownArrow))
-                {
-                    if (arrowHeld == 0) GetMessageHistory(1);
-                    arrowHeld += Time.deltaTime;
-                    arrowRepeater += Time.deltaTime;
-                }
-                blockInput = true;
-            }
-            else if (!Input.GetKey(KeyCode.RightArrow) && !Input.GetKey(KeyCode.LeftArrow))
-            {
-                arrowHeld = 0f;
-                arrowRepeater = 0f;
-            }
-            */
             base.GrafUpdate(timeStacker);
         }
 
         private void DeleteSelection()
         {
             lastSentMessage = lastSentMessage.Remove(Mathf.Min(cursorPos, selectionPos), Mathf.Abs(selectionPos - cursorPos));
-            menuLabel.text = lastSentMessage;
+            UpdateLabel(lastSentMessage);
             if (selectionPos < cursorPos) cursorPos = selectionPos;
             selectionPos = -1;
+        }
+
+        public void HandleTextSubmit()
+        {
+            lastSentMessage = "";
+            menuLabel.text = "";
+            cursorPos = 0;
+            selectionPos = -1;
+            historyCursor = messageHistory.Count;
+            completed = false;
+            HandleDeselect();
+            OnTextSubmit?.Invoke();
         }
 
         private void CopySelection()
@@ -473,7 +574,7 @@ namespace RainMeadow
                 historyCursor = index;
                 lastSentMessage = messageHistory[index];
             }
-            menuLabel.text = lastSentMessage;
+            UpdateLabel(lastSentMessage);
             cursorPos = lastSentMessage.Length;
             selectionPos = -1;
         }
@@ -513,11 +614,12 @@ namespace RainMeadow
 
         private void SetCursorSprite(bool inMiddle)
         {
+            int lowestCursorPos = selectionPos != -1 ? Mathf.Min(cursorPos, selectionPos) : cursorPos;
+            float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowestCursorPos > maxVisibleLength ? menuLabel.label.text.Length : lowestCursorPos), false);
             if (inMiddle)
             {
                 _cursor.element = Futile.atlasManager.GetElementWithName("pixel");
                 _cursor.height = 13f;
-                float width = LabelTest.GetWidth(menuLabel.label.text.Substring(0, cursorPos), false);
                 _cursorWidth = width;
                 cursorWrap.sprite.x = width + 11f + pos.x;
             }
@@ -525,7 +627,6 @@ namespace RainMeadow
             {
                 _cursor.element = Futile.atlasManager.GetElementWithName("modInputCursor");
                 _cursor.height = 6f;
-                float width = LabelTest.GetWidth(menuLabel.label.text, false);
                 _cursorWidth = width;
                 cursorWrap.sprite.x = width + 15f + pos.x;
             }
@@ -579,6 +680,13 @@ namespace RainMeadow
                 blockInput = false;
             }
         }
+
+        public override bool IsFoucsed()
+        {
+            if (!MultiView) return true;
+            return Focused;
+        }
+
         private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
         {

@@ -15,7 +15,8 @@ namespace RainMeadow.UI.Components
         public ChatMenuBox(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             roundedRect = new(menu, this, Vector2.zero, this.size, true) { fillAlpha = 0.3f };
-            chatTypingBox = new(menu, this, new(10, 10), new(this.size.x - 30, 30));
+            chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30), true);
+            //chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30));
             chatTypingBox.OnTextSubmit += () =>
             {
                 if (messageScroller != null) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
@@ -89,7 +90,7 @@ namespace RainMeadow.UI.Components
 
 
         public RoundedRect roundedRect;
-        public ChatTextBox2 chatTypingBox;
+        public ChatTextBox chatTypingBox;
         public ButtonScroller messageScroller;
     }
 }
