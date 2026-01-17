@@ -63,12 +63,22 @@ namespace RainMeadow
             cursorWrap.sprite.y = screenPos.y + size.y / 2;
             cursorWrap.sprite.alpha = IsFoucsed() ? Mathf.PingPong(Time.time * 4f, 1f) : 0;
             cursorWrap.sprite.isVisible = ChatTextBox.selectionPos == -1;
+
+            int firstLetterViewed = ChatTextBox.cursorPos > maxVisibleLength ? ChatTextBox.cursorPos - maxVisibleLength : 0,
+                lastLetterViewed = Mathf.Max(0, ChatTextBox.cursorPos > maxVisibleLength ? maxVisibleLength : Mathf.Min(maxVisibleLength, ChatTextBox.lastSentMessage.Length));
+
+            string visible = ChatTextBox.lastSentMessage.Substring(firstLetterViewed, lastLetterViewed);
+
+            int lowestCursorPos = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
+
             if (ChatTextBox.selectionPos != -1)
             {
+                int start = lowestCursorPos > firstLetterViewed ? lowestCursorPos - firstLetterViewed : firstLetterViewed > 0 ? 0 : lowestCursorPos;
+                float width = LabelTest.GetWidth(visible.Substring(start, Mathf.Min(Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos), maxVisibleLength - start)), false);
                 selectionWrap.sprite.isVisible = true;
                 selectionWrap.sprite.x = _cursorWidth + screenPos.x + 11f;
                 selectionWrap.sprite.y = screenPos.y + size.y / 2;
-                selectionWrap.sprite.width = LabelTest.GetWidth(menuLabel.label.text.Substring(lowest > maxVisibleLength ? menuLabel.label.text.Length : lowest, highest > maxVisibleLength ? menuLabel.label.text.Length : highest), false);
+                selectionWrap.sprite.width = width;
             }
             else 
                 selectionWrap.sprite.isVisible = false;

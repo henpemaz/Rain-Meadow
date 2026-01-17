@@ -364,7 +364,7 @@ namespace RainMeadow
                     selectionPos = -1;
                     SetCursorSprite(false);
                 }
-
+                // double check
                 else if (Input.GetKey(KeyCode.A) && (AnyCtrl))
                 {
                     if (cursorPos == len)
