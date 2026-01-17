@@ -227,7 +227,7 @@ namespace RainMeadow
             if (isOwner) // leave right away
             {
                 EntityLeftResource(oe);
-            }
+            } 
             else if (owner != null && !owner.hasLeft) // request to leave
             {
                 RequestEntityLeave(oe);
@@ -238,13 +238,22 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} : {this}");
             if (oe.isPending) throw new InvalidOperationException("can't leave if pending");
-            oe.pendingRequest = owner.InvokeRPC(this.OnEntityLeaveRequest, oe).Then(this.OnEntityLeaveResolve);
+            oe.pendingRequest = owner.InvokeRPC(this.OnEntityLeaveRequest, oe.id).Then(this.OnEntityLeaveResolve);
+            
         }
 
         [RPCMethod]
-        public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity oe)
+        public void OnEntityLeaveRequest(RPCEvent rpcEvent, OnlineEntity.EntityId entityID)
         {
+            var oe = entityID.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
+            if (oe == null)
+            {              
+                RainMeadow.Error($"online entity from {rpcEvent.from} is null!");
+                rpcEvent.from.QueueEvent(new GenericResult.Fail(rpcEvent));
+                return;
+            }
+            
             if (oe != null && oe.owner == rpcEvent.from && isOwner && isActive && !isReleasing)
             {
                 EntityLeftResource(oe);
@@ -259,11 +268,22 @@ namespace RainMeadow
 
         public void OnEntityLeaveResolve(GenericResult entityLeaveResult)
         {
-            var oe = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity;
+            var entityId = (entityLeaveResult.referencedEvent as RPCEvent).args[0] as OnlineEntity.EntityId;
+            var oe = entityId.FindEntity();
             RainMeadow.Debug($"{oe} : {this}");
+            if (oe == null || entityLeaveResult is GenericResult.Fail)
+            {
+                if (entityLeaveResult is GenericResult.Fail && oe != null)
+                {
+                    // owner has no idea what you're talking about, forget about it so they stop asking for the feed.
+                    RainMeadow.Debug($"Removing {oe} from feed");
+                    OnlineManager.RemoveFeed(this, oe);
+                }
+                return;
+
+            }   
             if (oe.pendingRequest == entityLeaveResult.referencedEvent) oe.pendingRequest = null;
             else if (isActive) RainMeadow.Error($"Weird event situation, pending is {oe.pendingRequest} and referenced is {entityLeaveResult.referencedEvent}");
-
             if (entityLeaveResult is GenericResult.Ok) // success
             {
                 if (isActive)
@@ -275,11 +295,16 @@ namespace RainMeadow
             {
                 if (oe.isMine) oe.JoinOrLeavePending();
             }
+            
         }
 
         public void EntityLeftResource(OnlineEntity oe)
         {
             RainMeadow.Debug($"{oe} : {this}");
+            if (oe == null)
+            {
+                return;
+            }
             if (oe.primaryResource == this && !registeredEntities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't registered in resource");
             if (!joinedEntities.ContainsKey(oe.id)) throw new InvalidProgrammerException("wasn't joined in resource");
             registeredEntities.Remove(oe.id);

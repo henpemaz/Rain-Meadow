@@ -264,7 +264,12 @@ namespace RainMeadow
         public virtual void Deregister()
         {
             RainMeadow.Debug("Removing entity from recentEntities: " + this);
+            if (id.FindEntity() != null) {
             OnlineManager.recentEntities.Remove(id);
+            } else
+            {
+                this.owner.InvokeRPC(RPCs.RequestRemoveFromFeed, this.currentlyJoinedResource, id);
+            }
         }
 
         public virtual void NewOwner(OnlinePlayer newOwner)
