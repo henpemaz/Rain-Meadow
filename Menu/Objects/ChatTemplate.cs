@@ -67,14 +67,14 @@ namespace RainMeadow
             int firstLetterViewed = ChatTextBox.cursorPos > maxVisibleLength ? ChatTextBox.cursorPos - maxVisibleLength : 0,
                 lastLetterViewed = Mathf.Max(0, ChatTextBox.cursorPos > maxVisibleLength ? maxVisibleLength : Mathf.Min(maxVisibleLength, ChatTextBox.lastSentMessage.Length));
 
-            string visible = ChatTextBox.lastSentMessage.Substring(firstLetterViewed, lastLetterViewed);
+            menuLabel.text = ChatTextBox.lastSentMessage.Substring(firstLetterViewed, lastLetterViewed);
 
             int lowestCursorPos = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
 
             if (ChatTextBox.selectionPos != -1)
             {
                 int start = lowestCursorPos > firstLetterViewed ? lowestCursorPos - firstLetterViewed : firstLetterViewed > 0 ? 0 : lowestCursorPos;
-                float width = LabelTest.GetWidth(visible.Substring(start, Mathf.Min(Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos), maxVisibleLength - start)), false);
+                float width = LabelTest.GetWidth(menuLabel.text.Substring(start, Mathf.Min(Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos), maxVisibleLength - start)), false);
                 selectionWrap.sprite.isVisible = true;
                 selectionWrap.sprite.x = _cursorWidth + screenPos.x + 11f;
                 selectionWrap.sprite.y = screenPos.y + size.y / 2;

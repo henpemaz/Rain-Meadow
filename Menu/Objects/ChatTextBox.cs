@@ -307,7 +307,7 @@ namespace RainMeadow
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         int space = msg.Substring(0, cursorPos - 1).LastIndexOf(' ') + 1;
                         lastSentMessage = msg.Remove(space, cursorPos - space);
-                        UpdateLabel(lastSentMessage);
+                        //UpdateLabel(lastSentMessage);
                         cursorPos = space;
                     }
                     backspaceRepeater %= DASRepeatRate; //Modulus instead of subtract so the repeater can't scale out of control if DeltaTime > DASRepeatRate.
@@ -330,14 +330,14 @@ namespace RainMeadow
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         int space = msg.Substring(cursorPos, Mathf.Max(len - cursorPos, 0)).IndexOf(' ');
                         lastSentMessage = msg.Remove(cursorPos, (space < 0 || space >= len) ? (space = Mathf.Max(len - cursorPos, 0)) : space + 1);
-                        UpdateLabel(lastSentMessage);
+                        //UpdateLabel(lastSentMessage);
 
                     }
                     else
                     {
                         menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                         lastSentMessage = msg.Remove(cursorPos, 1);
-                        UpdateLabel(lastSentMessage);
+                        //UpdateLabel(lastSentMessage);
                     }
                     backspaceRepeater %= DASRepeatRate;
                 }
@@ -384,7 +384,7 @@ namespace RainMeadow
                 else if (Input.GetKey(KeyCode.V) && (AnyCtrl))
                 {
                     lastSentMessage = Paste(msg);
-                    UpdateLabel(lastSentMessage);
+                    //UpdateLabel(lastSentMessage);
                     cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
                     selectionPos = -1;
                 }
@@ -503,7 +503,7 @@ namespace RainMeadow
         private void DeleteSelection()
         {
             lastSentMessage = lastSentMessage.Remove(Mathf.Min(cursorPos, selectionPos), Mathf.Abs(selectionPos - cursorPos));
-            UpdateLabel(lastSentMessage);
+            //UpdateLabel(lastSentMessage);
             if (selectionPos < cursorPos) cursorPos = selectionPos;
             selectionPos = -1;
         }
