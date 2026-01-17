@@ -96,14 +96,17 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     ArenaTeamClientSettings? teamSettings = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(playerBox.profileIdentifier);
                     playerBox.showRainbow = teamSettings?.team == winningTeam && winningTeam != -1;
                     string symbolName = teamSettings != null ? teamIcons[teamSettings.team] : "pixel";
-                    if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox))
+                    if (!playerBoxes.TryGetValue(playerBox, out TeamBattlePlayerBox teamBox) && playerBox.profileIdentifier != OnlineManager.lobby.owner)
                     {
                         teamBox = new(playerBox.menu, playerBox, new(0, 0), symbolName);
                         playerBox.subObjects.Add(teamBox);
                         playerBoxes.Add(playerBox, teamBox);
                     }
-                    else teamBox.teamSymbol.SetElementByName(symbolName);
+                    else 
+                    if (playerBox.profileIdentifier != OnlineManager.lobby.owner) {
+                    teamBox.teamSymbol.SetElementByName(symbolName);
                     teamBox.teamColor = teamSettings != null ? teamColors[teamSettings.team] : Color.black;
+                    }
                 }
                 if (button is ArenaPlayerSmallBox smallBox)
                 {
