@@ -15,6 +15,7 @@ using RWCustom;
 namespace RainMeadow.UI.Components
 {
     //supports multi view, meant more for menu use where there are multiple buttons
+    [Obsolete("Use ChatTextBox with multiView set to true.")]
     public class ChatTextBox2 : ButtonTemplate, ICanBeTyped
     {
         public int VisibleTextLimit => visibleTextLimit ?? Mathf.FloorToInt(menuLabel.size.x / Mathf.Max(LabelTest.GetWidth(currentMessage) / Mathf.Max(currentMessage.Length, 1), 1));

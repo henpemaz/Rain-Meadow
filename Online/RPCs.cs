@@ -127,6 +127,12 @@ namespace RainMeadow
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
 
+            if (saint != null && (opo.apo as AbstractCreature)?.realizedObject != null && (saint.apo as AbstractCreature)?.realizedCreature != null)
+            {
+                // Don't kill our friends!
+                if ((saint.apo as AbstractCreature).realizedCreature.FriendlyFireSafetyCandidate((opo.apo as AbstractCreature).realizedCreature)) return;
+            }
+
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)
             {

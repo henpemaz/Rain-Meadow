@@ -6,28 +6,31 @@ namespace RainMeadow
     {
         public string key = "";
         public byte[] data;
+        public ushort dataSize;
         public override Type type => Type.CustomPacket;
 
         public CustomPacket() { }
-        public CustomPacket(string key, byte[] data, ushort size)
+        public CustomPacket(string key, byte[] data, ushort dataSize)
         {
             this.key = key;
+            this.dataSize = dataSize;
             this.data = data;
-            this.size = size;
         }
 
         public override void Serialize(BinaryWriter writer)
         {
             base.Serialize(writer);
             writer.Write(this.key);
-            writer.Write(this.data, 0, this.size);
+            writer.Write(this.dataSize);
+            writer.Write(this.data, 0, this.dataSize);
         }
 
         public override void Deserialize(BinaryReader reader)
         {
             base.Deserialize(reader);
             this.key = reader.ReadString();
-            this.data = reader.ReadBytes(this.size);
+            this.dataSize = reader.ReadUInt16();
+            this.data = reader.ReadBytes(this.dataSize);
         }
 
         public override void Process()
@@ -47,8 +50,8 @@ namespace RainMeadow
         public void SteamEncode(MemoryStream ms, BinaryWriter writer)
         {
             writer.Write(this.key);
-            writer.Write(this.size);
-            writer.Write(this.data, 0, this.size);
+            writer.Write(this.dataSize);
+            writer.Write(this.data, 0, this.dataSize);
         }
     }
 }

@@ -40,4 +40,45 @@ namespace RainMeadow.UI.Components
         public FLabelAlignment labelPosAlignment = FLabelAlignment.Center;
         public OpLabel.LabelVAlignment verticalLabelPosAlignment = OpLabel.LabelVAlignment.Center;
     }
+
+    public class UsernameMenuLabel : AlignedMenuLabel
+    {
+        private FSprite hostIcon;
+        public bool Host => hostIcon != null;
+        public UsernameMenuLabel(Menu.Menu menu, MenuObject owner, string text, Vector2 pos, Vector2 size, bool bigText, FTextParams txtParams = null) : base(menu, owner, text, pos, size, bigText, txtParams)
+        {
+            if (OnlineManager.lobby.owner.id.GetPersonaName() == text)
+            {
+                hostIcon = new FSprite("ChieftainA")
+                {
+                    x = pos.x,
+                    y = pos.y,
+                    scaleX = 0.5f,
+                    scaleY = 0.5f,
+                    anchorX = 0.25f,
+                };
+                Container.AddChild(hostIcon);
+            }
+        }
+
+        public override void GrafUpdate(float timeStacker)
+        {
+            base.GrafUpdate(timeStacker);
+            if (hostIcon == null) return;
+            label.x += 14;
+            hostIcon.x = DrawX(timeStacker) + (labelPosAlignment == FLabelAlignment.Left ? 0 : labelPosAlignment == FLabelAlignment.Right ? size.x : size.x / 2);
+            hostIcon.y = DrawY(timeStacker) + (verticalLabelPosAlignment == OpLabel.LabelVAlignment.Bottom ? 0 : verticalLabelPosAlignment == OpLabel.LabelVAlignment.Top ? size.y : size.y / 2);
+            hostIcon.alpha = label.alpha;
+            hostIcon.color = label.color;
+        }
+
+        public override void RemoveSprites()
+        {
+            if (hostIcon != null)
+            {
+                hostIcon.RemoveFromContainer();
+            }
+            base.RemoveSprites();
+        }
+    }
 }
