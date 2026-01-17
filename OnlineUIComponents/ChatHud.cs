@@ -107,18 +107,15 @@ namespace RainMeadow
             {
                 if (chatLogOverlay != null)
                 {
-                    if (!ChatTextBox.AnyCtrl)
+                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollUp)
                     {
-                        if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
-                        {
-                            chatLogOverlay.scroller.AddScroll(-1);
-                            chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                        }
-                        else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollDown)
-                        {
-                            chatLogOverlay.scroller.AddScroll(1);
-                            chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
-                        }
+                        chatLogOverlay.scroller.AddScroll(-1);
+                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
+                    }
+                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollDown)
+                    {
+                        chatLogOverlay.scroller.AddScroll(1);
+                        chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
                     }
                 }
             }

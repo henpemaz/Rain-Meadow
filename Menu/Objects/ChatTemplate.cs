@@ -58,7 +58,7 @@ namespace RainMeadow
             }
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
             var highest = Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos);
-            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest > maxVisibleLength ? menuLabel.label.text.Length : lowest), false);
+            _cursorWidth = LabelTest.GetWidth(ChatTextBox.lastSentMessage.Substring(0, lowest > maxVisibleLength ? menuLabel.label.text.Length : lowest), false);
             cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 11f : 15f) + screenPos.x;
             cursorWrap.sprite.y = screenPos.y + size.y / 2;
             cursorWrap.sprite.alpha = IsFoucsed() ? Mathf.PingPong(Time.time * 4f, 1f) : 0;

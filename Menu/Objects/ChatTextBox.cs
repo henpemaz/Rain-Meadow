@@ -20,10 +20,11 @@ namespace RainMeadow
         private float backspaceRepeater = 0f;
         private float arrowHeld = 0f;
         private float arrowRepeater = 0f;
+        private bool clipboardHeld = false;
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
-        public static int textLimit = 100;
+        public const int textLimit = 100;
         public static int cursorPos = 0;
         public static int selectionPos = -1;
         public static int historyCursor = -1;
@@ -43,8 +44,17 @@ namespace RainMeadow
         public int? visibleTextLimit;
         public static string Clipboard
         {
-            get => GUIUtility.systemCopyBuffer;
-            set => GUIUtility.systemCopyBuffer = value;
+            get 
+            {
+                var contents = GUIUtility.systemCopyBuffer;
+                RainMeadow.Debug($"Clipboard was accessed! Reading {contents.Length} chars from system clipboard!");
+                return contents;
+            }
+            set
+            {
+                RainMeadow.Debug($"Clipboard was accessed! Writing {value.Length} chars to system clipboard!");
+                GUIUtility.systemCopyBuffer = value;
+            }
         }
         // Multiview Support
         public bool focused, forceMenuMouseMode, lastFreezeMenuFunctions, lastMenuMouseMode, previouslySubmittedText;
@@ -63,7 +73,7 @@ namespace RainMeadow
         public bool DontGetInputs => menu.FreezeMenuFunctions || lastFreezeMenuFunctions || !menu.Active || page != menu.pages.GetValueOrDefault(menu.currentPage);
         //
 
-        public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) ||  Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
+        public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
 
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, bool multiView = false) : base(menu, owner, displayText, pos, size)
         {
@@ -215,7 +225,7 @@ namespace RainMeadow
                     RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
                 }
                 // only resets the chat text box if in a story lobby menu, otherwise the text box is just destroyed
-                OnShutDownRequest.Invoke();
+                OnShutDownRequest?.Invoke();
                 typingHandler.Unassign(this);
                 lastSentMessage = "";
                 completed = false;
@@ -376,17 +386,28 @@ namespace RainMeadow
                 }
 
                 // CTRL + C / Command + C
-                else if (Input.GetKey(KeyCode.C) && (AnyCtrl))
+                else if (Input.GetKey(KeyCode.C) && !clipboardHeld && (AnyCtrl))
                 {
                     CopySelection();
+                    clipboardHeld = true;
                 }
                 // CTRL + V / Command + V
-                else if (Input.GetKey(KeyCode.V) && (AnyCtrl))
+                else if (Input.GetKey(KeyCode.V) && !clipboardHeld && (AnyCtrl))
                 {
+                    menu.PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                     lastSentMessage = Paste(msg);
-                    //UpdateLabel(lastSentMessage);
+                    UpdateLabel(lastSentMessage);
                     cursorPos = Mathf.Min(lastSentMessage.Length, cursorPos + Clipboard.Length);
                     selectionPos = -1;
+                    clipboardHeld = true;
+                }
+                // CTRL + X / Command + X
+                else if (Input.GetKey(KeyCode.X) && !clipboardHeld && (AnyCtrl))
+                {
+                    menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
+                    CopySelection();
+                    DeleteSelection();
+                    clipboardHeld = true;
                 }
                 else if (Input.GetKey(KeyCode.LeftArrow))
                 {
@@ -495,6 +516,10 @@ namespace RainMeadow
                     arrowHeld = 0f;
                     arrowRepeater = 0f;
                 }
+                if (!(Input.GetKey(KeyCode.C) || Input.GetKey(KeyCode.V) || Input.GetKey(KeyCode.X)))
+                {
+                    clipboardHeld = false;
+                }
             }
             blockInput = true;
             base.GrafUpdate(timeStacker);
@@ -528,30 +553,20 @@ namespace RainMeadow
 
         private string Paste(string msg)
         {
-            var paste = Clipboard;
-            if (string.IsNullOrEmpty(paste)) return msg;
+            var paste = string.Copy(Clipboard);
+            if (string.IsNullOrEmpty(paste))
+            {
+                RainMeadow.Debug("Clipboard was empty.");
+                return msg;
+            }
 
-            int newLength = paste.Length + msg.Length;
-            if (newLength < textLimit)
-            {
-                msg.Insert(Mathf.Min(cursorPos, msg.Length - 1), paste);
-            }
-            else
-            {
-                while(paste.Length + msg.Length < textLimit)
-                {
-                    if (paste.Length > 0)
-                    {
-                        paste.Remove(paste.Length - 1);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                msg.Insert(Mathf.Min(cursorPos, msg.Length - 1), paste);
-            }
-            return msg;
+            int space = textLimit - msg.Length;
+
+            if (space <= 0) return msg;
+            if (paste.Length > space) paste = paste.Substring(0, space);
+
+            RainMeadow.Debug($"Pasted {paste.Length} chars from clipboard.");
+            return msg.Insert(Mathf.Clamp(cursorPos, 0, msg.Length), paste);
         }
 
         private void GetMessageHistory(int dir)
