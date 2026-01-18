@@ -6,6 +6,7 @@ using System.Collections;
 using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace RainMeadow
 {
@@ -37,8 +38,8 @@ namespace RainMeadow
         public static bool completed = false;
         public static int autoCompleteIndex = 0;
         public string lastCompletion = "";
-        public int lastCompletionStart = 0;
-        public int lastCompletionEnd = 0;
+        public int lastCompletionStart = -1;
+        public int lastCompletionEnd = -1;
 
         public static event Action? OnShutDownRequest;
         public event Action? OnTextSubmit;
@@ -611,52 +612,87 @@ namespace RainMeadow
 
         private void AutoComplete()
         {
-            autoCompleteIndex++;
-            if (completed)
+            int start, end;
+            string current;
+
+            if (lastCompletionStart != -1 && cursorPos >= lastCompletionStart && cursorPos <= lastCompletionEnd)
             {
-                if (lastSentMessage.Length > 0)
-                {
-                    cursorPos = cursorPos - lastCompletion.Length;
-                    lastSentMessage = lastSentMessage.Remove(Mathf.Clamp(cursorPos - lastCompletion.Length, 0 , lastSentMessage.Length), Mathf.Clamp(cursorPos, 0, lastSentMessage.Length));
-                }
-                if (autoCompleteIndex >= completions.Count) autoCompleteIndex = 0;
+                start = lastCompletionStart; 
+                end = lastCompletionEnd;
+                current = lastCompletion;
             }
             else
             {
-                int index = cursorPos - lastCompletion.Length;
-                completions.Clear();
-                autoCompleteIndex = 0;
                 UpdateCompletions();
-                if (completions.Count > 0)
-                {
-                    return;
-                }
-                completed = true;
-                lastSentMessage = lastSentMessage.Remove(index, Mathf.Clamp(cursorPos, 0, lastSentMessage.Length));
-            }
-            string s = completions[autoCompleteIndex];
-            int space = textLimit - lastSentMessage.Length;
 
-            if (space <= 0) return;
-            if (s.Length > space) s = s.Substring(0, space);
+                start = GetStart(lastSentMessage, cursorPos);
+                end = GetEnd(lastSentMessage, cursorPos);
+                current = lastSentMessage.Substring(start, end - start);
+
+                completions = completions.Where(x => x.StartsWith(current, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x).ToList();
+            }
+
+            if (completions.Count == 0)
+            {
+                ResetCompletions();
+                return;
+            }
+
+            string complete = completions[autoCompleteIndex];
+            string newText = lastSentMessage.Substring(0, start) + complete + lastSentMessage.Substring(end);
+            if (newText.Length > textLimit)
+            {
+                ResetCompletions();
+                return;
+            }
+
+            lastSentMessage = newText;
+
+            lastCompletionStart = start;
+            lastCompletionEnd = end;
             lastCompletion = completions[autoCompleteIndex];
-            lastSentMessage = lastSentMessage.Insert(Mathf.Clamp(cursorPos, 0, lastSentMessage.Length), s);
-            cursorPos = Mathf.Clamp(cursorPos + s.Length, 0, lastSentMessage.Length);
+
+            cursorPos = Mathf.Clamp(end + complete.Length, 0, lastSentMessage.Length);
+            autoCompleteIndex = (autoCompleteIndex + 1) % completions.Count;
         }
 
         private void UpdateCompletions()
         {
-            completed = false;
-            lastCompletion = "";
             completions.Clear();
-            foreach(var player in OnlineManager.players) 
-                completions.Add(player.id.GetPersonaName());
             autoCompleteIndex = 0;
-            if (completions.Count > 0)
+            foreach (var player in OnlineManager.players)
             {
-                completed = true;
-                AutoComplete();
+                completions.Add(player.id.GetPersonaName());
             }
+        }
+
+        private void ResetCompletions()
+        {
+            lastCompletionEnd = -1;
+            lastCompletionStart = -1;
+            lastCompletion = "";
+            autoCompleteIndex = 0;
+            completions.Clear();
+        }
+
+        private int GetStart(string text, int pos)
+        {
+            int i = pos - 1;
+            while(i >= 0 && text[i] != ' ')
+            {
+                i--;
+            }
+            return i + 1;
+        }
+
+        private int GetEnd(string text, int pos)
+        {
+            int i = pos;
+            while (i < text.Length && text[i] != ' ')
+            {
+                i++;
+            }
+            return i;
         }
 
         private void SetCursorSprite(bool inMiddle)
