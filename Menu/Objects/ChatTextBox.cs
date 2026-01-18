@@ -21,6 +21,7 @@ namespace RainMeadow
         private float arrowHeld = 0f;
         private float arrowRepeater = 0f;
         private bool clipboardHeld = false;
+        private bool tabHeld = false;
         private static List<IDetour>? inputBlockers;
         public Action<char> OnKeyDown { get; set; }
         public static bool blockInput = false;
@@ -28,14 +29,16 @@ namespace RainMeadow
         public static int cursorPos = 0;
         public static int selectionPos = -1;
         public static int historyCursor = -1;
-        public static int autoComplete = 0;
         public static string lastSentMessage = "";
         public static string lastTyped = "";
 
         public static List<string> messageHistory = new();
         public static List<string> completions = new();
-
         public static bool completed = false;
+        public static int autoCompleteIndex = 0;
+        public string lastCompletion = "";
+        public int lastCompletionStart = 0;
+        public int lastCompletionEnd = 0;
 
         public static event Action? OnShutDownRequest;
         public event Action? OnTextSubmit;
@@ -385,6 +388,13 @@ namespace RainMeadow
                     selectionPos = msg.Length;
                 }
 
+                // Auto Complete
+                else if (Input.GetKey(KeyCode.Tab) && !tabHeld)
+                {
+                    AutoComplete();
+                    tabHeld = true;
+                }
+
                 // CTRL + C / Command + C
                 else if (Input.GetKey(KeyCode.C) && !clipboardHeld && (AnyCtrl))
                 {
@@ -520,6 +530,10 @@ namespace RainMeadow
                 {
                     clipboardHeld = false;
                 }
+                if (!Input.GetKey(KeyCode.Tab))
+                {
+                    tabHeld = false;
+                }
             }
             blockInput = true;
             base.GrafUpdate(timeStacker);
@@ -540,6 +554,7 @@ namespace RainMeadow
             cursorPos = 0;
             selectionPos = -1;
             historyCursor = messageHistory.Count;
+            lastCompletion = "";
             completed = false;
             HandleDeselect();
             OnTextSubmit?.Invoke();
@@ -589,37 +604,54 @@ namespace RainMeadow
                 historyCursor = index;
                 lastSentMessage = messageHistory[index];
             }
-            UpdateLabel(lastSentMessage);
+            //UpdateLabel(lastSentMessage);
             cursorPos = lastSentMessage.Length;
             selectionPos = -1;
         }
 
         private void AutoComplete()
         {
-            autoComplete++;
+            autoCompleteIndex++;
             if (completed)
             {
-                if (autoComplete >= completions.Count) autoComplete = 0;
+                if (lastSentMessage.Length > 0)
+                {
+                    cursorPos = cursorPos - lastCompletion.Length;
+                    lastSentMessage = lastSentMessage.Remove(Mathf.Clamp(cursorPos - lastCompletion.Length, 0 , lastSentMessage.Length), Mathf.Clamp(cursorPos, 0, lastSentMessage.Length));
+                }
+                if (autoCompleteIndex >= completions.Count) autoCompleteIndex = 0;
             }
             else
             {
+                int index = cursorPos - lastCompletion.Length;
                 completions.Clear();
-                autoComplete = 0;
+                autoCompleteIndex = 0;
                 UpdateCompletions();
                 if (completions.Count > 0)
                 {
-                    completed = true;
+                    return;
                 }
+                completed = true;
+                lastSentMessage = lastSentMessage.Remove(index, Mathf.Clamp(cursorPos, 0, lastSentMessage.Length));
             }
+            string s = completions[autoCompleteIndex];
+            int space = textLimit - lastSentMessage.Length;
+
+            if (space <= 0) return;
+            if (s.Length > space) s = s.Substring(0, space);
+            lastCompletion = completions[autoCompleteIndex];
+            lastSentMessage = lastSentMessage.Insert(Mathf.Clamp(cursorPos, 0, lastSentMessage.Length), s);
+            cursorPos = Mathf.Clamp(cursorPos + s.Length, 0, lastSentMessage.Length);
         }
 
         private void UpdateCompletions()
         {
             completed = false;
+            lastCompletion = "";
             completions.Clear();
             foreach(var player in OnlineManager.players) 
                 completions.Add(player.id.GetPersonaName());
-            autoComplete = 0;
+            autoCompleteIndex = 0;
             if (completions.Count > 0)
             {
                 completed = true;
