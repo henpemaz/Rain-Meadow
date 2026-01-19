@@ -33,10 +33,13 @@ namespace RainMeadow
             return orig(self);
         }
 
+        static bool waitingForPlayersToLeave = false;
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
         {
             if (isArenaMode(out var arena))
             {
+                if (waitingForPlayersToLeave) return;
+
                 arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
                 if (OnlineManager.lobby.isOwner)
@@ -65,6 +68,7 @@ namespace RainMeadow
                 ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
 
 
+
                 AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
                 Room room = absRoom.realizedRoom;
                 WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
@@ -91,6 +95,22 @@ namespace RainMeadow
                                 oe.ExitResource(roomSession.worldSession);
                             }
                         }
+                    }
+                    roomSession.ParticipantLeft(OnlineManager.mePlayer);
+                    worldSession.ParticipantLeft(OnlineManager.mePlayer);
+                    if ((OnlineManager.lobby.isOwner && worldSession.participants.Count > 0) || (!OnlineManager.lobby.isOwner && OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) && !ws.overworldSession.participants.Contains(OnlineManager.lobby.owner)))
+                    {
+                        if (OnlineManager.lobby.isOwner) {
+                        Debug($"Waiting for {worldSession.participants.Count} players to leave...");
+                        } else
+                        {
+                         Debug($"Waiting for host  players to join new world...");
+
+                        }
+                        waitingForPlayersToLeave = true; 
+                        manager.rainWorld.StartCoroutine(WaitLoop(orig, self, manager, worldSession));
+                        
+                        return; 
                     }
 
                     if (manager.currentMainLoop is RainWorldGame)
@@ -177,6 +197,30 @@ namespace RainMeadow
             {
                 orig(self, manager);
             }
+        }
+        private System.Collections.IEnumerator WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession session)
+        {
+            if (OnlineManager.lobby.isOwner) {
+            while (session.participants.Count > 0)
+            {
+                yield return null; 
+            }
+            } else
+            {
+                 if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var worldSession))
+                {
+                    RainMeadow.Error("Could not get arena world session! Exiting deadlock...");
+                } else {
+                 while (!worldSession.overworldSession.participants.Contains(OnlineManager.lobby.owner))
+                {
+                    yield return null; 
+                }
+                }
+            }
+
+            waitingForPlayersToLeave = false;
+            Debug("All players left. Proceeding.");
+            self.NextLevel(manager); 
         }
 
         // Room unload

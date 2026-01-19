@@ -361,7 +361,7 @@ namespace RainMeadow
         public static event Action<OnlineResource, OnlinePlayer>? OnParticipantLeft;
 
         protected virtual void ParticipantLeftImpl(OnlinePlayer player) { }
-        private void ParticipantLeft(OnlinePlayer participant)
+        public void ParticipantLeft(OnlinePlayer participant)
         {
             if (!participants.Contains(participant)) return;
             RainMeadow.Debug($"{this}-{participant}");
