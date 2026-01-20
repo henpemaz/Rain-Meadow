@@ -200,26 +200,44 @@ namespace RainMeadow
         }
         private System.Collections.IEnumerator WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession session)
         {
-            if (OnlineManager.lobby.isOwner) {
-            while (session.participants.Count > 0)
+            float startTime = UnityEngine.Time.time;
+            float timeoutSeconds = 5f;
+        
+            if (OnlineManager.lobby.isOwner) 
             {
-                yield return null; 
-            }
-            } else
-            {
-                 if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var worldSession))
-                {
-                    RainMeadow.Error("Could not get arena world session! Exiting deadlock...");
-                } else {
-                 while (!worldSession.overworldSession.participants.Contains(OnlineManager.lobby.owner))
+                // Wait until players leave OR 5 seconds pass. No deadlocks
+                while (session.participants.Count > 0 && (UnityEngine.Time.time - startTime < timeoutSeconds))
                 {
                     yield return null; 
                 }
+            } 
+            else
+            {
+                if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var worldSession))
+                {
+                    RainMeadow.Error("Could not get arena world session! Exiting deadlock...");
+                } 
+                else 
+                {
+                    // Wait until owner is present OR 5 seconds pass
+                    while (!worldSession.overworldSession.participants.Contains(OnlineManager.lobby.owner) && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                    {
+                        yield return null; 
+                    }
                 }
             }
-
+        
+            // Check if we hit the timeout for logging purposes
+            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
+            {
+                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
+            }
+            else
+            {
+                Debug("All players left or owner found. Proceeding.");
+            }
+        
             waitingForPlayersToLeave = false;
-            Debug("All players left. Proceeding.");
             self.NextLevel(manager); 
         }
 
