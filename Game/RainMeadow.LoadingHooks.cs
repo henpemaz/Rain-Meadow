@@ -33,7 +33,7 @@ namespace RainMeadow
             return orig(self);
         }
 
-        static bool waitingForPlayersToLeave = false;
+        private static bool waitingForPlayersToLeave = false;
 
         /// <summary>
         /// Used to control Host/Client resource racing in ArenaSitting_NextLevel
