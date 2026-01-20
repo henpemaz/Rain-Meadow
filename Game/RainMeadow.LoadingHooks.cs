@@ -142,8 +142,7 @@ namespace RainMeadow
                             }
                         }
                     }
-                    roomSession.ParticipantLeft(OnlineManager.mePlayer);
-                    worldSession.ParticipantLeft(OnlineManager.mePlayer);
+                    worldSession.NotNeeded();
                     if ((OnlineManager.lobby.isOwner && worldSession.participants.Count > 0) || (!OnlineManager.lobby.isOwner && OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) && !ws.overworldSession.participants.Contains(OnlineManager.lobby.owner)))
                     {
                         if (OnlineManager.lobby.isOwner) {
