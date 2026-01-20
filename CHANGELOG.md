@@ -7,7 +7,7 @@
 ## General
 - Added Chinese translation (thanks @havenoideawhatismyname!)
 - Fixed custom background thumbnails not disappearing when scrolling background pages
-
+- Fixed large lobbies interrupting ping cycle key inputs 
 ## Story
 - Fixes creature duplication occurring the next cycle  after a creature enters a den
 - Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
