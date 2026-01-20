@@ -13,13 +13,10 @@ namespace RainMeadow
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
 
-        public OnlinePlayer owningPlayerSource;
-
         public int hudCounter;
 
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
-            this.owningPlayerSource = OnlineManager.mePlayer;
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
             UpdatePlayers();
@@ -32,6 +29,15 @@ namespace RainMeadow
                 RainMeadow.rainMeadowOptions.ShowFriends.Value = Input.GetKey(RainMeadow.rainMeadowOptions.FriendsListKey.Value);
             else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
                 RainMeadow.rainMeadowOptions.ShowFriends.Value ^= true;
+
+                if (Input.GetKeyDown(KeyCode.P))
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
+                }
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
+                }
 
             base.Draw(timeStacker);
         }
