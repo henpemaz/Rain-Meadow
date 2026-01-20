@@ -339,15 +339,6 @@ namespace RainMeadow
                     self.manager.blackDelay = 0;
                 }
             }
-            // prevent blocked input from large lobbies, moved to here where only we will run this
-            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.P))
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
-            }
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
-            }
 
 
             if (isStoryMode(out var story))
