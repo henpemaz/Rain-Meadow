@@ -316,10 +316,7 @@ namespace RainMeadow
                 }
                 pos.y += 20;
             }
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
-            }
+
             if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
             {
                 this.pingLabel.y = this.gradient.y - 25f;
@@ -330,11 +327,6 @@ namespace RainMeadow
             {
                 this.pingLabel.alpha = 0;
             }
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
-            }
-
 
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
