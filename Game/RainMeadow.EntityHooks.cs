@@ -540,7 +540,6 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                if (waitingForPlayersToLeave) return;
                 Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
                 World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
