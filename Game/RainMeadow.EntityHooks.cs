@@ -658,7 +658,6 @@ namespace RainMeadow
                     orig(self, warpUsed);
                 }
 
-                
                 if (warpUsed)
                 { // and for warps we require a more manual approach; to properly make aware of old APOs entering a new region
                     foreach (var absplayer in self.game.Players)
