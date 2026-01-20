@@ -536,11 +536,56 @@ namespace RainMeadow
                 Error(ex);
             }
         }
+        /// <summary>
+        /// Used to control Host/Client resource racing in OverWorld_WorldLoaded
+        /// </summary>
+         private System.Collections.IEnumerator OverworldLoaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession session)
+        {
+            float startTime = UnityEngine.Time.time;
+            float timeoutSeconds = 5f;
+        
+            if (OnlineManager.lobby.isOwner) 
+            {
+                // Wait until players leave OR 5 seconds pass. No deadlocks
+                while (session.participants.Count > 0 && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null; 
+                }
+            } 
+            else
+            {
+                if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue((self.worldLoader == null) ? self.activeWorld.name : self.worldLoader.ReturnWorld().name, out var worldSession))
+                {
+                    RainMeadow.Error("Could not get world session! Exiting deadlock...");
+                } 
+                else 
+                {
+                    // Wait until owner is present OR 5 seconds pass
+                    while (!worldSession.overworldSession.participants.Contains(OnlineManager.lobby.owner) && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                    {
+                        yield return null; 
+                    }
+                }
+            }
+        
+            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
+            {
+                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
+            }
+            else
+            {
+                Debug("All players left or owner found. Proceeding.");
+            }
+        
+            waitingForPlayersToLeave = false;
+            self.WorldLoaded(warpUsed);
+        }
         // world transition at gates
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
             if (OnlineManager.lobby != null)
             {
+                if (waitingForPlayersToLeave) return;
                 Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
                 World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
                 WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
@@ -574,6 +619,21 @@ namespace RainMeadow
                                 opo.RemoveEntityFromGame(false);
                             }
                         }
+                    }
+                    roomSession.ParticipantLeft(OnlineManager.mePlayer);
+                    oldWorldSession.ParticipantLeft(OnlineManager.mePlayer);
+                    if ((OnlineManager.lobby.isOwner && oldWorldSession.participants.Count > 0) || (!OnlineManager.lobby.isOwner && OnlineManager.lobby.overworld.worldSessions.TryGetValue((self.worldLoader == null) ? self.activeWorld.name : self.worldLoader.ReturnWorld().name, out var ws) && !ws.overworldSession.participants.Contains(OnlineManager.lobby.owner)))
+                    {
+                        if (OnlineManager.lobby.isOwner) {
+                        Debug($"Waiting for {oldWorldSession.participants.Count} players to leave...");
+                        } else
+                        {
+                         Debug($"Waiting for host  players to join new world...");
+
+                        }
+                        waitingForPlayersToLeave = true; 
+                        self.game.rainWorld.StartCoroutine(OverworldLoaded_WaitLoop(orig, self, warpUsed, oldWorldSession));
+                        return; 
                     }
 
                     orig(self, warpUsed); // this replace the list of entities in new world with that from old world
