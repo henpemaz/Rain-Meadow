@@ -746,7 +746,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you or press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate");
             }
             else
             {
@@ -754,6 +754,7 @@ namespace RainMeadow
             }
         }
 
+        private int ticker = 0;
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
             orig(self);
@@ -761,16 +762,18 @@ namespace RainMeadow
             {
                 if (isStoryMode(out _))
                 {
+                    ticker++;
                     self.restartNotAllowed = 1; // block from GoToDeathScreen
 
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
                     {
-                        touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
+                        touchedInput = ticker > 200; // 5 seconds at 40 ticks a second
                     }
                     if (touchedInput || inVoidSea)
                     {
                         self.gameOverMode = false;
+                        ticker = 0;
                     }
                 }
             }
