@@ -317,17 +317,27 @@ namespace RainMeadow
                 pos.y += 20;
             }
 
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
-            {
-                this.pingLabel.y = this.gradient.y - 25f;
-                this.pingLabel.x = pos.x;
-            }
+            // what a weird solution to this
+             if (owner.owner.owningPlayerSource == OnlineManager.mePlayer) {
+                if (Input.GetKeyDown(KeyCode.P))
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
+                }
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
+                {
+                    this.pingLabel.y = this.gradient.y - 25f;
+                    this.pingLabel.x = pos.x;
+                }
 
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 2)
-            {
-                this.pingLabel.alpha = 0;
-            }
-
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 2)
+                {
+                    this.pingLabel.alpha = 0;
+                }
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
+                }
+             }
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
                 messageLabels[i].alpha = 0f;

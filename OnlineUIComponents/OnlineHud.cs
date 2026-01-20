@@ -13,10 +13,13 @@ namespace RainMeadow
         private RoomCamera camera;
         private readonly OnlineGameMode onlineGameMode;
 
+        public OnlinePlayer owningPlayerSource;
+
         public int hudCounter;
 
         public OnlineHUD(HUD.HUD hud, RoomCamera camera, OnlineGameMode onlineGameMode) : base(hud)
         {
+            this.owningPlayerSource = OnlineManager.mePlayer;
             this.camera = camera;
             this.onlineGameMode = onlineGameMode;
             UpdatePlayers();
