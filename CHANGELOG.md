@@ -12,7 +12,7 @@
 - Fixes creature duplication occurring the next cycle  after a creature enters a den
 - Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
 - Updated "Match Save" to "Sync Save" for clarity
-
+- Updated the Text Prompt on death to dismiss after 5 seconds instead of requiring input
 # Release 1.10.0 (Anniversary Edition)
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
