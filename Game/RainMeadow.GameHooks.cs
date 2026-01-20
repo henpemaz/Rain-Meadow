@@ -325,11 +325,6 @@ namespace RainMeadow
 
         private void RainWorldGame_Update1(On.RainWorldGame.orig_Update orig, RainWorldGame self)
         {
-            if (OnlineManager.lobby == null)
-            {
-                orig(self);
-                return;
-            }
             if (OnlineManager.lobby?.gameMode is MeadowGameMode)
             {
                 // fast travel init means save-and-restart on load, which uses player[0]
