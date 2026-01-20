@@ -335,7 +335,6 @@ namespace RainMeadow
                 }
             }
 
-
             if (isStoryMode(out var story))
             {
                 // synchronize food between all local avatars
