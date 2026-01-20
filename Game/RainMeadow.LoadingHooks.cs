@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonoMod.ModInterop;
 using MonoMod.RuntimeDetour;
 namespace RainMeadow
 {
@@ -33,12 +34,10 @@ namespace RainMeadow
             return orig(self);
         }
 
-        private static bool waitingForPlayersToLeave = false;
-
         /// <summary>
         /// Used to control Host/Client resource racing in ArenaSitting_NextLevel
         /// </summary>
-         private System.Collections.IEnumerator ArenaSitting_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession session)
+         private System.Collections.IEnumerator ArenaSitting_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession session, OnlineGameMode mode)
         {
             float startTime = UnityEngine.Time.time;
             float timeoutSeconds = 5f;
@@ -77,14 +76,20 @@ namespace RainMeadow
                 Debug("All players left or owner found. Proceeding.");
             }
         
-            waitingForPlayersToLeave = false;
+            session.waitingForPlayersToLeave = false;
             self.NextLevel(manager); 
         }
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
         {
             if (isArenaMode(out var arena))
             {
-                if (waitingForPlayersToLeave) return;
+
+                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+                Room room = absRoom.realizedRoom;
+                WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
+
+                if (worldSession.waitingForPlayersToLeave) return;
 
                 arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
@@ -111,38 +116,18 @@ namespace RainMeadow
                     }
                 }
 
-                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
-
-
-
-                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-                Room room = absRoom.realizedRoom;
-                WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
-
                 if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                 {
-                    // we go over all APOs in the room
                     Debug("Next level switching");
-                    var entities = absRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
-                    {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                        {
-                            oe.apo.LoseAllStuckObjects();
-                            if (!oe.isMine)
-                            {
-                                // not-online-aware removal
-                                oe.RemoveEntityFromGame(false);
-                            }
-                            else // mine leave the old online world elegantly
-                            {
-                                Debug("removing my entity from online " + oe);
-                                oe.ExitResource(roomSession);
-                                oe.ExitResource(roomSession.worldSession);
-                            }
-                        }
-                    }
                     worldSession.NotNeeded();
+                    
+                    // Ladies and gentlemen: The Sledgehammer
+                    roomSession.UpdateParticipants(
+                        roomSession.participants.Where(p => p != OnlineManager.mePlayer).ToList()
+                    );
+                    worldSession.UpdateParticipants(
+                        worldSession.participants.Where(p => p != OnlineManager.mePlayer).ToList()
+                    );
                     if ((OnlineManager.lobby.isOwner && worldSession.participants.Count > 0) || (!OnlineManager.lobby.isOwner && OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) && !ws.overworldSession.participants.Contains(OnlineManager.lobby.owner)))
                     {
                         if (OnlineManager.lobby.isOwner) {
@@ -152,8 +137,8 @@ namespace RainMeadow
                          Debug($"Waiting for host  players to join new world...");
 
                         }
-                        waitingForPlayersToLeave = true; 
-                        manager.rainWorld.StartCoroutine(ArenaSitting_WaitLoop(orig, self, manager, worldSession));
+                        worldSession.waitingForPlayersToLeave = true; 
+                        manager.rainWorld.StartCoroutine(ArenaSitting_WaitLoop(orig, self, manager, worldSession, arena));
                         
                         return; 
                     }
