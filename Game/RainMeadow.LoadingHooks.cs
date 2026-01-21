@@ -119,7 +119,8 @@ namespace RainMeadow
                 if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                 {
                     Debug("Next level switching");
-                    worldSession.NotNeeded();
+                    // I don't think we need this since ParticipantLeft will manage the transference
+                    //worldSession.NotNeeded();
                     
                     // Ladies and gentlemen: The Sledgehammer
                     roomSession.UpdateParticipants(
