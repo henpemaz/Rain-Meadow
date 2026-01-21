@@ -72,12 +72,13 @@ namespace RainMeadow
                 return button;
             }
             this.pages[this.currentPage].lastSelectedObject = this.continueButton = 
-                AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
+            AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
             AddButton(this.Translate("TO HUB"), this.Translate("Teleport to the closest hub"), this.ToHub, targetHub != -1, emotesprite: MeadowProgression.Emote.symbolTree.value.ToLowerInvariant());
             AddButton(this.Translate("TO OUTSKIRTS"), this.Translate("Teleport to outskirts"), this.ToOutskirts, suco4 != -1, emotesprite: MeadowProgression.Emote.symbolSurvivor.value.ToLowerInvariant());
             AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter, emotesprite: MeadowProgression.Emote.symbolShelter.value.ToLowerInvariant());
             AddButton(this.Translate("UNSTUCK"), this.Translate("Teleport to a nearby pipe"), this.Unstuck);
             AddButton(this.Translate("LOBBY"), this.Translate("Go back to the charater selection screen"), this.ToLobby);
+            AddButton(this.Translate((OnlineManager.lobby.gameMode as MeadowGameMode).timeline.ToUpper()), "", this.Continue, true, emotesprite: MeadowProgression.Emote.symbolTime.value.ToLowerInvariant());
             this.exitButton = AddButton(this.Translate("QUIT"), this.Translate("Exit back to the main menu"), this.ToMainMenu);
 
             Vector2 pos = new Vector2(
