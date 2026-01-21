@@ -147,7 +147,7 @@ namespace RainMeadow
 
             bool fade = false;
 
-            if (inactivityTimer > 1200)
+            if (inactivityTimer > RainMeadow.rainMeadowOptions.ChatInactivityTimer.Value * 40)
             {
                 fade = true;
             }
@@ -170,7 +170,7 @@ namespace RainMeadow
 
             if (fade)
             {
-                opacity = Mathf.Max(0.35f, opacity - 0.05f);
+                opacity = Mathf.Max(RainMeadow.rainMeadowOptions.ChatInactivityOpacity.Value, opacity - 0.05f);
             }
             else
             {

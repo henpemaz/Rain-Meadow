@@ -689,9 +689,9 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
-            if (!string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0f, 1f, 1f);
+                manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0f, 1f, 0f);
             }
             this.chatLog.Add((user, message));
             this.UpdateLogDisplay();
