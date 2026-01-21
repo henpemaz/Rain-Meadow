@@ -83,7 +83,6 @@ namespace RainMeadow
                 {
                   mode.timeline = timeline;
                 }
-                RainMeadow.Debug(mode.timeline);
             }
         }
     }
