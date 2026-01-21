@@ -120,7 +120,7 @@ namespace RainMeadow
                 {
                     Debug("Next level switching");
                     // I don't think we need this since ParticipantLeft will manage the transference
-                    //worldSession.NotNeeded();
+                    worldSession.NotNeeded();
                     
                     // Ladies and gentlemen: The Sledgehammer
                     roomSession.UpdateParticipants(
