@@ -33,6 +33,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             { 2, RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value },
             { 3, RainMeadow.rainMeadowOptions.ChieftainTeamName.Value }
         };
+        public Dictionary<int, string> displayTeamNames = new Dictionary<int, string>
+        {
+            { 0, MatchmakingManager.currentInstance.FilterTeamName(RainMeadow.rainMeadowOptions.MartyrTeamName.Value) },
+            { 1, MatchmakingManager.currentInstance.FilterTeamName(RainMeadow.rainMeadowOptions.OutlawsTeamName.Value) },
+            { 2, MatchmakingManager.currentInstance.FilterTeamName(RainMeadow.rainMeadowOptions.DragonSlayersTeamName.Value) },
+            { 3, MatchmakingManager.currentInstance.FilterTeamName(RainMeadow.rainMeadowOptions.ChieftainTeamName.Value) }
+        };
         public enum TeamSpawnPoints
         {
             martyrsTeamName,

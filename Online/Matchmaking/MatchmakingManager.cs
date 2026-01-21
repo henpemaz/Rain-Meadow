@@ -181,6 +181,10 @@ namespace RainMeadow
             ChatLogManager.LogMessage($"{player.id.GetPersonaName()}", $"{message}");
         }
         public virtual void FilterMessage(ref string message) { }
+        public virtual string FilterTeamName(string name)
+        {
+            return name;
+        }
         public virtual void RecieveCustomPacket(OnlinePlayer player, CustomPacket packet)
         {
             CustomManager.HandlePacket(player, packet);
