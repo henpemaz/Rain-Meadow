@@ -60,7 +60,7 @@ namespace RainMeadow
             MatchmakingManager.currentInstance.FilterMessage(ref message);
             if (!string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                camera.virtualMicrophone.PlaySound(PlopMachine.HiHat, 0, 0.4f, 1f);
+                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1f);
             }
             chatLog.Add((user, message));
             if (chatLogOverlay != null)
