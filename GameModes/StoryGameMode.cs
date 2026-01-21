@@ -25,6 +25,7 @@ namespace RainMeadow
         public string? defaultDenPos;
         public string? region = null;
         public SlugcatStats.Name currentCampaign;
+        public SlugcatStats.Name preferredSlug;
         public bool requireCampaignSlugcat;
         public string? saveStateString;
         public bool lastWarpIsEcho = false;
