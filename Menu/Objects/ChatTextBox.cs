@@ -781,7 +781,9 @@ namespace RainMeadow
         private static bool GetKey(Func<string, bool> orig, string name) => blockInput ? false : orig(name);
         private static bool GetKey(Func<KeyCode, bool> orig, KeyCode code)
         {
-            if (code == KeyCode.UpArrow || code == KeyCode.DownArrow) return orig(code);
+            if (code == KeyCode.UpArrow || code == KeyCode.DownArrow ||
+                code == KeyCode.LeftControl || code == KeyCode.RightControl || 
+                code == KeyCode.LeftApple) return orig(code);
 
             return blockInput ? false : orig(code);
         }
