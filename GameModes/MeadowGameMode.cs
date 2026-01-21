@@ -38,7 +38,7 @@ namespace RainMeadow
 
         public override SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
-            return SlugcatStats.Name.White;
+            return new SlugcatStats.Name(timeline);
         }
 
         public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
