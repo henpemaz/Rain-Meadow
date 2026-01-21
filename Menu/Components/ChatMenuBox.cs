@@ -80,7 +80,7 @@ namespace RainMeadow.UI.Components
             MatchmakingManager.currentInstance.FilterMessage(ref message);
             if (!string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                menu.manager.menuMic.PlaySound(PlopMachine.HiHat, 0, 0.4f, 1f);
+                menu.manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 0f);
             }
             bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
