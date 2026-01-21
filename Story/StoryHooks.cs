@@ -175,7 +175,7 @@ namespace RainMeadow
             if (RainMeadow.isStoryMode(out var story))
             {
 
-                if (!OnlineManager.lobby.isOwner)
+                if (!OnlineManager.lobby.isOwner && story.currentCampaign == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
                 {
                     OnlineManager.lobby.owner.InvokeOnceRPC(StoryRPCs.ForceSaveNewDenLocation, roomName, saveWorldStates); // tell host to save den location for everyone else
                 }
