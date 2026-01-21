@@ -94,7 +94,10 @@ namespace RainMeadow
             ShouldCapture(true);
             if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
             {
-                cs.isInteracting = true;
+                if (!MultiView)
+                    cs.isInteracting = true;
+                else 
+                    cs.isInteracting = Focused;
             }
         }
 
@@ -126,6 +129,10 @@ namespace RainMeadow
             SetFocused(false);
             blockInput = false;
             previouslySubmittedText = !menu.manager.menuesMouseMode;
+            if (OnlineManager.lobby.clientSettings.TryGetValue(OnlineManager.mePlayer, out var cs))
+            {
+                cs.isInteracting = false;
+            }
         }
         public void SetFocused(bool focused, SoundID? overrideSoundID = null)
         {
@@ -227,6 +234,7 @@ namespace RainMeadow
                     if (MultiView) HandleDeselect();
                     menu.PlaySound(SoundID.MENY_Already_Selected_MultipleChoice_Clicked);
                     RainMeadow.Debug("Could not send lastSentMessage because it had no text or only had whitespaces");
+                    if (MultiView) return;
                 }
                 // only resets the chat text box if in a story lobby menu, otherwise the text box is just destroyed
                 OnShutDownRequest?.Invoke();
