@@ -49,6 +49,7 @@ namespace RainMeadow
         public static string PINNED_KEY = "pinned";
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
+        public static string MEADOW_TIMELINE = "meadowtimeline";
 
         static public readonly List<MatchMakingDomain> supported_matchmakers = new();
 
@@ -89,7 +90,7 @@ namespace RainMeadow
         public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount,  string? meadowTimeline, bool pinned = false);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);

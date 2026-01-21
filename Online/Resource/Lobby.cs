@@ -30,9 +30,10 @@ namespace RainMeadow
         public Dictionary<string, int> configurableInts;
 
         public string? password;
+        public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
 
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password, string? meadTimeline) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
@@ -41,6 +42,7 @@ namespace RainMeadow
 
             requiredmods = RainMeadowModManager.GetRequiredMods();
             bannedmods = RainMeadowModManager.GetBannedMods();
+            meadowTimeline = meadTimeline;
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
@@ -58,7 +60,10 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
-
+                if (this.gameMode is MeadowGameMode mgm)
+                {
+                    mgm.timeline = meadowTimeline;
+                }
             }
             else
             {

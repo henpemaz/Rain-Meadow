@@ -214,11 +214,12 @@ namespace RainMeadow
             return false;
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, string? MEADOWTIMELINE, bool pinned = false)
         {
             creatingWithMode = gameMode;
             creatingPinned = pinned;
             lobbyPassword = password;
+            meadowTimeline = MEADOWTIMELINE;
             MAX_LOBBY = (int)maxPlayerCount;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
@@ -264,6 +265,8 @@ namespace RainMeadow
         private static string creatingWithMode;
         private static bool creatingPinned;
         private static string? lobbyPassword;
+
+        private static string meadowTimeline = "";
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -280,8 +283,9 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned? "true" : "false");
+                    SteamMatchmaking.SetLobbyData(lobbyID, MEADOW_TIMELINE, meadowTimeline != "" ? meadowTimeline : "");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword, meadowTimeline);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoinedEvent(true);
                 }
@@ -318,7 +322,7 @@ namespace RainMeadow
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 
-                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword);
+                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword, meadowTimeline);
                 }
                 else
                 {

@@ -12,13 +12,15 @@ namespace RainMeadow
     {
         public bool spawnPlants = true;
         public MeadowAvatarData avatarData;
+        public string timeline;
 
         public MeadowGameMode(Lobby lobby) : base(lobby)
         {
             this.avatarData = new MeadowAvatarData();
-
+            timeline = lobby.meadowTimeline;
             MeadowProgression.ReloadProgression();
             lobby.AddData(new MeadowMusic.LobbyMusicData());
+            lobby.AddData(new MeadowLobbyData());
         }
 
         public override List<string> nonGameplayRemixSettings
@@ -41,7 +43,7 @@ namespace RainMeadow
 
         public override SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
         {
-            return SlugcatStats.Timeline.White; // It would be cool to change timelines in meadow mode.
+            return new SlugcatStats.Timeline(timeline);
         }
 
         public override ProcessManager.ProcessID MenuProcessId()

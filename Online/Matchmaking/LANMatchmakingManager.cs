@@ -150,6 +150,7 @@ namespace RainMeadow {
                 updating_lobby.mode = lobby.mode;
                 updating_lobby.playerCount = lobby.playerCount;
                 updating_lobby.maxPlayerCount = lobby.maxPlayerCount;
+                
             }
 
             
@@ -190,9 +191,9 @@ namespace RainMeadow {
         }
 
         public int maxplayercount = 0;
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false) {
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, string? meadowTimeline, bool pinned = false) {
             maxplayercount = maxPlayerCount ?? 0;
-            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer, password);
+            OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(gameMode), OnlineManager.mePlayer, password, meadowTimeline);
             MatchmakingManager.OnLobbyJoinedEvent(true, "");
         }
 
@@ -202,7 +203,7 @@ namespace RainMeadow {
             if (OnlineManager.lobby is null) {
                 OnlineManager.lobby = new Lobby(
                     new OnlineGameMode.OnlineGameModeType(OnlineManager.currentlyJoiningLobby.mode, false), 
-                    owner, lobbyPassword);
+                    owner, lobbyPassword, meadowTimeline);
             }
                 
         }
@@ -269,6 +270,7 @@ namespace RainMeadow {
             OnPlayerListReceivedEvent(playerList.ToArray());
         }
         string lobbyPassword = "";
+        string meadowTimeline = "";
         public override void RequestJoinLobby(LobbyInfo lobby, string? password) {
             RainMeadow.DebugMe();
             if (lobby is LANLobbyInfo lobbyinfo) {

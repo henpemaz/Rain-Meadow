@@ -20,13 +20,18 @@ public class LobbyCreateMenu : SmartMenu
     private int maxPlayerCount;
     private OpCheckBox? lobbyPinnedCheckBox;
     private OpCheckBox? lobbyAnniversaryGags;
+
+    private OpComboBox2? meadowTimelineDropdown;
+
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
+    private ProperlyAlignedMenuLabel timelineDescription;
     private OpTypeBox passwordInputBox;
     private MenuDialogBox? popupDialog;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
+    public SlugcatStats.Timeline MeadowTimeline;
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
@@ -96,6 +101,21 @@ public class LobbyCreateMenu : SmartMenu
         where.y += 5;
         where.x += 80;
 
+
+        if (modeDropDown.value == OnlineGameMode.OnlineGameModeType.Meadow.value)
+        {
+            where.x -= 160;
+            where.y -= 45;
+            timelineDescription = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Timeline:"), where, new Vector2(200, 20f), false);
+            mainPage.subObjects.Add(timelineDescription);
+            where.x += 80;
+            where.y -= 5;
+            MeadowTimeline = SlugcatStats.Timeline.White;
+            meadowTimelineDropdown = new OpComboBox2(new Configurable<SlugcatStats.Timeline>(MeadowTimeline), where, 160, OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Timeline)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
+            new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
+        }
+
         if (MatchmakingManager.currentInstance.IsTrustedCommunity(OnlineManager.mePlayer.id))
         {
             where.x -= 160;
@@ -108,7 +128,6 @@ public class LobbyCreateMenu : SmartMenu
             where.y += 5;
             where.x += 80;
         }
-
         if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
         {
             where.x -= 200;
@@ -121,6 +140,7 @@ public class LobbyCreateMenu : SmartMenu
             where.y += 5;
             where.x += 80;
         }
+
 
 
         // display version
@@ -163,6 +183,19 @@ public class LobbyCreateMenu : SmartMenu
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
+        if (modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Meadow.value && meadowTimelineDropdown != null)
+        {
+            this.pages[0].ClearMenuObject(timelineDescription);
+            meadowTimelineDropdown.Deactivate();
+            meadowTimelineDropdown = null;
+            MeadowTimeline = null;
+        }
+    }
+
+    private void UpdateMeadowTimeline()
+    {
+      MeadowTimeline = new SlugcatStats.Timeline(meadowTimelineDropdown.value);
+      RainMeadow.Debug($"Selected Meadow Timeline: {MeadowTimeline}");
     }
     public void CreateElementBindings()
     {
@@ -198,7 +231,7 @@ public class LobbyCreateMenu : SmartMenu
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
         string? password = passwordInputBox.value.IsNullOrWhiteSpace() ? null : passwordInputBox.value;
-        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, MeadowTimeline.value, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
     }
 
     private void ShowLoadingDialog(string text)
