@@ -31,7 +31,7 @@ public class LobbyCreateMenu : SmartMenu
     private MenuDialogBox? popupDialog;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
-    public SlugcatStats.Timeline MeadowTimeline;
+    public string? meadowTimeline;
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
@@ -110,8 +110,24 @@ public class LobbyCreateMenu : SmartMenu
             mainPage.subObjects.Add(timelineDescription);
             where.x += 80;
             where.y -= 5;
-            MeadowTimeline = SlugcatStats.Timeline.White;
-            meadowTimelineDropdown = new OpComboBox2(new Configurable<SlugcatStats.Timeline>(MeadowTimeline), where, 160, OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Timeline)).Select(li => { li.displayName = Translate(li.displayName); return li; }).ToList()) { colorEdge = MenuColorEffect.rgbWhite };
+            meadowTimeline = SlugcatStats.Name.White.value;
+            string[] excludedSlugcats = { "MeadowOnline", "MeadowRandom", "Slugpup" }; // visual. Timelines default to White if unknown
+
+            var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
+                .Where(li => !excludedSlugcats.Contains(li.name))
+                .Select(li => 
+                { 
+                    li.displayName = Translate(li.displayName); 
+                    return li; 
+                })
+                .ToList();
+
+            meadowTimelineDropdown = new OpComboBox2(
+                new Configurable<string>(meadowTimeline), 
+                where, 
+                160, 
+                filteredList
+            ) { colorEdge = MenuColorEffect.rgbWhite };            
             meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
             new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
         }
@@ -183,19 +199,27 @@ public class LobbyCreateMenu : SmartMenu
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
-        if (modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Meadow.value && meadowTimelineDropdown != null)
-        {
-            this.pages[0].ClearMenuObject(timelineDescription);
-            meadowTimelineDropdown.Deactivate();
-            meadowTimelineDropdown = null;
-            MeadowTimeline = null;
+        if (meadowTimelineDropdown != null) {
+            if (modeDropDown.value ==  OnlineGameMode.OnlineGameModeType.Meadow.value)
+            {
+                 meadowTimelineDropdown.greyedOut = false;
+            } else {
+            
+              meadowTimelineDropdown.greyedOut = true;
+              meadowTimeline = "";
+
+            }
         }
+        
     }
 
     private void UpdateMeadowTimeline()
     {
-      MeadowTimeline = new SlugcatStats.Timeline(meadowTimelineDropdown.value);
-      RainMeadow.Debug($"Selected Meadow Timeline: {MeadowTimeline}");
+    if (meadowTimelineDropdown != null) {
+      
+      meadowTimeline = SlugcatStats.SlugcatToTimeline(new SlugcatStats.Name(meadowTimelineDropdown.value)).value;
+      RainMeadow.Debug($"Selected Meadow Timeline: {meadowTimeline}");
+    }
     }
     public void CreateElementBindings()
     {
@@ -231,7 +255,7 @@ public class LobbyCreateMenu : SmartMenu
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
         string? password = passwordInputBox.value.IsNullOrWhiteSpace() ? null : passwordInputBox.value;
-        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, MeadowTimeline.value, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, meadowTimeline, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
     }
 
     private void ShowLoadingDialog(string text)
