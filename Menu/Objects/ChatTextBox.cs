@@ -390,11 +390,11 @@ namespace RainMeadow
                 }
 
                 // Auto Complete
-                else if (Input.GetKey(KeyCode.Tab) && !tabHeld)
-                {
-                    AutoComplete();
-                    tabHeld = true;
-                }
+                //else if (Input.GetKey(KeyCode.Tab) && !tabHeld)
+                //{
+                //    AutoComplete();
+                //    tabHeld = true;
+                //}
 
                 // CTRL + C / Command + C
                 else if (Input.GetKey(KeyCode.C) && !clipboardHeld && (AnyCtrl))
