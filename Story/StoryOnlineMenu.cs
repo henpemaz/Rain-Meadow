@@ -152,6 +152,7 @@ namespace RainMeadow
                     manager.rainWorld.options.jollyPlayerOptionsArray[player].playerClass = slugcat;
                 }
                 playerSelectedSlugcats[player] = slugcat == slugcatColorOrder[slugcatPageIndex] ? null : slugcat;
+                storyGameMode.preferredSlug = slugcat;
 
                 if (player == 0)
                 {
@@ -534,6 +535,10 @@ namespace RainMeadow
                 //first player button is 30 pos below size of list. and list top part is 30 below the title. Plus
                 slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
+            }
+            if (storyGameMode.preferredSlug != null)
+            {
+                SetSelectedSlugcat(0, storyGameMode.preferredSlug);
             }
 
         }
