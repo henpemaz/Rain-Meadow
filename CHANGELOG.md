@@ -9,6 +9,15 @@
 - Fixed custom background thumbnails not disappearing when scrolling background pages
 - Fixed large lobbies interrupting ping cycle key inputs 
 - Fixed spectating never abstracting previous rooms
+### Chat
+-  Chat Opacity (Makes chat semi transparent when a player is behind it)
+-  Chat Inactivity (Makes chat semi transparent after a short period of inactivity (no new messages and no typing))
+-  Enforce max message length for receiving messages.
+-  Copy/Paste support
+-  Recently Sent Messages (Up/Down arrows)
+-  Sound when mentioned by name in chat.
+-  Host icon in chat
+-  Deprecate ChatTextBox2 and use just ChatTextBox
 ## Story
 - Fixes creature duplication occurring the next cycle  after a creature enters a den
 - Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
