@@ -2183,6 +2183,10 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (self.game.world.rainCycle.timer < 40)
+                {
+                    return false;
+                }
 
                 if (!(shortcutVessel.creature is Player))
                 {
