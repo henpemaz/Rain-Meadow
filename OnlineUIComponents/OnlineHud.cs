@@ -30,6 +30,15 @@ namespace RainMeadow
             else if (Input.GetKeyDown(RainMeadow.rainMeadowOptions.FriendsListKey.Value))
                 RainMeadow.rainMeadowOptions.ShowFriends.Value ^= true;
 
+                if (Input.GetKeyDown(KeyCode.P))
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
+                }
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
+                {
+                    RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
+                }
+
             base.Draw(timeStacker);
         }
 

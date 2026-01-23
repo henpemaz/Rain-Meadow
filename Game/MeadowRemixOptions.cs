@@ -21,7 +21,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<KeyCode> PointingKey;
     public readonly Configurable<KeyCode> ChatLogKey;
     public readonly Configurable<KeyCode> ChatButtonKey;
-    public readonly Configurable<bool> ChatLogOnOff;
+    public readonly Configurable<bool> ChatLogOnOff, ChatPing;
     public readonly Configurable<int> ArenaCountDownTimer;
     public readonly Configurable<int> ArenaSaintAscendanceTimer;
     public readonly Configurable<int> ArenaWatcherCamoTimer;
@@ -62,9 +62,9 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<string> ChieftainTeamName;
     public readonly Configurable<float> TeamColorLerp;
 
-    public readonly Configurable<float> ScrollSpeed, ChatBgOpacity;
+    public readonly Configurable<float> ScrollSpeed, ChatBgOpacity, ChatInactivityOpacity;
     public readonly Configurable<bool> ShowPing;
-    public readonly Configurable<int> ShowPingLocation;
+    public readonly Configurable<int> ShowPingLocation, ChatInactivityTimer;
 
     public readonly Configurable<string> LanUserName;
     public readonly Configurable<int> UdpTimeout;
@@ -120,12 +120,13 @@ public class RainMeadowOptions : OptionInterface
         ChatLogKey = config.Bind("ChatLogKey", KeyCode.Comma);
         ChatButtonKey = config.Bind("ChatButtonKey", KeyCode.Return);
         ChatLogOnOff = config.Bind("ChatLogOnOff", true);
+        ChatPing = config.Bind("ChatPing", true);
         ArenaCountDownTimer = config.Bind("ArenaCountDownTimer", 5);
 
         ArenaSaintAscendanceTimer = config.Bind("ArenaSaintAscendanceTimer", 3);
         ArenaWatcherCamoTimer = config.Bind("ArenaWatcherCamoTimer", 12);
 
-        ProfanityFilter = config.Bind("ProfanityFilter", false);
+        ProfanityFilter = config.Bind("ProfanityFilter", true);
 
         ArenaSAINOT = config.Bind("ArenaSAINOT", false);
         ArenaAllowMidJoin = config.Bind("ArenaAllowMidJoin", true);
@@ -182,6 +183,8 @@ public class RainMeadowOptions : OptionInterface
         StopMovementWhileSpectateOverlayActive = config.Bind("StopMovementWhileSpectateOverlayActive", false);
 
         ChatBgOpacity = config.Bind("ChatBgOpacity", 0.2f);
+        ChatInactivityOpacity = config.Bind("ChatInactivityOpacity", 0.35f);
+        ChatInactivityTimer = config.Bind("ChatInactivityTimer", 30);
         StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
@@ -214,6 +217,8 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton cheatReset;
             float cheaty = 130f;
             OpTextBox chatBgOpacity;
+            OpTextBox chatInactivityOpacity;
+            OpTextBox chatInactivityTimer;
             OnlineGameplay = new UIelement[]
           {
             new OpLabel(10f, 550f, Translate("Gameplay"), bigText: true),
@@ -260,9 +265,17 @@ public class RainMeadowOptions : OptionInterface
             new OpLabel(210, 120f, Translate("Show Ping")),
             new OpCheckBox(ShowPing, new Vector2(210, 90f)),
 
+            new OpLabel(10, 60f, Translate("Sound on Mention")),
+            new OpCheckBox(ChatPing, new Vector2(10, 30f)),
 
-            new OpLabel(410, 120f, Translate("Chat Log On/Off")),
-            new OpCheckBox(ChatLogOnOff, new Vector2(410f, 90f)),
+            new OpLabel(410, 120f, Translate("Chat Inactivity Opacity")),
+            chatInactivityOpacity = new OpTextBox(ChatInactivityOpacity, new Vector2(410f, 93f), 90),
+
+            new OpLabel(410, 60f, Translate("Chat Inactivity Timer")),
+            chatInactivityTimer = new OpTextBox(ChatInactivityTimer, new Vector2(410f, 33f), 90),
+
+            new OpLabel(210, 60f, Translate("Chat Log On/Off")),
+            new OpCheckBox(ChatLogOnOff, new Vector2(210f, 30f)),
 
 
           };

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using HUD;
 using Rewired;
@@ -9,7 +10,7 @@ namespace RainMeadow
     public class ChatHud : HudPart, IChatSubscriber
     {
         private TextPrompt textPrompt;
-        private RoomCamera camera;
+        public RoomCamera camera;
         private RainWorldGame game;
         private ChatLogOverlay? chatLogOverlay;
         private ChatInputOverlay? chatInputOverlay;
@@ -57,6 +58,10 @@ namespace RainMeadow
 
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                camera.virtualMicrophone.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 1f);
+            }
             chatLog.Add((user, message));
             if (chatLogOverlay != null)
             {
@@ -102,12 +107,12 @@ namespace RainMeadow
             {
                 if (chatLogOverlay != null)
                 {
-                    if (Input.GetKey(KeyCode.UpArrow) && chatLogOverlay.scroller.CanScrollUp)
+                    if (Input.GetKey(KeyCode.UpArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollUp)
                     {
                         chatLogOverlay.scroller.AddScroll(-1);
                         chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;
                     }
-                    else if (Input.GetKey(KeyCode.DownArrow) && chatLogOverlay.scroller.CanScrollDown)
+                    else if (Input.GetKey(KeyCode.DownArrow) && !ChatTextBox.AnyCtrl && chatLogOverlay.scroller.CanScrollDown)
                     {
                         chatLogOverlay.scroller.AddScroll(1);
                         chatLogOverlay.scroller.scrollOffset = chatLogOverlay.scroller.DownScrollOffset;

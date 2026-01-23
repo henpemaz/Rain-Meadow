@@ -152,6 +152,7 @@ namespace RainMeadow
                     manager.rainWorld.options.jollyPlayerOptionsArray[player].playerClass = slugcat;
                 }
                 playerSelectedSlugcats[player] = slugcat == slugcatColorOrder[slugcatPageIndex] ? null : slugcat;
+                storyGameMode.preferredSlug = slugcat;
 
                 if (player == 0)
                 {
@@ -535,6 +536,10 @@ namespace RainMeadow
                 slugcatSelector = new(this, pages[0], new(pos.x, pos.y - (ButtonSize * 2)), MaxVisibleOnList, ButtonSpacingOffset, PlayerSelectedSlugcat, GetSlugcatSelectionButtons);
                 pages[0].subObjects.Add(slugcatSelector);
             }
+            if (storyGameMode.preferredSlug != null)
+            {
+                SetSelectedSlugcat(0, storyGameMode.preferredSlug);
+            }
 
         }
 
@@ -696,6 +701,10 @@ namespace RainMeadow
             if (OnlineManager.lobby == null) return;
             if (OnlineManager.lobby.gameMode.mutedPlayers.Contains(user)) return;
             MatchmakingManager.currentInstance.FilterMessage(ref message);
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0f, 1f, 0f);
+            }
             this.chatLog.Add((user, message));
             this.UpdateLogDisplay();
         }

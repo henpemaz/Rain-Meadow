@@ -746,7 +746,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you or press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate");
             }
             else
             {
@@ -754,6 +754,7 @@ namespace RainMeadow
             }
         }
 
+        private int ticker = 0;
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
             orig(self);
@@ -761,16 +762,18 @@ namespace RainMeadow
             {
                 if (isStoryMode(out _))
                 {
+                    ticker++;
                     self.restartNotAllowed = 1; // block from GoToDeathScreen
 
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
                     {
-                        touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
+                        touchedInput = ticker > 200; // 5 seconds at 40 ticks a second
                     }
                     if (touchedInput || inVoidSea)
                     {
                         self.gameOverMode = false;
+                        ticker = 0;
                     }
                 }
             }
@@ -1718,14 +1721,23 @@ namespace RainMeadow
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
             RainMeadow.Debug($"START WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
 
-            if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || self.currentSaveState.denPosition != storyGameMode.defaultDenPos)
+            if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                storyGameMode.defaultDenPos = self.currentSaveState.denPosition;
             }
-            else
+            else 
             {
-                self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                {
+                    // user is freshly joining the game
+                    storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                } else
+                {
+                    self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                }
             }
+
             if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
             {
                 storyGameMode.myLastWarp = self.currentSaveState.warpPointTargetAfterWarpPointSave;

@@ -17,6 +17,13 @@ namespace RainMeadow
         private FSprite[] chatBg;
         private float bgSideOffset = 20;
         private const int maxVisibleMessages = 13;
+        private Rect chatRect;
+
+        public float opacity = 1.0f;
+        private float lastOpacity = 1.0f;
+        public int inactivityTimer;
+
+        private FSprite debug;
 
         public ChatLogOverlay(ChatHud chatHud, ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.ChatMode)
         {
@@ -46,7 +53,25 @@ namespace RainMeadow
             pages[0].subObjects.Add(scroller);
             UpdateLogDisplay();
             scroller.scrollOffset = scroller.DownScrollOffset = chatHud.logScrollPos == -1? scroller.MaxDownScroll : chatHud.logScrollPos;
+
+            chatRect = new Rect(scroller.pos, scroller.size).CloneWithExpansion(20);
+            //debug = new("pixel")
+            //{
+            //    anchorX = 0,
+            //    anchorY = 0,
+            //    color = Color.red,
+            //    alpha = Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value),
+            //};
+            //pages[0].Container.AddChild(debug);
         }
+
+        public override void Update()
+        {
+            base.Update();
+            OpacityUpdate();
+            inactivityTimer++;
+        }
+
         public override void GrafUpdate(float timeStacker)
         {
             /// Obtains the first visible button index on the scroller
@@ -58,6 +83,17 @@ namespace RainMeadow
                 return 0;
             }
             base.GrafUpdate(timeStacker);
+
+            if (debug != null)
+            {
+                debug.x = chatRect.x;
+                debug.y = chatRect.y;
+                debug.width = chatRect.width;
+                debug.height = chatRect.height;
+            }
+
+            var tOpacity = Mathf.Lerp(lastOpacity, opacity, timeStacker);
+
             // Make everything "invisible" by default (just 0-sized)
             for (int i = 0; i < chatBg.Length; ++i)
             {
@@ -65,19 +101,83 @@ namespace RainMeadow
                 chatBg[i].scaleY = 0;
             }
             int firstIndex = GetFirstIndex();
+            float longestMessage = 0;
             for (int i = 0; i < chatBg.Length; ++i)
             {
                 int j = firstIndex + i;
                 if (j >= 0 && j < scroller.buttons.Count)
                 {
+                    // We'll bypass IPartOfButtonScroller.Alpha and modify just the labels directly so
+                    // messages fading out work as intended.
+                    if (scroller.buttons[j] is AlignedMenuLabel label)
+                    {
+                        label.label.alpha = tOpacity;
+                        foreach(var subObj in label.subObjects)
+                        {
+                            if (subObj is AlignedMenuLabel sub) sub.label.alpha = tOpacity;
+                        }
+                    }
+
                     chatBg[i].x = scroller.pos.x + scroller.buttons[j].Pos.x - 4f;
                     chatBg[i].y = scroller.pos.y + scroller.buttons[j].Pos.y;
                     chatBg[i].scaleX = msgExtents[j] + 8f;
                     chatBg[i].scaleY = scroller.ButtonHeightAndSpacing + 1f;
-                    chatBg[i].alpha = scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value);
+                    chatBg[i].alpha = tOpacity * (scroller.buttons[j].Alpha * Mathf.Clamp01(RainMeadow.rainMeadowOptions.ChatBgOpacity.Value));
                 }
             }
         }
+
+        public void OpacityUpdate()
+        {
+            // If the chat input is open or we aren't in game we won't check for players.
+            if (chatHud.chatInputActive || chatHud.camera is null)
+            {
+                lastOpacity = 1.0f;
+                opacity = 1.0f;
+                inactivityTimer = 0;
+                return;
+            }
+
+            lastOpacity = opacity;
+            if (msgExtents.Count > 0)
+            {
+                // TODO only check messages currently visible
+                chatRect.width = msgExtents.Max() + 20;
+            }
+
+            bool fade = false;
+
+            if (inactivityTimer > RainMeadow.rainMeadowOptions.ChatInactivityTimer.Value * 40)
+            {
+                fade = true;
+            }
+            else
+            {
+                foreach (var avatar in OnlineManager.lobby.playerAvatars)
+                {
+                    var entity = avatar.Value.FindEntity(true);
+                    if (entity is OnlineCreature oc && oc.abstractCreature != null && oc.abstractCreature.realizedCreature != null && !oc.abstractCreature.realizedCreature.dead)
+                    {
+                        if (chatRect.Contains(oc.abstractCreature.realizedCreature.mainBodyChunk.pos - chatHud.camera.pos))
+                        {
+                            // A player avatar is currently being obscured by chat.
+                            fade = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (fade)
+            {
+                opacity = Mathf.Max(RainMeadow.rainMeadowOptions.ChatInactivityOpacity.Value, opacity - 0.05f);
+            }
+            else
+            {
+                opacity = Mathf.Min(1.0f, opacity + 0.05f);
+            }
+        }
+
         public void UpdateLogDisplay()
         {
             if (chatHud.chatLog.Count > myChatLog.Length)
@@ -104,16 +204,16 @@ namespace RainMeadow
                         }
                         else if (i == 0)
                         {
-                            AlignedMenuLabel usernameLabel = new(this, scroller, username!, new Vector2(xPos, yPos), new Vector2(0, 20), false);
+                            UsernameMenuLabel usernameLabel = new(this, scroller, username!, new Vector2(xPos, yPos), new Vector2(0, 20), false);
                             usernameLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.label.color = ChatLogManager.GetDisplayPlayerColor(username!);
 
-                            AlignedMenuLabel messagewithUserLabel = new(this, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2, 0), new Vector2(0, 20), false)
+                            AlignedMenuLabel messagewithUserLabel = new(this, usernameLabel, $": {s}", new Vector2(LabelTest.GetWidth(username) + 2 + (usernameLabel.Host ? 14 : 0), 0), new Vector2(0, 20), false)
                             { labelPosAlignment = FLabelAlignment.Left };
                             messagewithUserLabel.label.alignment = FLabelAlignment.Left;
                             usernameLabel.subObjects.Add(messagewithUserLabel);
                             scroller.AddScrollObjects(usernameLabel);
-                            msgExtents.Add(LabelTest.GetWidth($"{username}: {s}") + 4f);
+                            msgExtents.Add(LabelTest.GetWidth($"{username}: {s}") + 4f + (usernameLabel.Host ? 14f : 0));
                         }
                         else
                         {
@@ -125,7 +225,7 @@ namespace RainMeadow
                     }
                 }
                 myChatLog = [.. chatHud.chatLog];
-
+                inactivityTimer = 0;
             }
         }
     }
