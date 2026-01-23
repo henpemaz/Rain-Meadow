@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -60,10 +61,6 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
-                if (this.gameMode is MeadowGameMode mgm)
-                {
-                    mgm.timeline = meadowTimeline;
-                }
             }
             else
             {
@@ -189,6 +186,9 @@ namespace RainMeadow
         public class LobbyState : ResourceWithSubresourcesState
         {
             [OnlineField]
+            public string timeline; 
+
+            [OnlineField]
             public ushort nextId;
             [OnlineField]
             public string[] requiredmods;
@@ -218,12 +218,14 @@ namespace RainMeadow
                 onlineBoolRemixSettings = lobby.configurableBools;
                 onlineFloatRemixSettings = lobby.configurableFloats;
                 onlineIntRemixSettings = lobby.configurableInts;
+                timeline = lobby.meadowTimeline;
             }
 
             public override void ReadTo(OnlineResource resource)
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
+                lobby.meadowTimeline = timeline;
 
                 for (int i = 0; i < players.list.Count; i++)
                 {

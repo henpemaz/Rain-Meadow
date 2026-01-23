@@ -108,8 +108,7 @@ namespace RainMeadow
             var timelineSprite = new MenuSprite(this, pages[0], new FSprite(MeadowProgression.Emote.symbolTime.value.ToLowerInvariant()) { scale = 30f / 240f }, new Vector2(pos.x + 10f, pos.y + 10f));
             pages[0].subObjects.Add(timelineSprite);
 
-            var meadowMode = OnlineManager.lobby.gameMode as MeadowGameMode;
-            string timelineText = Translate($"Timeline: {meadowMode.timeline}");
+            string timelineText = Translate($"Timeline: {OnlineManager.lobby.meadowTimeline}");
             var timelineLabel = new MenuLabel(this, pages[0], timelineText, new Vector2(pos.x + 20f, pos.y), new Vector2(50f, 20f), bigText: false);
             timelineLabel.label.alignment = FLabelAlignment.Left;
             timelineLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);

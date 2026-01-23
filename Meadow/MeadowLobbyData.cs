@@ -51,37 +51,4 @@ namespace RainMeadow
             }
         }
     }
-    internal class MeadowLobbyData : OnlineResource.ResourceData
-    {
-        public override ResourceDataState MakeState(OnlineResource resource)
-        {
-            return new State(this);
-        }
-
-        internal class State : ResourceDataState
-        {
-            [OnlineField]
-            string timeline;
-            public State() { }
-            public State(MeadowLobbyData meadowLobbyData)
-            {
-                var mode = (OnlineManager.lobby.gameMode as MeadowGameMode);
-                if (mode != null && timeline != mode.timeline)
-                {
-                 timeline = mode.timeline;
-                }
-            }
-
-            public override Type GetDataType() => typeof(MeadowLobbyData);
-
-            public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
-            {
-                var mode = (OnlineManager.lobby.gameMode as MeadowGameMode);
-                if (mode != null && mode.timeline != timeline)
-                {
-                  mode.timeline = timeline;
-                }
-            }
-        }
-    }
 }

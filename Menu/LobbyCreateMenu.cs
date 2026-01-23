@@ -185,6 +185,8 @@ public class LobbyCreateMenu : SmartMenu
             {
                 OnlineManager.lobby.configurableBools.Add("MEADOW_ANNIVERSARY", true);
             }
+
+            OnlineManager.lobby.meadowTimeline = this.meadowTimeline;  
         }
 
         MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
@@ -200,14 +202,13 @@ public class LobbyCreateMenu : SmartMenu
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
         if (meadowTimelineDropdown != null) {
-            if (modeDropDown.value ==  OnlineGameMode.OnlineGameModeType.Meadow.value)
+            if (modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Story.value && modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Arena.value)
             {
                  meadowTimelineDropdown.greyedOut = false;
             } else {
             
               meadowTimelineDropdown.greyedOut = true;
               meadowTimeline = "";
-
             }
         }
         
