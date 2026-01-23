@@ -102,7 +102,7 @@ public class LobbyCreateMenu : SmartMenu
         where.x += 80;
 
 
-        if (modeDropDown.value == OnlineGameMode.OnlineGameModeType.Meadow.value && meadowTimelineDropdown == null)
+        if (meadowTimelineDropdown == null)
         {
             where.x -= 160;
             where.y -= 45;
