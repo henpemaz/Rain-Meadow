@@ -152,16 +152,21 @@ namespace RainMeadow
             orig(self, timeStacker, camPos);
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode)
             {
-                if (ModManager.MSC) // get out of the way
+                if (ModManager.MSC || ModManager.Watcher) // get out of the way
                 {
-                    for (int k = 0; k < self.entranceSprites.GetLength(0); k++)
-                    {
-                        if (self.entranceSprites[k, 0] != null && self.room.shortcuts[k].shortCutType == ShortcutData.Type.NPCTransportation)
+                    if (self.room != null && self.room.shortcuts != null) {
+                        for (int k = 0; k < self.room.shortcuts.Length; k++) {
+                        if (k < self.entranceSprites.GetLength(0) && self.entranceSprites[k, 0] != null) {
                         {
-                            self.entranceSprites[k, 0].isVisible = true;
+                            if (self != null && self.entranceSprites[k, 0] != null && self.room != null && self.room.shortcuts[k].shortCutType == ShortcutData.Type.NPCTransportation)
+                            {
+                                self.entranceSprites[k, 0].isVisible = true;
+                            }
+                        }
                         }
                     }
                 }
+            }
             }
         }
 

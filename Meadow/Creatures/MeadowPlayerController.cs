@@ -1,5 +1,15 @@
 ﻿using RWCustom;
 using UnityEngine;
+using MonoMod.RuntimeDetour;
+using Menu;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
+using MoreSlugcats;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+using RainMeadow.UI;
+using RainMeadow.UI.Components;
+using System;
 
 namespace RainMeadow
 {
@@ -11,10 +21,18 @@ namespace RainMeadow
         {
             On.Player.Update += Player_Update;
             On.Player.MovementUpdate += Player_MovementUpdate;
-
+            new Hook(typeof(Player).GetProperty("KarmaIsReinforced").GetGetMethod(), SetKarmaReinforcement);
             On.ShortcutHelper.ctor += ShortcutHelper_ctor;
         }
 
+        private static bool SetKarmaReinforcement(Func<Player, bool> orig, Player self)
+        {
+            if (OnlineManager.lobby.gameMode is MeadowGameMode)
+            {
+                return true;
+            }
+             return orig(self);
+        }
         private static void ShortcutHelper_ctor(On.ShortcutHelper.orig_ctor orig, ShortcutHelper self, Room room)
         {
             orig(self, room);
@@ -39,6 +57,7 @@ namespace RainMeadow
             orig(self, eu);
         }
 
+        private static bool setPortal;
         private static void Player_Update(On.Player.orig_Update orig, Player self, bool eu)
         {
             if (creatureControllers.TryGetValue(self, out var p))
@@ -49,6 +68,14 @@ namespace RainMeadow
                     self.playerState.isPup = false; // there's no pups here you dirty little cheater
                 }
                 p.Update(eu);
+                if (p.input[0].spec && !setPortal)
+                {
+   
+                    
+                    
+                    self.SpawnDynamicWarpPoint(null, null);
+                    
+                }
             }
             orig(self, eu);
             if (OnlineManager.lobby != null)

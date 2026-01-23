@@ -480,7 +480,7 @@ namespace RainMeadow
 
         private void WarpPoint_NewWorldLoaded_Room(On.Watcher.WarpPoint.orig_NewWorldLoaded_Room orig, Watcher.WarpPoint self, Room newRoom)
         {
-            if (isStoryMode(out var storyGameMode))
+            if (isStoryMode(out var storyGameMode) || OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 var warpData = (self.overrideData ?? self.Data).ToString();
                 string? sourceRoomName = self.getSourceRoom()?.abstractRoom.name;
