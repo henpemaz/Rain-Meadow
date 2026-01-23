@@ -256,7 +256,7 @@ public class LobbyCreateMenu : SmartMenu
         RainMeadow.DebugMe();
         Enum.TryParse<MatchmakingManager.LobbyVisibility>(visibilityDropDown.value, out var value);
         string? password = passwordInputBox.value.IsNullOrWhiteSpace() ? null : passwordInputBox.value;
-        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, meadowTimeline, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
+        MatchmakingManager.currentInstance.CreateLobby(value, modeDropDown.value, password, maxPlayerCount, this.lobbyPinnedCheckBox?.GetValueBool() ?? false);
     }
 
     private void ShowLoadingDialog(string text)

@@ -34,7 +34,7 @@ namespace RainMeadow
         public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
 
-        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password, string? meadTimeline) : base(null)
+        public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
         {
             OnlineManager.lobby = this; // needed for early entity processing
             bannedUsers.list = new List<MeadowPlayerId>();
@@ -43,7 +43,6 @@ namespace RainMeadow
 
             requiredmods = RainMeadowModManager.GetRequiredMods();
             bannedmods = RainMeadowModManager.GetBannedMods();
-            meadowTimeline = meadTimeline;
 
             this.gameMode = OnlineGameMode.FromType(mode, this);
             this.gameModeType = mode;
