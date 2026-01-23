@@ -214,12 +214,11 @@ namespace RainMeadow
             return false;
         }
 
-        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, string? MEADOWTIMELINE, bool pinned = false)
+        public override void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false)
         {
             creatingWithMode = gameMode;
             creatingPinned = pinned;
             lobbyPassword = password;
-            meadowTimeline = MEADOWTIMELINE;
             MAX_LOBBY = (int)maxPlayerCount;
             ELobbyType eLobbyTypeeLobbyType = visibility switch
             {
@@ -265,8 +264,6 @@ namespace RainMeadow
         private static string creatingWithMode;
         private static bool creatingPinned;
         private static string? lobbyPassword;
-
-        private static string meadowTimeline = "";
         private void LobbyCreated(LobbyCreated_t param, bool bIOFailure)
         {
             try
@@ -283,9 +280,8 @@ namespace RainMeadow
                     SteamMatchmaking.SetLobbyData(lobbyID, BANNED_MODS_KEY, RainMeadowModManager.ModArrayToString(RainMeadowModManager.GetBannedMods()));
                     SteamMatchmaking.SetLobbyData(lobbyID, PASSWORD_KEY, lobbyPassword != null ? "true" : "false");
                     SteamMatchmaking.SetLobbyData(lobbyID, PINNED_KEY, creatingPinned? "true" : "false");
-                    SteamMatchmaking.SetLobbyData(lobbyID, MEADOW_TIMELINE, meadowTimeline != "" ? meadowTimeline : "");
                     SteamMatchmaking.SetLobbyMemberLimit(lobbyID, MAX_LOBBY);
-                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword, meadowTimeline);
+                    OnlineManager.lobby = new Lobby(new OnlineGameMode.OnlineGameModeType(creatingWithMode), OnlineManager.mePlayer, lobbyPassword);
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
                     OnLobbyJoinedEvent(true);
                 }
@@ -322,7 +318,7 @@ namespace RainMeadow
                     }
                     SteamFriends.SetRichPresence("connect", lobbyID.ToString());
 
-                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword, meadowTimeline);
+                    OnlineManager.lobby = new Lobby(mode, owner, lobbyPassword);
                 }
                 else
                 {
@@ -549,6 +545,21 @@ namespace RainMeadow
             {
                 message = pchOutFilteredText;
             }
+        }
+
+        /// <summary>
+        /// Filters a team name using Steam if ProfanityFilter is enabled in Remix options.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public override string FilterTeamName(string name)
+        {
+            if (!filteringAvailable || !RainMeadow.rainMeadowOptions.ProfanityFilter.Value || OnlineManager.lobby == null) return name;
+            if (SteamUtils.FilterText(ETextFilteringContext.k_ETextFilteringContextName, CSteamID.Nil, name, out string pchOutFilteredText, (uint)(name.Length * 2 + 1)) > 0)
+            {
+                return pchOutFilteredText;
+            }
+            return name;
         }
 
         public override OnlinePlayer GetPlayer(MeadowPlayerId id)

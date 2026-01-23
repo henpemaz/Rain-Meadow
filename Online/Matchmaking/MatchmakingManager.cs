@@ -49,7 +49,6 @@ namespace RainMeadow
         public static string PINNED_KEY = "pinned";
         public static string PASSWORD_KEY = "password";
         public static int MAX_LOBBY = 4;
-        public static string MEADOW_TIMELINE = "meadowtimeline";
 
         static public readonly List<MatchMakingDomain> supported_matchmakers = new();
 
@@ -90,7 +89,7 @@ namespace RainMeadow
         public abstract void initializeMePlayer();
         public abstract void RequestLobbyList();
 
-        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount,  string? meadowTimeline, bool pinned = false);
+        public abstract void CreateLobby(LobbyVisibility visibility, string gameMode, string? password, int? maxPlayerCount, bool pinned = false);
 
         public abstract void RequestJoinLobby(LobbyInfo lobby, string? password);
         public abstract void JoinLobby(bool success);
@@ -173,10 +172,19 @@ namespace RainMeadow
 
         public virtual bool canSendChatMessages => false;
         public virtual void SendChatMessage(string message) { }
-        public virtual void RecieveChatMessage(OnlinePlayer player, string message) { 
+        public virtual void RecieveChatMessage(OnlinePlayer player, string message) {
+            if (message.Length > ChatTextBox.textLimit)
+            {
+                RainMeadow.Error($"Error: {player} tried sending a chat message longer than what is allowed. Message will not be displayed. {message.Length}/{ChatTextBox.textLimit}");
+                return;
+            }
             ChatLogManager.LogMessage($"{player.id.GetPersonaName()}", $"{message}");
         }
         public virtual void FilterMessage(ref string message) { }
+        public virtual string FilterTeamName(string name)
+        {
+            return name;
+        }
         public virtual void RecieveCustomPacket(OnlinePlayer player, CustomPacket packet)
         {
             CustomManager.HandlePacket(player, packet);
