@@ -3,6 +3,8 @@
 - Added flash to tab arrow to assist users in locating game mode tab settings
 - Publicized arena.blockList for developers
 - Fixed bees/bombs spawning client-side
+- Resolved a critical race condition when loading between levels 
+=======
 - Fixed pipe eating during the first few frames of the game if moving into den
 - Fixed Saints ascending teammates. Stop that.
 ## General

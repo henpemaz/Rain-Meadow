@@ -577,9 +577,9 @@ namespace RainMeadow
                             }
                         }
                     }
-
+                    
                     orig(self, warpUsed); // this replace the list of entities in new world with that from old world
-
+                    
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {

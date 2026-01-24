@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MonoMod.ModInterop;
 using MonoMod.RuntimeDetour;
 namespace RainMeadow
 {
@@ -33,10 +34,63 @@ namespace RainMeadow
             return orig(self);
         }
 
+        /// <summary>
+        /// Used to control Host/Client resource racing in ArenaSitting_NextLevel
+        /// </summary>
+         private System.Collections.IEnumerator ArenaSitting_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession session, OnlineGameMode mode)
+        {
+            float startTime = UnityEngine.Time.time;
+            float timeoutSeconds = 5f;
+        
+            if (OnlineManager.lobby.isOwner) 
+            {
+                // Wait until players leave OR 5 seconds pass. No deadlocks
+                while (session.participants.Count > 0 && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null; 
+                }
+            } 
+            else
+            {
+                if (!OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var worldSession))
+                {
+                    RainMeadow.Error("Could not get arena world session! Exiting deadlock...");
+                } 
+                else 
+                {
+                    // Wait until owner is present OR 5 seconds pass
+                    while (!worldSession.overworldSession.participants.Contains(OnlineManager.lobby.owner) && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                    {
+                        yield return null; 
+                    }
+                }
+            }
+        
+            // Check if we hit the timeout for logging purposes
+            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
+            {
+                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
+            }
+            else
+            {
+                Debug("All players left or owner found. Proceeding.");
+            }
+        
+            session.waitingForPlayersToLeave = false;
+            self.NextLevel(manager); 
+        }
         private void ArenaSitting_NextLevel(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager)
         {
             if (isArenaMode(out var arena))
             {
+
+                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
+                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
+                Room room = absRoom.realizedRoom;
+                WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
+
+                if (worldSession.waitingForPlayersToLeave) return;
+
                 arena.externalArenaGameMode.ArenaSessionNextLevel(arena, orig, self, manager);
 
                 if (OnlineManager.lobby.isOwner)
@@ -62,35 +116,32 @@ namespace RainMeadow
                     }
                 }
 
-                ArenaGameSession getArenaGameSession = (manager.currentMainLoop as RainWorldGame).GetArenaGameSession;
-
-
-                AbstractRoom absRoom = getArenaGameSession.game.world.abstractRooms[0];
-                Room room = absRoom.realizedRoom;
-                WorldSession worldSession = WorldSession.map.GetValue(absRoom.world, (w) => throw new KeyNotFoundException());
-
                 if (RoomSession.map.TryGetValue(absRoom, out var roomSession))
                 {
-                    // we go over all APOs in the room
                     Debug("Next level switching");
-                    var entities = absRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
+                    // I don't think we need this since ParticipantLeft will manage the transference
+                    worldSession.NotNeeded();
+                    
+                    // Ladies and gentlemen: The Sledgehammer
+                    roomSession.UpdateParticipants(
+                        roomSession.participants.Where(p => p != OnlineManager.mePlayer).ToList()
+                    );
+                    worldSession.UpdateParticipants(
+                        worldSession.participants.Where(p => p != OnlineManager.mePlayer).ToList()
+                    );
+                    if ((OnlineManager.lobby.isOwner && worldSession.participants.Count > 0) || (!OnlineManager.lobby.isOwner && OnlineManager.lobby.overworld.worldSessions.TryGetValue("arena", out var ws) && !ws.overworldSession.participants.Contains(OnlineManager.lobby.owner)))
                     {
-                        if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
+                        if (OnlineManager.lobby.isOwner) {
+                        Debug($"Waiting for {worldSession.participants.Count} players to leave...");
+                        } else
                         {
-                            oe.apo.LoseAllStuckObjects();
-                            if (!oe.isMine)
-                            {
-                                // not-online-aware removal
-                                oe.RemoveEntityFromGame(false);
-                            }
-                            else // mine leave the old online world elegantly
-                            {
-                                Debug("removing my entity from online " + oe);
-                                oe.ExitResource(roomSession);
-                                oe.ExitResource(roomSession.worldSession);
-                            }
+                         Debug($"Waiting for host  players to join new world...");
+
                         }
+                        worldSession.waitingForPlayersToLeave = true; 
+                        manager.rainWorld.StartCoroutine(ArenaSitting_WaitLoop(orig, self, manager, worldSession, arena));
+                        
+                        return; 
                     }
 
                     if (manager.currentMainLoop is RainWorldGame)

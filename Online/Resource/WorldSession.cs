@@ -19,6 +19,9 @@ namespace RainMeadow
         public string worldID;
         public ushort shortWorldID;
 
+        // Will extend beyond Arena_NextLevel eventually
+        public bool waitingForPlayersToLeave = false;
+
         public WorldSession(string worldID, ushort shortWorldID, OverworldSession overworld) : base(overworld)
         {
             this.worldID = worldID;
