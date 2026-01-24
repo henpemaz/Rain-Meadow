@@ -20,13 +20,18 @@ public class LobbyCreateMenu : SmartMenu
     private int maxPlayerCount;
     private OpCheckBox? lobbyPinnedCheckBox;
     private OpCheckBox? lobbyAnniversaryGags;
+
+    private OpComboBox2? meadowTimelineDropdown;
+
     private SimplerButton createButton;
     private OpComboBox2 modeDropDown;
     private ProperlyAlignedMenuLabel modeDescriptionLabel;
+    private ProperlyAlignedMenuLabel timelineDescription;
     private OpTypeBox passwordInputBox;
     private MenuDialogBox? popupDialog;
     public override MenuScene.SceneID GetScene => ModManager.MMF ? manager.rainWorld.options.subBackground : MenuScene.SceneID.Landscape_SU;
 
+    public string? meadowTimeline;
     public LobbyCreateMenu(ProcessManager manager) : base(manager, RainMeadow.Ext_ProcessID.LobbyCreateMenu)
     {
         // title at the top
@@ -96,6 +101,37 @@ public class LobbyCreateMenu : SmartMenu
         where.y += 5;
         where.x += 80;
 
+
+        if (meadowTimelineDropdown == null)
+        {
+            where.x -= 160;
+            where.y -= 45;
+            timelineDescription = new ProperlyAlignedMenuLabel(this, mainPage, Translate("Timeline:"), where, new Vector2(200, 20f), false);
+            mainPage.subObjects.Add(timelineDescription);
+            where.x += 80;
+            where.y -= 5;
+            meadowTimeline = SlugcatStats.Name.White.value;
+            string[] excludedSlugcats = { "MeadowOnline", "MeadowRandom", "Slugpup" }; // visual. Timelines default to White if unknown
+
+            var filteredList = OpResourceSelector.GetEnumNames(null, typeof(SlugcatStats.Name))
+                .Where(li => !excludedSlugcats.Contains(li.name))
+                .Select(li => 
+                { 
+                    li.displayName = Translate(li.displayName); 
+                    return li; 
+                })
+                .ToList();
+
+            meadowTimelineDropdown = new OpComboBox2(
+                new Configurable<string>(meadowTimeline), 
+                where, 
+                160, 
+                filteredList
+            ) { colorEdge = MenuColorEffect.rgbWhite };            
+            meadowTimelineDropdown.OnChanged += UpdateMeadowTimeline;
+            new UIelementWrapper(this.tabWrapper, meadowTimelineDropdown);
+        }
+
         if (MatchmakingManager.currentInstance.IsTrustedCommunity(OnlineManager.mePlayer.id))
         {
             where.x -= 160;
@@ -108,7 +144,6 @@ public class LobbyCreateMenu : SmartMenu
             where.y += 5;
             where.x += 80;
         }
-
         if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
         {
             where.x -= 200;
@@ -121,6 +156,7 @@ public class LobbyCreateMenu : SmartMenu
             where.y += 5;
             where.x += 80;
         }
+
 
 
         // display version
@@ -149,6 +185,8 @@ public class LobbyCreateMenu : SmartMenu
             {
                 OnlineManager.lobby.configurableBools.Add("MEADOW_ANNIVERSARY", true);
             }
+
+            OnlineManager.lobby.meadowTimeline = this.meadowTimeline;  
         }
 
         MatchmakingManager.OnLobbyJoined -= OnLobbyJoined;
@@ -163,6 +201,26 @@ public class LobbyCreateMenu : SmartMenu
     private void UpdateModeDescription()
     {
         modeDescriptionLabel.text = Custom.ReplaceLineDelimeters(Translate(OnlineGameMode.OnlineGameModeType.descriptions[new OnlineGameMode.OnlineGameModeType(modeDropDown.value)]));
+        if (meadowTimelineDropdown != null) {
+            if (modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Story.value && modeDropDown.value !=  OnlineGameMode.OnlineGameModeType.Arena.value)
+            {
+                 meadowTimelineDropdown.greyedOut = false;
+            } else {
+            
+              meadowTimelineDropdown.greyedOut = true;
+              meadowTimeline = "";
+            }
+        }
+        
+    }
+
+    private void UpdateMeadowTimeline()
+    {
+    if (meadowTimelineDropdown != null) {
+      
+      meadowTimeline = SlugcatStats.SlugcatToTimeline(new SlugcatStats.Name(meadowTimelineDropdown.value)).value;
+      RainMeadow.Debug($"Selected Meadow Timeline: {meadowTimeline}");
+    }
     }
     public void CreateElementBindings()
     {

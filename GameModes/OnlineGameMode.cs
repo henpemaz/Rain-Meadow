@@ -212,12 +212,19 @@ namespace RainMeadow
 
         public virtual SlugcatStats.Name LoadWorldAs(RainWorldGame game)
         {
+            if (OnlineManager.lobby.meadowTimeline == "") {
             return RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer;
+            }
+            return new SlugcatStats.Name(OnlineManager.lobby.meadowTimeline);
         }
 
         public virtual SlugcatStats.Timeline LoadWorldIn(RainWorldGame game)
         {
+            if (OnlineManager.lobby.meadowTimeline == "") {
             return SlugcatStats.SlugcatToTimeline(RainMeadow.Ext_SlugcatStatsName.OnlineSessionPlayer);
+            }
+            return new SlugcatStats.Timeline(OnlineManager.lobby.meadowTimeline);
+
         }
 
         public abstract ProcessManager.ProcessID MenuProcessId();

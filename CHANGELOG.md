@@ -28,9 +28,12 @@
 - Updated the Text Prompt on death to dismiss after 5 seconds instead of requiring input
 - Fixed forced den re-sheltering when a client has a valid den
 
+## Meadow
+- Added configurable timelines
 ## Engine
 - Fixed a sizing issue with Custom Packets
 # Release 1.10.0 (Anniversary Edition)
+
 ## Arena:
 - Fixes Amoeba controls not listening to your pointed direction
 - Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
