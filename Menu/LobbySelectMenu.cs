@@ -16,6 +16,8 @@ namespace RainMeadow
 {
     public class LobbySelectMenu : SmartMenu
     {
+        public static bool firstOpen;
+
         private SimplerButton createButton;
         private SimplerButton creditsButton;
         private SimplerButton directConnectButton;
@@ -250,6 +252,15 @@ namespace RainMeadow
             // if (lobbyLimitNumberTextBox.value != "" && !lobbyLimitNumberTextBox.held) ApplyLobbyLimit();
 
             // Statistics
+            if (!firstOpen)
+            {
+                if (!string.IsNullOrEmpty(RainMeadow.NewVersionAvailable))
+                {
+                    ShowUpdateDialog();
+                }
+                firstOpen = true;
+            }
+
             if (statisticsLabel != null)
             {
                 statisticsLabel.text = $"{Translate("Online:")} {playerCount} | {Translate("Lobbies:")} {lobbyCount}";
@@ -459,6 +470,15 @@ namespace RainMeadow
             error = Translate(error);
 
             popupDialog = new DialogBoxNotify(this, mainPage, error, "HIDE_DIALOG", new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
+            mainPage.subObjects.Add(popupDialog);
+            GreyOutLobbyCards(true);
+        }
+
+        public void ShowUpdateDialog()
+        {
+            if (popupDialog != null) HideDialog();
+
+            popupDialog = new UpdateDialog(this, mainPage, new Vector2(manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f));
             mainPage.subObjects.Add(popupDialog);
             GreyOutLobbyCards(true);
         }
