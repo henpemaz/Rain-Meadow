@@ -7,6 +7,7 @@ using MonoMod.RuntimeDetour;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace RainMeadow
 {
@@ -584,6 +585,8 @@ namespace RainMeadow
                 return msg;
             }
 
+            paste = Clean(paste);
+
             int space = textLimit - msg.Length;
 
             if (space <= 0) return msg;
@@ -591,6 +594,11 @@ namespace RainMeadow
 
             RainMeadow.Debug($"Pasted {paste.Length} chars from clipboard.");
             return msg.Insert(Mathf.Clamp(cursorPos, 0, msg.Length), paste);
+        }
+
+        private string Clean(string msg)
+        {
+            return Regex.Replace(msg, @"\r\n?|\n", "");
         }
 
         private void GetMessageHistory(int dir)
