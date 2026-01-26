@@ -308,7 +308,6 @@ namespace RainMeadow
             blockInput = false;
             if (MultiView && !Focused)
             {
-                blockInput = true;
                 base.GrafUpdate(timeStacker);
                 return;
             }
