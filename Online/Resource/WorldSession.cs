@@ -11,8 +11,6 @@ namespace RainMeadow
         public WorldLoader worldLoader;
         public static ConditionalWeakTable<World, WorldSession> map = new();
         public Dictionary<string, RoomSession> roomSessions = new();
-
-        public bool discard = false;
         public World World => world;
         public OverworldSession overworldSession => (OverworldSession)super;
 
@@ -32,7 +30,6 @@ namespace RainMeadow
         {
             this.world = world;
             this.worldLoader = worldLoader;
-            this.discard = false;
             map.Add(world, this);
         }
 
@@ -83,7 +80,7 @@ namespace RainMeadow
 
         protected override void UnavailableImpl()
         {
-            if (discard && isActive) Deactivate();
+
         }
 
         protected override ResourceState MakeState(uint ts)
