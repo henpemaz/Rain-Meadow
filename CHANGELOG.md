@@ -1,3 +1,7 @@
+# Release 1.11.1
+## Engine 
+- Fixed an issue where transitioning regions led to disappearing players
+
 # Release 1.11.0
 ## Arena
 - Added flash to tab arrow to assist users in locating game mode tab settings
