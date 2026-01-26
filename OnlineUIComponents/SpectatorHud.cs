@@ -94,9 +94,7 @@ namespace RainMeadow
                 if (return_to_player.Room.realizedRoom != null && camera.room.abstractRoom != return_to_player.Room)
                 {
                     AbstractRoom oldRoom = camera.room.abstractRoom;
-                    camera.MoveCamera(return_to_player.Room.realizedRoom, -1);
-                    oldRoom.Abstractize();
-
+                    camera.MoveCamera(return_to_player.Room.realizedRoom, -1);                    
                 }
             }
         }
@@ -145,7 +143,9 @@ namespace RainMeadow
                     {
                         AbstractRoom oldRoom = camera.room.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                        if (Extensions.GetOnlineCreature(spectatee, out var oc) && oc.owner != OnlineManager.mePlayer) {
                         oldRoom.Abstractize();
+                        }
                         
                     }
                 }
