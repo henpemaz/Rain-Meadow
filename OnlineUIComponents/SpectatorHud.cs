@@ -143,7 +143,7 @@ namespace RainMeadow
                     {
                         AbstractRoom oldRoom = camera.room.abstractRoom;
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
-                        if (Extensions.GetOnlineCreature(spectatee, out var oc) && oc.owner != OnlineManager.mePlayer) {
+                        if (!spectatee.IsLocal()) {
                         oldRoom.Abstractize();
                         }
                         
