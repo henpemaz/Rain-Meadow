@@ -1,5 +1,4 @@
-﻿using IL.MoreSlugcats;
-
+﻿
 namespace RainMeadow
 {
     public class RealizedSingularityBombState : RealizedState<MoreSlugcats.SingularityBomb>
