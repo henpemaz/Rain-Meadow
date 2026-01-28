@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RainMeadow
 {
 
-    public class RealizedWeaponState : RealizedPhysicalObjectState
+    public class RealizedWeaponState : RealizedState<Weapon>
     {
         [OnlineField]
         protected Weapon.Mode mode;
@@ -28,7 +28,7 @@ namespace RainMeadow
             throwDir = (byte)((weapon.throwDir.x < 0 ? 0b10 : 0b00) | (weapon.throwDir.y < 0 ? 0b01 : 0b00));
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(Weapon weapon, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
             if (onlineEntity.isTransfering)
@@ -37,7 +37,6 @@ namespace RainMeadow
                 return;
             }
 
-            var weapon = (Weapon)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var newMode = mode;
             
             if (weapon.room != null && weapon.mode != newMode)

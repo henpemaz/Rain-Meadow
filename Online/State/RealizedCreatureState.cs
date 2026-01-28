@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace RainMeadow
 {
-    public class RealizedCreatureState : RealizedPhysicalObjectState
+    public class RealizedCreatureState : RealizedState<Creature>
     {
         [OnlineField(nullable = true)]
         private DynamicOrderedStates<GraspRef> grasps;
@@ -20,9 +20,8 @@ namespace RainMeadow
         public ArtificialIntelligenceState? artificialIntelligenceState;
 
         public RealizedCreatureState() { }
-        public RealizedCreatureState(OnlineCreature onlineCreature) : base(onlineCreature)
+        public RealizedCreatureState(Creature creature, OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            var creature = onlineCreature.apo.realizedObject as Creature;
             grasps = new(creature.grasps?.Where(g => g != null && OnlinePhysicalObject.map.TryGetValue(g.grabbed.abstractPhysicalObject, out _))
                                         .Select(g => GraspRef.map.GetValue(g, GraspRef.FromGrasp))
                                         .ToList() ?? new());
@@ -53,11 +52,11 @@ namespace RainMeadow
             return true;
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(Creature creature, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
             if (onlineEntity is not OnlineCreature onlineCreature) { RainMeadow.Error("target not onlinecreature: " + onlineEntity); return; }
-            if (onlineCreature.apo.realizedObject is not Creature creature) { RainMeadow.Trace("target not realized: " + onlineEntity); return; }
+            if (onlineCreature.apo.realizedObject is not Creature) { RainMeadow.Trace("target not realized: " + onlineEntity); return; }
 
             creature.stun = stun;
             creature.enteringShortCut = enteringShortcut;

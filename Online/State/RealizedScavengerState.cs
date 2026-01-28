@@ -7,7 +7,7 @@ using UnityEngine;
 namespace RainMeadow
 {
     
-    public class RealizedScavengerState : RealizedCreatureState
+    public class RealizedScavengerState : RealizedState<Scavenger>
     {
 
         [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
@@ -434,9 +434,8 @@ namespace RainMeadow
         OnlineEntity.EntityId? lookAtEntity;
 
         public RealizedScavengerState() { }
-        public RealizedScavengerState(OnlineCreature onlineCreature) : base(onlineCreature)
-        {
-            var scav = onlineCreature.apo.realizedObject as Scavenger;
+        public RealizedScavengerState(Scavenger scav, OnlineCreature onlineCreature) : base(onlineCreature)
+        {            
             this.swingPos = scav.swingPos;
             this.swingRadius = scav.swingRadius;
             this.flip = scav.flip;
@@ -455,10 +454,9 @@ namespace RainMeadow
             
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(Scavenger scav, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var scav = (onlineEntity as OnlineCreature).realizedCreature as Scavenger;
             if (scav != null)
             {
                 scav.swingPos = this.swingPos;

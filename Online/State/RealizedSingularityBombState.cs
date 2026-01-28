@@ -1,6 +1,8 @@
-﻿namespace RainMeadow
+﻿using IL.MoreSlugcats;
+
+namespace RainMeadow
 {
-    public class RealizedSingularityBombState : RealizedWeaponState
+    public class RealizedSingularityBombState : RealizedState<MoreSlugcats.SingularityBomb>
     {
         [OnlineField]
         bool ignited;
@@ -15,19 +17,17 @@
         byte counter; // float is always used as an integer with range [0, 120)
 
         public RealizedSingularityBombState() { }
-        public RealizedSingularityBombState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedSingularityBombState(MoreSlugcats.SingularityBomb bomb, OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
-            var bomb = (MoreSlugcats.SingularityBomb)onlineEntity.apo.realizedObject;
             ignited = bomb.ignited;
             activateSingularity = bomb.activateSingularity;
             activateSucktion = bomb.activateSucktion;
             counter = (byte)bomb.counter;
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(MoreSlugcats.SingularityBomb bomb, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var bomb = (MoreSlugcats.SingularityBomb)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             bomb.ignited = ignited;
             bomb.activateSingularity = activateSingularity;
             bomb.activateSucktion = activateSucktion;

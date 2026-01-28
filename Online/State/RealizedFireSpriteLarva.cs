@@ -7,7 +7,7 @@ using Watcher;
 
 namespace RainMeadow
 {
-    public class RealizedFireSpriteLarva : RealizedPhysicalObjectState
+    public class RealizedFireSpriteLarva : RealizedState<BoxWorm.Larva>
     {
         [OnlineField]
         byte bites = 3;
@@ -19,11 +19,9 @@ namespace RainMeadow
             this.bites = (byte)larva.bites;
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(BoxWorm.Larva larva, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-            var larva = (BoxWorm.Larva)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
-
             larva.bites = bites;
         }
     }

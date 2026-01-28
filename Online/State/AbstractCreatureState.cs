@@ -32,7 +32,7 @@ namespace RainMeadow
 
         protected override RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
-            if (onlineObject.apo.realizedObject is Player) return new RealizedPlayerState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Player p) return new RealizedPlayerState(p, (OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Overseer) return new RealizedOverseerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Fly) return new RealizedFlyState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is TubeWorm) return new RealizedTubeWormState((OnlineCreature)onlineObject);
@@ -40,9 +40,9 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is DaddyLongLegs) return new RealizedDaddyLongLegsState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Deer) return new RealizedDeerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is DropBug) return new RealizedDropBugState((OnlineCreature)onlineObject);
-            if (onlineObject.apo.realizedObject is Scavenger) return new RealizedScavengerState((OnlineCreature)onlineObject);
-            if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
-            if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Scavenger s) return new RealizedScavengerState(s, (OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Lizard liz) return new RealizedLizardState(liz, (OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is Creature c) return new RealizedCreatureState(c, (OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);

@@ -151,10 +151,9 @@ namespace RainMeadow
         private Vector2? pointingDir;
 
         public RealizedPlayerState() { }
-        public RealizedPlayerState(OnlineCreature onlineEntity) : base(onlineEntity)
+        public RealizedPlayerState(Player p, OnlineCreature onlineEntity) : base(p, onlineEntity)
         {
             RainMeadow.Trace(this + " - " + onlineEntity);
-            Player p = onlineEntity.apo.realizedObject as Player;
             isCamo = p.isCamo; // watcher
 
             monkAscension = p.monkAscension;

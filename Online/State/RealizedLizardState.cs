@@ -46,7 +46,7 @@ namespace RainMeadow
     }
 
 
-    public class RealizedLizardState : RealizedCreatureState
+    public class RealizedLizardState : RealizedState<Lizard>
     {
         [OnlineFieldHalf(nullable = true)]
         private Vector2? gripPoint;
@@ -54,9 +54,8 @@ namespace RainMeadow
         private Generics.DynamicOrderedStates<LizLimbState> limbState;
 
         public RealizedLizardState() { }
-        public RealizedLizardState(OnlineCreature onlineCreature) : base(onlineCreature)
+        public RealizedLizardState(Lizard liz, OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            var liz = onlineCreature.apo.realizedObject as Lizard;
             var mainpos = liz.mainBodyChunk.pos;
             if (liz.gripPoint.HasValue) gripPoint = liz.gripPoint - mainpos; // relative to keep accuracy as half
 
@@ -70,7 +69,7 @@ namespace RainMeadow
             }
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(Lizard lizard, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlinePhysicalObject).apo.realizedObject is Lizard liz)

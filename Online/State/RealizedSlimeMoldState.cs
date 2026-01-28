@@ -1,7 +1,7 @@
 ﻿namespace RainMeadow
 {
     // 
-    public class RealizedSlimeMoldState : RealizedPhysicalObjectState
+    public class RealizedSlimeMoldState : RealizedState<SlimeMold>
     {
         [OnlineField]
         byte bites = 3;
@@ -15,11 +15,9 @@
 
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(SlimeMold slime, OnlineEntity onlineEntity)
         {
             base.ReadTo(onlineEntity);
-
-            var slime = (SlimeMold)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             slime.bites = bites;
         }
     }

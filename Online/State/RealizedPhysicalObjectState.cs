@@ -57,19 +57,24 @@ namespace RainMeadow
         public virtual void ReadTo(OnlineEntity onlineEntity)
         {
             if (onlineEntity.isPending) { RainMeadow.Trace($"not syncing {onlineEntity} because pending"); return; }
-            var opo = onlineEntity as OnlinePhysicalObject;
+            if (onlineEntity is not OnlinePhysicalObject opo || opo.apo.realizedObject == null)
+            {
+                return;
+            }
+
             var po = opo.apo.realizedObject;
 
             opo.lenientPos = ShouldPosBeLenient(po);
+            
             if (!opo.lenientPos)
             {
                 int minLength = Math.Min(chunkStates.Length, po.bodyChunks.Length);
-                for (int i = 0; i < minLength; i++) //sync bodychunk positions
+                for (int i = 0; i < minLength; i++)
                 {
-
                     chunkStates[i].ReadTo(po.bodyChunks[i]);
                 }
             }
+            
             if (po.collisionLayer != collisionLayer)
             {
                 po.ChangeCollisionLayer(collisionLayer);

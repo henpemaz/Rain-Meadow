@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    public class RealizedSpearState : RealizedWeaponState
+    public class RealizedSpearState : RealizedState<Spear>
     {
         [OnlineFieldHalf(group = "spear", nullable = true)]
         private Vector2? stuckInWall;
@@ -27,9 +27,8 @@ namespace RainMeadow
         private bool ignited;
 
         public RealizedSpearState() { }
-        public RealizedSpearState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedSpearState(Spear spear, OnlinePhysicalObject onlineEntity) : base(onlineEntity)
         {
-            var spear = (Spear)onlineEntity.apo.realizedObject;
             stuckInWall = spear.stuckInWall;
             stuckInWallCycles = (sbyte)spear.abstractSpear.stuckInWallCycles;
             needleActive = spear.spearmasterNeedle_hasConnection;
@@ -50,9 +49,8 @@ namespace RainMeadow
             else stuckInChunk = null;
         }
 
-        public override void ReadTo(OnlineEntity onlineEntity)
+        public override void ReadTo(Spear spear, OnlineEntity onlineEntity)
         {
-            var spear = (Spear)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             spear.stuckInWall = stuckInWall;
             spear.abstractSpear.stuckInWallCycles = stuckInWallCycles;
             spear.spearDamageBonus = spearDamageBonus;

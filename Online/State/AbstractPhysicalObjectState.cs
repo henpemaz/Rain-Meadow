@@ -55,9 +55,9 @@ namespace RainMeadow
             }
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
-            if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
+            if (onlineObject.apo.realizedObject is Spear s) return new RealizedSpearState(s, onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
-            if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
+            if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb b) return new RealizedSingularityBombState(b, onlineObject);
             if (onlineObject.apo.realizedObject is SporePlant) return new RealizedSporePlantState(onlineObject);
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
