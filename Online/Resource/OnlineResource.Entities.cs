@@ -117,7 +117,7 @@ namespace RainMeadow
             {
                 if (oe.GetType() != entityDefinition.GetType()) {
                     RainMeadow.Error($"Type mismatch on ID {oe.id}. Purging old {oe.GetType().Name} for new {entityDefinition.GetType().Name}");
-                    // Logic to remove 'oe' from the resource list so the new one can take its place
+                    // Logic to remove oe from the resource list so the new one can take its place
                     this.registeredEntities.Remove(oe.id);
                     oe = entityDefinition.MakeEntity(this, initialState);
                 } else {
