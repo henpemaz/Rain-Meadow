@@ -108,6 +108,7 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public List<int> bannedSlugs = new List<int>();
+        public MeadowAvatarData avatarData;
 
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
@@ -315,9 +316,19 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+            this.avatarData = new MeadowAvatarData();
 
         }
-
+        public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
+        {
+            RainMeadow.Debug($"{oe} + {inResource}");
+            base.NewEntity(oe, inResource);
+            if (oe is OnlineCreature oc)
+            {
+                RainMeadow.Debug("Registering new creature: " + oc);
+                oe.AddData(new MeadowCreatureData());
+            }
+        }
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);

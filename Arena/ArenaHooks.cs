@@ -440,11 +440,22 @@ namespace RainMeadow
                     self.InitializeLongerWatcherTail();
             }
         }
+        public Lizard mount;
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
             if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
                 self.player.watcherMorph = 0.51f;
             orig(self, sLeaser, rCam, timeStacker, camPos);
+            if (mount != null && mount.graphicsModule != null && self.player != null)
+            {
+                // Move the lizard to the Midground so the player (usually in Foreground) stays on top
+                foreach (var container in self.player.room.game.cameras)
+                {
+                  container.MoveObjectToContainer(self, container.ReturnFContainer("Background"));
+
+                }
+            }
+            
         }
         private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
         {
