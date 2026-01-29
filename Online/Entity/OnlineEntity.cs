@@ -409,7 +409,7 @@ namespace RainMeadow
             var localState = entity.GetState(tick, inResource);
             if (localState == null) return false;
 
-            // "Can the incoming state type be used to represent the local state type?"
+            // Can the incoming state type be used to represent the local state type
             return entityState.GetType().IsAssignableFrom(localState.GetType());
         }
         public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
