@@ -94,14 +94,14 @@ namespace RainMeadow
         {
             //PlacedObject.Type.SporePlant,  // crashes the game, ask Turtle (UPDATE: probably doesn't anymore)
             PlacedObject.Type.HangingPearls,  // duplicates and needs to be synced, ask choc
-            DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
+            //DLCSharedEnums.PlacedObjectType.Stowaway, //cause severe visual glitches and shaking when overlapped
             Watcher.WatcherEnums.PlacedObjectType.CosmeticRipple, //visual glitches and does not really hurt to exclude
         };
 
         public override bool AllowedInMode(PlacedObject item)
         {
             if (disallowedPlacedObjects.Contains(item.type)) return false;
-            if (item.type == PlacedObject.Type.StuckDaddy)
+            if (item.type == PlacedObject.Type.StuckDaddy || item.type == DLCSharedEnums.PlacedObjectType.Stowaway)
             {
                 return OnlineManager.lobby.isOwner;
             }
