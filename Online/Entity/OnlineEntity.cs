@@ -401,6 +401,17 @@ namespace RainMeadow
             StateProfiler.Instance?.Pop(entityState.GetType());
         }
 
+        public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick) 
+        {
+            var entity = entityState.entityId.FindEntity() as OnlinePhysicalObject;
+            if (entity == null) return false;
+
+            var localState = entity.GetState(tick, inResource);
+            if (localState == null) return false;
+
+            // "Can the incoming state type be used to represent the local state type?"
+            return entityState.GetType().IsAssignableFrom(localState.GetType());
+        }
         public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
         public virtual void ReadState(EntityFeedState entityFeedState)
         {
