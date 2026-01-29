@@ -141,6 +141,7 @@ namespace RainMeadow
                     if (spectatee.Room.realizedRoom != null && camera.room.abstractRoom != spectatee.Room)
                     {
                         camera.MoveCamera(spectatee.Room.realizedRoom, -1);
+                        
                     }
                 }
             }
