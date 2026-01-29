@@ -1,14 +1,14 @@
 ﻿using BepInEx;
-using Menu;
+using Newtonsoft.Json.Linq;
 using RainMeadow.Game;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Permissions;
-using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -18,7 +18,9 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.10.0";
+        public const string MeadowVersionStr = "0.1.11.1";
+        public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
+        public static string NewVersionAvailable = "";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -48,6 +50,8 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
 
             DeathContextualizer.CreateBindings();
+
+            StartCoroutine(CheckForUpdates());
         }
 
         private bool AdvancedProfilingEnabled()
@@ -252,6 +256,73 @@ namespace RainMeadow
                 fullyInit = false;
                 //throw;
             }
+        }
+
+        IEnumerator CheckForUpdates()
+        {
+            JObject json = null;
+            using (UnityWebRequest request = UnityWebRequest.Get(ReleaseUrl))
+            {
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    json = JObject.Parse(request.downloadHandler.text);
+                } 
+                else
+                {
+                    Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
+                    yield break;
+                }
+            }
+            if (json is null)
+            {
+                Logger.LogError($"A web request error occured whilst checking for updates: JSON returned no body.");
+                yield break;
+            }
+            if (json.TryGetValue("tag_name", out var token))
+            {
+                string latestVersion = token.ToString();
+                if (latestVersion.Count(f => f == '.') < 3)
+                {
+                    latestVersion = "0." + latestVersion;
+                }
+                RainMeadow.Debug($"Current Version - {MeadowVersionStr}, Latest Version - {latestVersion}");
+                if (IsNewerVersion(latestVersion, MeadowVersionStr))
+                {
+                    RainMeadow.Debug($"NEW RAIN MEADOW VERSION FOUND.");
+                    // One day grace window before users are prompted to update.
+                    if (json.TryGetValue("published_at", out var published)
+                        && DateTime.TryParse(published.ToString(), out var publishedDate)
+                        && publishedDate.AddDays(1) > DateTime.Now)
+                    {
+                        RainMeadow.Debug($"Update popup grace period active until: {publishedDate.AddDays(1).ToLongDateString()}");
+                        yield break;
+                    }
+                    NewVersionAvailable = latestVersion;
+                    
+                }
+            }
+        }
+
+        // This logic could be improved a bit but it seems to work fine for now so I'll leave it be.
+        public static bool IsNewerVersion(string newVersion, string currentVersion)
+        {
+            if (newVersion == currentVersion || string.IsNullOrWhiteSpace(newVersion) || string.IsNullOrWhiteSpace(currentVersion)) return false;
+
+            string[] nParts = newVersion.Split('.');
+            string[] cParts = currentVersion.Split('.');
+
+            int length = Math.Max(nParts.Length, cParts.Length);
+
+            for (int i = 0; i < length; i++)
+            {
+                int nPart = i < nParts.Length ? int.Parse(nParts[i]) : 0;
+                int cPart = i < cParts.Length ? int.Parse(cParts[i]) : 0;
+
+                if (nPart > cPart) return true; // newVersion is greater than currentVersion.
+            }
+            return false;
         }
     }
 }

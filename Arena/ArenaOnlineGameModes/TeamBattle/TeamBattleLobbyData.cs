@@ -98,6 +98,10 @@ namespace RainMeadow
                         teamBattleMode.teamNames[1] = outlawsName;
                         teamBattleMode.teamNames[2] = dragonslayersName;
                         teamBattleMode.teamNames[3] = chieftainsName;
+                        teamBattleMode.displayTeamNames[0] = MatchmakingManager.currentInstance.FilterTeamName(martyrsName);
+                        teamBattleMode.displayTeamNames[1] = MatchmakingManager.currentInstance.FilterTeamName(outlawsName);
+                        teamBattleMode.displayTeamNames[2] = MatchmakingManager.currentInstance.FilterTeamName(dragonslayersName);
+                        teamBattleMode.displayTeamNames[3] = MatchmakingManager.currentInstance.FilterTeamName(chieftainsName);
                         teamBattleMode.winningTeam = winningTeam;
                         teamBattleMode.martyrsSpawn = martyrs;
                         teamBattleMode.outlawsSpawn = outlaws;

@@ -1721,14 +1721,23 @@ namespace RainMeadow
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
             RainMeadow.Debug($"START WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
 
-            if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || self.currentSaveState.denPosition != storyGameMode.defaultDenPos)
+            if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                storyGameMode.defaultDenPos = self.currentSaveState.denPosition;
             }
-            else
+            else 
             {
-                self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                {
+                    // user is freshly joining the game
+                    storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                } else
+                {
+                    self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                }
             }
+
             if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
             {
                 storyGameMode.myLastWarp = self.currentSaveState.warpPointTargetAfterWarpPointSave;

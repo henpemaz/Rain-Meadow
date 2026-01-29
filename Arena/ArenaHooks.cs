@@ -587,7 +587,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.displayTeamNames[tb.winningTeam].ToUpper());
                     }
                 }
             }
@@ -1016,8 +1016,23 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 ILLabel skip = il.DefineLabel();
+
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdloc(18), // physicalObject
+                    i => i.MatchLdarg(0),
+                    i => i.MatchBeq(out skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, 18);
+                c.EmitDelegate((Player self, PhysicalObject po) =>
+                {
+                    // Don't ascend our friends!
+                    return po is Creature creature && self.FriendlyFireSafetyCandidate(creature);
+                });
+                c.Emit(OpCodes.Brtrue_S, skip);
+
                 c.GotoNext(
-                     i => i.MatchLdloc(18),
+                     i => i.MatchLdloc(18), //physicalObject
                      i => i.MatchIsinst<Creature>(),
                      i => i.MatchCallvirt<Creature>("Die")
                      );
@@ -1025,22 +1040,21 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && isArenaMode(out var _))
+                    if (self.IsLocal() && isArenaMode(out var arena))
                     {
                         if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
                         {
-                            if (!opo.isMine)
+                            if (opo.isMine) return;
+                            var saint = self.abstractCreature.GetOnlineCreature();
+                            if (saint != null)
                             {
-                                var saint = self.abstractCreature.GetOnlineCreature();
-                                if (saint != null)
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
-                                }
-                                else
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
-                                }
-
+                                // Don't ascend our friends!
+                                if (po is Creature c && self.FriendlyFireSafetyCandidate(c)) return;
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
+                            }
+                            else
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
                             }
                         }
                     }
@@ -1979,7 +1993,7 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                             {
-                                self.playerNameLabel.text += $" -- {team.teamNames[td.team].ToUpper()}";
+                                self.playerNameLabel.text += $" -- {team.displayTeamNames[td.team].ToUpper()}";
                             }
                         }
                     }
@@ -2083,7 +2097,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.displayTeamNames[tb.winningTeam].ToUpper());
                     }
                 }
             }
@@ -2191,6 +2205,10 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (self.game.world.rainCycle.timer < 40)
+                {
+                    return false;
+                }
 
                 if (!(shortcutVessel.creature is Player))
                 {
@@ -2442,6 +2460,10 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (self.game.world.rainCycle.timer < 40)
+                {
+                    return false;
+                }
                 return arena.externalArenaGameMode.IsExitsOpen(arena, orig, self);
 
             }
