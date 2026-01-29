@@ -1,5 +1,7 @@
-﻿using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
+﻿using System.CodeDom;
+using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RainMeadow
 {
@@ -30,6 +32,10 @@ namespace RainMeadow
                     if (TeamBattleMode.isTeamBattleMode(arena, out _))
                     {
                         return ArenaHelpers.CheckSameTeam(oc.owner, friend.abstractCreature.GetOnlineCreature()?.owner, creature, friend);
+                    }
+                    if (CreatureBrawl.isCreatureBrawl(arena, out var cb))
+                    {
+                        return cb.creatureCWT.TryGetValue(oc.realizedCreature, out _);
                     }
                 }
 
@@ -63,7 +69,18 @@ namespace RainMeadow
             }
         }
 
-
+        public static void StopWalk(Player p)
+        {
+            if (p != null)
+            {
+                p.input[0].x = 0;
+                p.input[0].y = 0;
+                p.input[0].analogueDir *= 0f;
+            } else
+            {
+                RainMeadow.Debug("Player is null while trying to stop movement");
+            }
+        }
         public static void HoldFire(Player p)
         {
             p.input[0].thrw = false;

@@ -1263,6 +1263,38 @@ public partial class RainMeadow
                     self.room.ChangeCollisionLayerForObject(self, 1);
                 }
             }
+
+            if (CreatureBrawl.isCreatureBrawl(arena, out var cb) && self.IsLocal()) {
+                if (self != null && cb.creatureCWT.TryGetValue(self, out var liz) != null && self.room != null && liz != null)
+                {
+                    if (liz.State.alive) {
+                        int saddleIndex = (liz.bodyChunks.Length > 1) ? 1 : 0;
+                        BodyChunk mountChunk = liz.bodyChunks[saddleIndex];
+
+                        self.firstChunk.pos = mountChunk.pos + new UnityEngine.Vector2(0, 30f);
+                        self.firstChunk.vel = mountChunk.vel;
+
+                        float headX = liz.bodyChunks[0].pos.x;
+                        float bodyX = mountChunk.pos.x;
+
+                        if (headX > bodyX + 2f) 
+                        {
+                            self.flipDirection = 1; // Face Right
+                        }
+                        else if (headX < bodyX - 2f)
+                        {
+                            self.flipDirection = -1; // Face Left
+                        }
+                        // self.bodyMode = Player.BodyModeIndex.S;
+                        self.gravity = 0f;
+                        self.slugOnBack.abstractStick = new Player.AbstractOnBackStick(self.abstractCreature, liz.abstractCreature);
+                        GameplayOverrides.StopWalk(self);
+                    } else
+                    {
+                        self.slugOnBack.abstractStick = null;
+                    }
+                }
+            }
         }
 
         if (OnlineManager.lobby != null && self.IsLocal() && ModManager.JollyCoop)
@@ -1353,49 +1385,6 @@ public partial class RainMeadow
             { //For reasons beyond my comprehension, PlayerBlink() has a weird, possibly unintended "else" that makes specifically Spearmaster *not* close their eyes during sleepCurlUp.
                 self.Blink(2); //Vanilla only avoids this issue because sleepCounter also closes eyes directly using Blink(). We're not using sleepCounter, so Spearmaster needs this insomnia cure.
             }
-                            RainMeadow.Debug(mount);
-                // 1. Logic to find and "mount" the lizard
-                if (mount == null && self.room != null)
-                {
-                    for (int i = 0; i < self.room.physicalObjects.Length; i++)
-                    {
-                        foreach (var obj in self.room.physicalObjects[i])
-                        {
-                            // Check distance so you don't teleport to a lizard across the map
-                            if (obj is Lizard lz)
-                            {
-                                mount = lz;
-                                self.controller = new ArenaGameSession.PlayerStopController();
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // 2. The "Riding" Physics
-                if (mount != null)
-                {
-                    Debug("helo");
-
-                    // Pin player to the lizard's head or back chunk
-                    // Chunk 0 is usually the head/neck area
-                    self.firstChunk.pos = mount.bodyChunks[0].pos + new UnityEngine.Vector2(0, 30f);
-                    self.firstChunk.vel = mount.bodyChunks[0].vel;
-                    if (mount.mainBodyChunk.vel.x > 0.2f)
-                        {
-                            self.flipDirection = 1; // Face Right
-                        }
-                        else if (mount.mainBodyChunk.vel.x < -0.2f)
-                        {
-                            self.flipDirection = -1; // Face Left
-                        }
-                                        // Optional: Keep the player in a "climbing" or "sitting" animation
-                    self.bodyMode = Player.BodyModeIndex.Crawl;
-                    
-                    // Prevent player from falling off due to gravity
-                    self.gravity = 0f;
-                    self.slugOnBack.abstractStick = new Player.AbstractOnBackStick(self.abstractCreature, mount.abstractCreature);
-                }
         }
 
         if (OnlineManager.lobby != null && !(ModManager.MSC && 

@@ -440,22 +440,19 @@ namespace RainMeadow
                     self.InitializeLongerWatcherTail();
             }
         }
-        public Lizard mount;
         private void PlayerGraphics_DrawSprites(On.PlayerGraphics.orig_DrawSprites orig, PlayerGraphics self, RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, UnityEngine.Vector2 camPos)
         {
-            if (isArenaMode(out _) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
+            if (isArenaMode(out var arena) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
                 self.player.watcherMorph = 0.51f;
             orig(self, sLeaser, rCam, timeStacker, camPos);
-            if (mount != null && mount.graphicsModule != null && self.player != null)
+            if (CreatureBrawl.isCreatureBrawl(arena, out var cb) && self.player != null && cb.creatureCWT.TryGetValue(self.player, out var mount) != null && mount.graphicsModule != null && self.player != null)
             {
-                // Move the lizard to the Midground so the player (usually in Foreground) stays on top
-                foreach (var container in self.player.room.game.cameras)
+                foreach (var container in mount.room.game.cameras)
                 {
-                  container.MoveObjectToContainer(self, container.ReturnFContainer("Background"));
+                  container.MoveObjectToContainer(self, container.ReturnFContainer("Midground"));
 
                 }
-            }
-            
+            }            
         }
         private void PlayerGraphics_WeaverParts_Update(On.PlayerGraphics.WeaverParts.orig_Update orig, PlayerGraphics.WeaverParts self)
         {

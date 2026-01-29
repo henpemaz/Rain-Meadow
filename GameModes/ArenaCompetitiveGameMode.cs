@@ -1,4 +1,5 @@
-﻿using Menu;
+﻿using DevInterface;
+using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
@@ -18,6 +19,7 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
+        public MeadowAvatarData avatarData;
 
         public bool registeredNewGameModes = false;
 
@@ -108,8 +110,6 @@ namespace RainMeadow
         public List<ushort> arenaSittingOnlineOrder = new List<ushort>();
         public List<ushort> playersLateWaitingInLobbyForNextRound = new List<ushort>();
         public List<int> bannedSlugs = new List<int>();
-        public MeadowAvatarData avatarData;
-
 
         public ArenaOnlineGameMode(Lobby lobby) : base(lobby)
         {
@@ -316,6 +316,7 @@ namespace RainMeadow
 
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
+            this.AddExternalGameModes(CreatureBrawl.CreatureBrawlMode, new CreatureBrawl());
             this.avatarData = new MeadowAvatarData();
 
         }
@@ -323,10 +324,12 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} + {inResource}");
             base.NewEntity(oe, inResource);
-            if (oe is OnlineCreature oc)
-            {
-                RainMeadow.Debug("Registering new creature: " + oc);
-                oe.AddData(new MeadowCreatureData());
+            if (CreatureBrawl.isCreatureBrawl(this, out _)) {
+                if (oe is OnlineCreature oc)
+                {
+                    RainMeadow.Debug("Registering new creature: " + oc);
+                    oe.AddData(new MeadowCreatureData());
+                }
             }
         }
         public void ResetInvDetails()
@@ -945,6 +948,7 @@ namespace RainMeadow
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             onlineCreature.AddData(avatarSettings);
+            onlineCreature.AddData(avatarData);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)

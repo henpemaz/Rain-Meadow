@@ -555,6 +555,62 @@ namespace RainMeadow
                 }
                 this.debugDestinationVisualizer.Update();
             }
+
+            if (RainMeadow.isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out var cb))
+            {
+                if (this.creature is Lizard lz && lz.IsLocal()) 
+                {
+                    if (this.input[0].pckp) 
+                    {
+                        lz.JawOpen = Mathf.Min(lz.JawOpen + 0.1f, 1.5f); // Open jaw over time
+                        lz.biteDelay = 0;
+                    } 
+                    else 
+                    {
+                        if (lz.JawOpen > 0.9f)
+                        {
+                            // --- NEW: Targeted Bite Logic ---
+                            BodyChunk targetChunk = null;
+                            float closestDist = 40f; // Maximum bite reach in pixels
+
+                            // Check objects in the same room
+                            for (int i = 0; i < lz.room.physicalObjects.Length; i++)
+                            {
+                                for (int j = 0; j < lz.room.physicalObjects[i].Count; j++)
+                                {
+                                    PhysicalObject obj = lz.room.physicalObjects[i][j];
+
+                                    // Don't bite yourself!
+                                    if (obj == lz) continue;
+
+                                    foreach (BodyChunk chunk in obj.bodyChunks)
+                                    {
+                                        float dist = Vector2.Distance(lz.mainBodyChunk.pos, chunk.pos);
+                                        if (dist < closestDist)
+                                        {
+                                            targetChunk = chunk;
+                                            closestDist = dist;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // If we found a chunk, bite it; otherwise, snap at the air
+                            if (targetChunk != null && !targetChunk.owner.IsLocal())
+                            {
+                                lz.Bite(targetChunk);
+                            }
+                            else
+                            {
+                                lz.Bite(null); // Just plays the snap animation/sound
+                            }
+
+                            lz.JawOpen = 0f; // Reset jaw after bite
+                            lz.biteDelay = 20;
+                        }
+                    }
+                }
+            }
         }
 
         protected virtual void PointImpl(Vector2 dir)
