@@ -73,8 +73,8 @@ namespace RainMeadow
                         // (bringTheTrain.state as LizardState).SetRotType(LizardState.RotType.Full);
                         room.abstractRoom.AddEntity(bringTheTrain);
                         self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
-                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos); 
                         RainMeadow.sSpawningAvatar = false;
+                        self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos); 
                         bringTheTrain.Realize();
                         bringTheTrain.realizedCreature.PlaceInRoom(room);
                 

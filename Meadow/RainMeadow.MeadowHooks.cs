@@ -91,7 +91,7 @@ namespace RainMeadow
 
         private CreatureTemplate.Relationship CreatureTemplate_CreatureRelationship_CreatureTemplate(On.CreatureTemplate.orig_CreatureRelationship_CreatureTemplate orig, CreatureTemplate self, CreatureTemplate crit)
         {
-            if (OnlineManager.lobby != null && (OnlineManager.lobby.gameMode is MeadowGameMode || isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out _)))
+            if (OnlineManager.lobby != null && (OnlineManager.lobby.gameMode is MeadowGameMode || (isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out _))))
             {
                 return new CreatureTemplate.Relationship(CreatureTemplate.Relationship.Type.Ignores, 2f); // intense ignore helps with looking
             }

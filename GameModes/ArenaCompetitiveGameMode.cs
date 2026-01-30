@@ -323,7 +323,7 @@ namespace RainMeadow
         {
             RainMeadow.Debug($"{oe} + {inResource}");
             base.NewEntity(oe, inResource);
-            if (CreatureBrawl.isCreatureBrawl(this, out _)) {
+            if (OnlineManager.lobby.gameMode is ArenaOnlineGameMode && CreatureBrawl.isCreatureBrawl(this, out _)) {
                 if (oe is OnlineCreature oc)
                 {
                     RainMeadow.Debug("Registering new creature: " + oc);

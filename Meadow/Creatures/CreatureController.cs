@@ -556,7 +556,7 @@ namespace RainMeadow
                 this.debugDestinationVisualizer.Update();
             }
 
-            if (RainMeadow.isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out var cb))
+            if (RainMeadow.isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out _))
             {
                 if (this.creature is Lizard lz && lz.IsLocal()) 
                 {
