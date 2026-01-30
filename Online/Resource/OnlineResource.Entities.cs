@@ -116,8 +116,7 @@ namespace RainMeadow
             if (oe.primaryResource == this)
             {
                     RainMeadow.Error($"ID {oe.id} is alresdy taken. Purging old {oe.GetType().Name} for new");
-                    // Logic to remove oe from the resource list so the new one can take its place
-                    this.registeredEntities.Remove(oe.id);
+                    // Try again
                     oe = entityDefinition.MakeEntity(this, initialState);
                     return;
             }
