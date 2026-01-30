@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace RainMeadow
@@ -115,15 +115,11 @@ namespace RainMeadow
             }
             if (oe.primaryResource == this)
             {
-                if (oe.GetType() != entityDefinition.GetType()) {
-                    RainMeadow.Error($"Type mismatch on ID {oe.id}. Purging old {oe.GetType().Name} for new {entityDefinition.GetType().Name}");
+                    RainMeadow.Error($"ID {oe.id} is alresdy taken. Purging old {oe.GetType().Name} for new");
                     // Logic to remove oe from the resource list so the new one can take its place
                     this.registeredEntities.Remove(oe.id);
                     oe = entityDefinition.MakeEntity(this, initialState);
-                } else {
-                    RainMeadow.Error($"Already registered: " + oe);
                     return;
-                }
             }
 
             if (oe.primaryResource is OnlineResource otherResource && otherResource != this && EventMath.IsNewer(otherResource.registeredEntities[oe.id].version, entityDefinition.version))
