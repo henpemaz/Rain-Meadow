@@ -865,6 +865,10 @@ namespace RainMeadow
             {
                 return this.enableBombs;
             }
+            if (item.type == PlacedObject.Type.HangingPearls)
+            {
+                return false;
+            }
 
             return true;
         }
