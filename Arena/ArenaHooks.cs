@@ -142,6 +142,16 @@ namespace RainMeadow
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
             On.Player.ctor += Player_ctor2;
+            On.LizardAI.DetermineBehavior +=   DetermineBehavior;
+        }
+
+        public LizardAI.Behavior DetermineBehavior(On.LizardAI.orig_DetermineBehavior orig, LizardAI self)
+        {
+            if (isArenaMode(out var arena) && CreatureBrawl.isCreatureBrawl(arena, out _))
+            {
+                return LizardAI.Behavior.FollowFriend;
+            }
+            return orig(self);
         }
 
         private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)

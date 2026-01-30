@@ -1265,9 +1265,10 @@ public partial class RainMeadow
             }
 
             if (CreatureBrawl.isCreatureBrawl(arena, out var cb) && self.IsLocal()) {
-                if (self != null && cb.creatureCWT.TryGetValue(self, out var liz) != null && self.room != null && liz != null)
+                if (self != null && cb.creatureCWT.TryGetValue(self, out var lz) != null && lz is Lizard liz && self.room != null && liz != null)
                 {
-                    if (liz.State.alive) {
+                
+                    if (liz.State.alive  && self.State.alive) {
                         int saddleIndex = (liz.bodyChunks.Length > 1) ? 1 : 0;
                         BodyChunk mountChunk = liz.bodyChunks[saddleIndex];
 
@@ -1285,6 +1286,14 @@ public partial class RainMeadow
                         {
                             self.flipDirection = -1; // Face Left
                         }
+                        if (liz.climbUpcoming)
+                        {
+                            self.bodyMode = Player.BodyModeIndex.ClimbingOnBeam;
+                        } else
+                        {
+                            self.bodyMode = Player.BodyModeIndex.Crawl;
+                        }
+                
                         // self.bodyMode = Player.BodyModeIndex.S;
                         self.gravity = 0f;
                         self.slugOnBack.abstractStick = new Player.AbstractOnBackStick(self.abstractCreature, liz.abstractCreature);

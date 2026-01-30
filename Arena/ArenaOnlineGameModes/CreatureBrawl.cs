@@ -52,37 +52,36 @@ namespace RainMeadow
         {
 
                          self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
-                        int randomLizardChoice = Random.Range(0, 4);
+                        int randomLizardChoice = 0;
+                        arena.avatarData.character = MeadowProgression.Character.Lizard;
+                        arena.avatarData.characterData = new MeadowProgression.CharacterData();
+                        arena.avatarData.characterData.displayName = "LIZARD";
+                        arena.avatarData.characterData.emotePrefix = "liz_";
+                        arena.avatarData.characterData.emoteAtlas = "emotes_lizard";
+                        arena.avatarData.characterData.emoteColor = new Color(197, 220, 232, 255f) / 255f;
+                        arena.avatarData.characterData.voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call;
+                        arena.avatarData.characterData.selectSpriteIndexes = new[] { 1, 2 };
+                        arena.avatarData.characterData.startingCoords = shortCutVessel.creature.abstractCreature.pos;
+                        arena.avatarData.skin = MeadowProgression.Skin.Lizard_Cyan;
+                        arena.avatarData.skinData = new MeadowProgression.SkinData();
+                        arena.avatarData.skinData.character = arena.avatarData.character;
+                        arena.avatarData.skinData.creatureType = CreatureTemplate.Type.RedLizard;
+                        arena.avatarData.skinData.baseColor = shortCutVessel.creature.abstractCreature.GetOnlineCreature().TryGetData<SlugcatCustomization>(out var d)? d.bodyColor : Color.white; 
+                        // Random.Range(0, 4);
+                        RainMeadow.sSpawningAvatar = true;
                         AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate(lizardMounts[randomLizardChoice]), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big 🙁 
                         // (bringTheTrain.state as LizardState).SetRotType(LizardState.RotType.Full);
                         room.abstractRoom.AddEntity(bringTheTrain);
-                        bringTheTrain.Realize();
-                        bringTheTrain.realizedCreature.PlaceInRoom(room);
-
                         self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
                         self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos); 
-                        MeadowAvatarData av = new MeadowAvatarData();
-                        av.character = MeadowProgression.Character.Lizard;
-
-                        av.characterData = new MeadowProgression.CharacterData();
-                        av.characterData.displayName = "LIZARD";
-                        av.characterData.emotePrefix = "liz_";
-                        av.characterData.emoteAtlas = "emotes_lizard";
-                        av.characterData.emoteColor = new Color(197, 220, 232, 255f) / 255f;
-                        av.characterData.voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call;
-                        av.characterData.selectSpriteIndexes = new[] { 1, 2 };
-                        av.characterData.startingCoords = room.GetWorldCoordinate(shortCutVessel.pos);
-                        av.skin = MeadowProgression.Skin.Lizard_Cyan;
-                        av.skinData = new MeadowProgression.SkinData();
-                        av.skinData.character = av.character;
-                        av.skinData.creatureType = lizardMounts[randomLizardChoice];
-                        av.skinData.baseColor = shortCutVessel.creature.abstractCreature.GetOnlineCreature().TryGetData<SlugcatCustomization>(out var d)? d.bodyColor : Color.white; 
+                        RainMeadow.sSpawningAvatar = false;
+                        bringTheTrain.Realize();
+                        bringTheTrain.realizedCreature.PlaceInRoom(room);
                 
                         bringTheTrain.lavaImmune = false;
                         bringTheTrain.tentacleImmune = false;
                         bringTheTrain.HypothermiaImmune = false;
-                        CreatureController.BindAvatar(bringTheTrain.realizedCreature,  bringTheTrain.GetOnlineCreature(), av);
-                    RainMeadow.sSpawningAvatar = false;
+                        // CreatureController.BindAvatar(bringTheTrain.realizedCreature,  bringTheTrain.GetOnlineCreature(), av);
                     //(shortCutVessel.creature as Player).controller = new ArenaGameSession.PlayerStopController(); 
                 // arena.avatars.Add(bringTheTrain.GetOnlineCreature());
                 this.creatureCWT.Add(shortCutVessel.creature, bringTheTrain.realizedCreature);

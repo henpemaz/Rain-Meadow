@@ -19,6 +19,7 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
+        public MeadowAvatarData avatarData;
 
         public bool registeredNewGameModes = false;
 
@@ -316,6 +317,7 @@ namespace RainMeadow
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
             this.AddExternalGameModes(CreatureBrawl.CreatureBrawlMode, new CreatureBrawl());
+            this.avatarData = new MeadowAvatarData();
         }
         public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
@@ -329,7 +331,6 @@ namespace RainMeadow
                 }
             }
         }
-
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);
@@ -945,7 +946,12 @@ namespace RainMeadow
 
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
+            RainMeadow.Debug(this);
+            if (onlineCreature.abstractCreature.creatureTemplate.type == CreatureTemplate.Type.Slugcat) {
             onlineCreature.AddData(avatarSettings);
+            } else {
+            onlineCreature.AddData(avatarData);
+            }
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)
@@ -954,6 +960,17 @@ namespace RainMeadow
             {
                 RainMeadow.Debug(oc);
                 RainMeadow.creatureCustomizations.GetValue(creature, (c) => data);
+            } else if (oc.TryGetData<MeadowAvatarData>(out var mad))
+            {
+
+                RainMeadow.Debug("isMeadowAvatarData" + oc);
+                MeadowAvatarData av = RainMeadow.creatureCustomizations.GetValue(creature, (c) => mad) as MeadowAvatarData;
+                // playable creatures
+                CreatureController.BindAvatar(creature, oc, av);
+            }
+            else
+            {
+                RainMeadow.Error("creature not avatar ?? " + oc);
             }
         }
 
