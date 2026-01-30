@@ -19,7 +19,6 @@ namespace RainMeadow
         public Dictionary<string, ExternalArenaGameMode> registeredGameModes;
 
         public OnlinePlayer currentLobbyOwner;
-        public MeadowAvatarData avatarData;
 
         public bool registeredNewGameModes = false;
 
@@ -317,8 +316,6 @@ namespace RainMeadow
             this.AddExternalGameModes(FFA.FFAMode, new FFA());
             this.AddExternalGameModes(TeamBattleMode.TeamBattle, new TeamBattleMode());
             this.AddExternalGameModes(CreatureBrawl.CreatureBrawlMode, new CreatureBrawl());
-            this.avatarData = new MeadowAvatarData();
-
         }
         public override void NewEntity(OnlineEntity oe, OnlineResource inResource)
         {
@@ -332,6 +329,7 @@ namespace RainMeadow
                 }
             }
         }
+
         public void ResetInvDetails()
         {
             lizardEvent = UnityEngine.Random.Range(0, 100);
@@ -948,7 +946,6 @@ namespace RainMeadow
         public override void ConfigureAvatar(OnlineCreature onlineCreature)
         {
             onlineCreature.AddData(avatarSettings);
-            onlineCreature.AddData(avatarData);
         }
 
         public override void Customize(Creature creature, OnlineCreature oc)

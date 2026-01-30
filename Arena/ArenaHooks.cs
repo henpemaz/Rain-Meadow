@@ -445,11 +445,13 @@ namespace RainMeadow
             if (isArenaMode(out var arena) && self.player.abstractPhysicalObject.GetOnlineObject(out var oe) == true && ArenaHelpers.GetArenaClientSettings(oe!.owner)?.weaverTail == true)
                 self.player.watcherMorph = 0.51f;
             orig(self, sLeaser, rCam, timeStacker, camPos);
-            if (CreatureBrawl.isCreatureBrawl(arena, out var cb) && self.player != null && cb.creatureCWT.TryGetValue(self.player, out var mount) != null && mount.graphicsModule != null && self.player != null)
+            if (CreatureBrawl.isCreatureBrawl(arena, out var cb) && self != null && self.player != null && cb.creatureCWT != null && cb.creatureCWT.TryGetValue(self.player, out var mount) != null && mount != null && mount.graphicsModule != null)
             {
                 foreach (var container in mount.room.game.cameras)
                 {
+                    if (container != null) {
                   container.MoveObjectToContainer(self, container.ReturnFContainer("Midground"));
+                    }
 
                 }
             }            
