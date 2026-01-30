@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Networking;
 namespace RainMeadow
 {
     public class CreatureBrawl : ExternalArenaGameMode
@@ -51,7 +52,8 @@ namespace RainMeadow
         {
 
                          self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
-                        AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big 🙁 
+                        int randomLizardChoice = Random.Range(0, 4);
+                        AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate(lizardMounts[randomLizardChoice]), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big 🙁 
                         // (bringTheTrain.state as LizardState).SetRotType(LizardState.RotType.Full);
                         room.abstractRoom.AddEntity(bringTheTrain);
                         bringTheTrain.Realize();
@@ -70,10 +72,12 @@ namespace RainMeadow
                         av.characterData.voiceId = RainMeadow.Ext_SoundID.RM_Lizard_Call;
                         av.characterData.selectSpriteIndexes = new[] { 1, 2 };
                         av.characterData.startingCoords = room.GetWorldCoordinate(shortCutVessel.pos);
-                        av.skin = MeadowProgression.Skin.Lizard_Red;
+                        av.skin = MeadowProgression.Skin.Lizard_Cyan;
                         av.skinData = new MeadowProgression.SkinData();
                         av.skinData.character = av.character;
-                        av.skinData.creatureType = CreatureTemplate.Type.RedLizard;
+                        av.skinData.creatureType = lizardMounts[randomLizardChoice];
+                        av.skinData.baseColor = shortCutVessel.creature.abstractCreature.GetOnlineCreature().TryGetData<SlugcatCustomization>(out var d)? d.bodyColor : Color.white; 
+                
                         bringTheTrain.lavaImmune = false;
                         bringTheTrain.tentacleImmune = false;
                         bringTheTrain.HypothermiaImmune = false;

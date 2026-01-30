@@ -560,7 +560,7 @@ namespace RainMeadow
             {
                 if (this.creature is Lizard lz && lz.IsLocal()) 
                 {
-                    if (this.input[0].pckp) 
+                    if (this.input[0].spec) 
                     {
                         lz.JawOpen = Mathf.Min(lz.JawOpen + 0.1f, 1.5f); // Open jaw over time
                         lz.biteDelay = 0;
