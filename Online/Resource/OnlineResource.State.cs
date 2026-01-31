@@ -212,6 +212,12 @@ namespace RainMeadow
                             {
                                 if (entity.currentlyJoinedResource == resource) // this resource is the most "detailed" provider
                                 {
+
+                                    // bandaid for mismatched entity IDs
+                                    if (entity is OnlinePhysicalObject && !entity.CanReadTo(entityState, resource, tick))
+                                    {
+                                        continue;
+                                    }
                                     try
                                     {
                                         entity.ReadState(entityState, resource);
