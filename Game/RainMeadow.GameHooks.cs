@@ -119,15 +119,19 @@ namespace RainMeadow
                 {
                     if (OnlineManager.lobby != null)
                     {
-                        if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
+                        // if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
                         
                         OnlineManager.lobby.overworld.BindOverworld(self);
                         OnlineManager.lobby.overworld.Needed();
-                        while (!OnlineManager.lobby.overworld.isAvailable)
+                        while (OnlineManager.lobby != null && !OnlineManager.lobby.overworld.isAvailable)
                         {
                             OnlineManager.ForceLoadUpdate();
                         }
-                        OnlineManager.lobby.overworld.Activate();
+
+                        if (OnlineManager.lobby != null)
+                        {
+                            OnlineManager.lobby.overworld.Activate();
+                        }
                     }
                 });
             }
@@ -551,7 +555,7 @@ namespace RainMeadow
                 OnlineManager.lobby.gameMode.GameShutDown(self);
 
 
-                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
+                
                 OnlineManager.lobby.overworld.NotNeeded();
                 if (self.manager.upcomingProcess != ProcessManager.ProcessID.MainMenu) // quit directly, otherwise wait release
                 {
@@ -560,6 +564,7 @@ namespace RainMeadow
                         OnlineManager.ForceLoadUpdate();
                     }
                 }
+                if (OnlineManager.lobby.overworld.isActive) OnlineManager.lobby.overworld.Deactivate();
             }
         }
 
