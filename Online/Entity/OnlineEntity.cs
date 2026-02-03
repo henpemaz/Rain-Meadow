@@ -403,13 +403,26 @@ namespace RainMeadow
 
         public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick) 
         {
-            var entity = entityState.entityId.FindEntity() as OnlinePhysicalObject;
-            if (entity == null) return false;
+            var entity = entityState.entityId.FindEntity();
+            if (entity == null)
+            {
+                RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: entity.FindEntity() is null: {entityState.from}, {entityState.entityId}");
+                return false;
+            } 
 
             var localState = entity.GetState(tick, inResource);
-            if (localState == null) return false;
+            if (localState == null)
+            {
+                RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: localState.GetState() is null");
+                return false;
+            } 
 
-            // Can the incoming state type be used to represent the local state type
+
+            if (!entityState.GetType().IsAssignableFrom(localState.GetType()))
+            {
+            RainMeadow.Error($"CanReadTo: Is not assignable EntityState: {entityState.GetType()}, localState: {localState.GetType()}:  {entityState.GetType().IsAssignableFrom(localState.GetType())}");
+            }
+
             return entityState.GetType().IsAssignableFrom(localState.GetType());
         }
         public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();

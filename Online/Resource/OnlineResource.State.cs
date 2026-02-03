@@ -214,7 +214,7 @@ namespace RainMeadow
                                 {
 
                                     // bandaid for mismatched entity IDs
-                                    if (entity is OnlinePhysicalObject && !entity.CanReadTo(entityState, resource, tick))
+                                    if (!entity.CanReadTo(entityState, resource, tick))
                                     {
                                         continue;
                                     }
