@@ -263,6 +263,8 @@ namespace RainMeadow
 
         public virtual void Deregister()
         {
+            RainMeadow.Debug("Removing feed for: " + this);
+            OnlineManager.RemoveFeed(this.currentlyJoinedResource, this); // Prevent reading state from non-existent entities
             RainMeadow.Debug("Removing entity from recentEntities: " + this);
             OnlineManager.recentEntities.Remove(id);
         }
