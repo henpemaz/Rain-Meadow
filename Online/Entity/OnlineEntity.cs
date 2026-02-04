@@ -263,6 +263,8 @@ namespace RainMeadow
 
         public virtual void Deregister()
         {
+            RainMeadow.Debug("Removing feed for: " + this);
+            OnlineManager.RemoveFeed(this.currentlyJoinedResource, this); // Prevent reading state from non-existent entities
             RainMeadow.Debug("Removing entity from recentEntities: " + this);
             OnlineManager.recentEntities.Remove(id);
         }
@@ -401,6 +403,30 @@ namespace RainMeadow
             StateProfiler.Instance?.Pop(entityState.GetType());
         }
 
+        public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick) 
+        {
+            var entity = entityState.entityId.FindEntity();
+            if (entity == null)
+            {
+                RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: entity.FindEntity() is null: {entityState.from}, {entityState.entityId}");
+                return false;
+            } 
+
+            var localState = entity.GetState(tick, inResource);
+            if (localState == null)
+            {
+                RainMeadow.Error($"CanReadTo: Entity state cannot readto. Reason: localState.GetState() is null");
+                return false;
+            } 
+
+
+            if (!entityState.GetType().IsAssignableFrom(localState.GetType()))
+            {
+            RainMeadow.Error($"CanReadTo: Is not assignable EntityState: {entityState.GetType()}, localState: {localState.GetType()}:  {entityState.GetType().IsAssignableFrom(localState.GetType())}");
+            }
+
+            return entityState.GetType().IsAssignableFrom(localState.GetType());
+        }
         public Dictionary<OnlineResource, Queue<EntityState>> incomingState = new();
         public virtual void ReadState(EntityFeedState entityFeedState)
         {

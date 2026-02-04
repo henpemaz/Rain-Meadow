@@ -1,4 +1,6 @@
-﻿namespace RainMeadow
+﻿using System;
+
+namespace RainMeadow
 {
     public abstract partial class OnlineEntity
     {

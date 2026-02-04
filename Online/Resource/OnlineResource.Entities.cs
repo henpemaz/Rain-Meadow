@@ -115,8 +115,10 @@ namespace RainMeadow
             }
             if (oe.primaryResource == this)
             {
-                RainMeadow.Error($"Already registered: " + oe);
-                return;
+                    RainMeadow.Error($"ID {oe.id} is already taken. Purging old {oe.GetType().Name} for new");
+                    // Try again
+                    oe = entityDefinition.MakeEntity(this, initialState);
+                    return;
             }
 
             if (oe.primaryResource is OnlineResource otherResource && otherResource != this && EventMath.IsNewer(otherResource.registeredEntities[oe.id].version, entityDefinition.version))
