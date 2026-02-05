@@ -231,7 +231,7 @@ namespace RainMeadow
             else if (owner != null && !owner.hasLeft) // request to leave
             {
                 oe.lastStates.Remove(oe.currentlyJoinedResource);
-                oe.incomingState.Remove(oe.currentlyEnteredResource);
+                oe.incomingState.Remove(oe.currentlyJoinedResource);
                 RequestEntityLeave(oe);
             }
         }
