@@ -241,7 +241,7 @@ namespace RainMeadow.UI.Components
                 teamBtn.teamCount.label.color = color;
 
                 teamNameBox.held = teamNameBox._KeyboardOn;
-                if (!teamNameBox.held) teamNameBox.value = displayName;
+                if (!teamNameBox.held) teamNameBox.value = name;
                 if (!teamColorPicker.held) teamColorPicker.valuecolor = color;
 
                 bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);
