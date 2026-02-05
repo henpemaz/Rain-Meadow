@@ -579,7 +579,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }
@@ -1985,7 +1985,7 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                             {
-                                self.playerNameLabel.text += $" -- {team.teamNames[td.team].ToUpper()}";
+                                self.playerNameLabel.text += $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
                             }
                         }
                     }
@@ -2089,7 +2089,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }

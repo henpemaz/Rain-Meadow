@@ -445,7 +445,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
-        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", teamBtn.teamName);
+        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(teamBtn.teamName));
         if (selectedObject is OnlineSlugcatAbilitiesInterface.SelectSettingsPage.SettingsButton settingBtn)
             return Translate("Go to <SETTINGSNAME> Page").Replace("<SETTINGSNAME>", settingBtn.menuLabel.label.text); //menulabel text is already coded to be translated
         return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
