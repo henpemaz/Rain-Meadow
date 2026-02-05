@@ -232,7 +232,7 @@ namespace RainMeadow.UI.Components
                 int actualTeamIndex = teamBtn.buttonArrayIndex;
                 Color color = teamBattleMode.teamColors[actualTeamIndex];
                 teamBtn.teamColor = color;
-                teamBtn.teamName = MatchmakingManager.currentInstance.FilterTeamName(teamBattleMode.teamNames[actualTeamIndex]);
+                teamBtn.teamName = teamBattleMode.teamNames[actualTeamIndex];
                 teamBtn.buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
                 teamBtn.teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
 
