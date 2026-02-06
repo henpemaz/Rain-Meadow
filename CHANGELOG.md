@@ -1,3 +1,7 @@
+# Release 1.12.0
+## Arena
+- Restored custom Team Names
+
 # Release 1.11.1
 ## Engine 
 - Fixed an issue where transitioning regions led to disappearing players
