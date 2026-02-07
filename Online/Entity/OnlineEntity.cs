@@ -263,8 +263,6 @@ namespace RainMeadow
 
         public virtual void Deregister()
         {
-            RainMeadow.Debug("Removing feed for: " + this);
-            OnlineManager.RemoveFeed(this.currentlyJoinedResource, this); // Prevent reading state from non-existent entities
             RainMeadow.Debug("Removing entity from recentEntities: " + this);
             OnlineManager.recentEntities.Remove(id);
         }
@@ -397,10 +395,11 @@ namespace RainMeadow
 
         public virtual void ReadState(EntityState entityState, OnlineResource inResource)
         {
-            lastStates[inResource] = entityState;
-            StateProfiler.Instance?.Push(entityState.GetType());
-            entityState.ReadTo(this);
-            StateProfiler.Instance?.Pop(entityState.GetType());
+                lastStates[inResource] = entityState;
+                StateProfiler.Instance?.Push(entityState.GetType());
+                entityState.ReadTo(this);
+                StateProfiler.Instance?.Pop(entityState.GetType());
+
         }
 
         public virtual bool CanReadTo(EntityState entityState, OnlineResource inResource, uint tick) 

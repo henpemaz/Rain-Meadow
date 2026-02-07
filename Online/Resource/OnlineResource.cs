@@ -27,6 +27,7 @@ namespace RainMeadow
         public bool isWaitingForState { get; protected set; } // The resource was leased or subscribed to by supervisor, waiting for owner
         public bool isReleasing { get; protected set; } // Ongoing release op
         public bool isPending => isRequesting || isReleasing || isWaitingForState; // Ongoing op
+        public bool transitionInProgress = false;
 
         public bool canRelease => !isPending // no ongoing transaction
             && (!isActive || !subresources.Any(s => s.isAvailable || s.isPending)) // no subresource available or pending

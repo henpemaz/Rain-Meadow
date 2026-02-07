@@ -536,7 +536,40 @@ namespace RainMeadow
                 Error(ex);
             }
         }
-        // world transition at gates
+
+        /// <summary>
+        /// Used to control Host/Client resource racing in ArenaSitting_NextLevel
+        /// </summary>
+         private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
+        {
+            float startTime = UnityEngine.Time.time;
+            float timeoutSeconds = 5f;
+            oldWorldSession.transitionInProgress = true;
+            if (OnlineManager.lobby.isOwner) {
+                while (oldWorldSession.participants.Count > 0 && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null; 
+                }
+        } else
+            {
+                 while (oldWorldSession.participants.Count > 0 && !newWorldSession.isAvailable && (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null; 
+                }  
+            }
+            // Check if we hit the timeout for logging purposes
+            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
+            {
+                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
+            }
+            else
+            {
+                Debug("Entities removed. Proceeding...");
+            }
+            oldWorldSession.transitionInProgress = false;
+            self.WorldLoaded(warpUsed);
+        }
+        // world transition at gatesactiveEntities
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
             if (OnlineManager.lobby != null)
@@ -548,6 +581,11 @@ namespace RainMeadow
                 bool isSameWorld = (self.activeWorld.name == newWorld.name);
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
+
+                if (oldWorldSession.transitionInProgress)
+                {
+                    return;
+                }
 
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
@@ -561,29 +599,51 @@ namespace RainMeadow
                     // we go over all APOs in the room
                     Debug("Gate switchery 1");
                     Room room = self.reportBackToGate.room;
-                    var entities = room.abstractRoom.entities;
-                    for (int i = entities.Count - 1; i >= 0; i--)
-                    {
-                        if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
+                        var entities = room.abstractRoom.entities;
+                        for (int i = entities.Count - 1; i >= 0; i--)
                         {
-                            // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
-                            // if they're the overseer and it isn't the host moving it, that's bad as well
-                            if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                            if (entities[i] is AbstractPhysicalObject apo && apo.GetOnlineObject(out var opo))
                             {
-                                // not-online-aware removal
-                                opo.RemoveEntityFromGame(false);
+                                // if they're not ours, they need to be removed from the room SO THE GAME DOESN'T MOVE THEM
+                                // if they're the overseer and it isn't the host moving it, that's bad as well
+                                if (!opo.isMine || (apo is AbstractCreature ac && ac.creatureTemplate.type == CreatureTemplate.Type.Overseer && !newWorldSession.isOwner))
+                                {
+                                    // not-online-aware removal
+                                    opo.RemoveEntityFromGame(false);
+                                }
                             }
                         }
-                    }
+
+
 
                     orig(self, warpUsed); // this replace the list of entities in new world with that from old world
-
                     // post: we add our entities to the new world
                     if (room != null && RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession2))
                     {
                         room.abstractRoom.entities.AddRange(entitiesFromNewRoom); // re-add overwritten entities
                         room.abstractRoom.creatures.AddRange(creaturesFromNewRoom);
                         roomSession2.Activate();
+                    }
+
+                    if (!isSameWorld && oldWorldSession.isActive)
+                    { // there exists "warps" to the same world, twice, for some bloody reason
+                        //this in fact probably is required for now because rain world devs DESPISE US
+                        RainMeadow.Debug("Unsubscribing from old world");
+                        oldWorldSession.Deactivate();
+                        oldWorldSession.NotNeeded(); // done? let go
+                    }
+
+                    if (oldWorldSession.participants.Count > 0)
+                    {
+                        if (OnlineManager.lobby.isOwner) {
+                        Debug($"Waiting for {oldWorldSession.participants.Count} players to leave...");
+                        } else
+                        {
+                         Debug($"Waiting for host  players to join new world...");
+                        }
+                        self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
+                        oldWorldSession.transitionInProgress = true;
+                        return; 
                     }
                 }
                 else if (warpUsed)
@@ -697,13 +757,7 @@ namespace RainMeadow
                     }
                 }
 
-                if (!isSameWorld)
-                { // there exists "warps" to the same world, twice, for some bloody reason
-                    //this in fact probably is required for now because rain world devs DESPISE US
-                    RainMeadow.Debug("Unsubscribing from old world");
-                    oldWorldSession.Deactivate();
-                    oldWorldSession.NotNeeded(); // done? let go
-                }
+
 
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
