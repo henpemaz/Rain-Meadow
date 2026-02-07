@@ -569,6 +569,32 @@ namespace RainMeadow
             oldWorldSession.transitionInProgress = false;
             self.WorldLoaded(warpUsed);
         }
+
+        private void DeactivateAndWait(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
+        {
+            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
+                if (!isSameWorld && oldWorldSession.isActive)
+                { // there exists "warps" to the same world, twice, for some bloody reason
+                    //this in fact probably is required for now because rain world devs DESPISE US
+                    RainMeadow.Debug("Unsubscribing from old world");
+                    oldWorldSession.Deactivate();
+                    oldWorldSession.NotNeeded(); // done? let go
+                }
+
+                if (oldWorldSession.participants.Count > 0)
+                {
+                    if (OnlineManager.lobby.isOwner) {
+                    Debug($"Waiting for {oldWorldSession.participants.Count} players to leave...");
+                    } else
+                    {
+                        Debug($"Waiting for host  players to join new world...");
+                    }
+                    self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
+                    oldWorldSession.transitionInProgress = true;
+                    return; 
+                }
+            }
+        }
         // world transition at gatesactiveEntities
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
         {
@@ -625,26 +651,8 @@ namespace RainMeadow
                         roomSession2.Activate();
                     }
 
-                    if (!isSameWorld && oldWorldSession.isActive)
-                    { // there exists "warps" to the same world, twice, for some bloody reason
-                        //this in fact probably is required for now because rain world devs DESPISE US
-                        RainMeadow.Debug("Unsubscribing from old world");
-                        oldWorldSession.Deactivate();
-                        oldWorldSession.NotNeeded(); // done? let go
-                    }
+                        DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
 
-                    if (oldWorldSession.participants.Count > 0)
-                    {
-                        if (OnlineManager.lobby.isOwner) {
-                        Debug($"Waiting for {oldWorldSession.participants.Count} players to leave...");
-                        } else
-                        {
-                         Debug($"Waiting for host  players to join new world...");
-                        }
-                        self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-                        oldWorldSession.transitionInProgress = true;
-                        return; 
-                    }
                 }
                 else if (warpUsed)
                 {
@@ -712,11 +720,16 @@ namespace RainMeadow
                         }
                     }
                     RainMeadow.Debug($"Watcher warp switchery post");
+
+                        DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
                 }
                 else
                 {
                     // special warp, don't bother with room items
                     orig(self, warpUsed);
+
+                    DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
+
                 }
 
                 if (warpUsed)
