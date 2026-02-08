@@ -448,6 +448,16 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
                 NewOwner(MatchmakingManager.currentInstance.GetLobbyOwner());
+                if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
+                    {
+                        for (int i =0; i< OnlineManager.players.Count; i++)
+                        {
+                            if (OnlineManager.players[i] != null && !OnlineManager.players[i].isMe)
+                            {
+                                OnlineManager.players[i].InvokeOnceRPC(RPCs.ResetClientRemixSettings);
+                            }
+                        }
+                    }
             }
 
             // first transfer recursivelly, then remove recursivelly

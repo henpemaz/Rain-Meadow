@@ -1,10 +1,25 @@
 ﻿using System;
 using System.Linq;
+using System.Collections.Generic;
+
 
 namespace RainMeadow
 {
     public static class RPCs
     {
+
+        [RPCMethod]
+        public static void ResetClientRemixSettings(RPCEvent rPC)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.state is Lobby.LobbyState ls)
+            {
+                OnlineManager.lobby.configurableBools = ls.onlineBoolRemixSettings;
+                OnlineManager.lobby.configurableInts = ls.onlineIntRemixSettings;
+                OnlineManager.lobby.configurableFloats = ls.onlineFloatRemixSettings;
+                RainMeadow.Debug($"Reset client remix settings");
+            }
+        }
+
         [RPCMethod]
         public static void DeathRain(RPCEvent rpc, GlobalRain.DeathRain.DeathRainMode deathRainMode, 
             float timeInThisMode, float calmBeforeStornSunlight)
