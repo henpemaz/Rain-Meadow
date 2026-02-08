@@ -2,6 +2,9 @@
 ## Arena
 - Restored custom Team Names
 
+## General
+- Re-synced Remix settings on Lobby owner change
+
 # Release 1.11.1
 ## Engine 
 - Fixed an issue where transitioning regions led to disappearing players
