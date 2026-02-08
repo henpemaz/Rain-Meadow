@@ -727,9 +727,7 @@ namespace RainMeadow
                 {
                     // special warp, don't bother with room items
                     orig(self, warpUsed);
-
                     DeactivateAndWait(orig, self, warpUsed, isSameWorld, oldWorldSession, newWorldSession, newWorld);
-
                 }
 
                 if (warpUsed)
@@ -771,6 +769,11 @@ namespace RainMeadow
                 }
 
 
+                if (OnlineManager.lobby.gameMode is MeadowGameMode)
+                {
+                    oldWorldSession.Deactivate();
+                    oldWorldSession.NotNeeded(); // done? let go
+                }
 
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
                 {
