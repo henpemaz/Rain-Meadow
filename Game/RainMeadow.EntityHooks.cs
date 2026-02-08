@@ -546,11 +546,10 @@ namespace RainMeadow
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
-            // Return the helper coroutine
             return WaitAndExecuteSession(
                 oldWorldSession,
                 waitCondition, 
-                () => self.WorldLoaded(warpUsed) // The action to run at the end
+                () => self.WorldLoaded(warpUsed) 
             );
         }
 
