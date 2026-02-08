@@ -40,11 +40,20 @@ namespace RainMeadow
 
             session.transitionInProgress = true;
 
-            while (session.participants.Count > 0 && 
-                (extraWaitCondition == null || extraWaitCondition()) && 
-                (UnityEngine.Time.time - startTime < timeoutSeconds))
+            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
+                while (session.participants.Count > 0 && 
+                    (extraWaitCondition == null || extraWaitCondition()) && 
+                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null;
+                }
+            } else
             {
-                yield return null;
+                while (session.isActive && 
+                    (UnityEngine.Time.time - startTime < timeoutSeconds))
+                {
+                    yield return null;
+                }
             }
 
             if (UnityEngine.Time.time - startTime >= timeoutSeconds)

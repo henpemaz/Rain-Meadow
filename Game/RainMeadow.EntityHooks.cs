@@ -541,7 +541,7 @@ namespace RainMeadow
         {
             System.Func<bool> waitCondition = null;
 
-            if (!OnlineManager.lobby.isOwner)
+            if (OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner)
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
@@ -556,14 +556,16 @@ namespace RainMeadow
 
         private void DeactivateAndWait(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
         {
+
+            if (!isSameWorld && oldWorldSession.isActive)
+            { // there exists "warps" to the same world, twice, for some bloody reason
+                //this in fact probably is required for now because rain world devs DESPISE US
+                RainMeadow.Debug("Unsubscribing from old world");
+                oldWorldSession.Deactivate();
+                oldWorldSession.NotNeeded(); // done? let go
+            }
+
             if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
-                if (!isSameWorld && oldWorldSession.isActive)
-                { // there exists "warps" to the same world, twice, for some bloody reason
-                    //this in fact probably is required for now because rain world devs DESPISE US
-                    RainMeadow.Debug("Unsubscribing from old world");
-                    oldWorldSession.Deactivate();
-                    oldWorldSession.NotNeeded(); // done? let go
-                }
 
                 if (oldWorldSession.participants.Count > 0)
                 {
@@ -573,11 +575,11 @@ namespace RainMeadow
                     {
                         Debug($"Waiting for host  players to join new world...");
                     }
-                    self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
-                    oldWorldSession.transitionInProgress = true;
-                    return; 
                 }
             }
+            self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
+            oldWorldSession.transitionInProgress = true;
+            return; 
         }
         // world transition at gatesactiveEntities
         private void OverWorld_WorldLoaded(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed)
@@ -749,13 +751,6 @@ namespace RainMeadow
                             newWorldSession.ApoEnteringWorld(apo);
                         }
                     }
-                }
-
-
-                if (OnlineManager.lobby.gameMode is MeadowGameMode)
-                {
-                    oldWorldSession.Deactivate();
-                    oldWorldSession.NotNeeded(); // done? let go
                 }
 
                 if (OnlineManager.lobby.gameMode is StoryGameMode storyGameMode)
