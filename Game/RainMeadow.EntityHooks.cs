@@ -577,7 +577,7 @@ namespace RainMeadow
 
                 World newWorld = self.worldLoader?.ReturnWorld() ?? self.activeWorld;
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException("New world session not found.");
-                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession;
+                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession; // Do not throw for the old world to prevent error during coroutine
 
                 if (oldWorldSession.transitionInProgress) return;
 
