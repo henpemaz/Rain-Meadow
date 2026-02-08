@@ -537,37 +537,21 @@ namespace RainMeadow
             }
         }
 
-        /// <summary>
-        /// Used to control Host/Client resource racing in ArenaSitting_NextLevel
-        /// </summary>
-         private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
+        private System.Collections.IEnumerator Overworld_Loaded_WaitLoop(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, WorldSession oldWorldSession, WorldSession newWorldSession, World world)
         {
-            float startTime = UnityEngine.Time.time;
-            float timeoutSeconds = 5f;
-            oldWorldSession.transitionInProgress = true;
-            if (OnlineManager.lobby.isOwner) {
-                while (oldWorldSession.participants.Count > 0 && (UnityEngine.Time.time - startTime < timeoutSeconds))
-                {
-                    yield return null; 
-                }
-        } else
+            System.Func<bool> waitCondition = null;
+
+            if (!OnlineManager.lobby.isOwner)
             {
-                 while (oldWorldSession.participants.Count > 0 && !newWorldSession.isAvailable && (UnityEngine.Time.time - startTime < timeoutSeconds))
-                {
-                    yield return null; 
-                }  
+                waitCondition = () => !newWorldSession.isAvailable;
             }
-            // Check if we hit the timeout for logging purposes
-            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
-            {
-                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
-            }
-            else
-            {
-                Debug("Entities removed. Proceeding...");
-            }
-            oldWorldSession.transitionInProgress = false;
-            self.WorldLoaded(warpUsed);
+
+            // Return the helper coroutine
+            return WaitAndExecuteSession(
+                oldWorldSession,
+                waitCondition, 
+                () => self.WorldLoaded(warpUsed) // The action to run at the end
+            );
         }
 
         private void DeactivateAndWait(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
@@ -602,13 +586,13 @@ namespace RainMeadow
             {
                 Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
                 World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
-                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? throw new KeyNotFoundException();
+                WorldSession oldWorldSession = self.activeWorld.GetResource();
                 WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
                 bool isSameWorld = (self.activeWorld.name == newWorld.name);
                 bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
                 bool isFirstWarpWorld = false;
 
-                if (oldWorldSession.transitionInProgress)
+                if (oldWorldSession != null && oldWorldSession.transitionInProgress)
                 {
                     return;
                 }
