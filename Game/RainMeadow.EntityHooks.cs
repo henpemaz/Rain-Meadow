@@ -584,18 +584,17 @@ namespace RainMeadow
         {
             if (OnlineManager.lobby != null)
             {
-                Debug($"warpWorldLoader is null: {self.warpWorldLoader == null}, worldLoader is null: {self.worldLoader == null}");
-                World newWorld = (self.worldLoader == null) ? self.activeWorld : self.worldLoader.ReturnWorld();
-                WorldSession oldWorldSession = self.activeWorld.GetResource();
-                WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException();
-                bool isSameWorld = (self.activeWorld.name == newWorld.name);
-                bool isEchoWarp = (self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null);
-                bool isFirstWarpWorld = false;
+                Debug($"Warp Status -> worldLoader: {self.worldLoader?.ReturnWorld().name ?? "NULL"}, activeWorld: {self.activeWorld.name}");
 
-                if (oldWorldSession != null && oldWorldSession.transitionInProgress)
-                {
-                    return;
-                }
+                World newWorld = self.worldLoader?.ReturnWorld() ?? self.activeWorld;
+                WorldSession newWorldSession = newWorld.GetResource() ?? throw new KeyNotFoundException("New world session not found.");
+                WorldSession oldWorldSession = self.activeWorld.GetResource() ?? newWorldSession;
+
+                if (oldWorldSession.transitionInProgress) return;
+
+                bool isSameWorld = self.activeWorld.name == newWorld.name;
+                bool isEchoWarp = self.game.GetStorySession.saveState.warpPointTargetAfterWarpPointSave != null;
+                bool isFirstWarpWorld = false;
 
                 if (self.reportBackToGate != null && RoomSession.map.TryGetValue(self.reportBackToGate.room.abstractRoom, out var roomSession))
                 {
