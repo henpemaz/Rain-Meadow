@@ -45,6 +45,7 @@ namespace RainMeadow
                     (extraWaitCondition == null || extraWaitCondition()) && 
                     (UnityEngine.Time.time - startTime < timeoutSeconds))
                 {
+                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
                     yield return null;
                 }
             } else
@@ -52,6 +53,7 @@ namespace RainMeadow
                 while (session.isActive && 
                     (UnityEngine.Time.time - startTime < timeoutSeconds))
                 {
+                    RainMeadow.Debug($"Waiting for session to deactivate...");
                     yield return null;
                 }
             }

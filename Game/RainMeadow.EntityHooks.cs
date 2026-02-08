@@ -565,18 +565,6 @@ namespace RainMeadow
                 oldWorldSession.NotNeeded(); // done? let go
             }
 
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
-
-                if (oldWorldSession.participants.Count > 0)
-                {
-                    if (OnlineManager.lobby.isOwner) {
-                    Debug($"Waiting for {oldWorldSession.participants.Count} players to leave...");
-                    } else
-                    {
-                        Debug($"Waiting for host  players to join new world...");
-                    }
-                }
-            }
             self.game.manager.rainWorld.StartCoroutine(Overworld_Loaded_WaitLoop(orig, self, warpUsed, oldWorldSession, newWorldSession, newWorld));
             oldWorldSession.transitionInProgress = true;
             return; 
