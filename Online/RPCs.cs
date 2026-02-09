@@ -16,6 +16,7 @@ namespace RainMeadow
                 OnlineManager.lobby.configurableBools = ls.onlineBoolRemixSettings;
                 OnlineManager.lobby.configurableInts = ls.onlineIntRemixSettings;
                 OnlineManager.lobby.configurableFloats = ls.onlineFloatRemixSettings;
+                OnlineGameMode.SetClientRemixSettings(OnlineManager.lobby.configurableBools, OnlineManager.lobby.configurableFloats, OnlineManager.lobby.configurableInts);
                 RainMeadow.Debug($"Reset client remix settings");
             }
         }
