@@ -541,12 +541,12 @@ namespace RainMeadow
         {
             System.Func<bool> waitCondition = null;
 
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner)
+            if ((OnlineManager.lobby.gameMode is not MeadowGameMode && !OnlineManager.lobby.isOwner) || OnlineManager.lobby.gameMode is MeadowGameMode)
             {
                 waitCondition = () => !newWorldSession.isAvailable;
             }
 
-            return WaitAndExecuteSession(
+            return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
                 waitCondition, 
                 () => self.WorldLoaded(warpUsed) 

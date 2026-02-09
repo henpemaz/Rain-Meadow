@@ -22,44 +22,6 @@ namespace RainMeadow
             new Hook(typeof(RainWorldGame).GetProperty(nameof(RainWorldGame.TimelinePoint)).GetGetMethod(), RainWorldGame_TimelinePoint);
         }
 
-        /// <summary>
-        /// A centralized coroutine helper that waits for a WorldSession's participants to clear before proceeding.
-        /// It enforces a 5-second safety timeout to prevent softlocks (deadlocks) if entities fail to remove.
-        /// </summary>
-        /// <param name="session">The WorldSession currently transitioning.</param>
-        /// <param name="extraWaitCondition">Optional: An additional condition that must remain true to keep waiting (e.g., !newWorldSession.isAvailable). Pass null if not needed.</param>
-        /// <param name="onComplete">The action/method to execute once the wait finishes or times out (e.g., orig(self, ...)).</param>
-        private System.Collections.IEnumerator WaitAndExecuteSession(
-            WorldSession session, 
-            System.Func<bool> extraWaitCondition, 
-            System.Action onComplete)
-        {
-            float startTime = UnityEngine.Time.time;
-            float timeoutSeconds = 5f;
-            session.transitionInProgress = true;
-
-            if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
-                while (session.participants.Count > 0 && 
-                    (extraWaitCondition == null || extraWaitCondition()) && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
-                {
-                    RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
-                }
-            }
-
-            if (UnityEngine.Time.time - startTime >= timeoutSeconds)
-            {
-                Debug("WaitLoop timed out after 5 seconds. Proceeding anyway to prevent deadlock.");
-            }
-            else
-            {
-                Debug("Entities removed. Proceeding...");
-            }
-
-            session.transitionInProgress = false;
-            onComplete?.Invoke();
-        }
         SlugcatStats.Name RainWorldGame_StoryCharacter(Func<RainWorldGame, SlugcatStats.Name> orig, RainWorldGame self)
         {
             if (OnlineManager.lobby != null) return OnlineManager.lobby.gameMode.LoadWorldAs(self);
@@ -73,7 +35,7 @@ namespace RainMeadow
         }
         private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession oldWorldSession)
         {
-            return WaitAndExecuteSession(
+            return WorldSession.WaitAndExecuteSession(
                 oldWorldSession, 
                 null, 
                 () => self.NextLevel(manager) 
