@@ -36,7 +36,6 @@ namespace RainMeadow
         {
             float startTime = UnityEngine.Time.time;
             float timeoutSeconds = 5f;
-
             session.transitionInProgress = true;
 
             if (OnlineManager.lobby.gameMode is not MeadowGameMode) {
@@ -45,14 +44,6 @@ namespace RainMeadow
                     (UnityEngine.Time.time - startTime < timeoutSeconds))
                 {
                     RainMeadow.Debug($"Waiting for {session.participants.Count} to leave...");
-                    yield return null;
-                }
-            } else
-            {
-                while (session.isActive && 
-                    (UnityEngine.Time.time - startTime < timeoutSeconds))
-                {
-                    RainMeadow.Debug($"Waiting for session to deactivate...");
                     yield return null;
                 }
             }
