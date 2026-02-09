@@ -262,7 +262,7 @@ namespace RainMeadow
         // Token: 0x060022B4 RID: 8884 RVA: 0x002B2484 File Offset: 0x002B0684
         private void ConnectEnd()
         {
-            if (ModManager.Watcher && playerGFX.player.isCamo)
+            if ((ModManager.Watcher && playerGFX.player.isCamo) || HolidayEvents.isAprilFools)
             {
                 return;
             }

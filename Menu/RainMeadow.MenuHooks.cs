@@ -573,6 +573,9 @@ namespace RainMeadow
                 return;
             }
 
+            HolidayEvents.AprilFools.UpdateLoginMessage(self);
+            
+
             // we might get here from quitting out of game
             OnlineManager.LeaveLobby();
 

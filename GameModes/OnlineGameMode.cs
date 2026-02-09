@@ -72,6 +72,7 @@ namespace RainMeadow
 
         public virtual bool PlayersCanStack => true;
         public virtual bool PlayersCanHandhold => true;
+        public HolidayClientSettingsData holidayClientData;
 
         internal static void SetClientRemixSettings(Dictionary<string, bool> hostBoolRemixSettings, Dictionary<string, float> hostFloatRemixSettings, Dictionary<string, int> hostIntRemixSettings)
         {
@@ -231,7 +232,10 @@ namespace RainMeadow
 
         public virtual void AddClientData()
         {
-
+            if (HolidayEvents.isHoliday())
+            {
+                holidayClientData = clientSettings.AddData(new HolidayClientSettingsData());
+            }
         }
 
         public virtual AbstractCreature SpawnAvatar(RainWorldGame self, WorldCoordinate location)

@@ -130,6 +130,12 @@ namespace RainMeadow
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
+            if (HolidayEvents.isHoliday() && OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) &&
+                settings.TryGetData<HolidayClientSettingsData>(out var hd))
+            {
+              customization.nickname = $"{customization.nickname}: {hd.meadowCoins}";
+            }
+        
             this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));
             owner.hud.fContainers[0].AddChild(this.username);
             this.username.alpha = 0f;

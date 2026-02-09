@@ -8,6 +8,7 @@ using RainMeadow.UI.Components;
 using UnityEngine;
 using RWCustom;
 using HarmonyLib;
+using UnityEngine.Rendering;
 
 namespace RainMeadow.UI
 {
@@ -54,6 +55,7 @@ namespace RainMeadow.UI
                 Alpha = 0,
                 signalText = "ROLL"
             };
+            HolidayEvents.AprilFools.UpdateSlotsButton(continueButton, manager);
             selectPage.SafeAddSubobjects(continueButton);
         }
         public override void Update()
@@ -117,6 +119,7 @@ namespace RainMeadow.UI
             {
                 PlaySound(SoundID.MENU_Button_Standard_Button_Pressed);
                 rolling = true;
+                HolidayEvents.SpentMeadowCoin(HolidayEvents.isAprilFools, 1);
             }
             if (message == "STOP")
             {

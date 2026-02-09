@@ -271,6 +271,7 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+            HolidayEvents.AprilFools.SpawnSnails(room, shortCutVessel);
             if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Night)
             {
                 (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;

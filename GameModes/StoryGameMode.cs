@@ -39,7 +39,6 @@ namespace RainMeadow
         public int avatarCount { get; set; } = 1;
 
         public StoryClientSettingsData storyClientData;
-
         public Watcher.WarpPoint.WarpPointData? myLastWarp = null; //yeah watcher gonna watch
         public string? myLastDenPos = null;
         public bool hasSheltered = false;
