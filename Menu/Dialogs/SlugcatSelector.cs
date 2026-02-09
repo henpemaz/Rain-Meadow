@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Menu;
 using RainMeadow.UI.Components;
 using UnityEngine;
 using RWCustom;
-using HarmonyLib;
-using UnityEngine.Rendering;
 
 namespace RainMeadow.UI
 {
