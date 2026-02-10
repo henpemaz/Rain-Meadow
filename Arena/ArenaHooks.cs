@@ -664,6 +664,10 @@ namespace RainMeadow
                 return "Unknown";
             }
 
+            if (id == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator) {
+                return "Overseer";
+            }
+
             return orig(id);
         }
 
@@ -2323,7 +2327,8 @@ namespace RainMeadow
 
                 }
 
-                if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
+                int activePlayerCountWithOverseers = self.Players.Count(p => (p.realizedCreature != null && p.realizedCreature is Player pl) && pl.SlugCatClass == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator);
+                if (self.Players.Count + activePlayerCountWithOverseers != arena.arenaSittingOnlineOrder.Count)
                 {
                     RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
 

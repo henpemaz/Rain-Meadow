@@ -179,6 +179,11 @@ namespace RainMeadow
 
         public virtual void SpawnPlayer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, List<int> suggestedDens)
         {
+            if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+            {
+                return;
+            }
+            
             List<OnlinePlayer> list = new List<OnlinePlayer>();
 
             List<OnlinePlayer> list2 = new List<OnlinePlayer>();

@@ -16,7 +16,7 @@ namespace RainMeadow
         public static List<SlugcatStats.Name> mscSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> otherSlugcats = new List<SlugcatStats.Name>();
         public static List<SlugcatStats.Name> selectableSlugcats = new List<SlugcatStats.Name?>();
-        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowRandom" };
+        public static readonly List<string> nonArenaSlugs = new List<string> { "MeadowOnline", "MeadowRandom",  RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator.value};
 
         public static void RecreateSlugcatCache()
         {
@@ -58,6 +58,7 @@ namespace RainMeadow
 
             allSlugcats.AddRange(baseGameSlugcats);
             selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineRandomSlugcat);
+            selectableSlugcats.Add(RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator);
 
             // all slugcats
             for (int i = 0; i < SlugcatStats.Name.values.Count; i++)
@@ -143,6 +144,7 @@ namespace RainMeadow
                         return ArenaHelpers.FindOnlinePlayerByLobbyId(arena.arenaSittingOnlineOrder[i]);
                     }
                 }
+                
             }
             catch
             {
