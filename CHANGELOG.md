@@ -2,6 +2,10 @@
 ## Arena
 - Restored custom Team Names
 
+## Story
+### Watcher
+- Fixed end-game ability not working
+
 # Release 1.11.1
 ## Engine 
 - Fixed an issue where transitioning regions led to disappearing players
