@@ -1,5 +1,7 @@
 # Release 1.12.0
 ## Arena
+- Added `arena.session` to access the current ArenaGameSession
+- Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
 
 # Release 1.11.1

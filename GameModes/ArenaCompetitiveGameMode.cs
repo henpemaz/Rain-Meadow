@@ -14,7 +14,7 @@ namespace RainMeadow
     {
 
         /// <summary>
-        /// Acts as a quick way to access current game session
+        /// Acts as a quick way to access current game session. Assigned during ArenaSessionCtor, after orig()
         /// </summary>
         public ArenaGameSession session;
         public ArenaOnlineSetup myArenaSetup;
