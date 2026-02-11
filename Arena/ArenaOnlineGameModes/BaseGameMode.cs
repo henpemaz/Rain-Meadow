@@ -409,7 +409,7 @@ namespace RainMeadow
             }
             if (OnlineManager.lobby.isOwner)
             {
-                arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
+                arena.playersEqualToOnlineSitting = self.Players.Count + activePlayerCountWithOverseers == arena.arenaSittingOnlineOrder.Count;
             }
 
             if (!self.sessionEnded)
