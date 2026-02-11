@@ -443,21 +443,20 @@ namespace RainMeadow
 
         public void OnPlayerDisconnect(OnlinePlayer player)
         {
-            //RainMeadow.Debug(this);
+            RainMeadow.Debug(this);
             if (this is Lobby lobby && owner == player) // lobby owner has left
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
                 NewOwner(MatchmakingManager.currentInstance.GetLobbyOwner());
-                if (OnlineManager.lobby != null && OnlineManager.lobby.isOwner)
-                    {
-                        for (int i =0; i< OnlineManager.players.Count; i++)
-                        {
-                            if (OnlineManager.players[i] != null && !OnlineManager.players[i].isMe)
-                            {
-                                OnlineManager.players[i].InvokeOnceRPC(RPCs.ResetClientRemixSettings);
-                            }
-                        }
-                    }
+                if (OnlineManager.lobby != null && OnlineManager.lobby?.state is Lobby.LobbyState ls && !OnlineManager.lobby.isOwner)
+                {
+                    OnlineManager.lobby.configurableBools = ls.onlineBoolRemixSettings;
+                    OnlineManager.lobby.configurableInts = ls.onlineIntRemixSettings;
+                    OnlineManager.lobby.configurableFloats = ls.onlineFloatRemixSettings;
+                    OnlineGameMode.SetClientRemixSettings(OnlineManager.lobby.configurableBools, OnlineManager.lobby.configurableFloats, OnlineManager.lobby.configurableInts);
+                    RainMeadow.Debug($"Reset client remix settings");
+                }
+
             }
 
             // first transfer recursivelly, then remove recursivelly
