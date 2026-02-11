@@ -12,6 +12,11 @@ namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
+
+        /// <summary>
+        /// Acts as a quick way to access current game session
+        /// </summary>
+        public ArenaGameSession session;
         public ArenaOnlineSetup myArenaSetup;
         public ExternalArenaGameMode externalArenaGameMode;
         public string currentGameMode;

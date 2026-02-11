@@ -32,6 +32,7 @@ namespace RainMeadow
 
         public virtual void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
         {
+            arena.session = self;
             arena.ResetAtSession_ctor();
         }
 
