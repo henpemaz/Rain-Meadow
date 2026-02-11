@@ -4,6 +4,10 @@
 - Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
 
+## General
+### Chat:
+- Auto-fill usernames when using "@" in chat. 
+
 # Release 1.11.1
 ## Engine 
 - Fixed an issue where transitioning regions led to disappearing players
