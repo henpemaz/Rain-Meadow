@@ -396,7 +396,7 @@ namespace RainMeadow
         public virtual void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
         {
             bool isOwnerOverseer = ArenaHelpers.GetArenaClientSettings(OnlineManager.lobby.owner)?.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator;
-            if (arena.setupTime > 0 && isOwnerOverseer)
+            if (arena.countdownInitiatedHoldFire && isOwnerOverseer)
             {
                 self.endSessionCounter = 30;
             }
