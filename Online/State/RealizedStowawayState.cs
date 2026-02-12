@@ -14,14 +14,16 @@ namespace RainMeadow
 
         [OnlineField]
         bool mawOpen;
-        [OnlineFieldHalf]
-        Vector2 originalPos;
-        [OnlineFieldHalf]
-        Vector2 placedDirection;
+        //[OnlineFieldHalf]
+        //Vector2 originalPos;
+        //[OnlineFieldHalf]
+        //Vector2 placedDirection;
         [OnlineFieldHalf]
         Vector2 currentDirection;
         [OnlineFieldHalf]
         float sleepScale;
+        [OnlineFieldHalf]
+        float[] headCooldown;
         [OnlineField(group = "counters")]
         int spitCooldown;
         [OnlineField(group = "counters")]
@@ -34,10 +36,12 @@ namespace RainMeadow
 
             mawOpen = stowaway.mawOpen;
 
-            originalPos = stowaway.originalPos;
+            //originalPos = stowaway.originalPos;
 
-            placedDirection = stowaway.placedDirection;
+            //placedDirection = stowaway.placedDirection;
             currentDirection = stowaway.currentDirection;
+
+            headCooldown = stowaway.headCooldown;
 
             sleepScale = stowaway.sleepScale;
 
@@ -54,10 +58,12 @@ namespace RainMeadow
 
             stowaway.mawOpen = mawOpen;
 
-            stowaway.originalPos = originalPos;
+            //stowaway.originalPos = originalPos;
 
-            stowaway.placedDirection = placedDirection;
+            //stowaway.placedDirection = placedDirection;
             stowaway.currentDirection = currentDirection;
+
+            stowaway.headCooldown = headCooldown;
 
             stowaway.sleepScale = sleepScale;
 

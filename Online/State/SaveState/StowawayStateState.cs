@@ -9,6 +9,12 @@ namespace RainMeadow
         Vector2 HomePos;
         [OnlineFieldHalf]
         Vector2 AimPos;
+        [OnlineField]
+        bool debugForceAwake;
+        [OnlineField]
+        int digestionTimeStart;
+        [OnlineField]
+        int digestionLength;
 
         public StowawayStateState() { }
 
@@ -19,6 +25,11 @@ namespace RainMeadow
 
             HomePos = stowawayState.HomePos;
             AimPos = stowawayState.aimPos;
+
+            debugForceAwake = stowawayState.debugForceAwake;
+
+            digestionTimeStart = stowawayState.digestionTimeStart;
+            digestionLength = stowawayState.digestionLength;
         }
 
         public override void ReadTo(AbstractCreature abstractCreature)
@@ -28,6 +39,11 @@ namespace RainMeadow
 
             stowawayState.HomePos = HomePos;
             stowawayState.aimPos = AimPos;
+
+            stowawayState.debugForceAwake = debugForceAwake;
+
+            stowawayState.digestionTimeStart = digestionTimeStart;
+            stowawayState.digestionLength = digestionLength;
         }
     }
 }
