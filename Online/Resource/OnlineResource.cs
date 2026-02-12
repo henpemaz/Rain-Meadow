@@ -448,13 +448,23 @@ namespace RainMeadow
             {
                 RainMeadow.Debug($"Lobby owner {player} left!!!");
                 NewOwner(MatchmakingManager.currentInstance.GetLobbyOwner());
-                if (OnlineManager.lobby != null && OnlineManager.lobby?.state is Lobby.LobbyState ls && !OnlineManager.lobby.isOwner)
-                {
-                    OnlineManager.lobby.configurableBools = ls.onlineBoolRemixSettings;
-                    OnlineManager.lobby.configurableInts = ls.onlineIntRemixSettings;
-                    OnlineManager.lobby.configurableFloats = ls.onlineFloatRemixSettings;
-                    OnlineGameMode.SetClientRemixSettings(OnlineManager.lobby.configurableBools, OnlineManager.lobby.configurableFloats, OnlineManager.lobby.configurableInts);
-                    RainMeadow.Debug($"Reset client remix settings");
+                if (OnlineManager.lobby != null && OnlineManager.lobby?.state is Lobby.LobbyState ls) {
+                    // Getting and Setting is expensive, do this as a one time instead of relying on lobby state syncs? 
+                    if (OnlineManager.lobby.isOwner)
+                    {
+                            (var configurableBools, var configurableFloats, var configurableInts) = OnlineGameMode.GetHostRemixSettings(OnlineManager.lobby.gameMode);
+                            ls.onlineBoolRemixSettings = configurableBools;
+                            ls.onlineFloatRemixSettings = configurableFloats;
+                            ls.onlineIntRemixSettings = configurableInts;
+                    }
+                    else 
+                    { 
+                        OnlineManager.lobby.configurableBools = ls.onlineBoolRemixSettings;
+                        OnlineManager.lobby.configurableInts = ls.onlineIntRemixSettings;
+                        OnlineManager.lobby.configurableFloats = ls.onlineFloatRemixSettings;
+                        OnlineGameMode.SetClientRemixSettings(OnlineManager.lobby.configurableBools, OnlineManager.lobby.configurableFloats, OnlineManager.lobby.configurableInts);
+                        RainMeadow.Debug($"Reset client remix settings");
+                    }
                 }
 
             }
