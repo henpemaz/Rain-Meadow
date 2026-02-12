@@ -4,6 +4,10 @@
 - Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
 
+## Story
+### Watcher
+- Fixed end-game ability not working
+
 ## General
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
