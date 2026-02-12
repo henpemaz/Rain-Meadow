@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
+using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
+using Unity.Mathematics;
 
 namespace RainMeadow
 {
@@ -249,14 +255,122 @@ namespace RainMeadow
             }
             if ((fieldType.BaseType?.IsGenericType ?? false) && typeof(ExtEnum<>).IsAssignableFrom(fieldType.BaseType.GetGenericTypeDefinition())) // todo array/list of this will be a headache
             {
-                return typeof(Serializer).GetMethods().Single(m => 
-                m.Name == (arguments.nullable? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
+                return typeof(Serializer).GetMethods().Single(m =>
+                m.Name == (arguments.nullable ? "SerializeNullableExtEnum" : "SerializeExtEnum") && m.IsGenericMethod).MakeGenericMethod(fieldType);
             }
 
             if (!(fieldType.IsValueType || (fieldType.IsArray && fieldType.GetElementType().IsValueType)) && fieldType != typeof(string))
             {
                 RainMeadow.Debug($"{fieldType} not handled by SerializerCallMethod");
             }
+
+            if (Nullable.GetUnderlyingType(fieldType) is Type t)
+            {
+                var retMethod = typeof(Serializer).GetMethod("SerializeNullable", new[] { fieldType.MakeByRefType() }); ;
+                if (retMethod is not null) return retMethod;
+
+                // T internalvalue = default(T);
+                // if (serializer.isWriting)
+                // {
+                //     serializer.writer.Write(value.HasValue);
+                //     if (value.HasValue)
+                //     {
+                //          internalvalue = value.Value;
+                //          goto callSerialize;
+                //     }
+                //     
+                // }
+
+                // if (serializer.isReading && serializer.reader.ReadBoolean())
+                // {
+                //     goto callSerialize;
+                // }
+                // return;
+
+                // callSerialize:
+                // 
+                //     Serialize(ref internalvalue);
+                //     value = in
+                //     return;
+
+                // IL implementation:
+                var writer = typeof(Serializer).GetField(nameof(Serializer.writer));
+                var reader = typeof(Serializer).GetField(nameof(Serializer.reader));
+                var hasValue = fieldType.GetProperty("HasValue").GetGetMethod();
+                var value = fieldType.GetProperty("Value").GetGetMethod();
+                var nullableCtor = fieldType.GetConstructor([t]);
+                var serializeFunc = GetSerializationMethod(t, false, true, true);
+                if (serializeFunc == null)
+                {
+                    throw new InvalidOperationException($"No matching serialization method found for type {t.FullName}");
+                }
+
+                var dynMethod = new DynamicMethod("SerializeNullable" + t.Name, null, [typeof(Serializer), fieldType.MakeByRefType()]);
+
+                var il = dynMethod.GetILGenerator();
+                var internalValue = il.DeclareLocal(t, true);
+                var afterWrite = il.DefineLabel();
+                var afterRead = il.DefineLabel();
+                var callSerialize = il.DefineLabel();
+
+                // internalValue = default;
+                il.Emit(OpCodes.Ldloca, internalValue);
+                il.Emit(OpCodes.Initobj, t);
+                il.Emit(OpCodes.Stloc, internalValue);
+
+                // if (serializer.IsWriting)
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, typeof(Serializer).GetProperty(nameof(Serializer.IsWriting)).GetGetMethod());
+                il.Emit(OpCodes.Brfalse_S, afterWrite);
+
+                // serializer.writer.Write(value.HasValue);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, writer);
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Call, hasValue);
+                il.Emit(OpCodes.Callvirt, typeof(BinaryWriter).GetMethod(nameof(BinaryWriter.Write), new[] { typeof(bool) }));
+
+                // if (value.HasValue) goto afterWrite;
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Call, hasValue);
+                il.Emit(OpCodes.Brfalse_S, afterWrite);
+
+                // internalvalue = value.Value;
+                // goto callSerialize;
+                il.Emit(OpCodes.Ldarg_1);
+                il.Emit(OpCodes.Call, value);
+                il.Emit(OpCodes.Stloc, internalValue);
+                il.Emit(OpCodes.Br, callSerialize);
+
+                il.MarkLabel(afterWrite);
+
+                // if (serializer.IsReading)
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, typeof(Serializer).GetProperty(nameof(Serializer.IsReading)).GetGetMethod());
+                il.Emit(OpCodes.Brfalse_S, afterRead);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldfld, reader);
+                il.Emit(OpCodes.Callvirt, typeof(BinaryReader).GetMethod(nameof(BinaryReader.ReadBoolean)));
+                il.Emit(OpCodes.Brfalse_S, afterRead);
+                il.Emit(OpCodes.Br, callSerialize);
+
+                il.MarkLabel(afterRead);
+                il.Emit(OpCodes.Ret);
+
+                // callSerialize:
+                il.MarkLabel(callSerialize);
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Ldloca, internalValue);
+                il.Emit(OpCodes.Call, serializeFunc);
+
+                il.Emit(OpCodes.Ldarga, 1);
+                il.Emit(OpCodes.Ldloc, internalValue);
+                il.Emit(OpCodes.Newobj, nullableCtor);
+                il.Emit(OpCodes.Stobj, fieldType);
+                il.Emit(OpCodes.Ret);
+                return dynMethod;
+            }
+
             return typeof(Serializer).GetMethod(nullable ? "SerializeNullable" : "Serialize", new[] { fieldType.MakeByRefType() });
         }
     }

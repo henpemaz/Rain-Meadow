@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
 using Menu;
 using Menu.Remix.MixedUI;
+using RainMeadow.UI.Components;
 
 namespace RainMeadow
 {
     public abstract class ChatTemplate : ButtonTemplate
     {
+        public bool MultiView;
+        public int maxVisibleLength;
+
         public HSLColor labelColor;
-        public MenuLabel menuLabel;
+        public AlignedMenuLabel menuLabel;
         public RoundedRect roundedRect;
 
         public FSprite _selection;
@@ -32,7 +36,9 @@ namespace RainMeadow
             selectionWrap = new FSpriteWrap(menu, owner, _selection);
             this.subObjects.Add(selectionWrap);
 
-            menuLabel = new MenuLabel(menu, owner, displayText, new Vector2(-roundedRect.size.x / 2 + 10f + pos.x, 0f), size, false);
+            //menuLabel = new(menu, owner, displayText, new(-roundedRect.size.x / 2 + 10f + pos.x, size.y / 2), size, false);
+            menuLabel = new(menu, this, displayText, new(10, 0), new(size.x - 30, size.y), false)
+            {labelPosAlignment = FLabelAlignment.Left};
             menuLabel.label.alignment = FLabelAlignment.Left;
             this.subObjects.Add(menuLabel);
 
@@ -45,20 +51,48 @@ namespace RainMeadow
 
         public override void GrafUpdate(float timeStacker)
         {
+            Vector2 screenPos = ScreenPos;
+            for (int i = 0; i < 9; i++)
+            {
+                roundedRect.sprites[i].color = Color.black;
+            }
             var lowest = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
-            _cursorWidth = LabelTest.GetWidth(menuLabel.label.text.Substring(0, lowest), false);
-            cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 11f : 15f) + this.pos.x;
-            cursorWrap.sprite.alpha = Mathf.PingPong(Time.time * 4f, 1f);
+            var highest = Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos);
+            if (menuLabel.label.text.Length > 0)
+                _cursorWidth = LabelTest.GetWidth(ChatTextBox.lastSentMessage.Substring(0, lowest > maxVisibleLength ? menuLabel.label.text.Length : lowest), false);
+            else
+                _cursorWidth = lowest;
+            cursorWrap.sprite.x = _cursorWidth + (ChatTextBox.cursorPos < menuLabel.label.text.Length ? 11f : 15f) + screenPos.x;
+            cursorWrap.sprite.y = screenPos.y + size.y / 2;
+            cursorWrap.sprite.alpha = IsFoucsed() ? Mathf.PingPong(Time.time * 4f, 1f) : 0;
             cursorWrap.sprite.isVisible = ChatTextBox.selectionPos == -1;
+
+            int firstLetterViewed = ChatTextBox.cursorPos > maxVisibleLength ? ChatTextBox.cursorPos - maxVisibleLength : 0,
+                lastLetterViewed = Mathf.Max(0, ChatTextBox.cursorPos > maxVisibleLength ? maxVisibleLength : Mathf.Min(maxVisibleLength, ChatTextBox.lastSentMessage.Length));
+
+            menuLabel.text = ChatTextBox.lastSentMessage.Substring(firstLetterViewed, lastLetterViewed);
+
+            int lowestCursorPos = ChatTextBox.selectionPos != -1 ? Mathf.Min(ChatTextBox.cursorPos, ChatTextBox.selectionPos) : ChatTextBox.cursorPos;
+
             if (ChatTextBox.selectionPos != -1)
             {
+                int start = lowestCursorPos > firstLetterViewed ? lowestCursorPos - firstLetterViewed : firstLetterViewed > 0 ? 0 : lowestCursorPos;
+                float width = LabelTest.GetWidth(menuLabel.text.Substring(start, Mathf.Min(Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos), maxVisibleLength - start)), false);
                 selectionWrap.sprite.isVisible = true;
-                selectionWrap.sprite.x = _cursorWidth + this.pos.x + 11f;
-                selectionWrap.sprite.width = LabelTest.GetWidth(menuLabel.label.text.Substring(lowest, Mathf.Abs(ChatTextBox.selectionPos - ChatTextBox.cursorPos)), false);
+                selectionWrap.sprite.x = _cursorWidth + screenPos.x + 11f;
+                selectionWrap.sprite.y = screenPos.y + size.y / 2;
+                selectionWrap.sprite.width = width;
             }
-            else selectionWrap.sprite.isVisible = false;
+            else 
+                selectionWrap.sprite.isVisible = false;
+            selectionWrap.sprite.alpha = IsFoucsed() ? 1f : 0f;
                 base.GrafUpdate(timeStacker);
             this.roundedRect.fillAlpha = 1.0f;
+        }
+
+        public virtual bool IsFoucsed()
+        {
+            return true;
         }
     }
 }

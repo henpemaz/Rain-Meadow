@@ -11,7 +11,8 @@ namespace RainMeadow
         public bool hasPassword;
         public int maxPlayerCount;
         public string requiredMods;
-        public string bannedMods;
+        public string bannedMods;        
+        public bool pinned;
 
         public LobbyInfo(string name, string mode, int playerCount, bool hasPassword, int? maxPlayerCount, string highImpactMods = "", string bannedMods = "")
         {

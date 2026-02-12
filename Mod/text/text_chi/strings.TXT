@@ -1,0 +1,628 @@
+// Rain Meadow Chinese Translation by METeam(Mass-Energy Trans team)
+// 模组名 & 简介
+henpemaz_rainmeadow-name|雨甸
+henpemaz_rainmeadow-description|多人游戏引擎，包含剧情，竞技场和一个受Might和Delight的“Meadow”所启发的自定义模式。
+
+// 模组入口
+MEADOW|联机
+
+// 房间选择菜单
+Lobby Mode|房间游戏模式
+All|全部
+Public Lobbies Only|仅公开房间
+Max Lobby Size|房间容量上限
+Lobby Mods|房间模组
+Unfiltered|全部
+Exact order|精确顺序
+Any order|任意顺序
+Direct Connect|直接连接
+Direct Connection is only available in the Local Matchmaker|仅在本地匹配器中支持直连
+Lobby Domain|房间服务器
+Local|本地
+Router|路由器
+Steam|Steam
+Failed to join lobby.<LINE> Lobby is full|加入房间失败。<LINE> 房间已满
+Failed to join lobby.<LINE>|加入房间失败。<LINE>
+Password Required|需要密码
+Wrong password!|密码错误！
+Joining lobby...|正在加入房间...
+Online:|在线:
+Lobbies:|房间:
+Rain Meadow Version:|雨甸版本:
+Credits|制作组
+
+// 卡片式房间选择页面
+Search Lobbies|搜索房间
+Click to join|点击加入
+<USERNAME>'s Lobby|<USERNAME>的房间
+Private|私密
+max|上限
+player|玩家
+players|玩家
+Sort by Ping|按延迟排序
+Sort A to Z|按A-Z排序
+Sort Z to A|按Z-A排序
+Sort by Fullest Lobby|按最满房间排序
+Sort by Emptiest Lobby|按最空房间排序
+Unknown Sorting Method|未知排序方法
+Refresh list|刷新列表
+
+// 创建房间菜单
+CREATE!|创建！
+Mode:|模式:
+Meadow|牧原
+A peaceful mode about exploring around and discovering little secrets, together or on<LINE>your own.|一个关于探索周遭和发掘秘密的和平模式，团队协作或独自游玩。
+Story|剧情
+Adventure together with friends in the world of Rain World, fight together and die<LINE>together.|与朋友一同在雨世界的世界里冒险，一起战斗，一起死亡。
+Arena|竞技场
+Fight against unforgiving creatues and foes where only the strong survive.|与无情的生物和敌人战斗，唯强者生。
+Visibility:|可见性:
+Public|公开
+Friends Only|仅好友可见
+Invite Only|仅邀请
+Password|密码
+Lobby Password|房间密码
+Player max:|玩家上限:
+Maximum number of players that can be in the lobby (up to 32)|房间可容纳的人数上限【至多32人】
+Creating lobby...|正在创建房间...
+Anniversary Gags:|周年庆乐子:
+
+// 牧原选角场景
+Locked|未锁定
+ENTER|进入
+Tint color|色彩
+Tint amount|色彩强度
+SKINS|皮肤
+SLUGCAT|蛞蝓猫
+Survivor|求生者
+Monk|僧侣
+Hunter|猎人
+Fluffy|毛毛
+Night|夜猫
+LIZARD|蜥蜴
+Pink|粉色
+Blue|蓝色
+Yellow|黄色
+Red|烈焰
+Black|黑色
+Axo|白蝾螈
+Sala|黑蝾螈
+Cyan|青色
+Fluffers|毛茸茸
+CICADA|蝉乌贼
+White|白色
+Dark|黑色
+SCAVENGER|拾荒者
+Twigs|细枝
+Acorn|橡果
+Oak|橡树
+Shrub|灌木
+Branches|树枝
+Sage|鼠尾草
+Cherry|樱桃
+Lavender|薰衣草
+Peppermint|薄荷
+Juniper|杜松
+NOODLEFLY|面条蝇
+Lily|百合
+Rose|玫瑰
+Poppy|罂粟
+Lotus|莲花
+Lilac|丁香
+Petunia|矮牵牛
+Jasmine|茉莉
+Gardenia|栀子
+EGGBUG|蛋虫
+Citrus|柑橘
+Blueberry|蓝莓
+Kiwi|猕猴桃
+Mango|芒果
+Dragonfruit|火龙果
+LANTERN MOUSE|光鼠
+Saphire|蓝宝石
+Ruby|红宝石
+Acquamarine|海蓝宝石
+Citrine|黄水晶
+Emerald|翡翠
+Quartz|石英
+Amethyst|紫水晶
+Opal|蛋白石
+Garnet|石榴石
+New character!|新角色！
+
+// 牧原模式
+CLEAR|清除
+CONTINUE|继续
+Close this menu|关闭此菜单
+TO HUB|返回中心
+Teleport to the closest hub|传送至最近的中心
+TO OUTSKIRTS|返回郊区
+Teleport to outskirts|传送至郊区
+PASSAGE|传送
+Passage to another shelter|传送至其他避难所
+UNSTUCK|脱离
+Teleport to a nearby pipe|传送至最近的管道
+LOBBY|房间
+Go back to the charater selection screen|返回选择角色屏幕
+QUIT|退出
+Exit back to the main menu|返回主菜单
+Hub zone volume|中心区音量
+Display names|显示名称
+Collision|碰撞
+New character unlocked|新角色已解锁
+New emote unlocked|新表情已解锁
+New skin unlocked|新皮肤已解锁
+
+// 故事模式
+Selected Slugcat|选中的蛞蝓猫
+Press on the button to open/close the slugcat selection list|点击按钮打开/关闭蛞蝓猫选择列表
+Current Campaign: |当前角色线:
+ - New Game| - 新游戏
+Unknonw Region|未知区域
+Invite Friends|邀请好友
+Friendly Fire|友伤
+Require Campaign Slugcat|需要游戏中蛞蝓猫
+Sync Save|存档匹配
+PLAYERS|玩家
+Press again to ban player!|再次点击可封禁玩家！
+Wait for others to shelter or rescue you, press |等待他人进入避难所或自杀，按下
+ to spectate, or press PAUSE BUTTON to dismiss message|以旁观，或按下"空格"以关闭消息
+READY|准备
+
+// 竞技场模式
+ME|我
+Got All<LINE>ScugSlots!!|获得全部<LINE>蛞蝓猫槽位！！
+Joining<LINE>soon!|即将<LINE>加入！
+Ready!|准备就绪！
+Selecting<LINE>Slugcat|正在选择<LINE>蛞蝓猫
+In Game!|游戏中！
+Showing players in thumbnail view|缩略图显示玩家
+Showing players in list view|列表显示玩家
+Current Mode:|当前模式:
+Do some wacky stuff around here!|在这里做些疯狂的事！
+Free For All|自由混战
+Trust no one. Last scug standing wins|不要相信任何人，站到最后的蛞蝓猫获胜
+Team Battle|团队战
+Choose a faction. Last team standing wins.|选择阵营，站到最后的队伍获胜
+Join Team "<TEAMNAME>"|加入队伍"<TEAMNAME>"
+POST-GAME STATS|赛后统计
+WINS|胜利
+KILLS|击杀
+DEATHS|死亡
+This game mode doesnt have any info to give|此游戏模式没有信息可提供
+Ready:|准备:
+Playlist Progress:|游戏列表进度:
+WAIT FOR OTHERS|等待其他人
+FORCE READY|强制准备
+LOBBY WILL LOCK|房间将锁定
+JOIN?|加入？
+QUEUED TO JOIN|排队加入
+READY?|准备？
+UNREADY|取消准备
+WAITING|等待中
+Ready up to join the host when the match begins|比赛开始时准备加入主机
+START MATCH!|开始比赛！
+Waiting for others...|等待其他人……
+Waiting for host...|等待主机……
+Welcome to Arena Online!<LINE>All players must ready up to begin.|欢迎来到在线竞技场！<LINE>所有玩家必须准备好才能开始游戏。
+Exit to Lobby Select|退出到房间选择
+Click to open <TABNAME> tab|点击打开<TABNAME>标签
+Arena Playlist|竞技场游玩列表
+Search for levels|搜索关卡
+Search levels|搜索关卡
+Match Settings|比赛设置
+Spears Hit:|长矛命中:
+Repeat Rooms:|房间重复次数:
+Invite friends|邀请朋友
+Item Stealing|物品偷窃
+Players can steal items from each other|玩家可以互相偷窃物品
+Players cannot steal items from each other|玩家不能互相偷窃物品
+Join In Progress|中途加入
+Players can join each round|玩家可以每回合加入
+Players can only join at the first round|玩家只能在第一回合加入
+Better Hitbox|更好的碰撞箱
+Thrown weapons are corrected to prevent no-clips|投掷武器会被修正以防止穿模
+Thrown weapons follow vanilla behaviour|投掷武器遵循原版行为
+Piggybacking|背起玩家
+Players cannot piggyback each other|玩家不能背起其他玩家
+Players can piggyback each other|玩家可以背起其他玩家
+Bombs|炸弹生成
+Scavenger bombs follow vanilla spawn behavior|拾荒者炸弹遵循原版生成
+No scavenger bombs spawn|拾荒者炸弹不会生成
+Bees|蜂巢生成
+Bee hives follow vanilla spawn behavior|蜂巢遵循原版生成
+No beehives spawn|蜂巢不会生成
+Corpse grab|抓起尸体
+Players can grab dead players|玩家可以抓起其他玩家的尸体
+Players cannot grab dead players|玩家不能抓起其他玩家的尸体
+Countdown Timer:|倒计时:
+How long the grace timer at the beginning of rounds lasts for. Default 5s.|每回合开始时的和平时间，默认为5秒。
+Arena Game Mode:|竞技场游戏模式:
+The game mode for this match|本场比赛的游戏模式
+Slugcat Abilities|蛞蝓猫能力
+Select Settings|选择设置
+MSC Settings|更多蛞蝓猫扩展包设置
+Watcher Settings|观望者设置
+Go to <SETTINGSNAME> Page|
+Return to Select Settings Page|
+Watcher Camo Duration:|观望者伪装持续时间:
+How long Wacher's abilities last for. Default: 12s|观望者能力持续时间，默认为12秒
+Watcher Ripple Level:|观望者涟漪等级:
+Updates Watcher's ripple level. Ranges from 1 to 9. Default: 1|设置观望者的涟漪等级，范围1到9，默认为1
+Weaver Watcher:|编织者观望者:
+Your watcher has synced weaver cosmetics|你的观望者拥有编织者外观
+Your watcher has synced normal cosmetics|你的观望者拥有普通外观
+Voidkeeper:|虚空守护者:
+Summon amoebas at the cost of your camo timer|消耗伪装持续时间来生成阿米巴
+Amoeba summoning is disabled lobby-wide|房间禁止生成阿米巴
+Voidkeeper Amoeba Duration:|虚空守护者阿米巴持续时长:
+Amoeba duration time in seconds|阿米巴持续时长，以秒为单位
+Void's Vengeance:|虚空的复仇:
+Amoeba's direction is influenced by pointing|阿米巴的方向受指向方向影响
+Amoebas chase targets at-will|阿米巴会随意追逐目标
+Disable Mauling:|禁用撕咬:
+Prevent Artificer and <PAINCATNAME> from mauling|阻止工匠和<PAINCATNAME>撕咬
+Disable Artificer Stun:|禁用工匠眩晕:
+Prevent Artificer from stunning other players|阻止工匠眩晕其他玩家
+Sain't:|非圣:
+Disable Saint ascendance ability, but allow it to throw spears|禁用圣徒超度能力，但允许其投掷长矛
+Saint Ascendance Duration:|圣徒超度能力持续时间:
+How long Saint's ascendance ability lasts for. Default: 3s|圣徒超度能力持续时间，默认为3秒
+<PAINCATNAME> gets egg at 0 throw skill:|<PAINCATNAME>在无法投矛时获得蛋:
+If <PAINCATNAME> spawns with 0 throw skill, also spawn with Eggzer0|如果<PAINCATNAME>以0投掷技能（无法投矛）的状态生成，也会生成Eggzer0
+<PAINCATNAME> can always throw spears:|<PAINCATNAME>总能投掷长矛:
+Always allow <PAINCATNAME> to throw spears, even if throw skill is 0|允许<PAINCATNAME>总是能投掷长矛，即使投掷技能为0
+<PAINCATNAME> sometimes gets a friend:|<PAINCATNAME>有时获得朋友:
+Allow <PAINCATNAME> to rarely spawn with a little friend|允许<PAINCATNAME>偶尔带着小伙伴生成
+Team Settings|队伍设置
+TEAM|队伍
+Team Lerp Color:|队伍过渡颜色:
+How much do you want team color to show on players? From 0 to 1|你想在玩家身上显示多深的队伍颜色？可输入0到1
+You cant color without Remix on!|没有开启Remix无法着色！
+Waiting|等待中
+Prepare for combat,|准备战斗，
+Prepare for war,|准备战争，
+Winner!|胜利者！
+<TEAMNAME> WIN!|<TEAMNAME>获胜！
+Unknown user|未知用户
+TO LOBBY|返回房间
+Go to Slugcat Selection Page|前往蛞蝓猫选择页面
+
+// 竞技场蛞蝓猫选择
+Back To Lobby|返回房间
+Go back to main lobby|返回大厅
+You have been unreadied. Switch back to re-ready yourself automatically|你已取消准备，再次切换来自动重新准备
+The match is starting in <COUNTDOWN>! Ready up!!|比赛将在<COUNTDOWN>后开始！准备！！
+THE NIGHTCAT|夜猫
+THE FARTIFICER|屁匠
+THE SLUGPUP|蛞蝓猫幼崽
+THE UNKNOWN|未知
+CHOOSE YOUR SLUGCAT|选择你的蛞蝓猫
+Unknown|未知
+Your enemies close in around you, but it won't be like your first time.<LINE>Snatch your spear and rock.|敌人环伺，但这已不再像初见那时。<LINE>握紧你的长矛和石头。
+Remember: they struck first, so you'll need to hit back harder.|记住:他们先手相犯，所以你要加倍奉还。
+Afflicted from the beginning, and a fighter to the end.<LINE>Show them the meaning of suffering.|生来罹难，战至终章。<LINE>向他们展现苦难的意义。
+Observe all weakness - then strike while cloaked in shadows.|观察所有弱点——然后在阴影掩护下出击。
+Your tale of twist and turns is near-complete.<LINE>Crush this one last quest.|你曲折的旅程将近完结。<LINE>完成这最后的任务。
+An explosive personality and unmatched anger.<LINE>Maul and detonate your way to vengeance.|爆裂的个性和不可匹敌的愤怒。<LINE>用撕咬和轰炸开辟你的复仇之路。
+A gnawing hunger grows inside you. Feed it with spears.|一种生长着的饥渴在你体内啃食，用长矛来满足它吧。
+In a world lacking purpose, perhaps you've finally found yours.<LINE>Move quickly so it's not lost.|在这个没有意义的世界里，你或许终于找到了目标。<LINE>动作要快，莫要放走。
+The spear is a weak vessel. Shape the world<LINE>from the markings of your mind.|长矛只是脆弱的容器，要用你心灵的印记改变世界。
+The mind is a weak vessel. Show your prowess<LINE>by the spear in your hand.|心灵只是脆弱的容器，要用你手中的长矛展示本领。
+Desperate. Fearful. Violent.|绝望、恐惧、暴力。
+Open: Voices. Choice. Burdened.<LINE>Closed: Whispers. Convergence. Drowning.<LINE>Open: Echoes. Clarity. Weightless.|开放:声音、选择、重负。<LINE>关闭:低语、汇聚、沉没。<LINE>开放:回声、清明、失重。
+Am I Warrior from the past, or a Messiah from the future?|我是来自过去的战士，还是来自未来的救世主？
+Am I Cat Searching for many, or a Mouse searching for one?|我是寻找众多的猫，还是寻找唯一的老鼠？
+<LINE>Am I a doomed Samaritan, or an Anomaly across time and space?|<LINE>我是注定失败的善者，还是跨越时空的异常？
+<LINE>Am I doomed a Samaritan, or am I forever stuck in your shadow?|<LINE>我注定要做善者，还是永远困在你的阴影里？
+<LINE>I do not know, for I am not one. I am many.|<LINE>我不知道，因为我并非独自，也非唯一。
+Those who walk a single path may find great treasure.<LINE>Those who wander many paths will find great truth.|循一条路的人可能发现宝藏，<LINE>而探多条路的人会找到真相。
+Press grab to toggle active slugcats|按“抓”来选择使用的蛞蝓猫
+
+// 怪猫姓名和简介
+Paincat|惨淡猫
+PAINCAT|惨淡猫
+Inv|Inv
+INV|INV
+Enot|Enot
+ENOT|ENOT
+Sofanthiel|Sofanthiel
+SOFANTHIEL|SOFANTHIEL
+Gorbo|Gorbo
+GORBO|GORBO
+???|???
+You have been through hell and back, but now, it's<LINE>time to atone for your sins in your past cycles.|你已经经历了地狱，但现在，是时候为你过去的循环赎罪了。
+...why are you here|...你为什么在这里呢
+Thanks, Andrew.|谢谢，安德鲁。
+.kcor dna raeps ruoy hctanS<LINE>.emit tsrif ruoy ekil eb t'now ti tub ,uoy dnuora ni esolc seimene ruoY|。头石和矛长的你紧握<LINE>。时那见初像再不这已但，伺环人敌
+Welcome to tower of gains: where you'll be doing heavy lifting for the<LINE>duration of your stay. I hope you've brought hydration, <USERNAME>!|欢迎来到收获之塔:在这里停留的时间你有些重活儿要干。<LINE>希望你带了水，<USERNAME>！
+$5 to unlock this description.|本描述需花费5美元解锁
+egg|蛋
+Seeking love will lead you down the<LINE>beautiful path of heartbreaking wrecks.|寻找爱情将带你走上<LINE>心碎残骸的美丽道路
+How much wood could a wood chuck chuck<LINE>if a wood chuck could chuck wood?|要是土拨鼠能拨土，<LINE>一只鼠能拨多少土？
+Feeling Lucky?<LINE>Try holding your slugcat portrait ;)|感到幸运？<LINE>按住你的蛞蝓猫头像试试看;)
+Did you know:<LINE>Meadow was released this Friday|你知道吗:<LINE>雨甸这周五发布了
+Did you know:<LINE>You're bad at Arena|你知道吗:<LINE>你在竞技场很菜
+Did you know:<LINE>There's more "Did you know"s.|你知道吗:<LINE>还有更多"你知道吗"
+Did you know:<LINE>This is the only "Did you know".|你知道吗:<LINE>这是唯一的"你知道吗"
+You will lose this round<LINE>Your body will not be found<LINE>6 feet underground|你会输掉这局<LINE>你的尸体将不被发现<LINE>在那六英尺地下
+"<USERNAME>, youre gonna get us both killed"|"<USERNAME>，你会把我们俩都害死"
+"no srsly wheres my egg"|"不说真的，的我的蛋在哪"
+"u dont need 2 be alone, bby."|"泥不需要孤单，北鼻！"
+"sometimes i wake up with a friend ive never met b4"|"有时早晨我会在未曾见过的朋友边上醒来"
+"i luv u <3"|"我爱你<3"
+WHY DID IT HAVE TO BE A VARIABLE<LINE>num2 IS LITERALLY 0|为什么非得是个变量？<LINE>num2明明写死了是0！
+Don't Care<LINE>Nuh<LINE>Yuh|无所谓<LINE>才怪<LINE>好吧
+Suddenly, the result rectangle failed to appear, you are softlocked.<LINE>What the hell.<LINE>I thought that glitch was fixed a while ago...|突然，结果框未能出现，你被软锁了。<LINE>什么鬼。<LINE>我以为那个Bug早就修好了……
+Ever thought about contributing to<LINE>https://github.com/henpemaz/Rain-Meadow?|想过给https://github.com/henpemaz/Rain-Meadow贡献吗？
+Be careful when selecting the Fartificer|选择屁匠时要小心
+am getting "among us potion at 3 am" vibes<LINE>add that /lh|哇有点“凌晨3点的among us药水”氛围<LINE>句末加扩号（轻快
+Playtesters<LINE>Are<LINE>Replaceable|游玩测试员<LINE>是<LINE>可替代的
+There's enough inv descriptions.<LINE>DOESNT FILL MY EMPTY STOMACH|有足足的inv简介。<LINE>但填不饱我空空的胃！
+"hiiii!"|"你好好好！"
+"i'm ded"|"我死了"
+bleh|呃
+inv? like invalidunits?|inv？就像invalidunits吗？
+
+// 蛞蝓猫老虎机！
+Press and hold something on screen to spin the slots / Hope you brought green|按住屏幕上的元素来旋转老虎机 / 希望你带了钱来
+One, two three of a kind / Somewhere on this page you will find|三个相同 / 你会在这页某处找到
+A joke started from the Meadow Discord / Makes all players broke, and none can afford|发源自Meadow Discord的笑话 / 让所有玩家破产，没人再买得起
+SCUGSLOTS|蛞蝓猫老虎机
+LET'S ROLL!|开始吧！
+Oops, better luck next time!|哎呀，下次好运！
+Try your luck again!|再试试运气！
+99% of gamblers quit before they win big|99%的赌徒都在赢大钱前退出
+So Close! Keep trying!|很接近！继续尝试！
+Almost there!|快到了！
+Congratulations! You have achieved the ultimate gamble skill!!!|恭喜！你获得了终极赌博技能！！！
+Gahh?? Impossible?!|啊？？不可能？！
+You got a <SLUGCATNAME>!|你获得了<SLUGCATNAME>！
+
+// 聊天教程
+Press '|按下'
+' to chat, press '|'来聊天，按下'
+' to toggle the chat log|'来切换聊天记录
+
+// 玩家加入/离开
+joined the game.|加入了游戏
+tried to join the game but was kicked.|尝试加入游戏但被踢出
+left the game.|离开了游戏
+
+// 死亡信息
+died.|死了。
+was crushed by the rain.|被雨水碾碎了。
+fell into the abyss.|坠入了深渊。
+drowned.|溺水了。
+hit the ground too hard.|落地过猛。
+was killed through unknown means.|被未知手段杀死了。
+tried to swim in burning liquid.|尝试在灼热的液体中游泳。
+spontaneously combusted.|自燃了。
+froze to death.|冻死了。
+was swallowed by the grass.|被舌草吞没。
+was swallowed by the walls.|被墙壁吞没。
+was electrocuted.|触电身亡。
+licked the power.|舔了电源。
+was consumed by the swarm.|被虫群吞噬。
+was electrocuted in the water.|在水中触电了。
+was obliterated by the sandstorm.|被沙暴摧毁。
+died from poison.|中毒身亡。
+was struck by lightning.|被闪电击中。
+was consumed by locusts.|被蝗虫吞噬。
+swam with the ripples.|随波逐流。
+experienced the force of fresh fruit.|体验到了新鲜水果的力量。
+was burnt to a crisp.|被烧焦了。
+was taken into the abyss by|被带入了无底深渊，凶手是
+was drowned by|淹死了，凶手是
+was slain by|被杀了，凶手是
+was ascended by|被超度了，凶手是
+was zapped by a|被电击了，凶手是一只
+was ambushed by a|被伏击了，凶手是一只
+was taken by a|被带走了，凶手是一只
+was slain by a|被杀了，凶手是一只
+
+// 死亡信息中出现的生物名称
+Pink Lizard|粉蜥蜴
+Green Lizard|绿蜥蜴
+Blue Lizard|蓝蜥蜴
+Yellow Lizard|金蜥蜴
+White Lizard|白蜥蜴
+Red Lizard|红蜥蜴
+Black Lizard|黑蜥蜴
+Salamander|蝾螈
+Cyan Lizard|青蜥蜴
+Leech|水蛭
+Sea Leech|海水蛭
+Snail|波动龟
+Vulture|秃鹫
+Garbage Worm|垃圾虫
+Lantern Mouse|光鼠
+Cicada A|白色蝉乌贼
+Cicada B|黑色蝉乌贼
+Jet Fish|蛙鱼
+Big Eel|利维坦
+Deer|雨鹿
+Tube Worm|管虫
+Daddy Long Legs|蓝长腿菌
+Brother Long Legs|黄长腿菌
+Tentacle Plant|红树
+Pole Mimic|拟态草
+Miros Bird|钢鸟
+Temple Guard|守卫
+Centipede|蜈蚣
+Red Centipede|烈焰蜈蚣
+Scavenger|拾荒者
+Centiwing|飞蜈蚣
+Small Centipede|小蜈蚣
+Overseer|监视者
+Vulture Grub|射线虫
+Big Spider|狼蛛
+Spitter Spider|烈焰狼蛛
+Egg Bug|蛋虫
+Small Needle|小面条蝇
+Big Needle|大面条蝇
+Drop Bug|落网虫
+King Vulture|魔王鹫
+Hazer|乌贼
+Miros Vulture|钢秃鹫
+Caramel Lizard|焦糖蜥蜴
+Eel|鳗蜥蜴
+Strawberry|草莓蜥蜴
+Mother Spider|蛛母
+Terror Long Legs|紫长腿菌
+Aquapede|水蜈蚣
+Stowaway Bug|偷渡虫
+Elite Scavenger|精英拾荒者
+Inspector|监察者
+Yeek|跃客
+Big Jellyfish|巨型水母
+Jungle Leech|丛林水蛭
+Hell Bug|火虫
+King Scavenger|拾荒者王
+Slugpup|蛞蝓猫幼崽
+Train Lizard|火车蜥蜴
+Barnacle|藤壶
+DrillCrab|钻蟹
+SandGrub|沙虫
+BigSandGrub|大沙虫
+BigMoth|大蛾
+SmallMoth|小蛾
+Box Worm|箱虫
+Fire Sprite|火精灵
+Rattler|震骨者
+SkyWhale|天空鲸
+ScavengerTemplar|拾荒者圣堂武士
+ScavengerDisciple|拾荒者门徒
+Loach|泥鳅
+Rot Behemoth|腐烂巨兽
+Blizzard Lizard|暴雪蜥蜴
+Basilisk Lizard|蛇怪蜥蜴
+Indigo Lizard|靛蓝蜥蜴
+Rat|老鼠
+Frog|青蛙
+Tardigrade|水熊虫
+
+// 直接连接文本
+Direct Connection... |直接连接……
+Password:|密码:
+Invalid Address, IP Address format should be xxx.xxx.xxx.xxx:port|无效地址，IP地址格式应为xxx.xxx.xxx.xxx:端口
+This address is possibly not local to your current network.|此地址可能不在你当前本地网络中。
+If so, This is very unstable and will most likely NOT work|如果是这样，这将非常不稳定且很可能不起作用
+Are you SURE you know what you're doing?|你确定你清楚自己在做什么吗？
+
+// LAN Matchmaking Manager
+LAN Lobby|局域网房间
+Nobody|没有人
+Your network interface(s) are|你的网络接口是
+<NAME> network interface is |<NAME>的网络接口是
+You are the owner of the lobby.|你是房间所有者。
+This player is the owner of the lobby.|此玩家是房间所有者。
+Players can "Direct Connect" to this lobby through your interface(s).|玩家可以通过你的接口"直接连接"到此房间。
+Players can "Direct Connect" to this lobby through their interface(s).|玩家可以通过他们的接口"直接连接"到此房间。
+You cannot use this feature here.|你无法在此使用此功能。
+
+// 检查应用模组
+Error loading mods!|加载模组错误！
+A restart is required to finish applying the mod changes.|更改的模组需要重启方可应用。
+Restarting now...|正在重启……
+Mod Mismatch!|模组不匹配！
+Mods that have to be enabled: |需要启用的模组:
+Mods that have to be disabled: |需要禁用的模组:
+Mods that have to be installed: |需要安装的模组:
+Apply these changes now?|现在应用这些更改？
+Warning: Differing Mod Load Orders!|警告：不同的模组加载顺序！
+This may cause unstable play.|这可能导致游戏不稳定。
+Reorder your mods now?|现在重新排序你的模组？
+Cannot join due to missing DLC!|由于缺少DLC无法加入！
+Missing DLC Mods that have to be enabled: |需要启用的缺失DLC模组:
+
+// 拓展菜单设定
+Note: These inputs are not used in Meadow mode|注意:这些按键在牧原模式中不可使用
+Show usernames|显示用户名
+Username Toggle|开关用户名
+Replace holding with toggling|用开关切换代替长按显示
+Key used for toggling spectator mode|切换旁观者模式的按键
+Stop Inputs While Spectating|旁观时暂停输入
+Pointing Key|指点按键
+Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within.|通过编辑以下文件控制客户端允许的模组。<LINE>内含相关说明。
+Edit High-Impact Mods|编辑高影响模组
+Edit Banned Mods|编辑禁止模组
+Chat Log Toggle|聊天记录切换
+Chat Talk Button|聊天说话按钮
+Chat Background Opacity|聊天背景透明度
+Show Ping|显示延迟
+Playtesting Gift|游玩测试礼物
+Anniversary Gift|周年庆礼物
+Chat Log On/Off|聊天记录开关
+Introroll|开场动画
+Vanilla|原版
+Downpour|倾盆大雨
+Watcher|观望者
+Lobby Music|房间音乐
+Downpour DLC is not activated, vanilla intro will be used instead|倾盆大雨DLC未激活，将使用原版开场
+Watcher DLC is not activated, vanilla intro will be used instead|观察者DLC未激活，将使用原版开场
+Player Menu Scroll Speed for Spectate, Story menu, Arena results.  Default: 5|旁观、故事菜单、竞技场结果的玩家菜单滚动速度，默认为5
+Disable Pause Menu Animation|禁用暂停菜单动画
+If selected, disables the sway animation in the pause menu|开启之后，将禁用暂停菜单的进场/出场动画
+Input “cheats” to access cheats|输入"cheats"打开作弊
+Just make sure not to ruin the fun for yourself...|只要确保不要破坏你自己的乐趣……
+Emote and skin unlocks will affect the currently selected character|表情和皮肤解锁将影响当前选择的角色
+Unlock Emote|解锁表情
+Unlock Skin|解锁皮肤
+Unlock Character|解锁角色
+Reset all progression|重置所有进度
+Match settings have been relocated to the arena lobby menu.<LINE>The remaining options just enable easter eggs.|比赛设置已重新定位到竞技场房间菜单。<LINE>其余选项只是启用彩蛋。
+The following option may contain spoilers for Saint's campaign.|以下选项可能包含圣徒剧情的剧透。
+OKIE DOKIE|好嘀~
+Slugpup: Rubicon background in select menu|使用魔方节点作为蛞蝓猫幼崽的选角页面背景
+Ready to shelter/gate|准备进入避难所/业力门
+If selected, usernames and icons will allways appear onscreen for slugcats in a gate or shelter.|如果选中，用户名和图标将始终显示在屏幕上的蛞蝓猫在门或避难所中。
+[Experimental Features]|[实验性功能]
+WARNING: Experimental features may cause data corruption, back up your saves|警告:实验性功能可能导致数据损坏，请备份你的存档
+Custom Story Slugcat:|自定义故事模式蛞蝓猫:
+If selected, hosts can choose slugcat campaigns that are unstable.|开启之后，将允许主机选择不稳定的蛞蝓猫模式。
+Steal items from other players in Story mode|故事模式中可偷取其他玩家的物品
+Gain achievements online|联机游玩时可获得成就
+Gameplay|游戏
+Streamer Mode|主播模式
+Me|自己
+Profanity Filter|脏话过滤
+Player Menu Scroll Speed for Spectate, Story Menu, Arena results. Default: $10|玩家菜单在旁观模式、剧情菜单及竞技场结果中的滚动速度，默认值：$10
+Everyone|所有人
+LAN|局域网
+Username|用户名
+// ↓可能从字面上不清楚这是什么，但搜索结果确实存在对这两个术语如此的翻译，所以假设对此领域了解的用户可以理解其所指↓
+UDP timeout (ms)|UDP超时（毫秒）
+UDP heartbeat (ms)|UDP心跳（毫秒）
+
+// 制作人名单
+Rain Meadow is a unique multiplayer engine for a unique game. Nothing else would fit. - Henpemaz|雨甸（Rain Meadow）是为这款独特游戏打造的独特多人在线引擎，无可替代的默契。- Henpemaz
+Meadow is a gamemode inspired by the game of same name from Might&Delight. It's a buggy, barely playable game, that one can fall in love with. Sounds familiar?|Meadow是受Might&Delight同名游戏启发的游戏模式。它是一个有bug、几乎无法玩的游戏，但你会爱上它，这听起来熟悉吗？
+This mod and all its features were brought to you by really awesome people from the community.|这个模组及其所有功能由RW社区中一群真的很了不起的人带来。
+Lead Developer|首席开发者
+Lead Artist|首席艺术家
+Lead Audio Designer|首席音频设计师
+Programming, engine|编程，引擎
+Programming, sound|编程，声音
+UI Design|UI设计
+Programming, menus|编程，菜单
+Programming, arena|编程，竞技场
+Programming, story|编程，故事
+Programming, modsync|编程，模组同步
+Programming, story, arena|编程，故事，竞技场
+Programming, UI, chat|编程，UI，聊天
+Illustration|插画
+Programming, UI, menus|编程，UI，菜单
+Programming, UI, story|编程，UI，故事
+Programming, UI, LAN|编程，UI，局域网
+Thank you playtesters from the Rain Meadow discord as well.|也感谢来自Rain Meadow discord的游玩测试员们。
+
+// 杂项
+Players|玩家
+CONFIRM|确认
+Leaving Lobby|离开房间
+You were removed from the previous online game|你已被移出房间
+This player does not have a profile.|此玩家没有个人资料
+Steam is not currently available. Some features of Rain Meadow have been disabled.|Steam当前不可用，雨甸的一些功能已被禁用。
+Rain Meadow failed to start|在线游戏启动失败
+Rain Meadow: Please use an external mod to access Inv's campaign.|雨甸：请使用外部模组访问Inv的战役

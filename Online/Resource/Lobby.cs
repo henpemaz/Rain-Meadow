@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RainMeadow
 {
@@ -30,6 +31,7 @@ namespace RainMeadow
         public Dictionary<string, int> configurableInts;
 
         public string? password;
+        public string? meadowTimeline;
         public bool hasPassword => !string.IsNullOrWhiteSpace(password);
 
         public Lobby(OnlineGameMode.OnlineGameModeType mode, OnlinePlayer owner, string? password) : base(null)
@@ -58,7 +60,6 @@ namespace RainMeadow
             {
                 this.password = password;
                 (configurableBools, configurableFloats, configurableInts) = OnlineGameMode.GetHostRemixSettings(this.gameMode);
-
             }
             else
             {
@@ -184,6 +185,9 @@ namespace RainMeadow
         public class LobbyState : ResourceWithSubresourcesState
         {
             [OnlineField]
+            public string timeline; 
+
+            [OnlineField]
             public ushort nextId;
             [OnlineField]
             public string[] requiredmods;
@@ -213,12 +217,14 @@ namespace RainMeadow
                 onlineBoolRemixSettings = lobby.configurableBools;
                 onlineFloatRemixSettings = lobby.configurableFloats;
                 onlineIntRemixSettings = lobby.configurableInts;
+                timeline = lobby.meadowTimeline;
             }
 
             public override void ReadTo(OnlineResource resource)
             {
                 var lobby = (Lobby)resource;
                 lobby.nextId = nextId;
+                lobby.meadowTimeline = timeline;
 
                 for (int i = 0; i < players.list.Count; i++)
                 {
@@ -266,6 +272,11 @@ namespace RainMeadow
                     {
                         OnlineGameMode.SetClientRemixSettings(onlineBoolRemixSettings, onlineFloatRemixSettings, onlineIntRemixSettings);
                     }
+
+                    lobby.configurableBools = onlineBoolRemixSettings.ToDictionary();
+                    lobby.configurableFloats = onlineFloatRemixSettings.ToDictionary();
+                    lobby.configurableInts = onlineIntRemixSettings.ToDictionary();
+
                     lobby.modsChecked = true;
                 }
 

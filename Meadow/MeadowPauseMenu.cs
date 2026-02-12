@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using Menu;
+﻿using Menu;
 using RWCustom;
 using System;
 using System.Collections.Generic;
@@ -72,7 +71,7 @@ namespace RainMeadow
                 return button;
             }
             this.pages[this.currentPage].lastSelectedObject = this.continueButton = 
-                AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
+            AddButton(this.Translate("CONTINUE"), this.Translate("Close this menu"), this.Continue);
             AddButton(this.Translate("TO HUB"), this.Translate("Teleport to the closest hub"), this.ToHub, targetHub != -1, emotesprite: MeadowProgression.Emote.symbolTree.value.ToLowerInvariant());
             AddButton(this.Translate("TO OUTSKIRTS"), this.Translate("Teleport to outskirts"), this.ToOutskirts, suco4 != -1, emotesprite: MeadowProgression.Emote.symbolSurvivor.value.ToLowerInvariant());
             AddButton(this.Translate("PASSAGE"), this.Translate("Passage to another shelter"), this.Passage, isShelter, emotesprite: MeadowProgression.Emote.symbolShelter.value.ToLowerInvariant());
@@ -105,6 +104,18 @@ namespace RainMeadow
             colCb.subObjects.Add(new Floater(this, colCb, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
             pages[0].subObjects.Add(colCb);
 
+            pos.y -= 40f;
+            var timelineSprite = new MenuSprite(this, pages[0], new FSprite(MeadowProgression.Emote.symbolTime.value.ToLowerInvariant()) { scale = 30f / 240f }, new Vector2(pos.x + 10f, pos.y + 10f));
+            pages[0].subObjects.Add(timelineSprite);
+
+            string timelineText = Translate($"Timeline: {OnlineManager.lobby.meadowTimeline}");
+            var timelineLabel = new MenuLabel(this, pages[0], timelineText, new Vector2(pos.x + 20f, pos.y), new Vector2(50f, 20f), bigText: false);
+            timelineLabel.label.alignment = FLabelAlignment.Left;
+            timelineLabel.label.color = Menu.Menu.MenuRGB(Menu.Menu.MenuColors.MediumGrey);
+            pages[0].subObjects.Add(timelineLabel);
+
+            pages[0].subObjects.Add(new Floater(this, timelineSprite, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
+            pages[0].subObjects.Add(new Floater(this, timelineLabel, new Vector2(750f, 0f), new Vector2(3f, 2.75f), new Vector2(3f, 1f)));
 
             // Removes the tutorial sprites 
             this.controlMap.RemoveSprites();

@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using Menu;
+﻿using Menu;
 using MoreSlugcats;
 using RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle;
 using System;
@@ -13,6 +12,11 @@ namespace RainMeadow
 {
     public class ArenaOnlineGameMode : OnlineGameMode
     {
+
+        /// <summary>
+        /// Acts as a quick way to access current game session. Assigned during ArenaSessionCtor, after orig()
+        /// </summary>
+        public ArenaGameSession session;
         public ArenaOnlineSetup myArenaSetup;
         public ExternalArenaGameMode externalArenaGameMode;
         public string currentGameMode;
@@ -33,6 +37,7 @@ namespace RainMeadow
         public bool leaveForNextLevel;
         public bool leaveToRestart;
 
+        public bool voidMasterEnabled = RainMeadow.rainMeadowOptions.VoidMaster.Value;
         public bool sainot = RainMeadow.rainMeadowOptions.ArenaSAINOT.Value;
         public bool painCatThrows = RainMeadow.rainMeadowOptions.PainCatThrows.Value;
         public bool painCatEgg = RainMeadow.rainMeadowOptions.PainCatEgg.Value;
@@ -42,7 +47,12 @@ namespace RainMeadow
         public bool itemSteal = RainMeadow.rainMeadowOptions.ArenaItemSteal.Value;
         public bool allowJoiningMidRound = RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value;
         public bool weaponCollisionFix = RainMeadow.rainMeadowOptions.WeaponCollisionFix.Value;
+        public bool enableBombs = RainMeadow.rainMeadowOptions.EnableBombs.Value;
+        public bool enableBees = RainMeadow.rainMeadowOptions.EnableBees.Value;
+        public bool enableCorpseGrab = RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value;
+
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
+        public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
         public string paincatName;
         public int lizardEvent;
@@ -90,7 +100,8 @@ namespace RainMeadow
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
-
+        
+        public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
 
         public ArenaClientSettings arenaClientSettings;
         public ArenaTeamClientSettings arenaTeamClientSettings;
@@ -131,8 +142,6 @@ namespace RainMeadow
             leaveForNextLevel = false;
             lobbyCountDown = 5;
             initiateLobbyCountdown = false;
-
-
             slugcatSelectMenuScenes = new Dictionary<string, MenuScene.SceneID>()
             {
                 { "White", MenuScene.SceneID.Landscape_SU },
@@ -774,7 +783,7 @@ namespace RainMeadow
         {
             return RainMeadow.Ext_ProcessID.ArenaLobbyMenu;
         }
-        static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
+        public static HashSet<AbstractPhysicalObject.AbstractObjectType> blockList = new()
         {
             AbstractPhysicalObject.AbstractObjectType.BlinkingFlower,
             AbstractPhysicalObject.AbstractObjectType.AttachedBee
@@ -786,6 +795,12 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
+            }
             return true;
         }
 
@@ -795,6 +810,12 @@ namespace RainMeadow
             {
                 return false;
             }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
+            }
             return true;
         }
 
@@ -803,6 +824,12 @@ namespace RainMeadow
             if (blockList.Contains(apo.type))
             {
                 return false;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.ScavengerBomb) {
+                return this.enableBombs;
+            }
+            if (apo.type == AbstractPhysicalObject.AbstractObjectType.SporePlant) {
+                return this.enableBees;
             }
             return true;
         }
@@ -833,6 +860,15 @@ namespace RainMeadow
             if (item.type == PlacedObject.Type.StuckDaddy || item.type == DLCSharedEnums.PlacedObjectType.Stowaway)
             {
                 return OnlineManager.lobby.isOwner;
+            }   
+
+            if (item.type == PlacedObject.Type.SporePlant || (item.data is PlacedObject.MultiplayerItemData spore) && spore.type == PlacedObject.MultiplayerItemData.Type.SporePlant)
+            {
+                return this.enableBees;
+            }
+            if ((item.data is PlacedObject.MultiplayerItemData bomb) && bomb.type == PlacedObject.MultiplayerItemData.Type.Bomb)
+            {
+                return this.enableBombs;
             }
 
             return true;

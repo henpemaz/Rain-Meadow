@@ -75,7 +75,12 @@ namespace RainMeadow
             public bool arenaItemSteal;
             [OnlineField(group = "arenaSetup")]
             public bool allowJoiningMidRound;
-
+            [OnlineField(group = "arenaSetup")]
+            public bool voidMasterEnabled;
+            [OnlineField(group = "arenaSetup")]
+            public int amoebaDuration;
+            [OnlineField(group = "aremaSetup")]
+            public bool amoebaControl;
             // Group: arenaGameplay
             [OnlineField(group = "arenaGameplay")]
             public List<ushort> arenaSittingOnlineOrder;
@@ -103,6 +108,12 @@ namespace RainMeadow
             public bool leaveForNextLevel;
             [OnlineField]
             public bool weaponCollisionFix;
+            [OnlineField]
+            public bool enableBombs;
+            [OnlineField]
+            public bool enableBees;
+            [OnlineField]
+            public bool enableCorpseGrab;
             [OnlineField]
             public bool playersEqualToOnlineSitting;
             [OnlineField]
@@ -149,12 +160,18 @@ namespace RainMeadow
                 arenaItemSteal = arena.itemSteal;
                 allowJoiningMidRound = arena.allowJoiningMidRound;
                 weaponCollisionFix = arena.weaponCollisionFix;
+                enableBombs = arena.enableBombs;
+                enableBees = arena.enableBees;
+                enableCorpseGrab = arena.enableCorpseGrab;
                 leaveForNextLevel = arena.leaveForNextLevel;
                 hasPermissionToRejoin = arena.hasPermissionToRejoin;
                 playersEqualToOnlineSitting = arena.playersEqualToOnlineSitting;
                 piggyBack = arena.piggyBack;
 
                 bannedSlugs = new(arena.bannedSlugs);
+                voidMasterEnabled = arena.voidMasterEnabled;
+                amoebaDuration = arena.amoebaDuration;
+                amoebaControl = arena.amoebaControl;
             }
 
             public override void ReadTo(OnlineResource.ResourceData data, OnlineResource resource)
@@ -205,12 +222,19 @@ namespace RainMeadow
                 (lobby.gameMode as ArenaOnlineGameMode).allowJoiningMidRound = allowJoiningMidRound;
                 (lobby.gameMode as ArenaOnlineGameMode).weaponCollisionFix = weaponCollisionFix;
 
+                (lobby.gameMode as ArenaOnlineGameMode).enableBees = enableBees;
+                (lobby.gameMode as ArenaOnlineGameMode).enableBombs = enableBombs;
+                (lobby.gameMode as ArenaOnlineGameMode).enableCorpseGrab = enableCorpseGrab;
+
                 (lobby.gameMode as ArenaOnlineGameMode).leaveForNextLevel = leaveForNextLevel;
                 (lobby.gameMode as ArenaOnlineGameMode).hasPermissionToRejoin = hasPermissionToRejoin;
                 (lobby.gameMode as ArenaOnlineGameMode).playersEqualToOnlineSitting = playersEqualToOnlineSitting;
 
                 (lobby.gameMode as ArenaOnlineGameMode).bannedSlugs = bannedSlugs;
                 (lobby.gameMode as ArenaOnlineGameMode).piggyBack = piggyBack;
+                (lobby.gameMode as ArenaOnlineGameMode).voidMasterEnabled= voidMasterEnabled;
+                (lobby.gameMode as ArenaOnlineGameMode).amoebaDuration= amoebaDuration;
+                (lobby.gameMode as ArenaOnlineGameMode).amoebaControl = amoebaControl;
 
 
             }

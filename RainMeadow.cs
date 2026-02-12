@@ -1,14 +1,14 @@
 ﻿using BepInEx;
-using Menu;
+using Newtonsoft.Json.Linq;
 using RainMeadow.Game;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
 using System.Security.Permissions;
-using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 [assembly: AssemblyVersion(RainMeadow.RainMeadow.MeadowVersionStr)]
 #pragma warning disable CS0618
@@ -18,7 +18,9 @@ namespace RainMeadow
     [BepInPlugin("henpemaz.rainmeadow", "RainMeadow", MeadowVersionStr)]
     public partial class RainMeadow : BaseUnityPlugin
     {
-        public const string MeadowVersionStr = "0.1.8.0";
+        public const string MeadowVersionStr = "0.1.11.1";
+        public const string ReleaseUrl = "https://api.github.com/repos/henpemaz/Rain-Meadow/releases/latest";
+        public static string NewVersionAvailable = "";
         public static RainMeadow instance;
         private bool init;
         public bool fullyInit;
@@ -48,6 +50,8 @@ namespace RainMeadow
             On.RWCustom.Custom.LogWarning += Custom_LogWarning;
 
             DeathContextualizer.CreateBindings();
+
+            StartCoroutine(CheckForUpdates());
         }
 
         private bool AdvancedProfilingEnabled()
@@ -169,6 +173,8 @@ namespace RainMeadow
 
                 MachineConnector.SetRegisteredOI("henpemaz_rainmeadow", rainMeadowOptions);
 
+                UsernameGenerator.Timestamp = DateTime.Now.Ticks;
+
                 var sw = Stopwatch.StartNew();
                 OnlineState.InitializeBuiltinTypes();
                 sw.Stop();
@@ -252,46 +258,69 @@ namespace RainMeadow
             }
         }
 
-
-        private static HashSet<string> devSteamIdHashes = new HashSet<string>()
+        IEnumerator CheckForUpdates()
         {
-            "AOOTy8PrB9DWbAxExg9BbhiLBbRqAgmsRLoAHnIGXOU=",
-            "dlWUAGjYBtAdypcmLwbDnZ73akq624OiSNIQ//ecsms=",
-            "ApNKog4MYwp7nfkyC6lIPtD+/sBJfBArnSPiy6yo7VU=",
-            "YIczH+KncjxdHf3MrnhumDUJ1QVAyBsy9ME6k0bZyPc=",
-            "P5S1c63jYWl3Ce73H0k99BeIMSAmxa/BbvkEiyTs9mM=",
-            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg=",
-            "ATe23LFNxITCICTkw+2Bs67cNZ5N/nRBMfziGhIn11s=",
-            "oz6hibRdEiJow7IWhn+T7Ij+agHeNqmxyHO34YMOla4=",
-            "E5mtN6Hh2vyAuOgBZ5iiTH36j2pAJ8urOgEZKZsciSo=",
-            "TA9uZQ7Z7MkVUm7D32EB0gpuQBrhE9cAZWB2UXBuqtg=",
-            "tXLLHFXRXKzi285CSDIko+gmRrLChLb3k3K1pV0GUq4=",
-            "AkQKwH5S6zj//MRsnrjaTp2HGe7Ln9ZB057MP5xLk2M=",
-            "tMoAaCdZejjuWCF0MsXcOUr+D4eok0b2c46B8PTM0kg=",
-            "095dLJgw4Nc1zbdUIdxL7d7nmyKxcj7hekNx8EQlXGY=",
-            "GpdPaLhUEEkwjCbkSLjXN7lZy0iXa5YlFErMi9V+hXI=",
-            "PwcZS6t8kETyBdrPiR2ple35lpLMfEw6TP/VyHVD4z4=",
-            "wZ2+Phw6EOBLv9bZKdSGV+3lWhNxiT2KHwCluqhLdzo=",
-            "Hr8BfOHHTBRGgSmQoj4qQdlHqaY6d4DHFbF7wCNFI1U=",
-            "cOL0sHXOvRyn7y5S+3VXWmuyZE1KvQXdfBgcHrph2kE=",
-            "3aA5+Ga/lMY848/EcCZLBnO93TS1RhPfSMgAGtf7MQY=",
-            "5eD7MQy+i6B6862JCgkjFXRevE7UFU+kvvBGPXJ4hGQ=",
-            "oz6hibRdEiJow7IWhn+T7Ij+agHeNqmxyHO34YMOla4=",
-            "iJFBCXhwwaHxbJ5uXfmZsK7Ad9a7vZgT1ZwiofO0aMg="
-        };
-
-        public static bool IsDev(MeadowPlayerId player)
-        {
-            if (player is SteamMatchmakingManager.SteamPlayerId steamid)
+            JObject json = null;
+            using (UnityWebRequest request = UnityWebRequest.Get(ReleaseUrl))
             {
-                ulong steamID = steamid.oid.GetSteamID64();
-                SHA256 Sha = SHA256.Create();
-                var steamIDHash = System.Convert.ToBase64String(Sha.ComputeHash(Encoding.ASCII.GetBytes(steamID.ToString())));
+                yield return request.SendWebRequest();
 
-                if (devSteamIdHashes.Contains(steamIDHash))
+                if (request.result == UnityWebRequest.Result.Success)
                 {
-                    return true;
+                    json = JObject.Parse(request.downloadHandler.text);
+                } 
+                else
+                {
+                    Logger.LogError($"A web request error occured whilst checking for updates: {request.result}");
+                    yield break;
                 }
+            }
+            if (json is null)
+            {
+                Logger.LogError($"A web request error occured whilst checking for updates: JSON returned no body.");
+                yield break;
+            }
+            if (json.TryGetValue("tag_name", out var token))
+            {
+                string latestVersion = token.ToString();
+                if (latestVersion.Count(f => f == '.') < 3)
+                {
+                    latestVersion = "0." + latestVersion;
+                }
+                RainMeadow.Debug($"Current Version - {MeadowVersionStr}, Latest Version - {latestVersion}");
+                if (IsNewerVersion(latestVersion, MeadowVersionStr))
+                {
+                    RainMeadow.Debug($"NEW RAIN MEADOW VERSION FOUND.");
+                    // One day grace window before users are prompted to update.
+                    if (json.TryGetValue("published_at", out var published)
+                        && DateTime.TryParse(published.ToString(), out var publishedDate)
+                        && publishedDate.AddDays(1) > DateTime.Now)
+                    {
+                        RainMeadow.Debug($"Update popup grace period active until: {publishedDate.AddDays(1).ToLongDateString()}");
+                        yield break;
+                    }
+                    NewVersionAvailable = latestVersion;
+                    
+                }
+            }
+        }
+
+        // This logic could be improved a bit but it seems to work fine for now so I'll leave it be.
+        public static bool IsNewerVersion(string newVersion, string currentVersion)
+        {
+            if (newVersion == currentVersion || string.IsNullOrWhiteSpace(newVersion) || string.IsNullOrWhiteSpace(currentVersion)) return false;
+
+            string[] nParts = newVersion.Split('.');
+            string[] cParts = currentVersion.Split('.');
+
+            int length = Math.Max(nParts.Length, cParts.Length);
+
+            for (int i = 0; i < length; i++)
+            {
+                int nPart = i < nParts.Length ? int.Parse(nParts[i]) : 0;
+                int cPart = i < cParts.Length ? int.Parse(cParts[i]) : 0;
+
+                if (nPart > cPart) return true; // newVersion is greater than currentVersion.
             }
             return false;
         }

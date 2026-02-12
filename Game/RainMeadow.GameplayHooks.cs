@@ -192,14 +192,17 @@ namespace RainMeadow
 
         private void DeafLoopHolder_Update(On.DeafLoopHolder.orig_Update orig, DeafLoopHolder self, bool eu)
         {
-            orig(self, eu);
             if (OnlineManager.lobby != null)
             {
-                if (self.player != null && self.player.IsLocal() && self.player.dead && self.deafLoop != null)
-                {
-                    self.deafLoop = null;
+                if (!self.player.IsLocal()) {
+                    self.slatedForDeletetion = true;
+                    return;
+                }
+                if (self.player.abstractCreature.state.dead || self.player.State.dead || self.player == null) {
+                    self.slatedForDeletetion = true;
                 }
             }
+            orig(self, eu);
 
         }
 
@@ -551,7 +554,7 @@ namespace RainMeadow
 
                 return ret;
             }
-            else if (self.IsLocal() || (WeaponOnline.isTransfering && self.thrownBy != null && self.thrownBy.abstractCreature.GetOnlineCreature()?.owner == OnlineManager.mePlayer))
+            else if (WeaponOnline.isMine || WeaponOnline.isPending)
             {
                 RealizedPhysicalObjectState realizedstate = null!;
                 if (self is Spear) realizedstate = new RealizedSpearState(WeaponOnline);

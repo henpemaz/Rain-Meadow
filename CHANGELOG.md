@@ -1,5 +1,73 @@
+# Release 1.12.0
+## Arena
+- Added `arena.session` to access the current ArenaGameSession
+- Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
+- Restored custom Team Names
+
+## General
+### Chat:
+- Auto-fill usernames when using "@" in chat. 
+
+# Release 1.11.1
+## Engine 
+- Fixed an issue where transitioning regions led to disappearing players
+
+# Release 1.11.0
+## Arena
+- Added flash to tab arrow to assist users in locating game mode tab settings
+- Publicized arena.blockList for developers
+- Fixed bees/bombs spawning client-side
+- Fixed pipe eating during the first few frames of the game if moving into den
+- Fixed Saints ascending teammates. Stop that.
+## General
+- Added Chinese translation (thanks @havenoideawhatismyname!)
+- Fixed custom background thumbnails not disappearing when scrolling background pages
+- Fixed large lobbies interrupting ping cycle key inputs 
+- Fixed spectating never abstracting previous rooms
+### Chat
+-  Chat Opacity (Makes chat semi transparent when a player is behind it)
+-  Chat Inactivity (Makes chat semi transparent after a short period of inactivity (no new messages and no typing))
+-  Enforce max message length for receiving messages.
+-  Copy/Paste support
+-  Recently Sent Messages (Up/Down arrows)
+-  Sound when mentioned by name in chat.
+-  Host icon in chat
+-  Deprecate ChatTextBox2 and use just ChatTextBox
+## Story
+- Fixes creature duplication occurring the next cycle  after a creature enters a den
+- Gracefully handle when the an online game mode menu is loaded but the online lobby hasn't 
+- Updated "Match Save" to "Sync Save" for clarity
+- Updated the Text Prompt on death to dismiss after 5 seconds instead of requiring input
+- Fixed forced den re-sheltering when a client has a valid den
+## Meadow
+- Added configurable timelines
+## Engine
+- Fixed a sizing issue with Custom Packets
+
+# Release 1.10.0 (Anniversary Edition)
+
+## Arena:
+- Fixes Amoeba controls not listening to your pointed direction
+- Piggyback toggle now also controls your ability to piggyback dead / stunned slugcats
+- Add scavenger bomb, bee hive, & corpse grab toggles
+- Fixed watcher cosmetic option not saving for clients
+- Fixed Saint's ascendance timer not updating its default value  
+## Story:
+- Fixed an issue where custom karma gates wouldn't open
+## General
+- Fixes infinite tinnitus
+- Adds copy/paste functionality to password & IP text boxes
+- Fixed Gourmand's damage collision to not linearly increase by player count
+- Refined Russian translation
+- Added custom backgrounds for the anniversary! Check them out under Options->Backgrounds
+
 # Release 1.9.0
 ## General:
+- Added Streamer Mode, it allows you to replace just your name or everyone's name with a randomized one to deter stream sniping. (Client-side Only)
+- Added an optional profanity filter for chat, it will filter chat messages based on your Steam chat settings. (Disabled by default)
+- Added Gameplay remix tab
+- Synced Scavengers animations and grasps.
+- Synced grasp stealing. Works in both Story and Arena gamemodes.
 - Fixed weapon phasing
 - Fixed sleep-crawling bug
 ## Story:
@@ -7,10 +75,11 @@
 - Host is now way less likely to be puppetted by a client after warping from echo
 - Fixed going to ripple karma screen whenever going near/to an echo room when 1st ending is already achieved
 - Prevent players being able to join after warping through ripple warps
+- Added more stability for clients warping
 - Fix sand grubs softlocking the game
 - Fixed friendly fire affecting scavenger kill behavior. Scavs are not your friends.
   ⚠️ Developers: InputOverrides class is now GameplayOverrides
-- Stabilized backpacking theoigh gates & portals 
+- Stabilized backpacking through gates & portals 
 ## Arena:
 - Added beehives 
 - Synced trophies
@@ -30,7 +99,16 @@
   2. Allows players to join a lobby without immidietly loading all regions.
   3. Allows non-host players to manage WorldSessions. (Meadow mode)
   4. Adds potential for downloading custom regions while inside the lobby.
-- Removed redundant arena hook subscription.
+- Synced the following:
+	RainWorldGame.clock
+	Geysers (via RainWorldGame.clock)
+	WaterLevelCycle
+	WindRect (via RainWorldGame.clock)
+	Big Moths (Drinking Chunk & Legs)
+	Death Rain Mode
+	FlameJets
+	Pomegranates
+	Creature Hypothermia
   
 # Release 1.8.0
 ## General:
@@ -41,7 +119,7 @@
 - Fixes Saint's karma activation to mirror game's original behavior.
 - Added a toggle for Watcher's ripple level
 - Separated Watcher Settings from MSC Settings in Slugcat Abilities tab
-- Fixed Beehives not being created in online space leading to Gourmand players being able to "lag-switch".
+
 ## Story:
 - Fixed glow always being enabled in non-watcher campaigns if watcher is enabled
 - Fixed one-way warps not teleporting players in Watcher. (Example: bad warps)
@@ -49,6 +127,7 @@
 - Prevented clients in lobby being allowed to join after warping
 - Added a remix options to gain achievements online. Default is FALSE.
 - Fixed ripple space being shared between players
+
 
 # Release 1.7.1
 ## Story:

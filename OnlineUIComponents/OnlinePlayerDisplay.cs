@@ -130,7 +130,7 @@ namespace RainMeadow
             this.slugIcon.color = lighter_color;
             this.blink = 1f;
 
-            this.username = new FLabel(Custom.GetFont(), customization.nickname);
+            this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));
             owner.hud.fContainers[0].AddChild(this.username);
             this.username.alpha = 0f;
             this.username.x = -1000f;
@@ -278,7 +278,7 @@ namespace RainMeadow
 
             if (messageQueue.Count > 0)
             {
-                this.username.text = customization.nickname + ": ";
+                this.username.text = UsernameGenerator.StreamerModeName(customization.nickname) + ": ";
 
                 while (messageQueue.Count > messageLabels.Count) messageQueue.Dequeue();
                 bool first = true;
@@ -307,35 +307,27 @@ namespace RainMeadow
                 }
             }
             else
-            {
-                this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : customization.nickname;
+                {
+                this.username.text = OnlineManager.lobby.clientSettings.TryGetValue(player, out var cs) && cs.isInteracting ? SetTypingUsername() : UsernameGenerator.StreamerModeName(customization.nickname);
                 if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 0)
                 {
                     this.pingLabel.x = pos.x + (this.username._textRect.width / 2) + 20f; // Position after the username
                     this.pingLabel.y = username.y;
                 }
-                pos.y += 20;
-            }
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value += 1;
-            }
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
-            {
-                this.pingLabel.y = this.gradient.y - 25f;
-                this.pingLabel.x = pos.x;
-            }
+                pos.y += 20;   
+                }
 
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 2)
-            {
-                this.pingLabel.alpha = 0;
-            }
-            if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value > 2)
-            {
-                RainMeadow.rainMeadowOptions.ShowPingLocation.Value = 0;
-            }
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 1)
+                {
+                    this.pingLabel.y = this.gradient.y - 25f;
+                    this.pingLabel.x = pos.x;
+                }
 
-
+                if (RainMeadow.rainMeadowOptions.ShowPingLocation.Value == 2)
+                {
+                    this.pingLabel.alpha = 0;
+                }
+            
             for (int i = messageQueue.Count; i < messageLabels.Count; i++)
             {
                 messageLabels[i].alpha = 0f;

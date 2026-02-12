@@ -126,6 +126,7 @@ namespace RainMeadow
 
             On.Watcher.WarpPoint.NewWorldLoaded_Room += WarpPoint_NewWorldLoaded_Room; // creature moving between WORLDS
             On.Watcher.WarpPoint.Update += Watcher_WarpPoint_Update;
+            On.Watcher.WarpPoint.WarpPrecast += Watcher_WarpPoint_WarpPrecast;
             //On.Watcher.WarpPoint.PerformWarp += WarpPoint_PerformWarp;
             On.Watcher.PrinceBehavior.InitateConversation += Watcher_PrinceBehavior_InitateConversation;
             IL.Watcher.Barnacle.LoseShell += Watcher_Barnacle_LoseShell;
@@ -196,13 +197,8 @@ namespace RainMeadow
                     var inGameClientsData = inGameClients.Select(cs => cs.GetData<StoryClientSettingsData>());
                     var inGameAvatarOPOs = inGameClients.SelectMany(cs => cs.avatars.Select(id => id.FindEntity(true))).OfType<OnlinePhysicalObject>();
                     var rooms = inGameAvatarOPOs.Select(opo => opo.apo.pos.room);
-                    var data = self.overrideData ?? self.Data;
                     var isTransportable = self.transportable; //prevent blocking joining after exiting an echowarp
-                    var isEcho = self.room == null || self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString()) == true;
-                    // Can't warp to warp points with null rooms (echo warps)
-                    // remember that echo warps are one way only, so we will NOT gate thru them
-                    // so please do not pretend it's a gate, and no requirements can be met, thanks :)
-                    // and ensure theyre in the same room as the warp point itself :)
+                    var isEcho = self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
                     if (!isEcho)
                     {
                         if (rooms.Distinct().Count() == 1 && inGameAvatarOPOs.First().apo.Room == self.room.abstractRoom && isTransportable)
@@ -226,7 +222,17 @@ namespace RainMeadow
             }
             orig(self, eu); // either host or singleplayer
         }
-
+        public void Watcher_WarpPoint_WarpPrecast(On.Watcher.WarpPoint.orig_WarpPrecast orig, Watcher.WarpPoint self)
+        {
+            if (OnlineManager.lobby != null && !OnlineManager.lobby.isOwner)
+            {
+                //see SpinningTop_SpawnWarpPoint
+                bool isEnteringEchoWarp = self.room.game.GetStorySession.spinningTopWarpsLeadingToRippleScreen.Contains(self.MyIdentifyingString());
+                if (!isEnteringEchoWarp)
+                    return; //To prevent race conditions in LoadRegion coroutines when host calls NormalExecuteWatcherRiftWarp
+            }
+            orig(self);
+        }
         public void Watcher_Barnacle_LoseShell(ILContext il)
         {
             try
@@ -281,7 +287,7 @@ namespace RainMeadow
                 placedObject.pos = warpPoint.pos;
                 warpPoint.WarpPrecast(); // force cast NOW
                 if (OnlineManager.lobby.isOwner)
-                    StoryRPCs.SaveEchoWarp(self.room.game, warpPoint);
+                    StoryHelpers.SaveEchoWarp(self.room.game, warpPoint);
                 else
                 {
                     Watcher.WarpPoint.WarpPointData warpData = warpPoint.overrideData ?? warpPoint.Data;
@@ -740,7 +746,7 @@ namespace RainMeadow
         {
             if (isStoryMode(out _))
             {
-                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you, press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate, or press PAUSE BUTTON to dismiss message");
+                self.gameOverString = Utils.Translate("Wait for others to shelter or rescue you or press ") + (RainMeadow.rainMeadowOptions.SpectatorKey.Value) + Utils.Translate(" to spectate");
             }
             else
             {
@@ -748,6 +754,7 @@ namespace RainMeadow
             }
         }
 
+        private int ticker = 0;
         private void TextPrompt_Update(On.HUD.TextPrompt.orig_Update orig, TextPrompt self)
         {
             orig(self);
@@ -755,16 +762,18 @@ namespace RainMeadow
             {
                 if (isStoryMode(out _))
                 {
+                    ticker++;
                     self.restartNotAllowed = 1; // block from GoToDeathScreen
 
                     bool touchedInput = false;
                     for (int j = 0; j < self.hud.rainWorld.options.controls.Length; j++)
                     {
-                        touchedInput = (self.hud.rainWorld.options.controls[j].gamePad || !self.defaultMapControls[j]) ? (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(5) || RWInput.CheckPauseButton(0, inMenu: false)) : (touchedInput || self.hud.rainWorld.options.controls[j].GetButton(11));
+                        touchedInput = ticker > 200; // 5 seconds at 40 ticks a second
                     }
                     if (touchedInput || inVoidSea)
                     {
                         self.gameOverMode = false;
+                        ticker = 0;
                     }
                 }
             }
@@ -1712,14 +1721,23 @@ namespace RainMeadow
             RainMeadow.Debug($"START DENPOS save:{self.currentSaveState.denPosition} last:{storyGameMode.myLastDenPos} lobby:{storyGameMode.defaultDenPos}");
             RainMeadow.Debug($"START WARPPOS save:{self.currentSaveState.warpPointTargetAfterWarpPointSave} last:{storyGameMode.myLastWarp}");
 
-            if (OnlineManager.lobby.isOwner || storyGameMode.myLastDenPos is null || self.currentSaveState.denPosition != storyGameMode.defaultDenPos)
+            if (OnlineManager.lobby.isOwner)
             {
                 storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                storyGameMode.defaultDenPos = self.currentSaveState.denPosition;
             }
-            else
+            else 
             {
-                self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                if (storyGameMode.myLastDenPos == "" || storyGameMode.myLastDenPos is null)
+                {
+                    // user is freshly joining the game
+                    storyGameMode.myLastDenPos = self.currentSaveState.denPosition;
+                } else
+                {
+                    self.currentSaveState.denPosition = storyGameMode.myLastDenPos;
+                }
             }
+
             if (OnlineManager.lobby.isOwner || storyGameMode.myLastWarp is null || self.currentSaveState.warpPointTargetAfterWarpPointSave != storyGameMode.myLastWarp)
             {
                 storyGameMode.myLastWarp = self.currentSaveState.warpPointTargetAfterWarpPointSave;
@@ -1970,8 +1988,9 @@ namespace RainMeadow
                 {
                     if (isStoryMode(out var story))
                     {
-                        if (story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening) return true;
                         story.storyClientData.readyForTransition = false;
+                        return story.readyForTransition >= StoryGameMode.ReadyForTransition.Opening;
+                       
                     }
                     return false;
                 });
@@ -1986,11 +2005,12 @@ namespace RainMeadow
                     if (isStoryMode(out var story))
                     {
                         story.storyClientData.readyForTransition = true;
-                        return true;
+                        
                     }
-                    return false;
+                    return true;
+                    
                 });
-                c.Emit(OpCodes.Brfalse, skip);
+                c.Emit(OpCodes.Brtrue, skip);
                 c.Emit(OpCodes.Ret);
                 c.MarkLabel(skip);
             }

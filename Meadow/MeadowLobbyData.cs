@@ -15,7 +15,6 @@ namespace RainMeadow
         public int blueTokensGoal;
         public int goldTokensGoal;
         public int ghostsGoal;
-
         public override ResourceDataState MakeState(OnlineResource resource)
         {
             return new State(this);

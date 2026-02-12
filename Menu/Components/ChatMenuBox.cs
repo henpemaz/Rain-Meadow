@@ -15,7 +15,8 @@ namespace RainMeadow.UI.Components
         public ChatMenuBox(Menu.Menu menu, MenuObject owner, Vector2 pos, Vector2 size) : base(menu, owner, pos, size)
         {
             roundedRect = new(menu, this, Vector2.zero, this.size, true) { fillAlpha = 0.3f };
-            chatTypingBox = new(menu, this, new(10, 10), new(this.size.x - 30, 30));
+            chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30), true);
+            //chatTypingBox = new(menu, this, "", new(10, 10), new(this.size.x - 30, 30));
             chatTypingBox.OnTextSubmit += () =>
             {
                 if (messageScroller != null) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
@@ -42,13 +43,13 @@ namespace RainMeadow.UI.Components
             }
             if (withUser)
             {
-                AlignedMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
+                UsernameMenuLabel userLabel = new(menu, messageScroller, user!, pos, size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 userLabel.label.alignment = FLabelAlignment.Left;
                 userLabel.label.color = ChatLogManager.GetDisplayPlayerColor(user!, MenuColorEffect.rgbMediumGrey);
 
 
-                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, $": {stg}", new(LabelTest.GetWidth(user) + 2, 0), userLabel.size, false)
+                AlignedMenuLabel messageWithUserLabel = new(menu, userLabel, $": {stg}", new(LabelTest.GetWidth(user) + 2 + (userLabel.Host ? 14 : 0), 0), userLabel.size, false)
                 { labelPosAlignment = FLabelAlignment.Left, verticalLabelPosAlignment = OpLabel.LabelVAlignment.Bottom };
                 messageWithUserLabel.label.alignment = FLabelAlignment.Left;
                 userLabel.subObjects.Add(messageWithUserLabel);
@@ -66,7 +67,8 @@ namespace RainMeadow.UI.Components
             float desiredXWidth = messageScroller.size.x - 5;
             Vector2 desiredSize = new(desiredXWidth, messageScroller.buttonHeight);
 
-            List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false)), 1, out string remainingMessage)];
+            bool host = OnlineManager.lobby?.owner.id.GetPersonaName() == user;
+            List<string> splitMessages = [.. MenuHelpers.SmartSplitIntoFixedStrings($"{message}", desiredXWidth - (isSystemMessage ? 0 : LabelTest.GetWidth($"{user}: ", false) + (host ? 14f : 0)), 1, out string remainingMessage)];
             splitMessages.AddRange(MenuHelpers.SmartSplitIntoStrings(remainingMessage, desiredXWidth));
             for (int i = 0; i < splitMessages.Count; i++)
                 messageLabels.Add(GetMessageLabel(user, splitMessages[i], isSystemMessage, i == 0, new(5, messageScroller.GetIdealPosWithScrollForButton(i + messageScroller.buttons.Count).y), desiredSize));
@@ -75,6 +77,11 @@ namespace RainMeadow.UI.Components
         public void AddMessage(string user, string message)
         {
             if (!(OnlineManager.lobby?.gameMode?.mutedPlayers.Contains(user) == false)) return;
+            MatchmakingManager.currentInstance.FilterMessage(ref message);
+            if (RainMeadow.rainMeadowOptions.ChatPing.Value && !string.IsNullOrEmpty(user) && user != OnlineManager.mePlayer.id.GetPersonaName() && message.IndexOf(OnlineManager.mePlayer.id.DisplayName, StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                menu.manager.menuMic.PlaySound(RainMeadow.Ext_SoundID.RM_Slugcat_Call, 0, 1f, 0f);
+            }
             bool setNewScrollPosToLatest = messageScroller.DownScrollOffset == messageScroller.MaxDownScroll;
             messageScroller.AddScrollObjects(GetMessageLabels(user, message));
             if (setNewScrollPosToLatest) messageScroller.DownScrollOffset = messageScroller.MaxDownScroll;
@@ -83,7 +90,7 @@ namespace RainMeadow.UI.Components
 
 
         public RoundedRect roundedRect;
-        public ChatTextBox2 chatTypingBox;
+        public ChatTextBox chatTypingBox;
         public ButtonScroller messageScroller;
     }
 }

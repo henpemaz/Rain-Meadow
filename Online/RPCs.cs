@@ -6,6 +6,31 @@ namespace RainMeadow
     public static class RPCs
     {
         [RPCMethod]
+        public static void DeathRain(RPCEvent rpc, GlobalRain.DeathRain.DeathRainMode deathRainMode, 
+            float timeInThisMode, float calmBeforeStornSunlight)
+        {
+            if (rpc.from != OnlineManager.lobby.owner) return; // Only allow DeathRain from the host.
+            if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
+            {
+                if (game.globalRain.deathRain == null)
+                {
+                    game.globalRain.deathRain = new(game.globalRain);
+                }
+                game.globalRain.deathRain.deathRainMode = deathRainMode;
+                if (deathRainMode == GlobalRain.DeathRain.DeathRainMode.Mayhem) return;
+
+                if (deathRainMode == GlobalRain.DeathRain.DeathRainMode.GradeABuildUp)
+                {
+                    game.globalRain.ShaderLight = -1f;
+                }
+
+                game.globalRain.deathRain.progression = 0f;
+                game.globalRain.deathRain.timeInThisMode = timeInThisMode;
+                game.globalRain.deathRain.calmBeforeStormSunlight = calmBeforeStornSunlight;
+            }
+        }
+
+        [RPCMethod]
         public static void Weapon_HitAnotherThrownWeapon(RPCEvent rpc, OnlinePhysicalObject weapon1, OnlinePhysicalObject weapon2)
         {
             if ((RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is not null))
@@ -101,6 +126,12 @@ namespace RainMeadow
         public static void Creature_Die(OnlinePhysicalObject opo, OnlinePhysicalObject saint)
         {
             if (!(RWCustom.Custom.rainWorld.processManager.currentMainLoop is RainWorldGame game && game.manager.upcomingProcess is null)) return;
+
+            if (saint != null && (opo.apo as AbstractCreature)?.realizedObject != null && (saint.apo as AbstractCreature)?.realizedCreature != null)
+            {
+                // Don't kill our friends!
+                if ((saint.apo as AbstractCreature).realizedCreature.FriendlyFireSafetyCandidate((opo.apo as AbstractCreature).realizedCreature)) return;
+            }
 
             (opo.apo as AbstractCreature)?.realizedCreature?.Die();
             if (saint != null)

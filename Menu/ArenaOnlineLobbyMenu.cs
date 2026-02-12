@@ -261,13 +261,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         if (RainMeadow.isArenaMode(out _)) Arena.externalArenaGameMode?.OnUIShutDown(this);
         arenaMainLobbyPage.chatMenuBox.chatTypingBox.DelayedUnload(0.1f);
         ChatLogManager.Unsubscribe(arenaMainLobbyPage.chatMenuBox);
-        if (OnlineManager.lobby?.isOwner == true)
-        {
+
+        bool owner = OnlineManager.lobby?.isOwner == true;
+        if (owner) 
             GetArenaSetup.SaveToFile();
-            arenaMainLobbyPage.SaveInterfaceOptions();
-            RainMeadow.rainMeadowOptions._SaveConfigFile();
-        }
         else (GetArenaSetup as ArenaOnlineSetup)?.SaveNonSessionToFile();
+
+        arenaMainLobbyPage.SaveInterfaceOptions(owner);
+        RainMeadow.rainMeadowOptions._SaveConfigFile();
+
         base.ShutDownProcess();
         if (manager.upcomingProcess != ProcessManager.ProcessID.Game)
         {
@@ -369,8 +371,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return check ? Translate("Players can join each round") : Translate("Players can only join at the first round");
             if (idString == "WEAPONCOLLISIONFIX")
                 return check ? Translate("Thrown weapons are corrected to prevent no-clips") : Translate("Thrown weapons follow vanilla behaviour");
+            if (idString == "ENABLEBOMBSANDBEES")
+                return check ? Translate("Bee hives and scavenger bombs follow vanilla spawn behavior") : Translate("bee hives and scavenger bombs are disabled");
             if (idString == "PIGGY")
                 return check ? Translate("Players can piggyback each other") : Translate("Players cannot piggyback each other");
+                            if (idString == "CORPSEGRAB")
+                return check ? Translate("Players can grab dead players") : Translate("Players cannot grab dead players");
+                            if (idString == "ENABLEBOMBS")
+                return check ? Translate("Scavenger bombs follow vanilla spawn behavior") : Translate("No scavenger bombs spawn");
+                            if (idString == "ENABLEBEES")
+                return check ? Translate("Bee hives follow vanilla spawn behavior") : Translate("No beehives spawn");
+
         }
         if (selectedObject is SimpleButton simpleBtn)
         {
@@ -393,6 +404,8 @@ public class ArenaOnlineLobbyMenu : SmartMenu
                 return Translate("Kick player from lobby");
             if (id == "COLOR_SLUGCAT")
                 return Translate("Customize your colors");
+            if (id == "HOST_INFO")
+                return Translate("This user is the lobby host");
         }
         if (selectedObject is SelectOneButton selectOneButton)
         {
@@ -432,7 +445,7 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             if (id == "SHUFFLE" && sideBtn.owner is PlaylistHolder playHolder)
                 return Translate(playHolder.ShuffleStatus ? "Playing levels in random order" : "Playing levels in selected order");
         }
-        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", teamBtn.teamName);
+        if (selectedObject is OnlineTeamBattleSettingsInterface.TeamButton teamBtn)  return Translate("Join Team \"<TEAMNAME>\"").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(teamBtn.teamName));
         if (selectedObject is OnlineSlugcatAbilitiesInterface.SelectSettingsPage.SettingsButton settingBtn)
             return Translate("Go to <SETTINGSNAME> Page").Replace("<SETTINGSNAME>", settingBtn.menuLabel.label.text); //menulabel text is already coded to be translated
         return selectedObject is IHaveADescription descObj ? descObj.Description : base.UpdateInfoText();
@@ -485,11 +498,17 @@ public class ArenaOnlineLobbyMenu : SmartMenu
         List<MenuObject> MatchSettingsRow2Elements = arenaMainLobbyPage.arenaSettingsInterface.roomRepeatArray.buttons.Cast<MenuObject>().ToList();
         List<MenuObject> MatchSettingsRow3Elements = arenaMainLobbyPage.arenaSettingsInterface.rainTimerArray.buttons.Cast<MenuObject>().ToList();
         List<MenuObject> MatchSettingsRow4Elements = arenaMainLobbyPage.arenaSettingsInterface.wildlifeArray.buttons.Cast<MenuObject>().ToList();
-        List<MenuObject> MatchSettingsRow5Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.stealItemCheckBox, arenaMainLobbyPage.arenaSettingsInterface.allowMidGameJoinCheckbox };
-        List<MenuObject> MatchSettingsRow6Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.piggyBackCheckbox, arenaMainLobbyPage.arenaSettingsInterface.weaponCollisionCheckBox };
-        List<MenuObject> MatchSettingsRow7Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.countdownTimerTextBox.wrapper };
-        List<MenuObject> MatchSettingsRow8Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.arenaGameModeComboBox.wrapper };
-        List<List<MenuObject>> MatchSettingsElementRowList = new List<List<MenuObject>>() { MatchSettingsRow1Elements, MatchSettingsRow2Elements, MatchSettingsRow3Elements, MatchSettingsRow4Elements, MatchSettingsRow5Elements, MatchSettingsRow6Elements, MatchSettingsRow7Elements, MatchSettingsRow8Elements };
+        
+        List<MenuObject> MatchSettingsRow5Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.arenaGameModeComboBox.wrapper };
+        List<MenuObject> MatchSettingsRow6Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.countdownTimerTextBox.wrapper };
+        List<MenuObject> MatchSettingsRow7Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.stealItemCheckBox };
+        List<MenuObject> MatchSettingsRow8Elements = new List<MenuObject>() {  arenaMainLobbyPage.arenaSettingsInterface.piggyBackCheckbox };
+        List<MenuObject> MatchSettingsRow9Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.enableBombs};
+        List<MenuObject> MatchSettingsRow10Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.enableCorpseGrab};
+        List<MenuObject> MatchSettingsRow11Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.allowMidGameJoinCheckbox};
+        List<MenuObject> MatchSettingsRow12Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.weaponCollisionCheckBox};
+        List<MenuObject> MatchSettingsRow13Elements = new List<MenuObject>() { arenaMainLobbyPage.arenaSettingsInterface.enableBees};
+        List<List<MenuObject>> MatchSettingsElementRowList = new List<List<MenuObject>>() { MatchSettingsRow1Elements, MatchSettingsRow2Elements, MatchSettingsRow3Elements, MatchSettingsRow4Elements, MatchSettingsRow5Elements, MatchSettingsRow6Elements, MatchSettingsRow7Elements, MatchSettingsRow8Elements, MatchSettingsRow9Elements, MatchSettingsRow10Elements, MatchSettingsRow11Elements, MatchSettingsRow12Elements, MatchSettingsRow13Elements };
         Extensions.TrySequentialParallelStitchBind(MatchSettingsElementRowList, areRows: true, loopLastIndex: true, reverseListList: true);
 
         UpdateElementBindings();

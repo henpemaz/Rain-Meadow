@@ -230,16 +230,16 @@ namespace RainMeadow.UI.Components
                 OpTextBox teamNameBox = teamNameBoxes[i];
                 OpTinyColorPicker teamColorPicker = teamColorPickers[i];
                 int actualTeamIndex = teamBtn.buttonArrayIndex;
-                string name = teamBattleMode.teamNames[actualTeamIndex];
+                string name =  teamBattleMode.teamNames[actualTeamIndex];
                 Color color = teamBattleMode.teamColors[actualTeamIndex];
                 teamBtn.teamColor = color;
-                teamBtn.teamName = teamBattleMode.teamNames[actualTeamIndex];
+                teamBtn.teamName = MatchmakingManager.currentInstance.FilterTeamName(teamBattleMode.teamNames[actualTeamIndex]);
                 teamBtn.buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
                 teamBtn.teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
                 teamBtn.teamCount.label.color = color;
-
                 teamNameBox.held = teamNameBox._KeyboardOn;
                 if (!teamNameBox.held) teamNameBox.value = name;
+                
                 if (!teamColorPicker.held) teamColorPicker.valuecolor = color;
 
                 bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);

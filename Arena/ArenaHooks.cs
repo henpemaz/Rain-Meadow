@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace RainMeadow
@@ -98,8 +99,6 @@ namespace RainMeadow
             On.MultiplayerUnlocks.IsLevelUnlocked += MultiplayerUnlocks_IsLevelUnlocked;
             On.MultiplayerUnlocks.IsCreatureUnlockedForLevelSpawn += MultiplayerUnlocks_IsCreatureUnlockedForLevelSpawn;
 
-
-            On.Player.ClassMechanicsSaint += Player_ClassMechanicsSaint;
             On.CreatureSymbol.ColorOfCreature += CreatureSymbol_ColorOfCreature;
             On.MoreSlugcats.SingularityBomb.ctor += SingularityBomb_ctor;
             IL.MoreSlugcats.SingularityBomb.Update += SingularityBomb_Update;
@@ -120,15 +119,318 @@ namespace RainMeadow
             On.Menu.ArenaOverlay.ctor += ArenaOverlay_ctor;
             new Hook(typeof(Player).GetProperty("CanPutSlugToBack").GetGetMethod(), this.CanPutSlugToBack);
             new Hook(typeof(Player).GetProperty("KarmaCap").GetGetMethod(), this.SetKarmaLevel);
+            new Hook(typeof(Player).GetProperty("activateDynamicWarpDuration").GetGetMethod(), this.SetDynamicWarpDuration);
+            new Hook(typeof(VoidSpawn.ChasePlayer).GetProperty("SwimTowards").GetGetMethod(), this.ChasePlayer);
+            new Hook(typeof(VoidSpawnGraphics).GetProperty("rippleMode").GetGetMethod(), this.GetRippleModeForLocalPlayer);
+
             On.Player.ActivateAscension += Player_ActivateAscension;
 
             On.Menu.PauseMenu.SpawnExitContinueButtons += PauseMenu_SpawnExitContinueButtons2;
-
             On.PlayerGraphics.ctor += PlayerGraphics_ctor;
             On.PlayerGraphics.DrawSprites += PlayerGraphics_DrawSprites;
             On.PlayerGraphics.WeaverParts.Update += PlayerGraphics_WeaverParts_Update;
 
+            On.Player.SpawnDynamicWarpPoint += Player_SpawnDynamicWarpPoint;
+            On.Player.CamoUpdate += Player_CamoUpdate2;
+            On.VoidSpawn.ctor_AbstractPhysicalObject_float_bool_SpawnType += VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType;
+            On.VoidSpawn.GenerateBody += VoidSpawn_GenerateBody;
+            On.VoidSpawn.Update += VoidSpawn_Update;
+
+            On.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update;
+            IL.VoidSpawnGraphics.Update += VoidSpawnGraphics_Update2;
+            IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
+            On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
+            On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
+            On.Player.ctor += Player_ctor2;
         }
+
+        private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
+        
+        {
+            orig(self, creature, world);
+            if (isArenaMode(out var arena))
+            {
+                self.godTimer = arena.arenaSaintAscendanceTimer * 40;
+                self.maxGodTime = arena.arenaSaintAscendanceTimer * 40; 
+            }
+        }
+
+        private void Player_CamoUpdate2(On.Player.orig_CamoUpdate orig, Player self)
+        {
+            orig(self);
+            if (!isArenaMode(out var arena)) return;
+            bool slowDownCharge = false;
+            foreach (VoidSpawn voidSpawn in self.room.voidSpawns)
+            {
+                if (!voidSpawn.IsLocal()) continue;
+                if (voidSpawn.behavior != null) //player actually created it
+                    slowDownCharge = true;
+                if (voidSpawn.abstractPhysicalObject.rippleLayer != self.abstractPhysicalObject.rippleLayer)
+                    voidSpawn.startFadeOut = true;
+            }
+            if (slowDownCharge)
+            {
+                self.camoCharge = Mathf.Min(self.camoCharge + 0.7f, self.usableCamoLimit);
+            }
+        }
+        private int SetDynamicWarpDuration(Func<Player, int> orig, Player self)
+        {
+            if (isArenaMode(out var arena))
+                return 75;
+            return orig(self);
+        }
+        private void Player_SpawnDynamicWarpPoint(On.Player.orig_SpawnDynamicWarpPoint orig, Player self, string forcedDestination, Vector2? forcedDestinationPosition)
+        {
+            if (!isArenaMode(out var arena))
+            {
+                orig(self, forcedDestination, forcedDestinationPosition);
+                return;
+            }
+            if (arena.countdownInitiatedHoldFire)
+            {
+                return;
+            }
+            if (!arena.voidMasterEnabled)
+            {
+                return;
+            }
+            if (!self.IsLocal()) return;
+
+            float requiredCharge = self.usableCamoLimit / 2;
+
+            if (self.camoCharge >= requiredCharge) return;
+
+            var room = self.room;
+            AbstractPhysicalObject apo = new(room.world, Watcher.WatcherEnums.AbstractObjectType.RippleSpawn, null, self.abstractCreature.pos, room.world.game.GetNewID());
+            VoidSpawn voidSpawn = new(apo, room.roomSettings.GetEffectAmount(RoomSettings.RoomEffect.Type.VoidMelt), VoidSpawnKeeper.DayLightMode(room), VoidSpawn.SpawnType.RippleAmoeba)
+            {
+                timeUntilFadeout = arena.amoebaDuration * 40
+            };
+            voidSpawn.behavior = new VoidSpawn.ChasePlayer(voidSpawn, room);
+            room.abstractRoom.AddEntity(apo);
+            voidSpawn.abstractPhysicalObject.Realize();
+            voidSpawn.abstractPhysicalObject.realizedObject.PlaceInRoom(room);
+            voidSpawn.PlaceInRoom(room);
+            voidSpawn.ChangeRippleLayer(self.abstractCreature.rippleLayer, true);
+            self.room.world.GetResource()?.ApoEnteringWorld(voidSpawn.abstractPhysicalObject);
+            self.room.abstractRoom.GetResource()?.ApoEnteringRoom(voidSpawn.abstractPhysicalObject, voidSpawn.abstractPhysicalObject.pos);
+
+            self.camoCharge += requiredCharge;
+
+        }
+        private void Room_MaterializeRippleSpawn(On.Room.orig_MaterializeRippleSpawn orig, Room self, Vector2 spawnPos, Room.RippleSpawnSource source)
+        {
+            if (isArenaMode(out _))
+                return; //if not, will see hordes of amoebas. now that's too much love
+            orig(self, spawnPos, source);
+        }
+
+        int GetPriority(ArenaOnlineGameMode arena, VoidSpawn voidSpawn, Player? player)
+        {
+            if (player == null || player.dead)
+                return 0;
+            if (player.abstractCreature.rippleLayer != voidSpawn.abstractPhysicalObject.rippleLayer)
+                return 1;
+            int additionalPoints = 0;
+            if (player.abstractCreature.GetOnlineObject(out var opo))
+            {
+                foreach (ArenaSitting.ArenaPlayer arenaPlayer in player.room.game.GetArenaGameSession.arenaSitting.players)
+                {
+                    if (arenaPlayer.playerNumber == ArenaHelpers.FindOnlinePlayerNumber(arena, opo!.owner))
+                    {
+                        additionalPoints = arenaPlayer.allKills.Count;
+                        break;
+                    }
+                }
+            }
+            return 2 + additionalPoints;
+        }
+        private Vector2 ChasePlayer(Func<VoidSpawn.ChasePlayer, Vector2> orig, VoidSpawn.ChasePlayer self)
+        {
+            if (!isArenaMode(out var arena)) return orig(self);
+            //only runs on the person who created the voidspawn because voidspawn.behaviour is null on default and isnt synced
+            VoidSpawn voidSpawn = self.owner;
+            Player? foundPlayer = null;
+            float minDistance = 0f;
+            foreach (AbstractCreature player in voidSpawn.room.game.GetArenaGameSession.Players)
+            {
+                if (player.IsLocal(out var oe)) continue;
+                if (player.realizedCreature is not Player realizedPlayer) continue;
+
+                if (realizedPlayer.room == null || realizedPlayer.room.abstractRoom.index != voidSpawn.room.abstractRoom.index) continue;
+
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
+                {
+                    ArenaTeamClientSettings? playerTeam = ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(oe!.owner);
+                    if (playerTeam != null && playerTeam.team == arena.arenaTeamClientSettings.team)
+                        continue;
+                }
+
+                int foundPlayerPriority = GetPriority(arena, voidSpawn, foundPlayer);
+                int playerPriority = GetPriority(arena, voidSpawn, realizedPlayer);
+                float distance = Vector2.Distance(voidSpawn.firstChunk.pos, realizedPlayer.mainBodyChunk.pos);
+
+                if (foundPlayer == null || playerPriority > foundPlayerPriority || (playerPriority == foundPlayerPriority && distance < minDistance))
+                {
+                    foundPlayer = realizedPlayer;
+                    minDistance = distance;
+                }
+            }
+            if (arena.amoebaControl && Input.GetKey(RainMeadow.rainMeadowOptions.PointingKey.Value))
+            {
+                Vector2 pointingVector = Pointing.GetOnlinePointingVector();
+                var controller = RWCustom.Custom.rainWorld.options.controls[0].GetActiveController();
+                if (controller is Rewired.Joystick)
+                {
+            
+                    Vector2 lastPosition = self.owner.abstractPhysicalObject.realizedObject.bodyChunks[0].pos;
+                    Vector2 nextPosition = lastPosition  + pointingVector * 400;            
+                    return nextPosition;
+                
+                } else {
+                    return pointingVector;
+                }
+            }
+            if (foundPlayer != null)
+            {
+                if (foundPlayer.standingInWarpPointProtectionTime > 0 || foundPlayer.warpPointCooldown > 0)
+                {
+                    return voidSpawn.mainBody[0].pos + RWCustom.Custom.DirVec(foundPlayer.mainBodyChunk.pos, voidSpawn.mainBody[0].pos) * 400f;
+                }
+                return foundPlayer.mainBodyChunk.pos;
+            }
+            return new Vector2(voidSpawn.mainBody[0].pos.x, voidSpawn.mainBody[1].pos.y);
+        }
+        private void VoidSpawn_ctor_AbstractPhysicalObject_float_bool_SpawnType(On.VoidSpawn.orig_ctor_AbstractPhysicalObject_float_bool_SpawnType orig, VoidSpawn self, AbstractPhysicalObject apo, float voidMeltInRoom, bool daylightmode, VoidSpawn.SpawnType variant)
+        {
+            //Default non-owners will spawn it as RippleSpawn causing visual glitches. So bruteforce it because we love amoebas!!
+            if (isArenaMode(out _))
+                variant = VoidSpawn.SpawnType.RippleAmoeba;
+            orig(self, apo, voidMeltInRoom, daylightmode, variant);
+        }
+        private void VoidSpawn_GenerateBody(On.VoidSpawn.orig_GenerateBody orig, VoidSpawn self)
+        {
+            if (!isArenaMode(out _))
+            {
+                orig(self);
+                return;
+            }
+            UnityEngine.Random.State savedState = UnityEngine.Random.state;
+            UnityEngine.Random.InitState(86042); //so bodychunk count match
+            orig(self);
+            UnityEngine.Random.state = savedState;
+        }
+        private void VoidSpawn_Update2(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                ILLabel label = null;
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchLdfld<PhysicalObject>(nameof(PhysicalObject.abstractPhysicalObject)),
+                    x => x.MatchLdfld<AbstractPhysicalObject>(nameof(AbstractPhysicalObject.rippleLayer)),
+                    x => x.MatchLdcI4(1),
+                    x => x.MatchBneUn(out label));
+                c.EmitDelegate(delegate ()
+                {
+                    return isArenaMode(out _);
+                });
+                c.Emit(OpCodes.Brtrue, label);
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private void VoidSpawn_Update(On.VoidSpawn.orig_Update orig, VoidSpawn self, bool eu)
+        {
+            orig(self, eu);
+            if (!isArenaMode(out _)) return;
+            self.culled = false;
+
+        }
+        private void VoidSpawnGraphics_Update2(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                ILLabel label = null;
+                c.GotoNext(x => x.MatchLdarg(0),
+                    x => x.MatchCall<GraphicsModule>("get_owner"),
+                    x => x.MatchLdfld<UpdatableAndDeletable>(nameof(UpdatableAndDeletable.room)),
+                    x => x.MatchLdfld<Room>(nameof(Room.game)),
+                    x => x.MatchCallvirt<RainWorldGame>("get_setupValues"),
+                    x => x.MatchLdfld<RainWorldGame.SetupValues>(nameof(RainWorldGame.SetupValues.playerGlowing)), x => x.MatchBrtrue(out label));
+                c.EmitDelegate(delegate ()
+                {
+                    return isArenaMode(out _);
+                });
+                c.Emit(OpCodes.Brtrue, label);
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private void VoidSpawnGraphics_Update(On.VoidSpawnGraphics.orig_Update orig, VoidSpawnGraphics self)
+        {
+            if (isArenaMode(out _))
+            {
+                if (self.owner.room.game.Players.Count != self.playersGlowVision.GetLength(0))
+                {
+                    float[,] oldPlayersGlowVision = self.playersGlowVision;
+                    int secondLength = oldPlayersGlowVision.GetLength(1);
+                    self.playersGlowVision = new float[self.owner.room.game.Players.Count, secondLength];
+                    int minLength = Mathf.Min(oldPlayersGlowVision.GetLength(0), self.playersGlowVision.GetLength(0));
+                    for (int i = 0; i < minLength; i++)
+                    {
+                        for (int j = 0; j < secondLength; j++)
+                            self.playersGlowVision[i, j] = oldPlayersGlowVision[i, j];
+                    }
+                }
+            }
+            orig(self);
+        }
+        private void VoidSpawnGraphics_DrawSprites(ILContext il)
+        {
+            try
+            {
+                ILCursor c = new(il);
+                c.GotoNext(MoveType.After, x => x.MatchStfld<VoidSpawnGraphics>(nameof(VoidSpawnGraphics.playerGlowVision)));
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldarg_3);
+                c.EmitDelegate(delegate (VoidSpawnGraphics self, float timeStacker)
+                {
+                    if (isArenaMode(out _)) //keep it visible to creator
+                        self.playerGlowVision = Mathf.Lerp(self.spawn.lastFade, self.spawn.fade, timeStacker);
+                });
+            }
+            catch (Exception ex)
+            {
+                Error(ex);
+            }
+        }
+        private float VoidSpawnGraphics_AlphaFromGlowDist(On.VoidSpawnGraphics.orig_AlphaFromGlowDist orig, VoidSpawnGraphics self, Vector2 A, Vector2 B)
+        {
+            if (isArenaMode(out _))
+                return 1 * self.playerGlowVision; //keep it visible to creator
+            return orig(self, A, B);
+        }
+        private bool GetRippleModeForLocalPlayer(Func<VoidSpawnGraphics, bool> orig, VoidSpawnGraphics self)
+        {
+            //can we consider just hooking onto game.ActiveRipplelayer to get local player's ripple space. Saves alot of the hooks
+            if (isArenaMode(out _))
+            {
+                if (self.spawn.room != null && self.spawn.rippleSpawn)
+                {
+                    AbstractCreature? myPlayer = self.spawn.room.game.Players.Find(x => x.IsLocal());
+                    int actualActiveRippleLayer = myPlayer?.rippleLayer ?? self.spawn.room.game.ActiveRippleLayer;
+                    return self.spawn.abstractPhysicalObject.rippleLayer == actualActiveRippleLayer;
+                }
+            }
+            return orig(self);
+        }
+
         private void PlayerGraphics_ctor(On.PlayerGraphics.orig_ctor orig, PlayerGraphics self, PhysicalObject ow)
         {
             orig(self, ow);
@@ -277,7 +579,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }
@@ -384,7 +686,7 @@ namespace RainMeadow
 
         private void CamoMeter_Update(On.Watcher.CamoMeter.orig_Update orig, Watcher.CamoMeter self)
         {
-            if (isArenaMode(out var _))
+            if (isArenaMode(out var arena))
             {
                 if (self.Player == null)
                 {
@@ -402,11 +704,22 @@ namespace RainMeadow
                     self.lastAnimTime = self.animTime;
                     self.Player.camoCharge = Mathf.Clamp(self.Player.camoCharge, 0f, self.Player.camoLimit);
 
-                    self.animSpeed = RWCustom.Custom.LerpAndTick(to: (self.Player.camoCharge == 0f) ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f), from: self.animSpeed, lerp: 0.02f, tick: 0.01f);
-                    self.animTime += self.animSpeed / 40f;
                     self.pos = new Vector2(Mathf.Max(55.01f, self.hud.rainWorld.options.SafeScreenOffset.x + 22.51f), Mathf.Max(45.01f, self.hud.rainWorld.options.SafeScreenOffset.y + 22.51f));
                     self.fade = self.Player.slugcatStats.name == Watcher.WatcherEnums.SlugcatStatsName.Watcher ? 1f : 0f; // why
                     self.full = 1f - self.Player.camoCharge / self.Player.camoLimit;
+                    float voidSpawnTax = 0.5f; //change it when tax changes
+                    if (arena.voidMasterEnabled && self.full > voidSpawnTax)
+                    {
+                        self.percentLimited = 1;
+                        self.animSpeed = 2f;
+                    }
+                    else
+                    {
+                        self.percentLimited = 0;
+                        float desiredAnimSpeed = self.Player.camoCharge == 0f ? 0f : ((!self.Player.isCamo) ? (-0.5f) : 1f);
+                        self.animSpeed = RWCustom.Custom.LerpAndTick(self.animSpeed, desiredAnimSpeed, 0.02f, 0.01f);
+                    }
+                    self.animTime += self.animSpeed / 40f;
                 }
 
             }
@@ -509,6 +822,9 @@ namespace RainMeadow
         }
         private bool CanPutSlugToBack(Func<Player, bool> orig, Player self)
         {
+            if (isArenaMode(out var arena) && !arena.piggyBack) {
+                   return false;
+            }
             if (OnlineManager.lobby != null && (self.input[0].y <= 0))
             {
                 foreach (var grasp in self.grasps)
@@ -555,9 +871,9 @@ namespace RainMeadow
                         if (OnlineManager.lobby != null)
                         {
                             var onlineCreature = self.abstractPhysicalObject.GetOnlineObject();
-                            if (onlineCreature != null && !onlineCreature.isMine)
+                            if (onlineCreature != null && !onlineCreature.isMine && source.owner.IsLocal())
                             {
-                                (onlineCreature as OnlineCreature).RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
+                                (onlineCreature as OnlineCreature)?.RPCCreatureViolence(source.owner.abstractPhysicalObject.GetOnlineObject(), hitChunk.index, hitAppendage, directionAndMomentum, type, damage, stunBonus);
                             }
                         }
                         self.Violence(source, directionAndMomentum, hitChunk, hitAppendage, type, damage, stunBonus);
@@ -692,8 +1008,23 @@ namespace RainMeadow
             {
                 var c = new ILCursor(il);
                 ILLabel skip = il.DefineLabel();
+
+                c.GotoNext(MoveType.After,
+                    i => i.MatchLdloc(18), // physicalObject
+                    i => i.MatchLdarg(0),
+                    i => i.MatchBeq(out skip));
+
+                c.Emit(OpCodes.Ldarg_0);
+                c.Emit(OpCodes.Ldloc, 18);
+                c.EmitDelegate((Player self, PhysicalObject po) =>
+                {
+                    // Don't ascend our friends!
+                    return po is Creature creature && self.FriendlyFireSafetyCandidate(creature);
+                });
+                c.Emit(OpCodes.Brtrue_S, skip);
+
                 c.GotoNext(
-                     i => i.MatchLdloc(18),
+                     i => i.MatchLdloc(18), //physicalObject
                      i => i.MatchIsinst<Creature>(),
                      i => i.MatchCallvirt<Creature>("Die")
                      );
@@ -701,22 +1032,21 @@ namespace RainMeadow
                 c.Emit(OpCodes.Ldloc, 18);
                 c.EmitDelegate((Player self, PhysicalObject po) =>
                 {
-                    if (self.IsLocal() && isArenaMode(out var _))
+                    if (self.IsLocal() && isArenaMode(out var arena))
                     {
                         if (OnlinePhysicalObject.map.TryGetValue(po.abstractPhysicalObject, out var opo))
                         {
-                            if (!opo.isMine)
+                            if (opo.isMine) return;
+                            var saint = self.abstractCreature.GetOnlineCreature();
+                            if (saint != null)
                             {
-                                var saint = self.abstractCreature.GetOnlineCreature();
-                                if (saint != null)
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
-                                }
-                                else
-                                {
-                                    opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
-                                }
-
+                                // Don't ascend our friends!
+                                if (po is Creature c && self.FriendlyFireSafetyCandidate(c)) return;
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, saint);
+                            }
+                            else
+                            {
+                                opo.owner.InvokeOnceRPC(RPCs.Creature_Die, opo, null);
                             }
                         }
                     }
@@ -1016,19 +1346,6 @@ namespace RainMeadow
             {
                 return orig(self, addToAliveTime, dontCountSandboxLosers);
             }
-        }
-
-        private void Player_ClassMechanicsSaint(On.Player.orig_ClassMechanicsSaint orig, Player self)
-        {
-
-            orig(self);
-            if (isArenaMode(out var _))
-            {
-                var duration = 0.35f * (self.maxGodTime / 400f); // we'll see how that feels for now
-                self.godTimer = Mathf.Min(self.godTimer + duration, self.maxGodTime);
-
-            }
-
         }
 
         private void ArenaSettingsInterface_ctor(On.Menu.ArenaSettingsInterface.orig_ctor orig, Menu.ArenaSettingsInterface self, Menu.Menu menu, Menu.MenuObject owner)
@@ -1593,6 +1910,7 @@ namespace RainMeadow
                             {
                                 IPlayerEdible playerEdible = player.grasps[j].grabbed as IPlayerEdible;
                                 num2 = ((!ModManager.MSC || !(player.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint) || (!(playerEdible is JellyFish) && !(playerEdible is Centipede) && !(playerEdible is Fly) && !(playerEdible is VultureGrub) && !(playerEdible is SmallNeedleWorm) && !(playerEdible is Hazer))) ? (num2 + (float)(player.grasps[j].grabbed as IPlayerEdible).FoodPoints) : (num2 + 0f));
+
                             }
                         }
                     }
@@ -1661,13 +1979,13 @@ namespace RainMeadow
                     var userNameBackup = "Unknown user";
                     try
                     {
-                        userNameBackup = currentName.id.name;
+                        userNameBackup = currentName.id.DisplayName;
                         self.playerNameLabel.text = userNameBackup;
                         if (TeamBattleMode.isTeamBattleMode(arena, out var team))
                         {
                             if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                             {
-                                self.playerNameLabel.text += $" -- {team.teamNames[td.team].ToUpper()}";
+                                self.playerNameLabel.text += $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
                             }
                         }
                     }
@@ -1771,7 +2089,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.teamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }
@@ -1879,6 +2197,10 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (self.game.world.rainCycle.timer < 40)
+                {
+                    return false;
+                }
 
                 if (!(shortcutVessel.creature is Player))
                 {
@@ -1990,70 +2312,12 @@ namespace RainMeadow
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
-            orig(self);
-
-            if (isArenaMode(out var arena))
-            {
-                if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
-                {
-                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-                    arena.currentLobbyOwner = OnlineManager.lobby.owner;
-
-                }
-
-                if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
-                {
-                    RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
-
-                    var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
-
-                    self.Players.RemoveAll(p => extraPlayers.Contains(p));
-
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))//&& ac.state.alive
-                        {
-                            self.Players.Add(ac);
-                        }
-                    }
-                }
-                arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
-                }
-
-                if (!self.sessionEnded)
-                {
-                    foreach (var s in self.arenaSitting.players)
-                    {
-                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
-                        {
-                            for (int i = 0; i < self.Players.Count; i++)
-                            {
-                                if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
-                                {
-                                    if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
-                                    {
-                                        s.timeAlive++;
-                                    }
-                                }
-                                else
-                                {
-                                    if (self.Players[i].state.alive) // alive and without an owner? Die
-                                    {
-                                        self.Players[i].Die();
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                }
-
+            if (isArenaMode(out var arena)) {
+                arena.externalArenaGameMode.ArenaSessionUpdate(orig, self, arena);
+            } else {
+                orig(self);
             }
+
         }
 
 
@@ -2130,6 +2394,10 @@ namespace RainMeadow
 
             if (isArenaMode(out var arena))
             {
+                if (self.game.world.rainCycle.timer < 40)
+                {
+                    return false;
+                }
                 return arena.externalArenaGameMode.IsExitsOpen(arena, orig, self);
 
             }
@@ -2156,4 +2424,5 @@ namespace RainMeadow
         }
     }
 }
+
 

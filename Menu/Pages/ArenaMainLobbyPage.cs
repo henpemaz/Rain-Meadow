@@ -11,6 +11,7 @@ using UnityEngine;
 using static RainMeadow.UI.Components.TabContainer;
 using static RainMeadow.UI.Components.OnlineSlugcatAbilitiesInterface;
 using RainMeadow.UI.Interfaces;
+using Menu.Remix.MixedUI.ValueTypes;
 
 
 namespace RainMeadow.UI.Pages;
@@ -37,6 +38,7 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
     public int painCatIndex, holdSlugcatBtnCounter;
     private ArenaOnlineGameMode Arena => (ArenaOnlineGameMode)OnlineManager.lobby.gameMode;
     public ArenaOnlineLobbyMenu? ArenaMenu => menu as ArenaOnlineLobbyMenu;
+    public NullLobbyError nullLobbyError;
 
     public ArenaMainLobbyPage(Menu.Menu menu, MenuObject owner, Vector2 pos, string painCatName, int painCatIndex) : base(menu, owner, pos)
     {
@@ -246,14 +248,20 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
         if (settingsPage == slugcatAbilitiesInterface.watcherSettingsTab)
             BindWatcherSettingsPage(isHidden);
     }
-    public void SaveInterfaceOptions()
+    public void SaveInterfaceOptions(bool saveOwnerOptions)
     {
-        RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
-        RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
-        RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
-        RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
+        if (saveOwnerOptions)
+        {
+            RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value = arenaSettingsInterface.countdownTimerTextBox.valueInt;
+            RainMeadow.rainMeadowOptions.ArenaItemSteal.Value = arenaSettingsInterface.stealItemCheckBox.Checked;
+            RainMeadow.rainMeadowOptions.ArenaAllowMidJoin.Value = arenaSettingsInterface.allowMidGameJoinCheckbox.Checked;
+            RainMeadow.rainMeadowOptions.EnablePiggyBack.Value = arenaSettingsInterface.piggyBackCheckbox.Checked;
+            RainMeadow.rainMeadowOptions.EnableCorpseGrab.Value = arenaSettingsInterface.enableCorpseGrab.Checked;
+            RainMeadow.rainMeadowOptions.EnableBombs.Value = arenaSettingsInterface.enableBombs.Checked;
+            RainMeadow.rainMeadowOptions.EnableBees.Value = arenaSettingsInterface.enableBees.Checked;
+        }
 
-        slugcatAbilitiesInterface?.SaveAllInterfaceOptions();
+        slugcatAbilitiesInterface?.SaveAllInterfaceOptions(saveOwnerOptions);
     }
     public void UpdatePlayerButtons(ButtonScroller.IPartOfButtonScroller button)
     {
@@ -373,6 +381,16 @@ public class ArenaMainLobbyPage : PositionedMenuObject, IDynamicBindHandler
 
         chatLobbyStateDivider.x = chatMenuBox.DrawX(timeStacker) + (chatMenuBox.size.x / 2);
         chatLobbyStateDivider.y = chatMenuBox.DrawY(timeStacker) + chatMenuBox.roundedRect.size.y - 50;
+        if (nullLobbyError != null)
+        {
+            return;
+        }
+        if (OnlineManager.lobby == null && nullLobbyError == null)
+        {
+            nullLobbyError = new NullLobbyError(this.ArenaMenu!, this.ArenaMenu!.pages[0], new Vector2(this.ArenaMenu.manager.rainWorld.options.ScreenSize.x / 2f - 240f + (1366f - this.ArenaMenu.manager.rainWorld.options.ScreenSize.x) / 2f, 224f), new Vector2(480f, 320f), "Arena lobby is null! Exiting...", false);
+            this.ArenaMenu.pages[0].subObjects.Add(nullLobbyError);
+            return;
+        }
     }
     public void BindDynamicSelectable(MenuObject objRequested)
     {

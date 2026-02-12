@@ -58,11 +58,11 @@ namespace RainMeadow.UI.Components
             Container.AddChild(pingLabel);
             lines = [];
             slugcatButton = new(menu, this, new(10, 10), new Vector2(100, 100), null, false, signal: profileIdentifier.isMe? "CHANGE_SLUGCAT" : "");
-            nameLabel = new(menu, this, player.id.name, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
+            nameLabel = new(menu, this, player.id.DisplayName, new(slugcatButton.pos.x + slugcatButton.size.x + 10, slugcatButton.pos.y + slugcatButton.size.y - 5), new(80, 30), true);
             nameLabel.label.anchorY = 1f;
             textOverlayLabel = new(menu, slugcatButton, "", Vector2.zero, slugcatButton.size, false);
             InitButtons(canKick);
-            this.SafeAddSubobjects(slugcatButton, nameLabel, textOverlayLabel, colorInfoButton, infoKickButton);
+            this.SafeAddSubobjects(slugcatButton, nameLabel, textOverlayLabel, colorInfoButton, infoKickButton, hostIdentifierButton);
             subObjects.AddRange(lines);
 
         }
@@ -135,7 +135,23 @@ namespace RainMeadow.UI.Components
             HSLColor basecolor = MyBaseColor();
             nameLabel.label.color = Color.Lerp(basecolor.rgb, rainbow, rainbow.a);
             slugcatButton.secondaryColor = showRainbow ? rainbow : desiredSlugcatButtonSecondaryColor;
-
+            if (!RainMeadow.isArenaMode(out var arena))
+            {
+                return;
+            }
+            if (hostIdentifierButton != null)
+            {
+                if (TeamBattleMode.isTeamBattleMode(arena, out var tb)) {
+                hostIdentifierButton.symbolSprite.SetElementByName(tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] ?? "ChieftainA");
+                } else
+                {
+                    if (hostIdentifierButton.symbolSprite.element.name != "ChieftainA")
+                    {
+                      hostIdentifierButton.symbolSprite.SetElementByName("ChieftainA");
+                    }
+                }
+            }
+            
         }
         public void InitButtons(bool canKick)
         {
@@ -159,6 +175,17 @@ namespace RainMeadow.UI.Components
                 connector.MoveLineSpriteBeforeNode(colorInfoButton.roundedRect.sprites[0]);
                 lines.Add(connector);
 
+            }
+            if (OnlineManager.lobby != null && profileIdentifier == OnlineManager.lobby.owner)
+            {
+                if (!RainMeadow.isArenaMode(out var arena))
+                {
+                    return;
+                }
+                hostIdentifierButton =  new(menu, this, TeamBattleMode.isTeamBattleMode(arena, out var tb) ? tb.teamIcons[ArenaHelpers.GetDataSettings<ArenaTeamClientSettings>(profileIdentifier).team] : "ChieftainA", "HOST_INFO", new(infoKickButton.pos.x + infoKickButton.size.x + 30, basePos.y + 21));
+                UiLineConnector connector = new(menu, infoKickButton, hostIdentifierButton, false);
+                connector.MoveLineSpriteBeforeNode(hostIdentifierButton.roundedRect.sprites[0]);
+                lines.Add(connector);
             }
         }
         public HSLColor MyBaseColor()
@@ -192,6 +219,7 @@ namespace RainMeadow.UI.Components
         public MenuLabel textOverlayLabel;
         public List<UiLineConnector> lines;
         public ScrollSymbolButton? infoKickButton;
+        public ScrollSymbolButton? hostIdentifierButton;
         public ScrollSymbolButton colorInfoButton;
         public ProperlyAlignedMenuLabel nameLabel;
         public SlugcatColorableButton slugcatButton;

@@ -46,9 +46,9 @@ namespace RainMeadow
             {
                 if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo)
                 {
-                    if (!colorDict.ContainsKey(opo.owner.id.name) && opo.TryGetData<SlugcatCustomization>(out var customization))
+                    if (!colorDict.ContainsKey(opo.owner.id.DisplayName) && opo.TryGetData<SlugcatCustomization>(out var customization))
                     {
-                        colorDict.Add(opo.owner.id.name, customization.bodyColor);
+                        colorDict.Add(opo.owner.id.DisplayName, customization.bodyColor);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -166,6 +167,8 @@ namespace RainMeadow
                     return new OnlineSporePlant(asp, entityId, owner, isTransferable);
                 case PebblesPearl.AbstractPebblesPearl app:
                     return new OnlinePebblesPearl(app, entityId, owner, isTransferable);
+                case Pomegranate.AbstractPomegranate ap:
+                    return new OnlinePomegranate(ap, entityId, owner, isTransferable);
                 default:
                     return new OnlineConsumable(acm, entityId, owner, isTransferable);
                 case null:
@@ -194,9 +197,24 @@ namespace RainMeadow
             map.Add(apo, this);
         }
 
+        public List<RPCEvent> graspLocked = new();
+        static public bool creatingRemoteObject { get; private set; } = false;
         public OnlinePhysicalObject(OnlinePhysicalObjectDefinition entityDefinition, OnlineResource inResource, AbstractPhysicalObjectState initialState) : base(entityDefinition, inResource, initialState)
         {
-            this.apo = ApoFromDef(entityDefinition, inResource, initialState);
+            bool oldCreatingRemoteObject = creatingRemoteObject;
+            creatingRemoteObject = true;
+            try
+            {
+                this.apo = ApoFromDef(entityDefinition, inResource, initialState);
+            }
+            catch (Exception except)
+            {
+                creatingRemoteObject = oldCreatingRemoteObject;
+                throw;
+            }
+            creatingRemoteObject = oldCreatingRemoteObject; 
+
+
             realized = initialState.realized;
             map.Add(apo, this);
         }
@@ -426,9 +444,12 @@ namespace RainMeadow
 
                 if (po is Creature creature)
                 {
-                    foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                    if (creature.grasps != null)
                     {
-                        grabbing.Release();
+                        foreach (Creature.Grasp grabbing in creature.grasps.OfType<Creature.Grasp>())
+                        {
+                            grabbing.Release();
+                        }
                     }
                 }
 

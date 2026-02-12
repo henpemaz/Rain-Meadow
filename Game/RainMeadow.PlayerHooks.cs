@@ -96,7 +96,7 @@ public partial class RainMeadow
         On.Player.CamoUpdate += Player_CamoUpdate;
         On.Player.ToggleCamo += Player_ToggleCamo;
         IL.Player.TransitionRippleUpdate += Player_TransitionRippleUpdate;
-
+        IL.Player.RippleSpawnInteractions += Player_RippleSpawnInteractions;
 
         On.Player.SetMalnourished += Player_SetMalnourished;
         new Hook(typeof(Player).GetProperty(nameof(Player.Malnourished)).GetGetMethod(), Player_get_Malnourished);
@@ -196,6 +196,12 @@ public partial class RainMeadow
         {
             return false;
         }
+
+        if (isArenaMode(out var arena) && arena.voidMasterEnabled)
+        {
+            return true;
+        }
+
         return orig(self);
     }
     private void Player_ToggleCamo(On.Player.orig_ToggleCamo orig, Player self)
@@ -393,6 +399,35 @@ public partial class RainMeadow
             c.EmitDelegate(delegate (Player player)
             {
                 return player.IsLocal(out _); //dont play ripple music
+            });
+            c.Emit(OpCodes.Brfalse, label);
+        }
+        catch (Exception ex)
+        {
+            Error(ex);
+        }
+    }
+    private void Player_RippleSpawnInteractions(ILContext il)
+    {
+        try
+        {
+            ILCursor c = new(il);
+            ILLabel label = null;
+            c.GotoNext(MoveType.After, x => x.MatchBneUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.Emit(OpCodes.Ldloc, 4);
+            c.EmitDelegate(delegate (Player self, int i)
+            {
+                VoidSpawn spawn = self.room.voidSpawns[i];
+                if (!self.IsLocal())
+                {
+                    if (isArenaMode(out _))
+                        spawn.playerProximityTime = 10; //slow down when near the player
+                    return false;
+                }
+                if (isArenaMode(out _) && spawn.IsLocal() && spawn.behavior != null)
+                    return false; //dont use death effect if amoeba was created by player and dont slow down the voidspawn!
+                return true;
             });
             c.Emit(OpCodes.Brfalse, label);
         }
@@ -752,6 +787,7 @@ public partial class RainMeadow
         if (OnlineManager.lobby != null)
         {
             if (pickUpCandidate == null || pickUpCandidate.isNPC) return false;
+            if (isArenaMode(out var arena) && !arena.piggyBack) return false;
             return true;
         }
 
@@ -1172,12 +1208,20 @@ public partial class RainMeadow
         public bool afkSleep;
         public int manualSleepDownCounter;
         public int timeSinceShelterWakeup;
+
+
+        public bool flightlocked;
+        public int capeFlyCounter;
     }
     public int afkSleepRequiredTime = 1200;
     public int manualSleepRequiredTime = 200;
 
     private void Player_Update1(On.Player.orig_Update orig, Player self, bool eu)
     {
+
+
+
+
         if (OnlineManager.lobby != null && self.objectInStomach != null)
             self.objectInStomach.pos = self.abstractCreature.pos;
         if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
@@ -1312,6 +1356,73 @@ public partial class RainMeadow
             { //For reasons beyond my comprehension, PlayerBlink() has a weird, possibly unintended "else" that makes specifically Spearmaster *not* close their eyes during sleepCurlUp.
                 self.Blink(2); //Vanilla only avoids this issue because sleepCounter also closes eyes directly using Blink(). We're not using sleepCounter, so Spearmaster needs this insomnia cure.
             }
+        }
+
+        if (OnlineManager.lobby != null && !(ModManager.MSC && 
+            self.SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint && 
+            (self.KarmaCap >= 9 || (self.room.game.session is ArenaGameSession && 
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.gameType == DLCSharedEnums.GameTypeID.Challenge && 
+                self.room.game.GetArenaGameSession.arenaSitting.gameTypeSetup.challengeMeta.ascended))) && 
+                OnlineManager.lobby.configurableBools.TryGetValue("MEADOW_ANNIVERSARY", out var anniversary) && anniversary)
+        {
+
+            if (self.IsLocal())
+            {
+                if (CapeManager.HasCape(OnlineManager.mePlayer.id).HasValue && !self.isNPC)
+                {
+                    var extras = playerExtras.GetOrCreateValue(self);
+                    if (!self.Consious)
+                    {
+                        extras.capeFlyCounter = 0;
+                        extras.flightlocked = true;
+                    }
+
+                    IntVector2 zero = new IntVector2(0, 0);
+                    if (self.canJump > 0 || self.canWallJump > 0 || self.canCorridorJump > 0)
+                    {
+                        extras.flightlocked = false;
+                    }
+                    else
+                    {
+                        if (self.input[0].pckp && self.input[0].jmp && !self.input[1].jmp && !extras.flightlocked)
+                        {
+                            extras.capeFlyCounter = 100;
+                            extras.flightlocked = true;
+                        }
+                    }
+
+                    if (extras.capeFlyCounter > 0)
+                    {
+                        extras.capeFlyCounter--;
+                        IntVector2 flyDir = new IntVector2(self.input[0].x, self.input[0].y);
+                        Player.BodyModeIndex[] bannedBodyModes = [
+                            Player.BodyModeIndex.CorridorClimb,
+                            Player.BodyModeIndex.ClimbingOnBeam,
+                            Player.BodyModeIndex.WallClimb,
+                            Player.BodyModeIndex.Swimming,
+                            Player.BodyModeIndex.ClimbIntoShortCut
+                        ];
+
+                        
+                        if ((flyDir.x == 0 && flyDir.y == 0) || bannedBodyModes.Contains(self.bodyMode))
+                        {
+                            extras.capeFlyCounter = 0;
+                        }
+                        else
+                        {
+                            self.animation = Player.AnimationIndex.None;
+                            self.mainBodyChunk.vel *= 0.8f;
+                            self.mainBodyChunk.vel += flyDir.ToVector2().normalized*2f;
+                            self.airInLungs = 1f;
+                            self.standing = false;
+                            self.WeightedPush(0, 1, Custom.DirVec(self.bodyChunks[0].pos, self.bodyChunks[1].pos), 1.0f);
+                            foreach (BodyChunk chunk in self.bodyChunks) chunk.vel.y += self.gravity * Mathf.Pow(((float)Mathf.Min(20, extras.capeFlyCounter))/20.0f, 1.4f);
+                        }
+                        
+                    }
+                }
+            }
+          
         }
     }
 
@@ -2028,10 +2139,13 @@ public partial class RainMeadow
                     }
                     if (obj is Player pl)
                     {
-                        if (pl.Stunned || pl.dead)
-                        {
+                        if (pl.dead || pl.Stunned) {
+                            if (pl.dead && !arena.enableCorpseGrab)// no grabbing period
+                            {
+                                return false;                  
+                            };
                             return orig(self, obj);
-                        };
+                        }
                     }
 
                 }
