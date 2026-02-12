@@ -411,7 +411,7 @@ namespace RainMeadow
                 .Count(settings => settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator);
                 if (self.Players.Count + activePlayerCountWithOverseers != arena.arenaSittingOnlineOrder.Count)
             {
-                RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
+                RainMeadow.Trace($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
 
                 var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
 
