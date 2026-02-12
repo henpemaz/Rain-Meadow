@@ -1172,6 +1172,19 @@ public partial class RainMeadow
             c.Index += 6;
             c.MarkLabel(skip);
 
+            // don't try teleporting remote players when using dev tools
+            c.Index = 0;
+            ILLabel skipDevTools = il.DefineLabel();
+            c.GotoNext(MoveType.Before,
+                i => i.MatchLdstr("v"),
+                i => i.MatchCallOrCallvirt<UnityEngine.Input>(nameof(UnityEngine.Input.GetKey)),
+                i => i.MatchLdloc(33),
+                i => i.MatchAnd(),
+                i => i.MatchBrfalse(out skipDevTools));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((Player self) => self.abstractPhysicalObject.IsLocal());
+            c.Emit(OpCodes.Brfalse, skipDevTools);
+
             // don't handle shelter for meadow and remote scugs
             c.Index = 0;
             ILLabel skipShelter = null;
