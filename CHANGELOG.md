@@ -3,10 +3,25 @@
 - Added `arena.session` to access the current ArenaGameSession
 - Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
+- Disabled Watcher glow from ripple level in online arena sessions
+
+## Story
+### Watcher
+- Fixed end-game ability not working
+
+## Meadow
+- Disabled Outer Expanse, Spearmaster and Artificer endings in Meadow mode
 
 ## General
+- Fixed Dev Tools trying to teleport remote players when holding V
+### Engine
+- Synced Waterflux
+- Synced Gourmand exhaustion and player lung exhaustion
+- Synced Vulture demasking
+- Synced Fire Sprites powering on Box Worms
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
+- Fixed chat filters not applying to messages above player heads.
 
 # Release 1.11.1
 ## Engine 
