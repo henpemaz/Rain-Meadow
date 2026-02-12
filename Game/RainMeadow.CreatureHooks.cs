@@ -42,11 +42,24 @@ namespace RainMeadow
             On.BigSpider.BabyPuff += BigSpider_BabyPuff;
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
+            On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
+
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private void BoxWorm_RecieveHelp(On.Watcher.BoxWorm.orig_RecieveHelp orig, Watcher.BoxWorm self)
+        {
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
+            {
+                orig(self);
+                opo.BroadcastRPCInRoomExceptOwners(opo.RecieveHelp);
+                return;
+            }
+            orig(self);
         }
 
         private void Hazer_HasSprayed(ILContext il)

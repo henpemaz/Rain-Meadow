@@ -45,6 +45,7 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is BoxWorm) return new RealizedBoxWormState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
 
