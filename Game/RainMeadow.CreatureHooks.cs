@@ -296,9 +296,10 @@ namespace RainMeadow
 
         private void Vulture_DropMask(On.Vulture.orig_DropMask orig, Vulture self, Vector2 violenceDir)
         {
-            if (!self.IsLocal())
+            if (OnlineManager.lobby != null && self.abstractPhysicalObject.GetOnlineObject(out var opo) && opo.isMine)
             {
-                (self.State as Vulture.VultureState).mask = false;
+                orig(self, violenceDir);
+                opo.BroadcastRPCInRoomExceptOwners(opo.Demask, violenceDir);
                 return;
             }
             orig(self, violenceDir);

@@ -703,5 +703,12 @@ namespace RainMeadow
             if (apo.realizedObject is null || apo.realizedObject is not ICallForHelp realized) return;
             realized.RecieveHelp();
         }
+
+        [RPCMethod (security = RPCSecurity.InResource)]
+        public void Demask(Vector2 violenceDir)
+        {
+            if (apo.realizedObject is null || apo.realizedObject is not Vulture vulture || vulture.IsMiros) return;
+            vulture.DropMask(violenceDir);
+        }
     }
 }
