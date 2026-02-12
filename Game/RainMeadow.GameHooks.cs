@@ -47,7 +47,8 @@ namespace RainMeadow
             IL.RoomSpecificScript.SS_E08GradientGravity.Update += RoomSpecificScript_SS_E08GradientGravity_Update;
 
             On.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.Update += OE_GourmandEnding_Update;
-            On.MoreSlugcats.MSCRoomSpecificScript.SpearmasterEnding.Update += SpearmasterEnding_Update; ;
+            On.MoreSlugcats.MSCRoomSpecificScript.SpearmasterEnding.Update += SpearmasterEnding_Update;
+            On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.Update += LC_FINAL_Update;
 
             On.AntiGravity.BrokenAntiGravity.Update += AntiGravity_BrokenAntiGravity_Update;
 
@@ -69,6 +70,12 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+        }
+
+        private void LC_FINAL_Update(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self, bool eu)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return;
+            orig(self, eu);
         }
 
         // Disable Spearmaster ending trigger in Meadow Mode.
