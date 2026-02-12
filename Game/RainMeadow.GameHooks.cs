@@ -45,6 +45,10 @@ namespace RainMeadow
             On.RoomSpecificScript.AddRoomSpecificScript += RoomSpecificScript_AddRoomSpecificScript;
 
             IL.RoomSpecificScript.SS_E08GradientGravity.Update += RoomSpecificScript_SS_E08GradientGravity_Update;
+
+            On.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.Update += OE_GourmandEnding_Update;
+            On.MoreSlugcats.MSCRoomSpecificScript.SpearmasterEnding.Update += SpearmasterEnding_Update; ;
+
             On.AntiGravity.BrokenAntiGravity.Update += AntiGravity_BrokenAntiGravity_Update;
 
             On.FliesWorldAI.AddFlyToSwarmRoom += FliesWorldAI_AddFlyToSwarmRoom;
@@ -65,6 +69,20 @@ namespace RainMeadow
             On.ProcessManager.CueAchievement += ProcessManager_CueAchievement;
 
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
+        }
+
+        // Disable Spearmaster ending trigger in Meadow Mode.
+        private void SpearmasterEnding_Update(On.MoreSlugcats.MSCRoomSpecificScript.SpearmasterEnding.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.SpearmasterEnding self, bool eu)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return;
+            orig(self, eu);
+        }
+
+        // Disable OE ending trigger in Meadow Mode.
+        private void OE_GourmandEnding_Update(On.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding self, bool eu)
+        {
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return
+            orig(self, eu);
         }
 
         private void MoveFlyToHive(On.FliesRoomAI.orig_MoveFlyToHive orig, FliesRoomAI self, Fly fly)
