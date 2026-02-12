@@ -1,9 +1,17 @@
 # Release 1.12.0
 ## Arena
+- Added `arena.session` to access the current ArenaGameSession
+- Moved ` ArenaGameSession_Update`  fully inside of ` ExternalGameMode.ArenaGameSession_Update` to enable overrides
 - Restored custom Team Names
 
 ## General
 - Re-synced Remix settings on Lobby owner change
+### Chat:
+- Auto-fill usernames when using "@" in chat. 
+
+## Story
+### Watcher
+- Fixed end-game ability not working 
 
 # Release 1.11.1
 ## Engine 
