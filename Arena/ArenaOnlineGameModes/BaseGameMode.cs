@@ -252,7 +252,7 @@ namespace RainMeadow
             
             if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
             {
-               ///SpawnOverseer(arena, self, room, randomExitIndex);
+               /// SpawnOverseer(arena, self, room, randomExitIndex);
                 return;
             }
 
@@ -395,6 +395,11 @@ namespace RainMeadow
 
         public virtual void ArenaSessionUpdate(On.ArenaGameSession.orig_Update orig, ArenaGameSession self, ArenaOnlineGameMode arena)
         {
+            bool isOwnerOverseer = ArenaHelpers.GetArenaClientSettings(OnlineManager.lobby.owner)?.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator;
+            if (arena.setupTime > 0 && isOwnerOverseer)
+            {
+                self.endSessionCounter = 30;
+            }
             orig(self);
             
             if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
@@ -411,7 +416,7 @@ namespace RainMeadow
                 .Count(settings => settings.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator);
                 if (self.Players.Count + activePlayerCountWithOverseers != arena.arenaSittingOnlineOrder.Count)
             {
-                RainMeadow.Trace($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
+                RainMeadow.Error($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
 
                 var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
 

@@ -350,7 +350,7 @@ Go to Slugcat Selection Page|Перейти к выбору Слизнекота
 ///Выбор персонажа в Арене
 Back To Lobby|Назад в лобби
 Go back to main lobby|Вернуться назад в лобби
-CHOOSE YOUR SLUGCAT|ВЫБЕРИ СВОЕГО СЛИЗНЕКОТА
+CHOOSE YOUR CHARACTER|ВЫБЕРИ СВОЕГО СЛИЗНЕКОТА
 Press grab to toggle active slugcats|Нажми «Взять», чтобы переключить активных Слизнекотов
 You have been unreadied. Switch back to re-ready yourself automatically|Вы перестали быть готовыми. Переключитесь обратно, чтобы сразу стать готовым снова.
 The match is starting in <COUNTDOWN>! Ready up!!|Матч начнётся через <COUNTDOWN>! Приготовься!!

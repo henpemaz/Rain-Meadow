@@ -66,7 +66,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         painCatDescription = ModManager.MSC ? GetPainCatDescription() : "";
 
-        chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR SLUGCAT"), new Vector2(680f, 575f), default, true);
+        chooseYourSlugcatLabel = new(menu, this, menu.Translate("CHOOSE YOUR CHARACTER"), new Vector2(680f, 575f), default, true);
         chooseYourSlugcatLabel.label.color = new Color(0.5f, 0.5f, 0.5f);
         chooseYourSlugcatLabel.label.shader = menu.manager.rainWorld.Shaders["MenuTextCustom"];
 
@@ -177,7 +177,7 @@ public class ArenaSlugcatSelectPage : PositionedMenuObject, SelectOneButton.Sele
 
         if (slugcatSelectNamePages.Count > 1)
         {
-            chooseYourSlugcatLabel.text = menu.Translate("CHOOSE YOUR SLUGCAT") + " (" + (currentSlugcatSelectPage + 1) + "/" + slugcatSelectNamePages.Count + ")";
+            chooseYourSlugcatLabel.text = menu.Translate("CHOOSE YOUR CHARACTER") + " (" + (currentSlugcatSelectPage + 1) + "/" + slugcatSelectNamePages.Count + ")";
         }
     }
 
