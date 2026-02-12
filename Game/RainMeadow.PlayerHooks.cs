@@ -393,6 +393,13 @@ public partial class RainMeadow
             });
             c.Emit(OpCodes.Brtrue, label); //skip sharing ripple layer with Players[0] which is host in arena
 
+            c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(0), x => x.MatchBleUn(out label));
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate(delegate (Player player)
+            {
+                return isArenaMode(out _);
+            });
+            c.Emit(OpCodes.Brtrue, label); // Don't glow in arena mode
 
             c.GotoNext(MoveType.After, x => x.MatchLdarg(0), x => x.MatchCall<Player>("get_rippleLevel"), x => x.MatchLdcR4(5), x => x.MatchBltUn(out label));
             c.Emit(OpCodes.Ldarg_0);
