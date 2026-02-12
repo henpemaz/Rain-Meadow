@@ -72,6 +72,7 @@ namespace RainMeadow
             On.GlobalRain.InitDeathRain += GlobalRain_InitDeathRain;
         }
 
+        // Disable Artificer ending trigger in Meadow Mode.
         private void LC_FINAL_Update(On.MoreSlugcats.MSCRoomSpecificScript.LC_FINAL.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.LC_FINAL self, bool eu)
         {
             if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return;
@@ -88,7 +89,7 @@ namespace RainMeadow
         // Disable OE ending trigger in Meadow Mode.
         private void OE_GourmandEnding_Update(On.MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding.orig_Update orig, MoreSlugcats.MSCRoomSpecificScript.OE_GourmandEnding self, bool eu)
         {
-            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return
+            if (OnlineManager.lobby != null && OnlineManager.lobby.gameMode is MeadowGameMode meadow) return;
             orig(self, eu);
         }
 
