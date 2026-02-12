@@ -77,14 +77,13 @@ namespace RainMeadow.UI.Components
 
                 KeyValuePair<int, string> mapping = actualMappings[num + i];
                 string name = teamBattleMode.teamNames[mapping.Key];
-                string displayName = teamBattleMode.displayTeamNames[mapping.Key];
                 Color teamColor = teamBattleMode.teamColors[mapping.Key];
 
                 Vector2 btnpos = i == 0 ? new(posXMultipler - 50, size.y - 125) : i % 2 == 0 ? new(teamButtons[0].pos.x, teamButtons[0].pos.y - 140) : new(posXMultipler * 3 - 50, teamButtons[i - 1].pos.y);
-                teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, displayName, mapping.Value);
+                teamButtons[i] = new(menu, this, btnpos, new(100, 100), teamButtons, mapping.Key, name, mapping.Value);
 
                 Vector2 namePickerPos = i == 0 ? new(posXMultipler - 75, dividerY - 40) : i % 2 == 0 ? new(teamNameBoxes[0].pos.x, teamNameBoxes[0].pos.y - 40) : new(posXMultipler * 3 - 95, teamNameBoxes[i - 1].pos.y);
-                OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(OnlineManager.lobby.isOwner ? name : displayName), namePickerPos, 150);
+                OpTextBox textBox = teamNameBoxes[i] = new(new Configurable<string>(name), namePickerPos, 150);
                 textBox.allowSpace = true;
                 textBox.accept = OpTextBox.Accept.StringASCII;
                 textBox.OnValueUpdate += (config, value, oldValue) => NameTextBox_OnValueUpdated(mapping.Key, value);
@@ -231,17 +230,16 @@ namespace RainMeadow.UI.Components
                 OpTextBox teamNameBox = teamNameBoxes[i];
                 OpTinyColorPicker teamColorPicker = teamColorPickers[i];
                 int actualTeamIndex = teamBtn.buttonArrayIndex;
-                string name = teamBattleMode.teamNames[actualTeamIndex];
-                string displayName = teamBattleMode.displayTeamNames[actualTeamIndex];
+                string name =  teamBattleMode.teamNames[actualTeamIndex];
                 Color color = teamBattleMode.teamColors[actualTeamIndex];
                 teamBtn.teamColor = color;
-                teamBtn.teamName = displayName;
+                teamBtn.teamName = MatchmakingManager.currentInstance.FilterTeamName(teamBattleMode.teamNames[actualTeamIndex]);
                 teamBtn.buttonBehav.greyedOut = teamColorPickers.Any(x => x.currentlyPicking);
                 teamBtn.teamCount.text = OnlineManager.lobby.clientSettings.Where(x => OnlineManager.players.Contains(x.Key) && x.Value.TryGetData<ArenaTeamClientSettings>(out var team) && team.team == actualTeamIndex).Count().ToString();
                 teamBtn.teamCount.label.color = color;
-
                 teamNameBox.held = teamNameBox._KeyboardOn;
-                if (!teamNameBox.held) teamNameBox.value = displayName;
+                if (!teamNameBox.held) teamNameBox.value = name;
+                
                 if (!teamColorPicker.held) teamColorPicker.valuecolor = color;
 
                 bool greyOutConfig = OwnerSettingsDisabled || teamColorPickers.Any(x => x.currentlyPicking && x != teamColorPickers[i]);

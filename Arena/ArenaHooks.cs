@@ -579,7 +579,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.displayTeamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }
@@ -1985,7 +1985,7 @@ namespace RainMeadow
                         {
                             if (OnlineManager.lobby.clientSettings[currentName].TryGetData<ArenaTeamClientSettings>(out var td))
                             {
-                                self.playerNameLabel.text += $" -- {team.displayTeamNames[td.team].ToUpper()}";
+                                self.playerNameLabel.text += $" -- {MatchmakingManager.currentInstance.FilterTeamName(team.teamNames[td.team].ToUpper())}";
                             }
                         }
                     }
@@ -2089,7 +2089,7 @@ namespace RainMeadow
 
                     if (tb.winningTeam != -1)
                     {
-                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", tb.displayTeamNames[tb.winningTeam].ToUpper());
+                        self.headingLabel.text = self.Translate("<TEAMNAME> WIN!").Replace("<TEAMNAME>", MatchmakingManager.currentInstance.FilterTeamName(tb.teamNames[tb.winningTeam].ToUpper()));
                     }
                 }
             }
@@ -2312,70 +2312,12 @@ namespace RainMeadow
 
         private void ArenaGameSession_Update(On.ArenaGameSession.orig_Update orig, ArenaGameSession self)
         {
-            orig(self);
-
-            if (isArenaMode(out var arena))
-            {
-                if (arena.currentLobbyOwner != OnlineManager.lobby.owner)
-                {
-                    self.game.manager.RequestMainProcessSwitch(ProcessManager.ProcessID.MultiplayerResults);
-                    arena.currentLobbyOwner = OnlineManager.lobby.owner;
-
-                }
-
-                if (self.Players.Count != arena.arenaSittingOnlineOrder.Count)
-                {
-                    RainMeadow.Trace($"Arena: Abstract Creature count does not equal registered players in the online Sitting! AC Count: {self.Players.Count} | ArenaSittingOnline Count: {arena.arenaSittingOnlineOrder.Count}");
-
-                    var extraPlayers = self.Players.Skip(arena.arenaSittingOnlineOrder.Count).ToList();
-
-                    self.Players.RemoveAll(p => extraPlayers.Contains(p));
-
-                    foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
-                    {
-                        if (playerAvatar.type == (byte)OnlineEntity.EntityId.IdType.none) continue; // not in game
-                        if (playerAvatar.FindEntity(true) is OnlinePhysicalObject opo && opo.apo is AbstractCreature ac && !self.Players.Contains(ac))//&& ac.state.alive
-                        {
-                            self.Players.Add(ac);
-                        }
-                    }
-                }
-                arena.externalArenaGameMode.ArenaSessionUpdate(arena, self);
-                if (OnlineManager.lobby.isOwner)
-                {
-                    arena.playersEqualToOnlineSitting = self.Players.Count == arena.arenaSittingOnlineOrder.Count;
-                }
-
-                if (!self.sessionEnded)
-                {
-                    foreach (var s in self.arenaSitting.players)
-                    {
-                        var os = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, s.playerNumber); // current player
-                        {
-                            for (int i = 0; i < self.Players.Count; i++)
-                            {
-                                if (OnlinePhysicalObject.map.TryGetValue(self.Players[i], out var onlineC))
-                                {
-                                    if (onlineC.owner == os && self.Players[i].realizedCreature != null && !self.Players[i].realizedCreature.State.dead)
-                                    {
-                                        s.timeAlive++;
-                                    }
-                                }
-                                else
-                                {
-                                    if (self.Players[i].state.alive) // alive and without an owner? Die
-                                    {
-                                        self.Players[i].Die();
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-
-                }
-
+            if (isArenaMode(out var arena)) {
+                arena.externalArenaGameMode.ArenaSessionUpdate(orig, self, arena);
+            } else {
+                orig(self);
             }
+
         }
 
 
