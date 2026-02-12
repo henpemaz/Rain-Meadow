@@ -1,3 +1,4 @@
+using MoreSlugcats;
 using Watcher;
 
 namespace RainMeadow
@@ -47,6 +48,8 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is StowawayBug) return new RealizedStowawayState((OnlineCreature)onlineObject);
+            if (onlineObject.apo.realizedObject is SandGrub) return new RealizedSandGrubState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
 
