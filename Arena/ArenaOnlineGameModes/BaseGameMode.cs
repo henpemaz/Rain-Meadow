@@ -177,7 +177,14 @@ namespace RainMeadow
         {
             return null;
         }
-
+        /// <summary>
+        /// Spawns a creature in an online space
+        /// </summary>
+        /// <param name="arena"></param>
+        /// <param name="self"></param>
+        /// <param name="room"></param>
+        /// <param name="randomExitIndex"></param>
+        /// <param name="templateType"></param>
         public void SpawnTransferableCreature(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, int randomExitIndex, CreatureTemplate.Type templateType)
         {
             AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate(templateType), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
@@ -187,6 +194,14 @@ namespace RainMeadow
             abstractCreature.RealizeInRoom();
             self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
         }
+        /// <summary>
+        /// Spawns a player-controlled avatar in an online space
+        /// </summary>
+        /// <param name="arena"></param>
+        /// <param name="self"></param>
+        /// <param name="room"></param>
+        /// <param name="randomExitIndex"></param>
+        /// <param name="templateType"></param>
         public void SpawnNonTransferableCreature(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, int randomExitIndex,  CreatureTemplate.Type templateType)
         {
             RainMeadow.Debug("Trying to create an abstract creature");
