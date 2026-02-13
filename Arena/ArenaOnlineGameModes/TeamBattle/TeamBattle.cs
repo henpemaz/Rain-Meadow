@@ -362,122 +362,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     }
                 }
 
-
-
-                RainMeadow.Debug("Trying to create an abstract creature");
-                RainMeadow.Debug($"RANDOM EXIT INDEX: {randomExitIndex}");
-                RainMeadow.Debug($"RANDOM START TILE INDEX: {room.ShortcutLeadingToNode(randomExitIndex).StartTile}");
-                RainMeadow.sSpawningAvatar = true;
-                AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate("Slugcat"), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
-                abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
-                abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(randomExitIndex).destNode;
-                abstractCreature.Room.AddEntity(abstractCreature);
-
-
-                RainMeadow.Debug("assigned ac, registering");
-
-                self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
-                RainMeadow.sSpawningAvatar = false;
-
-                self.game.cameras[0].followAbstractCreature = abstractCreature;
-
-                if (abstractCreature.GetOnlineObject(out var oe) && oe.TryGetData<SlugcatCustomization>(out var customization))
-                {
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, customization.playingAs, isGhost: false);
-
-                }
-                else
-                {
-                    RainMeadow.Error("Could not get online owner for spawned player!");
-                    abstractCreature.state = new PlayerState(abstractCreature, 0, self.arenaSitting.players[ArenaHelpers.FindOnlinePlayerNumber(arena, OnlineManager.mePlayer)].playerClass, isGhost: false);
-                }
-
-                RainMeadow.Debug("Arena: Realize Creature!");
-                abstractCreature.Realize();
-                var shortCutVessel = new ShortcutHandler.ShortCutVessel(room.ShortcutLeadingToNode(randomExitIndex).DestTile, abstractCreature.realizedCreature, self.game.world.GetAbstractRoom(0), 0);
-
-                shortCutVessel.entranceNode = abstractCreature.pos.abstractNode;
-                shortCutVessel.room = self.game.world.GetAbstractRoom(abstractCreature.Room.name);
-
-                self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
-                self.AddPlayer(abstractCreature);
-                if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Night)
-                {
-                    (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
-                }
-                if (ModManager.MSC)
-                {
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Red)
-                    {
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.75f);
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.5f);
-                    }
-
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Yellow)
-                    {
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, 0.75f);
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, 0.3f);
-                    }
-
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Artificer)
-                    {
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.All, -1, 0, -0.5f);
-                        self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Scavengers, -1, 0, -1f);
-                    }
-
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Slugpup)
-                    {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
-                    }
-
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Sofanthiel)
-                    {
-                        (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = arena.painCatThrowingSkill;
-                        RainMeadow.Debug("ENOT THROWING SKILL " + (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill);
-                        if ((abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill == 0 && arena.painCatEgg)
-                        {
-                            AbstractPhysicalObject bringThePain = new AbstractPhysicalObject(room.world, DLCSharedEnums.AbstractObjectType.SingularityBomb, null, abstractCreature.pos, shortCutVessel.room.world.game.GetNewID());
-                            room.abstractRoom.AddEntity(bringThePain);
-                            bringThePain.RealizeInRoom();
-
-                            self.room.world.GetResource().ApoEnteringWorld(bringThePain);
-                            self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringThePain, bringThePain.pos);
-                        }
-
-                        if (arena.lizardEvent == 99 && arena.painCatLizard)
-                        {
-                            self.creatureCommunities.SetLikeOfPlayer(CreatureCommunities.CommunityID.Lizards, -1, 0, 1f);
-                            AbstractCreature bringTheTrain = new AbstractCreature(room.world, StaticWorld.GetCreatureTemplate("Red Lizard"), null, room.GetWorldCoordinate(shortCutVessel.pos), shortCutVessel.room.world.game.GetNewID()); // Train too big :( 
-                            room.abstractRoom.AddEntity(bringTheTrain);
-                            bringTheTrain.Realize();
-                            bringTheTrain.realizedCreature.PlaceInRoom(room);
-
-
-                            self.room.world.GetResource().ApoEnteringWorld(bringTheTrain);
-                            self.room.abstractRoom.GetResource()?.ApoEnteringRoom(bringTheTrain, bringTheTrain.pos);
-                        }
-                    }
-
-                    if ((abstractCreature.realizedCreature as Player).SlugCatClass == MoreSlugcats.MoreSlugcatsEnums.SlugcatStatsName.Saint)
-                    {
-                        if (!arena.sainot) // ascendance saint
-                        {
-                            (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 0;
-                        }
-                        else
-                        {
-                            (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
-
-                        }
-                    }
-                }
-
-                if (ModManager.Watcher && (abstractCreature.realizedCreature as Player).SlugCatClass == Watcher.WatcherEnums.SlugcatStatsName.Watcher)
-                {
-                    (abstractCreature.realizedCreature as Player).enterIntoCamoDuration = 40;
-                }
-
-
+            if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
+            {
+                SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+            } else
+            {
+               SpawnNonTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Slugcat);
+            }
 
                 self.playersSpawned = true;
                 if (OnlineManager.lobby.isOwner)
@@ -498,9 +389,7 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     arena.hasPermissionToRejoin = false;
                 }
 
-
             }
-
 
         }
 
