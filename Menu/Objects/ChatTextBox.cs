@@ -80,6 +80,13 @@ namespace RainMeadow
 
         public static bool AnyCtrl => (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftApple));
 
+        // Store matches found for the current cycle
+        private List<string> completionMatches;
+        // Track which match we are currently displaying
+        private int completionIndex = 0;
+        // Track where the current '@' started so we know what text to replace
+        private int completionStartPos = -1;
+
         public ChatTextBox(Menu.Menu menu, MenuObject owner, string displayText, Vector2 pos, Vector2 size, bool multiView = false) : base(menu, owner, displayText, pos, size)
         {
             MultiView = multiView;
@@ -268,6 +275,7 @@ namespace RainMeadow
             if (!isUnloading) blockInput = true;
             UpdateLabel(lastSentMessage);
         }
+            
         public override void Update()
         {
             base.Update();
@@ -314,6 +322,11 @@ namespace RainMeadow
             // ctrl backspace stuff here instead of CaptureInputs, because ctrl + backspace doesn't always emit a capturable character on some operating systems
             if (Input.GetKey(KeyCode.Backspace) && (cursorPos > 0 || selectionPos != -1))
             {
+                // reset @ blindly
+                if (completionMatches != null) {
+                    UpdateCompletions();
+
+               }
                 // no alt + backspace, because alt can be finnicky
                 // activates on either the first frame the key is held, or for every (DASRepeatRate)th of a second after (DASDelay) seconds of being held
                 if (AnyCtrl && (backspaceHeld == 0 || (backspaceHeld >= DASDelay && backspaceRepeater >= DASRepeatRate)))
@@ -397,18 +410,16 @@ namespace RainMeadow
                     selectionPos = msg.Length;
                 }
 
-                // Auto Complete
-                //else if (Input.GetKey(KeyCode.Tab) && !tabHeld)
-                //{
-                //    AutoComplete();
-                //    tabHeld = true;
-                //}
-
                 // CTRL + C / Command + C
                 else if (Input.GetKey(KeyCode.C) && !clipboardHeld && (AnyCtrl))
                 {
                     CopySelection();
                     clipboardHeld = true;
+                }
+
+                else if (Input.GetKeyDown(KeyCode.Tab)) 
+                {
+                    AutoComplete();
                 }
                 // CTRL + V / Command + V
                 else if (Input.GetKey(KeyCode.V) && !clipboardHeld && (AnyCtrl))
@@ -627,58 +638,61 @@ namespace RainMeadow
 
         private void AutoComplete()
         {
-            int start, end;
-            string current;
-
-            if (lastCompletionStart != -1 && cursorPos >= lastCompletionStart && cursorPos <= lastCompletionEnd)
+            int lastAt = lastSentMessage.LastIndexOf('@', cursorPos - 1 >= 0 ? cursorPos - 1 : 0);
+            string currentSearchPrefix = "";
+            
+            if (lastAt != -1)
             {
-                start = lastCompletionStart; 
-                end = lastCompletionEnd;
-                current = lastCompletion;
+                currentSearchPrefix = lastSentMessage.Substring(lastAt + 1, cursorPos - (lastAt + 1));
+            }
+            if (completionMatches != null && completionStartPos != lastAt)
+            {
+                completionMatches = null;
+            }
+
+            if (completionMatches == null || completionMatches.Count == 0)
+            {
+                if (lastAt != -1)
+                {
+                    completionStartPos = lastAt;
+                    string searchPrefix = currentSearchPrefix;
+
+                    completionMatches = OnlineManager.players
+                        .Where(p => p.id.DisplayName.StartsWith(searchPrefix, System.StringComparison.InvariantCultureIgnoreCase))
+                        .Select(p => p.id.DisplayName)
+                        .OrderBy(n => n)
+                        .Distinct()
+                        .ToList();
+
+                    completionIndex = 0;
+                }
+            }
+
+            if (completionMatches != null && completionMatches.Count > 0)
+            {
+                string match = completionMatches[completionIndex % completionMatches.Count];
+
+                string prefix = lastSentMessage.Substring(0, completionStartPos + 1);
+                string suffix = lastSentMessage.Substring(cursorPos);
+                
+                lastSentMessage = prefix + match + suffix;
+                cursorPos = prefix.Length + match.Length;
+                
+                completionIndex++;
+                menu.PlaySound(SoundID.MENU_Button_Select_Gamepad_Or_Keyboard);
+                return;
             }
             else
             {
-                UpdateCompletions();
-
-                start = GetStart(lastSentMessage, cursorPos);
-                end = GetEnd(lastSentMessage, cursorPos);
-                current = lastSentMessage.Substring(start, end - start);
-
-                completions = completions.Where(x => x.StartsWith(current, StringComparison.OrdinalIgnoreCase)).OrderBy(x => x).ToList();
+                completionMatches = null;
+                completionStartPos = -1;
             }
-
-            if (completions.Count == 0)
-            {
-                ResetCompletions();
-                return;
-            }
-
-            string complete = completions[autoCompleteIndex];
-            string newText = lastSentMessage.Substring(0, start) + complete + lastSentMessage.Substring(end);
-            if (newText.Length > textLimit)
-            {
-                ResetCompletions();
-                return;
-            }
-
-            lastSentMessage = newText;
-
-            lastCompletionStart = start;
-            lastCompletionEnd = end;
-            lastCompletion = completions[autoCompleteIndex];
-
-            cursorPos = Mathf.Clamp(end + complete.Length, 0, lastSentMessage.Length);
-            autoCompleteIndex = (autoCompleteIndex + 1) % completions.Count;
         }
 
         private void UpdateCompletions()
         {
-            completions.Clear();
-            autoCompleteIndex = 0;
-            foreach (var player in OnlineManager.players)
-            {
-                completions.Add(player.id.GetPersonaName());
-            }
+                completionMatches = null;
+                completionStartPos = -1;
         }
 
         private void ResetCompletions()
