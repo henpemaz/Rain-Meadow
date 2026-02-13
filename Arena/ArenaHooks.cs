@@ -141,7 +141,19 @@ namespace RainMeadow
             IL.VoidSpawnGraphics.DrawSprites += VoidSpawnGraphics_DrawSprites;
             On.VoidSpawnGraphics.AlphaFromGlowDist += VoidSpawnGraphics_AlphaFromGlowDist;
             On.Room.MaterializeRippleSpawn += Room_MaterializeRippleSpawn;
-            On.Player.ctor += Player_ctor2;            
+            On.Player.ctor += Player_ctor2;  
+            new Hook(typeof(OverseerGraphics).GetProperty("MainColor").GetGetMethod(), this.OverseerBodyColor);
+          
+        }
+
+        private Color OverseerBodyColor(Func<OverseerGraphics, Color> orig, OverseerGraphics self)
+        {
+            if (isArenaMode(out var arena) && self.overseer.IsLocal())
+            {
+                return RainMeadow.rainMeadowOptions.BodyColor.Value;
+            }
+            
+            return orig(self);
         }
 
         private void Player_ctor2(On.Player.orig_ctor orig, Player self, AbstractCreature creature, World world)
