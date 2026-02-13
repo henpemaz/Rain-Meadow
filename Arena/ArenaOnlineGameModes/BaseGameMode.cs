@@ -236,6 +236,10 @@ namespace RainMeadow
 
             self.game.shortcuts.betweenRoomsWaitingLobby.Add(shortCutVessel);
             self.AddPlayer(abstractCreature);
+            if (abstractCreature.realizedCreature is not Player)
+            {
+                return;
+            }
             if ((abstractCreature.realizedCreature as Player).SlugCatClass == SlugcatStats.Name.Night)
             {
                 (abstractCreature.realizedCreature as Player).slugcatStats.throwingSkill = 1;
