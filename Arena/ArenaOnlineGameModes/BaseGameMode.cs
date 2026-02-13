@@ -180,14 +180,12 @@ namespace RainMeadow
 
         public void SpawnOverseer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, int randomExitIndex)
         {
-            RainMeadow.sSpawningAvatar = true;
             AbstractCreature abstractCreature = new AbstractCreature(self.game.world, StaticWorld.GetCreatureTemplate(CreatureTemplate.Type.Overseer), null, new WorldCoordinate(0, -1, -1, -1), new EntityID(-1, 0));
             abstractCreature.pos.room = self.game.world.GetAbstractRoom(0).index;
             abstractCreature.pos.abstractNode = room.ShortcutLeadingToNode(randomExitIndex).destNode;
             abstractCreature.Room.AddEntity(abstractCreature);
             abstractCreature.RealizeInRoom();
             self.game.world.GetResource().ApoEnteringWorld(abstractCreature);
-            RainMeadow.sSpawningAvatar = false;
         }
 
         public virtual void SpawnPlayer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, List<int> suggestedDens)
@@ -252,7 +250,7 @@ namespace RainMeadow
             
             if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
             {
-               /// SpawnOverseer(arena, self, room, randomExitIndex);
+                SpawnOverseer(arena, self, room, randomExitIndex);
                 return;
             }
 
