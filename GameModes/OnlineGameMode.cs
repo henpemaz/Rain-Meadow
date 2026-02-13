@@ -32,6 +32,7 @@ namespace RainMeadow
 
         public static (Dictionary<string, bool> hostBoolSettings, Dictionary<string, float> hostFloatSettings, Dictionary<string, int> hostIntSettings) GetHostRemixSettings(OnlineGameMode mode)
         {
+            RainMeadowModManager.Reset();
             Dictionary<string, bool> configurableBools = new();
             Dictionary<string, float> configurableFloats = new();
             Dictionary<string, int> configurableInts = new();
