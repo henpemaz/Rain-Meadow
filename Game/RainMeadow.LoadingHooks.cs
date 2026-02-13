@@ -35,8 +35,7 @@ namespace RainMeadow
         }
         private System.Collections.IEnumerator ArenaNextLevel_WaitLoop(On.ArenaSitting.orig_NextLevel orig, ArenaSitting self, ProcessManager manager, WorldSession oldWorldSession)
         {
-            System.Func<bool> waitCondition = null;
-            waitCondition = () => oldWorldSession.participants.Count > 0;
+            System.Func<bool> waitCondition = () => oldWorldSession.participants.Count > 0;
 
             return WorldSession.WaitAndExecuteSession(
                 oldWorldSession,
