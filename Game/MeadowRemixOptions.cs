@@ -73,6 +73,7 @@ public class RainMeadowOptions : OptionInterface
     public readonly Configurable<bool> StopMovementWhileSpectateOverlayActive;
 
     public readonly Configurable<bool> DevNightskySkin;
+    public readonly Configurable<bool> SunshineSkin;
 
     public readonly Configurable<bool> EnableAchievementsOnline;
 
@@ -189,6 +190,8 @@ public class RainMeadowOptions : OptionInterface
         StreamerMode = config.Bind("StreamerMode", StreamMode.None);
 
         DevNightskySkin = config.Bind("DevNightskySkin", false);
+
+        SunshineSkin = config.Bind("SunShineSkin", false);
 
         EnableAchievementsOnline = config.Bind("EnableAchievementsOnline", false);
         AnniversaryCape = config.Bind("AnniversaryCape", true);
@@ -320,6 +323,7 @@ public class RainMeadowOptions : OptionInterface
             OpSimpleButton editBannedModsButton;
 
             OpLabel devOptions;
+            OpLabel skinOptions;
 
             GeneralUIArrPlayerOptions = new UIelement[]
             {
@@ -327,7 +331,6 @@ public class RainMeadowOptions : OptionInterface
                 devOptions = new OpLabel(410f, 560f, Translate("Dev options")),
                 new OpCheckBox(DevNightskySkin, new Vector2(410f, 535f)),
                 new OpLabel(440f, 535f, Translate("Nightsky Skin")),
-
 
 
                 new OpLabel(10f, 490f, RWCustom.Custom.ReplaceLineDelimeters(Translate("Control which mods are permitted on clients by editing the files below.<LINE>Instructions included within."))),
@@ -346,8 +349,11 @@ public class RainMeadowOptions : OptionInterface
                 downpourWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Downpour DLC is not activated, vanilla intro will be used instead")),
                 watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
-                new OpLabel(10, 310, Translate("Lobby Music")),
-                music = new OpComboBox2(LobbyMusic, new Vector2(10, 280f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
+                skinOptions = new OpLabel(10f, 310, Translate("Skins")),
+                new OpCheckBox(SunshineSkin, new Vector2(10f, 285)),
+
+                new OpLabel(10, 250, Translate("Lobby Music")),
+                music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },
             };
             if (!MatchmakingManager.instances.Values.OfType<MatchmakingManager>().Any(x => x.IsDev(OnlineManager.mePlayer.id)))
             {
