@@ -555,7 +555,7 @@ namespace RainMeadow
 
         private void DeactivateAndWait(On.OverWorld.orig_WorldLoaded orig, OverWorld self, bool warpUsed, bool isSameWorld, WorldSession oldWorldSession, WorldSession newWorldSession, World newWorld)
         {
-
+            RainMeadow.Debug(this);
             if (!isSameWorld && oldWorldSession.isActive)
             { // there exists "warps" to the same world, twice, for some bloody reason
                 //this in fact probably is required for now because rain world devs DESPISE US
