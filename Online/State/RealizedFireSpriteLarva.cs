@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Watcher;
+﻿using Watcher;
 
 namespace RainMeadow
 {
@@ -11,12 +6,15 @@ namespace RainMeadow
     {
         [OnlineField]
         byte bites = 3;
+        [OnlineField]
+        bool edible;
         public RealizedFireSpriteLarva() { }
         public RealizedFireSpriteLarva(OnlinePhysicalObject onlineEntity)
         {
             var larva = (BoxWorm.Larva)onlineEntity.apo.realizedObject;
 
-            this.bites = (byte)larva.bites;
+            bites = (byte)larva.bites;
+            edible = larva.edible;
         }
 
         public override void ReadTo(OnlineEntity onlineEntity)
@@ -25,6 +23,7 @@ namespace RainMeadow
             var larva = (BoxWorm.Larva)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
 
             larva.bites = bites;
+            larva.edible = edible;
         }
     }
 }

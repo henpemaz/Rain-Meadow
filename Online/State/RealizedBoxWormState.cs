@@ -46,18 +46,37 @@ namespace RainMeadow
         bool forceRelease;
         [OnlineField]
         bool retracted;
+        [OnlineField]
+        int timeToDislodge;
+        [OnlineField (nullable = true)]
+        BodyChunkRef? bodyChunk;
+        [OnlineField (nullable = true)]
+        OnlinePhysicalObject? larva;
 
         public LarvaHolderState() { }
         public LarvaHolderState(BoxWorm.LarvaHolder holder)
         {
             forceRelease = holder.forceRelease;
             retracted = holder.retracted;
+            timeToDislodge = holder.timeToDislodge;
+            bodyChunk = BodyChunkRef.FromBodyChunk(holder.bodyChunk) ?? null;
+            larva = holder.abstractLarva.GetOnlineObject();
         }
 
         public void ReadTo(BoxWorm.LarvaHolder holder)
         {
             holder.forceRelease = forceRelease;
             holder.retracted = retracted;
+            holder.timeToDislodge.SetClamped(timeToDislodge);
+
+            if (bodyChunk != null && bodyChunk.ToBodyChunk() != null) 
+            {
+                holder.bodyChunk = bodyChunk.ToBodyChunk();
+            }
+            if (larva != null)
+            {
+                holder.abstractLarva = larva.apo as BoxWorm.Larva.AbstractLarva;
+            }
         }
     }
 }

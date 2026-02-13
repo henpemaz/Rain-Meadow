@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using UnityEngine;
-using System.Runtime.CompilerServices;
+using Watcher;
 using System.Linq;
-using HarmonyLib;
-using System.Threading.Tasks;
 
 namespace RainMeadow
 {    
@@ -43,12 +41,43 @@ namespace RainMeadow
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
             On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
+            IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
 
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;
             
             On.Creature.Grab += Creature_Grab;
             On.Creature.SwitchGrasps += Creature_SwitchGrasps;
+        }
+
+        private void LarvaHolder_Update(ILContext il)
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
+                i => i.MatchBrtrue(out _));
+
+            c.GotoNext(i => i.MatchRet());
+
+            var ret = c.MarkLabel();
+
+            c.GotoPrev(MoveType.After,
+                i => i.MatchLdarg(0),
+                i => i.MatchLdfld<Watcher.BoxWorm.LarvaHolder>(nameof(Watcher.BoxWorm.LarvaHolder.abstractLarva)),
+                i => i.MatchBrtrue(out _));
+
+            c.Emit(OpCodes.Ldarg_0);
+            c.EmitDelegate((BoxWorm.LarvaHolder self) =>
+            {
+                var boxWorm = self.bodyChunk.owner as BoxWorm;
+                if (!boxWorm.IsLocal())
+                {
+                    return false; // Don't spawn larva for remotes
+                }
+                return true;
+            });
+            c.Emit(OpCodes.Brfalse, ret); // Return if our abstractLarva doesn't yet exist for a remote BoxWorm
         }
 
         private void BoxWorm_RecieveHelp(On.Watcher.BoxWorm.orig_RecieveHelp orig, Watcher.BoxWorm self)

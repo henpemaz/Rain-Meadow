@@ -55,6 +55,7 @@ namespace RainMeadow
             }
             if (onlineObject.apo.realizedObject is SLOracleSwarmer) return new RealizedSLOracleSwarmerState(onlineObject);
             if (onlineObject.apo.realizedObject is OracleSwarmer) return new RealizedOracleSwarmerState(onlineObject);
+            //if (onlineObject.apo.realizedObject is Watcher.BoxWorm.Larva) return new RealizedFireSpriteLarva(onlineObject);
             if (onlineObject.apo.realizedObject is Spear) return new RealizedSpearState(onlineObject);
             if (onlineObject.apo.realizedObject is ScavengerBomb) return new RealizedScavengerBombState(onlineObject);
             if (onlineObject.apo.realizedObject is MoreSlugcats.SingularityBomb) return new RealizedSingularityBombState(onlineObject);
@@ -62,8 +63,6 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is SlimeMold) return new RealizedSlimeMoldState(onlineObject);
             if (onlineObject.apo.realizedObject is VultureGrub) return new RealizedVultureGrubState(onlineObject);
             if (onlineObject.apo.realizedObject is Hazer) return new RealizedHazerState(onlineObject);
-            // TODO Fix crash in future BoxWorm/FireSprite
-            // if (onlineObject.apo.realizedObject is Watcher.BoxWorm.Larva) return new RealizedFireSpriteLarva(onlineObject);
             if (onlineObject.apo.realizedObject is DangleFruit) return new RealizedDangleFruitState(onlineObject);
             if (onlineObject.apo.realizedObject is Weapon) return new RealizedWeaponState(onlineObject); // Order matters here. If your item inherits from another class, that parent class should be lower
 
