@@ -9,6 +9,8 @@ namespace RainMeadow
         private RoomCamera camera;
         private RainWorldGame game;
         public SpectatorOverlay? spectatorOverlay;
+        public HolidayStoreOverlay? holidayStoreOverlay;
+
         private AbstractCreature? spectatee;
         public bool isActive;
 
@@ -30,17 +32,26 @@ namespace RainMeadow
                 {
                     RainMeadow.Debug("Creating spectator overlay");
                     spectatorOverlay = new SpectatorOverlay(game.manager, game, camera);
+                    if (HolidayEvents.isHoliday()) {
+                        holidayStoreOverlay = new HolidayStoreOverlay(game.manager,  game);
+                    }
                     isActive = true;
                 }
                 else
                 {
                     RainMeadow.Debug("Spectate destroy!");
                     spectatorOverlay.ShutDownProcess();
+                    if (holidayStoreOverlay != null)
+                    {
+                        holidayStoreOverlay.ShutDownProcess();
+                        holidayStoreOverlay = null;
+                    }
                     spectatorOverlay = null;
                     isActive = false;
                 }
             }
             spectatorOverlay?.GrafUpdate(timeStacker);
+            holidayStoreOverlay?.GrafUpdate(timeStacker);
         }
 
         public void ClearSpectatee()
@@ -117,6 +128,10 @@ namespace RainMeadow
                 spectatorOverlay.forceNonMouseSelectFreeze = hud.parts.Find(x => x is ChatHud) is ChatHud { chatInputActive: true };
                 spectatorOverlay.Update();
                 spectatee = spectatorOverlay.spectatee;
+            }
+            if (holidayStoreOverlay != null)
+            {
+                holidayStoreOverlay.Update();
             }
 
             if (camera.InCutscene)

@@ -53,20 +53,20 @@ namespace RainMeadow
             this.AddToContainer(sLeaser, rCam, rCam.ReturnFContainer("Foreground"));
         }
 
-public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
-{
-    Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker);
-    sLeaser.sprites[0].x = vector.x - camPos.x;
-    sLeaser.sprites[0].y = vector.y - camPos.y;
+            public override void DrawSprites(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, float timeStacker, Vector2 camPos)
+            {
+                Vector2 vector = Vector2.Lerp(this.lastPos, this.pos, timeStacker);
+                sLeaser.sprites[0].x = vector.x - camPos.x;
+                sLeaser.sprites[0].y = vector.y - camPos.y;
 
-    // Increased from 0.15f to 0.3f to double the size
-    float size = 0.3f * Mathf.InverseLerp(0f, 0.5f, this.life);
-    sLeaser.sprites[0].scale = size; 
+                // Increased from 0.15f to 0.3f to double the size
+                float size = 0.3f * Mathf.InverseLerp(0f, 0.5f, this.life);
+                sLeaser.sprites[0].scale = size; 
 
-    sLeaser.sprites[0].isVisible = (Random.value < Mathf.InverseLerp(0f, 0.5f, this.life));
-    
-    base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
-}
+                sLeaser.sprites[0].isVisible = (Random.value < Mathf.InverseLerp(0f, 0.5f, this.life));
+                
+                base.DrawSprites(sLeaser, rCam, timeStacker, camPos);
+            }
 
             public override void ApplyPalette(RoomCamera.SpriteLeaser sLeaser, RoomCamera rCam, RoomPalette palette)
             {

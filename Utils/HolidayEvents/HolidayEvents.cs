@@ -80,13 +80,17 @@ namespace RainMeadow
 
                   Dictionary<int, string> okMessage = new Dictionary<int, string>
                 {
-                    { 0, RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0 ? "I'm a sellout, please give me coins" : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value}" },
+                    { 0, RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0 ? "I'm a sellout, please give me coins" : $"Coins remaining: {RainMeadow.rainMeadowOptions.MeadowCoins.Value - 1}" },
                     { 1, ";__;" },
                     { 2, "I don't deserve a cape" },
                     { 3, "I acknowledge that crash was my fault" },
                     { 4, "Please work" }
                 };
                 int result = UnityEngine.Random.Range(0, aprilMessages.Count);
+                if (result == 0)
+                {
+                    RainMeadow.rainMeadowOptions.MeadowCoins.Value--;
+                }
                 if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0)
                 {
                     result = 0;
@@ -118,7 +122,7 @@ namespace RainMeadow
                 if (RainMeadow.rainMeadowOptions.MeadowCoins.Value <= 0) {
                 continueButton.buttonBehav.greyedOut = true;
                 }
-                continueButton.menuLabel.text = RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0 ? $"LET'S ROLL! x{RainMeadow.rainMeadowOptions.MeadowCoins.Value}" : "YOU ARE POOR";
+                continueButton.menuLabel.text = RainMeadow.rainMeadowOptions.MeadowCoins.Value > 0 ? continueButton.menu.Translate($"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}") : continueButton.menu.Translate("YOU ARE POOR");
             }
         }
         

@@ -133,7 +133,7 @@ namespace RainMeadow
             if (HolidayEvents.isHoliday() && OnlineManager.lobby.clientSettings.TryGetValue(player, out ClientSettings settings) &&
                 settings.TryGetData<HolidayClientSettingsData>(out var hd))
             {
-              customization.nickname = $"{customization.nickname}: {hd.meadowCoins}";
+              customization.nickname = $"{customization.nickname}: ¤{hd.meadowCoins}";
             }
         
             this.username = new FLabel(Custom.GetFont(), UsernameGenerator.StreamerModeName(customization.nickname));

@@ -145,6 +145,7 @@ namespace RainMeadow.UI
         public void RollingUpdate()
         {
             continueButton.buttonBehav.greyedOut = true;
+            if (HolidayEvents.isHoliday()) continueButton.menuLabel.text = Translate($"COINS: ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}");
             hasAlreadyRolled = true;
             if (myRollingCounter % startEndRollingOrderCounter == 0)
             {

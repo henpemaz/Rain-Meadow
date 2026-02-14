@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 namespace RainMeadow;
 
@@ -325,6 +326,8 @@ public class RainMeadowOptions : OptionInterface
             OpLabel devOptions;
             OpLabel skinOptions;
 
+            OpCheckBox sunShineSkinCheckbox;
+
             GeneralUIArrPlayerOptions = new UIelement[]
             {
                 new OpLabel(10f, 550f, Translate("General"), bigText: true),
@@ -350,7 +353,6 @@ public class RainMeadowOptions : OptionInterface
                 watcherWarning = new OpLabel(introroll.pos.x + 170, 70, Translate("Watcher DLC is not activated, vanilla intro will be used instead")),
 
                 skinOptions = new OpLabel(10f, 310, Translate("Skins")),
-                new OpCheckBox(SunshineSkin, new Vector2(10f, 285)),
 
                 new OpLabel(10, 250, Translate("Lobby Music")),
                 music = new OpComboBox2(LobbyMusic, new Vector2(10, 220f), 160f, SongsItemList()) { colorEdge = Menu.MenuColorEffect.rgbWhite },

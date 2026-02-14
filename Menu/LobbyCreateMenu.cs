@@ -144,11 +144,11 @@ public class LobbyCreateMenu : SmartMenu
             where.y += 5;
             where.x += 80;
         }
-        if (DateTime.Now.Month == 12 && DateTime.Now.Day < 30)
+        if (HolidayEvents.isHoliday())
         {
             where.x -= 200;
             where.y -= 45;
-            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Anniversary Gags:"), where, new Vector2(400, 20f), false));
+            mainPage.subObjects.Add(new ProperlyAlignedMenuLabel(this, mainPage, Translate("Holiday Gags:"), where, new Vector2(400, 20f), false));
             where.x += 120;
             where.y -= 5;
             lobbyAnniversaryGags = new OpCheckBox(new Configurable<bool>(false), where);

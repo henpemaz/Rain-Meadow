@@ -4,12 +4,7 @@ namespace RainMeadow
 {
     public class HolidayClientSettingsData : OnlineEntity.EntityData
     {
-        public int meadowCoins;
-
-        public void Sanitize()
-        {
-            meadowCoins = RainMeadow.rainMeadowOptions.MeadowCoins.Value;
-        }
+        public int meadowCoins = RainMeadow.rainMeadowOptions.MeadowCoins.Value;
 
         public override EntityDataState MakeState(OnlineEntity onlineEntity, OnlineResource inResource)
         {
