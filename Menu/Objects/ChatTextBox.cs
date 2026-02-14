@@ -228,7 +228,7 @@ namespace RainMeadow
                     }
                     if (HolidayEvents.isAprilFools)
                     {
-                        msg = msg + $" and I have ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} Meadow coins!";
+                        msg = msg + $" btw I have ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} Meadow coins";
                     }
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)
