@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using HarmonyLib;
 using Menu;
 using Menu.Remix;
@@ -380,7 +380,9 @@ namespace RainMeadow
             
             if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
             {
-                SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+                RainMeadow.Debug("Player spawned as overseer");
+                // maybr add toggle later
+                // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
             } else
             {
                SpawnNonTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Slugcat);
