@@ -931,7 +931,6 @@ namespace RainMeadow
 
         public override void AddClientData()
         {
-            base.AddClientData();
             clientSettings.AddData(arenaClientSettings);
             clientSettings.AddData(arenaTeamClientSettings);
 

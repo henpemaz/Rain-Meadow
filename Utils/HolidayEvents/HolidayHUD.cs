@@ -111,7 +111,7 @@ namespace RainMeadow
             foreach (var item in storeItems)
             {
                 // Pass the calculated position to the button
-                Vector2 buttonPos = new Vector2(pos.x, 304 - 38 - (index * 40)); 
+                Vector2 buttonPos = new Vector2(pos.x, this.pos.y - 38 - (index * 40)); 
                 
                 var newItemButton = new ItemButton(this, me, buttonPos, game, item, index, true);
                 
