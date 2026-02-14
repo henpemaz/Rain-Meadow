@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine.Rendering;
 
 namespace RainMeadow
 {
@@ -228,7 +229,29 @@ namespace RainMeadow
                     }
                     if (HolidayEvents.isAprilFools)
                     {
-                        msg = msg + $" btw I have ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} Meadow coins";
+                        string coinUserBrag = "";
+                        if (RainMeadow.rainMeadowOptions.MeadowCoins.Value < 10)
+                        {
+                            coinUserBrag = $"please be nice I only have ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} Meadow coins";
+                        }
+                        if (RainMeadow.rainMeadowOptions.MeadowCoins.Value > 10 && RainMeadow.rainMeadowOptions.MeadowCoins.Value < 50)
+                        {
+                            coinUserBrag = $"btw I have ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} Meadow coins";
+                        }
+
+                        if (RainMeadow.rainMeadowOptions.MeadowCoins.Value > 50 && RainMeadow.rainMeadowOptions.MeadowCoins.Value < 200)
+                        {
+                            coinUserBrag = $"you're wrong. ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} coin user speaking.";
+                        }
+                        if (RainMeadow.rainMeadowOptions.MeadowCoins.Value > 500 && RainMeadow.rainMeadowOptions.MeadowCoins.Value < 1000)
+                        {
+                            coinUserBrag = $"I got ¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value} coins, but they're just for me.";
+                        }
+                        if (RainMeadow.rainMeadowOptions.MeadowCoins.Value >= 1000)
+                        {
+                            coinUserBrag = $"(¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}). Yeah, I beat Meadow";
+                        }
+                        msg = msg + coinUserBrag;
                     }
                     MatchmakingManager.currentInstance.SendChatMessage(msg);
                     foreach (var player in OnlineManager.players)

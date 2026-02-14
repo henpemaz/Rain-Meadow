@@ -173,7 +173,15 @@ public class ArenaOnlineLobbyMenu : SmartMenu
             (slugcats, selector) =>
             {
                 arenaSlugcatSelectPage.SwitchSelectedSlugcat(slugcats[UnityEngine.Random.Range(0, slugcats.Length)]);
-                if (RainMeadow.isArenaMode(out _)) Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+                if (RainMeadow.isArenaMode(out _)) { 
+                    Arena.arenaClientSettings.gotSlugcat = selector.IsMatching;
+                    if (selector.IsMatching)
+                    {
+                        if (HolidayEvents.isHoliday()) {
+                            HolidayEvents.GainedMeadowCoin(true, 1000);
+                        }
+                    }
+                }
             }
         );
         manager.ShowDialog(selector);
