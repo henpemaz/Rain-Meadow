@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
@@ -364,7 +364,8 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
             if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
             {
-                SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+                RainMeadow.Debug("Player spawned as Overseer");
+                // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
             } else
             {
                SpawnNonTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Slugcat);
