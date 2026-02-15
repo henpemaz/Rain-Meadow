@@ -645,7 +645,7 @@ namespace RainMeadow
                   OnlineManager.lobby?.clientSettings.TryGetValue(OnlineManager.mePlayer, out var settings) == true && 
                     settings.GetData<StoryClientData>() is StoryClientData myData)
                      {
-                      myData.readyForWin = self.abstractRoom.shelter;
+                       if (!self.abstractRoom.shelter) myData.readyForWin = false;
                      }
             }
         }
