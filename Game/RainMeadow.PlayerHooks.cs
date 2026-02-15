@@ -1107,8 +1107,6 @@ public partial class RainMeadow
 
         if (OnlineManager.lobby != null && self.objectInStomach != null)
             self.objectInStomach.pos = self.abstractCreature.pos;
-        if (isStoryMode(out var gameMode) && self.abstractCreature.IsLocal())
-            gameMode.storyClientData.readyForWin = false;
         float wasSleepCurlUp = self.sleepCurlUp;
 
         orig(self, eu);
