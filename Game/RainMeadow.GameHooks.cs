@@ -640,6 +640,13 @@ namespace RainMeadow
             if (game != null && OnlineManager.lobby != null)
             {
                 OnlineManager.lobby.gameMode.FilterItems(self);
+                
+                if (isStoryMode(out _) && 
+                  OnlineManager.lobby?.clientSettings.TryGetValue(OnlineManager.mePlayer, out var settings) == true && 
+                    settings.GetData<StoryClientData>() is StoryClientData myData)
+                     {
+                      myData.readyForWin = self.abstractRoom.shelter;
+                     }
             }
         }
 
