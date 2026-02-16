@@ -7,7 +7,7 @@
 ## Story
 ### Watcher
 - Fixed end-game ability not working
-
+- Synced `neuronsLeft` to prevent room script softlocks
 ## General
 ### Chat:
 - Auto-fill usernames when using "@" in chat. 
