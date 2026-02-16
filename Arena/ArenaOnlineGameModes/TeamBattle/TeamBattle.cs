@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ArenaMode = RainMeadow.ArenaOnlineGameMode;
@@ -7,17 +7,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 {
     public partial class TeamBattleMode : ExternalArenaGameMode
     {
-
-        public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID("Team Battle", register: false);
+        public static ArenaSetup.GameTypeID TeamBattle = new ArenaSetup.GameTypeID(
+            "Team Battle",
+            register: false
+        );
 
         public override ArenaSetup.GameTypeID GetGameModeId
         {
-            get
-            {
-                return TeamBattle;
-            }
+            get { return TeamBattle; }
             set { GetGameModeId = value; }
-
         }
 
         public static bool isTeamBattleMode(ArenaOnlineGameMode arena, out TeamBattleMode tb)
@@ -25,13 +23,14 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             tb = null;
             if (arena.currentGameMode == TeamBattle.value)
             {
-                tb = (arena.registeredGameModes.FirstOrDefault(x => x.Key == TeamBattle.value).Value as TeamBattleMode);
+                tb = (
+                    arena.registeredGameModes.FirstOrDefault(x => x.Key == TeamBattle.value).Value
+                    as TeamBattleMode
+                );
                 return true;
             }
             return false;
         }
-
-
 
         private int _timerDuration;
 
@@ -45,16 +44,24 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             dragonslayersSpawn = 0;
             chieftainsSpawn = 0;
             roundSpawnPointCycler = 0;
-
         }
 
-        public override bool IsExitsOpen(ArenaOnlineGameMode arena, On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig, ArenaBehaviors.ExitManager self)
+        public override bool IsExitsOpen(
+            ArenaOnlineGameMode arena,
+            On.ArenaBehaviors.ExitManager.orig_ExitsOpen orig,
+            ArenaBehaviors.ExitManager self
+        )
         {
-            int playersStillStanding = self.gameSession.Players?.Count(player =>
-                player.realizedCreature != null &&
-                player.realizedCreature.State.alive) ?? 0;
+            int playersStillStanding =
+                self.gameSession.Players?.Count(player =>
+                    player.realizedCreature != null && player.realizedCreature.State.alive
+                ) ?? 0;
 
-            if (playersStillStanding == 1 && arena.arenaSittingOnlineOrder.Count > 1 && !arena.countdownInitiatedHoldFire)
+            if (
+                playersStillStanding == 1
+                && arena.arenaSittingOnlineOrder.Count > 1
+                && !arena.countdownInitiatedHoldFire
+            )
             {
                 return true;
             }
@@ -76,15 +83,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             OnlinePhysicalObject? onlineP = acPlayer.GetOnlineObject();
                             if (onlineP != null)
                             {
-                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings.TryGetValue(onlineP.owner, out var onlineClientP);
+                                bool gotPlayerTeam = OnlineManager.lobby.clientSettings.TryGetValue(
+                                    onlineP.owner,
+                                    out var onlineClientP
+                                );
                                 if (gotPlayerTeam)
                                 {
-                                    onlineClientP.TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                                    onlineClientP.TryGetData<ArenaTeamClientSettings>(
+                                        out var playerTeam
+                                    );
                                     if (gotPlayerTeam)
                                     {
                                         if (acPlayer.realizedCreature != null)
                                         {
-
                                             if (acPlayer.realizedCreature.State.alive)
                                             {
                                                 aliveTeams.Add(playerTeam.team);
@@ -93,7 +104,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                                     }
                                 }
                             }
-
                         }
                     }
                     if (aliveTeams.Count == 1)
@@ -102,7 +112,6 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         {
                             RainMeadow.Debug("Team Battle: Adding rain");
                             self.gameSession.game.world.rainCycle.ArenaEndSessionRain();
-
                         }
                         return true;
                     }
@@ -111,28 +120,32 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self);
         }
 
-
         public override bool SpawnBatflies(FliesWorldAI self, int spawnRoom)
         {
             return false;
         }
+
         public override string TimerText()
         {
             return Utils.Translate("Prepare for war,") + " " + Utils.Translate(PlayingAsText());
         }
+
         public override int SetTimer(ArenaOnlineGameMode arena)
         {
             return arena.setupTime = RainMeadow.rainMeadowOptions.ArenaCountDownTimer.Value;
         }
+
         public override int TimerDuration
         {
             get { return _timerDuration; }
             set { _timerDuration = value; }
         }
+
         public override int TimerDirection(ArenaOnlineGameMode arena, int timer)
         {
             return --arena.setupTime;
         }
+
         public override bool HoldFireWhileTimerIsActive(ArenaOnlineGameMode arena)
         {
             if (arena.setupTime > 0)
@@ -145,36 +158,69 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public override void LandSpear(ArenaOnlineGameMode arena, ArenaGameSession self, Player player, Creature target, ArenaSitting.ArenaPlayer aPlayer)
+        public override void LandSpear(
+            ArenaOnlineGameMode arena,
+            ArenaGameSession self,
+            Player player,
+            Creature target,
+            ArenaSitting.ArenaPlayer aPlayer
+        )
         {
             aPlayer.AddSandboxScore(self.GameTypeSetup.spearHitScore);
-
         }
 
-        public override void ArenaSessionCtor(ArenaOnlineGameMode arena, On.ArenaGameSession.orig_ctor orig, ArenaGameSession self, RainWorldGame game)
+        public override void ArenaSessionCtor(
+            ArenaOnlineGameMode arena,
+            On.ArenaGameSession.orig_ctor orig,
+            ArenaGameSession self,
+            RainWorldGame game
+        )
         {
             base.ArenaSessionCtor(arena, orig, self, game);
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb))
             {
-                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var t))
+                if (
+                    OnlineManager
+                        .lobby.clientSettings[OnlineManager.mePlayer]
+                        .TryGetData<ArenaTeamClientSettings>(out var t)
+                )
                 {
-                    arena.avatarSettings.bodyColor = Color.Lerp(arena.avatarSettings.bodyColor, teamColors[t.team], tb.lerp);
+                    arena.avatarSettings.bodyColor = Color.Lerp(
+                        arena.avatarSettings.bodyColor,
+                        teamColors[t.team],
+                        tb.lerp
+                    );
                 }
             }
-
         }
 
-        public override bool PlayerSittingResultSort(ArenaMode arena, On.ArenaSitting.orig_PlayerSittingResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        public override bool PlayerSittingResultSort(
+            ArenaMode arena,
+            On.ArenaSitting.orig_PlayerSittingResultSort orig,
+            ArenaSitting self,
+            ArenaSitting.ArenaPlayer A,
+            ArenaSitting.ArenaPlayer B
+        )
         {
             if (isTeamBattleMode(arena, out var tb))
             {
-                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
-                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    A.playerNumber
+                );
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    B.playerNumber
+                );
 
                 if (playerA != null && playerB != null)
                 {
-                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
-                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
+                    OnlineManager
+                        .lobby.clientSettings[playerA]
+                        .TryGetData<ArenaTeamClientSettings>(out var teamA);
+                    OnlineManager
+                        .lobby.clientSettings[playerB]
+                        .TryGetData<ArenaTeamClientSettings>(out var teamB);
 
                     if (teamA != null && teamB != null)
                     {
@@ -192,16 +238,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             return A.score > B.score; // If both are on winning team, sort by kill value
                         }
                     }
-
                 }
-
             }
 
             return orig(self, A, B);
-
         }
 
-        public override bool PlayerSessionResultSort(ArenaMode arena, On.ArenaSitting.orig_PlayerSessionResultSort orig, ArenaSitting self, ArenaSitting.ArenaPlayer A, ArenaSitting.ArenaPlayer B)
+        public override bool PlayerSessionResultSort(
+            ArenaMode arena,
+            On.ArenaSitting.orig_PlayerSessionResultSort orig,
+            ArenaSitting self,
+            ArenaSitting.ArenaPlayer A,
+            ArenaSitting.ArenaPlayer B
+        )
         {
             if (isTeamBattleMode(arena, out var tb))
             {
@@ -211,15 +260,19 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 {
                     if (player.alive)
                     {
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                            arena,
+                            player.playerNumber
+                        );
                         if (onlineP != null)
                         {
-                            bool getPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                            bool getPlayerTeam = OnlineManager
+                                .lobby.clientSettings[onlineP]
+                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
                             if (getPlayerTeam)
                             {
                                 teamsRemaining.Add(playerTeam.team);
                             }
-
                         }
                     }
                 }
@@ -230,10 +283,15 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     {
                         tb.winningTeam = teamsRemaining.First();
 
-                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, player.playerNumber);
+                        OnlinePlayer? onlineP = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                            arena,
+                            player.playerNumber
+                        );
                         if (onlineP != null)
                         {
-                            bool gotPlayerTeam = OnlineManager.lobby.clientSettings[onlineP].TryGetData<ArenaTeamClientSettings>(out var playerTeam);
+                            bool gotPlayerTeam = OnlineManager
+                                .lobby.clientSettings[onlineP]
+                                .TryGetData<ArenaTeamClientSettings>(out var playerTeam);
                             if (gotPlayerTeam)
                             {
                                 player.winner = teamsRemaining.TryGetValue(playerTeam.team, out _);
@@ -246,13 +304,23 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                     }
                 }
 
-                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, A.playerNumber);
-                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(arena, B.playerNumber);
+                OnlinePlayer? playerA = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    A.playerNumber
+                );
+                OnlinePlayer? playerB = ArenaHelpers.FindOnlinePlayerByFakePlayerNumber(
+                    arena,
+                    B.playerNumber
+                );
 
                 if (playerA != null && playerB != null)
                 {
-                    OnlineManager.lobby.clientSettings[playerA].TryGetData<ArenaTeamClientSettings>(out var teamA);
-                    OnlineManager.lobby.clientSettings[playerB].TryGetData<ArenaTeamClientSettings>(out var teamB);
+                    OnlineManager
+                        .lobby.clientSettings[playerA]
+                        .TryGetData<ArenaTeamClientSettings>(out var teamA);
+                    OnlineManager
+                        .lobby.clientSettings[playerB]
+                        .TryGetData<ArenaTeamClientSettings>(out var teamB);
 
                     if (teamA != null && teamB != null)
                     {
@@ -284,7 +352,13 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             return orig(self, A, B);
         }
 
-        public override void ArenaSessionEnded(ArenaOnlineGameMode arena, On.ArenaSitting.orig_SessionEnded orig, ArenaSitting self, ArenaGameSession session, List<ArenaSitting.ArenaPlayer> list)
+        public override void ArenaSessionEnded(
+            ArenaOnlineGameMode arena,
+            On.ArenaSitting.orig_SessionEnded orig,
+            ArenaSitting self,
+            ArenaGameSession session,
+            List<ArenaSitting.ArenaPlayer> list
+        )
         {
             if (TeamBattleMode.isTeamBattleMode(arena, out var tb) && OnlineManager.lobby.isOwner)
             {
@@ -292,7 +366,12 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
             }
         }
 
-        public override void SpawnPlayer(ArenaOnlineGameMode arena, ArenaGameSession self, Room room, List<int> suggestedDens)
+        public override void SpawnPlayer(
+            ArenaOnlineGameMode arena,
+            ArenaGameSession self,
+            Room room,
+            List<int> suggestedDens
+        )
         {
             // Shameful copy-paste
             if (isTeamBattleMode(arena, out var teamBattleMode))
@@ -317,14 +396,34 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 }
                 int randomExitIndex = 0;
                 int totalExits = self.game.world.GetAbstractRoom(0).exits;
-                teamBattleMode.roundSpawnPointCycler = (teamBattleMode.roundSpawnPointCycler % totalExits);
+                teamBattleMode.roundSpawnPointCycler = (
+                    teamBattleMode.roundSpawnPointCycler % totalExits
+                );
 
-                if (OnlineManager.lobby.clientSettings[OnlineManager.mePlayer].TryGetData<ArenaTeamClientSettings>(out var teamSettings))
+                if (
+                    OnlineManager
+                        .lobby.clientSettings[OnlineManager.mePlayer]
+                        .TryGetData<ArenaTeamClientSettings>(out var teamSettings)
+                )
                 {
-                    teamBattleMode.martyrsSpawn = ((int)TeamSpawnPoints.martyrsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.outlawsSpawn = ((int)TeamSpawnPoints.outlawTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.dragonslayersSpawn = ((int)TeamSpawnPoints.dragonslayersTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
-                    teamBattleMode.chieftainsSpawn = ((int)TeamSpawnPoints.chieftainsTeamName + teamBattleMode.roundSpawnPointCycler) % totalExits;
+                    teamBattleMode.martyrsSpawn =
+                        (
+                            (int)TeamSpawnPoints.martyrsTeamName
+                            + teamBattleMode.roundSpawnPointCycler
+                        ) % totalExits;
+                    teamBattleMode.outlawsSpawn =
+                        ((int)TeamSpawnPoints.outlawTeamName + teamBattleMode.roundSpawnPointCycler)
+                        % totalExits;
+                    teamBattleMode.dragonslayersSpawn =
+                        (
+                            (int)TeamSpawnPoints.dragonslayersTeamName
+                            + teamBattleMode.roundSpawnPointCycler
+                        ) % totalExits;
+                    teamBattleMode.chieftainsSpawn =
+                        (
+                            (int)TeamSpawnPoints.chieftainsTeamName
+                            + teamBattleMode.roundSpawnPointCycler
+                        ) % totalExits;
 
                     switch ((TeamSpawnPoints)teamSettings.team)
                     {
@@ -341,7 +440,9 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                             randomExitIndex = teamBattleMode.chieftainsSpawn;
                             break;
                         default:
-                            Debug.LogWarning("Current player's team is not recognized for spawn point assignment.");
+                            Debug.LogWarning(
+                                "Current player's team is not recognized for spawn point assignment."
+                            );
                             randomExitIndex = 0;
                             break;
                     }
@@ -351,25 +452,37 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                         {
                             if (player.isMe)
                             {
-                                continue; // 
+                                continue; //
                             }
-                            player.InvokeOnceRPC(ArenaRPCs.Arena_NotifySpawnPoint,
-                                                teamBattleMode.martyrsSpawn,
-                                                teamBattleMode.outlawsSpawn,
-                                                teamBattleMode.dragonslayersSpawn,
-                                                teamBattleMode.chieftainsSpawn);
+                            player.InvokeOnceRPC(
+                                ArenaRPCs.Arena_NotifySpawnPoint,
+                                teamBattleMode.martyrsSpawn,
+                                teamBattleMode.outlawsSpawn,
+                                teamBattleMode.dragonslayersSpawn,
+                                teamBattleMode.chieftainsSpawn
+                            );
                         }
                     }
                 }
 
-            if (ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator)
-            {
-                RainMeadow.Debug("Player spawned as Overseer");
-                // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
-            } else
-            {
-               SpawnNonTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Slugcat);
-            }
+                if (
+                    ArenaHelpers.GetArenaClientSettings(OnlineManager.mePlayer)!.playingAs
+                    == RainMeadow.Ext_SlugcatStatsName.OnlineOverseerSpectator
+                )
+                {
+                    RainMeadow.Debug("Player spawned as Overseer");
+                    // SpawnTransferableCreature(arena, self, room, randomExitIndex, CreatureTemplate.Type.Overseer);
+                }
+                else
+                {
+                    SpawnNonTransferableCreature(
+                        arena,
+                        self,
+                        room,
+                        randomExitIndex,
+                        CreatureTemplate.Type.Slugcat
+                    );
+                }
 
                 self.playersSpawned = true;
                 if (OnlineManager.lobby.isOwner)
@@ -379,37 +492,50 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
 
                     foreach (var onlineArenaPlayer in arena.arenaSittingOnlineOrder)
                     {
-                        OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(onlineArenaPlayer);
+                        OnlinePlayer? getPlayer = ArenaHelpers.FindOnlinePlayerByLobbyId(
+                            onlineArenaPlayer
+                        );
                         if (getPlayer != null)
                         {
                             arena.CheckToAddPlayerStatsToDicts(getPlayer);
-
                         }
                     }
                     arena.playersLateWaitingInLobbyForNextRound.Clear();
                     arena.hasPermissionToRejoin = false;
                 }
-
             }
-
         }
 
-
-        public override string AddIcon(ArenaOnlineGameMode arena, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override string AddIcon(
+            ArenaOnlineGameMode arena,
+            PlayerSpecificOnlineHud owner,
+            SlugcatCustomization customization,
+            OnlinePlayer player
+        )
         {
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
             {
                 return "";
             }
 
-            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            if (
+                OnlineManager
+                    .lobby.clientSettings[player]
+                    .TryGetData<ArenaTeamClientSettings>(out var tb2)
+            )
             {
                 return teamIcons[tb2.team];
             }
             return "";
         }
 
-        public override Color IconColor(ArenaOnlineGameMode arena, OnlinePlayerDisplay display, PlayerSpecificOnlineHud owner, SlugcatCustomization customization, OnlinePlayer player)
+        public override Color IconColor(
+            ArenaOnlineGameMode arena,
+            OnlinePlayerDisplay display,
+            PlayerSpecificOnlineHud owner,
+            SlugcatCustomization customization,
+            OnlinePlayer player
+        )
         {
             if (OnlineManager.lobby.clientSettings.TryGetValue(key: player, out _) == false)
             {
@@ -421,16 +547,16 @@ namespace RainMeadow.Arena.ArenaOnlineGameModes.TeamBattle
                 return Color.grey;
             }
 
-
-            if (OnlineManager.lobby.clientSettings[player].TryGetData<ArenaTeamClientSettings>(out var tb2))
+            if (
+                OnlineManager
+                    .lobby.clientSettings[player]
+                    .TryGetData<ArenaTeamClientSettings>(out var tb2)
+            )
             {
                 return teamColors[tb2.team];
             }
 
             return customization.bodyColor;
         }
-
-
-
     }
 }
