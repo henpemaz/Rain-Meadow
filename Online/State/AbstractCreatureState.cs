@@ -25,6 +25,7 @@ namespace RainMeadow
         protected virtual CreatureStateState GetCreatureStateState(OnlineCreature onlineCreature)
         {
             if ((onlineCreature.apo as AbstractCreature).state is Vulture.VultureState) return new VultureStateState(onlineCreature);
+            if ((onlineCreature.apo as AbstractCreature).state is BigMoth.BigMothState) return new MothStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is HealthState) return new CreatureHealthStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is MoreSlugcats.PlayerNPCState) return new PlayerNPCStateState(onlineCreature);
             if ((onlineCreature.apo as AbstractCreature).state is PlayerState) return new PlayerStateState(onlineCreature);
@@ -33,6 +34,7 @@ namespace RainMeadow
 
         protected override RealizedPhysicalObjectState GetRealizedState(OnlinePhysicalObject onlineObject)
         {
+            // Order matters, make sure classes that inherit others are checked before what they're inheriting.
             if (onlineObject.apo.realizedObject is Player) return new RealizedPlayerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Overseer) return new RealizedOverseerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Fly) return new RealizedFlyState((OnlineCreature)onlineObject);
@@ -43,10 +45,11 @@ namespace RainMeadow
             if (onlineObject.apo.realizedObject is DropBug) return new RealizedDropBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Scavenger) return new RealizedScavengerState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is Lizard) return new RealizedLizardState((OnlineCreature)onlineObject);
-            if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is EggBug) return new RealizedEggBugState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BigMoth) return new RealizedMothState((OnlineCreature)onlineObject);
             if (onlineObject.apo.realizedObject is BoxWorm) return new RealizedBoxWormState((OnlineCreature)onlineObject);
+            // Do not put anything below Creature or you'll be stuck debugging for hours.
+            if (onlineObject.apo.realizedObject is Creature) return new RealizedCreatureState((OnlineCreature)onlineObject);
             return base.GetRealizedState(onlineObject);
         }
 

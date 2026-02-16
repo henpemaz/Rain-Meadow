@@ -41,7 +41,7 @@ namespace RainMeadow
             On.VultureGrub.AttemptCallVulture += VultureGrub_AttemptCallVulture;
 
             On.Watcher.BoxWorm.RecieveHelp += BoxWorm_RecieveHelp;
-            IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
+            //IL.Watcher.BoxWorm.LarvaHolder.Update += LarvaHolder_Update;
 
             IL.Hazer.Update += Hazer_HasSprayed;
             IL.Hazer.Die += Hazer_HasSprayed;

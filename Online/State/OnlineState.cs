@@ -237,11 +237,19 @@ namespace RainMeadow
             public Func<OnlineState, OnlineState, OnlineState> applydelta;
             public int ngroups;
 
+            /// <summary>
+            /// DeltaSupport allows for only sending out variables when they've updated. This can help reduce bandwidth usage
+            /// but will add CPU overhead.
+            /// </summary>
             public enum DeltaSupport
             {
+                /// <summary> Sync everything as-is everytime. No delta overhead. Most efficient for small independent fields. </summary>
                 None,
+                /// <summary> Copy the Delta Support level of my parent class. </summary>
                 FollowsContainer,
+                /// <summary> Send in full on change. If null, send boolean null bit. </summary>
                 NullableDelta,
+                /// <summary> Deep comparison, will reduce bandwidth the most but uses the most CPU. </summary>
                 Full
             }
 

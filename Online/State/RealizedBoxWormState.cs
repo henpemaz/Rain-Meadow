@@ -1,22 +1,24 @@
 ﻿using System.Linq;
+using UnityEngine;
 using Watcher;
 
 namespace RainMeadow
 {
+    [DeltaSupport(level = StateHandler.DeltaSupport.NullableDelta)]
     public class RealizedBoxWormState : RealizedCreatureState
     {
         [OnlineField]
         Generics.DynamicOrderedStates<LarvaHolderState> larvaHolders;
         [OnlineField (group = "counters")]
         int attackTimer;
-        [OnlineField(group = "counters")]
+        [OnlineField]
         int steamAvailable;
 
         public RealizedBoxWormState() { }
 
         public RealizedBoxWormState(OnlineCreature onlineCreature) : base(onlineCreature)
         {
-            var boxWorm = onlineCreature.apo.realizedObject as BoxWorm;
+            var boxWorm = onlineCreature.realizedCreature as BoxWorm;
 
             larvaHolders = new(boxWorm.larvaHolders.Select(x => new LarvaHolderState(x)).ToList());
 
@@ -29,7 +31,7 @@ namespace RainMeadow
             base.ReadTo(onlineEntity);
             if ((onlineEntity as OnlinePhysicalObject).apo.realizedObject is not BoxWorm boxWorm) return;
 
-            for(int i = 0; i < larvaHolders.list.Count; i++)
+            for (int i = 0; i < larvaHolders.list.Count; i++)
             {
                 larvaHolders.list[i].ReadTo(boxWorm.larvaHolders[i]);
             }
@@ -47,6 +49,8 @@ namespace RainMeadow
         [OnlineField]
         bool retracted;
         [OnlineField]
+        bool larvaEdible;
+        [OnlineField]
         int timeToDislodge;
         [OnlineField (nullable = true)]
         BodyChunkRef? bodyChunk;
@@ -60,7 +64,14 @@ namespace RainMeadow
             retracted = holder.retracted;
             timeToDislodge = holder.timeToDislodge;
             bodyChunk = BodyChunkRef.FromBodyChunk(holder.bodyChunk) ?? null;
-            larva = holder.abstractLarva.GetOnlineObject();
+            if (holder.abstractLarva != null)
+            {
+                larva = holder.abstractLarva.GetOnlineObject();
+                if (holder.abstractLarva.realizedObject != null)
+                {
+                    larvaEdible = ((BoxWorm.Larva)holder.abstractLarva.realizedObject).edible;
+                }
+            }
         }
 
         public void ReadTo(BoxWorm.LarvaHolder holder)
@@ -73,9 +84,13 @@ namespace RainMeadow
             {
                 holder.bodyChunk = bodyChunk.ToBodyChunk();
             }
-            if (larva != null)
+            if (larva != null && larva.apo != null)
             {
                 holder.abstractLarva = larva.apo as BoxWorm.Larva.AbstractLarva;
+                if (holder.abstractLarva.realizedObject != null)
+                {
+                    ((BoxWorm.Larva)holder.abstractLarva.realizedObject).edible = larvaEdible;
+                }
             }
         }
     }
