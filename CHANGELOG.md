@@ -7,6 +7,7 @@
 ## Story
 ### Watcher
 - Fixed end-game ability not working
+- Fixed Moon dying if the host didn't load the room first
 
 ## General
 ### Chat:
