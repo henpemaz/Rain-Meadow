@@ -8,21 +8,32 @@ namespace RainMeadow
     {
         [OnlineField(nullable = true)]
         public OnlinePhysicalObject? holdingObject;
+
         [OnlineField]
         public Phase revivePhase = Phase.LookingForSwarmer;
+
         [OnlineField]
         public int inPhaseCounter;
 
+        [OnlineField]
+        public int neuronsLeft;
+
         public RealizedSLOracleState() { }
 
-        public RealizedSLOracleState(OnlinePhysicalObject onlineEntity) : base(onlineEntity)
+        public RealizedSLOracleState(OnlinePhysicalObject onlineEntity)
+            : base(onlineEntity)
         {
             var oracle = (Oracle)onlineEntity.apo.realizedObject;
             var behavior = (SLOracleBehavior)oracle.oracleBehavior;
+            neuronsLeft = behavior.State.neuronsLeft;
+
             this.holdingObject = behavior.holdingObject?.abstractPhysicalObject?.GetOnlineObject();
+
             if (behavior.initWakeUpProcedure)
             {
-                var wakeUpProcedure = oracle.room.updateList.OfType<SLOracleWakeUpProcedure>().FirstOrDefault();
+                var wakeUpProcedure = oracle
+                    .room.updateList.OfType<SLOracleWakeUpProcedure>()
+                    .FirstOrDefault();
                 if (wakeUpProcedure is not null)
                 {
                     revivePhase = wakeUpProcedure.phase;
@@ -37,6 +48,7 @@ namespace RainMeadow
 
             var oracle = (Oracle)((OnlinePhysicalObject)onlineEntity).apo.realizedObject;
             var behavior = (SLOracleBehavior)oracle.oracleBehavior;
+            behavior.State.neuronsLeft = neuronsLeft;
 
             var po = this.holdingObject?.apo?.realizedObject;
             if (po != behavior.holdingObject)
@@ -51,20 +63,39 @@ namespace RainMeadow
                 }
             }
 
-            var wakeUpProcedure = oracle.room.updateList.OfType<SLOracleWakeUpProcedure>().FirstOrDefault();
+            var wakeUpProcedure = oracle
+                .room.updateList.OfType<SLOracleWakeUpProcedure>()
+                .FirstOrDefault();
             if (wakeUpProcedure is not null)
             {
-                if ((int)wakeUpProcedure.phase < (int)Phase.Rumble && (int)Phase.Rumble < (int)this.revivePhase)
+                if (
+                    (int)wakeUpProcedure.phase < (int)Phase.Rumble
+                    && (int)Phase.Rumble < (int)this.revivePhase
+                )
                 {
                     wakeUpProcedure.inPhaseCounter = 0;
-                    wakeUpProcedure.phase = Phase.Rumble;  // skip GoToOracle because we might not have NSHSwarmer
+                    wakeUpProcedure.phase = Phase.Rumble; // skip GoToOracle because we might not have NSHSwarmer
                 }
-                if ((int)wakeUpProcedure.phase < (int)Phase.Booting && (int)Phase.Booting <= (int)this.revivePhase)
+                if (
+                    (int)wakeUpProcedure.phase < (int)Phase.Booting
+                    && (int)Phase.Booting <= (int)this.revivePhase
+                )
                 {
                     wakeUpProcedure.inPhaseCounter = 0;
-                    wakeUpProcedure.phase = Phase.Booting;  // skip Rumble because laggy
+                    wakeUpProcedure.phase = Phase.Booting; // skip Rumble because laggy
                 }
-                for (var timeout = 500; timeout > 0 && ((int)wakeUpProcedure.phase < (int)this.revivePhase || ((int)wakeUpProcedure.phase == (int)this.revivePhase && wakeUpProcedure.inPhaseCounter < this.inPhaseCounter)); timeout--)
+                for (
+                    var timeout = 500;
+                    timeout > 0
+                        && (
+                            (int)wakeUpProcedure.phase < (int)this.revivePhase
+                            || (
+                                (int)wakeUpProcedure.phase == (int)this.revivePhase
+                                && wakeUpProcedure.inPhaseCounter < this.inPhaseCounter
+                            )
+                        );
+                    timeout--
+                )
                 {
                     wakeUpProcedure.Update(!wakeUpProcedure.evenUpdate);
                 }
