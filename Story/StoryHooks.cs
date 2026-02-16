@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace RainMeadow
 {
@@ -133,6 +134,7 @@ namespace RainMeadow
             On.Watcher.SpinningTop.SpawnWarpPoint += SpinningTop_SpawnWarpPoint;
             On.Watcher.SpinningTop.RaiseRippleLevel += SpinningTop_RaiseRippleLevel;
             IL.Watcher.SpinningTop.SpawnBackupWarpPoint += SpinningTop_SpawnBackupWarpPoint;
+            IL.SLOracleSwarmer.Update += SLOracleSwarmer_Update;
             //On.Watcher.SpinningTop.Update += SpinningTop_Update;
 
             //On.Watcher.SpinningTop.VanillaRegionSpinningTopEncounter += (On.Watcher.SpinningTop.orig_VanillaRegionSpinningTopEncounter orig, Watcher.SpinningTop self) =>
@@ -926,6 +928,40 @@ namespace RainMeadow
                     i => i.MatchCallvirt("System.Collections.Generic.List`1<OracleSwarmer>", "Add")
                 );
                 c.MarkLabel(skip);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e);
+            }
+        }
+
+        private void SLOracleSwarmer_Update(ILContext il)
+        {
+            try
+            {
+                var c = new ILCursor(il);
+                if (c.TryGotoNext(MoveType.After,
+                    i => i.MatchLdfld<SLOracleSwarmer>("oracle"),
+                    i => i.MatchLdnull(),
+                    i => i.MatchCgtUn()
+                    ))
+                {
+                    c.Emit(OpCodes.Ldarg_0);
+
+                    c.EmitDelegate<Func<bool, SLOracleSwarmer, bool>>((vanillaValue, self) =>
+                    {
+                        // If we aren't in an online lobby, stick to the vanilla result
+                        if (OnlineManager.lobby == null) return vanillaValue;
+
+                        // If online, set to true if oracle is null AND room is not Available
+                        if (!vanillaValue && RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && !rs.isAvailable)
+                        {
+                            return true;
+                        }
+
+                        return vanillaValue;
+                    });
+                }
             }
             catch (Exception e)
             {
