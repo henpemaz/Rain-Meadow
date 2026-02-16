@@ -1626,6 +1626,10 @@ namespace RainMeadow
         {
             if (message == "EXIT" && isArenaMode(out var arena))
             {
+                if (arena.leaveForNextLevel)
+                {
+                    return;
+                }
                 if (OnlineManager.lobby.isOwner)
                 {
                     for (int i = 0; i < arena.arenaSittingOnlineOrder.Count; i++)

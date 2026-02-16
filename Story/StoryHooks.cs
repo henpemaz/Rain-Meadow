@@ -1587,12 +1587,22 @@ namespace RainMeadow
                 if (hostCurrentRegion != -1 && hostCurrentRegion != self.currentRegion && hostCurrentRegion != self.upcomingRegion)
                     self.InitiateRegionSwitch(hostCurrentRegion);
             }
+            
             orig(self);
+
             if (storyGameMode is not null)
             {
                 if (OnlineManager.lobby.isOwner)
                 {
-                    storyGameMode.region = self.allRegions[self.accessibleRegions[self.currentRegion]].name;
+                    if (self.currentRegion >= 0 && self.currentRegion < self.accessibleRegions.Count) 
+                    {
+                        int realRegionIndex = self.accessibleRegions[self.currentRegion];
+                        
+                        if (realRegionIndex >= 0 && realRegionIndex < self.allRegions.Count())
+                        {
+                            storyGameMode.region = self.allRegions[realRegionIndex].name;
+                        }
+                    }
                 }
                 else if (self.startButton is not null)
                 {
