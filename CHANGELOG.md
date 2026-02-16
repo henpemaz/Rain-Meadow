@@ -7,6 +7,7 @@
 ## Story
 ### Watcher
 - Fixed end-game ability not working
+- Fixed mind control happening post-warp
 
 ## General
 ### Chat:
