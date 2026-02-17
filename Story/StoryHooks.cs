@@ -6,6 +6,8 @@ using RWCustom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -949,14 +951,10 @@ namespace RainMeadow
                     {
                         // If we aren't in an online lobby, stick to the vanilla result
                         if (OnlineManager.lobby == null) return vanillaValue;
-
-                        // If online, set to true if oracle is null AND room is not Available
-                        if (!vanillaValue && RoomSession.map.TryGetValue(self.room.abstractRoom, out var rs) && !rs.isAvailable)
-                        {
-                            return true;
-                        }
-
-                        return vanillaValue;
+                        
+                        // oracle is null && we're the lobby owner on this one
+                        return self.oracle.abstractPhysicalObject == null;
+                        
                     });
                 }
             }
