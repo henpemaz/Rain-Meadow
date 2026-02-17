@@ -14,6 +14,8 @@ namespace RainMeadow
         public const string Spear = "Spear";
         public const string ExplosiveSpear = "Explosive Spear";
         public const string ScavengerBomb = "Scavenger Bomb";
+        public const string Grub = "Grub";
+
         public const string InvsFrind = "Inv's Friend";
         public Vector2 pos;
 
@@ -121,6 +123,8 @@ namespace RainMeadow
         public static float ButtonSpacingOffset => 8;
         public static float ButtonSize => 30;
 
+        public MenuLabel meadowCoinValue;
+
         public AbstractCreature me = null;
 
         public HolidayStoreOverlay(ProcessManager manager, RainWorldGame game)
@@ -136,21 +140,19 @@ namespace RainMeadow
                 new FSprite("meadowcoin")
                 {
                     x = pos.x + 30,
-                    y = pos.y + 20,
+                    y = pos.y + 15,
                     scale = 0.10f,
                 }
             );
-            this.pages[0]
-                .subObjects.Add(
-                    new Menu.MenuLabel(
-                        this,
-                        this.pages[0],
-                        this.Translate($"{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"),
-                        new Vector2(pos.x + 15, pos.y),
-                        new Vector2(110, 30),
-                        true
-                    )
-                );
+            meadowCoinValue = new Menu.MenuLabel(
+                this,
+                this.pages[0],
+                this.Translate($"¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}"),
+                new Vector2(pos.x + 15, pos.y),
+                new Vector2(110, 30),
+                true
+            );
+            this.pages[0].subObjects.Add(meadowCoinValue);
 
             var storeItems = new Dictionary<string, int>
             {
@@ -193,6 +195,10 @@ namespace RainMeadow
         public override void Update()
         {
             base.Update();
+            if (meadowCoinValue != null)
+            {
+                meadowCoinValue.text = $"¤{RainMeadow.rainMeadowOptions.MeadowCoins.Value}";
+            }
             if (me == null)
             {
                 for (int i = 0; i < game.Players.Count; i++)
