@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RainMeadow
 {
-    // If you don't actually need the line-flicker logic, 
+    // If you don't actually need the line-flicker logic,
     // we can keep the Update simple to save performance.
     public class MeadowCoinIcon : TokenSparkIcon
     {
@@ -17,18 +17,22 @@ namespace RainMeadow
         private float lastAlpha;
         private FContainer container;
 
-        public MeadowCoinIcon(FContainer hudContainer, Color color, Vector2 pos, float scale, float alpha) : base(hudContainer, color, pos, scale, alpha)
+        public MeadowCoinIcon(
+            FContainer hudContainer,
+            Color color,
+            Vector2 pos,
+            float scale,
+            float alpha
+        )
+            : base(hudContainer, color, pos, scale, alpha)
         {
             this.TokenColor = color;
             this.sprites = new FSprite[1];
-            
-            // Using Circle20 for a smooth round coin
-            this.sprites[0] = new FSprite("Circle20", true); 
-
-            // Logic for that "Rain World Gold"
+            this.LoadElement("meadowcoin");
+            this.sprites[0] = new FSprite("meadowcoin", true);
             float goldIntensity = 0.2f;
             Color goldColor = this.GoldCol(goldIntensity);
-            
+
             this.sprites[0].color = Color.Lerp(this.TokenColor, goldColor, 0.6f);
             this.sprites[0].alpha = alpha;
 
@@ -41,9 +45,9 @@ namespace RainMeadow
 
             this.container = new FContainer();
             container.SetPosition(pos);
-            container.scale = scale; 
+            container.scale = scale;
             container.alpha = alpha;
-            
+
             container.AddChild(this.sprites[0]);
             hudContainer.AddChild(container);
         }
@@ -57,7 +61,28 @@ namespace RainMeadow
 
         public Color GoldCol(float g)
         {
-            return Color.Lerp(this.TokenColor, new Color(1f, 1f, 1f), 0.4f + 0.4f * Mathf.Max(0, Mathf.Pow(g, 0.5f)));
+            return Color.Lerp(
+                this.TokenColor,
+                new Color(1f, 1f, 1f),
+                0.4f + 0.4f * Mathf.Max(0, Mathf.Pow(g, 0.5f))
+            );
+        }
+
+        private void LoadElement(string elementName)
+        {
+            if (Futile.atlasManager.GetAtlasWithName(elementName) != null)
+            {
+                return;
+            }
+            string text = AssetManager.ResolveFilePath(
+                "Illustrations"
+                    + System.IO.Path.DirectorySeparatorChar.ToString()
+                    + elementName
+                    + ".png"
+            );
+            Texture2D texture2D = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            AssetManager.SafeWWWLoadTexture(ref texture2D, "file:///" + text, false, true);
+            Futile.atlasManager.LoadAtlasFromTexture(elementName, texture2D, false);
         }
 
         public void Draw(float timeStacker)
@@ -66,8 +91,8 @@ namespace RainMeadow
             var drawAlpha = Mathf.Lerp(lastAlpha, alpha, timeStacker);
             var drawScale = Mathf.Lerp(lastScale, scale, timeStacker);
 
-            float internalScale = 0.05f; 
-            this.sprites[0].scale = internalScale; 
+            float internalScale = 0.05f;
+            this.sprites[0].scale = internalScale;
 
             container.SetPosition(drawPos);
             container.alpha = drawAlpha;
