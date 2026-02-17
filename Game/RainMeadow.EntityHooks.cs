@@ -597,41 +597,6 @@ namespace RainMeadow
                     Room room = warpPoint.room; //may be null in the case a client activates an echo warp
                     isFirstWarpWorld = room == null; //do not update gate status afterwards :)
 
-                    if (isEchoWarp || isFirstWarpWorld || warpData.rippleWarp)
-                    { //echo activation is special edge case
-                        if (room == null) RainMeadow.Error("warp point with a null room");
-                        RainMeadow.Debug("this an echo warp");
-                        /*if (isStoryMode(out var storyGameMode))
-                        {
-                            self.warpData = storyGameMode.myLastWarp; //OVERRIDE WARP DATA VERY IMPORTANT!
-                        }*/
-                    }
-                    // We delete every single entitity in the old world, every single one, even our
-                    // slugcats are deleted, nothing is spared, this is because if we dont do this
-                    // someone will keep requesting for the creatures on the old world
-                    else if (RoomSession.map.TryGetValue(room.abstractRoom, out var roomSession3))
-                    {
-                        RainMeadow.Debug($"warp continous region switching -- clear session");
-                        var entities = room.abstractRoom.entities;
-                        for (int i = entities.Count - 1; i >= 0; i--)
-                        {
-                            if (entities[i] is AbstractPhysicalObject apo && OnlinePhysicalObject.map.TryGetValue(apo, out var oe))
-                            {
-                                oe.apo.LoseAllStuckObjects();
-                                if (!oe.isMine)
-                                {
-                                    // not-online-aware removal
-                                    oe.RemoveEntityFromGame(false);
-                                }
-                                else // mine leave the old online world elegantly
-                                {
-                                    RainMeadow.Debug("removing my entity from online " + oe);
-                                    oe.ExitResource(roomSession3);
-                                    oe.ExitResource(roomSession3.worldSession);
-                                }
-                            }
-                        }
-                    }
                     Debug($"destination region: {warpData.destRegion}, worldLoader is null? {self.worldLoader == null}, worldLoader's World is null? {self.worldLoader == null || self.worldLoader.world == null}, activeWorld is null? {self.activeWorld == null}");
                     Debug($"Watcher warp switchery APOs preparations from {self.activeWorld.name} to {(self.worldLoader == null ? newWorld.name : ($"{self.worldLoader.worldName}/{newWorld.name}"))}");
                     foreach (var playerAvatar in OnlineManager.lobby.playerAvatars.Select(kv => kv.Value))
