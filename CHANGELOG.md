@@ -5,6 +5,8 @@
 - Restored custom Team Names
 - Blocked next level call until chatbar is closed
 - Blocked exiting to lobby if host already initiated next level loading to prevent crash
+- Team Battle: Added friendly fire togggle
+- 
 ## Story
 - Fixed Moon dying if the room transferred owners 
 

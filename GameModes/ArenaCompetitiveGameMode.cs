@@ -54,6 +54,8 @@ namespace RainMeadow
         public bool piggyBack = RainMeadow.rainMeadowOptions.EnablePiggyBack.Value;
         public bool amoebaControl = RainMeadow.rainMeadowOptions.AmoebaControl.Value;
 
+        public bool friendlyFire = RainMeadow.rainMeadowOptions.FriendlyFire.Value;
+
         public string paincatName;
         public int lizardEvent;
 
@@ -100,7 +102,6 @@ namespace RainMeadow
         public int arenaSaintAscendanceTimer = RainMeadow.rainMeadowOptions.ArenaSaintAscendanceTimer.Value;
         public int watcherCamoTimer = RainMeadow.rainMeadowOptions.ArenaWatcherCamoTimer.Value;
         public int watcherRippleLevel = RainMeadow.rainMeadowOptions.ArenaWatcherRippleLevel.Value;
-        
         public int amoebaDuration = RainMeadow.rainMeadowOptions.AmoebaDuration.Value;
 
         public ArenaClientSettings arenaClientSettings;

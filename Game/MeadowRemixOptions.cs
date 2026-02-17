@@ -37,6 +37,7 @@ public class RainMeadowOptions : OptionInterface
 
     public readonly Configurable<int> AmoebaDuration;
     public readonly Configurable<bool> AmoebaControl;
+    public readonly Configurable<bool> FriendlyFire;
 
 
     public readonly Configurable<bool> BlockMaul;
@@ -140,6 +141,8 @@ public class RainMeadowOptions : OptionInterface
         VoidMaster = config.Bind("VoidMaster", false);
         AmoebaDuration = config.Bind("AmoebaDuration", 7);
         AmoebaControl = config.Bind("AmoebaControl", false);
+        FriendlyFire = config.Bind("FriendlyFire", false);
+
         ArenaWatcherRippleLevel = config.Bind("ArenaWatcherRippleLevel", 1);
 
 

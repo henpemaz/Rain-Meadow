@@ -262,6 +262,7 @@ namespace RainMeadow
         }
 
         public static bool CheckSameTeam(
+            ArenaOnlineGameMode arena,
             OnlinePlayer? A,
             OnlinePlayer? B,
             Creature creature,
@@ -282,16 +283,17 @@ namespace RainMeadow
                             .TryGetData<ArenaTeamClientSettings>(out var tb2)
                     )
                     {
-                        if (tb1.team == tb2.team)
+                        if (tb1.team == tb2.team && !arena.friendlyFire)
                         {
                             RainMeadow.Debug("Same team! No hits");
                         }
-                        return tb1.team == tb2.team && creature.State.alive && friend.State.alive;
+                        return tb1.team == tb2.team
+                            && !arena.friendlyFire
+                            && creature.State.alive
+                            && friend.State.alive;
                     }
                 }
             }
-
-            RainMeadow.Debug("Different teams or Player is null");
             return false;
         }
 
